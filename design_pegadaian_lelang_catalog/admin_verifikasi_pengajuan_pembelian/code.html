@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Curator - Verifikasi Pengajuan Pembelian</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container": "#eeeeee",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#3f4940",
+                        "on-secondary-container": "#745c00",
+                        "surface": "#f9f9f9",
+                        "on-background": "#1a1c1c",
+                        "on-secondary-fixed": "#241a00",
+                        "on-primary-container": "#8ade9f",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#a0f5b4",
+                        "outline": "#6f7a6f",
+                        "inverse-primary": "#85d99a",
+                        "primary-container": "#006432",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#126c39",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#fed65b",
+                        "secondary": "#735c00",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-fixed": "#400010",
+                        "tertiary-container": "#8f3a47",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-surface": "#1a1c1c",
+                        "on-primary-fixed-variant": "#005228",
+                        "on-tertiary-container": "#ffbac0",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-fixed": "#00210c",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "inverse-surface": "#2f3131",
+                        "outline-variant": "#bfc9bd",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "on-secondary-fixed-variant": "#574500",
+                        "secondary-fixed-dim": "#e9c349",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffdadc",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#ffe088",
+                        "tertiary": "#712331",
+                        "surface-container-low": "#f3f3f3",
+                        "primary": "#004a23",
+                        "background": "#f9f9f9"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-screen w-64 z-50 bg-zinc-100 dark:bg-zinc-950 flex flex-col p-4 gap-y-2 font-manrope tracking-wide">
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-emerald-900 dark:text-emerald-50 uppercase tracking-widest">Sovereign Curator</h1>
+<p class="text-[10px] text-zinc-500 font-bold uppercase tracking-tighter">Enterprise Admin</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-sm font-medium">Kelola Barang</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-white dark:bg-zinc-900 text-emerald-900 dark:text-emerald-400 font-bold shadow-sm rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-sm font-medium">Transaksi</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="text-sm font-medium">Laporan</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Pengaturan</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 space-y-4">
+<button class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-800 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+                Verify New Requests
+            </button>
+<a class="flex items-center gap-3 px-3 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-200 hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-sm font-medium">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 min-h-screen bg-surface">
+<!-- TopAppBar Component -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md z-40 flex justify-between items-center px-8 shadow-sm shadow-zinc-200/50 dark:shadow-none">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold tracking-tight text-emerald-900 dark:text-emerald-50">Verifikasi Pengajuan Pembelian</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-zinc-500">
+<span class="text-xs font-semibold uppercase tracking-widest px-3 py-1 bg-surface-container-low rounded-full">Unit Pusat</span>
+<button class="hover:bg-zinc-100 p-2 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-zinc-100 p-2 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+<div class="flex items-center gap-3 border-l border-zinc-200 pl-6">
+<div class="text-right">
+<p class="text-xs font-bold text-on-background">Admin Utama</p>
+<p class="text-[10px] text-zinc-500">Curator ID: #9921</p>
+</div>
+<img alt="Admin Profile Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10" data-alt="Close-up portrait of a professional male administrator in a clean office setting, soft professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAff5hG5xARvLfqyHv6D-F0w7UIRZJcKpt-EeeaPQ52Jl4tzu9A26iuESLWiueMpflDNschZgheyoeA7OzTYrp4QtBTAhJKTL6_vUt2CmiMGn8_tXH_1lg4UhDwWmBaBdk0iELqCrTq0H6EGTWQAZPJfDbYlr0rgdjPic7dH2R4bbZ6XxMbp7H2Xm9xPGc2Jt61f6B2Loh2ZyR-OGd5l8QGLNWASInLlt7CK6uDf_SXN_9_7_KQ6ssWKC7sJbWhrVKh93sgbeA49bQ"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="pt-24 pb-12 px-8 max-w-7xl mx-auto">
+<!-- Filter Tabs -->
+<div class="flex items-center gap-2 mb-8 bg-surface-container-low p-1 rounded-xl w-fit">
+<button class="px-6 py-2.5 rounded-lg text-sm font-bold bg-white text-emerald-900 shadow-sm">Semua</button>
+<button class="px-6 py-2.5 rounded-lg text-sm font-semibold text-zinc-500 hover:text-emerald-800 transition-colors">Diajukan</button>
+<button class="px-6 py-2.5 rounded-lg text-sm font-semibold text-zinc-500 hover:text-emerald-800 transition-colors">Menunggu Pembayaran</button>
+<button class="px-6 py-2.5 rounded-lg text-sm font-semibold text-zinc-500 hover:text-emerald-800 transition-colors">Selesai</button>
+<button class="px-6 py-2.5 rounded-lg text-sm font-semibold text-zinc-500 hover:text-emerald-800 transition-colors">Ditolak</button>
+</div>
+<!-- Dashboard Grid Layout -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Request Cards Column -->
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<!-- Card Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-transparent hover:border-emerald-100 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Kalung Emas 18K" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Exquisite 18K gold necklace displayed on a black velvet bust with soft spotlights highlighting the intricate craftsmanship" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2wOyTt9UTNY29kLoqW0sBxi1deFKugmkaEvSWQIOJXWcwrjqn5BoWaFQVwmCIr6ttlu99QvdsH2XLAWZlpBWCjh6_Wpe5rccsrQ7pn3HhpgutnzDapvzhGdN6c4T9CpC7DHgJlDBHfSh0QejlkNNfc9-2cY2LhURJ6QLrCSEbahVoQP7ZgBKj9Watmadm6I0tdAFREPt-jiUVphW1cUZVM-zyfKTm59XB7SUT_VynitsaCweap-qD_TzWGS8nhTlTOTgbnRRskq8"/>
+</div>
+<div>
+<h3 class="text-base font-bold text-on-background">Kalung Emas 18K</h3>
+<p class="text-[11px] font-bold text-zinc-400 tracking-widest uppercase">LEL-GLD-001</p>
+<p class="text-primary font-extrabold text-lg mt-1">Rp 12.450.000</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-widest rounded-full">Diajukan</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-zinc-50 mb-6">
+<div>
+<p class="text-[10px] text-zinc-400 uppercase font-bold mb-1">Pembeli</p>
+<p class="text-sm font-bold text-on-background">Budi Santoso</p>
+<p class="text-xs text-zinc-500">+62 812 3456 7890</p>
+</div>
+<div>
+<p class="text-[10px] text-zinc-400 uppercase font-bold mb-1">Waktu Pengajuan</p>
+<p class="text-sm font-medium text-on-background">24 Juli 2024</p>
+<p class="text-xs text-zinc-500">10:30 WIB</p>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<button class="text-emerald-700 text-xs font-bold hover:underline">Lihat Detail</button>
+<div class="flex gap-3">
+<button class="px-5 py-2 border border-outline-variant text-zinc-600 rounded-lg text-xs font-bold hover:bg-zinc-50 active:scale-95 transition-all">Tolak</button>
+<button class="px-5 py-2 bg-primary text-white rounded-lg text-xs font-bold shadow-sm hover:bg-emerald-800 active:scale-95 transition-all">Setujui</button>
+</div>
+</div>
+</div>
+<!-- Card Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-transparent hover:border-emerald-100 transition-all group">
+<div class="flex justify-between items-start mb-6">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+<img alt="Jam Tangan Mewah" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Luxury Swiss chronograph watch with mechanical components visible through a sapphire glass back on a dark stone surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2pwIzb3EUqzBDklvJJ7Bde5FwaqGnWuVzZcbAymSVzaEjm2LaYuqIy7ccgMBvtcnyaebIzucweV1PTcJzjFph0PY0RFU18FdRuSmCsNkR3P1riUzbfwNthSqIsF1JWOY547pr0fSj6JPmI-FrxjBEoesg469v-pvQ-gRw2HDvoCEMD1B9htbKx1UZTQTQDVtjdTTDdag4GSWNykQGvDNwt_BCNQkqDk-K1NxC_zhNtAlNq8DkYXjDe2dTo7wYhbKMyHvKvtBZQF0"/>
+</div>
+<div>
+<h3 class="text-base font-bold text-on-background">Rolex Submariner Pre-owned</h3>
+<p class="text-[11px] font-bold text-zinc-400 tracking-widest uppercase">LEL-WTC-882</p>
+<p class="text-primary font-extrabold text-lg mt-1">Rp 145.000.000</p>
+</div>
+</div>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-widest rounded-full">Menunggu Pembayaran</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-zinc-50 mb-6">
+<div>
+<p class="text-[10px] text-zinc-400 uppercase font-bold mb-1">Pembeli</p>
+<p class="text-sm font-bold text-on-background">Siti Aminah</p>
+<p class="text-xs text-zinc-500">+62 813 9988 7766</p>
+</div>
+<div>
+<p class="text-[10px] text-zinc-400 uppercase font-bold mb-1">Waktu Pengajuan</p>
+<p class="text-sm font-medium text-on-background">23 Juli 2024</p>
+<p class="text-xs text-zinc-500">14:15 WIB</p>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<button class="text-emerald-700 text-xs font-bold hover:underline">Lihat Detail</button>
+<div class="flex gap-3 opacity-50 cursor-not-allowed">
+<button class="px-5 py-2 border border-outline-variant text-zinc-400 rounded-lg text-xs font-bold" disabled="">Tolak</button>
+<button class="px-5 py-2 bg-zinc-200 text-zinc-400 rounded-lg text-xs font-bold shadow-sm" disabled="">Setujui</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Panel Column (Side Drawer Look) -->
+<div class="col-span-12 lg:col-span-5">
+<div class="bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden sticky top-24 border border-zinc-100">
+<div class="bg-primary px-8 py-6 text-white">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-lg font-bold">Detail Pengajuan</h3>
+<button class="bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+<p class="text-xs opacity-80 font-medium">No. Pengajuan: #REQ-2024-00452</p>
+</div>
+<div class="p-8 space-y-8 max-h-[calc(100vh-250px)] overflow-y-auto">
+<!-- Buyer Section -->
+<section>
+<h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 border-b border-zinc-50 pb-2">Informasi Pembeli</h4>
+<div class="space-y-4">
+<div class="flex justify-between">
+<span class="text-xs text-zinc-500">Nama Lengkap</span>
+<span class="text-xs font-bold text-on-background">Budi Santoso</span>
+</div>
+<div class="flex justify-between">
+<span class="text-xs text-zinc-500">NIK</span>
+<span class="text-xs font-bold text-on-background">3271040509880001</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs text-zinc-500">Alamat Pengiriman</span>
+<span class="text-xs font-medium text-on-background leading-relaxed">Jl. Kebon Jeruk No. 12, Kel. Palmerah, Kec. Palmerah, Jakarta Barat, 11480</span>
+</div>
+</div>
+</section>
+<!-- Timeline Section -->
+<section>
+<h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-6 border-b border-zinc-50 pb-2">Status History</h4>
+<div class="space-y-6 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-zinc-100">
+<div class="relative pl-8 flex items-center gap-3">
+<div class="absolute left-0 w-4 h-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm ring-1 ring-emerald-500/20 z-10"></div>
+<div>
+<p class="text-xs font-bold text-on-background">Diajukan</p>
+<p class="text-[10px] text-zinc-400">24 Juli 2024, 10:30 WIB</p>
+</div>
+</div>
+<div class="relative pl-8 flex items-center gap-3">
+<div class="absolute left-0 w-4 h-4 rounded-full bg-zinc-200 border-4 border-white shadow-sm z-10"></div>
+<div>
+<p class="text-xs font-medium text-zinc-400">Diverifikasi</p>
+</div>
+</div>
+<div class="relative pl-8 flex items-center gap-3">
+<div class="absolute left-0 w-4 h-4 rounded-full bg-zinc-200 border-4 border-white shadow-sm z-10"></div>
+<div>
+<p class="text-xs font-medium text-zinc-400">Menunggu Pembayaran</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Payment Proof Placeholder -->
+<section>
+<h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 border-b border-zinc-50 pb-2">Bukti Pembayaran</h4>
+<div class="border-2 border-dashed border-zinc-100 rounded-xl p-8 flex flex-col items-center justify-center bg-zinc-50/50">
+<span class="material-symbols-outlined text-zinc-300 text-4xl mb-2" data-icon="image_not_supported">image_not_supported</span>
+<p class="text-xs text-zinc-400 font-medium">Belum ada bukti pembayaran diunggah</p>
+</div>
+</section>
+<!-- Form Actions -->
+<section class="space-y-4 pt-4 border-t border-zinc-100">
+<div>
+<label class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 block">Catatan Penolakan (Opsional)</label>
+<textarea class="w-full text-xs p-3 rounded-lg border border-zinc-100 focus:ring-primary focus:border-primary min-h-[80px] bg-zinc-50/30" placeholder="Tuliskan alasan jika pengajuan ditolak..."></textarea>
+</div>
+<div class="flex gap-4">
+<button class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-xl text-xs font-extrabold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Tolak Pengajuan</button>
+<button class="flex-1 bg-primary text-white py-3 rounded-xl text-xs font-extrabold uppercase tracking-widest shadow-md hover:bg-emerald-800 transition-all">Verifikasi &amp; Setujui</button>
+</div>
+<button class="w-full border border-zinc-200 text-zinc-400 py-3 rounded-xl text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 cursor-not-allowed">
+<span class="material-symbols-outlined text-sm" data-icon="description">description</span>
+                                    Generate Nota Pembelian
+                                </button>
+</section>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

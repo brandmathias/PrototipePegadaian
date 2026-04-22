@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pegadaian - Katalog Barang Jaminan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#f9f9f9",
+                        "primary-fixed": "#a0f5b4",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#400010",
+                        "on-surface": "#1a1c1c",
+                        "tertiary-fixed": "#ffdadc",
+                        "secondary-fixed": "#ffe088",
+                        "tertiary": "#712331",
+                        "on-primary-container": "#8ade9f",
+                        "primary-container": "#006432",
+                        "secondary-fixed-dim": "#e9c349",
+                        "background": "#f9f9f9",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e8e8e8",
+                        "primary": "#004a23",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-primary-fixed": "#00210c",
+                        "inverse-surface": "#2f3131",
+                        "secondary-container": "#fed65b",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#241a00",
+                        "surface-tint": "#126c39",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "surface-dim": "#dadada",
+                        "surface-container": "#eeeeee",
+                        "on-primary-fixed-variant": "#005228",
+                        "on-surface-variant": "#3f4940",
+                        "primary-fixed-dim": "#85d99a",
+                        "inverse-primary": "#85d99a",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#8f3a47",
+                        "outline": "#6f7a6f",
+                        "outline-variant": "#bfc9bd",
+                        "surface-container-low": "#f3f3f3",
+                        "secondary": "#735c00",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "on-secondary-container": "#745c00",
+                        "surface": "#f9f9f9",
+                        "error": "#ba1a1a"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(249, 249, 249, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .editorial-shadow {
+            box-shadow: 0 10px 30px -10px rgba(26, 28, 28, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Shared Header -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-outline-variant/20 px-4 lg:px-10 py-3 glass-header sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-on-surface text-xl font-headline font-extrabold leading-tight tracking-tight">Pegadaian</h2>
+</div>
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-on-surface text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Beranda</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary leading-normal" href="#">Katalog</a>
+<a class="text-on-surface text-sm font-medium leading-normal hover:text-primary transition-colors" href="#">Tentang Kami</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-4 md:gap-8 items-center">
+<label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded h-full overflow-hidden">
+<div class="text-primary flex border-none bg-surface-container-low items-center justify-center pl-4" data-icon="search">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden border-none bg-surface-container-low focus:ring-0 h-full placeholder:text-outline text-base font-normal leading-normal pl-2" placeholder="Cari barang jaminan..."/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded h-10 w-10 bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-all" data-icon="shopping_cart">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<button class="flex items-center justify-center rounded h-10 w-10 bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-all" data-icon="notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-outline-variant/30" data-alt="professional portrait of a man in a business suit with a friendly expression, soft studio lighting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBv7VEFNb7QeUiOkLR7RVuQNfi9WXMpyHXFy0QfyN_CBIlBhVDPvpo3rz2Qyuo4N8a3Jz9jJfiZJ7mpRvSdoQvB9Bj0ypHLOl9LOmL8pgg8FLmiltaMxcP7E5cBxQV_iuCflwjkoT1XfbAemC77f4bYPmVmxCcOJBAZDQ2XFhODTZJTd1G8qPZPAIagUJnHsyWM9mHKE76JksPewzMefIOKwHv7MlBRIHpUzRBE5K_mVaSFBtHuUvUrDEbwLtHTlgAMJDTIFV8oeMs");'></div>
+</div>
+</header>
+<main class="flex flex-1 flex-col md:flex-row">
+<!-- Sidebar Navigation -->
+<aside class="w-full md:w-64 bg-surface-container-low p-6 flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-container text-on-primary-fixed-variant transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<p class="text-sm font-bold">Katalog Produk</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">receipt_long</span>
+<p class="text-on-surface text-sm font-medium">Transaksi Saya</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">favorite</span>
+<p class="text-on-surface text-sm font-medium">Favorit</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">history</span>
+<p class="text-on-surface text-sm font-medium">Riwayat</p>
+</div>
+</div>
+<div class="mt-4 border-t border-outline-variant/30 pt-6">
+<p class="text-outline text-xs font-label uppercase tracking-widest mb-4">Kategori Utama</p>
+<div class="flex flex-col gap-1">
+<button class="flex items-center justify-between px-2 py-1.5 text-sm hover:text-primary transition-colors">
+<span>Emas &amp; Perhiasan</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+</button>
+<button class="flex items-center justify-between px-2 py-1.5 text-sm hover:text-primary transition-colors">
+<span>Elektronik</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+</button>
+<button class="flex items-center justify-between px-2 py-1.5 text-sm hover:text-primary transition-colors">
+<span>Kendaraan Bermotor</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+</button>
+<button class="flex items-center justify-between px-2 py-1.5 text-sm hover:text-primary transition-colors">
+<span>Gadget &amp; Laptop</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<section class="flex-1 bg-surface-bright flex flex-col p-6 md:p-10 gap-8">
+<!-- Hero & Header Section -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 text-primary font-bold text-sm">
+<span class="material-symbols-outlined text-sm">verified_user</span>
+<span>Aman &amp; Terpercaya oleh Negara</span>
+</div>
+<div class="flex flex-wrap items-end justify-between gap-6">
+<div class="max-w-2xl">
+<h1 class="text-on-surface text-4xl md:text-5xl font-headline font-black leading-tight tracking-tight mb-4">Katalog Penjualan Barang Jaminan</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed">Dapatkan aset berkualitas tinggi yang telah diverifikasi keasliannya oleh penaksir profesional Pegadaian dengan harga jual terbaik.</p>
+</div>
+</div>
+</div>
+<!-- Filters & Category Chips -->
+<div class="flex flex-wrap items-center gap-3">
+<button class="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-sm shadow-md transition-transform hover:scale-105">Semua Barang</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface font-medium text-sm hover:bg-secondary-container/20 transition-all">Logam Mulia</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface font-medium text-sm hover:bg-secondary-container/20 transition-all">Smartphone</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface font-medium text-sm hover:bg-secondary-container/20 transition-all">Kamera DSLR</button>
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface font-medium text-sm hover:bg-secondary-container/20 transition-all">Laptop Pro</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+<!-- Product Card 1 -->
+<div class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden editorial-shadow transition-all hover:-translate-y-1">
+<div class="relative aspect-square overflow-hidden bg-surface-container">
+<div class="absolute top-3 left-3 z-10 bg-surface-container-highest/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-label font-bold uppercase tracking-wider text-on-surface">Lot 4821</div>
+<img alt="Gold Ring" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Close-up of a luxurious 18k yellow gold diamond ring on a dark velvet surface with dramatic cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuv26heNEEOVnKDHH7wiH4ekZYfxR1cMick7qBlrB242hCEZ1qjnwv8j6pHhxLAAaSw-eK0hL8EbdVzmvu1YrhE3NqquaEzMk_oLjHmeQcxGES95mK7bPjnfBAwTp-_ZUCHwbssneNi9jVA4v75djV7CPO9VQPcjFxnfVSarQAXdnK-nwd-hsK4fR3uZhx8aXme6wZ22hThtWbirt4AFyrCzGq0PKPy8ch5RnHG8j8X-r7lhnuOGa_zbxfXn7E781MXIkNoQn5zFE"/>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div>
+<h3 class="text-on-surface font-headline font-bold text-lg mb-1 group-hover:text-primary transition-colors">Cincin Emas Berlian 18K</h3>
+<p class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span> Jakarta Pusat
+                                </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/15 flex flex-col gap-1">
+<span class="text-outline text-[10px] font-label uppercase tracking-widest">Harga Jual</span>
+<span class="text-primary font-headline font-extrabold text-xl">Rp 8.500.000</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">shopping_bag</span>
+                                Beli Sekarang
+                            </button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden editorial-shadow transition-all hover:-translate-y-1">
+<div class="relative aspect-square overflow-hidden bg-surface-container">
+<div class="absolute top-3 left-3 z-10 bg-surface-container-highest/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-label font-bold uppercase tracking-wider text-on-surface">Lot 9012</div>
+<img alt="Laptop" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Modern sleek silver laptop on a clean white desk with soft natural window lighting and minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClkkW1Bxb77dPRwutOFdqc2zlxwkAYpzGVL0fOzJj3i-uuvykm_hVveWksADt-9Aj47e00aui68-p3kS-1UEK5Num8eWJ3qMyNb9ZFKoL0tzFk85Rmh0qv5Fj4Q29JlIxjFdP6oB01XEL4mCP9TVL2uV3cFm1fLFbTxKU6Yb7k3L8CyhVovF_rTzY3LCzFLNil1EBiWo5-zBzCGGaGUNA1X4TjpP9rA2w3OZYqZOYksfmHtfD20NEKZ4663eGmHlXDMskBtgHI-Vg"/>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div>
+<h3 class="text-on-surface font-headline font-bold text-lg mb-1 group-hover:text-primary transition-colors">MacBook Pro M2 14"</h3>
+<p class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span> Surabaya Selatan
+                                </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/15 flex flex-col gap-1">
+<span class="text-outline text-[10px] font-label uppercase tracking-widest">Harga Jual</span>
+<span class="text-primary font-headline font-extrabold text-xl">Rp 17.250.000</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">shopping_bag</span>
+                                Beli Sekarang
+                            </button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden editorial-shadow transition-all hover:-translate-y-1">
+<div class="relative aspect-square overflow-hidden bg-surface-container">
+<div class="absolute top-3 left-3 z-10 bg-surface-container-highest/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-label font-bold uppercase tracking-wider text-on-surface">Lot 3345</div>
+<img alt="Watch" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Luxury Swiss automatic watch with steel bracelet on a polished granite surface with sharp highlight reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcExPlAftOknE7gkmvXyM6SH0xKRM9Fj-J4FKdUMT9yNZuuxfODhITTuZ4UKKUL6h410V7qn6HnIRPYUNwPvikLb_f0xeEOuSmwI1CqYWYZ2ypjlN-lVTpEcuXojoCs49l9T8xxE3WEAACewK6X0Ytlr9SZ_6qWh5MZ2yMrXQldPN_X8-PK44DKq8JvKhK8EAse1W-AW9b1YbSuv_nR_D5q_riEH2tVnoVkt5Uaxh-swibWi5_I5oVlC6LJ6dNLckfz5zk5cWS6X8"/>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div>
+<h3 class="text-on-surface font-headline font-bold text-lg mb-1 group-hover:text-primary transition-colors">Seiko Presage Automatik</h3>
+<p class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span> Bandung Kota
+                                </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/15 flex flex-col gap-1">
+<span class="text-outline text-[10px] font-label uppercase tracking-widest">Harga Jual</span>
+<span class="text-primary font-headline font-extrabold text-xl">Rp 4.100.000</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">shopping_bag</span>
+                                Beli Sekarang
+                            </button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden editorial-shadow transition-all hover:-translate-y-1">
+<div class="relative aspect-square overflow-hidden bg-surface-container">
+<div class="absolute top-3 left-3 z-10 bg-surface-container-highest/80 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-label font-bold uppercase tracking-wider text-on-surface">Lot 7721</div>
+<img alt="Phone" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Modern pink flagship smartphone resting on a pastel marble surface with artistic shadows and soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmsjRBSAaTyeqRzt2YEvLYVian-puYvqv8Tt1eh06z5UhR-SV9TI90OuHJ8A5J0kXjEw-fVGHrZWBXmy3U0D_MGhHaWmgennK5isULD0jsU-86LCVhdPFM5IcelexGWe0aw52Hz6NMY1BZQoZTr05TvJQuu9BXwyL8OwRS9Kgu1En9kG6a3JodtrblJpCftaCpuSH8tDCCJrSaerOYVwWVykJwoYFZfBAXcNRPEQrnfDQivqhAT7T_0rZOUN_aaXb_G0j96oTDPw0"/>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div>
+<h3 class="text-on-surface font-headline font-bold text-lg mb-1 group-hover:text-primary transition-colors">iPhone 14 Pro 256GB</h3>
+<p class="text-on-surface-variant text-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span> Medan Baru
+                                </p>
+</div>
+<div class="pt-4 border-t border-outline-variant/15 flex flex-col gap-1">
+<span class="text-outline text-[10px] font-label uppercase tracking-widest">Harga Jual</span>
+<span class="text-primary font-headline font-extrabold text-xl">Rp 12.800.000</span>
+</div>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-sm">shopping_bag</span>
+                                Beli Sekarang
+                            </button>
+</div>
+</div>
+</div>
+<!-- Promotional Banner -->
+<div class="mt-12 rounded-2xl overflow-hidden bg-primary relative p-8 md:p-12 text-on-primary flex flex-col md:flex-row items-center gap-10">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="flex-1 z-10">
+<h2 class="text-3xl font-headline font-extrabold mb-4">Butuh Pembiayaan?</h2>
+<p class="text-on-primary-container text-lg max-w-lg mb-6">Gunakan fasilitas cicilan emas atau pinjaman jaminan di Pegadaian dengan bunga yang sangat kompetitif.</p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold hover:bg-secondary-fixed-dim transition-all">Ajukan Sekarang</button>
+<button class="px-8 py-3 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-lg font-bold hover:bg-white/20 transition-all">Pelajari Lebih Lanjut</button>
+</div>
+</div>
+<div class="hidden md:block w-72 h-48 bg-secondary-container rounded-xl shadow-2xl rotate-3 flex items-center justify-center overflow-hidden">
+<img alt="Gold Savings" class="w-full h-full object-cover" data-alt="Stacks of gold coins and small gold bars on a dark reflective surface representing wealth and security" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX-7FBvf6FdfmDLfu-spAqfdrvR-H2K1jasfouvMf_926KKVXiAbOqlyG_5VoCfWLpapUpmqPBaISX6Yrg7UkEhFMT_cd_DCxI8lt59SA4RqnlGRSIjlkAPAu4WQ23SN-WfZyafK6L5eTfOPJ2-ufuaLsqG4Z2krfzq8klV8b_Y85y-VP8CtCKduvtvY0tm9iB9T-kZ7LdsYJd-5kb6gVrML4d5-Bc1L4d8dSLmrkB_k5TsX6rxNEF__GJvTJC6u7JRL-LRkKGY0w"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 py-12 px-10">
+<div class="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 text-primary">
+<svg class="size-8" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+<h2 class="text-on-surface text-2xl font-headline font-bold">Pegadaian</h2>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">Penjualan barang jaminan yang aman, transparan, dan terpercaya. Bagian dari PT Pegadaian (Persero).</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-on-surface font-bold">Layanan Kami</h4>
+<ul class="flex flex-col gap-2 text-on-surface-variant text-sm">
+<li><a class="hover:text-primary" href="#">Katalog Emas</a></li>
+<li><a class="hover:text-primary" href="#">Katalog Kendaraan</a></li>
+<li><a class="hover:text-primary" href="#">Cicilan Barang</a></li>
+<li><a class="hover:text-primary" href="#">Gadai Express</a></li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-on-surface font-bold">Bantuan</h4>
+<ul class="flex flex-col gap-2 text-on-surface-variant text-sm">
+<li><a class="hover:text-primary" href="#">Cara Pembelian</a></li>
+<li><a class="hover:text-primary" href="#">Pengiriman &amp; Retur</a></li>
+<li><a class="hover:text-primary" href="#">Syarat &amp; Ketentuan</a></li>
+<li><a class="hover:text-primary" href="#">Hubungi Kami</a></li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="text-on-surface font-bold">Terdaftar &amp; Diawasi</h4>
+<div class="flex gap-4 items-center">
+<div class="w-20 h-10 bg-surface-container rounded-lg flex items-center justify-center p-2">
+<img alt="OJK Logo Placeholder" class="grayscale opacity-50" data-alt="Abstract icon representing official financial regulatory logo in minimalist black and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSGBaE291lzeqS0XAcT-2GEyqzzRByYlbztyj5Al_TE5W0q0gTTM9kvKdii7gheckSoZxd9f53QQm3nhM8gzQid3_Mr9LBSH7V5D76qRgoP1H28bPkQ0N6euPkfJ_Q18XpmDhFsu87CxFbOOInFi-c2nMYjPjTypPuzFVm-rapoY-tcQDPrHp3wfzK2xaEvVZDXrlP4oaUJg02LjZTSF48uztujoG8U5M8sF3EFy8oZNzujojDo25t5xh7E_kralqBB-pbanYTK9E"/>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-tight">Berizin dan diawasi oleh Otoritas Jasa Keuangan (OJK)</p>
+</div>
+</div>
+</div>
+<div class="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-outline-variant/10 text-center">
+<p class="text-on-surface-variant text-xs">© 2024 PT Pegadaian (Persero). Seluruh hak cipta dilindungi.</p>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

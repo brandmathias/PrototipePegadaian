@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kelola Sesi Lelang - Unit Manado | Sovereign Control</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-bright": "#f9f9f9",
+                      "secondary-fixed": "#ffe088",
+                      "primary-fixed-dim": "#85d99a",
+                      "on-tertiary-fixed": "#400010",
+                      "on-secondary-container": "#745c00",
+                      "on-error": "#ffffff",
+                      "primary-container": "#006432",
+                      "inverse-primary": "#85d99a",
+                      "outline": "#6f7a6f",
+                      "primary": "#004a23",
+                      "surface-container-low": "#f3f3f3",
+                      "background": "#f9f9f9",
+                      "surface-dim": "#dadada",
+                      "primary-fixed": "#a0f5b4",
+                      "surface-variant": "#e2e2e2",
+                      "on-surface": "#1a1c1c",
+                      "surface-container-high": "#e8e8e8",
+                      "surface-tint": "#126c39",
+                      "on-primary-container": "#8ade9f",
+                      "tertiary": "#712331",
+                      "tertiary-fixed": "#ffdadc",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#1a1c1c",
+                      "secondary-container": "#fed65b",
+                      "tertiary-fixed-dim": "#ffb2b9",
+                      "on-primary-fixed": "#00210c",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#7b2b38",
+                      "secondary": "#735c00",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#ffbac0",
+                      "on-surface-variant": "#3f4940",
+                      "on-secondary-fixed": "#241a00",
+                      "tertiary-container": "#8f3a47",
+                      "inverse-on-surface": "#f1f1f1",
+                      "outline-variant": "#bfc9bd",
+                      "secondary-fixed-dim": "#e9c349",
+                      "on-secondary-fixed-variant": "#574500",
+                      "surface": "#f9f9f9",
+                      "surface-container-highest": "#e2e2e2",
+                      "inverse-surface": "#2f3131",
+                      "surface-container": "#eeeeee",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed-variant": "#005228"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Manrope"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Inter"
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="h-screen w-72 border-r-0 bg-slate-50 dark:bg-slate-900 bg-slate-100 dark:bg-slate-800 transition-colors flat no shadows fixed left-0 top-0 flex flex-col pt-20 pb-8 px-4 h-full hidden md:flex z-40">
+<div class="mb-8 px-4">
+<h2 class="text-lg font-bold text-emerald-900 dark:text-emerald-50 font-headline tracking-tight">Sovereign Control</h2>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-body mt-1">Unit Admin Portal</p>
+</div>
+<button class="mb-8 mx-4 bg-primary text-on-primary py-2.5 px-4 rounded-md font-body text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-inner">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Create New Lot
+        </button>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100 border-r-4 border-amber-600 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+                        Active Lots
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+                        My Bids
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+                        Verification
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+                        Support
+                    </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800/50">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                        Sign Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-emerald-950/90 backdrop-blur-xl dark:bg-emerald-950/95 no-border tonal-shift-surface shadow-sm shadow-emerald-900/20 md:ml-72 md:w-[calc(100%-18rem)]">
+<div class="flex justify-between items-center h-16 px-8 max-w-[1920px] mx-auto font-manrope tracking-tight font-medium text-sm text-emerald-500 dark:text-emerald-400">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black tracking-tighter text-emerald-50 uppercase hidden md:block">Pegadaian Lelang</span>
+<span class="material-symbols-outlined md:hidden text-emerald-50 cursor-pointer" data-icon="menu">menu</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/50 text-sm">search</span>
+<input class="bg-emerald-900/30 border-0 rounded-full py-1.5 pl-9 pr-4 text-sm text-emerald-100 placeholder-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 w-64 transition-all" placeholder="Search lots..." type="text"/>
+</div>
+<button class="text-emerald-100/70 hover:text-white transition-colors hover:bg-emerald-900/50 hover:text-white rounded-md transition-all scale-95 duration-150 active:scale-90 p-2">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="bg-amber-500/10 text-amber-500 px-4 py-1.5 rounded-md text-sm font-bold hover:bg-amber-500/20 transition-colors">
+                    Login
+                </button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 pt-24 px-8 pb-12 md:ml-72 bg-surface-bright min-h-screen">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Kelola Sesi Lelang - Unit Manado</h1>
+<p class="font-body text-on-surface-variant mt-2 text-sm">Manage active auctions, process winners, and monitor lot performance.</p>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start z-10">
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Lelang Aktif</span>
+<span class="material-symbols-outlined text-primary" data-icon="gavel">gavel</span>
+</div>
+<div class="z-10">
+<span class="font-headline text-3xl font-bold text-primary">24</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-32 h-32 bg-secondary-container/20 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start z-10">
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Menunggu Pemenang</span>
+<span class="material-symbols-outlined text-secondary" data-icon="timer_off">timer_off</span>
+</div>
+<div class="z-10">
+<span class="font-headline text-3xl font-bold text-secondary">8</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-32 h-32 bg-surface-container-high rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+<div class="flex justify-between items-start z-10">
+<span class="font-label text-xs uppercase tracking-widest text-on-surface-variant">Total Barang Lelang</span>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="inventory_2">inventory_2</span>
+</div>
+<div class="z-10">
+<span class="font-headline text-3xl font-bold text-on-surface">156</span>
+</div>
+</div>
+</div>
+<!-- Content Area (Table) -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant/15 bg-surface-container-low flex justify-between items-center">
+<h3 class="font-headline text-lg font-bold text-primary">Daftar Barang Lelang</h3>
+<div class="flex gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 text-sm">search</span>
+<input class="bg-surface-bright border-b border-outline-variant/20 focus:border-primary border-t-0 border-l-0 border-r-0 py-1.5 pl-9 pr-4 text-sm text-on-surface placeholder-on-surface-variant/50 focus:ring-0 transition-colors bg-transparent" placeholder="Filter item..." type="text"/>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body text-sm">
+<thead class="bg-surface-container/50 text-on-surface-variant font-label text-xs uppercase tracking-wider border-b border-outline-variant/15">
+<tr>
+<th class="px-6 py-4 font-semibold">Item Name</th>
+<th class="px-6 py-4 font-semibold">Harga Dasar</th>
+<th class="px-6 py-4 font-semibold">Mode</th>
+<th class="px-6 py-4 font-semibold">Tanggal Berakhir</th>
+<th class="px-6 py-4 font-semibold text-center">Penawar</th>
+<th class="px-6 py-4 font-semibold">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10 text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-medium text-primary">Kalung Emas 24K - 15g</td>
+<td class="px-6 py-4">Rp 12.500.000</td>
+<td class="px-6 py-4"><span class="bg-surface-container px-2 py-1 rounded text-xs">Vickrey</span></td>
+<td class="px-6 py-4 text-tertiary-container font-medium">Hari ini, 15:00</td>
+<td class="px-6 py-4 text-center">12</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Aktif
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-xs font-semibold text-primary hover:text-primary-container px-3 py-1 border border-outline-variant/20 rounded hover:border-primary/50 transition-all">
+                                        Atur Lelang
+                                    </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-medium text-primary">Cincin Berlian 0.5ct</td>
+<td class="px-6 py-4">Rp 25.000.000</td>
+<td class="px-6 py-4"><span class="bg-surface-container px-2 py-1 rounded text-xs">Sealed</span></td>
+<td class="px-6 py-4 text-on-surface-variant">24 Okt 2023, 10:00</td>
+<td class="px-6 py-4 text-center">8</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Selesai
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-xs font-semibold text-secondary hover:text-secondary-fixed-dim px-3 py-1 border border-outline-variant/20 rounded hover:border-secondary/50 transition-all">
+                                        Proses Pemenang
+                                    </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4 font-medium text-primary">Gelang Emas Putih 18K</td>
+<td class="px-6 py-4">Rp 8.200.000</td>
+<td class="px-6 py-4"><span class="bg-surface-container px-2 py-1 rounded text-xs">Fixed</span></td>
+<td class="px-6 py-4 text-on-surface-variant">28 Okt 2023, 12:00</td>
+<td class="px-6 py-4 text-center">3</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Aktif
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-xs font-semibold text-primary hover:text-primary-container px-3 py-1 border border-outline-variant/20 rounded hover:border-primary/50 transition-all">
+                                        Atur Lelang
+                                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-outline-variant/15 bg-surface-container-low flex justify-between items-center text-sm text-on-surface-variant">
+<span>Showing 1 to 3 of 156 lots</span>
+<div class="flex gap-1">
+<button class="px-2 py-1 border border-outline-variant/20 rounded hover:bg-surface-variant transition-colors disabled:opacity-50" disabled="">&lt;</button>
+<button class="px-2 py-1 border border-outline-variant/20 rounded hover:bg-surface-variant transition-colors">1</button>
+<button class="px-2 py-1 border border-outline-variant/20 rounded hover:bg-surface-variant transition-colors">2</button>
+<button class="px-2 py-1 border border-outline-variant/20 rounded hover:bg-surface-variant transition-colors">3</button>
+<button class="px-2 py-1 border border-outline-variant/20 rounded hover:bg-surface-variant transition-colors">&gt;</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

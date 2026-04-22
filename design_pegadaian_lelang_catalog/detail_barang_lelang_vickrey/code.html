@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detail Barang Lelang - Pegadaian Lelang</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#f9f9f9",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-tertiary-fixed": "#400010",
+                        "on-secondary-container": "#745c00",
+                        "on-error": "#ffffff",
+                        "primary-container": "#006432",
+                        "inverse-primary": "#85d99a",
+                        "outline": "#6f7a6f",
+                        "primary": "#004a23",
+                        "surface-container-low": "#f3f3f3",
+                        "background": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#a0f5b4",
+                        "surface-variant": "#e2e2e2",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#126c39",
+                        "on-primary-container": "#8ade9f",
+                        "tertiary": "#712331",
+                        "tertiary-fixed": "#ffdadc",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#fed65b",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "on-primary-fixed": "#00210c",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "secondary": "#735c00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-surface-variant": "#3f4940",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-container": "#8f3a47",
+                        "inverse-on-surface": "#f1f1f1",
+                        "outline-variant": "#bfc9bd",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface": "#f9f9f9",
+                        "surface-container-highest": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "surface-container": "#eeeeee",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005228"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {},
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            font-family: theme('fontFamily.body');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .btn-primary-gradient {
+            background: linear-gradient(180deg, theme('colors.primary') 0%, theme('colors.primary-container') 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<nav class="bg-emerald-950/90 backdrop-blur-xl dark:bg-emerald-950/95 fixed top-0 w-full z-50 shadow-sm shadow-emerald-900/20">
+<div class="flex justify-between items-center h-16 px-8 max-w-[1920px] mx-auto">
+<div class="flex items-center gap-8">
+<a class="text-2xl font-black tracking-tighter text-emerald-50 uppercase font-headline" href="#">Pegadaian Lelang</a>
+<div class="hidden md:flex gap-6 font-manrope tracking-tight font-medium text-sm">
+<a class="text-emerald-100/70 hover:text-white transition-colors hover:bg-emerald-900/50 rounded-md px-3 py-2" href="#">Auctions</a>
+<a class="text-emerald-100/70 hover:text-white transition-colors hover:bg-emerald-900/50 rounded-md px-3 py-2" href="#">Fixed Price</a>
+<a class="text-amber-500 font-bold border-b-2 border-amber-500 pb-1 px-3 py-2" href="#">Sealed Bids</a>
+<a class="text-emerald-100/70 hover:text-white transition-colors hover:bg-emerald-900/50 rounded-md px-3 py-2" href="#">How it Works</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-emerald-500 dark:text-emerald-400 hover:bg-emerald-900/50 rounded-md p-2 transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="font-manrope tracking-tight font-medium text-sm text-emerald-500 dark:text-emerald-400 hover:bg-emerald-900/50 rounded-md px-4 py-2 transition-all">
+                    Login
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow pt-24 pb-16 px-4 md:px-8 max-w-7xl mx-auto w-full">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-sm text-on-surface-variant font-body mb-8">
+<a class="hover:text-primary transition-colors" href="#">Beranda</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Katalog</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">Detail Barang Lelang</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left: Image Gallery (Asymmetrical Editorial Layout) -->
+<div class="lg:col-span-7 flex flex-col gap-4">
+<div class="relative w-full aspect-square bg-surface-container-lowest rounded-xl overflow-hidden group">
+<img alt="Rolex Submariner Watch" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close-up of a luxury silver mechanical watch with black dial on a dark background, dramatic studio lighting highlighting the metal texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBakOe942elIIXc-_y4sBza4LsnTFgaySBk61j5WcSz3nIOY1MMTPwh6BohZXNuRE-IYuW1SGURqiLQWsIZImqmP0Us2w3Yqvu-KG3G576pVcauMEXzaX03JekoDfNmKe-vkm1SqNjXPKWZ7ZZSE1nXe-nu0vrlLS_XTemE_zZcK1w734RwwDh8O1qJJOtWZ5Wq-biFToRlOLuUeAliMLNxP18KqKSeeDAzx1KIjDX4x_PGNd2l-Rh9HUeb9mkuWXxVdKs4DFmUjQo"/>
+<!-- Lot Status Badge -->
+<div class="absolute top-4 right-4 bg-surface-container-highest/70 backdrop-blur-md px-4 py-2 rounded-lg border border-outline-variant/15 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label text-xs uppercase tracking-widest text-on-surface font-semibold">Live Now</span>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-4">
+<button class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden border-2 border-primary border-outline-variant/15 hover:border-primary/50 transition-colors">
+<img alt="Thumbnail 1" class="w-full h-full object-cover" data-alt="Detail shot of luxury watch face, sharp focus on hands and logo, metallic glint." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDNxGZHhX44ZNPbrUyQf-tj1M8fL9eYx5h9MDEubexMEica9LT6jFlKX_e7l6QJg-RKomJxZEL94P_HS9Aypz5P5YPn1yMmFbMp4v4EitmXK56f_gL86d_QLQjzC9fHwyh8nS3_stCHHmeV1FZr_wpcOozj38kMAV6Iiekk9bCSqYq0qRPOhpN-ejjcdn5eSk_ejfVWCXR6GKXLSvu6KMkhI5W4f3DEdTu8k0mH3-GkGpBTtTLs769PpQq-bw6o1rjKQmgW3GQTjg"/>
+</button>
+<button class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-colors">
+<img alt="Thumbnail 2" class="w-full h-full object-cover" data-alt="Side profile of luxury mechanical watch showing crown and case thickness, soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkNJpXdbl6YYRoAYR7bepZdxUwOhkV4nJ4IbD4nlczjnLIJZRLFWjZXR_P16cr_f1mOrQJrb5eaj-PrkXKJ8PqbYqUrZBJkV6Fyjwfka42cRPzGrrREM6298wAblRAN2BshMsGx4CRcX20-5Jb6wQ74nEKsWpk9Urro8hhwgLX2j9UTM5u57dlBYxONuSz_8OquvVL_f7oR-II_eA4qVTjbuBMMOnV4ad5e3EJNhYZjDS-w-dXMmqCP5or9ty3lBY9c1w3EPqS4VU"/>
+</button>
+<button class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden border border-outline-variant/15 hover:border-primary/50 transition-colors">
+<img alt="Thumbnail 3" class="w-full h-full object-cover" data-alt="Macro shot of luxury watch clasp and metallic bracelet links." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1yj0OjDGGwRPkBIQFvKce7UWLjxcVz-37I7fiatSWqVfHHtu44g1sPXPz_Lvd2Y2-v79Rk_sKTl9LjMH74C0zcYmX_G-vaO4NCG5p7bMQYYajpfviY-nqNMLi3aQPIBV-cY9XFq1lqWQ6qA62rn9HcontmdXfMix9LUCq94-r3ANRUQekuiLStX-NAkKaA7tViiPuPG69GEoMaP4mornDjllU_TnmYpcrURwdvoM1HuZYMVt64KNnEHOojqPmgDpm1kT5ZzDLmzA"/>
+</button>
+<button class="aspect-square bg-surface-container-low rounded-lg flex items-center justify-center border border-outline-variant/15 hover:bg-surface-variant transition-colors text-on-surface-variant group">
+<span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">add_photo_alternate</span>
+<span class="sr-only">View all photos</span>
+</button>
+</div>
+</div>
+<!-- Right: Details & Bidding -->
+<div class="lg:col-span-5 flex flex-col gap-8">
+<!-- Header Info -->
+<div>
+<div class="flex items-center gap-3 mb-3">
+<span class="bg-secondary-container text-on-secondary-container font-label text-[10px] uppercase tracking-[0.05em] px-2 py-1 rounded-sm font-semibold">Perhiasan</span>
+<span class="bg-surface-container-high text-on-surface font-label text-[10px] uppercase tracking-[0.05em] px-2 py-1 rounded-sm font-semibold border border-outline-variant/20">Kondisi: Baik</span>
+</div>
+<h1 class="font-headline text-4xl lg:text-5xl font-extrabold tracking-[-0.02em] text-on-surface leading-tight mb-2">Rolex Submariner Date 41mm</h1>
+<p class="font-body text-sm text-on-surface-variant">Lot #8492-A • Diselenggarakan oleh Unit Lelang Jakarta Pusat</p>
+</div>
+<!-- Pricing & Timer Panel -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-[0_8px_32px_rgba(26,28,28,0.04)]">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="font-body text-xs text-on-surface-variant mb-1 uppercase tracking-wider">Harga Dasar</p>
+<p class="font-headline text-3xl font-bold text-primary">Rp 185.000.000</p>
+</div>
+<div class="bg-tertiary-container text-on-tertiary px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span class="font-body text-sm font-semibold">2 Hari 5 Jam</span>
+</div>
+</div>
+<!-- Auction Badge -->
+<div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-lg mb-6">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-weight="fill">gavel</span>
+<div>
+<p class="font-body text-sm font-semibold text-on-surface mb-1">Sealed-bid Auction (Vickrey)</p>
+<p class="font-body text-xs text-on-surface-variant">Bid bersifat tertutup. Pemenang membayar harga penawar tertinggi kedua.</p>
+</div>
+</div>
+<!-- Bidding Form -->
+<form class="flex flex-col gap-4">
+<div>
+<label class="block font-body text-sm font-medium text-on-surface mb-2" for="bid_amount">Masukkan Nominal Bid</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-body text-on-surface-variant">Rp</span>
+<input class="w-full bg-surface-bright border-b-2 border-outline-variant/20 focus:border-primary hover:border-primary/50 transition-colors rounded-t-md px-10 py-3 font-headline text-lg font-semibold text-on-surface outline-none focus:ring-0" id="bid_amount" placeholder="0" type="text"/>
+</div>
+</div>
+<button class="btn-primary-gradient text-on-primary font-headline font-bold text-base py-4 rounded-lg w-full flex items-center justify-center gap-2 hover:opacity-95 transition-opacity active:scale-[0.98]" type="button">
+                            Kirim Penawaran
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="text-center font-body text-xs text-on-surface-variant mt-2 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                            Penawaran Anda aman dan dirahasiakan.
+                        </p>
+</form>
+</div>
+</div>
+</div>
+<!-- Tab Section Below -->
+<div class="mt-16 bg-surface-container-lowest rounded-xl border border-outline-variant/15 overflow-hidden">
+<!-- Tab Headers -->
+<div class="flex border-b border-outline-variant/15 bg-surface-container-low/50">
+<button class="px-8 py-4 font-body text-sm font-semibold text-primary border-b-2 border-primary bg-surface-container-lowest">Deskripsi</button>
+<button class="px-8 py-4 font-body text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">Spesifikasi</button>
+<button class="px-8 py-4 font-body text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">Lokasi Unit</button>
+</div>
+<!-- Tab Content (Deskripsi) -->
+<div class="p-8 max-w-3xl">
+<h3 class="font-headline text-xl font-bold text-on-surface mb-4">Tentang Barang Ini</h3>
+<p class="font-body text-sm text-on-surface-variant leading-relaxed mb-6">
+                    Jam tangan Rolex Submariner Date 41mm (Ref. 126610LN) dalam kondisi sangat baik. Dilengkapi dengan kotak asli dan dokumen sertifikat. Jam tangan ini merupakan salah satu model paling ikonik dari Rolex, menampilkan bezel Cerachrom hitam dan dial hitam yang serasi dengan penanda jam luminesen besar.
+                </p>
+<p class="font-body text-sm text-on-surface-variant leading-relaxed">
+                    Mekanisme pergerakan otomatis kaliber 3235 menawarkan cadangan daya sekitar 70 jam. Tali jam Oyster berbahan baja Oystersteel dilengkapi dengan clasp pengaman lipat Oysterlock dan sistem ekstensi Rolex Glidelock.
+                </p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-50 dark:bg-slate-950 w-full py-12 mt-auto border-t border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 items-center gap-6">
+<div>
+<p class="text-sm font-bold text-emerald-950 mb-2">Pegadaian Lelang</p>
+<p class="font-inter text-xs tracking-widest uppercase text-slate-500">© 2023 PT Pegadaian (Persero). High-End Editorial Auction Experience.</p>
+</div>
+<div class="flex flex-wrap gap-6 md:justify-end font-inter text-xs tracking-widest uppercase text-slate-500">
+<a class="hover:text-emerald-800 transition-opacity hover:opacity-80 cursor-pointer" href="#">Legal Information</a>
+<a class="hover:text-emerald-800 transition-opacity hover:opacity-80 cursor-pointer" href="#">Terms &amp; Conditions</a>
+<a class="hover:text-emerald-800 transition-opacity hover:opacity-80 cursor-pointer" href="#">Privacy Policy</a>
+<a class="hover:text-emerald-800 transition-opacity hover:opacity-80 cursor-pointer" href="#">Auction Guidelines</a>
+</div>
+</div>
+</footer>
+</body></html>

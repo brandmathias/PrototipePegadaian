@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Curator - My Acquisitions</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#735c00",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-fixed": "#400010",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#e9c349",
+                        "secondary-fixed": "#ffe088",
+                        "outline": "#6f7a6f",
+                        "background": "#f9f9f9",
+                        "tertiary": "#712331",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-background": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f3f3",
+                        "inverse-primary": "#85d99a",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-container": "#8f3a47",
+                        "primary-fixed": "#a0f5b4",
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#006432",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "surface-tint": "#126c39",
+                        "on-primary-fixed-variant": "#005228",
+                        "on-primary-container": "#8ade9f",
+                        "on-secondary-fixed": "#241a00",
+                        "inverse-surface": "#2f3131",
+                        "surface-variant": "#e2e2e2",
+                        "on-secondary-container": "#745c00",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-fixed": "#00210c",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed": "#ffdadc",
+                        "on-surface-variant": "#3f4940",
+                        "primary": "#004a23",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#fed65b",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bfc9bd",
+                        "on-secondary-fixed-variant": "#574500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Design System Specific Utility Classes */
+        .ds-ambient-shadow {
+            box-shadow: 0 4px 32px rgba(26, 28, 28, 0.04);
+        }
+        .ds-ghost-border {
+            border: 1px solid rgba(191, 201, 189, 0.15); /* outline-variant at 15% */
+        }
+        .ds-glass-panel {
+            background-color: rgba(249, 249, 249, 0.8); /* surface */
+            backdrop-filter: blur(12px);
+        }
+        .ds-primary-btn {
+            background-image: linear-gradient(to bottom, #004a23, #00381a);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#1a1c1c]/80 backdrop-blur-md flex items-center justify-between px-12 py-4 h-20 shadow-sm dark:shadow-none bg-[#f3f3f3] tonal-shift-bottom-bg-[#f3f3f3]">
+<div class="flex items-center gap-12">
+<div class="font-manrope text-2xl font-black text-[#004a23] dark:text-white tracking-tighter">
+                Sovereign Auctions
+            </div>
+<div class="hidden md:flex items-center gap-8 font-inter text-sm font-medium tracking-normal">
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">Live Floor</a>
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">Global Catalog</a>
+<a class="text-[#004a23] dark:text-[#fed65b] border-b-2 border-[#004a23] dark:border-[#fed65b] pb-1 hover:opacity-80 transition-opacity active:opacity-100" href="#">My Acquisitions</a>
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">Appraisals</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-[#004a23] dark:text-[#4ade80]">
+<button class="hover:opacity-80 transition-opacity active:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:opacity-80 transition-opacity active:opacity-100 flex items-center justify-center">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</button>
+</div>
+<button class="font-inter text-sm font-medium tracking-normal text-on-primary ds-primary-btn px-6 py-2 rounded-md hover:opacity-90 transition-opacity">
+                Place Proxy Bid
+            </button>
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-low" data-alt="professional headshot of a mature individual in a tailored suit against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdaJ2gPG6zoYqM6fEVUol2xrVkfvs3lW27jt0MuEpRGlCzmVcRi4JSf0d20lmsDGakWMPAVihgc0a-zdNbxyZ2S87nlU-_0r2FZdI9SXZqHb3EEOOpeN_GPYVskmPgZSBUJz0Pxqxsl_W7voK2XFGfxLIUa-SIevCBByxhsE5ign4CzeCQp-Pgye7ML0dh-uHS7g2eEFMBhJWB8bBFoWvqYs_Hzld0kUt4NLYD45IYk4foIw12J9huuktFkY9mhN8C-RZWadU2B_g"/>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-24 px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+<!-- Hero Section (Asymmetrical High-End Vibe) -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+<div class="max-w-2xl">
+<h1 class="font-headline text-5xl font-extrabold text-primary tracking-tight mb-4">Acquisitions Portfolio</h1>
+<p class="font-body text-lg text-on-surface-variant">Review your secured lots, manage pending verifications, and track your institutional investments.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-lg ds-ambient-shadow ds-ghost-border flex flex-col items-end min-w-[280px]">
+<span class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Total Capital Deployed</span>
+<span class="font-headline text-3xl font-bold text-primary">$1,245,000.00</span>
+<span class="font-body text-sm text-secondary mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                    Fully Authenticated
+                </span>
+</div>
+</header>
+<!-- Bento Grid: Status Overview -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+<!-- Pending Verification -->
+<div class="bg-surface-container-lowest rounded-xl p-8 ds-ambient-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-6 opacity-10 transition-opacity group-hover:opacity-20">
+<span class="material-symbols-outlined text-6xl text-secondary">hourglass_empty</span>
+</div>
+<h3 class="font-label text-sm uppercase tracking-[0.05em] text-on-surface-variant mb-6">Menunggu Verifikasi</h3>
+<div class="flex items-end gap-3">
+<span class="font-headline text-5xl font-bold text-on-surface">3</span>
+<span class="font-body text-sm text-on-surface-variant pb-1">Lots Pending</span>
+</div>
+<div class="mt-8 pt-6 border-t border-surface-container flex items-center justify-between">
+<span class="font-body text-sm font-medium text-primary">Action Required</span>
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+</div>
+</div>
+<!-- Paid/Cleared -->
+<div class="bg-surface-container-lowest rounded-xl p-8 ds-ambient-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-6 opacity-5 transition-opacity group-hover:opacity-10">
+<span class="material-symbols-outlined text-6xl text-primary">verified_user</span>
+</div>
+<h3 class="font-label text-sm uppercase tracking-[0.05em] text-on-surface-variant mb-6">Lunas</h3>
+<div class="flex items-end gap-3">
+<span class="font-headline text-5xl font-bold text-on-surface">12</span>
+<span class="font-body text-sm text-on-surface-variant pb-1">Secured Assets</span>
+</div>
+<div class="mt-8 pt-6 border-t border-surface-container flex items-center justify-between">
+<span class="font-body text-sm font-medium text-on-surface-variant">View Vault</span>
+<span class="material-symbols-outlined text-on-surface-variant">inventory_2</span>
+</div>
+</div>
+<!-- Rejected/Failed -->
+<div class="bg-surface-container-low rounded-xl p-8 border-l-4 border-tertiary-container relative overflow-hidden">
+<h3 class="font-label text-sm uppercase tracking-[0.05em] text-tertiary-container mb-6">Ditolak</h3>
+<div class="flex items-end gap-3">
+<span class="font-headline text-5xl font-bold text-tertiary-container">1</span>
+<span class="font-body text-sm text-on-surface-variant pb-1">Failed Bid/Payment</span>
+</div>
+<div class="mt-8 pt-6 flex items-center justify-between text-tertiary-container">
+<span class="font-body text-sm font-medium">Review Reasons</span>
+<span class="material-symbols-outlined">error</span>
+</div>
+</div>
+</section>
+<!-- Active Lots List (High-End Editorial Style) -->
+<section>
+<div class="flex items-center justify-between mb-8">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Recent Portfolio Activity</h2>
+<button class="font-body text-sm font-medium text-primary hover:text-primary-container transition-colors flex items-center gap-2">
+                    View Full Ledger <span class="material-symbols-outlined text-[18px]">arrow_outward</span>
+</button>
+</div>
+<div class="flex flex-col gap-6">
+<!-- Lot Item 1: Pending -->
+<article class="bg-surface-container-lowest rounded-lg ds-ambient-shadow ds-ghost-border p-4 flex flex-col md:flex-row gap-6 items-start md:items-center transition-all hover:-translate-y-1 duration-300">
+<div class="w-full md:w-48 h-32 rounded-md overflow-hidden relative flex-shrink-0 bg-surface-container-low">
+<img alt="Patek Philippe Grand Complications" class="w-full h-full object-cover mix-blend-multiply" data-alt="close up studio lighting of a luxury mechanical watch with gold detailing on a dark velvet background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW4cLgevNTFvPh3k5aUEFcZlBEKi8PTD_MSpFS4y3MDr8HzXtCbJf-pcxsP6LRLAvqZKEgr1rL2f8aIe08zaMz1pLe8FjsoynwAq3vME_zAUFEeleRRV0XiIJvSxQJygIU7ZjD_4f4Myx69anvbmQCdFmrRgHLhJ1Uz403bLPNKCpnRU9jngrvMB3FPG_GP2TZWsoTonUAWcc1JCXN3BA9VbQmcIywuEUg8OD8PojcQfzSB35c8DsH1GtmY-HeLx9nWnlToFa_bKU"/>
+<div class="absolute top-2 left-2 bg-surface-container-highest/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-label font-bold tracking-[0.05em] text-secondary">
+                            LOT #492
+                        </div>
+</div>
+<div class="flex-grow flex flex-col justify-between h-full py-2">
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-secondary-container/20 text-on-secondary-container font-label text-[10px] uppercase tracking-[0.05em] mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                Menunggu Verifikasi
+                            </span>
+<h3 class="font-headline text-xl font-bold text-on-surface leading-tight mb-1">Patek Philippe Grand Complications</h3>
+<p class="font-body text-sm text-on-surface-variant">Ref. 5208R-001, Rose Gold, Minute Repeater</p>
+</div>
+</div>
+<div class="md:text-right flex flex-col justify-between h-full py-2 md:pl-6 md:border-l border-surface-container-high w-full md:w-auto">
+<div class="mb-4">
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Winning Bid</p>
+<p class="font-headline text-2xl font-bold text-primary">$850,000</p>
+</div>
+<button class="ds-primary-btn text-on-primary font-body text-sm font-medium px-4 py-2 rounded-md w-full md:w-auto">
+                            Complete Transfer
+                        </button>
+</div>
+</article>
+<!-- Lot Item 2: Lunas -->
+<article class="bg-surface-container-lowest rounded-lg ds-ambient-shadow ds-ghost-border p-4 flex flex-col md:flex-row gap-6 items-start md:items-center transition-all hover:-translate-y-1 duration-300 opacity-90">
+<div class="w-full md:w-48 h-32 rounded-md overflow-hidden relative flex-shrink-0 bg-surface-container-low">
+<img alt="Cartier Emerald Ring" class="w-full h-full object-cover mix-blend-multiply" data-alt="macro photography of a large emerald ring set in platinum on a highly reflective dark marble surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjfmqwSSmlVkYgjHMLCOxlOq3INPAOByuIbjOb1dLXXwk_HMbCa51AVoa566_8-v8IcYu4R2CAKuoqhv9ZZ2TlnAOEQkR3JEwEE-ftXXMrpqQabGaaDJajkIOGrAFOVLmsNKh6VZTY6qkPCH86CHrG7ly5El-LTtJft24jOeiNAiHh2Nh7g7OZALwR-c_x1zrcuWK3-WZuzuctI2lSsXHwzvBA_QWEIt2Kf1rRmayCVI_vfUpbXyfbo-E-H6zIUYVgd96wEtl3GxU"/>
+<div class="absolute top-2 left-2 bg-surface-container-highest/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-label font-bold tracking-[0.05em] text-secondary">
+                            LOT #118
+                        </div>
+</div>
+<div class="flex-grow flex flex-col justify-between h-full py-2">
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-primary/10 text-primary font-label text-[10px] uppercase tracking-[0.05em] mb-3">
+<span class="material-symbols-outlined text-[12px]">check</span>
+                                Lunas
+                            </span>
+<h3 class="font-headline text-xl font-bold text-on-surface leading-tight mb-1">Estate Colombian Emerald Ring</h3>
+<p class="font-body text-sm text-on-surface-variant">14.2 Carat, Platinum Setting, VS1 Clarity</p>
+</div>
+</div>
+<div class="md:text-right flex flex-col justify-between h-full py-2 md:pl-6 md:border-l border-surface-container-high w-full md:w-auto">
+<div class="mb-4">
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Settled Price</p>
+<p class="font-headline text-2xl font-bold text-on-surface">$325,000</p>
+</div>
+<button class="font-body text-sm font-medium text-primary ds-ghost-border px-4 py-2 rounded-md hover:bg-surface-container-high transition-colors w-full md:w-auto">
+                            View Certificate
+                        </button>
+</div>
+</article>
+<!-- Lot Item 3: Ditolak -->
+<article class="bg-surface-container-lowest rounded-lg ds-ambient-shadow ds-ghost-border p-4 flex flex-col md:flex-row gap-6 items-start md:items-center transition-all hover:-translate-y-1 duration-300 opacity-75 grayscale-[20%]">
+<div class="w-full md:w-48 h-32 rounded-md overflow-hidden relative flex-shrink-0 bg-surface-container-low">
+<img alt="Ming Dynasty Vase" class="w-full h-full object-cover mix-blend-multiply" data-alt="museum style lighting on an ancient blue and white porcelain vase sitting on a dark wooden pedestal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChrYECmSq5dzhzQvXdMfy0qnON1PzlBr63Rwibeox2UWhrSQde2JCIe-80Aoptd-ciEfSA2LMJabqjc1hG6GyOJoqbppKex9x7rSw7R_BAu6sowDnCom60Gt4YDxEhk_ACvrXk2y0-jsm5frsq9uR2i-SW2rxxBRChya4ustdh8aYA9wGTkqp0bg5ox7mpTRd8zl3e_LTnVv4fOkBEPyF3Lk4H61O6uXTMmHb7uKNFDcrtvB1IMH_3Q63aq_cYp3pSOdD579yL4eY"/>
+<div class="absolute top-2 left-2 bg-surface-container-highest/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-label font-bold tracking-[0.05em] text-secondary">
+                            LOT #055
+                        </div>
+</div>
+<div class="flex-grow flex flex-col justify-between h-full py-2">
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-tertiary-container/10 text-tertiary-container font-label text-[10px] uppercase tracking-[0.05em] mb-3">
+<span class="material-symbols-outlined text-[12px]">close</span>
+                                Ditolak
+                            </span>
+<h3 class="font-headline text-xl font-bold text-on-surface leading-tight mb-1">Ming Dynasty Blue &amp; White Vase</h3>
+<p class="font-body text-sm text-on-surface-variant">15th Century, Minor restoration on lip</p>
+</div>
+</div>
+<div class="md:text-right flex flex-col justify-between h-full py-2 md:pl-6 md:border-l border-surface-container-high w-full md:w-auto">
+<div class="mb-4">
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Failed Bid</p>
+<p class="font-headline text-2xl font-bold text-on-surface-variant line-through opacity-50">$70,000</p>
+</div>
+<button class="font-body text-sm font-medium text-tertiary-container hover:underline w-full md:w-auto text-left md:text-right">
+                            Read Administrator Note
+                        </button>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="bg-[#1a1c1c] dark:bg-[#000000] text-[#735c00] dark:text-[#fed65b] font-inter text-[10px] uppercase tracking-[0.05em] w-full py-12 flex flex-col items-center justify-center gap-6 border-t border-white/5 no-border flat">
+<div class="flex flex-wrap items-center justify-center gap-8">
+<a class="text-white/40 hover:text-[#fed65b] transition-colors duration-300" href="#">Terms of Auction</a>
+<a class="text-white/40 hover:text-[#fed65b] transition-colors duration-300" href="#">State Disclosure</a>
+<a class="text-white/40 hover:text-[#fed65b] transition-colors duration-300" href="#">Privacy Mandate</a>
+<a class="text-white/40 hover:text-[#fed65b] transition-colors duration-300" href="#">Technical Support</a>
+</div>
+<div class="text-white/40 text-center px-6">
+            © 2024 Sovereign Curator Enterprise. Institutional Trust. Absolute Value.
+        </div>
+</footer>
+</body></html>

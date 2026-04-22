@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pegadaian Lelang - Temukan Barang Lelang Terpercaya</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-secondary-container": "#745c00",
+                "primary-container": "#006432",
+                "inverse-surface": "#2f3131",
+                "secondary-fixed-dim": "#e9c349",
+                "on-error-container": "#93000a",
+                "inverse-primary": "#85d99a",
+                "primary": "#004a23",
+                "on-tertiary": "#ffffff",
+                "surface-tint": "#126c39",
+                "on-error": "#ffffff",
+                "on-secondary": "#ffffff",
+                "surface-dim": "#dadada",
+                "surface-container-high": "#e8e8e8",
+                "on-secondary-fixed-variant": "#574500",
+                "background": "#f9f9f9",
+                "error-container": "#ffdad6",
+                "surface-container": "#eeeeee",
+                "on-primary-fixed": "#00210c",
+                "tertiary-container": "#8f3a47",
+                "tertiary-fixed-dim": "#ffb2b9",
+                "on-background": "#1a1c1c",
+                "on-secondary-fixed": "#241a00",
+                "outline-variant": "#bfc9bd",
+                "on-primary": "#ffffff",
+                "surface-container-low": "#f3f3f3",
+                "surface": "#f9f9f9",
+                "outline": "#6f7a6f",
+                "tertiary": "#712331",
+                "error": "#ba1a1a",
+                "on-primary-container": "#8ade9f",
+                "surface-variant": "#e2e2e2",
+                "primary-fixed": "#a0f5b4",
+                "on-tertiary-fixed-variant": "#7b2b38",
+                "on-tertiary-container": "#ffbac0",
+                "tertiary-fixed": "#ffdadc",
+                "surface-container-highest": "#e2e2e2",
+                "surface-container-lowest": "#ffffff",
+                "on-surface-variant": "#3f4940",
+                "primary-fixed-dim": "#85d99a",
+                "secondary": "#735c00",
+                "on-tertiary-fixed": "#400010",
+                "secondary-container": "#fed65b",
+                "on-primary-fixed-variant": "#005228",
+                "secondary-fixed": "#ffe088",
+                "inverse-on-surface": "#f1f1f1",
+                "surface-bright": "#f9f9f9",
+                "on-surface": "#1a1c1c"
+              },
+              fontFamily: {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .sovereign-shadow {
+            box-shadow: 0 4px 32px rgba(26, 28, 28, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-sm dark:shadow-none font-['Manrope'] antialiased">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tight text-emerald-900 dark:text-emerald-50">Pegadaian Lelang</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-emerald-900 dark:text-emerald-400 font-semibold border-b-2 border-emerald-900 dark:border-emerald-400 pb-1" href="#">Auctions</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200" href="#">Schedule</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200" href="#">How to Bid</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors duration-200" href="#">Branches</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex relative group">
+<span class="absolute inset-y-0 left-3 flex items-center text-stone-400 group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-sm focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Search lot or branch..." type="text"/>
+</div>
+<button class="px-6 py-2 bg-secondary text-on-secondary font-semibold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                    Login
+                </button>
+</div>
+</div>
+</nav>
+<!-- Hero Banner -->
+<section class="relative pt-32 pb-24 overflow-hidden bg-primary text-on-primary">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-secondary to-transparent"></div>
+</div>
+<div class="relative max-w-7xl mx-auto px-8 text-center">
+<h1 class="font-headline text-4xl md:text-6xl font-extrabold tracking-tight mb-6 max-w-3xl mx-auto leading-tight">
+                Temukan Barang Lelang Terpercaya
+            </h1>
+<p class="text-lg md:text-xl text-on-primary-container mb-12 max-w-2xl mx-auto font-light">
+                Aset berkualitas tinggi dengan jaminan keaslian dan transparansi dari PT Pegadaian.
+            </p>
+<div class="relative max-w-3xl mx-auto">
+<div class="flex p-2 bg-white rounded-xl shadow-2xl items-center">
+<span class="material-symbols-outlined text-stone-400 px-4">search</span>
+<input class="flex-grow border-none focus:ring-0 text-stone-800 placeholder-stone-400 text-lg" placeholder="Apa yang sedang Anda cari? (Emas, Laptop, Mobil...)" type="text"/>
+<button class="bg-primary px-8 py-3 rounded-lg font-bold hover:bg-primary-container transition-colors shadow-lg">Cari</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Filter Bar -->
+<div class="sticky top-[72px] z-40 bg-surface-container-low border-b border-outline-variant/10 shadow-sm py-4">
+<div class="max-w-7xl mx-auto px-8 flex flex-wrap items-center justify-between gap-6">
+<div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+<button class="px-5 py-2 bg-secondary-container text-on-secondary-container rounded-full text-sm font-semibold transition-all">Semua</button>
+<button class="px-5 py-2 bg-surface-container-highest text-on-surface-variant rounded-full text-sm font-semibold hover:bg-secondary-container/50 transition-all">Perhiasan</button>
+<button class="px-5 py-2 bg-surface-container-highest text-on-surface-variant rounded-full text-sm font-semibold hover:bg-secondary-container/50 transition-all">Elektronik</button>
+<button class="px-5 py-2 bg-surface-container-highest text-on-surface-variant rounded-full text-sm font-semibold hover:bg-secondary-container/50 transition-all">Kendaraan</button>
+<button class="px-5 py-2 bg-surface-container-highest text-on-surface-variant rounded-full text-sm font-semibold hover:bg-secondary-container/50 transition-all">Lainnya</button>
+</div>
+<div class="flex items-center gap-4 flex-grow lg:flex-grow-0">
+<div class="flex items-center gap-3 bg-white px-4 py-2 rounded-lg border border-outline-variant/20 shadow-sm">
+<span class="text-xs font-bold text-stone-500 uppercase tracking-widest">Price Range</span>
+<input class="accent-primary w-32 md:w-48" type="range"/>
+</div>
+<select class="bg-white border border-outline-variant/20 rounded-lg py-2 px-4 text-sm font-medium focus:ring-primary shadow-sm">
+<option>Terbaru</option>
+<option>Harga Terendah</option>
+<option>Harga Tertinggi</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Product Grid -->
+<main class="max-w-7xl mx-auto px-8 py-16">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Close-up of a high-end luxury gold watch resting on a velvet cushion with elegant dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKD0msOOVFCoaxomCjHuCBpXV6sNjNaEkN7QJ9iifeHoy_FYXXogifroyvdkzwFXb-DZYHIiDGdhZb9taNU5oKTVuEy0yz2heIL6fyXRsaBTQerEBH7X0TgcgJQasVoBCa92LHLpb8xO6V_tHUtZDRv9cTJoOnmQPDn4QnHOEO48XOklnRsKRnjdX40Uphn5_fdYWY0AoPIGSQydfwmaonhefMi6UHfge5wTwiWRU9sC_BnFmLSpb-MNohop8NSW28rxVey1UOTUI"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-white/80 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-primary">
+                        Live Now
+                    </div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Perhiasan</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            CP Sudirman, Jakarta
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">Kalung Emas 24K Polos - Estimasi 15 Gram</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 12.450.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Modern high-performance laptop on a minimalist white desk with soft ambient studio lighting and clean aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9FMFk5APCbmW9vn6to3Z_VNuFgKIaKEAJ6RELfDwydobkBEIrA7ouU9TbBs_6FufOxx7DHleM1QG51hOH2NW9-8KBskS-hKU1h9aUqQWeuMLA3ZX9umK3fR4mGFryEXdwMkXay3xQ-dh3agfq83sasHqixsHNui4V9Q74VxtMQ5vrr_Ni-T5B1yur4UDeouVfwg8jbXkf2pL6fClgtUrSKWcyNtTcM3W7NqRRr0zI10JT70vqwWSD02JV41WUqXEsfDq5HYzVWaM"/>
+<div class="absolute top-4 right-4 px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[10px] font-bold uppercase tracking-wider">
+                        Ending Soon
+                    </div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Elektronik</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            UPC Malioboro, Yogyakarta
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">MacBook Pro 14 M2 Pro - 16GB / 512GB Grey</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 18.200.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Luxury black SUV parked in a modern architectural garage with soft overhead lighting and reflective floor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDt9xXc5T21AcY-rL6c-NO28kB_QzQibNFJ2EvPA5lbo_s0OtKlXk1_FeUQG9U2AO7IAxLpHJuNV8xdAWQ6PX6RVRiPfdfqV0bJmH0k5ddPT8F-lg-LmNAvyLocg9B0so0ceEy4Gwe1dC1YitoAstWBjhSFCKAe2PXyayRD10pkur9j1GvNWIj3fiIdHLz9s7iYXLgWTgxdwrSoFetNnkhIpWz7unzfc9HZDtPYG0NJoFPXcqpPEW1IMKZfe32MdzMaV3N7qj92adg"/>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Kendaraan</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            CP Basuki Rahmat, Surabaya
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">SUV Premium 2021 - AT Diesel Silver Metallic</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 345.000.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Close-up of a modern minimalist white product, aesthetic still life with soft shadow and high key lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNUNEXfe4rZpauki_cvP5jNvR-4AIF8KIo4QUnt89k648zmJEbOO9DevpwhGX4mNYKK5tQNjTC9GZ_LCE8jjuOn1P2dKzRqIrSnXaOVT6MOuf64OVGad6YfG4ZzRGH9_1s3Nw3kaE1wovNNGNDjFV-4pLDbS5ex35j8AXTU6sXuuQiS_d2fTs_1gXrD0xbKRtvAyjm1qy1PyzKqwHqrS31LwQ3Q6uJyVC6yD2CJchC4uNnXLyJQ55xMb5VCn3GzE3hTlvnQg2KJyQ"/>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Lainnya</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            CP Medan Baru, Medan
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">Logam Mulia Antam 10gr - Sertifikat Asli</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 11.100.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Sleek red athletic sneakers isolated on a grey background with professional commercial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkMI1m817nTel9LB6lgn2e8MdAF_fawe10LX2j7mIcgQQN1DHdvN1G_Eih4UBxf9ui5uzbIPBepz4jM29Ek9DvmLJCrzIryNJugxrc9nIjpdCga86XBD6NfQWxspK_Hhc5zl9spsBbdWzsGVD_F-_1Q4QvG3n-s8Ny0WvGPbwCsTzC9RvyxykcS8IGMiJBp2hswAQE0kT92jQx-89bbgmevoOW4fIgABR7wjDo8pVus44Qccce46Y8kou8kkFR9jdjyKJgIjVYyvY"/>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Lainnya</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            CP Sudirman, Jakarta
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">Koleksi Sneaker Limited - Brand New In Box</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 4.500.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden sovereign-shadow hover:translate-y-[-4px] transition-all duration-300">
+<div class="relative h-64 bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="Professional studio headphones on a wooden table with soft focus bokeh background and warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClniTC9Sq6x8rQArbHUcktL2VfJDWkpEatqkaWYnWFIPsUXsxEqc2130m-D3yx7wkCqXsaA7bgx0SGA1OHaoHbWhhqY5WFL1amIF-kTORgwJoT3aTHFA_Lvh40QAzKWkC4w3VLsWva71mlkD6IbPUjKnILFvU4_NW3O0kZS_HgjfXMorUtmFJIu3aSiDqGOwJ2tF0QsS4a232kZg8kn3oSjEieEwiU87MExbS3z8ewbLpJrhxCrTE7AkT78KCEBvUJHkSkwoWbCr0"/>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-secondary uppercase tracking-widest">Elektronik</span>
+<span class="flex items-center gap-1 text-stone-400 text-xs">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                            UPC Panakkukang, Makassar
+                        </span>
+</div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-4 leading-snug">Headphone Studio Wireless - Noise Cancelling</h3>
+<div class="flex flex-col gap-1 mb-6">
+<span class="text-[10px] text-stone-500 font-semibold uppercase">Starting Price</span>
+<span class="text-2xl font-bold text-primary">Rp 3.150.000</span>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-all flex items-center justify-center gap-2">
+                        Lihat Detail
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-16 flex items-center justify-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant/30 text-stone-400 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold shadow-md">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant/30 text-stone-600 font-medium hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant/30 text-stone-600 font-medium hover:bg-surface-container transition-colors">3</button>
+<span class="px-2 text-stone-400">...</span>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant/30 text-stone-600 font-medium hover:bg-surface-container transition-colors">12</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant/30 text-stone-400 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-stone-100 dark:bg-stone-950 w-full py-12 border-t border-stone-200 dark:border-stone-800 font-['Inter'] text-sm">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 px-8 max-w-7xl mx-auto">
+<div class="flex flex-col gap-6">
+<span class="text-lg font-bold text-emerald-900 dark:text-emerald-50">Pegadaian Lelang</span>
+<p class="text-stone-500 leading-relaxed">
+                    Aman, Transparan, dan Terpercaya. Platform resmi pelelangan barang jaminan PT Pegadaian.
+                </p>
+<div class="flex items-center gap-4">
+<a class="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-emerald-900 dark:text-emerald-500 hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined text-[18px]">public</span>
+</a>
+<a class="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-emerald-900 dark:text-emerald-500 hover:scale-110 transition-transform" href="#">
+<span class="material-symbols-outlined text-[18px]">share</span>
+</a>
+</div>
+</div>
+<div>
+<h4 class="font-bold text-emerald-900 dark:text-emerald-500 mb-6 uppercase tracking-widest text-[10px]">Layanan</h4>
+<ul class="flex flex-col gap-3">
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Cara Lelang</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Pendaftaran Peserta</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Simulasi Pembayaran</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Pengambilan Barang</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-emerald-900 dark:text-emerald-500 mb-6 uppercase tracking-widest text-[10px]">Perusahaan</h4>
+<ul class="flex flex-col gap-3">
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Tentang Kami</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Unit Kerja / Cabang</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Hubungi Kami</a></li>
+<li><a class="text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors" href="#">Pusat Bantuan</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-emerald-900 dark:text-emerald-500 mb-6 uppercase tracking-widest text-[10px]">Kontak</h4>
+<ul class="flex flex-col gap-4">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-emerald-900 dark:text-emerald-500 text-[18px]">call</span>
+<span class="text-stone-500">Call Center 1500567</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-emerald-900 dark:text-emerald-500 text-[18px]">mail</span>
+<span class="text-stone-500">customer.care@pegadaian.co.id</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-emerald-900 dark:text-emerald-500 text-[18px]">location_on</span>
+<span class="text-stone-500">Jl. Kramat Raya No.162, Jakarta Pusat, 10430</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-8 mt-12 pt-8 border-t border-stone-200 dark:border-stone-800 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-stone-500 text-xs text-center md:text-left">
+                © 2024 PT Pegadaian. All Rights Reserved. Licensed and Supervised by OJK.
+            </p>
+<div class="flex gap-6">
+<a class="text-stone-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors text-xs" href="#">Terms of Service</a>
+<a class="text-stone-500 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors text-xs" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+</body></html>

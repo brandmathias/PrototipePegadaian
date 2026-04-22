@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Riwayat Pengajuan Saya - Sovereign Auction</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-tint": "#126c39",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "on-primary-fixed": "#00210c",
+                        "primary-container": "#006432",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container": "#eeeeee",
+                        "on-secondary-fixed": "#241a00",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "tertiary": "#712331",
+                        "secondary": "#735c00",
+                        "on-surface": "#1a1c1c",
+                        "primary-fixed": "#a0f5b4",
+                        "background": "#f9f9f9",
+                        "on-secondary-container": "#745c00",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-fixed": "#ffdadc",
+                        "primary": "#004a23",
+                        "on-tertiary-fixed": "#400010",
+                        "secondary-fixed-dim": "#e9c349",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bfc9bd",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-primary-container": "#8ade9f",
+                        "inverse-on-surface": "#f1f1f1",
+                        "secondary-container": "#fed65b",
+                        "on-background": "#1a1c1c",
+                        "tertiary-container": "#8f3a47",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-fixed-variant": "#574500",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "surface-variant": "#e2e2e2",
+                        "on-surface-variant": "#3f4940",
+                        "surface": "#f9f9f9",
+                        "inverse-primary": "#85d99a",
+                        "surface-container-high": "#e8e8e8",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#005228",
+                        "outline": "#6f7a6f",
+                        "on-tertiary": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm font-headline antialiased tracking-tight">
+<div class="flex justify-between items-center w-full px-6 py-3 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-emerald-900">Sovereign Auction</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-zinc-600 hover:text-emerald-800 transition-colors" href="#">Auctions</a>
+<a class="text-zinc-600 hover:text-emerald-800 transition-colors" href="#">My Bids</a>
+<a class="text-emerald-900 font-bold border-b-2 border-emerald-900 pb-1" href="#">History</a>
+<a class="text-zinc-600 hover:text-emerald-800 transition-colors" href="#">Assets</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<input class="pl-10 pr-4 py-1.5 rounded-full border-none bg-zinc-100 focus:ring-2 focus:ring-primary text-sm w-64" placeholder="Search auctions..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
+</div>
+<button class="p-2 hover:bg-zinc-100/50 rounded-full transition-all">
+<span class="material-symbols-outlined text-emerald-900">notifications</span>
+</button>
+<div class="flex items-center gap-2 pl-2 border-l border-zinc-200">
+<div class="text-right hidden lg:block">
+<p class="text-xs font-bold text-on-surface leading-none">Ahmad Sulaiman</p>
+<p class="text-[10px] text-zinc-500 uppercase tracking-wider">Premium Buyer</p>
+</div>
+<span class="material-symbols-outlined text-3xl text-emerald-900">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-20 px-6 max-w-screen-xl mx-auto min-h-screen">
+<!-- Page Title & Header Section -->
+<div class="mb-10">
+<h1 class="font-headline text-4xl font-extrabold text-primary tracking-tight mb-2">Riwayat Pengajuan Saya</h1>
+<p class="text-zinc-500 font-medium">Kelola dan pantau semua pengajuan lelang Anda di satu tempat.</p>
+</div>
+<!-- Filter Tabs -->
+<div class="flex flex-wrap items-center gap-2 mb-8 bg-surface-container-low p-1.5 rounded-xl inline-flex">
+<button class="px-6 py-2 rounded-lg bg-surface-container-lowest text-primary font-bold shadow-sm transition-all text-sm">Semua</button>
+<button class="px-6 py-2 rounded-lg text-zinc-600 hover:bg-white/50 transition-all text-sm">Diproses</button>
+<button class="px-6 py-2 rounded-lg text-zinc-600 hover:bg-white/50 transition-all text-sm">Disetujui</button>
+<button class="px-6 py-2 rounded-lg text-zinc-600 hover:bg-white/50 transition-all text-sm">Ditolak</button>
+<button class="px-6 py-2 rounded-lg text-zinc-600 hover:bg-white/50 transition-all text-sm">Selesai</button>
+</div>
+<!-- Transaction List -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Card 1: Completed -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+<div class="p-6 flex flex-col lg:flex-row lg:items-center gap-6">
+<div class="w-24 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0">
+<img alt="Rolex Submariner" class="w-full h-full object-cover" data-alt="close-up of a luxury silver watch with black dial on a minimalist grey surface with sharp lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBixa8zswbMiAiguv4np0p8psPoUub4p4Wd5djwd24tvL_ccIQuMVYo3sG_v77ffGFdf9xu50pnUFM7YxQAmBO2wRaZ8BXhNr5gKAN3ZXzhiFVqAOk7Aw0slN7ffYw-A_f2uhOu6AxIoO07dpP_S0NhI-xfGSQuRSVJjo84CnEr92zJ2FpRCWljonDA4focOHmTqHHdzQxsrwgEj3gAgMeo1lkBa1TYUlzdmSgDMM8yxjioqWIQ33fp0f46v0cjN-tGxxVIxaVepv4"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center justify-between mb-2">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-zinc-100 text-zinc-600">Selesai</span>
+<span class="text-sm text-zinc-400">#TRX-882910</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-1">Jam Tangan Rolex Submariner Date 126610LN</h3>
+<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+                                14 Okt 2023
+                            </div>
+<div class="flex items-center gap-1 font-bold text-primary text-base">
+                                Rp 185.500.000
+                            </div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-3 lg:border-l lg:pl-6 border-zinc-100">
+<button class="flex-1 lg:w-40 py-2.5 px-4 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">Lihat Detail</button>
+<button class="flex-1 lg:w-40 py-2.5 px-4 border border-outline-variant text-primary rounded-lg font-bold text-sm hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">download</span>
+                            Nota PDF
+                        </button>
+</div>
+</div>
+</div>
+<!-- Card 2: Processing -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+<div class="p-6 flex flex-col lg:flex-row lg:items-center gap-6">
+<div class="w-24 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0">
+<img alt="Gold Ring" class="w-full h-full object-cover" data-alt="macro shot of a sparkling 18K gold diamond ring on a dark velvet cushion with elegant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbwXnSh52oFBehIjK47BlUFFZVdWlYWZD_0VGBnUEmioEbvOKx4GYj8C8zNSuDd8glXszqAZyJJ5EV94qn0mf6086CucxsbukwzgBUFelKdnE6OjkMvY5fqHo_zEsF5C7QdFydDxNllEuqHn-fR6kzaM1sxd7GUGlSyVjceYyW5QuTypjjq-jqGTax85JpKZp635bjO8rU7I9sZXpIZCzpfpFMzu_Eo3JuZk6qPFCye25WcMdH0cBol8WWqdNXt_Uzna_RnobmdT0"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center justify-between mb-2">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-700">Diproses</span>
+<span class="text-sm text-zinc-400">#TRX-882944</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-1">Cincin Emas Putih 18K dengan Berlian 0.5ct</h3>
+<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+                                20 Okt 2023
+                            </div>
+<div class="flex items-center gap-1 font-bold text-primary text-base">
+                                Rp 12.750.000
+                            </div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-3 lg:border-l lg:pl-6 border-zinc-100">
+<button class="flex-1 lg:w-40 py-2.5 px-4 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">Lihat Detail</button>
+</div>
+</div>
+</div>
+<!-- Card 3: Approved -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
+<div class="p-6 flex flex-col lg:flex-row lg:items-center gap-6">
+<div class="w-24 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0">
+<img alt="Antiques" class="w-full h-full object-cover" data-alt="antique ceramic vase with intricate blue patterns standing on a rustic wooden table in soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD6NER4tExsGpd3ZeRQnSq5YU3sy_tTfOuctqcn7koB0ZWdAOv65SADNCyOjgJ-kUChaApwqAfc4c92ldio8N0kIdx4XS5Uw8AewaXfjd7uqL_EqW8SIPUkGuhuHJXTpJ_oGMPUzTRO9Ac69y_Bnnbg9ErRfigcJ7qtw9Ybz0PodHPwZJwZgl5-tCLEzKMYnkhMzzx0Qgtp14BKkkK-_R3coFhLjPNoYBsWE1hhwSBz-vd3_3AZfP2fZffM5UUxY70d63DbnZHtgE"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center justify-between mb-2">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700">Disetujui</span>
+<span class="text-sm text-zinc-400">#TRX-882915</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-1">Guci Keramik Dinasti Qing (Reproduction)</h3>
+<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+                                18 Okt 2023
+                            </div>
+<div class="flex items-center gap-1 font-bold text-primary text-base">
+                                Rp 4.200.000
+                            </div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-3 lg:border-l lg:pl-6 border-zinc-100">
+<button class="flex-1 lg:w-40 py-2.5 px-4 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">Lihat Detail</button>
+</div>
+</div>
+</div>
+<!-- Card 4: Rejected -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 opacity-80">
+<div class="p-6 flex flex-col lg:flex-row lg:items-center gap-6">
+<div class="w-24 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 grayscale">
+<img alt="Sunglasses" class="w-full h-full object-cover" data-alt="designer aviator sunglasses resting on a sleek metallic surface with high-contrast shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCitMXo25BIn9-d9Gtq3ulQ93VZsh__VquYs6uK4-vn8WmENfJB0wcaMU5ByMv4goNNfoE2F-utbWtzrJreaQ_VRpXuE6yCDNLABk_w_CuUVZ3dWcWoaoqyvmPwO0Y8NW1ISTlE8onKYZBynMtQHIK6xrovPgA5pwb24YK2FaK6PehJ4-DGhLz14p0V_ponrHKR9Zvv0NaxoMmXJrcvfDaBksq1mazWsLF9Yd4X6kMa-vH-mBWz8AZBOOfi27Mjgf82fjOZp0ByIfA"/>
+</div>
+<div class="flex-grow">
+<div class="flex items-center justify-between mb-2">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-50 text-red-700">Ditolak</span>
+<span class="text-sm text-zinc-400">#TRX-882890</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-zinc-500 mb-1">Kacamata Hitam Ray-Ban Wayfarer Classic</h3>
+<div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-base">calendar_today</span>
+                                05 Okt 2023
+                            </div>
+<div class="flex items-center gap-1 font-bold text-zinc-400 text-base">
+                                Rp 1.800.000
+                            </div>
+</div>
+</div>
+<div class="flex flex-row lg:flex-col gap-3 lg:border-l lg:pl-6 border-zinc-100">
+<button class="flex-1 lg:w-40 py-2.5 px-4 border border-outline-variant text-zinc-500 rounded-lg font-bold text-sm hover:bg-zinc-100 transition-colors">Lihat Alasan</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay (Backdrop) -->
+<div class="fixed inset-0 z-[100] bg-zinc-900/60 backdrop-blur-sm flex items-center justify-center p-4 lg:p-10">
+<!-- Modal Content Container -->
+<div class="bg-background w-full max-w-5xl max-h-full overflow-y-auto rounded-2xl shadow-2xl flex flex-col lg:flex-row relative">
+<button class="absolute top-4 right-4 z-[110] p-2 bg-white rounded-full shadow-md text-zinc-600 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+<!-- Sidebar Info (Left Column) -->
+<div class="lg:w-1/3 bg-surface-container-low p-8 border-r border-zinc-200">
+<h2 class="font-headline text-2xl font-bold text-primary mb-6">Detail Pengajuan</h2>
+<div class="mb-8">
+<p class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Status Saat Ini</p>
+<div class="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-primary">Transaksi Selesai</p>
+<p class="text-xs text-emerald-800/70">Diverifikasi pada 15 Okt 2023</p>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<p class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">Informasi Item</p>
+<p class="font-bold text-on-surface">Rolex Submariner Date</p>
+<p class="text-xs text-zinc-500">Karat: 18K White Gold Accents</p>
+<p class="text-xs text-zinc-500">Tahun: 2022 (Full Set)</p>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">Metode Pembayaran</p>
+<p class="font-bold text-on-surface text-sm">Virtual Account Mandiri</p>
+<p class="text-xs text-zinc-500">Ref: 8829-1002-3940</p>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-1">Bukti Pembayaran</p>
+<div class="mt-2 aspect-video rounded-lg bg-zinc-200 overflow-hidden relative group cursor-pointer">
+<img alt="Payment Proof" class="w-full h-full object-cover" data-alt="a digital receipt displayed on a smartphone screen with official green banking branding and success checkmark" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBNTMYn-acpnzHJQZlTD5Nl1xlbIxQgLAH9qjm1cuC3loClW34Yvrz-sUTk_F7fJ6ufkgnQ1I0hIBLGnFa2kgqfpgCe8L-TGxnZR8NuAiKVyIkl-tbefyPjYxaEn_BoRko9_RHVBpmqed_-k2RaxL1gBoL-k5oG7RfzocOv-GjRuZ8fNdRwD_2pIqfEzS3FTL3K-riu8hx85rgXDdrtxQ3Vagw3ui3_xpfDqb2PPdPWRMRTct1NmhvLIu82y-kYvnK1Uq5PQbG46E"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-3xl">zoom_in</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content (Right Column) -->
+<div class="lg:w-2/3 p-8 lg:p-12 overflow-y-auto">
+<!-- Timeline Tracker -->
+<div class="mb-12">
+<p class="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">Timeline Pengajuan</p>
+<div class="flex items-center w-full">
+<div class="flex flex-col items-center flex-1 relative">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary"></div>
+<p class="text-[10px] mt-2 font-bold text-primary">Diajukan</p>
+</div>
+<div class="flex flex-col items-center flex-1 relative">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary"></div>
+<p class="text-[10px] mt-2 font-bold text-primary">Diverifikasi</p>
+</div>
+<div class="flex flex-col items-center flex-1 relative">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary"></div>
+<p class="text-[10px] mt-2 font-bold text-primary">Disetujui</p>
+</div>
+<div class="flex flex-col items-center flex-1 relative">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary"></div>
+<p class="text-[10px] mt-2 font-bold text-primary">Pembayaran</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-sm">emoji_events</span>
+</div>
+<p class="text-[10px] mt-2 font-bold text-primary">Selesai</p>
+</div>
+</div>
+</div>
+<!-- Receipt Preview (A5 Style) -->
+<div class="bg-white p-10 shadow-lg rounded border-t-8 border-primary max-w-2xl mx-auto font-body">
+<div class="flex justify-between items-start mb-8 pb-6 border-b border-zinc-100">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<div class="w-6 h-6 bg-primary rounded-sm"></div>
+<span class="text-sm font-bold text-emerald-900 tracking-tight">PEGADAIAN LELANG</span>
+</div>
+<p class="text-[8px] text-zinc-400 uppercase tracking-widest">Sovereign State Enterprise</p>
+</div>
+<div class="text-right">
+<h4 class="text-lg font-bold text-on-surface uppercase tracking-tighter">BUKTI PEMENANG LELANG</h4>
+<p class="text-xs text-zinc-500">NO: INV/20231014/XLIX/8829</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-8 mb-8">
+<div>
+<p class="text-[10px] font-bold text-zinc-400 uppercase mb-2">Pihak Pertama (Penjual)</p>
+<p class="text-xs font-bold">PT. Pegadaian (Persero)</p>
+<p class="text-[10px] text-zinc-500">Jl. Kramat Raya No.162, Jakarta</p>
+<p class="text-[10px] text-zinc-500">Unit: Kantor Pusat Lelang Digital</p>
+</div>
+<div>
+<p class="text-[10px] font-bold text-zinc-400 uppercase mb-2">Pihak Kedua (Pembeli)</p>
+<p class="text-xs font-bold">Ahmad Sulaiman</p>
+<p class="text-[10px] text-zinc-500">Sulaiman.ahmad@email.com</p>
+<p class="text-[10px] text-zinc-500">ID: 327501002930004</p>
+</div>
+</div>
+<div class="bg-zinc-50 rounded-lg p-4 mb-8">
+<table class="w-full text-xs">
+<thead>
+<tr class="border-b border-zinc-200">
+<th class="text-left py-2 font-bold text-zinc-500">Deskripsi Aset</th>
+<th class="text-right py-2 font-bold text-zinc-500">Harga Akhir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="py-3">
+<p class="font-bold">Rolex Submariner Date 126610LN</p>
+<p class="text-[10px] text-zinc-400">SN: 8V294X10 - Kondisi Grade A</p>
+</td>
+<td class="py-3 text-right font-bold">Rp 185.500.000</td>
+</tr>
+<tr class="border-t border-zinc-100">
+<td class="py-2 text-zinc-500">Biaya Administrasi (2%)</td>
+<td class="py-2 text-right">Rp 3.710.000</td>
+</tr>
+<tr class="border-t border-zinc-100">
+<td class="py-2 text-zinc-500 text-sm font-bold">TOTAL PEMBAYARAN</td>
+<td class="py-2 text-right text-sm font-bold text-primary">Rp 189.210.000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-[9px] text-zinc-400 italic">
+                            Dicetak secara digital melalui Sovereign Auction System pada 15/10/2023. <br/>
+                            Dokumen ini adalah bukti sah kepemilikan aset lelang.
+                        </div>
+<div class="relative w-24 h-24 flex flex-col items-center justify-center border border-dashed border-zinc-300 rounded">
+<span class="text-[8px] font-bold text-zinc-300 mb-1">STAMP AREA</span>
+<div class="absolute opacity-10">
+<span class="material-symbols-outlined text-6xl text-primary">verified</span>
+</div>
+<p class="text-[8px] text-primary font-bold">VERIFIED BY</p>
+<p class="text-[7px] text-primary">PE-AUCTION</p>
+</div>
+</div>
+</div>
+<div class="mt-8 flex justify-center gap-4">
+<button class="py-3 px-8 bg-primary text-on-primary rounded-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">download</span>
+                        Unduh Nota (PDF)
+                    </button>
+<button class="py-3 px-8 border border-outline-variant text-primary rounded-xl font-bold hover:bg-zinc-50 transition-colors">
+                        Tutup
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Mobile Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-safe pt-2 bg-white border-t border-zinc-100 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<div class="flex flex-col items-center justify-center text-zinc-500 px-3 py-1">
+<span class="material-symbols-outlined">gavel</span>
+<span class="font-inter text-[10px] uppercase tracking-widest font-bold">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 px-3 py-1">
+<span class="material-symbols-outlined">loyalty</span>
+<span class="font-inter text-[10px] uppercase tracking-widest font-bold">Bids</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-emerald-50 text-emerald-900 rounded-xl px-3 py-1 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">history</span>
+<span class="font-inter text-[10px] uppercase tracking-widest font-bold">History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-zinc-500 px-3 py-1">
+<span class="material-symbols-outlined">person</span>
+<span class="font-inter text-[10px] uppercase tracking-widest font-bold">Profile</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Curator - Fiscal Authority</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary": "#735c00",
+                      "on-surface": "#1a1c1c",
+                      "on-error": "#ffffff",
+                      "surface": "#f9f9f9",
+                      "error": "#ba1a1a",
+                      "inverse-on-surface": "#f1f1f1",
+                      "on-tertiary-fixed": "#400010",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#e9c349",
+                      "secondary-fixed": "#ffe088",
+                      "outline": "#6f7a6f",
+                      "background": "#f9f9f9",
+                      "tertiary": "#712331",
+                      "primary-fixed-dim": "#85d99a",
+                      "on-background": "#1a1c1c",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f3f3f3",
+                      "inverse-primary": "#85d99a",
+                      "surface-bright": "#f9f9f9",
+                      "tertiary-container": "#8f3a47",
+                      "primary-fixed": "#a0f5b4",
+                      "surface-container": "#eeeeee",
+                      "primary-container": "#006432",
+                      "on-tertiary-container": "#ffbac0",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#7b2b38",
+                      "surface-tint": "#126c39",
+                      "on-primary-fixed-variant": "#005228",
+                      "on-primary-container": "#8ade9f",
+                      "on-secondary-fixed": "#241a00",
+                      "inverse-surface": "#2f3131",
+                      "surface-variant": "#e2e2e2",
+                      "on-secondary-container": "#745c00",
+                      "surface-container-high": "#e8e8e8",
+                      "on-primary-fixed": "#00210c",
+                      "surface-container-highest": "#e2e2e2",
+                      "tertiary-fixed": "#ffdadc",
+                      "on-surface-variant": "#3f4940",
+                      "primary": "#004a23",
+                      "on-secondary": "#ffffff",
+                      "surface-dim": "#dadada",
+                      "secondary-container": "#fed65b",
+                      "tertiary-fixed-dim": "#ffb2b9",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#bfc9bd",
+                      "on-secondary-fixed-variant": "#574500"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Manrope"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Inter"
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        /* Custom Toggle Switch Styles based on Theme Colors */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #004a23; /* primary */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #004a23; /* primary */
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+        .toggle-label {
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #e2e2e2; /* surface-variant */
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-label:after {
+            content: '';
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-[#f3f3f3] dark:bg-[#121212] h-screen w-72 flex flex-col border-r-0 shadow-none z-40 relative flex-shrink-0">
+<div class="flex flex-col h-full py-8 px-4">
+<!-- Brand & Admin Info -->
+<div class="mb-12 px-4">
+<h1 class="font-manrope text-xl font-bold text-[#004a23] dark:text-white tracking-tight mb-6">
+                    Sovereign Curator
+                </h1>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center overflow-hidden" data-alt="Abstract minimal geometric avatar with deep green and gold accents representing a secure institutional admin profile">
+<span class="material-symbols-outlined text-xl">shield_person</span>
+</div>
+<div>
+<div class="font-manrope text-sm font-semibold text-on-surface">Super Admin Authority</div>
+<div class="font-inter text-[10px] uppercase tracking-[0.05em] text-on-surface-variant">Sovereign Curator</div>
+</div>
+</div>
+</div>
+<!-- Primary Navigation -->
+<ul class="flex flex-col gap-2 flex-1">
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 dark:hover:bg-white/10 transition-all duration-300 scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        Command Center
+                    </a>
+</li>
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 dark:hover:bg-white/10 transition-all duration-300 scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                        Asset Inventory
+                    </a>
+</li>
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 dark:hover:bg-white/10 transition-all duration-300 scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+                        Auction Pipeline
+                    </a>
+</li>
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 dark:hover:bg-white/10 transition-all duration-300 scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+                        User Authority
+                    </a>
+</li>
+<!-- Active Tab (Fiscal Reports matches Bank Account intent) -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-[#1a1c1c] text-[#004a23] dark:text-white rounded-md shadow-[0_4px_12px_rgba(0,0,0,0.04)] font-manrope text-sm font-semibold tracking-wide scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">analytics</span>
+                        Fiscal Reports
+                    </a>
+</li>
+</ul>
+<!-- CTA -->
+<div class="mt-8 mb-6 px-4">
+<button class="w-full bg-primary text-on-primary font-inter text-sm font-medium py-3 rounded-xl shadow-[inset_0_2px_4px_rgba(255,255,255,0.1)] hover:bg-opacity-90 transition-opacity">
+                    New Auction Lot
+                </button>
+</div>
+<!-- Footer Tabs -->
+<div class="mt-auto pt-6 border-t border-surface-variant/50">
+<ul class="flex flex-col gap-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                            System Settings
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-2 text-[#1a1c1c]/60 dark:text-white/60 hover:text-[#004a23] dark:hover:text-white font-manrope text-sm font-semibold tracking-wide rounded-md hover:bg-[#ffffff]/50 transition-all duration-300" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                            Secure Logout
+                        </a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden bg-background relative">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-white/80 dark:bg-[#1a1c1c]/80 backdrop-blur-md fixed top-0 w-full z-50 flex items-center justify-between px-12 py-4 h-20 shadow-sm dark:shadow-none pl-80">
+<div class="flex items-center gap-12">
+<span class="font-manrope text-2xl font-black text-[#004a23] dark:text-white tracking-tighter">Sovereign Auctions</span>
+<nav class="hidden md:flex gap-8">
+<!-- Inactive -->
+<a class="font-inter text-sm font-medium tracking-normal text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">Live Floor</a>
+<!-- Active (Contextual default for TopNav if needed, though SideNav handles primary routing here. Setting Global Catalog as active for demonstration of component styles) -->
+<a class="font-inter text-sm font-medium tracking-normal text-[#004a23] dark:text-[#fed65b] border-b-2 border-[#004a23] dark:border-[#fed65b] pb-1 hover:opacity-80 transition-opacity active:opacity-100" href="#">Global Catalog</a>
+<a class="font-inter text-sm font-medium tracking-normal text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">My Acquisitions</a>
+<a class="font-inter text-sm font-medium tracking-normal text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23] hover:opacity-80 transition-opacity active:opacity-100" href="#">Appraisals</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<button class="font-inter text-sm font-medium text-primary border border-outline-variant/20 rounded-xl px-4 py-2 hover:bg-surface-container transition-colors">
+                    Place Proxy Bid
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">account_balance_wallet</span></button>
+</div>
+</div>
+</header>
+<!-- Canvas / Content Scroll Area -->
+<div class="flex-1 overflow-y-auto mt-20 p-12">
+<!-- Page Context Header (Editorial Style) -->
+<div class="max-w-6xl mx-auto mb-12">
+<div class="flex items-end justify-between mb-2">
+<div>
+<span class="font-inter text-[10px] uppercase tracking-[0.05em] text-secondary font-bold mb-2 block">Asset Detail Integration</span>
+<h2 class="font-headline text-4xl font-extrabold text-primary tracking-tight">Unit #A-402 Fiscal Mandate</h2>
+</div>
+<div class="text-right">
+<span class="inline-flex items-center gap-1 bg-surface-container-highest/70 backdrop-blur-md px-3 py-1 rounded-full font-inter text-xs font-semibold text-on-surface shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                            Active Lease
+                        </span>
+</div>
+</div>
+<!-- Editorial 'Whitespace' separation -->
+<div class="h-1 w-16 bg-secondary mt-6 rounded-full"></div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Unit Context (To show integration) -->
+<div class="lg:col-span-1 flex flex-col gap-8">
+<!-- Context Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 relative overflow-hidden group">
+<!-- Abstract Texture Background -->
+<div class="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiMxYTFjMWMiLz48L3N2Zz4=')] mix-blend-multiply pointer-events-none" data-alt="Subtle repeating dot pattern texture providing depth to the white card surface"></div>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-6">Asset Summary</h3>
+<div class="space-y-5 relative z-10">
+<div>
+<label class="font-inter text-[10px] uppercase tracking-[0.05em] text-on-surface-variant block mb-1">Entity / Holding</label>
+<p class="font-inter text-sm font-medium text-on-surface">Sovereign Enterprises Ltd.</p>
+</div>
+<div>
+<label class="font-inter text-[10px] uppercase tracking-[0.05em] text-on-surface-variant block mb-1">Appraised Value</label>
+<p class="font-headline text-xl font-bold text-primary">$4,250,000.00</p>
+</div>
+<div>
+<label class="font-inter text-[10px] uppercase tracking-[0.05em] text-on-surface-variant block mb-1">Last Audit</label>
+<p class="font-inter text-sm font-medium text-on-surface">Oct 14, 2024</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Bank Account Management -->
+<div class="lg:col-span-2">
+<div class="bg-surface-container-lowest rounded-xl p-8 h-full shadow-[0_4px_32px_rgba(26,28,28,0.02)]">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="font-headline text-xl font-bold text-on-surface">Authorized Depository Accounts</h3>
+<p class="font-inter text-sm text-on-surface-variant mt-1">Manage institutional routing for this specific asset.</p>
+</div>
+<button class="flex items-center gap-2 font-inter text-sm font-semibold text-primary hover:text-secondary transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                Register Account
+                            </button>
+</div>
+<!-- Account Item 1 (Active) -->
+<div class="bg-surface rounded-xl p-6 mb-6 flex items-start justify-between group hover:bg-surface-container-low transition-colors duration-300">
+<div class="flex items-start gap-5">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary border border-outline-variant/10">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-on-surface">J.P. Morgan Chase &amp; Co.</h4>
+<div class="flex items-center gap-3 mt-1">
+<span class="font-inter text-sm font-medium text-on-surface-variant">Acct: •••• •••• •••• 8924</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-inter text-xs text-on-surface-variant">Routing: 021000021</span>
+</div>
+<div class="mt-3 font-inter text-sm text-on-surface-variant">
+<span class="font-semibold text-on-surface text-xs uppercase tracking-[0.05em] mr-2">Holder:</span>
+                                        Sovereign Enterprises Ltd.
+                                    </div>
+</div>
+</div>
+<!-- Actions / Toggle -->
+<div class="flex flex-col items-end gap-4">
+<div class="flex items-center gap-3">
+<span class="font-inter text-xs font-semibold text-primary uppercase tracking-[0.05em]">Active</span>
+<!-- Custom Toggle HTML -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="toggle1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle1"></label>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity font-inter text-xs font-semibold text-on-surface-variant hover:text-primary">
+                                    Edit Details
+                                </button>
+</div>
+</div>
+<!-- Account Item 2 (Inactive) -->
+<div class="bg-surface rounded-xl p-6 flex items-start justify-between group hover:bg-surface-container-low transition-colors duration-300">
+<div class="flex items-start gap-5 opacity-60">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-center text-on-surface-variant border border-outline-variant/10">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-on-surface">Bank of America, N.A.</h4>
+<div class="flex items-center gap-3 mt-1">
+<span class="font-inter text-sm font-medium text-on-surface-variant">Acct: •••• •••• •••• 1105</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-inter text-xs text-on-surface-variant">Routing: 026009593</span>
+</div>
+<div class="mt-3 font-inter text-sm text-on-surface-variant">
+<span class="font-semibold text-on-surface text-xs uppercase tracking-[0.05em] mr-2">Holder:</span>
+                                        Sovereign Enterprises Ltd.
+                                    </div>
+</div>
+</div>
+<!-- Actions / Toggle -->
+<div class="flex flex-col items-end gap-4">
+<div class="flex items-center gap-3">
+<span class="font-inter text-xs font-semibold text-on-surface-variant uppercase tracking-[0.05em]">Suspended</span>
+<!-- Custom Toggle HTML -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="toggle2" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer" for="toggle2"></label>
+</div>
+</div>
+<button class="opacity-0 group-hover:opacity-100 transition-opacity font-inter text-xs font-semibold text-on-surface-variant hover:text-primary">
+                                    Edit Details
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer (Landing type from JSON, but simplified for internal view to maintain design integrity) -->
+<footer class="mt-24 py-12 flex flex-col items-center justify-center gap-6 no-border text-on-surface-variant">
+<div class="flex gap-6 font-inter text-[10px] uppercase tracking-[0.05em]">
+<a class="hover:text-primary transition-colors duration-300" href="#">Terms of Auction</a>
+<a class="hover:text-primary transition-colors duration-300" href="#">State Disclosure</a>
+<a class="hover:text-primary transition-colors duration-300" href="#">Privacy Mandate</a>
+<a class="hover:text-primary transition-colors duration-300" href="#">Technical Support</a>
+</div>
+<div class="font-inter text-[10px] uppercase tracking-[0.05em] opacity-60">
+                    © 2024 Sovereign Curator Enterprise. Institutional Trust. Absolute Value.
+                 </div>
+</footer>
+</div>
+</main>
+</body></html>

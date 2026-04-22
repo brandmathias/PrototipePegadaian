@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard - Penjualan Barang Jaminan</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-fixed": "#241a00",
+              "tertiary-container": "#8f3a47",
+              "secondary-container": "#fed65b",
+              "surface-container-high": "#e8e8e8",
+              "inverse-primary": "#85d99a",
+              "tertiary": "#712331",
+              "primary": "#004a23",
+              "secondary-fixed": "#ffe088",
+              "surface-variant": "#e2e2e2",
+              "outline": "#6f7a6f",
+              "on-error-container": "#93000a",
+              "surface": "#f9f9f9",
+              "on-tertiary": "#ffffff",
+              "on-error": "#ffffff",
+              "on-primary-fixed": "#00210c",
+              "on-tertiary-fixed-variant": "#7b2b38",
+              "on-primary": "#ffffff",
+              "on-secondary-container": "#745c00",
+              "inverse-on-surface": "#f1f1f1",
+              "surface-bright": "#f9f9f9",
+              "tertiary-fixed": "#ffdadc",
+              "tertiary-fixed-dim": "#ffb2b9",
+              "surface-dim": "#dadada",
+              "on-primary-container": "#8ade9f",
+              "surface-tint": "#126c39",
+              "secondary": "#735c00",
+              "error": "#ba1a1a",
+              "on-background": "#1a1c1c",
+              "secondary-fixed-dim": "#e9c349",
+              "on-primary-fixed-variant": "#005228",
+              "on-secondary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "inverse-surface": "#2f3131",
+              "primary-fixed-dim": "#85d99a",
+              "on-tertiary-container": "#ffbac0",
+              "primary-container": "#006432",
+              "outline-variant": "#bfc9bd",
+              "on-secondary-fixed-variant": "#574500",
+              "on-surface-variant": "#3f4940",
+              "surface-container-highest": "#e2e2e2",
+              "surface-container-low": "#f3f3f3",
+              "error-container": "#ffdad6",
+              "on-surface": "#1a1c1c",
+              "on-tertiary-fixed": "#400010",
+              "background": "#f9f9f9",
+              "surface-container": "#eeeeee",
+              "primary-fixed": "#a0f5b4"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      .tonal-shift {
+        background: linear-gradient(to bottom, rgba(0,74,35,1) 0%, rgba(0,50,24,1) 100%);
+      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #bfc9bd; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- SideNavBar Implementation -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r-0 bg-emerald-900 shadow-xl z-50 flex flex-col py-6 overflow-y-auto">
+<!-- Brand Header -->
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="inventory">inventory</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-white tracking-widest uppercase font-headline leading-tight">Penjualan Jaminan</h1>
+</div>
+</div>
+<p class="text-emerald-100/60 text-xs font-medium px-1">Admin Unit Manado</p>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 space-y-1">
+<!-- Dashboard (Active) -->
+<a class="bg-emerald-800 text-white font-semibold rounded-lg mx-2 px-4 py-3 flex items-center gap-3 active:scale-95 transform transition-transform group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-manrope text-sm tracking-tight">Dashboard</span>
+</a>
+<a class="text-emerald-100/70 hover:text-white mx-2 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-emerald-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-manrope text-sm tracking-tight">Kelola Barang Jaminan</span>
+</a>
+<a class="text-emerald-100/70 hover:text-white mx-2 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-emerald-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-manrope text-sm tracking-tight">Pesanan Masuk</span>
+</a>
+<a class="text-emerald-100/70 hover:text-white mx-2 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-emerald-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-manrope text-sm tracking-tight">Laporan Penjualan</span>
+</a>
+<a class="text-emerald-100/70 hover:text-white mx-2 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-emerald-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-manrope text-sm tracking-tight">Pengaturan</span>
+</a>
+</nav>
+<!-- Footer Actions -->
+<div class="mt-auto space-y-1 pt-6 border-t border-emerald-800/50">
+<a class="text-emerald-100/70 hover:text-white mx-2 px-4 py-3 flex items-center gap-3 transition-colors hover:bg-emerald-800/50 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-manrope text-sm tracking-tight">Bantuan</span>
+</a>
+<button class="w-[calc(100%-1rem)] mx-2 mt-2 px-4 py-3 bg-red-900/30 text-red-100 rounded-lg flex items-center gap-3 hover:bg-red-900/50 transition-all active:scale-95 transform">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-manrope text-sm tracking-tight">Logout</span>
+</button>
+</div>
+</aside>
+<!-- TopAppBar Implementation -->
+<header class="flex justify-between items-center ml-64 px-8 h-20 sticky top-0 z-40 w-[calc(100%-16rem)] bg-white/80 backdrop-blur-md border-b border-emerald-100/20">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-semibold text-emerald-900 font-headline">Unit Manado</h2>
+<div class="h-6 w-px bg-emerald-100/50"></div>
+<p class="text-sm text-on-surface-variant">Dashboard Penjualan Jaminan</p>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-sm focus:ring-2 focus:ring-primary transition-all" placeholder="Cari pesanan atau barang..." type="text"/>
+</div>
+<!-- Actions -->
+<button class="hover:bg-slate-100 rounded-full p-2 relative group transition-all active:scale-90">
+<span class="material-symbols-outlined text-emerald-900" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-tertiary rounded-full border-2 border-white"></span>
+</button>
+<button class="hover:bg-slate-100 rounded-full p-2 group transition-all active:scale-90">
+<span class="material-symbols-outlined text-emerald-900" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-8 min-h-screen">
+<!-- Welcome Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h1 class="text-3xl font-extrabold text-primary font-headline tracking-tight">Selamat datang, Admin Unit Manado</h1>
+<p class="text-on-surface-variant font-medium mt-1">Senin, 24 Juli 2024 • Ringkasan penjualan barang jaminan hari ini</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 bg-white border border-outline-variant text-primary font-semibold rounded-lg hover:bg-surface-container-low transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="file_download">file_download</span>
+                    Export PDF
+                </button>
+<button class="px-5 py-2.5 bg-primary text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md shadow-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Input Barang Jaminan
+                </button>
+</div>
+</div>
+<!-- Metric Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<!-- Total Stok -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-4 border-primary">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold uppercase tracking-widest">+12% vs bln lalu</span>
+</div>
+<h3 class="text-on-surface-variant text-sm font-medium mb-1">Total Stok Tersedia</h3>
+<p class="text-3xl font-bold text-on-surface font-headline">1,284</p>
+</div>
+<!-- Pesanan Masuk -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-4 border-secondary">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="shopping_basket">shopping_basket</span>
+</div>
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-2 py-0.5 rounded-full font-bold">BARU</span>
+</div>
+<h3 class="text-on-surface-variant text-sm font-medium mb-1">Pesanan Masuk (Hari Ini)</h3>
+<p class="text-3xl font-bold text-on-surface font-headline">42</p>
+</div>
+<!-- Penjualan Selesai -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-4 border-emerald-400">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-emerald-50 rounded-lg text-emerald-600">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<span class="text-emerald-600 text-xs font-bold uppercase tracking-widest">Target 85%</span>
+</div>
+<h3 class="text-on-surface-variant text-sm font-medium mb-1">Penjualan Selesai (Bulan Ini)</h3>
+<p class="text-3xl font-bold text-on-surface font-headline">318</p>
+</div>
+<!-- Barang Belum Terjual -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border-b-4 border-tertiary-container">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-tertiary-container/10 rounded-lg text-tertiary-container">
+<span class="material-symbols-outlined" data-icon="assignment_late">assignment_late</span>
+</div>
+<span class="text-tertiary-container text-xs font-bold uppercase tracking-widest">Review Stok</span>
+</div>
+<h3 class="text-on-surface-variant text-sm font-medium mb-1">Barang Belum Terjual (&gt;30 hari)</h3>
+<p class="text-3xl font-bold text-on-surface font-headline">156</p>
+</div>
+</div>
+<!-- Main Content Area: Bento Style -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Recent Transactions Table (Left 2/3) -->
+<div class="xl:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-6 border-b border-surface-container flex justify-between items-center">
+<h3 class="text-xl font-bold text-on-surface font-headline">Pesanan Terbaru</h3>
+<button class="text-primary text-sm font-bold hover:underline">Lihat Semua Pesanan</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-on-surface-variant text-xs uppercase tracking-wider font-bold">
+<tr>
+<th class="px-6 py-4">ID Pesanan</th>
+<th class="px-6 py-4">Pembeli</th>
+<th class="px-6 py-4">Barang Jaminan</th>
+<th class="px-6 py-4">Tanggal Pesanan</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Detail</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1: Menunggu Pembayaran -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#INV-MN-00421</td>
+<td class="px-6 py-4 font-medium">Budi Santoso</td>
+<td class="px-6 py-4">Cincin Emas 10gr</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">24/07/2024</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[11px] font-extrabold uppercase tracking-tight">Menunggu Bayar</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Verifikasi Pembayaran -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#INV-MN-00418</td>
+<td class="px-6 py-4 font-medium">Lestari Wijaya</td>
+<td class="px-6 py-4">Laptop ASUS ROG G15</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">23/07/2024</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[11px] font-extrabold uppercase tracking-tight">Verifikasi</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Dikemas -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#INV-MN-00415</td>
+<td class="px-6 py-4 font-medium">Andi Pratama</td>
+<td class="px-6 py-4">Sepeda Motor Vario 150</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">22/07/2024</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[11px] font-extrabold uppercase tracking-tight">Dikemas</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Dibatalkan -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#INV-MN-00412</td>
+<td class="px-6 py-4 font-medium">Siska Amalia</td>
+<td class="px-6 py-4">Kalung Berlian 5ct</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">21/07/2024</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-[11px] font-extrabold uppercase tracking-tight">Dibatalkan</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Selesai -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-mono text-sm text-primary font-semibold">#INV-MN-00409</td>
+<td class="px-6 py-4 font-medium">Hendra Kurnia</td>
+<td class="px-6 py-4">Logam Mulia ANTAM 50gr</td>
+<td class="px-6 py-4 text-sm text-on-surface-variant">20/07/2024</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-slate-200 text-slate-700 rounded-full text-[11px] font-extrabold uppercase tracking-tight">Selesai</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-auto p-4 bg-surface-container-low border-t border-surface-container flex justify-between items-center text-xs text-on-surface-variant font-medium">
+<span>Menampilkan 5 dari 3,420 pesanan</span>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded bg-white border border-outline-variant disabled:opacity-50">
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-white border border-outline-variant hover:bg-surface-container">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-white border border-outline-variant hover:bg-surface-container">
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Sidebar Panel (1/3) -->
+<div class="space-y-8">
+<!-- Action Hub -->
+<div class="bg-primary-container p-6 rounded-xl text-white relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="text-lg font-bold font-headline mb-4">Pusat Kelola Unit</h4>
+<div class="space-y-3">
+<button class="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg flex items-center justify-between transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="text-sm font-semibold">Cek Kualitas Barang</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg flex items-center justify-between transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span class="text-sm font-semibold">Print Label Barang</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg flex items-center justify-between transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+<span class="text-sm font-semibold">Update Katalog Baru</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Decorative Background element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+</div>
+<!-- Logistics / Monitoring Section -->
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10">
+<h4 class="text-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Status Logistik Barang</h4>
+<div class="space-y-6">
+<div class="flex gap-4 items-start">
+<div class="mt-1 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Dalam Perjalanan ke Pembeli</p>
+<p class="text-sm font-bold mt-0.5">12 Paket Barang Jaminan</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="mt-1 w-2 h-2 rounded-full bg-amber-500 ring-4 ring-amber-100"></div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Siap Dikirim (Menunggu Kurir)</p>
+<p class="text-sm font-bold mt-0.5">4 Pesanan Selesai Kemas</p>
+</div>
+</div>
+<div class="flex gap-4 items-start opacity-50">
+<div class="mt-1 w-2 h-2 rounded-full bg-slate-300 ring-4 ring-slate-100"></div>
+<div>
+<p class="text-xs text-on-surface-variant font-medium">Diterima Pembeli</p>
+<p class="text-sm font-bold mt-0.5">8 Paket Terkonfirmasi</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 text-xs font-bold text-primary border border-primary/20 rounded hover:bg-primary/5 transition-all">Lihat Detail Pengiriman</button>
+</div>
+<!-- Unit Support Banner -->
+<div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl border border-emerald-200 flex items-center gap-4">
+<div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" data-icon="support_agent">support_agent</span>
+</div>
+<div>
+<p class="text-sm font-bold text-emerald-900 leading-tight">Butuh bantuan IT atau Logistik?</p>
+<p class="text-xs text-emerald-700 mt-1">Hubungi helpdesk pusat via internal chat.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Global FAB Suppression -->
+</body></html>

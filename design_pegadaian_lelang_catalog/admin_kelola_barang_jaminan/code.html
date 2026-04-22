@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin - Kelola Barang Jaminan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-fixed-dim": "#ffb2b9",
+              "background": "#f9f9f9",
+              "outline": "#6f7a6f",
+              "on-surface-variant": "#3f4940",
+              "on-primary": "#ffffff",
+              "on-tertiary-fixed-variant": "#7b2b38",
+              "on-tertiary": "#ffffff",
+              "primary": "#004a23",
+              "surface-variant": "#e2e2e2",
+              "inverse-on-surface": "#f1f1f1",
+              "surface-tint": "#126c39",
+              "on-primary-fixed-variant": "#005228",
+              "error": "#ba1a1a",
+              "inverse-surface": "#2f3131",
+              "tertiary": "#712331",
+              "on-tertiary-fixed": "#400010",
+              "on-error-container": "#93000a",
+              "on-error": "#ffffff",
+              "primary-fixed": "#a0f5b4",
+              "on-surface": "#1a1c1c",
+              "surface-container": "#eeeeee",
+              "surface": "#f9f9f9",
+              "on-secondary": "#ffffff",
+              "on-primary-container": "#8ade9f",
+              "on-primary-fixed": "#00210c",
+              "error-container": "#ffdad6",
+              "surface-container-high": "#e8e8e8",
+              "on-secondary-container": "#745c00",
+              "on-secondary-fixed": "#241a00",
+              "tertiary-container": "#8f3a47",
+              "primary-fixed-dim": "#85d99a",
+              "on-background": "#1a1c1c",
+              "on-secondary-fixed-variant": "#574500",
+              "surface-dim": "#dadada",
+              "surface-container-highest": "#e2e2e2",
+              "secondary-fixed": "#ffe088",
+              "secondary": "#735c00",
+              "secondary-fixed-dim": "#e9c349",
+              "outline-variant": "#bfc9bd",
+              "tertiary-fixed": "#ffdadc",
+              "surface-container-low": "#f3f3f3",
+              "primary-container": "#006432",
+              "inverse-primary": "#85d99a",
+              "surface-bright": "#f9f9f9",
+              "on-tertiary-container": "#ffbac0",
+              "secondary-container": "#fed65b",
+              "surface-container-lowest": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased">
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-zinc-100 dark:bg-zinc-950 flex flex-col py-6 space-y-2 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="font-manrope font-extrabold text-emerald-900 dark:text-emerald-50 text-lg leading-tight">Pegadaian</h1>
+<p class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Inventory Management</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-300 mx-2 transition-all duration-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="font-inter text-sm font-medium">Dashboard</span>
+</a>
+<!-- Active Tab: Kelola Barang -->
+<a class="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-900 text-emerald-900 dark:text-emerald-400 shadow-sm rounded-lg mx-2 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-inter text-sm font-semibold">Kelola Barang</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-300 mx-2 transition-all duration-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">receipt_long</span>
+<span class="font-inter text-sm font-medium">Transaksi</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-300 mx-2 transition-all duration-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+<span class="font-inter text-sm font-medium">Laporan</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-zinc-600 dark:text-zinc-400 hover:text-emerald-800 dark:hover:text-emerald-300 mx-2 transition-all duration-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="font-inter text-sm font-medium">Pengaturan</span>
+</a>
+</nav>
+<div class="px-2 mt-auto">
+<a class="flex items-center gap-3 px-6 py-3 text-zinc-600 dark:text-zinc-400 hover:text-error dark:hover:text-error transition-all duration-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[22px]">logout</span>
+<span class="font-inter text-sm font-medium">Keluar</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md flex items-center justify-between px-8 z-40 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-4">
+<span class="font-inter text-zinc-400 text-sm">Pages / Kelola Barang Jaminan</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<button class="p-2 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-zinc-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-zinc-200 dark:bg-zinc-800"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-xs font-bold text-emerald-900 dark:text-emerald-400 uppercase tracking-wider">Unit Pusat</p>
+<p class="text-[11px] text-zinc-500">Admin Profile</p>
+</div>
+<img alt="Admin Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-100" data-alt="professional portrait of a middle-aged male executive in a sharp business suit with neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOseWKydkuZUo-hhUXKWlYH96RGOI6e_vTGoKTP6sq-acppsdbq4-wVFeEwbo2X25n0SwZBF7MIGaumr-lLnGnHjl_XC3Ejm7aAa5IOFXx4tXICYnqCpI3x2qoMzy3vPmDD9g--0FYKGrYsPqhHnAQWbi-GLAbOb7wFWB7Iy5_OLJGEsWcJ4ccf02s5sK-pLtTsPe8OwOLnTU9Q3YyklaUX4MBrH9TVR039itlmWS2QHwABu3KlzKpvDrnIbwE8abhJo83Uz1wOpA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-8 min-h-screen bg-zinc-50 dark:bg-zinc-950">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-headline font-bold text-emerald-900 dark:text-emerald-50 tracking-tight">Kelola Barang Jaminan</h2>
+<p class="text-zinc-500 mt-1">Manajemen inventaris aset jaminan langsung Pegadaian</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-emerald-900/20 hover:scale-[0.98] transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                Tambah Barang
+            </button>
+</div>
+<!-- Filter & Search Bar Section -->
+<section class="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm flex flex-wrap items-center gap-4">
+<div class="relative flex-1 min-w-[300px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="Cari Kode atau Nama Barang..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<select class="bg-zinc-50 border-none rounded-lg text-sm py-2.5 px-4 focus:ring-2 focus:ring-primary/20 text-zinc-600">
+<option>Semua Kategori</option>
+<option>Perhiasan Emas</option>
+<option>Kendaraan</option>
+<option>Elektronik</option>
+<option>Logam Mulia</option>
+</select>
+<div class="flex bg-zinc-100 p-1 rounded-lg">
+<button class="px-4 py-1.5 text-xs font-bold rounded-md bg-white text-emerald-900 shadow-sm">SEMUA</button>
+<button class="px-4 py-1.5 text-xs font-bold rounded-md text-zinc-500 hover:text-emerald-800 transition-colors">TERSEDIA</button>
+<button class="px-4 py-1.5 text-xs font-bold rounded-md text-zinc-500 hover:text-emerald-800 transition-colors">TERJUAL</button>
+</div>
+</div>
+</section>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-zinc-50/50 border-b border-zinc-100">
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Foto</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Kode</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Nama Barang</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Kategori</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Harga Jual</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Tanggal Input</th>
+<th class="px-6 py-4 text-[11px] font-bold text-zinc-400 uppercase tracking-widest text-right">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-zinc-50">
+<!-- Row 1: Tersedia -->
+<tr class="hover:bg-zinc-50/80 transition-colors group">
+<td class="px-6 py-4">
+<img alt="Gold Necklace" class="w-12 h-12 rounded-lg object-cover bg-zinc-100" data-alt="high-end gold necklace with intricate filigree details lying on a luxury green velvet background, sharp focus, professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEeKD0GO4IAj_sQ-uJHshj8v6vNjH3ZRTi0ofp8gFaic-B63dWa5Zq8d8A1P8tUCGj3nZxmpjzUSOkgUME7z_P9oVsklTDGz0lPEkwga2qVbLLkyFFP_2qMEuzw2jCGVFaeiQXkbuR0JlrCB5nPZaPxHqxRTIvyZBGdwcrk1RiBUAGVaskQ5FPyQCqPEWPgNwd_kDpzUhIy7cjpZpxsqV_CFjH-dobbGlTtAj-fHyoFmrmMPiam2uM1IzXLqCC0EnTuuuPWdX9CC4"/>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-zinc-500">J-2023-001</td>
+<td class="px-6 py-4">
+<p class="font-semibold text-emerald-900 text-sm">Kalung Emas 24K 10gr</p>
+<p class="text-[10px] text-zinc-400">Kondisi: Baik</p>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-600">Perhiasan</td>
+<td class="px-6 py-4 font-headline font-bold text-primary text-sm">Rp 9.250.000</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">Tersedia</span>
+</td>
+<td class="px-6 py-4 text-xs text-zinc-500">12 Okt 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-zinc-400 hover:text-primary hover:bg-emerald-50 rounded-md transition-colors" title="Edit">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+<button class="p-1.5 text-zinc-400 hover:text-error hover:bg-error-container/30 rounded-md transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Terjual -->
+<tr class="hover:bg-zinc-50/80 transition-colors group">
+<td class="px-6 py-4">
+<img alt="Swiss Watch" class="w-12 h-12 rounded-lg object-cover grayscale opacity-60" data-alt="luxury silver swiss watch with mechanical details on a dark grey stone surface, professional studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA9W7A9sgtiyoBTiM14XMl42JXF_VljkIc_RGahlR3ysjvtgTdb6ZYYGuU5Eq-dMrnyHDJxOxFamNN5fwJtoDvh9Rk22Dj9utFJ4_6XRd7W3DeZ33BA6M1rlGhyg5wPs2mELxgxY45Z3-gRSLVJlkiflDfAOtg0KJfH1udlXJi9sn6bJhbGI8hdi0zstI8BZWeEnoBX-HZaeOTDDR0os1kM5HgdzFARmOvl_hR3klYy5GcTCBTiKZoAtEjIhcocNo_Nq2mJEb-JPk"/>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-zinc-500">J-2023-002</td>
+<td class="px-6 py-4">
+<p class="font-semibold text-zinc-400 text-sm line-through">Jam Tangan Rolex Oyster</p>
+<p class="text-[10px] text-zinc-400">Kondisi: Cukup</p>
+</td>
+<td class="px-6 py-4 text-sm text-zinc-400">Aksesoris Mewah</td>
+<td class="px-6 py-4 font-headline font-bold text-zinc-400 text-sm">Rp 45.000.000</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500">Terjual</span>
+</td>
+<td class="px-6 py-4 text-xs text-zinc-500">10 Okt 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-zinc-400 hover:bg-zinc-100 rounded-md transition-colors"><span class="material-symbols-outlined text-sm">visibility</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-zinc-50/30 flex items-center justify-between border-t border-zinc-100">
+<p class="text-xs text-zinc-500 font-medium">Menampilkan <span class="text-emerald-900">1 - 2</span> dari <span class="text-emerald-900">142</span> barang</p>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary text-xs font-bold shadow-sm">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-zinc-500 hover:bg-white text-xs font-bold transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-zinc-500 hover:bg-white text-xs font-bold transition-colors">3</button>
+<span class="px-1 text-zinc-400 text-xs">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent text-zinc-500 hover:bg-white text-xs font-bold transition-colors">15</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-400 hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay: Tambah Barang Baru -->
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-6 md:p-12 overflow-y-auto">
+<!-- Backdrop -->
+<div class="fixed inset-0 bg-emerald-950/40 backdrop-blur-sm transition-opacity"></div>
+<!-- Modal Content -->
+<div class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-full overflow-hidden animate-in fade-in zoom-in duration-300">
+<div class="px-8 py-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+<div>
+<h3 class="text-xl font-headline font-bold text-emerald-900 tracking-tight">Tambah Barang Jaminan</h3>
+<p class="text-xs text-zinc-500 uppercase tracking-widest font-bold mt-0.5">Direct Sale Asset Entry</p>
+</div>
+<button class="p-2 hover:bg-zinc-200/50 rounded-full transition-colors">
+<span class="material-symbols-outlined text-zinc-400">close</span>
+</button>
+</div>
+<div class="p-8 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+<!-- Column Left: Upload -->
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-3">Foto &amp; Video Barang</label>
+<div class="border-2 border-dashed border-zinc-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center bg-zinc-50 hover:bg-emerald-50/30 hover:border-primary/30 transition-all group cursor-pointer h-64">
+<div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">cloud_upload</span>
+</div>
+<p class="font-semibold text-zinc-700 text-sm">Klik atau tarik file ke sini</p>
+<p class="text-xs text-zinc-400 mt-2 leading-relaxed">PNG, JPG atau MP4 (Maks. 10MB). <br/>Unggah foto untuk katalog penjualan langsung.</p>
+</div>
+<div class="mt-6">
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-3">Deskripsi Produk</label>
+<textarea class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 placeholder:text-zinc-400" placeholder="Jelaskan detail fisik, karat, kondisi mesin, atau spesifikasi lengkap untuk pembeli..." rows="4"></textarea>
+</div>
+</div>
+<!-- Column Right: Form Fields -->
+<div class="space-y-5">
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Nama Barang</label>
+<input class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" placeholder="e.g. Kalung Emas Berlian" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Kategori</label>
+<select class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 text-zinc-600 appearance-none">
+<option>Pilih Kategori</option>
+<option>Perhiasan</option>
+<option>Elektronik</option>
+<option>Kendaraan</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Kondisi</label>
+<select class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20 text-zinc-600 appearance-none">
+<option>Baik</option>
+<option>Cukup</option>
+<option>Kurang</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Harga Jual (Fixed Price)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">Rp</span>
+<input class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary/20 font-bold text-primary" placeholder="0" type="number"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Berat / Dimensi</label>
+<input class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" placeholder="e.g. 15.5 gr / 20x20 cm" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2">Keterangan Penjualan</label>
+<input class="w-full bg-zinc-50 border-none rounded-xl text-sm py-3 px-4 focus:ring-2 focus:ring-primary/20" placeholder="e.g. Harga nett, Sertifikat lengkap" type="text"/>
+</div>
+</div>
+</div>
+<!-- Footer Buttons -->
+<div class="p-8 border-t border-zinc-100 flex items-center justify-end gap-3 bg-zinc-50/50">
+<button class="px-8 py-3 text-sm font-bold text-zinc-500 hover:text-zinc-800 transition-colors uppercase tracking-widest">Batal</button>
+<button class="px-10 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-lg shadow-emerald-900/20 hover:scale-[0.98] transition-transform active:scale-95 uppercase tracking-widest">Simpan Barang</button>
+</div>
+</div>
+</div>
+</body></html>

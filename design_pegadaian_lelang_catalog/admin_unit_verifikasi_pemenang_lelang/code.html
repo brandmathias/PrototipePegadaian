@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Control - Verification</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f9f9f9",
+                        "secondary-fixed": "#ffe088",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-tertiary-fixed": "#400010",
+                        "on-secondary-container": "#745c00",
+                        "on-error": "#ffffff",
+                        "primary-container": "#006432",
+                        "inverse-primary": "#85d99a",
+                        "outline": "#6f7a6f",
+                        "primary": "#004a23",
+                        "surface-container-low": "#f3f3f3",
+                        "background": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "primary-fixed": "#a0f5b4",
+                        "surface-variant": "#e2e2e2",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "surface-tint": "#126c39",
+                        "on-primary-container": "#8ade9f",
+                        "tertiary": "#712331",
+                        "tertiary-fixed": "#ffdadc",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#fed65b",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "on-primary-fixed": "#00210c",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "secondary": "#735c00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-surface-variant": "#3f4940",
+                        "on-secondary-fixed": "#241a00",
+                        "tertiary-container": "#8f3a47",
+                        "inverse-on-surface": "#f1f1f1",
+                        "outline-variant": "#bfc9bd",
+                        "secondary-fixed-dim": "#e9c349",
+                        "on-secondary-fixed-variant": "#574500",
+                        "surface": "#f9f9f9",
+                        "surface-container-highest": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "surface-container": "#eeeeee",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005228"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background font-body text-on-surface min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-slate-50 dark:bg-slate-900 h-screen w-72 border-r-0 bg-slate-100 dark:bg-slate-800 transition-colors fixed left-0 top-0 flex flex-col pt-20 pb-8 px-4 z-40 hidden md:flex">
+<!-- Brand/Header -->
+<div class="mb-8 px-4 flex flex-col gap-2">
+<h1 class="font-headline text-lg font-bold text-emerald-900 dark:text-emerald-50">Sovereign Control</h1>
+<p class="font-body text-sm text-slate-500">Unit Admin Portal</p>
+</div>
+<!-- Main Navigation -->
+<div class="flex flex-col gap-2 flex-grow">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Active Lots -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">gavel</span>
+<span>Active Lots</span>
+</a>
+<!-- My Bids -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history_edu</span>
+<span>My Bids</span>
+</a>
+<!-- Verification (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-100 border-r-4 border-amber-600 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span>Verification</span>
+</a>
+<!-- Support -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold hover:translate-x-1 transition-transform duration-200 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">contact_support</span>
+<span>Support</span>
+</a>
+</div>
+<!-- CTA -->
+<div class="px-4 mb-6">
+<button class="w-full bg-primary text-on-primary font-headline font-semibold py-3 rounded-md shadow-inner shadow-primary-container/50 hover:bg-primary/90 transition-opacity active:scale-95">
+                Create New Lot
+            </button>
+</div>
+<!-- Footer Navigation -->
+<div class="flex flex-col gap-2 mt-auto border-t border-slate-200 dark:border-slate-700 pt-4 px-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-manrope text-sm font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-72 p-6 md:p-12 max-w-[1600px] mx-auto w-full">
+<!-- Header -->
+<header class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h2 class="font-headline text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight mb-2">Verifikasi Pemenang &amp; Pembayaran Lelang</h2>
+<p class="font-body text-on-surface-variant text-base">Review and verify auction winner payments.</p>
+</div>
+<!-- Quick Stats/Filters (Optional visual anchor) -->
+<div class="flex gap-4">
+<div class="bg-surface-container-low px-4 py-2 rounded-md flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="font-label text-sm uppercase tracking-widest text-on-surface-variant">2 Pending</span>
+</div>
+</div>
+</header>
+<!-- Content Grid (Asymmetrical Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Request List Column (Left, Narrower) -->
+<div class="lg:col-span-5 flex flex-col gap-4">
+<h3 class="font-headline font-semibold text-lg text-on-surface mb-2">Pending Requests</h3>
+<!-- Card 1: Active/Selected State -->
+<div class="bg-surface-container-lowest rounded-xl p-6 relative cursor-pointer group shadow-[0_4px_32px_rgba(26,28,28,0.04)] border-l-4 border-primary">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-1">Lot #492-B</p>
+<h4 class="font-headline font-bold text-xl text-primary">Rolex Submariner Date</h4>
+</div>
+<span class="bg-surface-container-high text-on-surface text-xs font-label uppercase px-2 py-1 rounded-sm tracking-widest">Transfer</span>
+</div>
+<div class="space-y-2 mb-6">
+<div class="flex justify-between text-sm">
+<span class="font-body text-on-surface-variant">Winner</span>
+<span class="font-body font-medium text-on-surface">Budi Santoso</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="font-body text-on-surface-variant">Final Bid</span>
+<span class="font-headline font-bold text-primary">Rp 145.000.000</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="font-body text-on-surface-variant">Submitted</span>
+<span class="font-body font-medium text-on-surface">10 mins ago</span>
+</div>
+</div>
+<button class="w-full bg-surface-container text-on-surface font-body font-medium text-sm py-2 rounded-md hover:bg-surface-variant transition-colors">
+                        Review Details
+                    </button>
+</div>
+<!-- Card 2: Inactive State -->
+<div class="bg-surface-container-low rounded-xl p-6 relative cursor-pointer group hover:bg-surface-container transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-1">Lot #510-A</p>
+<h4 class="font-headline font-semibold text-lg text-on-surface">Antam Gold Bar 50g</h4>
+</div>
+<span class="bg-surface-container-high text-on-surface text-xs font-label uppercase px-2 py-1 rounded-sm tracking-widest">Direct</span>
+</div>
+<div class="space-y-2 mb-6">
+<div class="flex justify-between text-sm">
+<span class="font-body text-on-surface-variant">Winner</span>
+<span class="font-body font-medium text-on-surface">Siti Rahma</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="font-body text-on-surface-variant">Final Bid</span>
+<span class="font-headline font-semibold text-on-surface">Rp 52.500.000</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed View Column (Right, Wider) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-8 shadow-[0_8px_32px_rgba(26,28,28,0.06)] sticky top-8">
+<div class="flex justify-between items-center mb-8 border-b border-outline-variant/20 pb-4">
+<h3 class="font-headline text-2xl font-bold text-on-surface">Verification Details</h3>
+<span class="bg-secondary-container text-on-secondary-container font-label text-xs uppercase px-3 py-1.5 rounded-sm tracking-widest font-semibold">Needs Action</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+<!-- Winner Info -->
+<div>
+<h4 class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Winner Information</h4>
+<div class="space-y-4">
+<div>
+<p class="text-xs text-on-surface-variant font-body mb-1">Full Name</p>
+<p class="font-body font-medium text-on-surface">Budi Santoso</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-body mb-1">ID Number (KTP)</p>
+<p class="font-body font-medium text-on-surface">3174123456789012</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-body mb-1">Contact</p>
+<p class="font-body font-medium text-on-surface">+62 812-3456-7890</p>
+</div>
+</div>
+</div>
+<!-- Payment Info -->
+<div>
+<h4 class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Payment Summary</h4>
+<div class="bg-surface-bright p-4 rounded-md space-y-3 border border-outline-variant/15">
+<div class="flex justify-between">
+<span class="font-body text-sm text-on-surface-variant">Lot Amount</span>
+<span class="font-body text-sm font-medium text-on-surface">Rp 145.000.000</span>
+</div>
+<div class="flex justify-between">
+<span class="font-body text-sm text-on-surface-variant">Admin Fee (2%)</span>
+<span class="font-body text-sm font-medium text-on-surface">Rp 2.900.000</span>
+</div>
+<div class="border-t border-outline-variant/20 pt-2 flex justify-between mt-2">
+<span class="font-body font-semibold text-on-surface">Total Expected</span>
+<span class="font-headline font-bold text-primary">Rp 147.900.000</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Proof Section -->
+<div class="mb-10">
+<h4 class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Payment Proof (Transfer)</h4>
+<div class="bg-surface-container p-2 rounded-lg inline-block border border-outline-variant/15">
+<img alt="Payment receipt transfer slip" class="rounded-md max-h-64 object-cover" data-alt="close up of a generic printed bank transfer receipt slip on a white desk with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8uFij7dSLTibKF20MlliKZDZ_K28fEYE0eoS7Pe6E62v8Gca1Sg8JXNu9FcrghE2liNorxUVcFdyOsSGBIroH8pDH_IoQvAUA5FLoZ7E1-vmQelEXaojlDs6m0TJS81kvv90zUd2eUDzPEnVcBKYu7BSK6aI_ONUe5JUFGwY7O5JPACgmMufRALanLsvock9QSplo5HYdVDIv4yql2K40ut5_Au6_UOchzd-8rHeui5m0gr_rqIKccQez8-W424RuQEZ38gjP4mE"/>
+</div>
+<p class="text-xs text-on-surface-variant mt-2 italic font-body">Uploaded on 24 Oct 2023, 14:32 WIB</p>
+</div>
+<!-- Status History (Minimalist Timeline) -->
+<div class="mb-10">
+<h4 class="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4">Verification History</h4>
+<div class="space-y-4 pl-2">
+<div class="relative pl-6 before:content-[''] before:absolute before:left-1.5 before:top-2 before:w-0.5 before:h-full before:bg-outline-variant/30 last:before:hidden">
+<div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full bg-primary border-2 border-surface-container-lowest"></div>
+<p class="font-body text-sm font-medium text-on-surface">Payment Proof Submitted</p>
+<p class="font-body text-xs text-on-surface-variant">By System - 24 Oct, 14:32</p>
+</div>
+<div class="relative pl-6">
+<div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full bg-surface-variant border-2 border-surface-container-lowest"></div>
+<p class="font-body text-sm font-medium text-on-surface-variant">Awaiting Admin Verification</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-outline-variant/20">
+<button class="flex-1 bg-primary text-on-primary font-headline font-semibold py-3 px-6 rounded-md shadow-inner shadow-primary-container/50 hover:bg-primary/90 transition-opacity active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Verifikasi Pembayaran
+                    </button>
+<button class="flex-1 border border-outline-variant/30 text-error font-headline font-semibold py-3 px-6 rounded-md hover:bg-error/5 transition-colors active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">cancel</span>
+                        Tolak
+                    </button>
+<button class="flex-none bg-surface-container text-on-surface font-headline font-semibold py-3 px-6 rounded-md hover:bg-surface-variant transition-colors active:scale-95 flex items-center justify-center gap-2" disabled="" title="Available after verification">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">print</span>
+                        Cetak Nota
+                    </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

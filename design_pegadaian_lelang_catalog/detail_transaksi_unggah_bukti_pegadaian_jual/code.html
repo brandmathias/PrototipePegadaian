@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pegadaian Jual - Detail Transaksi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#004a23",
+                        "outline-variant": "#bfc9bd",
+                        "secondary-fixed": "#ffe088",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "surface": "#f9f9f9",
+                        "inverse-surface": "#2f3131",
+                        "background": "#f9f9f9",
+                        "surface-dim": "#dadada",
+                        "outline": "#6f7a6f",
+                        "on-surface": "#1a1c1c",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-secondary-fixed": "#241a00",
+                        "surface-container-low": "#f3f3f3",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e2e2e2",
+                        "primary-container": "#006432",
+                        "on-primary-container": "#8ade9f",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-primary-fixed-variant": "#005228",
+                        "inverse-primary": "#85d99a",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "tertiary-fixed": "#ffdadc",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#3f4940",
+                        "on-background": "#1a1c1c",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#a0f5b4",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-container": "#745c00",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-container": "#8f3a47",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#fed65b",
+                        "surface-container": "#eeeeee",
+                        "on-tertiary-fixed": "#400010",
+                        "on-secondary-fixed-variant": "#574500",
+                        "on-primary-fixed": "#00210c",
+                        "secondary": "#735c00",
+                        "primary-fixed-dim": "#85d99a",
+                        "secondary-fixed-dim": "#e9c349",
+                        "surface-tint": "#126c39",
+                        "tertiary": "#712331",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-smoothing: antialiased; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pt-16">
+<!-- TopNavBar -->
+<nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-emerald-900 dark:text-emerald-400 font-['Manrope'] tracking-tight fixed top-0 w-full z-50 shadow-sm dark:shadow-none flex justify-between items-center h-16 px-8 max-w-[1920px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold text-emerald-900 dark:text-emerald-500 uppercase tracking-widest">Pegadaian Jual</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-emerald-800 transition-colors" href="#">Katalog</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-emerald-800 transition-colors" href="#">Cara Lelang</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-emerald-800 transition-colors" href="#">Bantuan</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-4 text-slate-600">
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-all p-2 rounded-full"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="text-emerald-900 dark:text-emerald-400 font-bold border-b-2 border-yellow-600 pb-1 p-2"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-all p-2 rounded-full"><span class="material-symbols-outlined" data-icon="account_circle">account_circle</span></button>
+</div>
+</div>
+<div class="bg-slate-100 dark:bg-slate-800 h-[1px] w-full absolute bottom-0 left-0"></div>
+</nav>
+<main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+<!-- Breadcrumb -->
+<nav class="mb-8 text-sm font-label text-on-surface-variant flex items-center gap-2">
+<a class="hover:text-primary transition-colors" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Transaksi</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-semibold tracking-[0.05em] uppercase">Detail</span>
+</nav>
+<h1 class="font-headline text-4xl lg:text-5xl font-bold text-primary tracking-tight mb-8">Detail Pembayaran</h1>
+<!-- Status Tracker -->
+<div class="mb-12 bg-surface-container-low rounded-xl p-6">
+<div class="flex flex-col md:flex-row justify-between relative">
+<!-- Line -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-surface-variant -z-0 -translate-y-1/2"></div>
+<div class="flex flex-col items-center relative z-10 w-full md:w-1/4 mb-4 md:mb-0">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center mb-2 shadow-sm border border-secondary-container/20">
+<span class="material-symbols-outlined text-sm" data-icon="more_horiz">more_horiz</span>
+</div>
+<span class="font-label text-xs uppercase tracking-[0.05em] text-on-surface font-semibold text-center">Menunggu Verifikasi</span>
+</div>
+<div class="flex flex-col items-center relative z-10 w-full md:w-1/4 mb-4 md:mb-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="upload_file">upload_file</span>
+</div>
+<span class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant text-center">Bukti Diunggah</span>
+</div>
+<div class="flex flex-col items-center relative z-10 w-full md:w-1/4 mb-4 md:mb-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+</div>
+<span class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant text-center">Terverifikasi</span>
+</div>
+<div class="flex flex-col items-center relative z-10 w-full md:w-1/4">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</div>
+<span class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant text-center">Selesai</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left: Transaction Info -->
+<div class="bg-surface-container-lowest rounded-xl p-6 h-fit relative">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent pointer-events-none rounded-xl"></div>
+<h2 class="font-headline text-xl font-bold text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Rincian Transaksi
+                </h2>
+<div class="space-y-6 relative z-10">
+<div>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">ID Transaksi</p>
+<p class="font-body text-base font-semibold text-on-surface">TRX-20231024-001</p>
+</div>
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-md overflow-hidden shrink-0 bg-surface-container">
+<img alt="Cincin Berlian" class="w-full h-full object-cover" data-alt="close-up of elegant diamond ring on dark velvet background with dramatic spotlighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTA9n_j2jHgZSCQwJ3n8CaFmDB3v-FkbzgXnSKwwLUDbvBszVb817wBskB-ndxA8mqd7p0TTzt4Y1dKg4TF0vUm3zF7Z4p26SmvRIeZ8z7BVWkP2N8cWGkUwRRM3-R7NYX7LYc0Y5PvLchRVWOHwxUsoDWo_kRVTblkPpiYl5mDjccb1dTuec3ColGgio9PvIQDk_ORumI16IHZanD8ioWp1fix6WZZDIj-H3uBQLw80Yf3EDOtPkg-RGSdxdNmb-6xoajuaZx-gk"/>
+</div>
+<div>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Nama Barang</p>
+<p class="font-body text-sm font-semibold text-on-surface line-clamp-2">Cincin Emas Putih Berlian 18K (Lot #45A)</p>
+</div>
+</div>
+<div>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Total Harga</p>
+<p class="font-headline text-2xl font-bold text-primary">Rp 12.500.000</p>
+</div>
+<div>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Metode Pembayaran</p>
+<p class="font-body text-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="account_balance">account_balance</span> Transfer Bank
+                        </p>
+</div>
+</div>
+</div>
+<!-- Middle: Bank Account Info -->
+<div class="bg-surface-container-lowest rounded-xl p-6 h-fit border border-outline-variant/15 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-bl-full -z-0"></div>
+<h2 class="font-headline text-xl font-bold text-primary mb-6 flex items-center gap-2 relative z-10">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> Rekening Tujuan
+                </h2>
+<div class="bg-surface-container-low p-4 rounded-lg mb-6 relative z-10 border-l-4 border-secondary">
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Bank</p>
+<p class="font-body text-lg font-semibold text-on-surface mb-4">Bank Rakyat Indonesia (BRI)</p>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Nomor Rekening</p>
+<div class="flex items-center justify-between bg-surface-container-lowest p-3 rounded border border-outline-variant/20 mb-4">
+<p class="font-headline text-xl font-bold text-primary tracking-wider">0123-4567-8901-234</p>
+<button class="text-secondary hover:text-primary transition-colors p-1" title="Salin">
+<span class="material-symbols-outlined text-lg" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-1">Atas Nama</p>
+<p class="font-body text-sm font-semibold text-on-surface uppercase tracking-wide">PT Pegadaian (Persero)</p>
+</div>
+<div class="bg-tertiary-container/10 p-4 rounded-lg flex items-start gap-3 relative z-10">
+<span class="material-symbols-outlined text-tertiary mt-0.5" data-icon="info">info</span>
+<p class="font-body text-xs text-on-surface-variant">Pastikan Anda mentransfer tepat sesuai dengan <strong>Total Harga</strong> untuk mempercepat proses verifikasi otomatis.</p>
+</div>
+</div>
+<!-- Right: Upload Box -->
+<div class="bg-surface-container-lowest rounded-xl p-6 h-fit">
+<h2 class="font-headline text-xl font-bold text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span> Unggah Bukti
+                </h2>
+<p class="font-body text-sm text-on-surface-variant mb-6">Unggah bukti transfer maksimal 24 jam setelah pengajuan.</p>
+<div class="border-2 border-dashed border-outline-variant/50 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer group mb-6">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="upload_file">upload_file</span>
+</div>
+<p class="font-body text-sm font-semibold text-on-surface mb-1">Klik atau seret file ke sini</p>
+<p class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant">Format: JPG, PNG, PDF (Maks. 5MB)</p>
+</div>
+<!-- Simulated selected file (hidden by default in real app, shown for design) -->
+<!-- <div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary" data-icon="image">image</span>
+                        <div>
+                            <p class="font-body text-sm font-medium text-on-surface truncate max-w-[150px]">bukti_tf_bca.jpg</p>
+                            <p class="font-body text-xs text-on-surface-variant">1.2 MB</p>
+                        </div>
+                    </div>
+                    <button class="text-error hover:bg-error-container p-1 rounded transition-colors">
+                        <span class="material-symbols-outlined text-sm" data-icon="delete">delete</span>
+                    </button>
+                </div> -->
+<button class="w-full bg-primary text-on-primary font-body font-semibold py-3 px-4 rounded-md shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:opacity-90 transition-opacity flex justify-center items-center gap-2">
+                    Kirim Bukti Pembayaran
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-emerald-950 dark:bg-black w-full py-12 border-t border-emerald-900/30 mt-auto">
+<div class="flex flex-col items-center gap-6 max-w-7xl mx-auto px-4">
+<span class="text-white font-bold text-xl tracking-widest font-['Manrope'] uppercase">Pegadaian</span>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-emerald-200/60 hover:text-white transition-colors" href="#">Tentang Kami</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-emerald-200/60 hover:text-white transition-colors" href="#">Syarat &amp; Ketentuan</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-emerald-200/60 hover:text-white transition-colors" href="#">Kebijakan Privasi</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-emerald-200/60 hover:text-white transition-colors" href="#">Kontak Kami</a>
+</div>
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-yellow-500 dark:text-yellow-600 mt-4 text-center">© 2024 PT Pegadaian (Persero). Seluruh Hak Cipta Dilindungi.</p>
+</div>
+</footer>
+</body></html>

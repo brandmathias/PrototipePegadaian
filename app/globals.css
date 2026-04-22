@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter:
+    "Segoe UI", "Helvetica Neue", Arial, system-ui, -apple-system, BlinkMacSystemFont,
+    sans-serif;
+  --font-manrope:
+    "Trebuchet MS", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image:
+      radial-gradient(circle at top left, rgba(0, 74, 35, 0.08), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(115, 92, 0, 0.08), transparent 28%);
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+@layer utilities {
+  .page-heading-eyebrow {
+    @apply inline-flex items-center rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-primary;
+  }
+
+  .page-heading-title {
+    text-wrap: balance;
+  }
+
+  .page-heading-description {
+    @apply max-w-3xl text-sm leading-7 text-muted-foreground md:text-base;
+  }
+
+  .surface-panel {
+    @apply rounded-[1.6rem] border bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)];
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .surface-panel-soft {
+    @apply rounded-[1.5rem] border bg-surface-low/60;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .hero-surface {
+    @apply overflow-hidden rounded-[2rem] border shadow-[0_20px_60px_rgba(0,0,0,0.04)];
+    border-color: rgba(0, 0, 0, 0.05);
+    background: linear-gradient(135deg, #f9f8f3 0%, #f4f2e8 48%, #eef7f2 100%);
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+  }
+
+  .editorial-grid {
+    background-image:
+      linear-gradient(rgba(191, 201, 189, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(191, 201, 189, 0.18) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    background-clip: padding-box;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.42);
+    background-clip: padding-box;
+  }
+}

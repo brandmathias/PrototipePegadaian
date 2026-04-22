@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Curator - User Authority Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#735c00",
+                        "on-surface": "#1a1c1c",
+                        "on-error": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f1f1f1",
+                        "on-tertiary-fixed": "#400010",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#e9c349",
+                        "secondary-fixed": "#ffe088",
+                        "outline": "#6f7a6f",
+                        "background": "#f9f9f9",
+                        "tertiary": "#712331",
+                        "primary-fixed-dim": "#85d99a",
+                        "on-background": "#1a1c1c",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3f3f3",
+                        "inverse-primary": "#85d99a",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-container": "#8f3a47",
+                        "primary-fixed": "#a0f5b4",
+                        "surface-container": "#eeeeee",
+                        "primary-container": "#006432",
+                        "on-tertiary-container": "#ffbac0",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2b38",
+                        "surface-tint": "#126c39",
+                        "on-primary-fixed-variant": "#005228",
+                        "on-primary-container": "#8ade9f",
+                        "on-secondary-fixed": "#241a00",
+                        "inverse-surface": "#2f3131",
+                        "surface-variant": "#e2e2e2",
+                        "on-secondary-container": "#745c00",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-fixed": "#00210c",
+                        "surface-container-highest": "#e2e2e2",
+                        "tertiary-fixed": "#ffdadc",
+                        "on-surface-variant": "#3f4940",
+                        "primary": "#004a23",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#fed65b",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bfc9bd",
+                        "on-secondary-fixed-variant": "#574500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#1a1c1c]/80 backdrop-blur-md tonal-shift-bottom-bg-[#f3f3f3] shadow-sm dark:shadow-none flex items-center justify-between px-12 py-4 h-20 transition-opacity active:opacity-100 hover:opacity-80">
+<!-- Brand Logo -->
+<div class="font-manrope text-2xl font-black text-[#004a23] dark:text-white tracking-tighter">
+            Sovereign Auctions
+        </div>
+<!-- Navigation Links (Web) -->
+<div class="hidden md:flex items-center gap-8 font-inter text-sm font-medium tracking-normal">
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23]" href="#">Live Floor</a>
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23]" href="#">Global Catalog</a>
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23]" href="#">My Acquisitions</a>
+<a class="text-[#1a1c1c]/70 dark:text-white/70 hover:text-[#004a23]" href="#">Appraisals</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-[#004a23] dark:text-[#4ade80]">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</button>
+</div>
+<button class="hidden md:block bg-[#004a23] text-white px-5 py-2 rounded-md font-inter text-sm font-medium shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:bg-[#00381a] transition-colors">
+                Place Proxy Bid
+            </button>
+<div class="h-10 w-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant/30 flex items-center justify-center">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional corporate headshot of a mature executive in a dark tailored suit against a muted neutral grey background, high-end studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmAx7LrBWViKb0QrOv6GQTkCnILo1TUqZPDwohK07MrlKyrw4YnDDGyEucjeffDmewxivm6KOQWITY3ws5hVsa9eb_2JN9MU7dbQmmc9fwkIqVgZoMtgIomrIbQWgUTlNpt6DLHCFE67XEPXZ6mV9QiavJxFER7EikAmwWNTgR7BAet1npL4P3luVztrWGx-KXBR-sBU49eXlcmsc5C-jt-LC88OD9sL-2PgSpLc3oszjcyrjFHx48kzZ2Hclinb0JTc2AfstBXcY"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-24 px-4 sm:px-6 lg:px-12 max-w-[1600px] mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-12">
+<h1 class="font-headline text-5xl md:text-6xl text-primary tracking-tighter mb-4">User Authority Profile</h1>
+<p class="font-body text-title-md text-on-surface-variant max-w-2xl">Manage your sovereign identity mandates, contact coordinates, and security ledger to ensure uninterrupted auction participation.</p>
+</div>
+<!-- Bento Layout Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Identity Summary -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<!-- Curator Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 flex flex-col items-center text-center">
+<div class="relative w-32 h-32 mb-6">
+<img alt="Profile Avatar" class="w-full h-full object-cover rounded-full shadow-sm" data-alt="professional corporate headshot of a mature executive in a dark tailored suit against a muted neutral grey background, high-end studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3_ajYGxTELEv3rNlpQn20hhOi2T7DhCOErYPteAFiJsjxh7A87UFRlSvEEPFHlkhA38DcIFV1y3yPPyvvztGKpsdRAtBfRiQ0lAf8CG_ir8oPrTlzdcCzZZW_51URNNnBi8ozcTeeAA_Vt84u3bJyER4Nw6s01iqpoz-BvqwtkHQtE90zZuJ_5own9sngboySzCjiwN9kxxjXkbfz2jVIxc1Rcjs6YinqODWLp-Bi7Qm1IH4ALyek65tex564yKo5ch4g6TlDGEU"/>
+<div class="absolute bottom-0 right-0 bg-secondary-container text-on-secondary-container rounded-full p-1 border-2 border-surface-container-lowest" title="Identity Verified">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-1">Alexander Vance</h2>
+<p class="font-body text-sm text-on-surface-variant mb-4">Institutional Benefactor</p>
+<div class="inline-flex items-center gap-2 bg-surface text-on-surface-variant px-4 py-2 rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+<span class="font-label text-xs uppercase tracking-widest font-semibold">Tier 1 Clearance</span>
+</div>
+</div>
+<!-- Support Anchor -->
+<div class="bg-surface-container-low rounded-xl p-8">
+<h3 class="font-headline text-lg font-bold text-primary mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined">gavel</span>
+                        Curatorial Support
+                    </h3>
+<p class="font-body text-sm text-on-surface-variant mb-6">Modifications to heavily regulated fields such as State Identifiers may require manual verification by the central authority.</p>
+<button class="text-primary font-body text-sm font-semibold border-b border-primary pb-0.5 hover:text-primary-container transition-colors">
+                        Initiate Support Protocol
+                    </button>
+</div>
+</div>
+<!-- Right Column: Forms -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Identity Mandate Form -->
+<div class="bg-surface-container-lowest rounded-xl p-8 md:p-10">
+<h3 class="font-headline text-2xl font-bold text-primary mb-8 border-b border-outline-variant/20 pb-4">Identity Mandate</h3>
+<form class="space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Field: Full Name -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Full Legal Designation</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" type="text" value="Alexander Vance"/>
+</div>
+<!-- Field: Email -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Institutional Dispatch (Email)</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" type="email" value="a.vance@sovereign-holdings.int"/>
+</div>
+<!-- Field: Phone -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Primary Comms Cipher (Phone)</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" type="tel" value="+62 811 992 0014"/>
+</div>
+<!-- Field: KTP -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2 flex justify-between">
+<span>State Identifier (KTP)</span>
+<span class="text-secondary opacity-70">Regulated</span>
+</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" readonly="" type="text" value="3171234567890001"/>
+</div>
+</div>
+<div class="pt-6 flex justify-end">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-md font-body text-sm font-semibold shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] hover:opacity-90 transition-opacity" type="button">
+                                Ratify Identity Profile
+                            </button>
+</div>
+</form>
+</div>
+<!-- Security Ledger Form -->
+<div class="bg-surface-container-lowest rounded-xl p-8 md:p-10">
+<h3 class="font-headline text-2xl font-bold text-primary mb-8 border-b border-outline-variant/20 pb-4">Security Ledger</h3>
+<form class="space-y-8 max-w-2xl">
+<!-- Field: Current Password -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Current Access Cipher</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" placeholder="Enter current password" type="password"/>
+</div>
+<!-- Field: New Password -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">New Access Cipher</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" placeholder="Establish new password" type="password"/>
+</div>
+<!-- Field: Confirm Password -->
+<div class="flex flex-col group">
+<label class="font-label text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2">Verify Access Cipher</label>
+<input class="bg-transparent border-0 border-b border-outline-variant/30 text-on-surface font-body text-base py-2 px-0 focus:ring-0 focus:border-primary transition-colors focus:outline-none w-full" placeholder="Re-enter new password" type="password"/>
+</div>
+<div class="pt-6 flex justify-start">
+<button class="bg-transparent text-primary px-8 py-3 rounded-md font-body text-sm font-semibold border border-outline-variant/20 hover:bg-primary/5 transition-colors" type="button">
+                                Enforce New Security Protocol
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#1a1c1c] dark:bg-[#000000] w-full py-12 flex flex-col items-center justify-center gap-6 border-t border-white/5 mt-auto">
+<div class="flex flex-wrap justify-center gap-6 md:gap-12 text-[#735c00] dark:text-[#fed65b] font-inter text-[10px] uppercase tracking-[0.05em]">
+<a class="hover:text-[#fed65b] transition-colors duration-300" href="#">Terms of Auction</a>
+<a class="hover:text-[#fed65b] transition-colors duration-300" href="#">State Disclosure</a>
+<a class="hover:text-[#fed65b] transition-colors duration-300" href="#">Privacy Mandate</a>
+<a class="hover:text-[#fed65b] transition-colors duration-300" href="#">Technical Support</a>
+</div>
+<div class="text-[#735c00] dark:text-[#fed65b] font-inter text-[10px] uppercase tracking-[0.05em] text-center px-4">
+            © 2024 Sovereign Curator Enterprise. Institutional Trust. Absolute Value.
+        </div>
+</footer>
+</body></html>

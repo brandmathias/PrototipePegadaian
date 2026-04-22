@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detail Barang Jaminan | Pegadaian</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-background": "#1a1c1c",
+              "secondary": "#735c00",
+              "on-secondary-fixed": "#241a00",
+              "on-primary-container": "#8ade9f",
+              "tertiary": "#712331",
+              "on-primary-fixed-variant": "#005228",
+              "tertiary-fixed": "#ffdadc",
+              "primary-fixed-dim": "#85d99a",
+              "surface-bright": "#f9f9f9",
+              "surface-container": "#eeeeee",
+              "surface-container-low": "#f3f3f3",
+              "surface-container-highest": "#e2e2e2",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#f1f1f1",
+              "surface-dim": "#dadada",
+              "secondary-fixed-dim": "#e9c349",
+              "on-error-container": "#93000a",
+              "primary": "#004a23",
+              "on-surface-variant": "#3f4940",
+              "error-container": "#ffdad6",
+              "secondary-container": "#fed65b",
+              "tertiary-container": "#8f3a47",
+              "primary-fixed": "#a0f5b4",
+              "on-tertiary-fixed-variant": "#7b2b38",
+              "surface-container-high": "#e8e8e8",
+              "surface": "#f9f9f9",
+              "on-tertiary": "#ffffff",
+              "error": "#ba1a1a",
+              "background": "#f9f9f9",
+              "surface-variant": "#e2e2e2",
+              "on-secondary-container": "#745c00",
+              "surface-tint": "#126c39",
+              "surface-container-lowest": "#ffffff",
+              "on-surface": "#1a1c1c",
+              "inverse-primary": "#85d99a",
+              "on-error": "#ffffff",
+              "on-tertiary-container": "#ffbac0",
+              "tertiary-fixed-dim": "#ffb2b9",
+              "secondary-fixed": "#ffe088",
+              "primary-container": "#006432",
+              "outline": "#6f7a6f",
+              "on-secondary": "#ffffff",
+              "on-tertiary-fixed": "#400010",
+              "on-secondary-fixed-variant": "#574500",
+              "inverse-surface": "#2f3131",
+              "on-primary-fixed": "#00210c",
+              "outline-variant": "#bfc9bd"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<nav class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md shadow-sm dark:shadow-none docked full-width top-0 z-50 sticky">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-black text-emerald-900 dark:text-emerald-50 tracking-tighter font-headline">
+                Pegadaian
+            </div>
+<div class="hidden md:flex items-center space-x-8 text-sm font-medium Inter">
+<a class="text-emerald-800 dark:text-emerald-400 border-b-2 border-emerald-800 dark:border-emerald-400 pb-1" href="#">Katalog</a>
+<a class="text-zinc-600 dark:text-zinc-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors duration-200" href="#">Cara Pembelian</a>
+<a class="text-zinc-600 dark:text-zinc-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors duration-200" href="#">Lokasi Cabang</a>
+<a class="text-zinc-600 dark:text-zinc-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors duration-200" href="#">Bantuan</a>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-zinc-600 dark:text-zinc-400 font-semibold px-4 py-2 hover:bg-zinc-50 transition-all">Masuk</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-md font-bold shadow-sm hover:opacity-90 active:scale-[0.99] transition-all">Daftar</button>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-6 py-8">
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="flex mb-8 text-sm text-on-surface-variant font-medium">
+<ol class="flex items-center space-x-2">
+<li><a class="hover:text-primary transition-colors" href="#">Beranda</a></li>
+<li class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Katalog</a>
+</li>
+<li class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-semibold">Detail Barang Jaminan</span>
+</li>
+</ol>
+</nav>
+<!-- Main Content -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
+<!-- Left Column: Media -->
+<div class="lg:col-span-7 space-y-4">
+<div class="aspect-[4/3] bg-surface-container-low rounded-xl overflow-hidden group relative">
+<img alt="Gold Necklace" class="w-full h-full object-cover" data-alt="Close-up of a high-end luxury gold necklace with intricate craftsmanship resting on a dark velvet display pedestal under soft studio spotlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpRGq9lYPMdpc3WP2qRsej8ZANuDS2z4Wb-GK4EfxzbO5zQXldkT1-bORBl0_kbrThpw1j50vK2c5AdlMfm5PEvC_EY9p3xTbBYtI6M8qmJK153IEv62goSlx_GihCxvzgw4C7IYPL7fhFgrQqwQxfP-7Wv_26b6fRNeGig5KFkVLHurdsWXdD0TNGRn1v0d-lrlc1SQWljsmiS3tepVs88OyFB3hBfRm-iDxAqYTZxpN10sWtBTZ1SVSDjEfLQbmaz3srSWUO3J4"/>
+<div class="absolute top-4 right-4 bg-white/70 backdrop-blur-md px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase text-primary">
+                        ID #4429
+                    </div>
+</div>
+<div class="grid grid-cols-4 gap-4">
+<div class="aspect-square bg-surface-container-lowest rounded-lg border-2 border-primary overflow-hidden cursor-pointer">
+<img alt="Thumbnail 1" class="w-full h-full object-cover" data-alt="Alternative close-up view of the gold necklace chain detail under warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCfPQFWiJAXtr5ID76S1ym1x5oPZyCoIynlEiuq1Yajrzd_AmeefszL5m4GgOj_-cvUBO6Rv1BpgmMUF9R_sNzGmftk9c_KNSdFdK-y2bdfjZaiAaLcOvxenMOQ2TbyjIJLTG0QtcvFy0EPDjkiEDsZwfkGr6mLZKhnmVaDRNzerkGxbZeq9nszLb18LwtEy8IZ9a7xkFVOhcWoN71_uBQvQMP37lhm0dc8NgTcOiPElMT8cv3TTpSFRz62x0EibWr-RcgFggS-7Q"/>
+</div>
+<div class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-primary-fixed transition-all">
+<img alt="Thumbnail 2" class="w-full h-full object-cover" data-alt="Macro photography of the clasp mechanism and jewelry hallmark of the gold necklace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMlkYzccmFMcnRJh8bDdnxP3j-_fBnJ6xcpLHBUJWaDQbwArRHA6E2iRHk7MaroWT7GdwnTxvzWLWHDPu-fn1DLzH_Y8tI83UftijMcz1-wRRuwNT-aQ7OLZrK_7hpzd2775qagNScWHPfOdi8gJuDm0BNcVJoNRg2Dzsdi5rweLms6x_5CQMAXwVE0rzTewpwWI6tlKRasFiG1GFvNZCBVPEGfCmG6hqkPX8LFFl2Y43QNpxL_MZ3Dp2BXAbLTMjJOADPnLUYZ2I"/>
+</div>
+<div class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-primary-fixed transition-all">
+<img alt="Thumbnail 3" class="w-full h-full object-cover" data-alt="Side profile of the gold necklace showing the three-dimensional structure of the pendant links" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeXrQvOwKbn4Em0Xxr0FCeVhLXpRIHjpFKxkkLYshvE6aohiXzyd50JHwkuK_a7q-rheCCTOkZlcEAh-ggaCjoZjBShavRQUbA9pj1B5PuTSo2-seJxbUOx97Tfh910cq9Gs63GeqPagapq_JIhteDBbE9DniExxyMn1NEoLHViC5j9LBN8D4SwzdfU7a7w3Z1dwEv3DTAcwJuyTmtx87WMTY9ssi9EwvnGdYzRIQfa-fKZqFBR_2I1L4qxEySStLtJrsYRdZSYfM"/>
+</div>
+<div class="aspect-square bg-surface-container-lowest rounded-lg overflow-hidden cursor-pointer hover:ring-2 ring-primary-fixed transition-all flex items-center justify-center bg-zinc-200">
+<span class="material-symbols-outlined text-zinc-500">add_photo_alternate</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Info -->
+<div class="lg:col-span-5 flex flex-col">
+<div class="flex items-center space-x-3 mb-4">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2.5 py-1 rounded uppercase tracking-wider">Perhiasan</span>
+<span class="flex items-center text-xs font-semibold text-emerald-700">
+<span class="material-symbols-outlined text-sm mr-1" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        Kondisi: Baik
+                    </span>
+</div>
+<h1 class="text-3xl font-extrabold font-headline text-on-surface leading-tight mb-4 tracking-tight">Kalung Emas Kuning 18K Model Figaro Italy</h1>
+<div class="prose prose-sm text-on-surface-variant font-body mb-8">
+<p>Kalung emas berkualitas tinggi dengan desain Figaro klasik asal Italia. Memiliki kilau yang terjaga dengan sistem pengunci yang sangat aman. Barang ini telah melalui proses verifikasi keaslian dan penilaian karat oleh tim penilai ahli Pegadaian.</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl mb-8">
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-widest mb-1">Harga Jual</p>
+<div class="text-4xl font-extrabold text-primary font-headline tracking-tighter">
+                        Rp 12.450.000
+                    </div>
+</div>
+<div class="space-y-4 mb-8">
+<div class="flex items-start space-x-3 p-4 bg-white rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-primary mt-1">location_on</span>
+<div>
+<p class="text-sm font-bold text-on-surface">Unit: CP Sudirman, Jakarta</p>
+<p class="text-xs text-on-surface-variant">Jl. Jenderal Sudirman No.Kav 44-46, Jakarta Pusat</p>
+</div>
+</div>
+</div>
+<div class="mt-auto space-y-4">
+<button class="w-full bg-primary text-on-primary font-extrabold py-5 rounded-md shadow-lg flex items-center justify-center space-x-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span>AJUKAN PEMBELIAN</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="p-4 bg-secondary-container/20 border-l-4 border-secondary-container rounded-r-lg">
+<div class="flex space-x-3">
+<span class="material-symbols-outlined text-on-secondary-container">info</span>
+<p class="text-xs font-medium text-on-secondary-container leading-relaxed">
+                                Pembayaran dilakukan secara offline di kantor unit terkait. Harap membawa identitas diri yang berlaku saat melakukan penebusan barang.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Details Table -->
+<section class="mb-20">
+<h2 class="text-xl font-extrabold font-headline mb-6 flex items-center">
+<span class="w-8 h-1 bg-primary mr-3"></span>
+                Spesifikasi Detail
+            </h2>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<tbody class="divide-y divide-surface-container">
+<tr>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface-variant bg-surface-container-low w-1/4">Kode Barang</td>
+<td class="px-6 py-4 text-sm font-medium text-on-surface">LEL-GLD-2024-00129</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface-variant bg-surface-container-low">Berat</td>
+<td class="px-6 py-4 text-sm font-medium text-on-surface">14.50 Gram</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface-variant bg-surface-container-low">Dimensi</td>
+<td class="px-6 py-4 text-sm font-medium text-on-surface">Panjang: 45 cm</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface-variant bg-surface-container-low">Kondisi</td>
+<td class="px-6 py-4 text-sm font-medium text-on-surface">Baik (9/10), Minim baret halus</td>
+</tr>
+<tr>
+<td class="px-6 py-4 text-sm font-semibold text-on-surface-variant bg-surface-container-low">Tanggal Tersedia</td>
+<td class="px-6 py-4 text-sm font-medium text-on-surface">12 Oktober 2024</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Related Items -->
+<section class="mb-20">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-xl font-extrabold font-headline">Barang Serupa</h2>
+<a class="text-sm font-bold text-primary hover:underline underline-offset-4" href="#">Lihat Semua</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="aspect-video bg-zinc-200 overflow-hidden">
+<img alt="Item 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Close-up of diamond stud earrings in a white gold setting, sparkling against a dark charcoal background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoqIAHfRWjUEg1mAai9PQyNwDaLUUo8an_FQ_t4m7IePbBNytaybx9ARE43Asc2l2v6OsI_t9uYK8EdmHjjYcrAY3_vRmWBqy_yslW_0vQAwxs8edjVH2QnA7YQ20ae7F1YvWebuneFEyAnkpiEpnaxpU2QKxy4w5cIMC_XyWhl8KBgieIMzt7H_zX8b9Jp9Dzuvn4C2RRM8mR30rB6dt0JSofCaF9ROGm_Y6UmkI0srhjshOkQl2CXulrOoIcOMKUs5Wgvu8ALn4"/>
+</div>
+<div class="p-5">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Perhiasan</span>
+<h3 class="font-bold text-on-surface mt-1 mb-3">Anting Berlian Simpel 1.2ct</h3>
+<p class="text-lg font-extrabold text-primary font-headline tracking-tight">Rp 8.200.000</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="aspect-video bg-zinc-200 overflow-hidden">
+<img alt="Item 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Elegant classic luxury watch with a silver band and black face positioned on a leather surface with soft bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcKEx4YTpoGU7YEiy1S2kiQmjdv7B1dHJA9PHOaDPRMWRng_kaYtFd420VK7bkP4Mh6tifCcIWG5zYbbar2NdKD3VuzYC36fUsNFNsTDcrwJgMZX8FQQT1HXo0oDS4zVAxfGUzLvnU45VAYtRD5U3sUqcEIJtkgEv5m_tBEeMQxQA2PSXiTL3rp2GH63XRL1Qd0AQc3FiM97PSXcyTIAAesvjSqJJtrc4S_PWQu0jlJssE6PXJwmbrfPth4ODlP0qllAZSSUU_peY"/>
+</div>
+<div class="p-5">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Arloji</span>
+<h3 class="font-bold text-on-surface mt-1 mb-3">Seiko Automatic Prospex</h3>
+<p class="text-lg font-extrabold text-primary font-headline tracking-tight">Rp 5.450.000</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+<div class="aspect-video bg-zinc-200 overflow-hidden">
+<img alt="Item 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Stack of small gold bars showing the weight and purity stamps under warm professional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfWVZSYMR1YvaG8xCHd3nspgBRG00G65sV3igCOuma60vmVaivBaq_xrZaDyJVzT4bsIq4lsAk-xL_wws7uKZchiyIePtVS5GZjp7L9vlykIkPLgE281YNDsz3YJ0KkebfiWeXtAxGDJaWvMGgCA_jyPq59v0TBjBMlnpFByAzsEkRMR-Qs9CEg6K-pE1rzwQaEvt9VB9R-12Xmu16LaurMctW7waORFximfTOtX1T6fyCgySYMSML4oZbkTN3o7cu-ZUpMUMmXRQ"/>
+</div>
+<div class="p-5">
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Logam Mulia</span>
+<h3 class="font-bold text-on-surface mt-1 mb-3">Emas Antam 10 Gram (Cert)</h3>
+<p class="text-lg font-extrabold text-primary font-headline tracking-tight">Rp 11.100.000</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 w-full pt-12 pb-8">
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-6">
+<div class="text-lg font-bold text-emerald-900 dark:text-emerald-100 uppercase tracking-wider font-headline">
+                    Pegadaian
+                </div>
+<p class="text-xs Inter text-zinc-500 max-w-sm">
+                    Platform resmi penjualan barang jaminan PT Pegadaian. Kami memberikan akses transparan dan aman untuk mendapatkan barang berkualitas dengan harga terbaik.
+                </p>
+<div class="flex space-x-4">
+<span class="material-symbols-outlined text-zinc-400 cursor-pointer hover:text-emerald-700">social_leaderboard</span>
+<span class="material-symbols-outlined text-zinc-400 cursor-pointer hover:text-emerald-700">public</span>
+<span class="material-symbols-outlined text-zinc-400 cursor-pointer hover:text-emerald-700">chat</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-4">
+<div class="text-xs font-semibold uppercase tracking-wider text-emerald-900 dark:text-emerald-500">Layanan</div>
+<ul class="space-y-2 text-xs text-zinc-500 Inter">
+<li><a class="hover:text-emerald-600 dark:hover:text-emerald-300 underline underline-offset-4 opacity-shift on hover transition-all" href="#">Tentang Kami</a></li>
+<li><a class="hover:text-emerald-600 dark:hover:text-emerald-300 underline underline-offset-4 opacity-shift on hover transition-all" href="#">Pusat Bantuan</a></li>
+<li><a class="hover:text-emerald-600 dark:hover:text-emerald-300 underline underline-offset-4 opacity-shift on hover transition-all" href="#">Kontak Kami</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<div class="text-xs font-semibold uppercase tracking-wider text-emerald-900 dark:text-emerald-500">Legal</div>
+<ul class="space-y-2 text-xs text-zinc-500 Inter">
+<li><a class="hover:text-emerald-600 dark:hover:text-emerald-300 underline underline-offset-4 opacity-shift on hover transition-all" href="#">Syarat &amp; Ketentuan</a></li>
+<li><a class="hover:text-emerald-600 dark:hover:text-emerald-300 underline underline-offset-4 opacity-shift on hover transition-all" href="#">Kebijakan Privasi</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-zinc-100 dark:border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="text-xs Inter text-zinc-500">
+                © 2024 PT Pegadaian. Seluruh Hak Cipta Dilindungi. Terdaftar dan Diawasi oleh OJK.
+            </div>
+<div class="flex items-center space-x-6">
+<div class="h-8 w-24 bg-zinc-200/50 rounded flex items-center justify-center text-[10px] font-bold text-zinc-400">OJK LOGO</div>
+<div class="h-8 w-24 bg-zinc-200/50 rounded flex items-center justify-center text-[10px] font-bold text-zinc-400">BUMN LOGO</div>
+</div>
+</div>
+</footer>
+</body></html>
