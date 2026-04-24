@@ -19,13 +19,16 @@ export const users = pgTable(
     role: text("role").notNull().default("buyer"),
     phoneNumber: text("phone_number"),
     nationalId: text("national_id"),
+    unitId: text("unit_id"),
+    isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
   (table) => ({
     emailIdx: uniqueIndex("user_email_unique").on(table.email),
     phoneIdx: uniqueIndex("user_phone_number_unique").on(table.phoneNumber),
-    nationalIdIdx: uniqueIndex("user_national_id_unique").on(table.nationalId)
+    nationalIdIdx: uniqueIndex("user_national_id_unique").on(table.nationalId),
+    unitIdIdx: index("user_unit_id_idx").on(table.unitId)
   })
 );
 

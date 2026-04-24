@@ -6,6 +6,8 @@ export type AppSessionUser = {
   email: string;
   role: AuthRole;
   phoneNumber?: string | null;
+  unitId?: string | null;
+  isActive?: boolean;
 };
 
 export type BuyerSessionUser = AppSessionUser & {

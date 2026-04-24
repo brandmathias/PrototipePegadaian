@@ -8,6 +8,13 @@
       "when": 1776876511980,
       "tag": "0000_yellow_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776903419272,
+      "tag": "0001_wealthy_jackpot",
+      "breakpoints": true
     }
   ]
 }

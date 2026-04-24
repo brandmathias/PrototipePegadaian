@@ -1,5 +1,7 @@
 import { SuperAdminDashboardPage } from "@/components/pages/superadmin-pages";
+import { getSuperAdminMonitoring } from "@/lib/services/monitoring.service";
 
-export default function Page() {
-  return <SuperAdminDashboardPage />;
+export default async function Page() {
+  const data = await getSuperAdminMonitoring();
+  return <SuperAdminDashboardPage {...data} />;
 }

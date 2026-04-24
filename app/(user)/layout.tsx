@@ -13,7 +13,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        role: session.user.role,
+        role: "buyer",
         phoneNumber:
           "phoneNumber" in session.user && typeof session.user.phoneNumber === "string"
             ? session.user.phoneNumber

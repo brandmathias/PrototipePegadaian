@@ -1,4 +1,5 @@
 import { SuperAdminUnitDetailPage } from "@/components/pages/superadmin-pages";
+import { getUnitById } from "@/lib/services/unit.service";
 
 export default async function Page({
   params
@@ -6,5 +7,11 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <SuperAdminUnitDetailPage unitId={id} />;
+
+  try {
+    const unit = await getUnitById(id);
+    return <SuperAdminUnitDetailPage unit={unit} />;
+  } catch {
+    return <SuperAdminUnitDetailPage unit={null} />;
+  }
 }

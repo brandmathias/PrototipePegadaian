@@ -41,7 +41,9 @@ function toSessionUser(session: NonNullable<Awaited<ReturnType<typeof getServerS
     phoneNumber:
       "phoneNumber" in session.user && typeof session.user.phoneNumber === "string"
         ? session.user.phoneNumber
-        : null
+        : null,
+    unitId: "unitId" in session.user && typeof session.user.unitId === "string" ? session.user.unitId : null,
+    isActive: "isActive" in session.user && typeof session.user.isActive === "boolean" ? session.user.isActive : true
   } satisfies AppSessionUser;
 }
 
@@ -59,6 +61,10 @@ export async function requireRoleSession(role: AuthRole, nextPath?: string) {
 
   if (session.user.role !== role) {
     redirect(getRoleHomePath(session.user.role));
+  }
+
+  if ("isActive" in session.user && session.user.isActive === false) {
+    redirect("/login");
   }
 
   return session;
@@ -89,4 +95,37 @@ export async function getAdminSessionUser(nextPath?: string) {
 export async function getSuperAdminSessionUser(nextPath?: string) {
   const session = await requireSuperAdminSession(nextPath);
   return toSessionUser(session);
+}
+
+export async function requireSuperAdminApiSession() {
+  const session = await getServerSession();
+
+  if (!session?.user) {
+    return {
+      ok: false as const,
+      status: 401,
+      message: "Silakan masuk terlebih dahulu."
+    };
+  }
+
+  if (!isAuthRole(session.user.role) || session.user.role !== "super_admin") {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akses superadmin ditolak."
+    };
+  }
+
+  if ("isActive" in session.user && session.user.isActive === false) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akun Anda sedang nonaktif."
+    };
+  }
+
+  return {
+    ok: true as const,
+    session
+  };
 }
