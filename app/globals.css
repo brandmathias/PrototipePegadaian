@@ -104,6 +104,39 @@
   .feedback-pop {
     animation: feedback-pop 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
   }
+
+  .toast-progress-bar {
+    animation: toast-progress var(--toast-duration, 4200ms) linear forwards;
+  }
+
+  .interactive-card {
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease,
+      border-color 220ms ease,
+      background-color 220ms ease;
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+  }
+
+  .interactive-tap {
+    touch-action: manipulation;
+  }
+
+  .interactive-tap:active {
+    transform: scale(0.985);
+  }
+
+  .section-reveal {
+    animation: section-reveal 420ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  }
+
+  .status-pulse {
+    animation: status-pulse 1800ms ease-out infinite;
+  }
 }
 
 @keyframes toast-enter {
@@ -127,5 +160,58 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes status-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+
+  70% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

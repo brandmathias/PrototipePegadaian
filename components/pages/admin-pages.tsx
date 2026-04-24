@@ -25,6 +25,7 @@ import {
   Wallet
 } from "lucide-react";
 
+import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,30 @@ import {
   getAdminTransactionById
 } from "@/lib/mock-data";
 
+type AdminInventoryItem = Record<string, any>;
+type AdminAuctionItem = Record<string, any>;
+type AdminTransactionItem = Record<string, any>;
+type AdminBlacklistItem = Record<string, any>;
+
+function dateAfter(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function buildBarangPayload(item?: AdminInventoryItem) {
+  return {
+    name: item?.name ?? "Barang Gadai Baru",
+    category: item?.category ?? "Perhiasan",
+    condition: item?.condition ?? "baik",
+    description: item?.description ?? "Barang gadai dicatat oleh admin unit untuk diproses sesuai workflow PRD.",
+    appraisalValue: Number(item?.appraisalValue ?? item?.price ?? 1000000),
+    loanValue: Number(item?.loanValue ?? 750000),
+    ownerName: item?.ownerName ?? "Nasabah Unit",
+    customerNumber: item?.customerNumber ?? `NAS-${Date.now().toString().slice(-6)}`,
+    pawnedAt: String(item?.pawnedAt ?? new Date().toISOString().slice(0, 10)),
+    dueDate: String(item?.dueDate ?? dateAfter(30))
+  };
+}
+
 function AdminPageIntro({
   eyebrow,
   title,
@@ -54,7 +79,7 @@ function AdminPageIntro({
   actions?: ReactNode;
 }) {
   return (
-    <section className="hero-surface p-5 sm:p-6 lg:p-7">
+    <section className="hero-surface section-reveal p-5 sm:p-6 lg:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-4xl">
           <p className="page-heading-eyebrow">
@@ -113,7 +138,7 @@ function DetailTile({
   value: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-[#fbfbfb] p-4 sm:p-5">
+    <div className="interactive-card rounded-2xl border border-black/10 bg-[#fbfbfb] p-4 sm:p-5">
       <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/45 sm:text-xs">
         {label}
       </p>
@@ -124,7 +149,7 @@ function DetailTile({
 
 function EmptyPanel({ text }: { text: string }) {
   return (
-    <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm text-black/55">
+    <div className="feedback-pop rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm text-black/55">
       {text}
     </div>
   );
@@ -144,7 +169,7 @@ function WorkflowActionCard({
   variant?: "default" | "secondary";
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-black/10 bg-[#fafaf8] p-5">
+    <div className="interactive-card section-reveal rounded-[1.5rem] border border-black/10 bg-[#fafaf8] p-5">
       <div className="inline-flex size-11 items-center justify-center rounded-2xl bg-white text-[#0a6a49] shadow-sm">
         <Icon className="size-5" />
       </div>
@@ -161,26 +186,26 @@ function WorkflowActionCard({
   );
 }
 
-export function AdminInventoryPage() {
+export function AdminInventoryPage({ items = adminInventory }: { items?: AdminInventoryItem[] }) {
   const statusGroups = [
     {
       label: "GADAI",
-      items: adminInventory.filter((item) => item.status === "GADAI"),
+      items: items.filter((item) => item.status === "GADAI"),
       description: "Masih berada dalam masa tebus dan perlu dipantau kedaluwarsanya."
     },
     {
       label: "JAMINAN",
-      items: adminInventory.filter((item) => item.status === "JAMINAN"),
+      items: items.filter((item) => item.status === "JAMINAN"),
       description: "Sudah masuk aset unit dan siap disiapkan untuk penjualan."
     },
     {
       label: "DIPASARKAN",
-      items: adminInventory.filter((item) => item.status === "DIPASARKAN"),
+      items: items.filter((item) => item.status === "DIPASARKAN"),
       description: "Sudah tayang di katalog dan sedang berjalan di pasar."
     },
     {
       label: "GAGAL",
-      items: adminInventory.filter((item) => item.status === "GAGAL"),
+      items: items.filter((item) => item.status === "GAGAL"),
       description: "Perlu evaluasi ulang sebelum dipasarkan kembali."
     }
   ];
@@ -251,7 +276,7 @@ export function AdminInventoryPage() {
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-black/40" />
             <Input
               className="h-12 rounded-2xl bg-[#f3f3f3] pl-12 text-sm sm:text-base"
-              placeholder="Cari kode, nama barang, kategori, atau nomor nasabah..."
+              placeholder="Cari kode, nama barang, kategori, atau nomor nasabah…"
             />
           </div>
         </div>
@@ -270,7 +295,7 @@ export function AdminInventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {adminInventory.map((item) => (
+              {items.map((item) => (
                 <tr className="border-t border-black/10 text-sm sm:text-base" key={item.id}>
                   <td className="px-6 py-4 font-semibold text-[#0a6a49]">{item.code}</td>
                   <td className="px-6 py-4">
@@ -404,18 +429,27 @@ export function AdminInventoryCreatePage() {
             </CardContent>
           </Card>
 
-          <Button className="h-12 w-full rounded-2xl text-sm sm:text-base">
+          <AdminUnitActionButton
+            className="h-12 w-full rounded-2xl text-sm sm:text-base"
+            endpoint="/api/admin/barang"
+            pendingTitle="Menyimpan barang baru"
+            pendingDescription="Data utama dan status awal barang sedang direkam ke sistem unit."
+            payload={buildBarangPayload()}
+            redirectTo="/admin/barang"
+            successDescription="Barang baru sudah masuk ke daftar gadai aktif unit."
+            successTitle="Barang gadai tersimpan"
+          >
             <PackagePlus className="size-4" />
             Simpan Barang Gadai
-          </Button>
+          </AdminUnitActionButton>
         </div>
       </div>
     </div>
   );
 }
 
-export function AdminInventoryDetailPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
 
   const actions =
     item.status === "GADAI"
@@ -578,8 +612,8 @@ export function AdminInventoryDetailPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminInventoryEditPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryEditPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
 
   return (
     <div className="space-y-6">
@@ -640,7 +674,19 @@ export function AdminInventoryEditPage({ itemId }: { itemId?: string }) {
               </Button>
             </CardContent>
           </Card>
-          <Button className="h-12 w-full rounded-2xl text-sm sm:text-base">Simpan Perubahan</Button>
+          <AdminUnitActionButton
+            className="h-12 w-full rounded-2xl text-sm sm:text-base"
+            endpoint={`/api/admin/barang/${item.id}`}
+            method="PUT"
+            pendingTitle="Memperbarui data barang"
+            pendingDescription="Perubahan data barang sedang diselaraskan dengan workflow unit."
+            payload={buildBarangPayload(item)}
+            refresh
+            successDescription="Data barang sudah diperbarui dan siap dilanjutkan sesuai statusnya."
+            successTitle="Perubahan barang tersimpan"
+          >
+            Simpan Perubahan
+          </AdminUnitActionButton>
         </div>
       </div>
     </div>
@@ -684,8 +730,8 @@ function WorkflowFormShell({
   );
 }
 
-export function AdminInventoryExtendPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryExtendPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
 
   return (
     <WorkflowFormShell
@@ -721,7 +767,21 @@ export function AdminInventoryExtendPage({ itemId }: { itemId?: string }) {
             <p>- Pastikan barang masih berada dalam masa gadai aktif.</p>
             <p>- Tanggal jatuh tempo baru harus lebih akhir dari jadwal yang berjalan saat ini.</p>
             <p>- Riwayat perpanjangan perlu dicatat agar pelacakan proses tetap lengkap.</p>
-            <Button className="mt-4 w-full rounded-2xl">Simpan perpanjangan</Button>
+            <AdminUnitActionButton
+              className="mt-4 w-full rounded-2xl"
+              endpoint={`/api/admin/barang/${item.id}/perpanjang`}
+              pendingTitle="Mencatat perpanjangan"
+              pendingDescription="Tanggal jatuh tempo baru sedang diperbarui di riwayat barang."
+              payload={{
+                newDueDate: dateAfter(30),
+                note: "Perpanjangan dicatat melalui dashboard admin unit."
+              }}
+              redirectTo={`/admin/barang/${item.id}`}
+              successDescription="Tanggal jatuh tempo sudah diperbarui."
+              successTitle="Perpanjangan tersimpan"
+            >
+              Simpan perpanjangan
+            </AdminUnitActionButton>
           </CardContent>
         </Card>
       </div>
@@ -729,8 +789,8 @@ export function AdminInventoryExtendPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminInventoryRedeemPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryRedeemPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
 
   return (
     <WorkflowFormShell
@@ -770,7 +830,25 @@ export function AdminInventoryRedeemPage({ itemId }: { itemId?: string }) {
             <p>- Barang ditandai selesai ditebus.</p>
             <p>- Setelah itu, barang tidak lagi masuk ke alur penjualan atau lelang.</p>
             <p>- Riwayat tetap tersimpan untuk kebutuhan pelacakan internal.</p>
-            <Button className="mt-4 w-full rounded-2xl">Konfirmasi Penebusan</Button>
+            <AdminUnitActionButton
+              className="mt-4 w-full rounded-2xl"
+              confirmDescription="Setelah penebusan dikonfirmasi, barang keluar dari alur penjualan unit dan tercatat sebagai riwayat selesai."
+              confirmLabel="Ya, konfirmasi tebus"
+              confirmTitle="Konfirmasi penebusan barang"
+              confirmVariant="destructive"
+              endpoint={`/api/admin/barang/${item.id}/tebus`}
+              pendingDescription="Sistem sedang menutup alur barang ini sebagai barang yang ditebus nasabah."
+              pendingTitle="Mengonfirmasi penebusan"
+              payload={{
+                redeemedAt: new Date().toISOString().slice(0, 10),
+                reference: `TEBUS-${Date.now().toString().slice(-6)}`
+              }}
+              redirectTo={`/admin/barang/${item.id}`}
+              successDescription="Barang keluar dari alur penjualan dan tersimpan sebagai riwayat tebus."
+              successTitle="Penebusan dikonfirmasi"
+            >
+              Konfirmasi Penebusan
+            </AdminUnitActionButton>
           </CardContent>
         </Card>
       </div>
@@ -778,8 +856,8 @@ export function AdminInventoryRedeemPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminInventoryConvertPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[1].id);
+export function AdminInventoryConvertPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[1].id);
 
   return (
     <WorkflowFormShell
@@ -810,7 +888,20 @@ export function AdminInventoryConvertPage({ itemId }: { itemId?: string }) {
             <p>- Perubahan di halaman ini memindahkan barang dari masa gadai ke aset unit.</p>
             <p>- Setelah dipindahkan, barang tidak kembali ke tahap gadai.</p>
             <p>- Langkah berikutnya adalah menyiapkan skema penjualan saat barang siap ditawarkan.</p>
-            <Button className="mt-4 w-full rounded-2xl">Pindahkan ke aset unit</Button>
+            <AdminUnitActionButton
+              className="mt-4 w-full rounded-2xl"
+              confirmDescription="Barang akan dipindahkan ke aset unit dan langkah berikutnya adalah menyiapkannya untuk pemasaran."
+              confirmLabel="Pindahkan sekarang"
+              confirmTitle="Jadikan barang sebagai aset unit"
+              endpoint={`/api/admin/barang/${item.id}/jadikan-jaminan`}
+              pendingDescription="Status barang sedang dipindahkan dari masa tebus ke aset unit."
+              pendingTitle="Memindahkan ke aset unit"
+              redirectTo={`/admin/barang/${item.id}`}
+              successDescription="Barang sudah berpindah ke aset unit dan siap disiapkan untuk pemasaran."
+              successTitle="Barang menjadi aset unit"
+            >
+              Pindahkan ke aset unit
+            </AdminUnitActionButton>
           </CardContent>
         </Card>
       </div>
@@ -818,8 +909,8 @@ export function AdminInventoryConvertPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminInventoryMarketPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[2].id);
+export function AdminInventoryMarketPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[2].id);
 
   return (
     <WorkflowFormShell
@@ -871,7 +962,21 @@ export function AdminInventoryMarketPage({ itemId }: { itemId?: string }) {
               <Input className="h-12" readOnly value="Terisi otomatis mengikuti durasi" />
             </div>
             <div className="md:col-span-2">
-              <Button className="h-12 w-full rounded-2xl">Tayangkan ke katalog</Button>
+            <AdminUnitActionButton
+              className="h-12 w-full rounded-2xl"
+              endpoint={`/api/admin/barang/${item.id}/pasarkan`}
+              pendingDescription="Sistem sedang menyiapkan tayangan katalog dan detail harga awal."
+              pendingTitle="Mempublikasikan barang"
+              payload={{
+                mode: "fixed_price",
+                price: Number(item.price ?? item.appraisalValue ?? 1000000)
+              }}
+              redirectTo="/admin/lelang"
+              successDescription="Barang sudah dipublikasikan sebagai fixed price."
+              successTitle="Barang tayang di katalog"
+            >
+              Tayangkan ke katalog
+            </AdminUnitActionButton>
             </div>
           </div>
         </Card>
@@ -880,8 +985,8 @@ export function AdminInventoryMarketPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminInventoryRelistPage({ itemId }: { itemId?: string }) {
-  const item = getAdminInventoryById(itemId ?? adminInventory[7].id);
+export function AdminInventoryRelistPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
+  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[7].id);
 
   return (
     <WorkflowFormShell
@@ -916,10 +1021,22 @@ export function AdminInventoryRelistPage({ itemId }: { itemId?: string }) {
               <FieldLabel>Catatan evaluasi</FieldLabel>
               <Textarea className="min-h-32" placeholder="Tambahkan catatan evaluasi bila ada perubahan harga, mode, atau pertimbangan lain." />
             </div>
-            <Button className="h-12 w-full rounded-2xl">
+            <AdminUnitActionButton
+              className="h-12 w-full rounded-2xl"
+              endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
+              pendingDescription="Strategi pemasaran baru sedang diterapkan agar barang bisa tayang kembali."
+              pendingTitle="Menayangkan ulang barang"
+              payload={{
+                mode: "fixed_price",
+                price: Number(item.price ?? item.appraisalValue ?? 1000000)
+              }}
+              redirectTo="/admin/lelang"
+              successDescription="Barang sudah aktif kembali dengan strategi pemasaran baru."
+              successTitle="Barang ditayangkan ulang"
+            >
               <RotateCcw className="size-4" />
               Tayangkan ulang barang
-            </Button>
+            </AdminUnitActionButton>
           </div>
         </Card>
       </div>
@@ -927,7 +1044,7 @@ export function AdminInventoryRelistPage({ itemId }: { itemId?: string }) {
   );
 }
 
-export function AdminAuctionListPage() {
+export function AdminAuctionListPage({ auctions = adminAuctions }: { auctions?: AdminAuctionItem[] }) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
@@ -937,7 +1054,7 @@ export function AdminAuctionListPage() {
       />
 
       <div className="grid gap-5 lg:grid-cols-3">
-        {adminAuctions.map((auction) => (
+        {auctions.map((auction) => (
           <Card className="rounded-2xl border border-black/10" key={auction.id}>
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
@@ -971,8 +1088,8 @@ export function AdminAuctionListPage() {
   );
 }
 
-export function AdminAuctionDetailPage({ auctionId }: { auctionId?: string }) {
-  const auction = getAdminAuctionById(auctionId ?? adminAuctions[0].id);
+export function AdminAuctionDetailPage({ auctionId, auction: providedAuction }: { auctionId?: string; auction?: AdminAuctionItem }) {
+  const auction = providedAuction ?? getAdminAuctionById(auctionId ?? adminAuctions[0].id);
 
   return (
     <div className="space-y-6">
@@ -1025,7 +1142,7 @@ export function AdminAuctionDetailPage({ auctionId }: { auctionId?: string }) {
   );
 }
 
-export function AdminTransactionsPage() {
+export function AdminTransactionsPage({ transactions = adminTransactions }: { transactions?: AdminTransactionItem[] }) {
   const filters = [
     "SEMUA",
     "MENUNGGU_PEMBAYARAN",
@@ -1076,7 +1193,7 @@ export function AdminTransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {adminTransactions.map((transaction) => (
+              {transactions.map((transaction) => (
                 <tr className="border-t border-black/10 text-sm sm:text-base" key={transaction.id}>
                   <td className="px-6 py-4 font-semibold text-[#0a6a49]">{transaction.id}</td>
                   <td className="px-6 py-4">{transaction.buyer}</td>
@@ -1106,8 +1223,8 @@ export function AdminTransactionsPage() {
   );
 }
 
-export function AdminTransactionDetailPage({ transactionId }: { transactionId?: string }) {
-  const transaction = getAdminTransactionById(transactionId ?? adminTransactions[0].id);
+export function AdminTransactionDetailPage({ transactionId, transaction: providedTransaction }: { transactionId?: string; transaction?: AdminTransactionItem }) {
+  const transaction = providedTransaction ?? getAdminTransactionById(transactionId ?? adminTransactions[0].id);
   const canPrint = transaction.printableReceipt || transaction.status === "LUNAS";
 
   return (
@@ -1186,24 +1303,69 @@ export function AdminTransactionDetailPage({ transactionId }: { transactionId?: 
                 <Textarea className="min-h-28" placeholder="Isi bila ada alasan penolakan atau catatan lanjutan untuk tim." />
               </div>
 
-              <Button className="h-12 w-full rounded-2xl">
+              <AdminUnitActionButton
+                className="h-12 w-full rounded-2xl"
+                confirmDescription="Setelah diverifikasi, transaksi akan ditandai lunas dan barang otomatis masuk status terjual."
+                confirmLabel="Setujui pembayaran"
+                confirmTitle="Verifikasi pembayaran transfer"
+                endpoint={`/api/admin/transaksi/${transaction.id}/verifikasi`}
+                pendingDescription="Bukti transfer sedang diperiksa dan status transaksi akan diperbarui."
+                pendingTitle="Memverifikasi pembayaran"
+                payload={{ reference: transaction.reference === "-" ? `REF-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                refresh
+                successDescription="Transaksi sudah lunas dan barang ditandai terjual."
+                successTitle="Pembayaran disetujui"
+              >
                 <FileCheck2 className="size-4" />
                 Setujui pembayaran transfer
-              </Button>
-              <Button className="h-12 w-full rounded-2xl" variant="secondary">
+              </AdminUnitActionButton>
+              <AdminUnitActionButton
+                className="h-12 w-full rounded-2xl"
+                confirmDescription="Gunakan ini hanya jika dana benar-benar sudah diterima langsung oleh petugas unit."
+                confirmLabel="Ya, dana sudah diterima"
+                confirmTitle="Konfirmasi bayar langsung di unit"
+                endpoint={`/api/admin/transaksi/${transaction.id}/konfirmasi-langsung`}
+                pendingDescription="Status pembayaran langsung sedang ditutup sebagai transaksi selesai."
+                pendingTitle="Mengonfirmasi bayar langsung"
+                payload={{ reference: transaction.reference === "-" ? `CASH-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                refresh
+                successDescription="Pembayaran langsung sudah dikonfirmasi oleh unit."
+                successTitle="Pembayaran langsung selesai"
+                variant="secondary"
+              >
                 <Wallet className="size-4" />
                 Selesaikan bayar di unit
-              </Button>
-              <Button className="h-12 w-full rounded-2xl" variant="destructive">
+              </AdminUnitActionButton>
+              <AdminUnitActionButton
+                className="h-12 w-full rounded-2xl"
+                confirmDescription="Pembeli akan diminta mengunggah bukti transfer yang baru atau lebih jelas."
+                confirmLabel="Kembalikan bukti"
+                confirmTitle="Kembalikan bukti pembayaran"
+                confirmVariant="destructive"
+                endpoint={`/api/admin/transaksi/${transaction.id}/tolak-bukti`}
+                pendingDescription="Sistem sedang mengirimkan catatan revisi agar pembeli memperbaiki bukti transfer."
+                pendingTitle="Mengembalikan bukti pembayaran"
+                payload={{ reason: "Bukti pembayaran perlu diperbaiki oleh pembeli." }}
+                refresh
+                successDescription="Pembeli perlu mengunggah bukti pembayaran yang benar."
+                successTitle="Bukti pembayaran dikembalikan"
+                variant="destructive"
+              >
                 <FileWarning className="size-4" />
                 Kembalikan untuk perbaikan
-              </Button>
+              </AdminUnitActionButton>
 
               {canPrint ? (
-                <Button className="h-12 w-full rounded-2xl" variant="accent">
+                <AdminUnitActionButton
+                  className="h-12 w-full rounded-2xl"
+                  pendingLabel="Membuka cetak…"
+                  successTitle="Nota siap dicetak"
+                  successDescription="Preview nota dibuka agar bisa langsung dicetak atau disimpan."
+                  variant="accent"
+                >
                   <Printer className="size-4" />
                   Cetak nota
-                </Button>
+                </AdminUnitActionButton>
               ) : (
                 <div className="rounded-2xl border border-dashed border-black/10 bg-[#fbfbfa] p-4 text-sm text-black/55">
                   Nota baru dapat dicetak setelah transaksi selesai diverifikasi.
@@ -1217,7 +1379,7 @@ export function AdminTransactionDetailPage({ transactionId }: { transactionId?: 
   );
 }
 
-export function AdminBlacklistPage() {
+export function AdminBlacklistPage({ entries = adminBlacklist }: { entries?: AdminBlacklistItem[] }) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
@@ -1227,7 +1389,7 @@ export function AdminBlacklistPage() {
       />
 
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        {adminBlacklist.map((entry) => (
+        {entries.map((entry) => (
           <Card className="rounded-2xl border border-black/10" key={entry.userId}>
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
@@ -1265,8 +1427,8 @@ export function AdminBlacklistPage() {
   );
 }
 
-export function AdminBlacklistDetailPage({ userId }: { userId?: string }) {
-  const entry = getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
+export function AdminBlacklistDetailPage({ userId, entry: providedEntry }: { userId?: string; entry?: AdminBlacklistItem }) {
+  const entry = providedEntry ?? getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
 
   return (
     <div className="space-y-6">
@@ -1298,7 +1460,7 @@ export function AdminBlacklistDetailPage({ userId }: { userId?: string }) {
             <CardTitle className="text-xl sm:text-[1.45rem]">Riwayat Tindakan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {entry.history.map((history) => (
+            {(entry.history ?? []).map((history: { date: string; action: string; note: string }) => (
               <div className="rounded-[1.4rem] border border-black/10 bg-[#fafaf8] p-4" key={`${history.date}-${history.action}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="font-semibold text-black/85">{history.action}</p>
@@ -1314,8 +1476,8 @@ export function AdminBlacklistDetailPage({ userId }: { userId?: string }) {
   );
 }
 
-export function AdminBlacklistExtendPage({ userId }: { userId?: string }) {
-  const entry = getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
+export function AdminBlacklistExtendPage({ userId, entry: providedEntry }: { userId?: string; entry?: AdminBlacklistItem }) {
+  const entry = providedEntry ?? getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
 
   return (
     <div className="space-y-6">
@@ -1351,10 +1513,26 @@ export function AdminBlacklistExtendPage({ userId }: { userId?: string }) {
               <FieldLabel>Alasan perpanjangan</FieldLabel>
               <Textarea className="min-h-32" placeholder="Tuliskan alasan yang jelas agar tim lain mudah menelusuri keputusan ini." />
             </div>
-            <Button className="h-12 w-full rounded-2xl">
+            <AdminUnitActionButton
+              className="h-12 w-full rounded-2xl"
+              confirmDescription="Perpanjangan blokir akan langsung memperbarui masa pembatasan pengguna di unit ini."
+              confirmLabel="Simpan perpanjangan"
+              confirmTitle="Perpanjang masa pembatasan"
+              confirmVariant="destructive"
+              endpoint={`/api/admin/blacklist/${entry.userId}/perpanjang`}
+              pendingDescription="Tanggal berakhir blokir dan catatan alasan sedang diperbarui."
+              pendingTitle="Memperpanjang blacklist"
+              payload={{
+                blockedUntil: dateAfter(30),
+                reason: "Masa blokir diperpanjang berdasarkan evaluasi admin unit."
+              }}
+              redirectTo={`/admin/blacklist/${entry.userId}`}
+              successDescription="Masa pembatasan akun sudah diperbarui."
+              successTitle="Blacklist diperpanjang"
+            >
               <ShieldEllipsis className="size-4" />
               Simpan pembaruan blokir
-            </Button>
+            </AdminUnitActionButton>
           </div>
         </Card>
       </div>

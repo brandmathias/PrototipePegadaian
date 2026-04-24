@@ -5,7 +5,6 @@ import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
   Ban,
-  Bell,
   Building2,
   CircleHelp,
   FileCheck2,
@@ -23,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
+import { AlertCenter } from "@/components/ui/alert-center";
 import { cn } from "@/lib/utils";
 import type { AuthRole } from "@/lib/auth/guards";
 
@@ -225,17 +225,14 @@ export function DashboardShell({
                     className="h-14 w-full rounded-[1.35rem] border border-black/5 bg-[#eceae7] pl-12 pr-4 text-base outline-none transition focus:border-[#0b704f]/30 focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0f7a57]/30"
                     id="admin-search"
                     name="adminSearch"
-                    placeholder="Cari transaksi atau barang..."
+                    placeholder="Cari transaksi atau barang…"
                     type="search"
                   />
                 </div>
                 <div className="flex items-center justify-end gap-2">
-                  <button
-                    aria-label="Buka notifikasi"
-                    className="inline-flex size-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]"
-                  >
-                    <Bell aria-hidden="true" className="size-5" />
-                  </button>
+                  <AlertCenter
+                    scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"}
+                  />
                   {profileHref ? (
                     <Link
                       aria-label="Buka profil admin"

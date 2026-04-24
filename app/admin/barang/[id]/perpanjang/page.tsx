@@ -1,4 +1,6 @@
 import { AdminInventoryExtendPage } from "@/components/pages/admin-pages";
+import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
+import { getAdminBarangById } from "@/lib/services/admin-barang.service";
 
 export default async function Page({
   params
@@ -6,6 +8,8 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const { unitId } = await getAdminUnitPageContext();
+  const item = await getAdminBarangById(unitId, id);
 
-  return <AdminInventoryExtendPage itemId={id} />;
+  return <AdminInventoryExtendPage item={item} itemId={id} />;
 }

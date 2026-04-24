@@ -15,16 +15,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminBlacklist, adminInventory, adminSummary, adminTransactions } from "@/lib/mock-data";
 
-export function AdminDashboardPage() {
-  const gadai = adminInventory.filter((item) => item.status === "GADAI");
-  const jaminan = adminInventory.filter((item) => item.status === "JAMINAN");
-  const dipasarkan = adminInventory.filter((item) => item.status === "DIPASARKAN");
-  const gagal = adminInventory.filter((item) => item.status === "GAGAL");
-  const menungguPembayaranBarang = adminInventory.filter(
+type AdminDashboardData = {
+  summary?: { unitName: string; subtitle?: string; activeBank: string };
+  inventory?: Array<any>;
+  transactions?: Array<any>;
+  blacklist?: Array<any>;
+};
+
+export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
+  const summary = data?.summary ?? adminSummary;
+  const inventory = data?.inventory ?? adminInventory;
+  const transactions = data?.transactions ?? adminTransactions;
+  const blacklist = data?.blacklist ?? adminBlacklist;
+
+  const gadai = inventory.filter((item) => item.status === "GADAI");
+  const jaminan = inventory.filter((item) => item.status === "JAMINAN");
+  const dipasarkan = inventory.filter((item) => item.status === "DIPASARKAN");
+  const gagal = inventory.filter((item) => item.status === "GAGAL");
+  const menungguPembayaranBarang = inventory.filter(
     (item) => item.status === "MENUNGGU_PEMBAYARAN"
   );
 
-  const transactionQueue = adminTransactions.filter((transaction) =>
+  const transactionQueue = transactions.filter((transaction) =>
     ["BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG", "MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI"].includes(
       transaction.status
     )
@@ -87,7 +99,7 @@ export function AdminDashboardPage() {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <section className="hero-surface p-6 sm:p-7 lg:p-8">
+      <section className="hero-surface section-reveal p-6 sm:p-7 lg:p-8">
         <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr] xl:items-start">
           <div className="max-w-4xl space-y-5">
             <div className="flex flex-wrap items-center gap-3">
@@ -95,12 +107,12 @@ export function AdminDashboardPage() {
                 Ringkasan Hari Ini
               </span>
               <span className="rounded-full border border-[#cfe2d7] bg-white/70 px-4 py-2 text-xs font-semibold text-[#0a6a49]/80">
-                Rekening aktif {adminSummary.activeBank}
+                Rekening aktif {summary.activeBank}
               </span>
             </div>
             <div>
               <h2 className="page-heading-title font-headline text-[2.35rem] font-black leading-[0.96] tracking-tight text-[#085a41] sm:text-[3rem] xl:text-[4rem]">
-                {adminSummary.unitName}
+                {summary.unitName}
               </h2>
               <p className="mt-4 max-w-3xl text-base leading-7 text-foreground/72 sm:text-lg">
                 Halaman ini membantu tim unit memantau pekerjaan yang paling penting, dari
@@ -124,7 +136,7 @@ export function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-[#d2e4da] bg-white/80 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur">
+          <div className="interactive-card rounded-[1.75rem] border border-[#d2e4da] bg-white/80 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur">
             <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/58">
               Checklist Harian
             </p>
@@ -142,7 +154,7 @@ export function AdminDashboardPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <article
-            className={`rounded-[1.6rem] border bg-gradient-to-br p-5 shadow-[0_14px_34px_rgba(0,0,0,0.035)] sm:p-6 ${card.tone}`}
+            className={`interactive-card section-reveal rounded-[1.6rem] border bg-gradient-to-br p-5 shadow-[0_14px_34px_rgba(0,0,0,0.035)] sm:p-6 ${card.tone}`}
             key={card.title}
           >
             <div className="flex items-start justify-between gap-4">
@@ -162,7 +174,7 @@ export function AdminDashboardPage() {
       <section className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-5">
           {workflowLanes.map((lane) => (
-            <Card className="overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]" key={lane.title}>
+            <Card className="section-reveal overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]" key={lane.title}>
               <CardHeader className="border-b border-black/8">
                 <CardTitle>{lane.title}</CardTitle>
                 <p className="text-sm leading-6 text-black/60">{lane.description}</p>
@@ -171,7 +183,7 @@ export function AdminDashboardPage() {
                 {lane.items.length ? (
                   lane.items.map((item) => (
                     <div
-                      className="rounded-[1.4rem] border border-black/8 bg-[#fbfbf8] p-4"
+                      className="interactive-card rounded-[1.4rem] border border-black/8 bg-[#fbfbf8] p-4"
                       key={item.id}
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -206,7 +218,7 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="space-y-5">
-          <Card className="overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]">
+          <Card className="section-reveal overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]">
             <CardHeader className="border-b border-black/8">
               <CardTitle>Pembayaran yang Perlu Ditangani</CardTitle>
               <p className="text-sm leading-6 text-black/60">
@@ -216,7 +228,7 @@ export function AdminDashboardPage() {
             <CardContent className="space-y-4 p-5 sm:p-6">
               {transactionQueue.map((transaction) => (
                 <div
-                  className="rounded-[1.4rem] border border-black/8 bg-[#fbfbf8] p-4"
+                  className="interactive-card rounded-[1.4rem] border border-black/8 bg-[#fbfbf8] p-4"
                   key={transaction.id}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -242,7 +254,7 @@ export function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]">
+          <Card className="section-reveal overflow-hidden border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]">
             <CardHeader className="border-b border-black/8">
               <CardTitle>Pengingat Pelanggaran Lelang</CardTitle>
               <p className="text-sm leading-6 text-black/60">
@@ -268,7 +280,7 @@ export function AdminDashboardPage() {
                 <div className="flex items-start gap-3">
                   <Clock3 className="mt-1 size-5 text-[#0a6a49]" />
                   <div className="space-y-2 text-sm leading-6 text-black/65">
-                    <p>{adminBlacklist.filter((entry) => entry.status === "AKTIF").length} akun sedang dibatasi di unit ini.</p>
+                    <p>{blacklist.filter((entry) => entry.status === "AKTIF").length} akun sedang dibatasi di unit ini.</p>
                     <p>Mereka masih dapat membeli fixed price, tetapi akses ikut lelang Vickrey tetap ditahan sampai masa blokir berakhir.</p>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import {
   CheckCircle2,
   Clock3,
@@ -261,7 +262,9 @@ export function LoginPage() {
           nota pembayaran.
         </p>
       </div>
-      <LoginForm />
+      <Suspense fallback={<div className="rounded-2xl bg-surface-low p-4 text-sm text-muted-foreground">Menyiapkan formulir masuk...</div>}>
+        <LoginForm />
+      </Suspense>
     </Card>
   );
 }
@@ -274,7 +277,9 @@ export function RegisterPage() {
         eyebrow="Registrasi pembeli"
         title="Buat akun pembeli baru"
       />
-      <RegisterForm />
+      <Suspense fallback={<div className="rounded-2xl bg-surface-low p-4 text-sm text-muted-foreground">Menyiapkan formulir registrasi...</div>}>
+        <RegisterForm />
+      </Suspense>
     </Card>
   );
 }

@@ -9,14 +9,14 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /temukan barang lelang terpercaya/i
+        name: /jelajahi barang jaminan/i
       })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /jelajahi katalog/i })
     ).toHaveAttribute("href", "/katalog");
     expect(
-      screen.getByRole("heading", { name: /barang unggulan minggu ini/i })
+      screen.getByRole("heading", { name: /cuplikan barang/i })
     ).toBeInTheDocument();
   });
 });

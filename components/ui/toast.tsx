@@ -6,22 +6,46 @@ import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastVariant = "success" | "error" | "info";
+type ToastScope = "global" | "admin-unit" | "superadmin";
 
 type ToastItem = {
   id: string;
   title: string;
   description?: string;
   variant: ToastVariant;
+  createdAt: number;
+  scope: ToastScope;
+  duration: number;
+};
+
+type ToastNotification = ToastItem & {
+  read: boolean;
+};
+
+type ToastInput = {
+  title: string;
+  description?: string;
+  variant: ToastVariant;
+  scope?: ToastScope;
+  duration?: number;
 };
 
 type ToastContextValue = {
-  toast: (input: Omit<ToastItem, "id">) => void;
+  toast: (input: ToastInput) => string;
   dismiss: (id: string) => void;
+  notifications: ToastNotification[];
+  unreadCount: number;
+  markAllAsRead: (scope?: ToastScope) => void;
+  markAsRead: (id: string) => void;
 };
 
 const ToastContext = React.createContext<ToastContextValue>({
-  toast: () => undefined,
-  dismiss: () => undefined
+  toast: () => "",
+  dismiss: () => undefined,
+  notifications: [],
+  unreadCount: 0,
+  markAllAsRead: () => undefined,
+  markAsRead: () => undefined
 });
 
 function getToastIcon(variant: ToastVariant) {
@@ -39,7 +63,8 @@ function getToastIcon(variant: ToastVariant) {
 function getToastClasses(variant: ToastVariant) {
   if (variant === "success") {
     return {
-      container: "border-primary/20 bg-[linear-gradient(135deg,rgba(8,90,65,0.12),rgba(255,255,255,0.96))]",
+      container:
+        "border-primary/20 bg-[linear-gradient(135deg,rgba(8,90,65,0.12),rgba(255,255,255,0.96))]",
       icon: "bg-primary/12 text-primary",
       accent: "bg-primary"
     };
@@ -47,14 +72,16 @@ function getToastClasses(variant: ToastVariant) {
 
   if (variant === "error") {
     return {
-      container: "border-destructive/20 bg-[linear-gradient(135deg,rgba(184,28,28,0.1),rgba(255,255,255,0.96))]",
+      container:
+        "border-destructive/20 bg-[linear-gradient(135deg,rgba(184,28,28,0.1),rgba(255,255,255,0.96))]",
       icon: "bg-destructive/12 text-destructive",
       accent: "bg-destructive"
     };
   }
 
   return {
-    container: "border-accent/30 bg-[linear-gradient(135deg,rgba(180,140,12,0.12),rgba(255,255,255,0.96))]",
+    container:
+      "border-accent/30 bg-[linear-gradient(135deg,rgba(180,140,12,0.12),rgba(255,255,255,0.96))]",
     icon: "bg-accent/20 text-accent-foreground",
     accent: "bg-accent"
   };
@@ -62,22 +89,68 @@ function getToastClasses(variant: ToastVariant) {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([]);
+  const [notifications, setNotifications] = React.useState<ToastNotification[]>([]);
 
   const dismiss = React.useCallback((id: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== id));
   }, []);
 
-  const toast = React.useCallback((input: Omit<ToastItem, "id">) => {
+  const markAsRead = React.useCallback((id: string) => {
+    setNotifications((current) =>
+      current.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
+  }, []);
+
+  const markAllAsRead = React.useCallback((scope?: ToastScope) => {
+    setNotifications((current) =>
+      current.map((notification) =>
+        !scope || notification.scope === scope || notification.scope === "global"
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  }, []);
+
+  const toast = React.useCallback((input: ToastInput) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setToasts((current) => [...current, { id, ...input }]);
+    const item: ToastItem = {
+      id,
+      title: input.title,
+      description: input.description,
+      variant: input.variant,
+      createdAt: Date.now(),
+      scope: input.scope ?? "global",
+      duration: input.duration ?? 4200
+    };
+
+    setToasts((current) => [...current, item]);
+    setNotifications((current) => [{ ...item, read: false }, ...current].slice(0, 12));
 
     window.setTimeout(() => {
       setToasts((current) => current.filter((toastItem) => toastItem.id !== id));
-    }, 4200);
+    }, item.duration);
+
+    return id;
   }, []);
 
+  const unreadCount = React.useMemo(
+    () => notifications.filter((notification) => !notification.read).length,
+    [notifications]
+  );
+
   return (
-    <ToastContext.Provider value={{ toast, dismiss }}>
+    <ToastContext.Provider
+      value={{
+        toast,
+        dismiss,
+        notifications,
+        unreadCount,
+        markAllAsRead,
+        markAsRead
+      }}
+    >
       {children}
       <div
         aria-live="polite"
@@ -96,16 +169,28 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 )}
                 key={item.id}
                 role={item.variant === "error" ? "alert" : "status"}
+                style={
+                  {
+                    "--toast-duration": `${item.duration}ms`
+                  } as React.CSSProperties
+                }
               >
                 <div className={cn("absolute inset-y-0 left-0 w-1.5", classes.accent)} />
                 <div className="flex items-start gap-3 p-4 pl-5">
-                  <div className={cn("mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl", classes.icon)}>
+                  <div
+                    className={cn(
+                      "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
+                      classes.icon
+                    )}
+                  >
                     <Icon className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground">{item.title}</p>
                     {item.description ? (
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        {item.description}
+                      </p>
                     ) : null}
                   </div>
                   <button
@@ -116,6 +201,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   >
                     <X className="size-4" />
                   </button>
+                </div>
+                <div className="toast-progress absolute inset-x-0 bottom-0 h-[3px] bg-black/6">
+                  <div className={cn("toast-progress-bar h-full origin-left", classes.accent)} />
                 </div>
               </div>
             );

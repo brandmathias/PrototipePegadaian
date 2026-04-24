@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -265,18 +266,18 @@ export function SuperAdminDashboardPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <a href="/superadmin/unit">
+              <Link href="/superadmin/unit">
                 <Button>
                   <Building2 className="size-4" />
                   Kelola Unit
                 </Button>
-              </a>
-              <a href="/superadmin/monitoring">
+              </Link>
+              <Link href="/superadmin/monitoring">
                 <Button variant="secondary">
                   <Shield className="size-4" />
                   Buka Monitoring
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -325,12 +326,12 @@ export function SuperAdminDashboardPage({
                       <p className="font-semibold text-foreground">{item.title}</p>
                       <p className="text-sm leading-relaxed text-muted-foreground">{item.detail}</p>
                     </div>
-                    <a href={item.href}>
+                    <Link href={item.href}>
                       <Button variant="secondary">
                         {item.action}
                         <ArrowRight className="size-4" />
                       </Button>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))
@@ -508,15 +509,15 @@ export function SuperAdminUnitsPage({ units }: { units: SuperAdminUnitListItem[]
                         )}
                       </div>
                       <div className="flex flex-wrap gap-3">
-                        <a href={`/superadmin/unit/${unit.id}`}>
+                        <Link href={`/superadmin/unit/${unit.id}`}>
                           <Button variant="secondary">Detail Unit</Button>
-                        </a>
-                        <a href={`/superadmin/unit/${unit.id}/rekening`}>
+                        </Link>
+                        <Link href={`/superadmin/unit/${unit.id}/rekening`}>
                           <Button>
                             <CreditCard className="size-4" />
                             Kelola Rekening
                           </Button>
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </CardContent>
@@ -549,12 +550,12 @@ export function SuperAdminUnitDetailPage({ unit }: { unit: SuperAdminUnitDetail 
         description="Lihat status unit, admin yang bertugas, dan rekening aktif saat ini dalam satu tempat."
         action={
           <div className="flex flex-wrap gap-3">
-            <a href={`/superadmin/unit/${unit.id}/rekening`}>
+            <Link href={`/superadmin/unit/${unit.id}/rekening`}>
               <Button>
                 <WalletCards className="size-4" />
                 Kelola Rekening
               </Button>
-            </a>
+            </Link>
             <DeactivateUnitButton disabled={!unit.isActive} unitId={unit.id} />
           </div>
         }
@@ -790,9 +791,9 @@ export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringD
                   <p className="text-sm text-muted-foreground">
                     Tinjau unit ini untuk memastikan rekening aktif, admin aktif, dan status operasionalnya tetap sinkron.
                   </p>
-                  <a href={`/superadmin/unit/${item.unitId}`}>
+                  <Link href={`/superadmin/unit/${item.unitId}`}>
                     <Button variant="secondary">Buka Unit Terkait</Button>
-                  </a>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

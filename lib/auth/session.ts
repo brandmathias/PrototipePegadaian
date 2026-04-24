@@ -129,3 +129,45 @@ export async function requireSuperAdminApiSession() {
     session
   };
 }
+
+export async function requireAdminApiSession() {
+  const session = await getServerSession();
+
+  if (!session?.user) {
+    return {
+      ok: false as const,
+      status: 401,
+      message: "Silakan masuk terlebih dahulu."
+    };
+  }
+
+  if (!isAuthRole(session.user.role) || session.user.role !== "admin_unit") {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akses admin unit ditolak."
+    };
+  }
+
+  if ("isActive" in session.user && session.user.isActive === false) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akun Anda sedang nonaktif."
+    };
+  }
+
+  if (!("unitId" in session.user) || typeof session.user.unitId !== "string" || !session.user.unitId) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akun admin belum terhubung ke unit."
+    };
+  }
+
+  return {
+    ok: true as const,
+    session,
+    unitId: session.user.unitId
+  };
+}
