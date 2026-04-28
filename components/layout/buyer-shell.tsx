@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Bell, Gavel, LogOut, Search } from "lucide-react";
+import { Gavel, LogOut, Search } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
+import { AlertCenter } from "@/components/ui/alert-center";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
@@ -79,17 +80,13 @@ export function BuyerShell({ buyer, children, title, description }: BuyerShellPr
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 aria-label="Cari barang jaminan"
+                autoComplete="off"
                 className="border-border/70 bg-white pl-10"
-                placeholder="Cari barang jaminan..."
+                name="buyerSearchDesktop"
+                placeholder="Cari barang jaminan\u2026"
               />
             </div>
-            <button
-              aria-label="Notifikasi"
-              className="inline-flex size-10 items-center justify-center rounded-full border border-border/70 bg-white text-primary transition hover:bg-primary/5"
-              type="button"
-            >
-              <Bell className="size-4" />
-            </button>
+            <AlertCenter className="shrink-0" scope="buyer" />
             <Link
               className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
               href="/profil"
@@ -140,8 +137,10 @@ export function BuyerShell({ buyer, children, title, description }: BuyerShellPr
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   aria-label="Cari barang jaminan"
+                  autoComplete="off"
                   className="border-border/70 bg-white pl-10"
-                  placeholder="Cari barang jaminan..."
+                  name="buyerSearchMobile"
+                  placeholder="Cari barang jaminan\u2026"
                 />
               </div>
               <div className="rounded-[1.5rem] border border-border/70 bg-white/85 px-4 py-4 text-sm leading-relaxed text-muted-foreground shadow-[0_18px_40px_-34px_rgba(13,77,59,0.35)] xl:max-w-sm">

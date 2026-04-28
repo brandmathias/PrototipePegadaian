@@ -10,6 +10,9 @@ import {
 describe("buyer auth guards", () => {
   it("allows only internal buyer-safe paths", () => {
     expect(getSafeBuyerNextPath("/dashboard")).toBe("/dashboard");
+    expect(getSafeBuyerNextPath("/katalog/buyer-demo-fixed-pemasaran/beli")).toBe(
+      "/katalog/buyer-demo-fixed-pemasaran/beli"
+    );
     expect(getSafeBuyerNextPath("/transaksi/TRX-2026-0033")).toBe("/transaksi/TRX-2026-0033");
     expect(getSafeBuyerNextPath("/profil")).toBe("/profil");
   });

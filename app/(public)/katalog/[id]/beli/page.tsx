@@ -1,4 +1,5 @@
 import { PurchasePage } from "@/components/pages/public-pages";
+import { getPublicLotById } from "@/lib/services/public-catalog.service";
 
 export default async function Page({
   params
@@ -6,5 +7,6 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return <PurchasePage lotId={id} />;
+  const lot = await getPublicLotById(id);
+  return <PurchasePage lot={lot} lotId={id} />;
 }

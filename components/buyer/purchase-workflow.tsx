@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
   Building2,
   CheckCircle2,
   Landmark,
+  LoaderCircle,
   MapPinned
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { currency, userTransactions, type Lot } from "@/lib/mock-data";
+import { useToast } from "@/components/ui/toast";
+import { currency, type Lot } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 type PurchaseWorkflowProps = {
@@ -36,13 +39,17 @@ const methods = [
 ] as const;
 
 export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [method, setMethod] =
-    useState<(typeof methods)[number]["id"]>("TRANSFER_BANK");
+    useState<(typeof methods)[number]["id"]>(lot.bankAccountNumber ? "TRANSFER_BANK" : "BAYAR_LANGSUNG");
+  const hasActiveAccount = Boolean(lot.bankAccountNumber);
 
-  const existingTransaction = userTransactions.find(
-    (transaction) =>
-      transaction.lotId === lot.id && !["LUNAS", "GAGAL"].includes(transaction.status)
-  );
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const preview = useMemo(() => {
     if (method === "TRANSFER_BANK") {
@@ -71,6 +78,46 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         "Cocok jika Anda ingin menyelesaikan pembayaran langsung di loket Pegadaian tanpa perlu unggah bukti transfer."
     };
   }, [method]);
+
+  function handlePurchase() {
+    startTransition(async () => {
+      const response = await fetch(`/api/user/beli/${lot.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          paymentMethod: method === "BAYAR_LANGSUNG" ? "langsung" : "transfer"
+        })
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/beli`)}`);
+        return;
+      }
+
+      if (!response.ok) {
+        toast({
+          title: "Pembelian belum bisa diproses",
+          description: payload.message ?? "Silakan coba lagi setelah beberapa saat.",
+          variant: "error",
+          scope: "buyer"
+        });
+        return;
+      }
+
+      toast({
+        title: "Transaksi dibuat",
+        description: "Kami arahkan Anda ke detail transaksi untuk menyelesaikan pembayaran.",
+        variant: "success",
+        scope: "buyer"
+      });
+      router.push(`/transaksi/${payload.data.id}`);
+      router.refresh();
+    });
+  }
 
   return (
     <Card className="overflow-hidden border border-border/70 bg-white">
@@ -105,22 +152,14 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             </p>
           </div>
 
-          {existingTransaction ? (
+          {!hasActiveAccount ? (
             <div className="rounded-[1.75rem] border border-tertiary-container/25 bg-tertiary-container/10 p-5">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-1 size-5 text-tertiary-container" />
-                <div className="space-y-3">
-                  <p className="font-semibold text-foreground">
-                    Transaksi aktif untuk barang ini sudah ada
-                  </p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Agar tidak membuat pengajuan ganda, lanjutkan dulu transaksi yang sudah
-                    aktif untuk barang ini.
-                  </p>
-                  <Link href={`/transaksi/${existingTransaction.id}`}>
-                    <Button variant="secondary">Buka transaksi aktif</Button>
-                  </Link>
-                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Unit belum memiliki rekening aktif, jadi opsi transfer disembunyikan. Anda
+                  tetap dapat membuat pengajuan bayar langsung di unit.
+                </p>
               </div>
             </div>
           ) : null}
@@ -134,6 +173,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                     ? "border-primary bg-primary text-white shadow-ambient"
                     : "border-border/70 bg-white hover:border-primary/25 hover:bg-primary/[0.03]"
                 )}
+                disabled={option.id === "TRANSFER_BANK" && !hasActiveAccount}
                 key={option.id}
                 onClick={() => setMethod(option.id)}
                 type="button"
@@ -188,7 +228,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             </div>
           </div>
 
-          {method === "TRANSFER_BANK" ? (
+          {method === "TRANSFER_BANK" && hasActiveAccount ? (
             <div className="rounded-[1.75rem] border border-primary/15 bg-primary/[0.03] p-5">
               <div className="flex items-start gap-3">
                 <Landmark className="mt-1 size-5 text-primary" />
@@ -199,20 +239,20 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                       <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                         Bank
                       </p>
-                      <p className="mt-2 font-semibold text-foreground">BRI</p>
+                      <p className="mt-2 font-semibold text-foreground">{lot.bankName}</p>
                     </div>
                     <div>
                       <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                         Nomor rekening
                       </p>
-                      <p className="mt-2 font-semibold text-foreground">0123-4567-8901-234</p>
+                      <p className="mt-2 font-semibold text-foreground">{lot.bankAccountNumber}</p>
                     </div>
                     <div className="sm:col-span-2">
                       <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                         Atas nama
                       </p>
                       <p className="mt-2 font-semibold text-foreground">
-                        PT Pegadaian (Persero) - {lot.unitName}
+                        {lot.bankAccountHolder}
                       </p>
                     </div>
                   </div>
@@ -241,13 +281,24 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button className="min-w-[13rem]" disabled={Boolean(existingTransaction)}>
-              Konfirmasi Pembelian
+            <Button className="min-w-[13rem]" disabled={!isHydrated || isPending} onClick={handlePurchase}>
+              {!isHydrated ? (
+                "Menyiapkan\u2026"
+              ) : isPending ? (
+                <>
+                  <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                  {"Memproses\u2026"}
+                </>
+              ) : (
+                "Konfirmasi Pembelian"
+              )}
             </Button>
-            <Button disabled={Boolean(existingTransaction)} variant="secondary">
-              <Building2 className="size-4" />
-              Lihat Simulasi Detail Transaksi
-            </Button>
+            <Link href="/transaksi">
+              <Button variant="secondary">
+                <Building2 className="size-4" />
+                Lihat Transaksi Saya
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

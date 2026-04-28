@@ -1,35 +1,54 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AlertTriangle, Clock3, Gavel, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, Clock3, Gavel, LoaderCircle, ShieldCheck } from "lucide-react";
+import { useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 import { currency, userSummary, type Lot } from "@/lib/mock-data";
 
 type VickreyBidFormProps = {
   lot: Lot;
   existingBidAmount?: number;
   existingBidStatus?: string;
+  isBlacklisted?: boolean;
+  blacklistUntil?: Date | null;
 };
 
 export function VickreyBidForm({
   lot,
   existingBidAmount,
-  existingBidStatus
+  existingBidStatus,
+  isBlacklisted = userSummary.blacklist.active,
+  blacklistUntil
 }: VickreyBidFormProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [bidAmount, setBidAmount] = useState(
     existingBidAmount ? String(existingBidAmount) : String(lot.price)
   );
 
   const numericBid = Number(bidAmount || 0);
   const invalidBid = Number.isNaN(numericBid) || numericBid < lot.price;
-  const blocked = userSummary.blacklist.active;
+  const blocked = isBlacklisted;
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const helperText = useMemo(() => {
     if (blocked) {
-      return `Akun sedang dibatasi sampai ${userSummary.blacklist.until}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
+      const untilLabel = blacklistUntil
+        ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeZone: "Asia/Makassar" }).format(blacklistUntil)
+        : userSummary.blacklist.until;
+      return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
     }
 
     if (existingBidAmount) {
@@ -41,7 +60,45 @@ export function VickreyBidForm({
     }
 
     return "Penawaran bersifat tertutup dan baru dibuka sistem setelah sesi lelang berakhir.";
-  }, [blocked, existingBidAmount, existingBidStatus, invalidBid, lot.price]);
+  }, [blacklistUntil, blocked, existingBidAmount, existingBidStatus, invalidBid, lot.price]);
+
+  function handleSubmitBid() {
+    startTransition(async () => {
+      const response = await fetch(`/api/user/bid/${lot.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ amount: numericBid })
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/bid`)}`);
+        return;
+      }
+
+      if (!response.ok) {
+        toast({
+          title: "Bid belum bisa dikirim",
+          description: payload.message ?? "Periksa kembali nominal bid Anda.",
+          variant: "error",
+          scope: "buyer"
+        });
+        return;
+      }
+
+      toast({
+        title: "Bid tertutup tersimpan",
+        description: "Anda bisa memantau hasilnya dari riwayat bid.",
+        variant: "success",
+        scope: "buyer"
+      });
+      router.push("/riwayat-bid");
+      router.refresh();
+    });
+  }
 
   return (
     <Card className="overflow-hidden border border-border/70 bg-white">
@@ -103,8 +160,10 @@ export function VickreyBidForm({
             </label>
             <div className="mt-3">
               <Input
+                autoComplete="off"
                 id="bid-amount"
                 min={lot.price}
+                name="bidAmount"
                 onChange={(event) => setBidAmount(event.target.value)}
                 placeholder="Masukkan nominal bid"
                 type="number"
@@ -166,10 +225,25 @@ export function VickreyBidForm({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button className="min-w-[14rem]" disabled={blocked || invalidBid}>
-              Konfirmasi Bid Tertutup
+            <Button
+              className="min-w-[14rem]"
+              disabled={!isHydrated || blocked || invalidBid || isPending}
+              onClick={handleSubmitBid}
+            >
+              {!isHydrated ? (
+                "Menyiapkan\u2026"
+              ) : isPending ? (
+                <>
+                  <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                  {"Mengirim\u2026"}
+                </>
+              ) : (
+                "Konfirmasi Bid Tertutup"
+              )}
             </Button>
-            <Button variant="secondary">Lihat Riwayat Bid</Button>
+            <Link href="/riwayat-bid">
+              <Button variant="secondary">Lihat Riwayat Bid</Button>
+            </Link>
           </div>
         </div>
       </CardContent>

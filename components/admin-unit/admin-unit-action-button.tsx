@@ -35,7 +35,7 @@ export function AdminUnitActionButton({
   successDescription,
   pendingTitle,
   pendingDescription,
-  pendingLabel = "Memproses permintaan…",
+  pendingLabel = "Memproses permintaan...",
   redirectTo,
   refresh = true,
   confirmTitle,

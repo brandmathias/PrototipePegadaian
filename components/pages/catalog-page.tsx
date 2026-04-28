@@ -7,7 +7,7 @@ import { Gavel, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { LotCard } from "@/components/shared/lot-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
-import { categories, publicLots } from "@/lib/mock-data";
+import { categories, publicLots, type Lot } from "@/lib/mock-data";
 
 const sortOptions = [
   { value: "latest", label: "Terbaru" },
@@ -22,7 +22,7 @@ const priceBands = [
   { value: "above-50", label: "> Rp 50 Jt" }
 ] as const;
 
-export function CatalogPage() {
+export function CatalogPage({ lots: initialLots = publicLots }: { lots?: Lot[] }) {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [sortBy, setSortBy] = useState("latest");
   const [mode, setMode] = useState<"all" | "fixed_price" | "vickrey">("all");
@@ -30,15 +30,15 @@ export function CatalogPage() {
   const [priceBand, setPriceBand] = useState<(typeof priceBands)[number]["value"]>("all");
 
   const units = useMemo(
-    () => ["Semua Unit", ...new Set(publicLots.map((lot) => lot.unitName))],
-    []
+    () => ["Semua Unit", ...new Set(initialLots.map((lot) => lot.unitName))],
+    [initialLots]
   );
 
   const lots = useMemo(() => {
     const byCategory =
       activeCategory === "Semua"
-        ? publicLots
-        : publicLots.filter((lot) => lot.category === activeCategory);
+        ? initialLots
+        : initialLots.filter((lot) => lot.category === activeCategory);
 
     const byMode =
       mode === "all" ? byCategory : byCategory.filter((lot) => lot.mode === mode);
@@ -64,7 +64,7 @@ export function CatalogPage() {
     }
 
     return filtered;
-  }, [activeCategory, mode, priceBand, sortBy, unitFilter]);
+  }, [activeCategory, initialLots, mode, priceBand, sortBy, unitFilter]);
 
   return (
     <div className="container space-y-10 py-12">
@@ -209,6 +209,14 @@ export function CatalogPage() {
           <LotCard key={lot.id} lot={lot} />
         ))}
       </div>
+      {lots.length === 0 ? (
+        <div className="rounded-[1.75rem] border border-dashed border-border bg-white p-8 text-center">
+          <p className="text-lg font-semibold text-foreground">Belum ada barang sesuai filter ini.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Coba ubah kategori, mode pemasaran, unit, atau rentang harga.
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

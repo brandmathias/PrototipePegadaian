@@ -21,6 +21,11 @@ export type Lot = {
   status: string;
   description: string;
   countdown?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
+  bankBranch?: string;
+  unitAddress?: string;
   specs: Array<{ label: string; value: string }>;
 };
 
@@ -182,6 +187,7 @@ export type BuyerTransactionKind = "FIXED_PRICE" | "VICKREY_WIN";
 export type BuyerTransactionStatus =
   | "MENUNGGU_VERIFIKASI"
   | "BUKTI_DIUNGGAH"
+  | "DITOLAK_BUKTI"
   | "MENUNGGU_KONFIRMASI_LANGSUNG"
   | "MENUNGGU_PEMBAYARAN"
   | "LUNAS"

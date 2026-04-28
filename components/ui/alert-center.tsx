@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 
 type AlertCenterProps = {
-  scope: "admin-unit" | "superadmin";
+  scope: "buyer" | "admin-unit" | "superadmin";
   className?: string;
 };
 
@@ -36,6 +36,25 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     () => scopedNotifications.filter((notification) => !notification.read).length,
     [scopedNotifications]
   );
+  const copy = React.useMemo(() => {
+    if (scope === "buyer") {
+      return {
+        label: "Pusat Alert Pembeli",
+        title: "Aktivitas akun terbaru",
+        description: "Ringkasan transaksi, bid, pembayaran, dan profil tersimpan di sini.",
+        emptyTitle: "Belum ada alert akun.",
+        emptyDescription: "Setelah Anda membeli, bid, atau memperbarui profil, respon sistem akan muncul di sini."
+      };
+    }
+
+    return {
+      label: "Pusat Alert",
+      title: "Respons sistem terbaru",
+      description: "Semua notifikasi penting dari aksi admin unit tersimpan di sini.",
+      emptyTitle: "Belum ada alert baru.",
+      emptyDescription: "Saat admin memproses aksi, ringkasan respon sistem akan muncul di sini."
+    };
+  }, [scope]);
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -99,13 +118,13 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58">
-                  Pusat Alert
+                  {copy.label}
                 </p>
                 <h3 className="mt-2 font-headline text-[1.45rem] font-black text-[#085a41]">
-                  Respons sistem terbaru
+                  {copy.title}
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-black/58">
-                  Semua notifikasi penting dari aksi admin unit tersimpan di sini.
+                  {copy.description}
                 </p>
               </div>
               <button
@@ -145,7 +164,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                             : "bg-accent/20 text-accent-foreground"
                       )}
                     >
-                      <Sparkles className="size-4" />
+                      <Sparkles aria-hidden="true" className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
@@ -162,7 +181,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                         </p>
                       ) : null}
                       <div className="mt-2 flex items-center gap-2 text-xs font-medium text-black/42">
-                        <Clock3 className="size-3.5" />
+                        <Clock3 aria-hidden="true" className="size-3.5" />
                         {formatTimeLabel(notification.createdAt)}
                       </div>
                     </div>
@@ -171,9 +190,9 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
               </div>
             ) : (
               <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/70 px-5 py-8 text-center">
-                <p className="text-sm font-semibold text-black/72">Belum ada alert baru.</p>
+                <p className="text-sm font-semibold text-black/72">{copy.emptyTitle}</p>
                 <p className="mt-1 text-sm leading-6 text-black/52">
-                  Saat admin memproses aksi, ringkasan respon sistem akan muncul di sini.
+                  {copy.emptyDescription}
                 </p>
               </div>
             )}

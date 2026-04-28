@@ -6,7 +6,7 @@ import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastVariant = "success" | "error" | "info";
-type ToastScope = "global" | "admin-unit" | "superadmin";
+type ToastScope = "global" | "buyer" | "admin-unit" | "superadmin";
 
 type ToastItem = {
   id: string;
@@ -64,8 +64,8 @@ function getToastClasses(variant: ToastVariant) {
   if (variant === "success") {
     return {
       container:
-        "border-primary/20 bg-[linear-gradient(135deg,rgba(8,90,65,0.12),rgba(255,255,255,0.96))]",
-      icon: "bg-primary/12 text-primary",
+        "border-primary/20 bg-[linear-gradient(135deg,rgba(8,90,65,0.14),rgba(255,255,255,0.98)_46%,rgba(240,249,244,0.98))]",
+      icon: "bg-primary/12 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]",
       accent: "bg-primary"
     };
   }
@@ -73,16 +73,16 @@ function getToastClasses(variant: ToastVariant) {
   if (variant === "error") {
     return {
       container:
-        "border-destructive/20 bg-[linear-gradient(135deg,rgba(184,28,28,0.1),rgba(255,255,255,0.96))]",
-      icon: "bg-destructive/12 text-destructive",
+        "border-destructive/20 bg-[linear-gradient(135deg,rgba(184,28,28,0.12),rgba(255,255,255,0.98)_48%,rgba(255,246,246,0.98))]",
+      icon: "bg-destructive/12 text-destructive shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]",
       accent: "bg-destructive"
     };
   }
 
   return {
     container:
-      "border-accent/30 bg-[linear-gradient(135deg,rgba(180,140,12,0.12),rgba(255,255,255,0.96))]",
-    icon: "bg-accent/20 text-accent-foreground",
+      "border-accent/30 bg-[linear-gradient(135deg,rgba(180,140,12,0.14),rgba(255,255,255,0.98)_48%,rgba(255,250,232,0.98))]",
+    icon: "bg-accent/20 text-accent-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]",
     accent: "bg-accent"
   };
 }
@@ -154,6 +154,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <div
         aria-live="polite"
+        aria-atomic="true"
         className="pointer-events-none fixed inset-x-0 top-4 z-[100] flex justify-center px-4 sm:justify-end"
       >
         <div className="flex w-full max-w-md flex-col gap-3">
@@ -164,7 +165,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             return (
               <div
                 className={cn(
-                  "toast-enter pointer-events-auto relative overflow-hidden rounded-[1.35rem] border shadow-[0_18px_44px_rgba(15,23,42,0.16)] backdrop-blur-sm",
+                  "toast-enter pointer-events-auto relative overflow-hidden rounded-[1.35rem] border shadow-[0_18px_44px_rgba(15,23,42,0.16)] backdrop-blur-xl",
                   classes.container
                 )}
                 key={item.id}
@@ -175,31 +176,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   } as React.CSSProperties
                 }
               >
+                <div className="toast-sheen pointer-events-none absolute inset-0" />
                 <div className={cn("absolute inset-y-0 left-0 w-1.5", classes.accent)} />
                 <div className="flex items-start gap-3 p-4 pl-5">
                   <div
                     className={cn(
-                      "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
+                      "toast-icon-pop mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
                       classes.icon
                     )}
                   >
-                    <Icon className="size-5" />
+                    <Icon aria-hidden="true" className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="break-words text-sm font-semibold text-foreground">{item.title}</p>
                     {item.description ? (
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-1 break-words text-sm leading-relaxed text-muted-foreground">
                         {item.description}
                       </p>
                     ) : null}
                   </div>
                   <button
                     aria-label="Tutup notifikasi"
-                    className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-black/5 hover:text-foreground"
+                    className="interactive-tap rounded-full p-1 text-muted-foreground transition-[background-color,color,transform] duration-200 hover:bg-black/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                     onClick={() => dismiss(item.id)}
                     type="button"
                   >
-                    <X className="size-4" />
+                    <X aria-hidden="true" className="size-4" />
                   </button>
                 </div>
                 <div className="toast-progress absolute inset-x-0 bottom-0 h-[3px] bg-black/6">

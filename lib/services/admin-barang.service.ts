@@ -231,6 +231,10 @@ export async function convertAdminBarangToJaminan(unitId: string, userId: string
     throw new Error("Hanya barang gadai yang bisa dipindahkan menjadi jaminan.");
   }
 
+  if (current.dueDate.getTime() > Date.now()) {
+    throw new Error("Barang baru bisa menjadi jaminan setelah melewati tanggal jatuh tempo.");
+  }
+
   const [updated] = await db
     .update(barang)
     .set({ status: "jaminan", updatedAt: new Date() })

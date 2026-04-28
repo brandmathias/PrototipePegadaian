@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 import { getRoleHomePath, getSafeBuyerNextPath, getSafeRoleNextPath, isAuthRole } from "@/lib/auth/guards";
@@ -17,10 +17,15 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const rawNext = searchParams.get("next");
   const nextPath = getSafeBuyerNextPath(rawNext);
   const registerHref = rawNext ? `/register?next=${encodeURIComponent(nextPath)}` : "/register";
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,7 +33,11 @@ export function LoginForm() {
 
     let payload;
     try {
-      payload = validateBuyerLoginPayload({ email, password });
+      const formData = new FormData(event.currentTarget);
+      payload = validateBuyerLoginPayload({
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? "")
+      });
     } catch (validationError) {
       setError(validationError instanceof Error ? validationError.message : "Periksa lagi email dan kata sandi.");
       return;
@@ -61,11 +70,16 @@ export function LoginForm() {
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <label
+          className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+          htmlFor="buyer-login-email"
+        >
           Email
         </label>
         <Input
           autoComplete="email"
+          id="buyer-login-email"
+          name="email"
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Masukkan email"
           type="email"
@@ -73,11 +87,16 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <label
+          className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+          htmlFor="buyer-login-password"
+        >
           Password
         </label>
         <Input
           autoComplete="current-password"
+          id="buyer-login-password"
+          name="password"
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Masukkan kata sandi"
           type="password"
@@ -89,8 +108,8 @@ export function LoginForm() {
           {error}
         </div>
       ) : null}
-      <Button className="w-full" disabled={isPending} type="submit">
-        {isPending ? "Memproses..." : "Masuk"}
+      <Button className="w-full" disabled={!isHydrated || isPending} type="submit">
+        {!isHydrated ? "Menyiapkan\u2026" : isPending ? "Memproses\u2026" : "Masuk"}
       </Button>
       <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-surface-low p-4 text-sm text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 text-primary" />

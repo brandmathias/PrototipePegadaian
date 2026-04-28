@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
-  CheckCircle2,
   Clock3,
   Gavel,
   Landmark,
@@ -22,12 +21,46 @@ import {
   currency,
   getBidHistoryByLotId,
   getLotById,
-  userSummary
+  type BuyerBid,
+  type Lot
 } from "@/lib/mock-data";
 
-export function LotDetailPage({ lotId }: { lotId: string }) {
-  const lot = getLotById(lotId);
-  const bidState = getBidHistoryByLotId(lotId);
+type BuyerPublicStatus = {
+  blacklist: {
+    active: boolean;
+    until: Date | null;
+    totalViolations: number;
+  };
+} | null;
+
+function getBlacklistLabel(status: BuyerPublicStatus) {
+  if (!status?.blacklist.active) {
+    return null;
+  }
+
+  if (!status.blacklist.until) {
+    return "Akun sedang dibatasi untuk mengikuti lelang Vickrey.";
+  }
+
+  return `Akun sedang dibatasi sampai ${new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "medium",
+    timeZone: "Asia/Makassar"
+  }).format(status.blacklist.until)}. Selama blacklist aktif, Anda tidak dapat mengirim bid baru.`;
+}
+
+export function LotDetailPage({
+  lotId,
+  lot: loadedLot,
+  bidState: loadedBidState,
+  buyerStatus = null
+}: {
+  lotId: string;
+  lot?: Lot | null;
+  bidState?: BuyerBid | null;
+  buyerStatus?: BuyerPublicStatus;
+}) {
+  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
+  const bidState = loadedBidState === undefined ? getBidHistoryByLotId(lotId) : loadedBidState;
 
   if (!lot) {
     notFound();
@@ -134,10 +167,9 @@ export function LotDetailPage({ lotId }: { lotId: string }) {
                 </div>
               ) : null}
 
-              {userSummary.blacklist.active ? (
+              {getBlacklistLabel(buyerStatus) ? (
                 <div className="rounded-[1.5rem] border border-tertiary-container/25 bg-tertiary-container/10 p-5 text-sm leading-relaxed text-muted-foreground">
-                  Akun sedang dibatasi sampai {userSummary.blacklist.until}. Selama blacklist
-                  aktif, user tidak dapat mengirim bid baru.
+                  {getBlacklistLabel(buyerStatus)}
                 </div>
               ) : null}
 
@@ -199,8 +231,8 @@ export function LotDetailPage({ lotId }: { lotId: string }) {
   );
 }
 
-export function PurchasePage({ lotId }: { lotId: string }) {
-  const lot = getLotById(lotId);
+export function PurchasePage({ lotId, lot: loadedLot }: { lotId: string; lot?: Lot | null }) {
+  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
   if (!lot) notFound();
 
   return (
@@ -220,9 +252,19 @@ export function PurchasePage({ lotId }: { lotId: string }) {
   );
 }
 
-export function BidPage({ lotId }: { lotId: string }) {
-  const lot = getLotById(lotId);
-  const bidState = getBidHistoryByLotId(lotId);
+export function BidPage({
+  lotId,
+  lot: loadedLot,
+  bidState: loadedBidState,
+  buyerStatus = null
+}: {
+  lotId: string;
+  lot?: Lot | null;
+  bidState?: BuyerBid | null;
+  buyerStatus?: BuyerPublicStatus;
+}) {
+  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
+  const bidState = loadedBidState === undefined ? getBidHistoryByLotId(lotId) : loadedBidState;
 
   if (!lot) notFound();
 
@@ -241,6 +283,8 @@ export function BidPage({ lotId }: { lotId: string }) {
       <VickreyBidForm
         existingBidAmount={bidState?.bidAmount}
         existingBidStatus={bidState?.status}
+        isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
+        blacklistUntil={buyerStatus?.blacklist.until ?? null}
         lot={lot}
       />
     </div>

@@ -6,25 +6,25 @@ import {
   ExternalLink,
   FileCheck2,
   Gavel,
-  KeyRound,
   Landmark,
   MapPinned,
   Printer,
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
-  User
 } from "lucide-react";
 
+import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
+import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   bidHistory,
   currency,
   getTransactionById,
+  type BuyerBid,
   type BuyerBidStatus,
   type BuyerTransaction,
   type BuyerTransactionStatus,
@@ -33,6 +33,11 @@ import {
 } from "@/lib/mock-data";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
+
+type BuyerSummary = Omit<typeof userSummary, "metrics"> & {
+  nationalId?: string;
+  metrics: Array<{ label: string; value: string; accent?: string }>;
+};
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -56,6 +61,11 @@ const transactionStatusMeta: Record<
     label: "Bukti Diunggah",
     variant: "default",
     description: "Bukti transfer sudah diterima dan sedang diverifikasi admin unit."
+  },
+  DITOLAK_BUKTI: {
+    label: "Bukti Perlu Diperbaiki",
+    variant: "danger",
+    description: "Admin menolak bukti pembayaran sebelumnya. Unggah ulang bukti yang sesuai."
   },
   MENUNGGU_KONFIRMASI_LANGSUNG: {
     label: "Menunggu Konfirmasi Langsung",
@@ -150,6 +160,7 @@ function getCurrentStep(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
     case "MENUNGGU_VERIFIKASI":
+    case "DITOLAK_BUKTI":
       return 1;
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
@@ -170,6 +181,10 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
 
   if (transaction.status === "MENUNGGU_PEMBAYARAN" && transaction.method === "TRANSFER_BANK") {
     return "Transaksi sudah aktif. Lakukan transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu berakhir.";
+  }
+
+  if (transaction.status === "DITOLAK_BUKTI") {
+    return "Bukti pembayaran perlu diperbaiki. Unggah ulang bukti transfer yang jelas dan sesuai nominal transaksi.";
   }
 
   return transactionStatusMeta[transaction.status].description;
@@ -223,9 +238,18 @@ function TransactionTimeline({ transaction }: { transaction: BuyerTransaction })
   );
 }
 
-export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
-  const needsAction = userTransactions.filter((transaction) =>
-    ["MENUNGGU_VERIFIKASI", "MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
+export function UserDashboardPage({
+  buyer,
+  data
+}: {
+  buyer: BuyerSessionUser;
+  data?: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+}) {
+  const summary = data?.summary ?? userSummary;
+  const transactions = data?.transactions ?? userTransactions;
+  const bids = data?.bids ?? bidHistory;
+  const needsAction = transactions.filter((transaction) =>
+    ["MENUNGGU_VERIFIKASI", "MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
       transaction.status
     )
   );
@@ -237,9 +261,9 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
           <div className="space-y-5">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="default">Akun Pembeli</Badge>
-              <Badge variant={userSummary.blacklist.active ? "danger" : "muted"}>
-                {userSummary.blacklist.active
-                  ? `Blacklist aktif sampai ${userSummary.blacklist.until}`
+              <Badge variant={summary.blacklist.active ? "danger" : "muted"}>
+                {summary.blacklist.active
+                  ? `Blacklist aktif sampai ${summary.blacklist.until}`
                   : "Akun siap bertransaksi"}
               </Badge>
             </div>
@@ -263,7 +287,7 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {userSummary.highlights.map((item) => (
+            {summary.highlights.map((item) => (
               <div
                 className="rounded-[1.5rem] border border-border/70 bg-white/85 p-5"
                 key={item}
@@ -276,7 +300,7 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {userSummary.metrics.map((metric) => (
+        {summary.metrics.map((metric) => (
           <Card className="border border-border/70 bg-white p-6" key={metric.label}>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
               {metric.label}
@@ -341,14 +365,14 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
                   Verifikasi akun
                 </p>
                 <p className="mt-3 text-xl font-bold text-primary">
-                  {userSummary.verificationStatus}
+                  {summary.verificationStatus}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">{buyer.email}</p>
               </div>
               <div
                 className={cn(
                   "rounded-[1.5rem] border p-5",
-                  userSummary.blacklist.active
+                  summary.blacklist.active
                     ? "border-tertiary-container/25 bg-tertiary-container/10"
                     : "border-primary/15 bg-primary/[0.03]"
                 )}
@@ -357,10 +381,10 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
                   Status blacklist
                 </p>
                 <p className="mt-3 text-xl font-bold text-foreground">
-                  {userSummary.blacklist.active ? "Aktif" : "Tidak aktif"}
+                  {summary.blacklist.active ? "Aktif" : "Tidak aktif"}
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {userSummary.blacklist.reason}
+                  {summary.blacklist.reason}
                 </p>
               </div>
             </CardContent>
@@ -371,7 +395,7 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
               <CardTitle className="text-white">Aktivitas bid terbaru</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {bidHistory.slice(0, 3).map((item) => (
+              {bids.slice(0, 3).map((item) => (
                 <div className="rounded-[1.5rem] bg-white/10 p-5" key={`${item.lot}-${item.closing}`}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="font-semibold">{item.lot}</p>
@@ -392,9 +416,18 @@ export function UserDashboardPage({ buyer }: { buyer: BuyerSessionUser }) {
   );
 }
 
-export function TransactionsPage({ buyer: _buyer }: { buyer: BuyerSessionUser }) {
+export function TransactionsPage({
+  buyer: _buyer,
+  data
+}: {
+  buyer: BuyerSessionUser;
+  data?: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+}) {
+  const summary = data?.summary ?? userSummary;
+  const transactions = data?.transactions ?? userTransactions;
+  const bids = data?.bids ?? bidHistory;
   const bidSummary = Object.entries(
-    bidHistory.reduce<Record<BuyerBidStatus, number>>(
+    bids.reduce<Record<BuyerBidStatus, number>>(
       (accumulator, item) => {
         accumulator[item.status] += 1;
         return accumulator;
@@ -422,7 +455,7 @@ export function TransactionsPage({ buyer: _buyer }: { buyer: BuyerSessionUser })
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {userSummary.metrics.map((metric) => (
+        {summary.metrics.map((metric) => (
           <Card className="border border-border/70 bg-white p-5" key={metric.label}>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
               {metric.label}
@@ -465,7 +498,7 @@ export function TransactionsPage({ buyer: _buyer }: { buyer: BuyerSessionUser })
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {bidHistory.slice(0, 3).map((item) => (
+            {bids.slice(0, 3).map((item) => (
               <div
                 className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
                 key={`${item.lot}-${item.bidAmount}-${item.closing}`}
@@ -506,7 +539,7 @@ export function TransactionsPage({ buyer: _buyer }: { buyer: BuyerSessionUser })
       </div>
 
       <div className="grid gap-5">
-        {userTransactions.map((transaction) => (
+        {transactions.map((transaction) => (
           <Card className="border border-border/70 bg-white" key={transaction.id}>
             <CardContent className="grid gap-5 p-6 lg:grid-cols-[1.2fr_0.8fr_0.5fr] lg:items-center">
               <div className="space-y-3">
@@ -557,12 +590,14 @@ export function TransactionsPage({ buyer: _buyer }: { buyer: BuyerSessionUser })
 
 export function TransactionDetailPage({
   buyer,
-  transactionId
+  transactionId,
+  transaction: loadedTransaction
 }: {
   buyer: BuyerSessionUser;
   transactionId: string;
+  transaction?: BuyerTransaction | null;
 }) {
-  const transaction = getTransactionById(transactionId);
+  const transaction = loadedTransaction ?? getTransactionById(transactionId);
 
   if (!transaction) {
     return (
@@ -754,12 +789,10 @@ export function TransactionDetailPage({
                           : "Format JPG, PNG, atau PDF untuk mempercepat verifikasi admin."}
                       </p>
                     </div>
-                    <div className="space-y-3">
-                      <Input placeholder="Nomor referensi transfer" />
-                      <Button className="w-full">
-                        {transaction.paymentProof ? "Perbarui Bukti Pembayaran" : "Kirim Bukti Pembayaran"}
-                      </Button>
-                    </div>
+                    <BuyerPaymentProofForm
+                      currentProof={transaction.paymentProof}
+                      transactionId={transaction.id}
+                    />
                   </div>
                 )}
               </>
@@ -911,12 +944,14 @@ export function TransactionDetailPage({
 
 export function TransactionReceiptPage({
   buyer,
-  transactionId
+  transactionId,
+  transaction: loadedTransaction
 }: {
   buyer: BuyerSessionUser;
   transactionId: string;
+  transaction?: BuyerTransaction | null;
 }) {
-  const transaction = getTransactionById(transactionId);
+  const transaction = loadedTransaction ?? getTransactionById(transactionId);
 
   if (!transaction || transaction.status !== "LUNAS") {
     return (
@@ -1053,7 +1088,13 @@ export function TransactionReceiptPage({
   );
 }
 
-export function BidHistoryPage({ buyer: _buyer }: { buyer: BuyerSessionUser }) {
+export function BidHistoryPage({
+  buyer: _buyer,
+  bids = bidHistory
+}: {
+  buyer: BuyerSessionUser;
+  bids?: BuyerBid[];
+}) {
   return (
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
@@ -1069,7 +1110,7 @@ export function BidHistoryPage({ buyer: _buyer }: { buyer: BuyerSessionUser }) {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Object.entries(
-          bidHistory.reduce<Record<BuyerBidStatus, number>>(
+          bids.reduce<Record<BuyerBidStatus, number>>(
             (accumulator, item) => {
               accumulator[item.status] += 1;
               return accumulator;
@@ -1093,7 +1134,7 @@ export function BidHistoryPage({ buyer: _buyer }: { buyer: BuyerSessionUser }) {
 
       <Card className="border border-border/70 bg-white">
         <CardContent className="space-y-4 p-6">
-          {bidHistory.map((item) => (
+          {bids.map((item) => (
             <div
               className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
               key={`${item.lot}-${item.bidAmount}-${item.closing}`}
@@ -1135,7 +1176,13 @@ export function BidHistoryPage({ buyer: _buyer }: { buyer: BuyerSessionUser }) {
   );
 }
 
-export function ProfilePage({ buyer }: { buyer: BuyerSessionUser }) {
+export function ProfilePage({
+  buyer,
+  summary = userSummary
+}: {
+  buyer: BuyerSessionUser;
+  summary?: BuyerSummary;
+}) {
   return (
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
@@ -1144,82 +1191,15 @@ export function ProfilePage({ buyer }: { buyer: BuyerSessionUser }) {
         title="Kelola identitas dan keamanan akun"
       />
 
+      <BuyerProfileSettingsForm
+        email={buyer.email}
+        initialName={buyer.name}
+        initialNationalId={summary.nationalId ?? ""}
+        initialPhone={buyer.phoneNumber ?? summary.phone}
+      />
+
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Data akun pembeli</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Nama lengkap
-              </label>
-              <Input defaultValue={buyer.name} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Email
-              </label>
-              <Input defaultValue={buyer.email} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Nomor telepon
-              </label>
-              <Input defaultValue={getBuyerPhone(buyer)} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Nomor KTP
-              </label>
-              <Input defaultValue={userSummary.nikMasked} />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Alamat
-              </label>
-              <Input defaultValue={userSummary.address} />
-            </div>
-            <div className="md:col-span-2">
-              <Button className="inline-flex">
-                <User className="size-4" />
-                Simpan Perubahan
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Keamanan akun</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Password saat ini
-                </label>
-                <Input type="password" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Password baru
-                </label>
-                <Input type="password" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Konfirmasi password baru
-                </label>
-                <Input type="password" />
-              </div>
-              <Button variant="secondary">
-                <KeyRound className="size-4" />
-                Perbarui Password
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card className="border border-border/70 bg-white">
             <CardHeader>
               <CardTitle>Status verifikasi</CardTitle>
@@ -1229,7 +1209,7 @@ export function ProfilePage({ buyer }: { buyer: BuyerSessionUser }) {
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="mt-1 size-5 text-primary" />
                   <div>
-                    <p className="font-semibold text-foreground">{userSummary.verificationStatus}</p>
+                    <p className="font-semibold text-foreground">{summary.verificationStatus}</p>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       Akun dapat mengikuti fixed price, melihat detail transaksi, dan menerima
                       nota digital ketika pembayaran selesai diverifikasi.
@@ -1241,7 +1221,7 @@ export function ProfilePage({ buyer }: { buyer: BuyerSessionUser }) {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Member sejak
                 </p>
-                <p className="mt-3 font-semibold text-foreground">{userSummary.memberSince}</p>
+                <p className="mt-3 font-semibold text-foreground">{summary.memberSince}</p>
               </div>
             </CardContent>
           </Card>
@@ -1254,23 +1234,23 @@ export function ProfilePage({ buyer }: { buyer: BuyerSessionUser }) {
               <div
                 className={cn(
                   "rounded-[1.5rem] border p-5",
-                  userSummary.blacklist.active
+                  summary.blacklist.active
                     ? "border-tertiary-container/25 bg-tertiary-container/10"
                     : "border-border/70 bg-surface-low"
                 )}
               >
                 <div className="flex items-start gap-3">
-                  {userSummary.blacklist.active ? (
+                  {summary.blacklist.active ? (
                     <AlertTriangle className="mt-1 size-5 text-tertiary-container" />
                   ) : (
                     <CheckCircle2 className="mt-1 size-5 text-primary" />
                   )}
                   <div>
                     <p className="font-semibold text-foreground">
-                      {userSummary.blacklist.active ? "Blacklist aktif" : "Tidak ada blacklist aktif"}
+                      {summary.blacklist.active ? "Blacklist aktif" : "Tidak ada blacklist aktif"}
                     </p>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {userSummary.blacklist.reason}
+                      {summary.blacklist.reason}
                     </p>
                   </div>
                 </div>

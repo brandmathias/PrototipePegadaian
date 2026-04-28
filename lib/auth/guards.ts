@@ -21,7 +21,7 @@ const ROLE_HOME_PATHS: Record<AuthRole, string> = {
 };
 
 const ROLE_ALLOWED_PREFIXES: Record<AuthRole, string[]> = {
-  buyer: ["/dashboard", "/transaksi", "/profil", "/riwayat-bid"],
+  buyer: ["/dashboard", "/katalog", "/transaksi", "/profil", "/riwayat-bid"],
   admin_unit: ["/admin"],
   super_admin: ["/superadmin"]
 };

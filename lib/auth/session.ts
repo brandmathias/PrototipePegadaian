@@ -171,3 +171,37 @@ export async function requireAdminApiSession() {
     unitId: session.user.unitId
   };
 }
+
+export async function requireBuyerApiSession() {
+  const session = await getServerSession();
+
+  if (!session?.user) {
+    return {
+      ok: false as const,
+      status: 401,
+      message: "Silakan masuk sebagai pembeli terlebih dahulu."
+    };
+  }
+
+  if (!isAuthRole(session.user.role) || session.user.role !== "buyer") {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akses pembeli ditolak."
+    };
+  }
+
+  if ("isActive" in session.user && session.user.isActive === false) {
+    return {
+      ok: false as const,
+      status: 403,
+      message: "Akun Anda sedang nonaktif."
+    };
+  }
+
+  return {
+    ok: true as const,
+    session,
+    userId: session.user.id
+  };
+}

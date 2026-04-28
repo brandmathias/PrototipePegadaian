@@ -52,6 +52,11 @@ function dateAfter(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
+function isDueDateReached(dueDate: string) {
+  const due = new Date(`${dueDate}T00:00:00.000Z`).getTime();
+  return Number.isFinite(due) && due <= Date.now();
+}
+
 function buildBarangPayload(item?: AdminInventoryItem) {
   return {
     name: item?.name ?? "Barang Gadai Baru",
@@ -276,7 +281,7 @@ export function AdminInventoryPage({ items = adminInventory }: { items?: AdminIn
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-black/40" />
             <Input
               className="h-12 rounded-2xl bg-[#f3f3f3] pl-12 text-sm sm:text-base"
-              placeholder="Cari kode, nama barang, kategori, atau nomor nasabah…"
+              placeholder="Cari kode, nama barang, kategori, atau nomor nasabah..."
             />
           </div>
         </div>
@@ -302,7 +307,7 @@ export function AdminInventoryPage({ items = adminInventory }: { items?: AdminIn
                     <div>
                       <p className="font-semibold text-black/85">{item.name}</p>
                       <p className="mt-1 text-sm text-black/55">
-                        {item.category} · {item.ownerName}
+                        {item.category} - {item.ownerName}
                       </p>
                     </div>
                   </td>
@@ -450,36 +455,41 @@ export function AdminInventoryCreatePage() {
 
 export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
   const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
+  const gadaiActions = [
+    {
+      title: "Catat Perpanjangan",
+      description: "Perbarui tanggal jatuh tempo tanpa mengubah tahap barang saat ini.",
+      href: `/admin/barang/${item.id}/perpanjang`,
+      icon: CalendarClock
+    },
+    {
+      title: "Catat Penebusan",
+      description: "Catat pelunasan nasabah dan tutup proses barang dengan rapi.",
+      href: `/admin/barang/${item.id}/tebus`,
+      icon: ReceiptText
+    },
+    ...(isDueDateReached(item.dueDate)
+      ? [
+          {
+            title: "Jadikan Jaminan",
+            description: "Pindahkan ke aset unit karena masa tebus sudah berakhir tanpa pelunasan.",
+            href: `/admin/barang/${item.id}/jadikan-jaminan`,
+            icon: ShieldAlert
+          }
+        ]
+      : []),
+    {
+      title: "Edit Data Barang",
+      description: "Rapikan data barang selama masih berada dalam proses gadai.",
+      href: `/admin/barang/${item.id}/edit`,
+      icon: PencilLine,
+      variant: "secondary" as const
+    }
+  ];
 
   const actions =
     item.status === "GADAI"
-      ? [
-          {
-            title: "Catat Perpanjangan",
-            description: "Perbarui tanggal jatuh tempo tanpa mengubah tahap barang saat ini.",
-            href: `/admin/barang/${item.id}/perpanjang`,
-            icon: CalendarClock
-          },
-          {
-            title: "Catat Penebusan",
-            description: "Catat pelunasan nasabah dan tutup proses barang dengan rapi.",
-            href: `/admin/barang/${item.id}/tebus`,
-            icon: ReceiptText
-          },
-          {
-            title: "Jadikan Jaminan",
-            description: "Pindahkan ke aset unit bila masa tebus berakhir tanpa pelunasan.",
-            href: `/admin/barang/${item.id}/jadikan-jaminan`,
-            icon: ShieldAlert
-          },
-          {
-            title: "Edit Data Barang",
-            description: "Rapikan data barang selama masih berada dalam proses gadai.",
-            href: `/admin/barang/${item.id}/edit`,
-            icon: PencilLine,
-            variant: "secondary" as const
-          }
-        ]
+      ? gadaiActions
       : item.status === "JAMINAN"
         ? [
             {
@@ -1226,6 +1236,9 @@ export function AdminTransactionsPage({ transactions = adminTransactions }: { tr
 export function AdminTransactionDetailPage({ transactionId, transaction: providedTransaction }: { transactionId?: string; transaction?: AdminTransactionItem }) {
   const transaction = providedTransaction ?? getAdminTransactionById(transactionId ?? adminTransactions[0].id);
   const canPrint = transaction.printableReceipt || transaction.status === "LUNAS";
+  const canVerifyTransfer = transaction.status === "BUKTI_DIUNGGAH" && transaction.method === "TRANSFER_BANK";
+  const canConfirmDirect = transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG";
+  const canTakePaymentAction = canVerifyTransfer || canConfirmDirect;
 
   return (
     <div className="space-y-6">
@@ -1294,71 +1307,84 @@ export function AdminTransactionDetailPage({ transactionId, transaction: provide
               <CardTitle className="text-xl sm:text-[1.45rem]">Tindakan Lanjutan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <FieldLabel>Nomor referensi internal</FieldLabel>
-                <Input className="h-12" defaultValue={transaction.reference === "-" ? "" : transaction.reference} placeholder="Contoh: REF-MND-8821" />
-              </div>
-              <div className="space-y-2">
-                <FieldLabel>Alasan penolakan</FieldLabel>
-                <Textarea className="min-h-28" placeholder="Isi bila ada alasan penolakan atau catatan lanjutan untuk tim." />
-              </div>
+              {canTakePaymentAction ? (
+                <>
+                  <div className="space-y-2">
+                    <FieldLabel>Nomor referensi internal</FieldLabel>
+                    <Input className="h-12" defaultValue={transaction.reference === "-" ? "" : transaction.reference} placeholder="Contoh: REF-MND-8821" />
+                  </div>
+                  {canVerifyTransfer ? (
+                    <div className="space-y-2">
+                      <FieldLabel>Alasan penolakan</FieldLabel>
+                      <Textarea className="min-h-28" placeholder="Isi bila bukti transfer perlu dikembalikan ke pembeli." />
+                    </div>
+                  ) : null}
 
-              <AdminUnitActionButton
-                className="h-12 w-full rounded-2xl"
-                confirmDescription="Setelah diverifikasi, transaksi akan ditandai lunas dan barang otomatis masuk status terjual."
-                confirmLabel="Setujui pembayaran"
-                confirmTitle="Verifikasi pembayaran transfer"
-                endpoint={`/api/admin/transaksi/${transaction.id}/verifikasi`}
-                pendingDescription="Bukti transfer sedang diperiksa dan status transaksi akan diperbarui."
-                pendingTitle="Memverifikasi pembayaran"
-                payload={{ reference: transaction.reference === "-" ? `REF-${Date.now().toString().slice(-6)}` : transaction.reference }}
-                refresh
-                successDescription="Transaksi sudah lunas dan barang ditandai terjual."
-                successTitle="Pembayaran disetujui"
-              >
-                <FileCheck2 className="size-4" />
-                Setujui pembayaran transfer
-              </AdminUnitActionButton>
-              <AdminUnitActionButton
-                className="h-12 w-full rounded-2xl"
-                confirmDescription="Gunakan ini hanya jika dana benar-benar sudah diterima langsung oleh petugas unit."
-                confirmLabel="Ya, dana sudah diterima"
-                confirmTitle="Konfirmasi bayar langsung di unit"
-                endpoint={`/api/admin/transaksi/${transaction.id}/konfirmasi-langsung`}
-                pendingDescription="Status pembayaran langsung sedang ditutup sebagai transaksi selesai."
-                pendingTitle="Mengonfirmasi bayar langsung"
-                payload={{ reference: transaction.reference === "-" ? `CASH-${Date.now().toString().slice(-6)}` : transaction.reference }}
-                refresh
-                successDescription="Pembayaran langsung sudah dikonfirmasi oleh unit."
-                successTitle="Pembayaran langsung selesai"
-                variant="secondary"
-              >
-                <Wallet className="size-4" />
-                Selesaikan bayar di unit
-              </AdminUnitActionButton>
-              <AdminUnitActionButton
-                className="h-12 w-full rounded-2xl"
-                confirmDescription="Pembeli akan diminta mengunggah bukti transfer yang baru atau lebih jelas."
-                confirmLabel="Kembalikan bukti"
-                confirmTitle="Kembalikan bukti pembayaran"
-                confirmVariant="destructive"
-                endpoint={`/api/admin/transaksi/${transaction.id}/tolak-bukti`}
-                pendingDescription="Sistem sedang mengirimkan catatan revisi agar pembeli memperbaiki bukti transfer."
-                pendingTitle="Mengembalikan bukti pembayaran"
-                payload={{ reason: "Bukti pembayaran perlu diperbaiki oleh pembeli." }}
-                refresh
-                successDescription="Pembeli perlu mengunggah bukti pembayaran yang benar."
-                successTitle="Bukti pembayaran dikembalikan"
-                variant="destructive"
-              >
-                <FileWarning className="size-4" />
-                Kembalikan untuk perbaikan
-              </AdminUnitActionButton>
+                  {canVerifyTransfer ? (
+                    <>
+                      <AdminUnitActionButton
+                        className="h-12 w-full rounded-2xl"
+                        confirmDescription="Setelah diverifikasi, transaksi akan ditandai lunas dan barang otomatis masuk status terjual."
+                        confirmLabel="Setujui pembayaran"
+                        confirmTitle="Verifikasi pembayaran transfer"
+                        endpoint={`/api/admin/transaksi/${transaction.id}/verifikasi`}
+                        pendingDescription="Bukti transfer sedang diperiksa dan status transaksi akan diperbarui."
+                        pendingTitle="Memverifikasi pembayaran"
+                        payload={{ reference: transaction.reference === "-" ? `REF-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                        refresh
+                        successDescription="Transaksi sudah lunas dan barang ditandai terjual."
+                        successTitle="Pembayaran disetujui"
+                      >
+                        <FileCheck2 className="size-4" />
+                        Setujui pembayaran transfer
+                      </AdminUnitActionButton>
+                      <AdminUnitActionButton
+                        className="h-12 w-full rounded-2xl"
+                        confirmDescription="Pembeli akan diminta mengunggah bukti transfer yang baru atau lebih jelas."
+                        confirmLabel="Kembalikan bukti"
+                        confirmTitle="Kembalikan bukti pembayaran"
+                        confirmVariant="destructive"
+                        endpoint={`/api/admin/transaksi/${transaction.id}/tolak-bukti`}
+                        pendingDescription="Sistem sedang mengirimkan catatan revisi agar pembeli memperbaiki bukti transfer."
+                        pendingTitle="Mengembalikan bukti pembayaran"
+                        payload={{ reason: "Bukti pembayaran perlu diperbaiki oleh pembeli." }}
+                        refresh
+                        successDescription="Pembeli perlu mengunggah bukti pembayaran yang benar."
+                        successTitle="Bukti pembayaran dikembalikan"
+                        variant="destructive"
+                      >
+                        <FileWarning className="size-4" />
+                        Kembalikan untuk perbaikan
+                      </AdminUnitActionButton>
+                    </>
+                  ) : null}
+
+                  {canConfirmDirect ? (
+                    <AdminUnitActionButton
+                      className="h-12 w-full rounded-2xl"
+                      confirmDescription="Gunakan ini hanya jika dana benar-benar sudah diterima langsung oleh petugas unit."
+                      confirmLabel="Ya, dana sudah diterima"
+                      confirmTitle="Konfirmasi bayar langsung di unit"
+                      endpoint={`/api/admin/transaksi/${transaction.id}/konfirmasi-langsung`}
+                      pendingDescription="Status pembayaran langsung sedang ditutup sebagai transaksi selesai."
+                      pendingTitle="Mengonfirmasi bayar langsung"
+                      payload={{ reference: transaction.reference === "-" ? `CASH-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                      refresh
+                      successDescription="Pembayaran langsung sudah dikonfirmasi oleh unit."
+                      successTitle="Pembayaran langsung selesai"
+                      variant="secondary"
+                    >
+                      <Wallet className="size-4" />
+                      Selesaikan bayar di unit
+                    </AdminUnitActionButton>
+                  ) : null}
+                </>
+              ) : null}
 
               {canPrint ? (
                 <AdminUnitActionButton
                   className="h-12 w-full rounded-2xl"
-                  pendingLabel="Membuka cetak…"
+                  pendingLabel="Membuka cetak..."
                   successTitle="Nota siap dicetak"
                   successDescription="Preview nota dibuka agar bisa langsung dicetak atau disimpan."
                   variant="accent"
@@ -1368,7 +1394,9 @@ export function AdminTransactionDetailPage({ transactionId, transaction: provide
                 </AdminUnitActionButton>
               ) : (
                 <div className="rounded-2xl border border-dashed border-black/10 bg-[#fbfbfa] p-4 text-sm text-black/55">
-                  Nota baru dapat dicetak setelah transaksi selesai diverifikasi.
+                  {canTakePaymentAction
+                    ? "Nota baru dapat dicetak setelah transaksi selesai diverifikasi."
+                    : "Tidak ada tindakan pembayaran yang tersedia untuk status transaksi saat ini."}
                 </div>
               )}
             </CardContent>
