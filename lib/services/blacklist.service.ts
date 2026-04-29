@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { blacklistActionLogs, blacklists, units, users } from "@/lib/db/schema";
+import { serializeBlacklistEntry } from "@/lib/superadmin/serializers";
 import { validateBlacklistRevokePayload } from "@/lib/superadmin/validation";
 
 export async function listBlacklists() {
@@ -22,19 +23,19 @@ export async function listBlacklists() {
     .leftJoin(units, eq(units.id, blacklists.unitId))
     .orderBy(desc(blacklists.updatedAt));
 
-  return rows.map((row) => ({
-    id: row.id,
-    userId: row.userId,
-    name: row.name,
-    email: row.email,
-    unit: row.unitName ?? "Lintas unit",
-    total: row.totalViolations,
-    until: row.blockedUntil
-      ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(row.blockedUntil)
-      : "Sampai ditinjau ulang",
-    reason: row.revokeReason ?? "Pelanggaran pembayaran atau penyelesaian lelang.",
-    status: row.isActive ? "Aktif" : "Nonaktif"
-  }));
+  return rows.map((row) =>
+    serializeBlacklistEntry({
+      id: row.id,
+      userId: row.userId,
+      name: row.name,
+      email: row.email,
+      unitName: row.unitName,
+      isActive: row.isActive,
+      totalViolations: row.totalViolations,
+      blockedUntil: row.blockedUntil,
+      revokeReason: row.revokeReason
+    })
+  );
 }
 
 export async function revokeBlacklist(userId: string, actorUserId: string, input: { reason?: string }) {

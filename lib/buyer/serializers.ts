@@ -1,4 +1,5 @@
 import type { BuyerBid, BuyerBidStatus, BuyerTransaction, Lot } from "@/lib/mock-data";
+import { getCountdownState } from "@/lib/countdown";
 
 type AccountShape = {
   bankName: string | null;
@@ -74,27 +75,6 @@ function toDateTimeLabel(value: Date | null | undefined) {
   }).format(value);
 }
 
-function getCountdown(endsAt: Date | null | undefined) {
-  if (!endsAt) {
-    return undefined;
-  }
-
-  const diffMs = endsAt.getTime() - Date.now();
-  if (diffMs <= 0) {
-    return "Menunggu hasil";
-  }
-
-  const hours = Math.floor(diffMs / 3_600_000);
-  const days = Math.floor(hours / 24);
-  const restHours = hours % 24;
-
-  if (days > 0) {
-    return `${days} hari ${restHours} jam`;
-  }
-
-  return `${Math.max(1, hours)} jam`;
-}
-
 function toTransactionStatus(status: string): BuyerTransaction["status"] {
   if (status === "bukti_diunggah") return "BUKTI_DIUNGGAH";
   if (status === "menunggu_konfirmasi_langsung") return "MENUNGGU_KONFIRMASI_LANGSUNG";
@@ -161,7 +141,10 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     condition: row.condition,
     status: isVickrey ? "Lelang aktif" : "Tersedia",
     description: row.description,
-    countdown: isVickrey ? getCountdown(row.endsAt) : undefined,
+    countdown: isVickrey
+      ? getCountdownState(row.endsAt, { expiredLabel: "Menunggu hasil" }).label
+      : undefined,
+    endsAt: row.endsAt?.toISOString(),
     bankName: row.account?.bankName ?? undefined,
     bankAccountNumber: row.account?.accountNumber ?? undefined,
     bankAccountHolder: row.account?.accountHolderName ?? undefined,
@@ -194,7 +177,13 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     unit: row.unitName,
     unitAddress: row.unitAddress,
     createdAt: toDateTimeLabel(row.createdAt),
-    deadline: row.status === "lunas" ? "Selesai" : toDateTimeLabel(row.paymentDeadline),
+    deadline:
+      row.status === "lunas"
+        ? "Selesai"
+        : getCountdownState(row.paymentDeadline, {
+            expiredLabel: "Waktu pembayaran berakhir"
+          }).label,
+    deadlineAt: row.status === "lunas" ? undefined : row.paymentDeadline?.toISOString(),
     reference: row.referenceNumber ?? "-",
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
     paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",

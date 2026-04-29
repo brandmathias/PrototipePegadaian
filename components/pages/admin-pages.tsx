@@ -25,6 +25,7 @@ import {
   Wallet
 } from "lucide-react";
 
+import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
@@ -149,6 +150,46 @@ function DetailTile({
       </p>
       <div className="mt-2 text-base font-semibold text-black/80 sm:text-lg">{value}</div>
     </div>
+  );
+}
+
+function AdminAuctionDeadline({
+  auction,
+  prefix,
+  className
+}: {
+  auction: AdminAuctionItem;
+  prefix?: string;
+  className?: string;
+}) {
+  return (
+    <AdminLiveCountdown
+      className={className}
+      expiredLabel="Deadline terlewati"
+      fallbackLabel={auction.ending}
+      prefix={prefix}
+      targetAt={auction.endingAt}
+    />
+  );
+}
+
+function AdminTransactionDeadline({
+  transaction,
+  prefix,
+  className
+}: {
+  transaction: AdminTransactionItem;
+  prefix?: string;
+  className?: string;
+}) {
+  return (
+    <AdminLiveCountdown
+      className={className}
+      expiredLabel="Batas waktu terlewati"
+      fallbackLabel={transaction.deadline}
+      prefix={prefix}
+      targetAt={transaction.deadlineAt}
+    />
   );
 }
 
@@ -1080,7 +1121,9 @@ export function AdminAuctionListPage({ auctions = adminAuctions }: { auctions?: 
             <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
               <p>Mode: {auction.mode}</p>
               <p>Peserta: {auction.participants} user</p>
-              <p>Deadline: {auction.ending}</p>
+              <p>
+                <AdminAuctionDeadline auction={auction} prefix="Sisa waktu" />
+              </p>
               <p>Visibilitas bid: {auction.visibility}</p>
               <p>{auction.note}</p>
               <Link
@@ -1118,7 +1161,10 @@ export function AdminAuctionDetailPage({ auctionId, auction: providedAuction }: 
           <CardContent className="grid gap-4 md:grid-cols-2">
             <DetailTile label="ID Pemasaran" value={auction.id} />
             <DetailTile label="Mode" value={auction.mode} />
-            <DetailTile label="Deadline" value={auction.ending} />
+            <DetailTile
+              label="Sisa Waktu"
+              value={<AdminAuctionDeadline auction={auction} />}
+            />
             <DetailTile label="Peserta" value={`${auction.participants} peserta`} />
             <DetailTile label="Keterbukaan Hasil" value={auction.visibility} />
             <DetailTile label="Status" value={<AdminStatusBadge status={auction.status} />} />
@@ -1210,7 +1256,9 @@ export function AdminTransactionsPage({ transactions = adminTransactions }: { tr
                   <td className="px-6 py-4">{transaction.lot}</td>
                   <td className="px-6 py-4 text-black/65">{transaction.pemasaranMode}</td>
                   <td className="px-6 py-4 text-black/65">{transaction.method}</td>
-                  <td className="px-6 py-4 text-black/65">{transaction.deadline}</td>
+                  <td className="px-6 py-4 text-black/65">
+                    <AdminTransactionDeadline transaction={transaction} />
+                  </td>
                   <td className="px-6 py-4">
                     <AdminStatusBadge status={transaction.status} />
                   </td>
@@ -1261,7 +1309,10 @@ export function AdminTransactionDetailPage({ transactionId, transaction: provide
               <DetailTile label="Mode Pemasaran" value={transaction.pemasaranMode} />
               <DetailTile label="Metode Bayar" value={transaction.method} />
               <DetailTile label="Total Bayar" value={currency.format(transaction.total)} />
-              <DetailTile label="Deadline" value={transaction.deadline} />
+              <DetailTile
+                label="Sisa Waktu"
+                value={<AdminTransactionDeadline transaction={transaction} />}
+              />
             </CardContent>
           </Card>
 

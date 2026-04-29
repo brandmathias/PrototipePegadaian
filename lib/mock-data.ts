@@ -4,6 +4,7 @@ import type {
   AdminInventoryStatus,
   AdminTransactionStatus
 } from "@/lib/admin";
+import { getCountdownState } from "@/lib/countdown";
 
 export type AuctionMode = "fixed_price" | "vickrey";
 
@@ -21,6 +22,7 @@ export type Lot = {
   status: string;
   description: string;
   countdown?: string;
+  endsAt?: string;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountHolder?: string;
@@ -34,6 +36,41 @@ export const currency = new Intl.NumberFormat("id-ID", {
   currency: "IDR",
   maximumFractionDigits: 0
 });
+
+const witaDateTime = new Intl.DateTimeFormat("id-ID", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Asia/Makassar"
+});
+
+function offsetDate({
+  days = 0,
+  hours = 0,
+  minutes = 0
+}: {
+  days?: number;
+  hours?: number;
+  minutes?: number;
+}) {
+  return new Date(Date.now() + (((days * 24 + hours) * 60 + minutes) * 60 * 1000));
+}
+
+function toWitaDateTime(value: Date) {
+  return witaDateTime.format(value);
+}
+
+const demoAuctionEndsAt = {
+  macbook: offsetDate({ days: 2, hours: 4 }),
+  headphone: offsetDate({ hours: 7, minutes: 20 }),
+  cincin: offsetDate({ days: 5, hours: 12 })
+};
+
+const demoPaymentDeadlines = {
+  trx0051: offsetDate({ hours: 9, minutes: 10 }),
+  trx0045: offsetDate({ hours: 18 }),
+  trx0039: offsetDate({ days: 1, hours: 5 }),
+  trx0033: offsetDate({ hours: 22, minutes: 45 })
+};
 
 export const categories = [
   "Semua",
@@ -78,14 +115,17 @@ export const publicLots: Lot[] = [
     city: "Yogyakarta",
     condition: "Baik",
     status: "Lelang Aktif",
-    countdown: "2 hari 04 jam",
+    countdown: getCountdownState(demoAuctionEndsAt.macbook.toISOString(), {
+      expiredLabel: "Menunggu hasil"
+    }).label,
+    endsAt: demoAuctionEndsAt.macbook.toISOString(),
     description:
       "Laptop performa tinggi dengan kondisi mulus, baterai prima, dan unit telah lulus pengecekan fungsi dasar.",
     specs: [
       { label: "Processor", value: "Apple M2 Pro" },
       { label: "RAM", value: "16 GB" },
       { label: "Penyimpanan", value: "512 GB SSD" },
-      { label: "Batas Lelang", value: "24 April 2026, 16.00 WITA" }
+      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.macbook) }
     ]
   },
   {
@@ -142,14 +182,17 @@ export const publicLots: Lot[] = [
     city: "Makassar",
     condition: "Baik",
     status: "Lelang Aktif",
-    countdown: "7 jam 20 menit",
+    countdown: getCountdownState(demoAuctionEndsAt.headphone.toISOString(), {
+      expiredLabel: "Menunggu hasil"
+    }).label,
+    endsAt: demoAuctionEndsAt.headphone.toISOString(),
     description:
       "Perangkat audio kondisi prima dengan paket lengkap. Digunakan sebagai contoh lot Vickrey yang mendekati deadline.",
     specs: [
       { label: "Baterai", value: "32 jam" },
       { label: "Warna", value: "Midnight Black" },
       { label: "Aksesori", value: "Box + kabel original" },
-      { label: "Batas Lelang", value: "21 April 2026, 23.30 WITA" }
+      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.headphone) }
     ]
   },
   {
@@ -164,14 +207,17 @@ export const publicLots: Lot[] = [
     city: "Bandung",
     condition: "Baik",
     status: "Lelang Aktif",
-    countdown: "5 hari 12 jam",
+    countdown: getCountdownState(demoAuctionEndsAt.cincin.toISOString(), {
+      expiredLabel: "Menunggu hasil"
+    }).label,
+    endsAt: demoAuctionEndsAt.cincin.toISOString(),
     description:
       "Perhiasan unggulan dengan detail appraisal dan dokumentasi foto lengkap. Diposisikan sebagai hero lot editorial.",
     specs: [
       { label: "Batu", value: "Diamond 1.2 ct" },
       { label: "Ring Size", value: "16" },
       { label: "Material", value: "White gold" },
-      { label: "Batas Lelang", value: "27 April 2026, 10.00 WITA" }
+      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.cincin) }
     ]
   }
 ];
@@ -206,6 +252,7 @@ export type BuyerTransaction = {
   unitAddress: string;
   createdAt: string;
   deadline: string;
+  deadlineAt?: string;
   reference: string;
   applicationNumber: string;
   paymentLabel: string;
@@ -279,7 +326,10 @@ export const userTransactions: BuyerTransaction[] = [
     unit: "Pegadaian CP Medan Baru",
     unitAddress: "Jl. Gajah Mada No. 88, Medan Baru",
     createdAt: "21 April 2026, 09.10 WITA",
-    deadline: "22 April 2026, 09.10 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0051.toISOString(), {
+      expiredLabel: "Waktu pembayaran berakhir"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0051.toISOString(),
     reference: "FP-2026-0051",
     applicationNumber: "PGJ-FP-2026-0051",
     paymentLabel: "Transfer bank ke rekening unit",
@@ -304,7 +354,10 @@ export const userTransactions: BuyerTransaction[] = [
     unit: "Pegadaian CP Sudirman",
     unitAddress: "Jl. Jend. Sudirman No. 45, Jakarta Pusat",
     createdAt: "21 April 2026, 10.35 WITA",
-    deadline: "22 April 2026, 18.00 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0045.toISOString(), {
+      expiredLabel: "Waktu pembayaran berakhir"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0045.toISOString(),
     reference: "FP-2026-0045",
     applicationNumber: "PGJ-FP-2026-0045",
     paymentLabel: "Transfer bank sudah dilakukan",
@@ -330,7 +383,10 @@ export const userTransactions: BuyerTransaction[] = [
     unit: "Pegadaian CP Basuki Rahmat",
     unitAddress: "Jl. Basuki Rahmat No. 119, Surabaya",
     createdAt: "20 April 2026, 14.00 WITA",
-    deadline: "23 April 2026, 15.00 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0039.toISOString(), {
+      expiredLabel: "Waktu pembayaran berakhir"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0039.toISOString(),
     reference: "FP-2026-0039",
     applicationNumber: "PGJ-FP-2026-0039",
     paymentLabel: "Bayar langsung di unit Pegadaian",
@@ -351,7 +407,10 @@ export const userTransactions: BuyerTransaction[] = [
     unit: "Pegadaian UPC Malioboro",
     unitAddress: "Jl. Malioboro No. 17, Yogyakarta",
     createdAt: "21 April 2026, 08.45 WITA",
-    deadline: "22 April 2026, 08.45 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0033.toISOString(), {
+      expiredLabel: "Waktu pembayaran berakhir"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0033.toISOString(),
     reference: "VIC-2026-0033",
     applicationNumber: "PGJ-VIC-2026-0033",
     paymentLabel: "Pemenang lelang Vickrey",
@@ -701,6 +760,7 @@ export const adminTransactions: Array<{
   total: number;
   reference: string;
   deadline: string;
+  deadlineAt?: string;
   pemasaranMode: "FIXED_PRICE" | "VICKREY_AUCTION";
   accountName: string;
   accountNumber: string;
@@ -719,7 +779,10 @@ export const adminTransactions: Array<{
     method: "TRANSFER_BANK",
     total: 12500000,
     reference: "-",
-    deadline: "22 April 2026, 18.00 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0045.toISOString(), {
+      expiredLabel: "Batas waktu terlewati"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0045.toISOString(),
     pemasaranMode: "FIXED_PRICE",
     accountName: "PT Pegadaian (Persero) Unit Manado",
     accountNumber: "0123-4567-8901-234",
@@ -737,7 +800,10 @@ export const adminTransactions: Array<{
     method: "BAYAR_LANGSUNG",
     total: 18400000,
     reference: "-",
-    deadline: "22 April 2026, 17.00 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0039.toISOString(), {
+      expiredLabel: "Batas waktu terlewati"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0039.toISOString(),
     pemasaranMode: "FIXED_PRICE",
     accountName: "PT Pegadaian (Persero) Unit Manado",
     accountNumber: "0123-4567-8901-234",
@@ -754,7 +820,10 @@ export const adminTransactions: Array<{
     method: "TRANSFER_BANK",
     total: 18200000,
     reference: "-",
-    deadline: "22 April 2026, 08.45 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0033.toISOString(), {
+      expiredLabel: "Batas waktu terlewati"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0033.toISOString(),
     pemasaranMode: "VICKREY_AUCTION",
     accountName: "PT Pegadaian (Persero) Unit Manado",
     accountNumber: "0123-4567-8901-234",
@@ -771,7 +840,10 @@ export const adminTransactions: Array<{
     method: "TRANSFER_BANK",
     total: 11100000,
     reference: "-",
-    deadline: "21 April 2026, 11.20 WITA",
+    deadline: getCountdownState(demoPaymentDeadlines.trx0051.toISOString(), {
+      expiredLabel: "Batas waktu terlewati"
+    }).label,
+    deadlineAt: demoPaymentDeadlines.trx0051.toISOString(),
     pemasaranMode: "FIXED_PRICE",
     accountName: "PT Pegadaian (Persero) Unit Manado",
     accountNumber: "0123-4567-8901-234",
@@ -806,6 +878,7 @@ export const adminAuctions: Array<{
   lot: string;
   status: AdminAuctionStatus;
   ending: string;
+  endingAt?: string;
   participants: number;
   mode: "FIXED_PRICE" | "VICKREY_AUCTION";
   visibility: "TERSEMBUNYI" | "HASIL_DIBUKA";
@@ -818,7 +891,10 @@ export const adminAuctions: Array<{
     lotId: "lot-105",
     lot: "MacBook Pro 14 inci M2 Pro 16/512",
     status: "AKTIF",
-    ending: "24 April 2026, 16.00 WITA",
+    ending: getCountdownState(demoAuctionEndsAt.macbook.toISOString(), {
+      expiredLabel: "Deadline terlewati"
+    }).label,
+    endingAt: demoAuctionEndsAt.macbook.toISOString(),
     participants: 12,
     mode: "VICKREY_AUCTION",
     visibility: "TERSEMBUNYI",

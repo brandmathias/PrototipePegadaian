@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Clock3, Gavel, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useTransition } from "react";
 
+import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -128,10 +129,14 @@ export function VickreyBidForm({
               <div className="rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
                 Harga dasar {currency.format(lot.price)}
               </div>
-              {lot.countdown ? (
+              {lot.countdown || lot.endsAt ? (
                 <div className="inline-flex items-center gap-2 rounded-full bg-tertiary-container/10 px-4 py-2 text-sm font-semibold text-tertiary-container">
                   <Clock3 className="size-4" />
-                  {lot.countdown}
+                  <LiveCountdown
+                    expiredLabel="Menunggu hasil"
+                    fallbackLabel={lot.countdown}
+                    targetAt={lot.endsAt}
+                  />
                 </div>
               ) : null}
             </div>

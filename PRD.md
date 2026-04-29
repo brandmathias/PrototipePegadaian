@@ -1,4 +1,5 @@
 # Product Requirements Document (PRD)
+
 ## Aplikasi Pengelolaan dan Layanan Informasi Barang Lelang Berbasis Web
 
 **Versi:** 4.0  
@@ -17,6 +18,7 @@ Sistem mendukung dua mekanisme pemasaran barang: **Fixed Price** (harga tetap) d
 Sistem bersifat **multi-unit** — satu instalasi melayani banyak cabang/unit Pegadaian secara terpusat.
 
 ### Tujuan Utama
+
 - Mengelola siklus hidup barang gadai secara digital dari awal hingga akhir.
 - Memberikan fleksibilitas kepada Admin Unit untuk menentukan mekanisme penjualan barang.
 - Memberikan transparansi kepada publik/pembeli mengenai katalog barang yang tersedia.
@@ -24,6 +26,7 @@ Sistem bersifat **multi-unit** — satu instalasi melayani banyak cabang/unit Pe
 - Menyediakan alur pembayaran yang jelas beserta verifikasi dan cetak nota.
 
 ### Batasan Sistem (Constraints)
+
 - Tidak menggunakan payment gateway eksternal.
 - Pembayaran via **transfer bank** (upload bukti) atau **langsung di Pegadaian** — keduanya diverifikasi manual oleh Admin Unit.
 - Vickrey Auction bersifat **simulasi** — pemenang ditentukan sistem, pembayaran tetap offline.
@@ -35,9 +38,11 @@ Sistem bersifat **multi-unit** — satu instalasi melayani banyak cabang/unit Pe
 ## 2. Aktor & Peran (Roles)
 
 ### 2.1 Super Admin
+
 Pengelola sistem secara global. Memiliki akses penuh ke semua data dan konfigurasi.
 
 **Kapabilitas:**
+
 - CRUD Unit Pegadaian (nama, alamat, kode unit).
 - CRUD akun Admin Unit (create, assign ke unit, nonaktifkan).
 - Mengelola **nomor rekening bank tujuan per unit** (nama bank, nomor rekening, nama pemilik).
@@ -45,9 +50,11 @@ Pengelola sistem secara global. Memiliki akses penuh ke semua data dan konfigura
 - Melihat dan mengelola blacklist user secara global (termasuk mencabut blokir lebih awal).
 
 ### 2.2 Admin Unit
+
 Operator di masing-masing unit Pegadaian. Hanya mengelola data milik unit-nya sendiri.
 
 **Kapabilitas:**
+
 - Input barang gadai masuk ke sistem.
 - Melakukan **perpanjangan masa gadai** atas permintaan nasabah.
 - Mencatat **penebusan barang** oleh nasabah.
@@ -59,9 +66,11 @@ Operator di masing-masing unit Pegadaian. Hanya mengelola data milik unit-nya se
 - Melihat riwayat pelanggaran user dan mengelola blacklist di unit-nya.
 
 ### 2.3 User (Pembeli / Peserta Lelang)
+
 Pengguna publik yang telah mendaftar dan login.
 
 **Kapabilitas:**
+
 - Melihat katalog barang yang dipasarkan.
 - Melihat detail barang (foto, video, kondisi, harga, informasi unit).
 - Mengajukan pembelian barang fixed price (memilih metode bayar + upload bukti jika transfer).
@@ -70,10 +79,12 @@ Pengguna publik yang telah mendaftar dan login.
 - Melihat riwayat transaksi dan bidding pribadi.
 
 **Pembatasan User Blacklist:**
+
 - User dengan blacklist aktif **tidak dapat** mengikuti lelang Vickrey.
 - User blacklist masih dapat melihat katalog dan membeli barang fixed price.
 
 ### 2.4 Guest (Tidak Login)
+
 - Hanya dapat melihat katalog dan detail barang (read-only).
 - Tidak dapat melakukan pembelian atau bidding.
 
@@ -212,15 +223,17 @@ Admin unit menginput barang nasabah yang masuk sebagai gadai
 
 ### 3.1 Ringkasan Seluruh Status Barang
 
-| Status | Deskripsi | Siapa yang Bisa Mengubah | Dapat Kembali ke Status Sebelumnya? |
-|---|---|---|---|
-| `GADAI` | Barang sedang dijaminkan. Nasabah masih memiliki hak tebus. | Admin Unit (input baru) | — (status awal) |
-| `DITEBUS` | Nasabah menebus barang. Selesai. | Admin Unit | ❌ Terminal state |
-| `JAMINAN` | Barang resmi milik Pegadaian. Belum dipasarkan. | Admin Unit | ❌ Tidak bisa kembali ke GADAI |
-| `DIPASARKAN` | Barang aktif di katalog publik (fixed price atau vickrey). | Admin Unit | ❌ Tidak bisa kembali ke JAMINAN |
-| `MENUNGGU_PEMBAYARAN` | Pemenang Vickrey ditentukan, menunggu pembayaran ≤24 jam. | Sistem (otomatis) | ❌ |
-| `TERJUAL` | Transaksi selesai & terverifikasi. Nota dapat dicetak. | Admin Unit (verifikasi) | ❌ Terminal state |
-| `GAGAL` | Tidak ada penawar, atau pemenang tidak membayar. Bisa dipasarkan ulang. | Sistem / Admin Unit | ✅ Bisa → DIPASARKAN (re-listing) |
+
+| Status                | Deskripsi                                                               | Siapa yang Bisa Mengubah | Dapat Kembali ke Status Sebelumnya? |
+| --------------------- | ----------------------------------------------------------------------- | ------------------------ | ----------------------------------- |
+| `GADAI`               | Barang sedang dijaminkan. Nasabah masih memiliki hak tebus.             | Admin Unit (input baru)  | — (status awal)                     |
+| `DITEBUS`             | Nasabah menebus barang. Selesai.                                        | Admin Unit               | ❌ Terminal state                    |
+| `JAMINAN`             | Barang resmi milik Pegadaian. Belum dipasarkan.                         | Admin Unit               | ❌ Tidak bisa kembali ke GADAI       |
+| `DIPASARKAN`          | Barang aktif di katalog publik (fixed price atau vickrey).              | Admin Unit               | ❌ Tidak bisa kembali ke JAMINAN     |
+| `MENUNGGU_PEMBAYARAN` | Pemenang Vickrey ditentukan, menunggu pembayaran ≤24 jam.               | Sistem (otomatis)        | ❌                                   |
+| `TERJUAL`             | Transaksi selesai & terverifikasi. Nota dapat dicetak.                  | Admin Unit (verifikasi)  | ❌ Terminal state                    |
+| `GAGAL`               | Tidak ada penawar, atau pemenang tidak membayar. Bisa dipasarkan ulang. | Sistem / Admin Unit      | ✅ Bisa → DIPASARKAN (re-listing)    |
+
 
 ---
 
@@ -248,17 +261,19 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 ### 4.1 Registrasi & Autentikasi
 
 **User (Pembeli) — Registrasi Mandiri:**
+
 1. Mendaftar di `/register` dengan:
-   - Nama lengkap
-   - Email (unik)
-   - Nomor telepon/HP
-   - Password (min. 8 karakter)
-   - Nomor KTP (digunakan untuk identifikasi jika terjadi pelanggaran blacklist)
+  - Nama lengkap
+  - Email (unik)
+  - Nomor telepon/HP
+  - Password (min. 8 karakter)
+  - Nomor KTP (digunakan untuk identifikasi jika terjadi pelanggaran blacklist)
 2. Setelah registrasi berhasil, user dapat langsung login.
 3. Login menggunakan email + password.
 4. Sesi dikelola menggunakan **JWT di httpOnly cookie**.
 
 **Admin Unit & Super Admin — Akun Dibuat oleh Super Admin:**
+
 1. Super Admin membuat akun admin melalui `/superadmin/admin`.
 2. Admin login melalui halaman `/login` yang sama — sistem membedakan berdasarkan field `role` di dalam JWT token.
 3. Setelah login, sistem redirect ke dashboard sesuai role masing-masing.
@@ -271,24 +286,27 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 
 **Form Input Barang Gadai:**
 
-| Field | Tipe | Wajib | Keterangan |
-|---|---|---|---|
-| `nama_barang` | string | ✅ | Nama/judul deskriptif barang |
-| `kategori` | enum | ✅ | `emas`, `elektronik`, `kendaraan`, `perhiasan`, `lainnya` |
-| `deskripsi` | text | ✅ | Deskripsi detail spesifikasi dan kondisi barang |
-| `kondisi` | enum | ✅ | `baik`, `cukup`, `rusak_ringan` |
-| `nilai_taksiran` | decimal | ✅ | Nilai estimasi pasar barang (hasil taksasi petugas) |
-| `nilai_gadai` | decimal | ✅ | Jumlah pinjaman yang diberikan ke nasabah |
-| `nama_penggadai` | string | ✅ | Nama nasabah — **tidak ditampilkan ke publik** |
-| `nomor_nasabah` | string | ✅ | ID nasabah internal — **tidak ditampilkan ke publik** |
-| `tanggal_gadai` | date | ✅ | Tanggal barang masuk sebagai gadai |
-| `tanggal_jatuh_tempo` | date | ✅ | Batas waktu nasabah menebus (harus > tanggal_gadai) |
-| `foto` | file[] | ✅ | Min. 1, maks. 5 file. Format: `jpg`, `png`, `webp`. Maks. 5 MB/file |
-| `video` | file[] | ❌ | Opsional. Maks. 2 file. Format: `mp4`, `mov`, `webm`. Maks. 50 MB/file |
+
+| Field                 | Tipe    | Wajib | Keterangan                                                             |
+| --------------------- | ------- | ----- | ---------------------------------------------------------------------- |
+| `nama_barang`         | string  | ✅     | Nama/judul deskriptif barang                                           |
+| `kategori`            | enum    | ✅     | `emas`, `elektronik`, `kendaraan`, `perhiasan`, `lainnya`              |
+| `deskripsi`           | text    | ✅     | Deskripsi detail spesifikasi dan kondisi barang                        |
+| `kondisi`             | enum    | ✅     | `baik`, `cukup`, `rusak_ringan`                                        |
+| `nilai_taksiran`      | decimal | ✅     | Nilai estimasi pasar barang (hasil taksasi petugas)                    |
+| `nilai_gadai`         | decimal | ✅     | Jumlah pinjaman yang diberikan ke nasabah                              |
+| `nama_penggadai`      | string  | ✅     | Nama nasabah — **tidak ditampilkan ke publik**                         |
+| `nomor_nasabah`       | string  | ✅     | ID nasabah internal — **tidak ditampilkan ke publik**                  |
+| `tanggal_gadai`       | date    | ✅     | Tanggal barang masuk sebagai gadai                                     |
+| `tanggal_jatuh_tempo` | date    | ✅     | Batas waktu nasabah menebus (harus > tanggal_gadai)                    |
+| `foto`                | file[]  | ✅     | Min. 1, maks. 5 file. Format: `jpg`, `png`, `webp`. Maks. 5 MB/file    |
+| `video`               | file[]  | ❌     | Opsional. Maks. 2 file. Format: `mp4`, `mov`, `webm`. Maks. 50 MB/file |
+
 
 **Setelah disimpan:** Status barang otomatis = `GADAI`.
 
 **Aturan Media (Foto & Video):**
+
 - Minimal 1 foto wajib ada saat input.
 - Video bersifat opsional tetapi dianjurkan untuk barang bernilai tinggi.
 - Selama status `GADAI` atau `JAMINAN`: admin dapat menambah atau menghapus media.
@@ -304,14 +322,15 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 **Prasyarat:** Status barang = `GADAI`.
 
 **Workflow Lengkap:**
+
 1. Admin Unit membuka halaman daftar barang dengan filter status `GADAI`.
 2. Admin mencari barang milik nasabah (by nama nasabah atau nomor nasabah).
 3. Admin membuka detail barang, memeriksa `tanggal_jatuh_tempo` saat ini.
 4. Admin mengklik tombol **"Catat Perpanjangan"**.
 5. Sistem menampilkan form:
-   - Tanggal jatuh tempo saat ini (read-only, sebagai referensi).
-   - Input durasi perpanjangan: pilihan dalam hari atau bulan, atau input tanggal jatuh tempo baru secara langsung.
-   - Catatan perpanjangan (opsional — misalnya nomor kontrak perpanjangan).
+  - Tanggal jatuh tempo saat ini (read-only, sebagai referensi).
+  - Input durasi perpanjangan: pilihan dalam hari atau bulan, atau input tanggal jatuh tempo baru secara langsung.
+  - Catatan perpanjangan (opsional — misalnya nomor kontrak perpanjangan).
 6. Admin mengkonfirmasi.
 7. **Sistem memvalidasi:** `tanggal_jatuh_tempo_baru` harus lebih besar dari tanggal saat ini.
 8. Sistem memperbarui kolom `tanggal_jatuh_tempo` pada record barang.
@@ -319,6 +338,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 10. Status barang **tetap `GADAI`** — tidak ada perubahan status.
 
 **Catatan Penting:**
+
 - Satu barang dapat diperpanjang **berkali-kali** (tidak ada batas maksimum — sesuaikan dengan kebijakan bisnis).
 - Riwayat perpanjangan (tanggal lama, tanggal baru, siapa yang memproses) disimpan permanen untuk keperluan audit.
 - Admin dapat melihat riwayat perpanjangan di halaman detail barang.
@@ -332,22 +352,24 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 **Prasyarat:** Status barang = `GADAI`.
 
 **Workflow Lengkap:**
+
 1. Admin Unit membuka detail barang yang akan ditebus.
 2. Admin mengklik tombol **"Catat Penebusan"**.
 3. Sistem menampilkan konfirmasi:
-   - Nama barang.
-   - Nama penggadai.
-   - Tanggal jatuh tempo.
-   - Peringatan: *"Tindakan ini tidak dapat dibatalkan. Barang akan keluar dari sistem."*
+  - Nama barang.
+  - Nama penggadai.
+  - Tanggal jatuh tempo.
+  - Peringatan: *"Tindakan ini tidak dapat dibatalkan. Barang akan keluar dari sistem."*
 4. Admin mengisi:
-   - Tanggal penebusan (default: hari ini).
-   - Nomor referensi penebusan (nomor kuitansi/transaksi offline).
-   - Catatan (opsional).
+  - Tanggal penebusan (default: hari ini).
+  - Nomor referensi penebusan (nomor kuitansi/transaksi offline).
+  - Catatan (opsional).
 5. Admin mengkonfirmasi.
 6. Sistem mengubah status barang menjadi `DITEBUS`.
 7. Sistem mencatat event penebusan di `riwayat_status_barang`.
 
 **Catatan Penting:**
+
 - Status `DITEBUS` adalah **terminal state** — barang tidak dapat diproses lebih lanjut dalam sistem.
 - Barang berstatus `DITEBUS` **tidak muncul** di katalog publik maupun di antrian lelang.
 - Penebusan masih dapat dilakukan **setelah** tanggal jatuh tempo selama admin belum mengkonversi barang ke status `JAMINAN`.
@@ -363,18 +385,20 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 **Kapan dilakukan:** Setelah `tanggal_jatuh_tempo` terlewati DAN nasabah tidak hadir untuk menebus atau memperpanjang.
 
 **Workflow Lengkap:**
+
 1. Admin Unit membuka daftar barang.
 2. Sistem secara visual menandai barang yang `tanggal_jatuh_tempo`-nya sudah lewat dengan label/badge **"Jatuh Tempo"**.
 3. Admin memilih barang dan mengklik **"Konfirmasi Jadi Jaminan"**.
 4. Sistem menampilkan konfirmasi:
-   - Nama barang, nama penggadai.
-   - Tanggal jatuh tempo yang sudah lewat.
-   - Peringatan: *"Pastikan nasabah benar-benar tidak menebus. Setelah dikonfirmasi, barang tidak bisa dikembalikan ke nasabah melalui sistem ini."*
+  - Nama barang, nama penggadai.
+  - Tanggal jatuh tempo yang sudah lewat.
+  - Peringatan: *"Pastikan nasabah benar-benar tidak menebus. Setelah dikonfirmasi, barang tidak bisa dikembalikan ke nasabah melalui sistem ini."*
 5. Admin mengkonfirmasi.
 6. Sistem mengubah status barang dari `GADAI` → `JAMINAN`.
 7. Sistem mencatat perubahan status di `riwayat_status_barang`.
 
 **Catatan Penting:**
+
 - Tombol **"Catat Penebusan"** tetap muncul di halaman detail barang selama status masih `GADAI`, bahkan jika sudah melewati jatuh tempo. Admin harus memilih secara eksplisit antara "Konfirmasi Jadi Jaminan" atau "Catat Penebusan".
 - Setelah status menjadi `JAMINAN`, nasabah **tidak dapat lagi** menebus barang melalui sistem.
 
@@ -387,24 +411,27 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 **Konteks:** Admin Unit memilih apakah barang ini akan dijual dengan harga tetap (fixed price) atau dilelang (Vickrey Auction).
 
 **Workflow Lengkap:**
+
 1. Admin Unit membuka halaman daftar barang jaminan (`/admin/barang?status=jaminan`).
 2. Admin memilih barang dan membuka halaman detail.
 3. Admin mengklik tombol **"Pasarkan Barang"**.
 4. Sistem menampilkan form konfigurasi pemasaran:
 
 **Jika memilih Fixed Price:**
+
 - Input `harga_jual` (decimal, wajib > 0).
 - Sistem langsung menampilkan barang di katalog setelah dikonfirmasi.
 
 **Jika memilih Vickrey Auction:**
+
 - Input `harga_dasar` (decimal, wajib > 0) — sebagai harga minimum bid.
 - Input `durasi_lelang` (integer, 1–30 hari).
 - Sistem menghitung dan menampilkan `tanggal_selesai_lelang` = `NOW() + durasi_hari`.
 
-5. Admin mengkonfirmasi.
-6. Sistem mengubah status barang dari `JAMINAN` → `DIPASARKAN`.
-7. Sistem membuat record baru di tabel `pemasaran` dengan mode yang dipilih.
-8. Barang langsung muncul di katalog publik.
+1. Admin mengkonfirmasi.
+2. Sistem mengubah status barang dari `JAMINAN` → `DIPASARKAN`.
+3. Sistem membuat record baru di tabel `pemasaran` dengan mode yang dipilih.
+4. Barang langsung muncul di katalog publik.
 
 ---
 
@@ -415,55 +442,61 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 #### A. Dari Sisi User
 
 **Langkah 1 — Ajukan Pembelian:**
+
 1. User membuka detail barang di katalog, terlihat label **"Beli Langsung"** dan harga jual.
 2. User mengklik **"Beli Sekarang"**.
 3. Sistem memeriksa apakah sudah ada pengajuan aktif dari user lain:
-   - Jika ada → tombol dinonaktifkan, tampil pesan "Barang sedang dalam proses pembelian oleh user lain."
+  - Jika ada → tombol dinonaktifkan, tampil pesan "Barang sedang dalam proses pembelian oleh user lain."
 4. Sistem memeriksa apakah user sudah memiliki transaksi aktif yang belum selesai:
-   - Jika ada → tampil pesan dan redirect ke halaman transaksi aktif tersebut.
+  - Jika ada → tampil pesan dan redirect ke halaman transaksi aktif tersebut.
 5. Sistem menampilkan halaman konfirmasi pembelian berisi:
-   - Ringkasan barang (nama, foto utama, kondisi, harga jual).
-   - Informasi rekening bank unit: nama bank, nomor rekening, nama pemilik rekening.
-   - Pilihan metode pembayaran: **Transfer Bank** atau **Bayar Langsung di Pegadaian**.
+  - Ringkasan barang (nama, foto utama, kondisi, harga jual).
+  - Informasi rekening bank unit: nama bank, nomor rekening, nama pemilik rekening.
+  - Pilihan metode pembayaran: **Transfer Bank** atau **Bayar Langsung di Pegadaian**.
 6. User memilih metode dan mengklik **"Konfirmasi Pembelian"**.
 7. Sistem membuat record di tabel `transaksi` dengan status `MENUNGGU_PEMBAYARAN`.
 
 **Langkah 2a — Transfer Bank:**
+
 1. User diarahkan ke halaman detail transaksi (`/transaksi/[id]`).
 2. Halaman menampilkan:
-   - Jumlah yang harus ditransfer.
-   - Nama bank, nomor rekening, nama pemilik rekening tujuan.
-   - Batas waktu upload bukti (24 jam).
+  - Jumlah yang harus ditransfer.
+  - Nama bank, nomor rekening, nama pemilik rekening tujuan.
+  - Batas waktu upload bukti (24 jam).
 3. User melakukan transfer melalui aplikasi bank/ATM masing-masing.
 4. User mengupload **bukti transfer** di halaman tersebut (jpg/png/pdf, maks. 5 MB).
 5. Status transaksi berubah ke `BUKTI_DIUNGGAH`.
 6. Admin mendapat notifikasi (badge di dashboard).
 
 **Langkah 2b — Bayar Langsung:**
+
 1. Halaman konfirmasi menampilkan:
-   - **Nomor Pengajuan** (ID transaksi yang harus ditunjukkan ke petugas).
-   - Nama barang dan total harga yang harus dibayar.
-   - Alamat lengkap unit Pegadaian tujuan.
-   - Instruksi: *"Kunjungi unit Pegadaian dan tunjukkan Nomor Pengajuan ini kepada petugas."*
+  - **Nomor Pengajuan** (ID transaksi yang harus ditunjukkan ke petugas).
+  - Nama barang dan total harga yang harus dibayar.
+  - Alamat lengkap unit Pegadaian tujuan.
+  - Instruksi: *"Kunjungi unit Pegadaian dan tunjukkan Nomor Pengajuan ini kepada petugas."*
 2. Status transaksi = `MENUNGGU_KONFIRMASI_LANGSUNG`.
 
 #### B. Dari Sisi Admin Unit
 
 **Verifikasi Bukti Transfer:**
+
 1. Admin membuka `/admin/transaksi` → filter status `BUKTI_DIUNGGAH`.
 2. Admin membuka detail transaksi → lihat bukti pembayaran yang diunggah user.
 3. Admin mencocokkan dengan mutasi rekening bank secara manual (offline).
 4. **Jika valid:** Admin klik **"Verifikasi Pembayaran"** → isi nomor referensi internal → konfirmasi.
 5. **Jika tidak valid:** Admin klik **"Tolak Bukti"** → isi alasan penolakan.
-   - User mendapat notifikasi bahwa bukti ditolak dan diminta upload ulang.
-   - Status transaksi kembali ke `MENUNGGU_PEMBAYARAN`.
+  - User mendapat notifikasi bahwa bukti ditolak dan diminta upload ulang.
+  - Status transaksi kembali ke `MENUNGGU_PEMBAYARAN`.
 
 **Konfirmasi Bayar Langsung:**
+
 1. Nasabah/user datang ke kasir Pegadaian dan menyebutkan Nomor Pengajuan.
 2. Admin membuka transaksi → cari berdasarkan Nomor Pengajuan.
 3. Admin klik **"Konfirmasi Pembayaran Langsung"** → isi nomor kuitansi kasir → konfirmasi.
 
 **Setelah Verifikasi (Berlaku untuk Kedua Metode):**
+
 1. Status transaksi berubah ke `LUNAS`.
 2. Status barang berubah ke `TERJUAL`.
 3. Tombol **"Cetak Nota"** aktif — dapat diakses oleh admin dan user yang bertransaksi.
@@ -516,6 +549,7 @@ INFORMASI PEMBAYARAN
 ### 4.9 Vickrey Auction — Alur Bidding Lengkap
 
 **Konsep Vickrey Auction:**
+
 - Semua bid bersifat **tertutup** — tidak ada yang tahu nilai bid orang lain.
 - **Pemenang** = penawar dengan bid tertinggi (B1).
 - **Harga yang dibayar** = nilai bid tertinggi kedua (B2), bukan nilai bid pemenang.
@@ -525,21 +559,21 @@ INFORMASI PEMBAYARAN
 
 1. User membuka detail barang lelang Vickrey.
 2. Halaman menampilkan:
-   - Harga dasar lelang.
-   - Countdown timer menuju deadline.
-   - Status bid user: *"Anda belum memasukkan penawaran"* atau *"Anda sudah memasukkan penawaran"*.
+  - Harga dasar lelang.
+  - Countdown timer menuju deadline.
+  - Status bid user: *"Anda belum memasukkan penawaran"* atau *"Anda sudah memasukkan penawaran"*.
 3. **Cek Blacklist:** Jika user memiliki blacklist aktif, tombol bid dinonaktifkan dan tampil pesan:
-   > *"Anda sedang dalam masa pemblokiran lelang hingga [tanggal]. Total pelanggaran: [X] kali."*
+  > *"Anda sedang dalam masa pemblokiran lelang hingga [tanggal]. Total pelanggaran: [X] kali."*
 4. User mengklik **"Masukkan Penawaran"**.
 5. Sistem menampilkan form input nominal bid.
-   - Validasi: nominal ≥ harga dasar.
+  - Validasi: nominal ≥ harga dasar.
 6. Sistem menampilkan dialog konfirmasi:
-   > *"Anda akan memasukkan penawaran sebesar Rp [X]. Penawaran tidak dapat diubah atau dibatalkan setelah dikonfirmasi."*
+  > *"Anda akan memasukkan penawaran sebesar Rp [X]. Penawaran tidak dapat diubah atau dibatalkan setelah dikonfirmasi."*
 7. User mengkonfirmasi.
 8. **Sistem menyimpan bid:**
-   - `nominal` — nilai asli, tersimpan di database, hanya dibaca sistem saat deadline.
-   - `salt` — random string unik per bid.
-   - `bid_hash` = SHA-256(`user_id` + `nominal` + `salt`) — untuk verifikasi integritas.
+  - `nominal` — nilai asli, tersimpan di database, hanya dibaca sistem saat deadline.
+  - `salt` — random string unik per bid.
+  - `bid_hash` = SHA-256(`user_id` + `nominal` + `salt`) — untuk verifikasi integritas.
 9. User melihat konfirmasi: *"Penawaran Anda berhasil dicatat."* (nilai tidak ditampilkan ulang).
 10. Tombol bid berubah menjadi **non-aktif** dengan label *"Anda sudah memasukkan penawaran"*.
 
@@ -551,22 +585,26 @@ Cron job berjalan setiap 5 menit untuk memeriksa lelang yang sudah melewati `tan
 2. Untuk setiap lelang yang ditemukan:
 
 **Jika tidak ada bid sama sekali:**
+
 - Status `pemasaran` berubah ke `selesai`.
 - Status barang berubah ke `GAGAL`.
 - Tidak ada transaksi dibuat.
 
 **Jika ada 1 bid:**
+
 - Pemenang = user pemilik bid tersebut.
 - `harga_final` = `harga_dasar` (bukan nilai bid pemenang).
 - Lanjut ke langkah pembuatan transaksi.
 
 **Jika ada ≥ 2 bid:**
+
 - Urutkan bid dari tertinggi ke terendah.
 - `B1` = bid tertinggi → pemenang.
 - `B2` = bid tertinggi kedua → `harga_final` yang harus dibayar.
 - Lanjut ke langkah pembuatan transaksi.
 
 **Pembuatan Transaksi (setelah pemenang ditentukan):**
+
 - Update record `pemasaran`: set `pemenang_id`, `harga_final`, `status = selesai`.
 - Buat record baru di tabel `transaksi` dengan:
   - `status = MENUNGGU_PEMBAYARAN`
@@ -577,11 +615,13 @@ Cron job berjalan setiap 5 menit untuk memeriksa lelang yang sudah melewati `tan
 #### C. Pembayaran oleh Pemenang Vickrey
 
 Identik dengan alur pembayaran Fixed Price (bagian 4.7), dengan perbedaan:
+
 - Jumlah yang harus dibayar adalah `harga_final` (B2), bukan nilai bid pemenang.
 - Batas waktu pembayaran adalah **24 jam** sejak transaksi dibuat.
 - Halaman detail transaksi menampilkan **countdown timer** sisa waktu pembayaran.
 
 **Jika Tidak Membayar dalam 24 Jam:**
+
 1. Cron job mendeteksi `batas_waktu_bayar <= NOW()` dengan status `MENUNGGU_PEMBAYARAN`.
 2. Status transaksi → `GAGAL`.
 3. Status barang → `GAGAL`.
@@ -595,12 +635,14 @@ Identik dengan alur pembayaran Fixed Price (bagian 4.7), dengan perbedaan:
 
 Pelanggaran dihitung secara **akumulatif permanen** (tidak pernah direset, bahkan setelah masa blokir selesai).
 
+
 | Akumulasi Pelanggaran | Durasi Blokir Ikut Lelang Vickrey |
-|---|---|
-| 1 kali | 7 hari |
-| 2 kali | 30 hari |
-| 3 kali | 90 hari |
-| 4 kali atau lebih | 365 hari (1 tahun) |
+| --------------------- | --------------------------------- |
+| 1 kali                | 7 hari                            |
+| 2 kali                | 30 hari                           |
+| 3 kali                | 90 hari                           |
+| 4 kali atau lebih     | 365 hari (1 tahun)                |
+
 
 > **Catatan:** Blokir **hanya** berlaku untuk berpartisipasi dalam **lelang Vickrey**. User yang terblokir tetap dapat: login, melihat katalog, dan membeli barang fixed price.
 
@@ -612,10 +654,10 @@ Saat cron job mendeteksi pemenang tidak membayar dalam 24 jam:
 2. Hitung total akumulasi pelanggaran user tersebut.
 3. Tentukan durasi blokir berdasarkan tabel di atas.
 4. **Jika belum ada record blacklist untuk user ini:**
-   - Buat record baru di tabel `blacklist`.
+  - Buat record baru di tabel `blacklist`.
 5. **Jika sudah ada record blacklist (dari pelanggaran sebelumnya):**
-   - Update kolom `total_pelanggaran` dan `tanggal_blokir_selesai`.
-   - Jika blacklist sebelumnya sudah tidak aktif (`is_aktif = false`), aktifkan kembali.
+  - Update kolom `total_pelanggaran` dan `tanggal_blokir_selesai`.
+  - Jika blacklist sebelumnya sudah tidak aktif (`is_aktif = false`), aktifkan kembali.
 6. Catat tindakan di `log_blacklist_action`.
 
 #### Pengelolaan Blacklist oleh Admin Unit
@@ -623,15 +665,18 @@ Saat cron job mendeteksi pemenang tidak membayar dalam 24 jam:
 Halaman `/admin/blacklist` — menampilkan user yang memiliki riwayat pelanggaran **di unit ini**.
 
 Informasi yang ditampilkan per user:
+
 - Nama user dan email.
 - Total pelanggaran akumulatif.
 - Status blacklist saat ini: **Aktif** (dengan tanggal selesai) atau **Tidak Aktif**.
 - Tombol **"Lihat Riwayat Pelanggaran"** → detail setiap pelanggaran (nama barang, tanggal lelang, tanggal pelanggaran).
 
 Tindakan yang **bisa** dilakukan Admin Unit:
+
 - Memperpanjang masa blokir secara manual (dengan mengisi alasan yang wajib dicatat).
 
 Tindakan yang **tidak bisa** dilakukan Admin Unit:
+
 - ❌ Menghapus riwayat pelanggaran (data permanen untuk audit).
 - ❌ Mencabut/mempersingkat masa blokir (hanya Super Admin).
 
@@ -640,6 +685,7 @@ Tindakan yang **tidak bisa** dilakukan Admin Unit:
 Halaman `/superadmin/blacklist` — menampilkan blacklist lintas semua unit.
 
 Tindakan tambahan yang bisa dilakukan Super Admin:
+
 - **Mencabut blacklist lebih awal** (early unblock) — wajib mengisi alasan.
 - Semua tindakan Super Admin pada blacklist dicatat di `log_blacklist_action`.
 
@@ -650,12 +696,13 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 **Prasyarat:** Status barang = `GAGAL`.
 
 **Workflow:**
+
 1. Admin membuka detail barang berstatus `GAGAL`.
 2. Admin mengklik **"Pasarkan Ulang"**.
 3. Sistem menampilkan form konfigurasi ulang (sama seperti form 4.6):
-   - Mode pemasaran (bisa diubah — misalnya dari Vickrey ke Fixed Price).
-   - Harga jual / harga dasar baru (disarankan lebih rendah dari sebelumnya).
-   - Durasi baru (jika Vickrey).
+  - Mode pemasaran (bisa diubah — misalnya dari Vickrey ke Fixed Price).
+  - Harga jual / harga dasar baru (disarankan lebih rendah dari sebelumnya).
+  - Durasi baru (jika Vickrey).
 4. Sistem mengarsipkan record `pemasaran` sebelumnya (tidak dihapus).
 5. Sistem membuat record `pemasaran` baru.
 6. Status barang berubah dari `GAGAL` → `DIPASARKAN`.
@@ -668,24 +715,28 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 **Konteks:** Setiap unit Pegadaian memiliki rekening bank sendiri sebagai tujuan transfer pembayaran dari user.
 
 **Workflow:**
+
 1. Super Admin membuka `/superadmin/unit/[id]/rekening`.
 2. Halaman menampilkan daftar rekening bank yang terdaftar untuk unit tersebut.
 3. Super Admin dapat:
-   - **Menambahkan** rekening bank baru.
-   - **Mengedit** data rekening yang ada.
-   - **Menetapkan** satu rekening sebagai **rekening aktif/utama** (rekening lain otomatis non-aktif).
-   - **Menonaktifkan** rekening yang sudah tidak digunakan.
+  - **Menambahkan** rekening bank baru.
+  - **Mengedit** data rekening yang ada.
+  - **Menetapkan** satu rekening sebagai **rekening aktif/utama** (rekening lain otomatis non-aktif).
+  - **Menonaktifkan** rekening yang sudah tidak digunakan.
 
 **Field per Rekening:**
 
-| Field | Tipe | Keterangan |
-|---|---|---|
-| `nama_bank` | string | Contoh: BRI, BCA, Mandiri, BNI, BSI |
-| `nomor_rekening` | string | Nomor rekening tujuan |
-| `nama_pemilik_rekening` | string | Nama pemilik rekening |
-| `is_aktif` | boolean | Hanya satu rekening yang `TRUE` per unit |
+
+| Field                   | Tipe    | Keterangan                               |
+| ----------------------- | ------- | ---------------------------------------- |
+| `nama_bank`             | string  | Contoh: BRI, BCA, Mandiri, BNI, BSI      |
+| `nomor_rekening`        | string  | Nomor rekening tujuan                    |
+| `nama_pemilik_rekening` | string  | Nama pemilik rekening                    |
+| `is_aktif`              | boolean | Hanya satu rekening yang `TRUE` per unit |
+
 
 **Aturan Bisnis:**
+
 - Hanya **satu rekening** yang boleh `is_aktif = TRUE` per unit pada satu waktu.
 - Saat Super Admin mengaktifkan rekening baru, rekening aktif sebelumnya otomatis di-set `is_aktif = FALSE`.
 - Jika tidak ada rekening aktif untuk sebuah unit, opsi pembayaran **Transfer Bank** tidak ditampilkan ke user untuk barang dari unit tersebut.
@@ -696,56 +747,64 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 
 ### 5.1 Halaman Publik (Guest & User)
 
-| Path | Deskripsi |
-|---|---|
-| `/` | Landing page: hero section, statistik (jumlah barang aktif, unit terdaftar), preview barang terbaru. |
-| `/katalog` | Daftar semua barang berstatus `DIPASARKAN`. Filter: kategori, unit, mode (fixed/vickrey), rentang harga. Sorting: terbaru, harga. Paginasi 20 item/halaman. |
+
+| Path            | Deskripsi                                                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`             | Landing page: hero section, statistik (jumlah barang aktif, unit terdaftar), preview barang terbaru.                                                        |
+| `/katalog`      | Daftar semua barang berstatus `DIPASARKAN`. Filter: kategori, unit, mode (fixed/vickrey), rentang harga. Sorting: terbaru, harga. Paginasi 20 item/halaman. |
 | `/katalog/[id]` | Detail barang: galeri foto & video, deskripsi, kondisi, harga/harga dasar, mode (badge Fixed Price / Lelang), countdown timer jika Vickrey, informasi unit. |
-| `/login` | Form login untuk semua role. |
-| `/register` | Form registrasi user baru. |
+| `/login`        | Form login untuk semua role.                                                                                                                                |
+| `/register`     | Form registrasi user baru.                                                                                                                                  |
+
 
 ### 5.2 Halaman User (Login Required)
 
-| Path | Deskripsi |
-|---|---|
-| `/dashboard` | Ringkasan: transaksi aktif, lelang yang diikuti, notifikasi (hasil bid, status pembayaran). |
-| `/katalog/[id]/beli` | Halaman konfirmasi pembelian + pilih metode bayar (fixed price). |
-| `/katalog/[id]/bid` | Form submit bid Vickrey (jika user belum bid & tidak blacklist). |
-| `/transaksi` | Daftar semua transaksi user (semua status). |
-| `/transaksi/[id]` | Detail transaksi: instruksi bayar, form upload bukti (jika transfer), countdown timer (jika Vickrey), tombol cetak nota (jika lunas). |
-| `/transaksi/[id]/nota` | Halaman nota transaksi yang dioptimalkan untuk print/PDF. |
-| `/riwayat-bid` | Riwayat partisipasi lelang Vickrey (menang/kalah, harga). |
-| `/profil` | Edit data diri dan ganti password. |
+
+| Path                   | Deskripsi                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `/dashboard`           | Ringkasan: transaksi aktif, lelang yang diikuti, notifikasi (hasil bid, status pembayaran).                                           |
+| `/katalog/[id]/beli`   | Halaman konfirmasi pembelian + pilih metode bayar (fixed price).                                                                      |
+| `/katalog/[id]/bid`    | Form submit bid Vickrey (jika user belum bid & tidak blacklist).                                                                      |
+| `/transaksi`           | Daftar semua transaksi user (semua status).                                                                                           |
+| `/transaksi/[id]`      | Detail transaksi: instruksi bayar, form upload bukti (jika transfer), countdown timer (jika Vickrey), tombol cetak nota (jika lunas). |
+| `/transaksi/[id]/nota` | Halaman nota transaksi yang dioptimalkan untuk print/PDF.                                                                             |
+| `/riwayat-bid`         | Riwayat partisipasi lelang Vickrey (menang/kalah, harga).                                                                             |
+| `/profil`              | Edit data diri dan ganti password.                                                                                                    |
+
 
 ### 5.3 Halaman Admin Unit (Role: `admin_unit`)
 
-| Path | Deskripsi |
-|---|---|
-| `/admin` | Dashboard: statistik unit (barang per status, transaksi pending verifikasi, lelang aktif). |
-| `/admin/barang` | Daftar semua barang unit. Filter by status. Highlight barang jatuh tempo. |
-| `/admin/barang/tambah` | Form input barang gadai baru (termasuk upload foto & video). |
-| `/admin/barang/[id]` | Detail barang lengkap + tombol aksi sesuai status saat ini (lihat tabel transisi). |
-| `/admin/barang/[id]/edit` | Edit data barang (hanya saat status `GADAI` atau `JAMINAN`). |
-| `/admin/barang/[id]/perpanjang` | Form catat perpanjangan masa gadai. |
-| `/admin/barang/[id]/riwayat-perpanjangan` | Riwayat semua perpanjangan untuk barang ini. |
-| `/admin/lelang` | Daftar semua sesi pemasaran unit (aktif & historis). |
-| `/admin/lelang/[id]` | Detail sesi pemasaran: daftar bid (setelah deadline untuk Vickrey), info pemenang, status. |
-| `/admin/transaksi` | Daftar transaksi yang membutuhkan tindakan admin. Filter: `BUKTI_DIUNGGAH`, `MENUNGGU_KONFIRMASI_LANGSUNG`. |
-| `/admin/transaksi/[id]` | Detail transaksi: lihat bukti bayar user, tombol verifikasi/tolak/konfirmasi langsung, tombol cetak nota. |
-| `/admin/blacklist` | Daftar user dengan riwayat pelanggaran di unit ini. Riwayat detail per user. Tombol perpanjang blokir. |
-| `/admin/profil` | Edit profil admin unit. |
+
+| Path                                      | Deskripsi                                                                                                   |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `/admin`                                  | Dashboard: statistik unit (barang per status, transaksi pending verifikasi, lelang aktif).                  |
+| `/admin/barang`                           | Daftar semua barang unit. Filter by status. Highlight barang jatuh tempo.                                   |
+| `/admin/barang/tambah`                    | Form input barang gadai baru (termasuk upload foto & video).                                                |
+| `/admin/barang/[id]`                      | Detail barang lengkap + tombol aksi sesuai status saat ini (lihat tabel transisi).                          |
+| `/admin/barang/[id]/edit`                 | Edit data barang (hanya saat status `GADAI` atau `JAMINAN`).                                                |
+| `/admin/barang/[id]/perpanjang`           | Form catat perpanjangan masa gadai.                                                                         |
+| `/admin/barang/[id]/riwayat-perpanjangan` | Riwayat semua perpanjangan untuk barang ini.                                                                |
+| `/admin/lelang`                           | Daftar semua sesi pemasaran unit (aktif & historis).                                                        |
+| `/admin/lelang/[id]`                      | Detail sesi pemasaran: daftar bid (setelah deadline untuk Vickrey), info pemenang, status.                  |
+| `/admin/transaksi`                        | Daftar transaksi yang membutuhkan tindakan admin. Filter: `BUKTI_DIUNGGAH`, `MENUNGGU_KONFIRMASI_LANGSUNG`. |
+| `/admin/transaksi/[id]`                   | Detail transaksi: lihat bukti bayar user, tombol verifikasi/tolak/konfirmasi langsung, tombol cetak nota.   |
+| `/admin/blacklist`                        | Daftar user dengan riwayat pelanggaran di unit ini. Riwayat detail per user. Tombol perpanjang blokir.      |
+| `/admin/profil`                           | Edit profil admin unit.                                                                                     |
+
 
 ### 5.4 Halaman Super Admin (Role: `super_admin`)
 
-| Path | Deskripsi |
-|---|---|
-| `/superadmin` | Dashboard global: statistik seluruh unit, grafik. |
-| `/superadmin/unit` | Daftar semua unit Pegadaian. CRUD unit. |
-| `/superadmin/unit/[id]` | Detail unit: informasi umum. |
-| `/superadmin/unit/[id]/rekening` | Kelola rekening bank tujuan pembayaran untuk unit ini. |
-| `/superadmin/admin` | Daftar & CRUD akun Admin Unit. |
-| `/superadmin/monitoring` | Monitoring global: semua barang dan transaksi lintas unit (read-only). |
-| `/superadmin/blacklist` | Blacklist global lintas semua unit. Tombol cabut blacklist. |
+
+| Path                             | Deskripsi                                                              |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `/superadmin`                    | Dashboard global: statistik seluruh unit, grafik.                      |
+| `/superadmin/unit`               | Daftar semua unit Pegadaian. CRUD unit.                                |
+| `/superadmin/unit/[id]`          | Detail unit: informasi umum.                                           |
+| `/superadmin/unit/[id]/rekening` | Kelola rekening bank tujuan pembayaran untuk unit ini.                 |
+| `/superadmin/admin`              | Daftar & CRUD akun Admin Unit.                                         |
+| `/superadmin/monitoring`         | Monitoring global: semua barang dan transaksi lintas unit (read-only). |
+| `/superadmin/blacklist`          | Blacklist global lintas semua unit. Tombol cabut blacklist.            |
+
 
 ---
 
@@ -753,21 +812,23 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 
 ### Arsitektur: Full Stack Next.js (Monorepo)
 
-| Layer | Teknologi | Keterangan |
-|---|---|---|
-| **Framework** | Next.js 14+ (App Router) | Frontend + Backend dalam satu project |
-| **Bahasa** | TypeScript | Strict mode |
-| **UI Components** | shadcn/ui | Berbasis Radix UI |
-| **Styling** | Tailwind CSS | Utility-first |
-| **Database** | PostgreSQL | Relational database |
-| **ORM** | Drizzle ORM | Type-safe, schema-as-code |
-| **Autentikasi** | Jose (JWT manual) + httpOnly cookie | Atau NextAuth.js v5 |
-| **Validasi** | Zod | Schema validation di server & client |
-| **Upload File** | Next.js Route Handler + `formidable` | Simpan di `/public/uploads` atau cloud storage |
-| **Penjadwalan** | `node-cron` via custom server ATAU Vercel Cron | Untuk proses lelang otomatis |
-| **Cetak/PDF** | CSS `@media print` + `window.print()` | Untuk nota transaksi |
-| **Hashing** | Node.js `crypto` (SHA-256) | Untuk bid hash Vickrey |
-| **Password** | `bcrypt` | Salt rounds ≥ 12 |
+
+| Layer             | Teknologi                                      | Keterangan                                     |
+| ----------------- | ---------------------------------------------- | ---------------------------------------------- |
+| **Framework**     | Next.js 14+ (App Router)                       | Frontend + Backend dalam satu project          |
+| **Bahasa**        | TypeScript                                     | Strict mode                                    |
+| **UI Components** | shadcn/ui                                      | Berbasis Radix UI                              |
+| **Styling**       | Tailwind CSS                                   | Utility-first                                  |
+| **Database**      | PostgreSQL                                     | Relational database                            |
+| **ORM**           | Drizzle ORM                                    | Type-safe, schema-as-code                      |
+| **Autentikasi**   | Jose (JWT manual) + httpOnly cookie            | Atau NextAuth.js v5                            |
+| **Validasi**      | Zod                                            | Schema validation di server & client           |
+| **Upload File**   | Next.js Route Handler + `formidable`           | Simpan di `/public/uploads` atau cloud storage |
+| **Penjadwalan**   | `node-cron` via custom server ATAU Vercel Cron | Untuk proses lelang otomatis                   |
+| **Cetak/PDF**     | CSS `@media print` + `window.print()`          | Untuk nota transaksi                           |
+| **Hashing**       | Node.js `crypto` (SHA-256)                     | Untuk bid hash Vickrey                         |
+| **Password**      | `bcrypt`                                       | Salt rounds ≥ 12                               |
+
 
 ### Struktur Direktori Proyek
 
@@ -922,6 +983,7 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 ## 7. Database Schema (Drizzle ORM — PostgreSQL)
 
 ### Tabel: `units`
+
 ```sql
 id              UUID PRIMARY KEY DEFAULT gen_random_uuid()
 nama_unit       VARCHAR(255) NOT NULL
@@ -934,6 +996,7 @@ updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `rekening_unit`
+
 ```sql
 id                    UUID PRIMARY KEY DEFAULT gen_random_uuid()
 unit_id               UUID NOT NULL REFERENCES units(id) ON DELETE CASCADE
@@ -947,6 +1010,7 @@ updated_at            TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `users`
+
 ```sql
 id              UUID PRIMARY KEY DEFAULT gen_random_uuid()
 nama_lengkap    VARCHAR(255) NOT NULL
@@ -965,6 +1029,7 @@ updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `barang`
+
 ```sql
 id               UUID PRIMARY KEY DEFAULT gen_random_uuid()
 unit_id          UUID NOT NULL REFERENCES units(id)
@@ -997,6 +1062,7 @@ updated_at       TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `media_barang`
+
 ```sql
 id           UUID PRIMARY KEY DEFAULT gen_random_uuid()
 barang_id    UUID NOT NULL REFERENCES barang(id) ON DELETE CASCADE
@@ -1011,6 +1077,7 @@ created_at   TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `riwayat_perpanjangan`
+
 ```sql
 id                       UUID PRIMARY KEY DEFAULT gen_random_uuid()
 barang_id                UUID NOT NULL REFERENCES barang(id)
@@ -1022,6 +1089,7 @@ created_at               TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `pemasaran`
+
 ```sql
 id              UUID PRIMARY KEY DEFAULT gen_random_uuid()
 barang_id       UUID NOT NULL REFERENCES barang(id)
@@ -1057,6 +1125,7 @@ updated_at      TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `bids`
+
 ```sql
 id          UUID PRIMARY KEY DEFAULT gen_random_uuid()
 pemasaran_id UUID NOT NULL REFERENCES pemasaran(id)
@@ -1074,6 +1143,7 @@ UNIQUE (pemasaran_id, user_id)
 ```
 
 ### Tabel: `transaksi`
+
 ```sql
 id                  UUID PRIMARY KEY DEFAULT gen_random_uuid()
 pemasaran_id        UUID NOT NULL REFERENCES pemasaran(id)
@@ -1112,6 +1182,7 @@ updated_at          TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `pelanggaran_user`
+
 ```sql
 id              UUID PRIMARY KEY DEFAULT gen_random_uuid()
 user_id         UUID NOT NULL REFERENCES users(id)
@@ -1124,6 +1195,7 @@ created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `blacklist`
+
 ```sql
 id                      UUID PRIMARY KEY DEFAULT gen_random_uuid()
 user_id                 UUID NOT NULL UNIQUE REFERENCES users(id)
@@ -1139,6 +1211,7 @@ updated_at              TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `log_blacklist_action`
+
 ```sql
 id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
 blacklist_id  UUID NOT NULL REFERENCES blacklist(id)
@@ -1152,6 +1225,7 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 ```
 
 ### Tabel: `riwayat_status_barang`
+
 ```sql
 id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
 barang_id     UUID NOT NULL REFERENCES barang(id)
@@ -1168,90 +1242,116 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 ## 8. API Route Reference (Next.js Route Handlers)
 
 ### Auth
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| POST | `/api/auth/register` | Registrasi user baru | Public |
-| POST | `/api/auth/login` | Login semua role | Public |
-| POST | `/api/auth/logout` | Hapus session cookie | All |
-| GET | `/api/auth/me` | Data user aktif dari JWT | All |
+
+
+| Method | Route                | Deskripsi                | Auth   |
+| ------ | -------------------- | ------------------------ | ------ |
+| POST   | `/api/auth/register` | Registrasi user baru     | Public |
+| POST   | `/api/auth/login`    | Login semua role         | Public |
+| POST   | `/api/auth/logout`   | Hapus session cookie     | All    |
+| GET    | `/api/auth/me`       | Data user aktif dari JWT | All    |
+
 
 ### Barang (Publik)
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| GET | `/api/barang` | Daftar barang berstatus `dipasarkan` | Public |
-| GET | `/api/barang/[id]` | Detail barang (tanpa field data nasabah) | Public |
+
+
+| Method | Route              | Deskripsi                                | Auth   |
+| ------ | ------------------ | ---------------------------------------- | ------ |
+| GET    | `/api/barang`      | Daftar barang berstatus `dipasarkan`     | Public |
+| GET    | `/api/barang/[id]` | Detail barang (tanpa field data nasabah) | Public |
+
 
 ### Admin Unit — Manajemen Barang
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| GET | `/api/admin/barang` | Daftar semua barang unit (semua status) | Admin |
-| POST | `/api/admin/barang` | Input barang gadai baru | Admin |
-| GET | `/api/admin/barang/[id]` | Detail barang (termasuk data nasabah) | Admin |
-| PUT | `/api/admin/barang/[id]` | Edit barang (hanya jika status = gadai/jaminan) | Admin |
-| POST | `/api/admin/barang/[id]/media` | Upload foto/video ke barang | Admin |
-| DELETE | `/api/admin/barang/[id]/media/[mediaId]` | Hapus media (hanya status gadai/jaminan) | Admin |
-| POST | `/api/admin/barang/[id]/perpanjang` | Catat perpanjangan masa gadai | Admin |
-| POST | `/api/admin/barang/[id]/tebus` | Catat penebusan oleh nasabah | Admin |
-| POST | `/api/admin/barang/[id]/jadikan-jaminan` | Konfirmasi barang → jaminan | Admin |
-| POST | `/api/admin/barang/[id]/pasarkan` | Publikasi ke katalog (pilih mode + konfigurasi) | Admin |
-| POST | `/api/admin/barang/[id]/pasarkan-ulang` | Re-listing barang yang gagal | Admin |
+
+
+| Method | Route                                    | Deskripsi                                       | Auth  |
+| ------ | ---------------------------------------- | ----------------------------------------------- | ----- |
+| GET    | `/api/admin/barang`                      | Daftar semua barang unit (semua status)         | Admin |
+| POST   | `/api/admin/barang`                      | Input barang gadai baru                         | Admin |
+| GET    | `/api/admin/barang/[id]`                 | Detail barang (termasuk data nasabah)           | Admin |
+| PUT    | `/api/admin/barang/[id]`                 | Edit barang (hanya jika status = gadai/jaminan) | Admin |
+| POST   | `/api/admin/barang/[id]/media`           | Upload foto/video ke barang                     | Admin |
+| DELETE | `/api/admin/barang/[id]/media/[mediaId]` | Hapus media (hanya status gadai/jaminan)        | Admin |
+| POST   | `/api/admin/barang/[id]/perpanjang`      | Catat perpanjangan masa gadai                   | Admin |
+| POST   | `/api/admin/barang/[id]/tebus`           | Catat penebusan oleh nasabah                    | Admin |
+| POST   | `/api/admin/barang/[id]/jadikan-jaminan` | Konfirmasi barang → jaminan                     | Admin |
+| POST   | `/api/admin/barang/[id]/pasarkan`        | Publikasi ke katalog (pilih mode + konfigurasi) | Admin |
+| POST   | `/api/admin/barang/[id]/pasarkan-ulang`  | Re-listing barang yang gagal                    | Admin |
+
 
 ### Admin Unit — Lelang & Transaksi
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| GET | `/api/admin/lelang` | Daftar semua sesi pemasaran unit | Admin |
-| GET | `/api/admin/lelang/[id]` | Detail pemasaran + daftar bid (setelah deadline) | Admin |
-| GET | `/api/admin/transaksi` | Daftar transaksi yang perlu tindakan | Admin |
-| GET | `/api/admin/transaksi/[id]` | Detail transaksi + bukti bayar (jika ada) | Admin |
-| POST | `/api/admin/transaksi/[id]/verifikasi` | Verifikasi bukti transfer → `LUNAS` | Admin |
-| POST | `/api/admin/transaksi/[id]/tolak-bukti` | Tolak bukti transfer (isi alasan) | Admin |
-| POST | `/api/admin/transaksi/[id]/konfirmasi-langsung` | Konfirmasi bayar tunai → `LUNAS` | Admin |
+
+
+| Method | Route                                           | Deskripsi                                        | Auth  |
+| ------ | ----------------------------------------------- | ------------------------------------------------ | ----- |
+| GET    | `/api/admin/lelang`                             | Daftar semua sesi pemasaran unit                 | Admin |
+| GET    | `/api/admin/lelang/[id]`                        | Detail pemasaran + daftar bid (setelah deadline) | Admin |
+| GET    | `/api/admin/transaksi`                          | Daftar transaksi yang perlu tindakan             | Admin |
+| GET    | `/api/admin/transaksi/[id]`                     | Detail transaksi + bukti bayar (jika ada)        | Admin |
+| POST   | `/api/admin/transaksi/[id]/verifikasi`          | Verifikasi bukti transfer → `LUNAS`              | Admin |
+| POST   | `/api/admin/transaksi/[id]/tolak-bukti`         | Tolak bukti transfer (isi alasan)                | Admin |
+| POST   | `/api/admin/transaksi/[id]/konfirmasi-langsung` | Konfirmasi bayar tunai → `LUNAS`                 | Admin |
+
 
 ### Admin Unit — Blacklist
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| GET | `/api/admin/blacklist` | Daftar user dengan riwayat pelanggaran di unit ini | Admin |
-| GET | `/api/admin/blacklist/[userId]` | Detail riwayat pelanggaran per user | Admin |
-| POST | `/api/admin/blacklist/[userId]/perpanjang` | Perpanjang masa blokir (wajib isi alasan) | Admin |
+
+
+| Method | Route                                      | Deskripsi                                          | Auth  |
+| ------ | ------------------------------------------ | -------------------------------------------------- | ----- |
+| GET    | `/api/admin/blacklist`                     | Daftar user dengan riwayat pelanggaran di unit ini | Admin |
+| GET    | `/api/admin/blacklist/[userId]`            | Detail riwayat pelanggaran per user                | Admin |
+| POST   | `/api/admin/blacklist/[userId]/perpanjang` | Perpanjang masa blokir (wajib isi alasan)          | Admin |
+
 
 ### User — Transaksi & Bidding
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| POST | `/api/user/beli/[pemasaranId]` | Ajukan pembelian fixed price | User |
-| POST | `/api/user/bid/[pemasaranId]` | Submit bid Vickrey | User |
-| GET | `/api/user/transaksi` | Daftar transaksi milik user | User |
-| GET | `/api/user/transaksi/[id]` | Detail transaksi + instruksi bayar | User |
-| POST | `/api/user/transaksi/[id]/upload-bukti` | Upload bukti pembayaran transfer | User |
-| GET | `/api/user/riwayat-bid` | Riwayat bidding Vickrey | User |
+
+
+| Method | Route                                   | Deskripsi                          | Auth |
+| ------ | --------------------------------------- | ---------------------------------- | ---- |
+| POST   | `/api/user/beli/[pemasaranId]`          | Ajukan pembelian fixed price       | User |
+| POST   | `/api/user/bid/[pemasaranId]`           | Submit bid Vickrey                 | User |
+| GET    | `/api/user/transaksi`                   | Daftar transaksi milik user        | User |
+| GET    | `/api/user/transaksi/[id]`              | Detail transaksi + instruksi bayar | User |
+| POST   | `/api/user/transaksi/[id]/upload-bukti` | Upload bukti pembayaran transfer   | User |
+| GET    | `/api/user/riwayat-bid`                 | Riwayat bidding Vickrey            | User |
+
 
 ### Super Admin
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| GET/POST | `/api/superadmin/unit` | List & tambah unit | SuperAdmin |
-| GET/PUT/DELETE | `/api/superadmin/unit/[id]` | Detail, edit, hapus unit | SuperAdmin |
-| GET/POST | `/api/superadmin/unit/[id]/rekening` | Kelola rekening bank unit | SuperAdmin |
-| PUT | `/api/superadmin/unit/[id]/rekening/[rid]` | Edit rekening / set sebagai aktif | SuperAdmin |
-| GET/POST | `/api/superadmin/admin` | List & tambah admin unit | SuperAdmin |
-| GET/PUT/DELETE | `/api/superadmin/admin/[id]` | Detail, edit, nonaktifkan admin unit | SuperAdmin |
-| GET | `/api/superadmin/monitoring` | Monitoring global (read-only) | SuperAdmin |
-| GET | `/api/superadmin/blacklist` | Blacklist global lintas unit | SuperAdmin |
-| POST | `/api/superadmin/blacklist/[userId]/cabut` | Cabut blacklist lebih awal | SuperAdmin |
+
+
+| Method         | Route                                      | Deskripsi                            | Auth       |
+| -------------- | ------------------------------------------ | ------------------------------------ | ---------- |
+| GET/POST       | `/api/superadmin/unit`                     | List & tambah unit                   | SuperAdmin |
+| GET/PUT/DELETE | `/api/superadmin/unit/[id]`                | Detail, edit, hapus unit             | SuperAdmin |
+| GET/POST       | `/api/superadmin/unit/[id]/rekening`       | Kelola rekening bank unit            | SuperAdmin |
+| PUT            | `/api/superadmin/unit/[id]/rekening/[rid]` | Edit rekening / set sebagai aktif    | SuperAdmin |
+| GET/POST       | `/api/superadmin/admin`                    | List & tambah admin unit             | SuperAdmin |
+| GET/PUT/DELETE | `/api/superadmin/admin/[id]`               | Detail, edit, nonaktifkan admin unit | SuperAdmin |
+| GET            | `/api/superadmin/monitoring`               | Monitoring global (read-only)        | SuperAdmin |
+| GET            | `/api/superadmin/blacklist`                | Blacklist global lintas unit         | SuperAdmin |
+| POST           | `/api/superadmin/blacklist/[userId]/cabut` | Cabut blacklist lebih awal           | SuperAdmin |
+
 
 ### Cron (Internal, dilindungi secret key)
-| Method | Route | Deskripsi | Auth |
-|---|---|---|---|
-| POST | `/api/cron/proses-lelang` | Proses semua lelang expired: tentukan pemenang, catat gagal, set blacklist | `CRON_SECRET` header |
+
+
+| Method | Route                     | Deskripsi                                                                  | Auth                 |
+| ------ | ------------------------- | -------------------------------------------------------------------------- | -------------------- |
+| POST   | `/api/cron/proses-lelang` | Proses semua lelang expired: tentukan pemenang, catat gagal, set blacklist | `CRON_SECRET` header |
+
 
 ---
 
 ## 9. Business Rules & Validasi
 
 ### Transisi Status Barang
+
 - Setiap perubahan status **harus** melalui endpoint yang sesuai — tidak boleh ada perubahan status langsung melalui `PUT /barang/[id]`.
 - Sistem **menolak** semua transisi status yang tidak terdaftar di bagian 3.2.
 - Setiap perubahan status selalu dicatat di tabel `riwayat_status_barang`.
 
 ### Barang Gadai
+
 - `tanggal_jatuh_tempo` harus setelah `tanggal_gadai`.
 - `nilai_gadai` harus ≤ `nilai_taksiran`.
 - Perpanjangan hanya dapat dilakukan jika status = `GADAI`.
@@ -1260,12 +1360,14 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 - `nama_penggadai` dan `nomor_nasabah` tidak boleh hadir dalam response endpoint publik.
 
 ### Pemasaran & Lelang
+
 - `harga_jual` / `harga_dasar` harus > 0.
 - Durasi Vickrey: 1 hari ≤ durasi ≤ 30 hari.
 - Satu barang hanya boleh memiliki **satu** record `pemasaran` dengan status `aktif`.
 - Setelah status barang = `DIPASARKAN`, tidak bisa kembali ke `JAMINAN` atau `GADAI`.
 
 ### Bidding Vickrey
+
 - Satu user hanya dapat memasukkan satu bid per sesi pemasaran (enforced via `UNIQUE` constraint di tabel `bids`).
 - Nominal bid harus ≥ `harga_dasar`.
 - Bid tidak dapat diubah atau dibatalkan setelah disubmit.
@@ -1273,12 +1375,14 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 - User dengan blacklist aktif (`is_aktif = true` dan `tanggal_blokir_selesai > NOW()`) tidak dapat submit bid.
 
 ### Pembayaran
+
 - Batas waktu pembayaran pemenang Vickrey: **24 jam** sejak transaksi dibuat.
 - Upload bukti: format `jpg`, `png`, `pdf` — maks. 5 MB.
 - Nomor referensi wajib diisi admin saat verifikasi.
 - Setelah status transaksi = `LUNAS`, **tidak dapat** diubah lagi.
 
 ### Rekening Bank
+
 - Hanya satu rekening `is_aktif = TRUE` per unit — enforced via unique partial index:
   ```sql
   CREATE UNIQUE INDEX ON rekening_unit (unit_id) WHERE is_aktif = TRUE;
@@ -1286,6 +1390,7 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 - Jika tidak ada rekening aktif, opsi transfer bank tidak ditampilkan ke user.
 
 ### Blacklist
+
 - Pelanggaran dihitung akumulatif permanen (tidak pernah direset).
 - Blokir hanya untuk lelang Vickrey. Fixed price tetap dapat diakses.
 - Admin unit hanya bisa memperpanjang blokir, tidak bisa mengurangi atau menghapus riwayat.
@@ -1295,32 +1400,36 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 
 ## 10. Security Considerations
 
-| Aspek | Implementasi |
-|---|---|
-| **Autentikasi** | JWT di `httpOnly` + `secure` + `sameSite=strict` cookie. Expiry: 8 jam. |
-| **Otorisasi** | `middleware.ts` memvalidasi JWT dan memeriksa `role` sebelum request mencapai Route Handler. |
-| **Isolasi Data Unit** | Setiap query Admin Unit **selalu** difilter dengan `unit_id` yang diambil dari JWT payload — tidak dapat di-override dari URL params atau request body. |
-| **Bid Privacy** | Kolom `nominal` di tabel `bids` tidak pernah disertakan dalam response API sebelum `tanggal_selesai` lelang terlewati. Di-select secara eksplisit hanya di service cron. |
-| **Transisi Status** | Validasi transisi status di layer service — request yang mencoba transisi tidak valid dikembalikan `400 Bad Request`. |
-| **Password** | Di-hash dengan `bcrypt` (salt rounds = 12). |
-| **Validasi Input** | Semua request body divalidasi dengan Zod di setiap Route Handler sebelum diproses. |
-| **Upload File** | Validasi MIME type dan ukuran di server-side. Simpan file dengan nama acak (bukan nama asli dari user). |
-| **Cron Endpoint** | `POST /api/cron/proses-lelang` memerlukan header `Authorization: Bearer ${CRON_SECRET}`. CRON_SECRET disimpan di environment variable. |
-| **Data Nasabah** | `nama_penggadai` dan `nomor_nasabah` tidak pernah di-include dalam Drizzle `select` untuk query endpoint publik. |
+
+| Aspek                 | Implementasi                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Autentikasi**       | JWT di `httpOnly` + `secure` + `sameSite=strict` cookie. Expiry: 8 jam.                                                                                                  |
+| **Otorisasi**         | `middleware.ts` memvalidasi JWT dan memeriksa `role` sebelum request mencapai Route Handler.                                                                             |
+| **Isolasi Data Unit** | Setiap query Admin Unit **selalu** difilter dengan `unit_id` yang diambil dari JWT payload — tidak dapat di-override dari URL params atau request body.                  |
+| **Bid Privacy**       | Kolom `nominal` di tabel `bids` tidak pernah disertakan dalam response API sebelum `tanggal_selesai` lelang terlewati. Di-select secara eksplisit hanya di service cron. |
+| **Transisi Status**   | Validasi transisi status di layer service — request yang mencoba transisi tidak valid dikembalikan `400 Bad Request`.                                                    |
+| **Password**          | Di-hash dengan `bcrypt` (salt rounds = 12).                                                                                                                              |
+| **Validasi Input**    | Semua request body divalidasi dengan Zod di setiap Route Handler sebelum diproses.                                                                                       |
+| **Upload File**       | Validasi MIME type dan ukuran di server-side. Simpan file dengan nama acak (bukan nama asli dari user).                                                                  |
+| **Cron Endpoint**     | `POST /api/cron/proses-lelang` memerlukan header `Authorization: Bearer ${CRON_SECRET}`. CRON_SECRET disimpan di environment variable.                                   |
+| **Data Nasabah**      | `nama_penggadai` dan `nomor_nasabah` tidak pernah di-include dalam Drizzle `select` untuk query endpoint publik.                                                         |
+
 
 ---
 
 ## 11. Non-Functional Requirements
 
-| Aspek | Target |
-|---|---|
-| **Responsivitas** | Tampilan optimal di desktop (≥1024px) dan mobile (≥375px). |
-| **Performa** | Halaman katalog: TTI < 2 detik dengan SSR + paginasi 20 item/halaman. |
-| **Skalabilitas** | Penambahan unit baru tidak memerlukan perubahan kode. |
-| **Maintainability** | Setiap domain memiliki service terpisah di `lib/services/`. Route Handler hanya memanggil service, tidak berisi business logic langsung. |
-| **Audit Trail** | Setiap perubahan status barang → `riwayat_status_barang`. Setiap perpanjangan → `riwayat_perpanjangan`. Setiap tindakan blacklist → `log_blacklist_action`. |
-| **Cetak Nota** | Halaman nota dioptimalkan dengan `@media print`. Semua elemen navigasi, sidebar, dan tombol disembunyikan saat print. |
-| **Konsistensi Data** | Cron job menggunakan database transaction untuk memastikan semua update (status barang, pemasaran, transaksi, blacklist) berhasil secara atomik. |
+
+| Aspek                | Target                                                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Responsivitas**    | Tampilan optimal di desktop (≥1024px) dan mobile (≥375px).                                                                                                  |
+| **Performa**         | Halaman katalog: TTI < 2 detik dengan SSR + paginasi 20 item/halaman.                                                                                       |
+| **Skalabilitas**     | Penambahan unit baru tidak memerlukan perubahan kode.                                                                                                       |
+| **Maintainability**  | Setiap domain memiliki service terpisah di `lib/services/`. Route Handler hanya memanggil service, tidak berisi business logic langsung.                    |
+| **Audit Trail**      | Setiap perubahan status barang → `riwayat_status_barang`. Setiap perpanjangan → `riwayat_perpanjangan`. Setiap tindakan blacklist → `log_blacklist_action`. |
+| **Cetak Nota**       | Halaman nota dioptimalkan dengan `@media print`. Semua elemen navigasi, sidebar, dan tombol disembunyikan saat print.                                       |
+| **Konsistensi Data** | Cron job menggunakan database transaction untuk memastikan semua update (status barang, pemasaran, transaksi, blacklist) berhasil secara atomik.            |
+
 
 ---
 
@@ -1339,21 +1448,24 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 
 ## 13. Glosarium
 
-| Istilah | Definisi |
-|---|---|
-| **Barang Gadai** | Barang yang diserahkan nasabah kepada Pegadaian sebagai jaminan pinjaman. Status awal di sistem adalah `GADAI`. |
-| **Penebusan** | Proses nasabah membayar pokok + bunga pinjaman dan mengambil kembali barangnya. Status barang menjadi `DITEBUS`. |
-| **Perpanjangan** | Proses nasabah memperpanjang masa gadai sebelum jatuh tempo. Status barang tetap `GADAI` dengan tanggal jatuh tempo baru. |
-| **Barang Jaminan** | Barang gadai yang tidak ditebus setelah jatuh tempo, sehingga resmi menjadi milik Pegadaian. Status `JAMINAN`. |
-| **Pemasaran** | Proses Admin Unit mempublikasikan barang jaminan ke katalog publik dengan mode Fixed Price atau Vickrey Auction. Status `DIPASARKAN`. |
-| **Fixed Price** | Mode penjualan di mana harga ditetapkan tetap oleh Admin Unit. |
-| **Vickrey Auction** | Mekanisme lelang tertutup di mana pemenang adalah penawar tertinggi (B1) namun hanya membayar sebesar penawaran tertinggi kedua (B2). |
-| **Sealed-bid** | Sistem bidding di mana nilai bid setiap penawar tidak diketahui oleh penawar lain selama lelang berlangsung. |
-| **B1** | Bid tertinggi dalam Vickrey Auction — menentukan pemenang. |
-| **B2** | Bid tertinggi kedua dalam Vickrey Auction — menentukan harga yang harus dibayar pemenang. |
-| **Re-listing** | Proses Admin Unit mempublikasikan ulang barang yang gagal terjual ke katalog publik. |
-| **Blacklist** | Status pemblokiran untuk user yang memenangkan lelang Vickrey namun tidak membayar dalam 24 jam. Mencegah user tersebut mengikuti lelang Vickrey selama periode blokir. |
-| **Pelanggaran** | Satu kejadian di mana user menjadi pemenang lelang Vickrey tetapi tidak melakukan pembayaran dalam batas waktu 24 jam. |
-| **Cron Job** | Proses terjadwal di server yang secara otomatis menangani pengecekan dan pemrosesan lelang yang sudah melewati deadline. |
-| **Nota Transaksi** | Dokumen cetak resmi sebagai bukti transaksi jual beli yang dihasilkan sistem setelah pembayaran diverifikasi. |
-| **Multi-unit** | Kemampuan sistem untuk mendukung dan mengelola lebih dari satu cabang/unit Pegadaian dalam satu instalasi aplikasi. |
+
+| Istilah             | Definisi                                                                                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barang Gadai**    | Barang yang diserahkan nasabah kepada Pegadaian sebagai jaminan pinjaman. Status awal di sistem adalah `GADAI`.                                                         |
+| **Penebusan**       | Proses nasabah membayar pokok + bunga pinjaman dan mengambil kembali barangnya. Status barang menjadi `DITEBUS`.                                                        |
+| **Perpanjangan**    | Proses nasabah memperpanjang masa gadai sebelum jatuh tempo. Status barang tetap `GADAI` dengan tanggal jatuh tempo baru.                                               |
+| **Barang Jaminan**  | Barang gadai yang tidak ditebus setelah jatuh tempo, sehingga resmi menjadi milik Pegadaian. Status `JAMINAN`.                                                          |
+| **Pemasaran**       | Proses Admin Unit mempublikasikan barang jaminan ke katalog publik dengan mode Fixed Price atau Vickrey Auction. Status `DIPASARKAN`.                                   |
+| **Fixed Price**     | Mode penjualan di mana harga ditetapkan tetap oleh Admin Unit.                                                                                                          |
+| **Vickrey Auction** | Mekanisme lelang tertutup di mana pemenang adalah penawar tertinggi (B1) namun hanya membayar sebesar penawaran tertinggi kedua (B2).                                   |
+| **Sealed-bid**      | Sistem bidding di mana nilai bid setiap penawar tidak diketahui oleh penawar lain selama lelang berlangsung.                                                            |
+| **B1**              | Bid tertinggi dalam Vickrey Auction — menentukan pemenang.                                                                                                              |
+| **B2**              | Bid tertinggi kedua dalam Vickrey Auction — menentukan harga yang harus dibayar pemenang.                                                                               |
+| **Re-listing**      | Proses Admin Unit mempublikasikan ulang barang yang gagal terjual ke katalog publik.                                                                                    |
+| **Blacklist**       | Status pemblokiran untuk user yang memenangkan lelang Vickrey namun tidak membayar dalam 24 jam. Mencegah user tersebut mengikuti lelang Vickrey selama periode blokir. |
+| **Pelanggaran**     | Satu kejadian di mana user menjadi pemenang lelang Vickrey tetapi tidak melakukan pembayaran dalam batas waktu 24 jam.                                                  |
+| **Cron Job**        | Proses terjadwal di server yang secara otomatis menangani pengecekan dan pemrosesan lelang yang sudah melewati deadline.                                                |
+| **Nota Transaksi**  | Dokumen cetak resmi sebagai bukti transaksi jual beli yang dihasilkan sistem setelah pembayaran diverifikasi.                                                           |
+| **Multi-unit**      | Kemampuan sistem untuk mendukung dan mengelola lebih dari satu cabang/unit Pegadaian dalam satu instalasi aplikasi.                                                     |
+
+

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock3, MapPin } from "lucide-react";
 
+import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -41,10 +42,15 @@ export function LotCard({ lot }: LotCardProps) {
           <p className="font-headline text-2xl font-extrabold tracking-tight text-primary">
             {currency.format(lot.price)}
           </p>
-          {lot.countdown ? (
+          {lot.countdown || lot.endsAt ? (
             <p className="inline-flex items-center gap-1 text-xs font-medium text-tertiary-container">
               <Clock3 className="size-3.5" />
-              Sesi berakhir {lot.countdown}
+              <LiveCountdown
+                expiredLabel="Menunggu hasil"
+                fallbackLabel={lot.countdown}
+                prefix="Sesi berakhir"
+                targetAt={lot.endsAt}
+              />
             </p>
           ) : null}
         </div>

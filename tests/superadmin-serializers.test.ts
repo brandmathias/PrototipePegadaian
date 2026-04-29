@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  serializeBlacklistEntry,
   serializeMonitoringSummary,
   serializeUnitAccount,
   serializeUnitListItem
@@ -61,6 +62,29 @@ describe("superadmin serializers", () => {
       metrics: expect.arrayContaining([
         expect.objectContaining({ label: "Total Unit", value: "2" })
       ])
+    });
+  });
+
+  it("serializes blacklist entries with countdown metadata when blocked until exists", () => {
+    expect(
+      serializeBlacklistEntry({
+        id: "blk-1",
+        userId: "buyer-1",
+        name: "Raras",
+        email: "raras@example.com",
+        unitName: "Pegadaian CP Manado",
+        isActive: true,
+        totalViolations: 2,
+        blockedUntil: new Date("2026-04-29T10:01:05+08:00"),
+        revokeReason: null,
+        now: new Date("2026-04-29T10:00:00+08:00")
+      })
+    ).toMatchObject({
+      id: "blk-1",
+      status: "Aktif",
+      countdownLabel: "1 menit 5 detik",
+      countdownAt: "2026-04-29T02:01:05.000Z",
+      expiredLabel: "Masa blokir selesai"
     });
   });
 });

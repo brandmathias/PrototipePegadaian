@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Pencil,
   Building2,
+  Clock3,
   Inbox,
   CreditCard,
   Landmark,
@@ -17,6 +18,7 @@ import {
   WalletCards
 } from "lucide-react";
 
+import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminUnitForm, DeactivateAdminButton } from "@/components/superadmin/admin-form";
 import { CabutBlacklistForm } from "@/components/superadmin/cabut-blacklist-form";
 import { ActivateRekeningButton, RekeningForm } from "@/components/superadmin/rekening-form";
@@ -44,6 +46,9 @@ export type SuperAdminPriority = {
   detail: string;
   href: string;
   action: string;
+  countdownLabel?: string;
+  countdownAt?: string;
+  expiredLabel?: string;
 };
 
 export type SuperAdminSummary = {
@@ -107,11 +112,15 @@ export type SuperAdminAdminItem = {
 export type SuperAdminMonitoringItem = {
   id: string;
   unitId: string;
+  href?: string;
   unit: string;
   scope: string;
   status: string;
   activity: string;
   detail: string;
+  countdownLabel?: string;
+  countdownAt?: string;
+  expiredLabel?: string;
 };
 
 export type SuperAdminMonitoringData = {
@@ -130,6 +139,9 @@ export type SuperAdminBlacklistItem = {
   until: string;
   reason: string;
   status: string;
+  countdownLabel?: string;
+  countdownAt?: string;
+  expiredLabel?: string;
 };
 
 function StatusBadge({ value }: { value: string }) {
@@ -144,6 +156,37 @@ function StatusBadge({ value }: { value: string }) {
   }
 
   return <Badge variant="danger">{value}</Badge>;
+}
+
+function SuperAdminCountdown({
+  countdownAt,
+  countdownLabel,
+  className,
+  expiredLabel = "Waktu terlewati",
+  prefix = "Sisa waktu"
+}: {
+  countdownAt?: string;
+  countdownLabel?: string;
+  expiredLabel?: string;
+  prefix?: string;
+  className?: string;
+}) {
+  if (!countdownAt && !countdownLabel) {
+    return null;
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+      <Clock3 className="size-4 shrink-0" />
+      <AdminLiveCountdown
+        className={className}
+        expiredLabel={expiredLabel}
+        fallbackLabel={countdownLabel ?? expiredLabel}
+        prefix={prefix}
+        targetAt={countdownAt}
+      />
+    </div>
+  );
 }
 
 function EditableAccountCard({
@@ -325,6 +368,12 @@ export function SuperAdminDashboardPage({
                     <div className="space-y-2">
                       <p className="font-semibold text-foreground">{item.title}</p>
                       <p className="text-sm leading-relaxed text-muted-foreground">{item.detail}</p>
+                      <SuperAdminCountdown
+                        className="text-sm font-semibold text-primary"
+                        countdownAt={item.countdownAt}
+                        countdownLabel={item.countdownLabel}
+                        expiredLabel={item.expiredLabel}
+                      />
                     </div>
                     <Link href={item.href}>
                       <Button variant="secondary">
@@ -364,6 +413,14 @@ export function SuperAdminDashboardPage({
                     </div>
                     <p className="mt-3 text-sm text-muted-foreground">{unit.activity}</p>
                     <p className="mt-2 text-sm text-muted-foreground">{unit.detail}</p>
+                    <div className="mt-3">
+                      <SuperAdminCountdown
+                        className="text-sm font-semibold text-primary"
+                        countdownAt={unit.countdownAt}
+                        countdownLabel={unit.countdownLabel}
+                        expiredLabel={unit.expiredLabel}
+                      />
+                    </div>
                   </div>
                 ))
               )}
@@ -393,6 +450,14 @@ export function SuperAdminDashboardPage({
                       <StatusBadge value={item.status} />
                     </div>
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.detail}</p>
+                    <div className="mt-3">
+                      <SuperAdminCountdown
+                        className="text-sm font-semibold text-primary"
+                        countdownAt={item.countdownAt}
+                        countdownLabel={item.countdownLabel}
+                        expiredLabel={item.expiredLabel}
+                      />
+                    </div>
                   </div>
                 ))
               )}
@@ -786,12 +851,18 @@ export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringD
                   <p className="text-lg font-bold text-foreground">{item.unit}</p>
                   <p className="text-sm text-muted-foreground">{item.activity}</p>
                   <p className="text-sm leading-relaxed text-muted-foreground">{item.detail}</p>
+                  <SuperAdminCountdown
+                    className="text-sm font-semibold text-primary"
+                    countdownAt={item.countdownAt}
+                    countdownLabel={item.countdownLabel}
+                    expiredLabel={item.expiredLabel}
+                  />
                 </div>
                 <div className="space-y-3 rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5">
                   <p className="text-sm text-muted-foreground">
                     Tinjau unit ini untuk memastikan rekening aktif, admin aktif, dan status operasionalnya tetap sinkron.
                   </p>
-                  <Link href={`/superadmin/unit/${item.unitId}`}>
+                  <Link href={item.href ?? `/superadmin/unit/${item.unitId}`}>
                     <Button variant="secondary">Buka Unit Terkait</Button>
                   </Link>
                 </div>
@@ -805,6 +876,8 @@ export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringD
 }
 
 export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlacklistItem[] }) {
+  const expiringEntry = entries.find((entry) => entry.status === "Aktif" && entry.countdownAt);
+
   return (
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
@@ -841,6 +914,14 @@ export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlackl
                   <p className="mt-3 text-sm text-muted-foreground">
                     {item.total} pelanggaran | Berlaku sampai {item.until}
                   </p>
+                  <div className="mt-3">
+                    <SuperAdminCountdown
+                      className="text-sm font-semibold text-primary"
+                      countdownAt={item.countdownAt}
+                      countdownLabel={item.countdownLabel}
+                      expiredLabel={item.expiredLabel}
+                    />
+                  </div>
                 </div>
               ))
             )}
@@ -864,6 +945,23 @@ export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlackl
                   </div>
                 </div>
               </div>
+
+              {expiringEntry ? (
+                <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.04] p-5">
+                  <p className="text-sm font-semibold text-foreground">Masa blokir terdekat untuk ditinjau</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {expiringEntry.name} dari {expiringEntry.unit}
+                  </p>
+                  <div className="mt-3">
+                    <SuperAdminCountdown
+                      className="text-sm font-semibold text-primary"
+                      countdownAt={expiringEntry.countdownAt}
+                      countdownLabel={expiringEntry.countdownLabel}
+                      expiredLabel={expiringEntry.expiredLabel}
+                    />
+                  </div>
+                </div>
+              ) : null}
 
               {entries.find((entry) => entry.status === "Aktif") ? (
                 <CabutBlacklistForm userId={entries.find((entry) => entry.status === "Aktif")!.userId} />

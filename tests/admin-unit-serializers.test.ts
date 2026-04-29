@@ -59,6 +59,7 @@ describe("admin unit serializers", () => {
 
     expect(auction.visibility).toBe("TERKUNCI");
     expect(auction.finalPrice).toBeNull();
+    expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
   });
 
   it("serializes transaction status labels", () => {
@@ -86,5 +87,6 @@ describe("admin unit serializers", () => {
     expect(transaction.status).toBe("BUKTI_DIUNGGAH");
     expect(transaction.method).toBe("TRANSFER_BANK");
     expect(transaction.total).toBe(12500000);
+    expect(transaction.deadlineAt).toBe("2026-04-25T00:00:00.000Z");
   });
 });

@@ -10,6 +10,7 @@ import {
   ShieldAlert
 } from "lucide-react";
 
+import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -244,7 +245,14 @@ export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
                       : "Pembayaran dilakukan di unit dan menunggu konfirmasi penerimaan dana."}
                   </p>
                   <div className="mt-4 flex items-center justify-between gap-3 text-sm text-black/55">
-                    <span>Deadline {transaction.deadline}</span>
+                    <span>
+                      <AdminLiveCountdown
+                        expiredLabel="Batas waktu terlewati"
+                        fallbackLabel={transaction.deadline}
+                        prefix="Sisa waktu"
+                        targetAt={transaction.deadlineAt}
+                      />
+                    </span>
                     <Link className="font-semibold text-[#0a6a49]" href={`/admin/transaksi/${transaction.id}`}>
                       Proses
                     </Link>

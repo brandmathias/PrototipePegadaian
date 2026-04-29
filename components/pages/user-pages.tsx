@@ -16,6 +16,7 @@ import {
 
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
+import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -194,6 +195,26 @@ function getBuyerPhone(buyer: BuyerSessionUser) {
   return buyer.phoneNumber ?? userSummary.phone;
 }
 
+function BuyerPaymentCountdown({
+  transaction,
+  prefix,
+  className
+}: {
+  transaction: BuyerTransaction;
+  prefix?: string;
+  className?: string;
+}) {
+  return (
+    <LiveCountdown
+      className={className}
+      expiredLabel={transaction.status === "LUNAS" ? "Selesai" : "Waktu pembayaran berakhir"}
+      fallbackLabel={transaction.deadline}
+      prefix={prefix}
+      targetAt={transaction.deadlineAt}
+    />
+  );
+}
+
 function TransactionTimeline({ transaction }: { transaction: BuyerTransaction }) {
   const steps = getTimelineLabels(transaction);
   const currentStep = getCurrentStep(transaction);
@@ -342,7 +363,7 @@ export function UserDashboardPage({
                       {transaction.id} | {transaction.unit}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Deadline {transaction.deadline}
+                      <BuyerPaymentCountdown prefix="Sisa waktu" transaction={transaction} />
                     </p>
                   </div>
                   <Link href={`/transaksi/${transaction.id}`}>
@@ -563,7 +584,9 @@ export function TransactionsPage({
                   {currency.format(transaction.amount)}
                 </p>
                 <p className="text-sm text-muted-foreground">{transaction.paymentLabel}</p>
-                <p className="text-sm text-muted-foreground">Deadline {transaction.deadline}</p>
+                <p className="text-sm text-muted-foreground">
+                  <BuyerPaymentCountdown prefix="Sisa waktu" transaction={transaction} />
+                </p>
               </div>
 
               <div className="flex flex-col gap-3 lg:items-end">
@@ -654,10 +677,12 @@ export function TransactionDetailPage({
               </p>
             </Card>
             <Card className="border border-border/70 p-5 shadow-none">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                Deadline
-              </p>
-              <p className="mt-3 font-semibold text-foreground">{transaction.deadline}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  Sisa waktu
+                </p>
+                <p className="mt-3 font-semibold text-foreground">
+                  <BuyerPaymentCountdown transaction={transaction} />
+                </p>
             </Card>
             <Card className="border border-border/70 p-5 shadow-none sm:col-span-2">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -830,7 +855,10 @@ export function TransactionDetailPage({
                     <div className="flex items-start gap-3">
                       <Clock3 className="mt-0.5 size-4 text-primary" />
                       <p className="text-sm text-muted-foreground">
-                        Datang sebelum batas waktu {transaction.deadline}.
+                        <BuyerPaymentCountdown
+                          prefix="Batas pembayaran tersisa"
+                          transaction={transaction}
+                        />
                       </p>
                     </div>
                     <div className="flex items-start gap-3">

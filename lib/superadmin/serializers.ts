@@ -1,3 +1,5 @@
+import { getCountdownState } from "@/lib/countdown";
+
 type SerializedUnitAccount = {
   id: string;
   bankName: string;
@@ -78,5 +80,42 @@ export function serializeMonitoringSummary(input: {
         detail: "Akun buyer yang masih diblokir dari lelang"
       }
     ]
+  };
+}
+
+export function serializeBlacklistEntry(input: {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  unitName: string | null;
+  isActive: boolean;
+  totalViolations: number;
+  blockedUntil: Date | null;
+  revokeReason: string | null;
+  now?: Date;
+}) {
+  const countdown = input.isActive
+    ? getCountdownState(input.blockedUntil, {
+        now: input.now?.getTime(),
+        expiredLabel: "Masa blokir selesai"
+      })
+    : null;
+
+  return {
+    id: input.id,
+    userId: input.userId,
+    name: input.name,
+    email: input.email,
+    unit: input.unitName ?? "Lintas unit",
+    total: input.totalViolations,
+    until: input.blockedUntil
+      ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(input.blockedUntil)
+      : "Sampai ditinjau ulang",
+    reason: input.revokeReason ?? "Pelanggaran pembayaran atau penyelesaian lelang.",
+    status: input.isActive ? "Aktif" : "Nonaktif",
+    countdownLabel: countdown?.label,
+    countdownAt: input.blockedUntil?.toISOString(),
+    expiredLabel: countdown ? "Masa blokir selesai" : undefined
   };
 }
