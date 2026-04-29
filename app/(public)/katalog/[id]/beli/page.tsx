@@ -8,5 +8,5 @@ export default async function Page({
 }) {
   const { id } = await params;
   const lot = await getPublicLotById(id);
-  return <PurchasePage lot={lot} lotId={id} />;
+  return <PurchasePage lot={lot} />;
 }

@@ -936,7 +936,7 @@ export const adminBlacklist: Array<{
   reason: string;
   lastIncident: string;
   activeAuctionRestriction: string;
-  history: Array<{ date: string; action: string; note: string }>;
+  history: Array<{ date: string; action: string; actionLabel?: string; actorLabel?: string; actorType?: "manual" | "system"; note: string }>;
 }> = [
   {
     userId: "usr-dimas",
@@ -952,6 +952,9 @@ export const adminBlacklist: Array<{
       {
         date: "18 April 2026",
         action: "blokir_otomatis",
+        actionLabel: "Blokir otomatis",
+        actorLabel: "Sistem otomatis",
+        actorType: "system",
         note: "Pemenang Vickrey tidak membayar dalam 24 jam."
       }
     ]
@@ -970,11 +973,17 @@ export const adminBlacklist: Array<{
       {
         date: "15 Maret 2026",
         action: "blokir_otomatis",
+        actionLabel: "Blokir otomatis",
+        actorLabel: "Sistem otomatis",
+        actorType: "system",
         note: "Pemenang lelang Sony A6400 tidak menyelesaikan pembayaran."
       },
       {
         date: "20 April 2026",
         action: "perpanjang_manual",
+        actionLabel: "Perpanjangan manual",
+        actorLabel: "Admin internal",
+        actorType: "manual",
         note: "Masa blokir diperpanjang 30 hari karena pelanggaran kedua."
       }
     ]
@@ -993,6 +1002,9 @@ export const adminBlacklist: Array<{
       {
         date: "2 Maret 2026",
         action: "blokir_otomatis",
+        actionLabel: "Blokir otomatis",
+        actorLabel: "Sistem otomatis",
+        actorType: "system",
         note: "Pemenang lelang tidak membayar sesuai batas waktu."
       }
     ]

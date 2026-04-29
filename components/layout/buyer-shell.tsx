@@ -10,7 +10,6 @@ import { AlertCenter } from "@/components/ui/alert-center";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
-import { userSummary } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 type BuyerShellProps = {
@@ -18,6 +17,13 @@ type BuyerShellProps = {
   children: ReactNode;
   title: string;
   description: string;
+  summary: {
+    memberSince: string;
+    blacklist: {
+      active: boolean;
+      until: string;
+    };
+  };
 };
 
 const buyerNav = [
@@ -35,7 +41,7 @@ const buyerNav = [
   }
 ];
 
-export function BuyerShell({ buyer, children, title, description }: BuyerShellProps) {
+export function BuyerShell({ buyer, children, title, description, summary }: BuyerShellProps) {
   const pathname = usePathname();
 
   return (
@@ -112,9 +118,9 @@ export function BuyerShell({ buyer, children, title, description }: BuyerShellPr
                 <Badge className="bg-primary/10 text-primary" variant="default">
                   Ruang Pembeli
                 </Badge>
-                <Badge variant={userSummary.blacklist.active ? "danger" : "muted"}>
-                  {userSummary.blacklist.active
-                    ? `Blacklist aktif sampai ${userSummary.blacklist.until}`
+                <Badge variant={summary.blacklist.active ? "danger" : "muted"}>
+                  {summary.blacklist.active
+                    ? `Blacklist aktif sampai ${summary.blacklist.until}`
                     : "Akun terverifikasi"}
                 </Badge>
               </div>
@@ -127,7 +133,7 @@ export function BuyerShell({ buyer, children, title, description }: BuyerShellPr
                 </p>
               </div>
               <p className="text-sm font-medium text-primary/80">
-                Akun {buyer.email} | Member sejak {userSummary.memberSince} | Semua aktivitas
+                Akun {buyer.email} | Member sejak {summary.memberSince} | Semua aktivitas
                 pembelian dan lelang tersusun rapi di satu tempat
               </p>
             </div>

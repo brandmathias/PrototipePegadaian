@@ -1,5 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
+import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { validateBlacklistExtendPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { blacklistActionLogs, blacklists, users } from "@/lib/db/schema";
@@ -36,6 +38,7 @@ export async function listAdminBlacklist(unitId: string) {
 }
 
 export async function getAdminBlacklistByUserId(unitId: string, userId: string) {
+  const performers = alias(users, "blacklist_log_performer");
   const [row] = await db
     .select({ blacklist: blacklists, user: users })
     .from(blacklists)
@@ -48,18 +51,21 @@ export async function getAdminBlacklistByUserId(unitId: string, userId: string) 
   }
 
   const history = await db
-    .select()
+    .select({
+      action: blacklistActionLogs.action,
+      createdAt: blacklistActionLogs.createdAt,
+      note: blacklistActionLogs.note,
+      performedByType: blacklistActionLogs.performedByType,
+      performedByName: performers.name
+    })
     .from(blacklistActionLogs)
+    .leftJoin(performers, eq(performers.id, blacklistActionLogs.performedByUserId))
     .where(eq(blacklistActionLogs.blacklistId, row.blacklist.id))
     .orderBy(desc(blacklistActionLogs.createdAt));
 
   return {
     ...serializeBlacklist(row),
-    history: history.map((item) => ({
-      date: item.createdAt.toISOString().slice(0, 10),
-      action: item.action,
-      note: item.note
-    }))
+    history: history.map(serializeBlacklistHistoryEntry)
   };
 }
 
@@ -82,6 +88,7 @@ export async function extendAdminBlacklist(unitId: string, adminId: string, user
     blacklistId: updated.id,
     targetUserId: userId,
     action: "perpanjang_manual",
+    performedByType: "manual",
     performedByUserId: adminId,
     note: payload.reason
   });

@@ -20,5 +20,5 @@ export default async function Page({
         ])
       : [null, null];
 
-  return <BidPage buyerStatus={buyerStatus} bidState={bidState} lot={lot} lotId={id} />;
+  return <BidPage buyerStatus={buyerStatus} bidState={bidState} lot={lot} />;
 }

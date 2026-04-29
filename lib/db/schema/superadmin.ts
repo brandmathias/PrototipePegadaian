@@ -78,9 +78,8 @@ export const blacklistActionLogs = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     action: text("action").notNull(),
-    performedByUserId: text("performed_by_user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    performedByType: text("performed_by_type").notNull().default("manual"),
+    performedByUserId: text("performed_by_user_id").references(() => users.id, { onDelete: "set null" }),
     note: text("note").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },

@@ -6,10 +6,21 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { StatCard } from "@/components/shared/stat-card";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { landingStats, publicLots } from "@/lib/mock-data";
+import type { Lot } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-export function HomePage() {
+type HomePageStat = {
+  label: string;
+  value: string;
+};
+
+export function HomePage({
+  featuredLots,
+  stats
+}: {
+  featuredLots: Lot[];
+  stats: HomePageStat[];
+}) {
   return (
     <div className="space-y-20 pb-10">
       <section className="relative overflow-hidden bg-[linear-gradient(135deg,#01492a_0%,#025833_40%,#0a3323_100%)] py-24 text-white">
@@ -57,7 +68,7 @@ export function HomePage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {landingStats.map((stat) => (
+              {stats.map((stat) => (
                 <div
                   className="rounded-[1.25rem] border border-white/10 bg-white/8 p-4 backdrop-blur"
                   key={stat.label}
@@ -166,10 +177,21 @@ export function HomePage() {
           }
         />
         <div className="grid gap-6 lg:grid-cols-3">
-          {publicLots.slice(0, 3).map((lot) => (
+          {featuredLots.map((lot) => (
             <LotCard key={lot.id} lot={lot} />
           ))}
         </div>
+        {featuredLots.length === 0 ? (
+          <div className="rounded-[1.75rem] border border-dashed border-border bg-white p-8 text-center">
+            <p className="text-lg font-semibold text-foreground">
+              Belum ada lot aktif yang dipublikasikan.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Katalog akan otomatis terisi saat admin unit mulai memasarkan barang dari database
+              aktif.
+            </p>
+          </div>
+        ) : null}
       </section>
 
       <section className="container space-y-8">

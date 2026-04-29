@@ -67,6 +67,7 @@ export async function revokeBlacklist(userId: string, actorUserId: string, input
       blacklistId: activeBlacklist.id,
       targetUserId: userId,
       action: "cabut_manual",
+      performedByType: "manual",
       performedByUserId: actorUserId,
       note: payload.reason
     });

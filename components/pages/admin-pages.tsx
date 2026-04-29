@@ -1539,10 +1539,13 @@ export function AdminBlacklistDetailPage({ userId, entry: providedEntry }: { use
             <CardTitle className="text-xl sm:text-[1.45rem]">Riwayat Tindakan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {(entry.history ?? []).map((history: { date: string; action: string; note: string }) => (
+            {(entry.history ?? []).map((history: { date: string; action: string; actionLabel?: string; note: string; actorLabel?: string; actorType?: string }) => (
               <div className="rounded-[1.4rem] border border-black/10 bg-[#fafaf8] p-4" key={`${history.date}-${history.action}`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-semibold text-black/85">{history.action}</p>
+                  <div>
+                    <p className="font-semibold text-black/85">{history.actionLabel ?? history.action}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/45">{history.actorLabel ?? (history.actorType === "system" ? "Sistem otomatis" : "Admin internal")}</p>
+                  </div>
                   <p className="text-sm text-black/55">{history.date}</p>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-black/65">{history.note}</p>

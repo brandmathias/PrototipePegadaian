@@ -7,7 +7,7 @@ import { Gavel, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { LotCard } from "@/components/shared/lot-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
-import { categories, publicLots, type Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/mock-data";
 
 const sortOptions = [
   { value: "latest", label: "Terbaru" },
@@ -22,7 +22,7 @@ const priceBands = [
   { value: "above-50", label: "> Rp 50 Jt" }
 ] as const;
 
-export function CatalogPage({ lots: initialLots = publicLots }: { lots?: Lot[] }) {
+export function CatalogPage({ lots: initialLots }: { lots: Lot[] }) {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [sortBy, setSortBy] = useState("latest");
   const [mode, setMode] = useState<"all" | "fixed_price" | "vickrey">("all");
@@ -31,6 +31,10 @@ export function CatalogPage({ lots: initialLots = publicLots }: { lots?: Lot[] }
 
   const units = useMemo(
     () => ["Semua Unit", ...new Set(initialLots.map((lot) => lot.unitName))],
+    [initialLots]
+  );
+  const categories = useMemo(
+    () => ["Semua", ...new Set(initialLots.map((lot) => lot.category))],
     [initialLots]
   );
 

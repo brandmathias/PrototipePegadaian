@@ -20,8 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   currency,
-  getBidHistoryByLotId,
-  getLotById,
   type BuyerBid,
   type Lot
 } from "@/lib/mock-data";
@@ -50,19 +48,14 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
 }
 
 export function LotDetailPage({
-  lotId,
-  lot: loadedLot,
-  bidState: loadedBidState,
+  lot,
+  bidState,
   buyerStatus = null
 }: {
-  lotId: string;
-  lot?: Lot | null;
-  bidState?: BuyerBid | null;
+  lot: Lot | null;
+  bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
 }) {
-  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
-  const bidState = loadedBidState === undefined ? getBidHistoryByLotId(lotId) : loadedBidState;
-
   if (!lot) {
     notFound();
   }
@@ -158,7 +151,7 @@ export function LotDetailPage({
                 </div>
               )}
 
-              {bidState ? (
+      {bidState ? (
                 <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
                     Aktivitas akun Anda
@@ -236,8 +229,7 @@ export function LotDetailPage({
   );
 }
 
-export function PurchasePage({ lotId, lot: loadedLot }: { lotId: string; lot?: Lot | null }) {
-  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
+export function PurchasePage({ lot }: { lot: Lot | null }) {
   if (!lot) notFound();
 
   return (
@@ -258,19 +250,14 @@ export function PurchasePage({ lotId, lot: loadedLot }: { lotId: string; lot?: L
 }
 
 export function BidPage({
-  lotId,
-  lot: loadedLot,
-  bidState: loadedBidState,
+  lot,
+  bidState,
   buyerStatus = null
 }: {
-  lotId: string;
-  lot?: Lot | null;
-  bidState?: BuyerBid | null;
+  lot: Lot | null;
+  bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
 }) {
-  const lot = loadedLot === undefined ? getLotById(lotId) : loadedLot;
-  const bidState = loadedBidState === undefined ? getBidHistoryByLotId(lotId) : loadedBidState;
-
   if (!lot) notFound();
 
   return (

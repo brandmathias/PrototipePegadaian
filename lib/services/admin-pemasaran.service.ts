@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
-import { barang, bids, pemasaran, riwayatStatusBarang } from "@/lib/db/schema";
+import { barang, bids, pemasaran, riwayatStatusBarang, users } from "@/lib/db/schema";
 
 async function getBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
@@ -72,19 +72,22 @@ export async function listAdminPemasaran(unitId: string) {
     .select({
       marketing: pemasaran,
       item: barang,
-      bidCount: sql<number>`count(${bids.id})`
+      bidCount: sql<number>`count(${bids.id})`,
+      winnerName: users.name
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
+    .leftJoin(users, eq(users.id, pemasaran.winnerId))
     .where(eq(barang.unitId, unitId))
-    .groupBy(pemasaran.id, barang.id)
+    .groupBy(pemasaran.id, barang.id, users.name)
     .orderBy(desc(pemasaran.createdAt));
 
   return rows.map((row) =>
     serializeAdminPemasaran(row.marketing, {
       lotName: row.item.name,
-      bidCount: Number(row.bidCount ?? 0)
+      bidCount: Number(row.bidCount ?? 0),
+      winnerName: row.winnerName ?? null
     })
   );
 }
@@ -94,13 +97,15 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     .select({
       marketing: pemasaran,
       item: barang,
-      bidCount: sql<number>`count(${bids.id})`
+      bidCount: sql<number>`count(${bids.id})`,
+      winnerName: users.name
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
+    .leftJoin(users, eq(users.id, pemasaran.winnerId))
     .where(and(eq(pemasaran.id, pemasaranId), eq(barang.unitId, unitId)))
-    .groupBy(pemasaran.id, barang.id)
+    .groupBy(pemasaran.id, barang.id, users.name)
     .limit(1);
 
   if (!row) {
@@ -109,6 +114,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
 
   return serializeAdminPemasaran(row.marketing, {
     lotName: row.item.name,
-    bidCount: Number(row.bidCount ?? 0)
+    bidCount: Number(row.bidCount ?? 0),
+    winnerName: row.winnerName ?? null
   });
 }
