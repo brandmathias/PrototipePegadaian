@@ -4,6 +4,17 @@ import { afterEach, beforeEach, vi } from "vitest";
 
 import { AdminDashboardPage } from "@/components/pages/admin-dashboard-page";
 
+const baseDashboardData = {
+  summary: {
+    unitName: "Admin Unit Demo",
+    activeBank: "BRI 0123",
+    subtitle: "Demo"
+  },
+  inventory: [],
+  transactions: [],
+  blacklist: []
+};
+
 describe("AdminDashboardPage", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -15,10 +26,10 @@ describe("AdminDashboardPage", () => {
   });
 
   it("renders operational summary and latest transaction table", () => {
-    render(<AdminDashboardPage />);
+    render(<AdminDashboardPage data={baseDashboardData} />);
 
     expect(screen.getByText(/ringkasan hari ini/i)).toBeInTheDocument();
-    expect(screen.getByText(/barang gadai aktif/i)).toBeInTheDocument();
+    expect(screen.getByText(/barang jaminan siap dipasarkan/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran yang perlu ditangani/i })).toBeInTheDocument();
   });
 
@@ -26,13 +37,7 @@ describe("AdminDashboardPage", () => {
     render(
       <AdminDashboardPage
         data={{
-          summary: {
-            unitName: "Admin Unit Demo",
-            activeBank: "BRI 0123",
-            subtitle: "Demo"
-          },
-          inventory: [],
-          blacklist: [],
+          ...baseDashboardData,
           transactions: [
             {
               id: "TRX-1",

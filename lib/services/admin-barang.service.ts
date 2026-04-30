@@ -2,7 +2,9 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
 import {
+  ADMIN_BARANG_MEDIA_LIMIT,
   validateAdminBarangPayload,
+  validateAdminBarangMediaList,
   validatePerpanjanganPayload,
   validateTebusPayload
 } from "@/lib/admin-unit/validation";
@@ -98,35 +100,60 @@ export async function getAdminBarangById(unitId: string, barangId: string) {
   };
 }
 
-export async function createAdminBarang(unitId: string, userId: string, input: Parameters<typeof validateAdminBarangPayload>[0]) {
+export async function createAdminBarang(
+  unitId: string,
+  userId: string,
+  input: Parameters<typeof validateAdminBarangPayload>[0] & { media?: unknown }
+) {
   const payload = validateAdminBarangPayload(input);
-  const [created] = await db
-    .insert(barang)
-    .values({
-      id: crypto.randomUUID(),
-      unitId,
-      code: makeBarangCode(),
-      name: payload.name,
-      category: payload.category,
-      condition: payload.condition,
-      description: payload.description,
-      appraisalValue: payload.appraisalValue,
-      loanValue: payload.loanValue,
-      ownerName: payload.ownerName,
-      customerNumber: payload.customerNumber,
-      pawnedAt: toUtcDate(payload.pawnedAt),
-      dueDate: toUtcDate(payload.dueDate),
-      status: "gadai",
-      createdByUserId: userId
-    })
-    .returning();
+  const media = validateAdminBarangMediaList(input.media);
 
-  await recordStatusChange({
-    barangId: created.id,
-    oldStatus: null,
-    newStatus: "gadai",
-    userId,
-    note: "Barang gadai baru dicatat oleh admin unit."
+  const created = await db.transaction(async (tx) => {
+    const [createdBarang] = await tx
+      .insert(barang)
+      .values({
+        id: crypto.randomUUID(),
+        unitId,
+        code: makeBarangCode(),
+        name: payload.name,
+        category: payload.category,
+        condition: payload.condition,
+        description: payload.description,
+        appraisalValue: payload.appraisalValue,
+        loanValue: payload.loanValue,
+        ownerName: payload.ownerName,
+        customerNumber: payload.customerNumber,
+        pawnedAt: toUtcDate(payload.pawnedAt),
+        dueDate: toUtcDate(payload.dueDate),
+        status: "jaminan",
+        createdByUserId: userId
+      })
+      .returning();
+
+    await tx.insert(riwayatStatusBarang).values({
+      id: crypto.randomUUID(),
+      barangId: createdBarang.id,
+      oldStatus: null,
+      newStatus: "jaminan",
+      changedByUserId: userId,
+      note: "Barang hasil input gadai dicatat sebagai barang jaminan unit."
+    });
+
+    if (media.length > 0) {
+      await tx.insert(mediaBarang).values(
+        media.map((item, index) => ({
+          id: crypto.randomUUID(),
+          barangId: createdBarang.id,
+          type: item.type,
+          url: item.url,
+          fileName: item.fileName,
+          sizeBytes: item.sizeBytes,
+          sortOrder: item.sortOrder ?? index
+        }))
+      );
+    }
+
+    return createdBarang;
   });
 
   return serializeAdminBarang(created);
@@ -136,7 +163,7 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
   const current = await assertBarangForUnit(barangId, unitId);
 
   if (!["gadai", "jaminan"].includes(current.status)) {
-    throw new Error("Barang hanya dapat diedit saat status gadai atau jaminan.");
+    throw new Error("Barang hanya dapat diedit sebelum tayang di katalog.");
   }
 
   const payload = validateAdminBarangPayload(input);
@@ -257,23 +284,45 @@ export async function addAdminBarangMedia(
   barangId: string,
   input: { type?: string; url?: string; fileName?: string; sizeBytes?: number; sortOrder?: number }
 ) {
+  const [created] = await addAdminBarangMediaBatch(unitId, barangId, [input]);
+  return created;
+}
+
+export async function addAdminBarangMediaBatch(
+  unitId: string,
+  barangId: string,
+  input: Array<{ type?: string; url?: string; fileName?: string; sizeBytes?: number; sortOrder?: number }>
+) {
   await assertBarangForUnit(barangId, unitId);
-  const url = String(input.url ?? "").trim();
-  if (!url) {
-    throw new Error("URL media wajib diisi.");
+  const [{ count }] = await db
+    .select({
+      count: sql<number>`count(*)`
+    })
+    .from(mediaBarang)
+    .where(eq(mediaBarang.barangId, barangId));
+
+  if (Number(count) + input.length > ADMIN_BARANG_MEDIA_LIMIT) {
+    throw new Error(`Maksimal ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video untuk satu barang.`);
   }
 
-  const [created] = await db
+  const media = validateAdminBarangMediaList(input).map((item, index) => ({
+    ...item,
+    sortOrder: Number(count) + index
+  }));
+
+  const created = await db
     .insert(mediaBarang)
-    .values({
-      id: crypto.randomUUID(),
-      barangId,
-      type: input.type === "video" ? "video" : "foto",
-      url,
-      fileName: String(input.fileName ?? "").trim(),
-      sizeBytes: Number(input.sizeBytes ?? 0),
-      sortOrder: Number(input.sortOrder ?? 0)
-    })
+    .values(
+      media.map((item) => ({
+        id: crypto.randomUUID(),
+        barangId,
+        type: item.type,
+        url: item.url,
+        fileName: item.fileName,
+        sizeBytes: item.sizeBytes,
+        sortOrder: item.sortOrder
+      }))
+    )
     .returning();
 
   return created;

@@ -16,7 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
-import { currency, type Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/contracts/catalog";
+import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
 type PurchaseWorkflowProps = {
@@ -269,7 +270,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       Nomor pengajuan
                     </p>
-                    <p className="mt-2 text-lg font-bold text-primary">PGJ-FP-2026-00XX</p>
+                    <p className="mt-2 text-lg font-bold text-primary">Dibuat otomatis setelah konfirmasi</p>
                     <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                       Simpan nomor pengajuan ini. Anda akan membutuhkannya saat datang ke
                       unit untuk pembayaran langsung dan konfirmasi petugas.

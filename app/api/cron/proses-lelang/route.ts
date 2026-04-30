@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { runAuctionSettlementCron } from "@/lib/services/cron.service";
 
-export async function POST(request: Request) {
+async function handleCron(request: Request) {
   const secret = process.env.CRON_SECRET;
 
   if (!secret) {
@@ -22,4 +22,12 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : "Cron settlement gagal dijalankan.";
     return NextResponse.json({ message }, { status: 500 });
   }
+}
+
+export async function GET(request: Request) {
+  return handleCron(request);
+}
+
+export async function POST(request: Request) {
+  return handleCron(request);
 }

@@ -1,8 +1,8 @@
-import { currency } from "@/lib/mock-data";
 import {
   normalizeBuyerNationalId,
   normalizeBuyerPhoneNumber
 } from "@/lib/auth/buyer-auth-validation";
+import { currency } from "@/lib/formatters/currency";
 
 export type BuyerPurchasePayload = {
   paymentMethod: "transfer" | "langsung";

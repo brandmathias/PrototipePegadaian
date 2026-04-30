@@ -22,6 +22,8 @@ type BuyerShellProps = {
     blacklist: {
       active: boolean;
       until: string;
+      reason?: string;
+      violations?: number;
     };
   };
 };

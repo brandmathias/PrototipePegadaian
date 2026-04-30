@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Clock3,
-  FileClock,
   Gavel,
   PackagePlus,
   ShieldAlert
@@ -14,22 +13,17 @@ import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { adminBlacklist, adminInventory, adminSummary, adminTransactions } from "@/lib/mock-data";
 
 type AdminDashboardData = {
-  summary?: { unitName: string; subtitle?: string; activeBank: string };
-  inventory?: Array<any>;
-  transactions?: Array<any>;
-  blacklist?: Array<any>;
+  summary: { unitName: string; subtitle?: string; activeBank: string };
+  inventory: Array<any>;
+  transactions: Array<any>;
+  blacklist: Array<any>;
 };
 
-export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
-  const summary = data?.summary ?? adminSummary;
-  const inventory = data?.inventory ?? adminInventory;
-  const transactions = data?.transactions ?? adminTransactions;
-  const blacklist = data?.blacklist ?? adminBlacklist;
+export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
+  const { summary, inventory, transactions, blacklist } = data;
 
-  const gadai = inventory.filter((item) => item.status === "GADAI");
   const jaminan = inventory.filter((item) => item.status === "JAMINAN");
   const dipasarkan = inventory.filter((item) => item.status === "DIPASARKAN");
   const gagal = inventory.filter((item) => item.status === "GAGAL");
@@ -45,16 +39,9 @@ export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
 
   const cards = [
     {
-      title: "Barang Gadai Aktif",
-      value: gadai.length,
-      detail: "Pantau jatuh tempo lebih awal agar keputusan perpanjangan, tebus, atau konversi bisa diproses tepat waktu.",
-      icon: FileClock,
-      tone: "from-slate-50 to-white border-slate-200 text-slate-800"
-    },
-    {
-      title: "Barang Siap Dijual",
+      title: "Barang Jaminan Siap Dipasarkan",
       value: jaminan.length,
-      detail: "Siap dipilihkan skema penjualan yang paling sesuai sebelum tayang ke katalog publik.",
+      detail: "Barang sudah masuk aset unit dan siap dipilihkan skema fixed price atau Vickrey.",
       icon: ShieldAlert,
       tone: "from-amber-50 to-white border-amber-200 text-amber-900"
     },
@@ -75,13 +62,6 @@ export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
   ];
 
   const workflowLanes = [
-    {
-      title: "Perlu Tindak Lanjut Segera",
-      description: "Daftar barang yang sebaiknya diproses lebih dulu agar alur kerja unit tetap lancar.",
-      items: gadai,
-      hrefBuilder: (id: string) => `/admin/barang/${id}`,
-      emptyText: "Belum ada barang yang perlu diprioritaskan dari alur gadai."
-    },
     {
       title: "Siap Tayang ke Katalog",
       description: "Barang yang tinggal dilengkapi pengaturan penjualannya sebelum dipublikasikan.",
@@ -117,7 +97,7 @@ export function AdminDashboardPage({ data }: { data?: AdminDashboardData }) {
               </h2>
               <p className="mt-4 max-w-3xl text-base leading-7 text-foreground/72 sm:text-lg">
                 Halaman ini membantu tim unit memantau pekerjaan yang paling penting, dari
-                pencatatan barang masuk, tindak lanjut jatuh tempo, penayangan ke katalog,
+                pencatatan barang jaminan, penayangan ke katalog,
                 verifikasi pembayaran, sampai penanganan pelanggaran lelang.
               </p>
             </div>

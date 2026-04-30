@@ -18,11 +18,9 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  currency,
-  type BuyerBid,
-  type Lot
-} from "@/lib/mock-data";
+import type { BuyerBid } from "@/lib/contracts/buyer";
+import type { Lot } from "@/lib/contracts/catalog";
+import { currency } from "@/lib/formatters/currency";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -61,6 +59,7 @@ export function LotDetailPage({
   }
 
   const isVickrey = lot.mode === "vickrey";
+  const showAuctionCountdown = isVickrey && (lot.countdown || lot.endsAt);
 
   return (
     <div className="container space-y-10 py-10 md:space-y-12 md:py-12">
@@ -108,7 +107,7 @@ export function LotDetailPage({
                   <p className="font-headline text-5xl font-extrabold tracking-tight text-primary">
                     {currency.format(lot.price)}
                   </p>
-                  {lot.countdown || lot.endsAt ? (
+                  {showAuctionCountdown ? (
                     <div className="inline-flex items-center gap-2 rounded-full bg-tertiary-container/10 px-4 py-2 text-sm font-semibold text-tertiary-container">
                       <Clock3 className="size-4" />
                       <LiveCountdown

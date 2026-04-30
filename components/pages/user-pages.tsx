@@ -21,22 +21,29 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  bidHistory,
-  currency,
-  getTransactionById,
-  type BuyerBid,
-  type BuyerBidStatus,
-  type BuyerTransaction,
-  type BuyerTransactionStatus,
-  userSummary,
-  userTransactions
-} from "@/lib/mock-data";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
+import type { BuyerBid, BuyerBidStatus, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
+import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
-type BuyerSummary = Omit<typeof userSummary, "metrics"> & {
+type BuyerSummary = {
+  name?: string;
+  unit?: string;
+  accountId?: string;
+  email?: string;
+  phone: string;
   nationalId?: string;
+  nikMasked?: string;
+  address?: string;
+  memberSince: string;
+  verificationStatus: string;
+  blacklist: {
+    active: boolean;
+    until: string;
+    reason: string;
+    violations: number;
+  };
+  highlights: string[];
   metrics: Array<{ label: string; value: string; accent?: string }>;
 };
 
@@ -191,8 +198,8 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
   return transactionStatusMeta[transaction.status].description;
 }
 
-function getBuyerPhone(buyer: BuyerSessionUser) {
-  return buyer.phoneNumber ?? userSummary.phone;
+function getBuyerPhone(buyer: BuyerSessionUser, summaryPhone?: string) {
+  return buyer.phoneNumber ?? summaryPhone ?? "-";
 }
 
 function BuyerPaymentCountdown({
@@ -264,11 +271,9 @@ export function UserDashboardPage({
   data
 }: {
   buyer: BuyerSessionUser;
-  data?: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+  data: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
 }) {
-  const summary = data?.summary ?? userSummary;
-  const transactions = data?.transactions ?? userTransactions;
-  const bids = data?.bids ?? bidHistory;
+  const { summary, transactions, bids } = data;
   const needsAction = transactions.filter((transaction) =>
     ["MENUNGGU_VERIFIKASI", "MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
       transaction.status
@@ -442,11 +447,9 @@ export function TransactionsPage({
   data
 }: {
   buyer: BuyerSessionUser;
-  data?: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+  data: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
 }) {
-  const summary = data?.summary ?? userSummary;
-  const transactions = data?.transactions ?? userTransactions;
-  const bids = data?.bids ?? bidHistory;
+  const { summary, transactions, bids } = data;
   const bidSummary = Object.entries(
     bids.reduce<Record<BuyerBidStatus, number>>(
       (accumulator, item) => {
@@ -620,7 +623,7 @@ export function TransactionDetailPage({
   transactionId: string;
   transaction?: BuyerTransaction | null;
 }) {
-  const transaction = loadedTransaction ?? getTransactionById(transactionId);
+  const transaction = loadedTransaction ?? null;
 
   if (!transaction) {
     return (
@@ -898,7 +901,7 @@ export function TransactionDetailPage({
                   </p>
                   <p className="mt-3 font-semibold text-foreground">{buyer.name}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{buyer.email}</p>
-                  <p className="text-sm text-muted-foreground">{getBuyerPhone(buyer)}</p>
+                  <p className="text-sm text-muted-foreground">{getBuyerPhone(buyer, "-")}</p>
                 </div>
               </div>
 
@@ -979,7 +982,7 @@ export function TransactionReceiptPage({
   transactionId: string;
   transaction?: BuyerTransaction | null;
 }) {
-  const transaction = loadedTransaction ?? getTransactionById(transactionId);
+  const transaction = loadedTransaction ?? null;
 
   if (!transaction || transaction.status !== "LUNAS") {
     return (
@@ -1062,7 +1065,7 @@ export function TransactionReceiptPage({
                   Data pembeli
                 </p>
                 <p className="mt-3 font-semibold text-foreground">{buyer.name}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{getBuyerPhone(buyer)}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{getBuyerPhone(buyer, "-")}</p>
                 <p className="text-sm text-muted-foreground">{buyer.email}</p>
               </div>
             </div>
@@ -1118,10 +1121,10 @@ export function TransactionReceiptPage({
 
 export function BidHistoryPage({
   buyer: _buyer,
-  bids = bidHistory
+  bids
 }: {
   buyer: BuyerSessionUser;
-  bids?: BuyerBid[];
+  bids: BuyerBid[];
 }) {
   return (
     <div className="space-y-8 md:space-y-10">
@@ -1206,10 +1209,10 @@ export function BidHistoryPage({
 
 export function ProfilePage({
   buyer,
-  summary = userSummary
+  summary
 }: {
   buyer: BuyerSessionUser;
-  summary?: BuyerSummary;
+  summary: BuyerSummary;
 }) {
   return (
     <div className="space-y-8 md:space-y-10">
@@ -1223,7 +1226,7 @@ export function ProfilePage({
         email={buyer.email}
         initialName={buyer.name}
         initialNationalId={summary.nationalId ?? ""}
-        initialPhone={buyer.phoneNumber ?? summary.phone}
+        initialPhone={getBuyerPhone(buyer, summary.phone)}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">

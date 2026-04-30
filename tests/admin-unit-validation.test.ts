@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ADMIN_BARANG_MEDIA_LIMIT,
   validateAdminBarangPayload,
+  validateAdminBarangMediaList,
   validateBlacklistExtendPayload,
   validatePemasaranPayload,
   validatePerpanjanganPayload,
@@ -92,5 +94,42 @@ describe("admin unit validation", () => {
       blockedUntil: "2026-07-01",
       reason: "Pelanggaran berulang."
     });
+  });
+
+  it("limits barang media uploads to four foto or video files", () => {
+    expect(
+      validateAdminBarangMediaList([
+        { type: "foto", url: "/uploads/barang/foto-1.jpg", fileName: "foto-1.jpg", sizeBytes: 1000 },
+        { type: "video", url: "/uploads/barang/video-1.mp4", fileName: "video-1.mp4", sizeBytes: 2000 }
+      ])
+    ).toEqual([
+      {
+        type: "foto",
+        url: "/uploads/barang/foto-1.jpg",
+        fileName: "foto-1.jpg",
+        sizeBytes: 1000,
+        sortOrder: 0
+      },
+      {
+        type: "video",
+        url: "/uploads/barang/video-1.mp4",
+        fileName: "video-1.mp4",
+        sizeBytes: 2000,
+        sortOrder: 1
+      }
+    ]);
+
+    expect(() =>
+      validateAdminBarangMediaList(
+        Array.from({ length: ADMIN_BARANG_MEDIA_LIMIT + 1 }, (_, index) => ({
+          type: "foto",
+          url: `/uploads/barang/foto-${index}.jpg`
+        }))
+      )
+    ).toThrow(`Maksimal ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video untuk satu barang.`);
+
+    expect(() => validateAdminBarangMediaList([{ type: "dokumen", url: "/uploads/barang/file.pdf" }])).toThrow(
+      "Jenis media hanya bisa foto atau video."
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
@@ -19,7 +19,7 @@ async function getBarangForUnit(barangId: string, unitId: string) {
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
-  if (item.status !== "jaminan" && item.status !== "gagal") {
+  if (item.status !== "jaminan" && item.status !== "gagal" && item.status !== "gadai") {
     throw new Error("Barang hanya bisa dipasarkan dari status jaminan atau gagal.");
   }
 
@@ -112,9 +112,23 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
+  const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
+  const bidRows = shouldRevealBids
+    ? await db
+        .select({
+          bid: bids,
+          bidderName: users.name
+        })
+        .from(bids)
+        .innerJoin(users, eq(users.id, bids.userId))
+        .where(eq(bids.pemasaranId, row.marketing.id))
+        .orderBy(desc(bids.nominal), asc(bids.createdAt))
+    : [];
+
   return serializeAdminPemasaran(row.marketing, {
     lotName: row.item.name,
     bidCount: Number(row.bidCount ?? 0),
-    winnerName: row.winnerName ?? null
+    winnerName: row.winnerName ?? null,
+    bids: bidRows
   });
 }

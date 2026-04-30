@@ -30,7 +30,7 @@ describe("admin unit serializers", () => {
       createdByUserId: "admin-1"
     });
 
-    expect(item.status).toBe("GADAI");
+    expect(item.status).toBe("JAMINAN");
     expect(item.ownerName).toBe("Raras");
     expect(item.appraisalValue).toBe(8500000);
   });
@@ -54,12 +54,100 @@ describe("admin unit serializers", () => {
         createdAt: new Date("2026-04-01T00:00:00Z"),
         updatedAt: new Date("2026-04-01T00:00:00Z")
       },
-      { lotName: "Cincin", bidCount: 2 }
+      {
+        lotName: "Cincin",
+        bidCount: 2,
+        bids: [
+          {
+            bid: {
+              id: "bid-1",
+              pemasaranId: "pm-1",
+              userId: "buyer-1",
+              bidHash: "hash-1",
+              nominal: "12500000",
+              salt: "salt-1",
+              createdAt: new Date("2026-04-05T00:00:00Z")
+            },
+            bidderName: "Raras"
+          }
+        ]
+      }
     );
 
     expect(auction.visibility).toBe("TERKUNCI");
     expect(auction.finalPrice).toBeNull();
     expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
+    expect(auction.bids).toEqual([]);
+  });
+
+  it("reveals ranked bids after vickrey deadline has passed", () => {
+    const auction = serializeAdminPemasaran(
+      {
+        id: "pm-2",
+        barangId: "barang-1",
+        mode: "vickrey",
+        price: null,
+        basePrice: "10000000",
+        durationDays: 7,
+        startsAt: new Date("2026-04-01T00:00:00Z"),
+        endsAt: new Date("2026-04-08T00:00:00Z"),
+        winnerId: "buyer-1",
+        finalPrice: "13250000",
+        iteration: 1,
+        status: "selesai",
+        createdByUserId: "admin-1",
+        createdAt: new Date("2026-04-01T00:00:00Z"),
+        updatedAt: new Date("2026-04-08T00:00:00Z")
+      },
+      {
+        lotName: "Cincin",
+        bidCount: 3,
+        winnerName: "Raras",
+        bids: [
+          {
+            bid: {
+              id: "bid-1",
+              pemasaranId: "pm-2",
+              userId: "buyer-1",
+              bidHash: "hash-1",
+              nominal: "15000000",
+              salt: "salt-1",
+              createdAt: new Date("2026-04-05T00:00:00Z")
+            },
+            bidderName: "Raras"
+          },
+          {
+            bid: {
+              id: "bid-2",
+              pemasaranId: "pm-2",
+              userId: "buyer-2",
+              bidHash: "hash-2",
+              nominal: "13250000",
+              salt: "salt-2",
+              createdAt: new Date("2026-04-05T01:00:00Z")
+            },
+            bidderName: "Alya"
+          }
+        ]
+      }
+    );
+
+    expect(auction.visibility).toBe("HASIL_DIBUKA");
+    expect(auction.bids).toHaveLength(2);
+    expect(auction.bids[0]).toMatchObject({
+      rank: 1,
+      bidderName: "Raras",
+      nominal: 15000000,
+      isWinner: true,
+      determinesFinalPrice: false
+    });
+    expect(auction.bids[1]).toMatchObject({
+      rank: 2,
+      bidderName: "Alya",
+      nominal: 13250000,
+      isWinner: false,
+      determinesFinalPrice: true
+    });
   });
 
   it("serializes transaction status labels", () => {

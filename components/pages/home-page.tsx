@@ -6,7 +6,7 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { StatCard } from "@/components/shared/stat-card";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/contracts/catalog";
 import { cn } from "@/lib/utils";
 
 type HomePageStat = {

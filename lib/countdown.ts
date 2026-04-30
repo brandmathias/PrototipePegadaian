@@ -44,14 +44,14 @@ export function getCountdownState(
   if (days > 0) {
     return {
       isExpired: false,
-      label: `${days} hari ${padUnit(hours)} jam`
+      label: `${days} hari ${padUnit(hours)} jam ${padUnit(minutes)} menit ${padUnit(seconds)} detik`
     };
   }
 
   if (hours > 0) {
     return {
       isExpired: false,
-      label: `${hours} jam ${padUnit(minutes)} menit`
+      label: `${hours} jam ${padUnit(minutes)} menit ${padUnit(seconds)} detik`
     };
   }
 

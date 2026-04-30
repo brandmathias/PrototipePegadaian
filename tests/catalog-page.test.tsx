@@ -34,4 +34,32 @@ describe("CatalogPage", () => {
     expect(screen.queryByRole("button", { name: "Perhiasan" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toBeInTheDocument();
   });
+
+  it("does not show auction countdowns on fixed price lots even if stale endsAt data exists", () => {
+    render(
+      <CatalogPage
+        lots={[
+          {
+            id: "lot-db-fixed",
+            code: "LOT-FIXED",
+            name: "Cincin Fixed Price",
+            category: "Perhiasan",
+            mode: "fixed_price",
+            price: 12500000,
+            location: "Manado",
+            unitName: "Pegadaian Manado",
+            city: "Manado",
+            condition: "Baik",
+            status: "Tersedia",
+            description: "Data fixed price dari database.",
+            endsAt: new Date("2026-05-05T10:00:00+08:00").toISOString(),
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Cincin Fixed Price")).toBeInTheDocument();
+    expect(screen.queryByText(/sesi berakhir/i)).not.toBeInTheDocument();
+  });
 });

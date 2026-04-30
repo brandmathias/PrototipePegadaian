@@ -55,10 +55,8 @@ Operator di masing-masing unit Pegadaian. Hanya mengelola data milik unit-nya se
 
 **Kapabilitas:**
 
-- Input barang gadai masuk ke sistem.
-- Melakukan **perpanjangan masa gadai** atas permintaan nasabah.
-- Mencatat **penebusan barang** oleh nasabah.
-- Mengkonversi barang yang tidak ditebus menjadi **barang jaminan resmi**.
+- Input barang hasil gadai/tidak ditebus sebagai **barang jaminan unit**.
+- Melengkapi data appraisal, foto, dan video barang jaminan sebelum dipasarkan.
 - Memilih mode pemasaran (Fixed Price atau Vickrey Auction) dan mempublikasikan barang ke katalog.
 - Verifikasi transaksi pembayaran (transfer bank maupun bayar langsung).
 - Mencetak nota transaksi setelah pembayaran terverifikasi.
@@ -92,7 +90,9 @@ Pengguna publik yang telah mendaftar dan login.
 
 ## 3. Alur Status Barang — State Machine Lengkap
 
-Berikut adalah state machine **lengkap** yang merepresentasikan seluruh siklus hidup barang, mulai dari masuk sebagai barang gadai hingga selesai.
+Berikut adalah state machine **lengkap** yang merepresentasikan seluruh siklus hidup barang, mulai dari barang masuk sebagai jaminan unit hingga selesai.
+
+> **Revisi implementasi:** istilah **barang gadai** hanya digunakan pada konteks intake/form input karena barang berasal dari proses gadai offline. Setelah berhasil dicatat di sistem, klasifikasi operasional barang langsung menjadi `JAMINAN`. Status `GADAI` tidak digunakan sebagai kategori utama admin unit.
 
 ```
                     ┌─────────────────────────────────────────────────┐
@@ -226,7 +226,7 @@ Admin unit menginput barang nasabah yang masuk sebagai gadai
 
 | Status                | Deskripsi                                                               | Siapa yang Bisa Mengubah | Dapat Kembali ke Status Sebelumnya? |
 | --------------------- | ----------------------------------------------------------------------- | ------------------------ | ----------------------------------- |
-| `GADAI`               | Barang sedang dijaminkan. Nasabah masih memiliki hak tebus.             | Admin Unit (input baru)  | — (status awal)                     |
+| `GADAI`               | Legacy/opsional. Tidak digunakan sebagai klasifikasi utama UI admin unit pada implementasi ini. | Sistem lama / migrasi    | ✅ Harus dinormalisasi ke `JAMINAN` |
 | `DITEBUS`             | Nasabah menebus barang. Selesai.                                        | Admin Unit               | ❌ Terminal state                    |
 | `JAMINAN`             | Barang resmi milik Pegadaian. Belum dipasarkan.                         | Admin Unit               | ❌ Tidak bisa kembali ke GADAI       |
 | `DIPASARKAN`          | Barang aktif di katalog publik (fixed price atau vickrey).              | Admin Unit               | ❌ Tidak bisa kembali ke JAMINAN     |
@@ -240,9 +240,8 @@ Admin unit menginput barang nasabah yang masuk sebagai gadai
 ### 3.2 Aturan Transisi Status (Tegas)
 
 ```
-GADAI        → GADAI              : Perpanjangan masa gadai (tanggal jatuh tempo diperbarui)
-GADAI        → DITEBUS            : Nasabah menebus, admin mencatat
-GADAI        → JAMINAN            : Admin mengkonfirmasi barang tidak ditebus (jatuh tempo lewat)
+INPUT        → JAMINAN            : Admin mencatat barang hasil gadai/tidak ditebus sebagai aset unit
+GADAI        → JAMINAN            : Normalisasi data legacy bila masih ada status GADAI lama
 JAMINAN      → DIPASARKAN         : Admin memilih mode & mempublikasikan barang
 DIPASARKAN   → MENUNGGU_PEMBAYARAN: Cron job (otomatis, hanya untuk mode vickrey saat deadline)
 DIPASARKAN   → TERJUAL            : Admin verifikasi pembayaran (fixed price)
@@ -299,17 +298,16 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 | `nomor_nasabah`       | string  | ✅     | ID nasabah internal — **tidak ditampilkan ke publik**                  |
 | `tanggal_gadai`       | date    | ✅     | Tanggal barang masuk sebagai gadai                                     |
 | `tanggal_jatuh_tempo` | date    | ✅     | Batas waktu nasabah menebus (harus > tanggal_gadai)                    |
-| `foto`                | file[]  | ✅     | Min. 1, maks. 5 file. Format: `jpg`, `png`, `webp`. Maks. 5 MB/file    |
-| `video`               | file[]  | ❌     | Opsional. Maks. 2 file. Format: `mp4`, `mov`, `webm`. Maks. 50 MB/file |
+| `media`               | file[]  | ✅     | Min. 1, maks. 4 file gabungan foto/video. Foto: `jpg`, `png`, `webp`. Video: `mp4`, `mov`, `webm`. |
 
 
-**Setelah disimpan:** Status barang otomatis = `GADAI`.
+**Setelah disimpan:** Status barang otomatis = `JAMINAN`.
 
 **Aturan Media (Foto & Video):**
 
-- Minimal 1 foto wajib ada saat input.
-- Video bersifat opsional tetapi dianjurkan untuk barang bernilai tinggi.
-- Selama status `GADAI` atau `JAMINAN`: admin dapat menambah atau menghapus media.
+- Minimal 1 foto/video wajib ada saat input.
+- Total media barang maksimal 4 file (gabungan foto dan video).
+- Selama status `JAMINAN`: admin dapat menambah atau menghapus media sesuai batas maksimal.
 - Setelah status `DIPASARKAN`: media hanya dapat ditambah, tidak dapat dihapus.
 - Seluruh media disimpan di server dan diakses via URL publik.
 
@@ -781,8 +779,8 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 | `/admin/barang`                           | Daftar semua barang unit. Filter by status. Highlight barang jatuh tempo.                                   |
 | `/admin/barang/tambah`                    | Form input barang gadai baru (termasuk upload foto & video).                                                |
 | `/admin/barang/[id]`                      | Detail barang lengkap + tombol aksi sesuai status saat ini (lihat tabel transisi).                          |
-| `/admin/barang/[id]/edit`                 | Edit data barang (hanya saat status `GADAI` atau `JAMINAN`).                                                |
-| `/admin/barang/[id]/perpanjang`           | Form catat perpanjangan masa gadai.                                                                         |
+| `/admin/barang/[id]/edit`                 | Edit data dan tambah media barang (utama saat status `JAMINAN`, sebelum tayang).                            |
+| `/admin/barang/[id]/perpanjang`           | Legacy/opsional bila data lama masih memakai status `GADAI`.                                                |
 | `/admin/barang/[id]/riwayat-perpanjangan` | Riwayat semua perpanjangan untuk barang ini.                                                                |
 | `/admin/lelang`                           | Daftar semua sesi pemasaran unit (aktif & historis).                                                        |
 | `/admin/lelang/[id]`                      | Detail sesi pemasaran: daftar bid (setelah deadline untuk Vickrey), info pemenang, status.                  |
@@ -1269,9 +1267,9 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 | GET    | `/api/admin/barang`                      | Daftar semua barang unit (semua status)         | Admin |
 | POST   | `/api/admin/barang`                      | Input barang gadai baru                         | Admin |
 | GET    | `/api/admin/barang/[id]`                 | Detail barang (termasuk data nasabah)           | Admin |
-| PUT    | `/api/admin/barang/[id]`                 | Edit barang (hanya jika status = gadai/jaminan) | Admin |
-| POST   | `/api/admin/barang/[id]/media`           | Upload foto/video ke barang                     | Admin |
-| DELETE | `/api/admin/barang/[id]/media/[mediaId]` | Hapus media (hanya status gadai/jaminan)        | Admin |
+| PUT    | `/api/admin/barang/[id]`                 | Edit barang sebelum tayang katalog              | Admin |
+| POST   | `/api/admin/barang/[id]/media`           | Upload foto/video ke barang (maks. 4 total)     | Admin |
+| DELETE | `/api/admin/barang/[id]/media/[mediaId]` | Hapus media sebelum barang tayang               | Admin |
 | POST   | `/api/admin/barang/[id]/perpanjang`      | Catat perpanjangan masa gadai                   | Admin |
 | POST   | `/api/admin/barang/[id]/tebus`           | Catat penebusan oleh nasabah                    | Admin |
 | POST   | `/api/admin/barang/[id]/jadikan-jaminan` | Konfirmasi barang → jaminan                     | Admin |
@@ -1467,5 +1465,3 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 | **Cron Job**        | Proses terjadwal di server yang secara otomatis menangani pengecekan dan pemrosesan lelang yang sudah melewati deadline.                                                |
 | **Nota Transaksi**  | Dokumen cetak resmi sebagai bukti transaksi jual beli yang dihasilkan sistem setelah pembayaran diverifikasi.                                                           |
 | **Multi-unit**      | Kemampuan sistem untuk mendukung dan mengelola lebih dari satu cabang/unit Pegadaian dalam satu instalasi aplikasi.                                                     |
-
-

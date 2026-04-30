@@ -21,7 +21,7 @@ import {
   units,
   users
 } from "@/lib/db/schema";
-import type { BuyerBid, BuyerTransaction } from "@/lib/mock-data";
+import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 
 const ACTIVE_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",

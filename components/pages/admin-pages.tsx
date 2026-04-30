@@ -3,18 +3,15 @@ import type { ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
-  CalendarClock,
   CheckCircle2,
   Clock3,
   FileCheck2,
   FileWarning,
   Gavel,
-  ImagePlus,
   Landmark,
   PackagePlus,
   PencilLine,
   Printer,
-  ReceiptText,
   RotateCcw,
   Search,
   ShieldAlert,
@@ -27,35 +24,41 @@ import {
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
+import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
+import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  adminAuctions,
-  adminBlacklist,
-  adminInventory,
-  adminTransactions,
-  currency,
-  getAdminAuctionById,
-  getAdminBlacklistByUserId,
-  getAdminInventoryById,
-  getAdminTransactionById
-} from "@/lib/mock-data";
+import { currency } from "@/lib/formatters/currency";
 
 type AdminInventoryItem = Record<string, any>;
-type AdminAuctionItem = Record<string, any>;
+type AdminBarangMedia = {
+  id: string;
+  type: string;
+  url: string;
+  fileName?: string;
+  sizeBytes?: number;
+};
+type AdminAuctionItem = Record<string, any> & {
+  bids?: Array<{
+    id: string;
+    bidderId: string;
+    bidderName: string;
+    nominal: number;
+    submittedAt: string;
+    submittedAtLabel: string;
+    rank: number;
+    isWinner: boolean;
+    determinesFinalPrice: boolean;
+  }>;
+};
 type AdminTransactionItem = Record<string, any>;
 type AdminBlacklistItem = Record<string, any>;
 
 function dateAfter(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-function isDueDateReached(dueDate: string) {
-  const due = new Date(`${dueDate}T00:00:00.000Z`).getTime();
-  return Number.isFinite(due) && due <= Date.now();
 }
 
 function buildBarangPayload(item?: AdminInventoryItem) {
@@ -201,6 +204,47 @@ function EmptyPanel({ text }: { text: string }) {
   );
 }
 
+function AdminBarangMediaGallery({ media }: { media: AdminBarangMedia[] }) {
+  if (!media.length) {
+    return (
+      <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm text-black/55">
+        Belum ada foto atau video yang tersimpan untuk barang ini.
+      </div>
+    );
+  }
+
+  return (
+    <Card className="rounded-2xl border border-black/10">
+      <CardHeader>
+        <CardTitle className="text-xl sm:text-[1.45rem]">Galeri Foto & Video</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
+          Media ini akan menjadi bahan utama saat barang ditayangkan ke katalog.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3 sm:grid-cols-2">
+        {media.map((item) => {
+          const isVideo = item.type === "video" || item.url.match(/\.(mp4|mov|webm)$/i);
+          return (
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white" key={item.id}>
+              <div className="aspect-video bg-[#edf3ef]">
+                {isVideo ? (
+                  <video className="size-full object-cover" controls src={item.url} />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt={item.fileName || "Foto barang"} className="size-full object-cover" src={item.url} />
+                )}
+              </div>
+              <div className="p-3 text-xs font-semibold uppercase tracking-[0.14em] text-black/45">
+                {isVideo ? "Video" : "Foto"} {item.fileName ? `- ${item.fileName}` : ""}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
 function WorkflowActionCard({
   title,
   description,
@@ -232,17 +276,12 @@ function WorkflowActionCard({
   );
 }
 
-export function AdminInventoryPage({ items = adminInventory }: { items?: AdminInventoryItem[] }) {
+export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
   const statusGroups = [
-    {
-      label: "GADAI",
-      items: items.filter((item) => item.status === "GADAI"),
-      description: "Masih berada dalam masa tebus dan perlu dipantau kedaluwarsanya."
-    },
     {
       label: "JAMINAN",
       items: items.filter((item) => item.status === "JAMINAN"),
-      description: "Sudah masuk aset unit dan siap disiapkan untuk penjualan."
+      description: "Barang jaminan unit yang siap dilengkapi sebelum ditayangkan."
     },
     {
       label: "DIPASARKAN",
@@ -303,7 +342,7 @@ export function AdminInventoryPage({ items = adminInventory }: { items?: AdminIn
         <PanelTitle
           action={
             <div className="flex flex-wrap gap-2">
-              {["SEMUA", "GADAI", "JAMINAN", "DIPASARKAN", "TERJUAL", "GAGAL", "DITEBUS"].map((filter) => (
+              {["SEMUA", "JAMINAN", "DIPASARKAN", "TERJUAL", "GAGAL", "DITEBUS"].map((filter) => (
                 <button
                   className="rounded-full border border-black/15 px-3 py-2 text-xs font-semibold text-black/65 hover:border-[#0a6a49] hover:text-[#0a6a49] sm:text-sm"
                   key={filter}
@@ -391,137 +430,22 @@ export function AdminInventoryCreatePage() {
         description="Gunakan formulir ini untuk mencatat barang masuk beserta appraisal, informasi nasabah, jadwal jatuh tempo, dan media pendukung sebelum lanjut ke proses berikutnya."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.22fr_0.78fr]">
-        <div className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle
-            description="Data awal ini akan menjadi dasar operasional selama barang masih berada dalam masa tebus."
-            title="Data Barang"
-          />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Nama barang</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="Contoh: Kalung Emas 24K 10 gram" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Kategori</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="emas / elektronik / kendaraan" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Kondisi</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="baik / cukup / rusak_ringan" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nilai taksiran</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="0" type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nilai gadai</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="0" type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Tanggal gadai</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" type="date" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Tanggal jatuh tempo</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" type="date" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nama penggadai</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="Data internal admin" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nomor nasabah</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" placeholder="ID nasabah" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Deskripsi barang</FieldLabel>
-              <Textarea
-                className="min-h-40 text-sm sm:text-base"
-                placeholder="Jelaskan kondisi fisik, spesifikasi, dan catatan appraisal."
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-dashed border-[#93c7b0] bg-[#f1faf5] p-6">
-            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-white text-[#0a6a49] shadow-sm">
-              <UploadCloud className="size-6" />
-            </div>
-            <h3 className="mt-4 font-headline text-2xl font-black text-[#0a6a49]">
-              Upload Media Barang
-            </h3>
-            <p className="mt-2 text-sm leading-7 text-black/70 sm:text-base">
-              Minimal satu foto utama perlu tersedia. Selama barang belum tayang,
-              media masih bisa ditambah, diganti, atau dirapikan.
-            </p>
-            <div className="mt-4 rounded-2xl border border-dashed border-[#93c7b0] bg-white p-8 text-center text-sm text-black/50 sm:text-base">
-              Dropzone foto dan video
-            </div>
-          </div>
-
-          <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
-              <CardTitle className="text-xl">Checklist sebelum simpan</CardTitle>
-              <CardDescription className="text-sm sm:text-base">
-                Pastikan data inti sudah aman sebelum barang disimpan.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
-              <p>- Nilai gadai tidak boleh melebihi nilai taksiran.</p>
-              <p>- Tanggal jatuh tempo harus berada setelah tanggal gadai.</p>
-              <p>- Setelah disimpan, barang akan masuk ke tahap gadai aktif.</p>
-            </CardContent>
-          </Card>
-
-          <AdminUnitActionButton
-            className="h-12 w-full rounded-2xl text-sm sm:text-base"
-            endpoint="/api/admin/barang"
-            pendingTitle="Menyimpan barang baru"
-            pendingDescription="Data utama dan status awal barang sedang direkam ke sistem unit."
-            payload={buildBarangPayload()}
-            redirectTo="/admin/barang"
-            successDescription="Barang baru sudah masuk ke daftar gadai aktif unit."
-            successTitle="Barang gadai tersimpan"
-          >
-            <PackagePlus className="size-4" />
-            Simpan Barang Gadai
-          </AdminUnitActionButton>
-        </div>
-      </div>
+      <AdminInventoryCreateForm />
     </div>
   );
 }
 
-export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
-  const gadaiActions = [
+export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
+  const legacyGadaiActions = [
     {
-      title: "Catat Perpanjangan",
-      description: "Perbarui tanggal jatuh tempo tanpa mengubah tahap barang saat ini.",
-      href: `/admin/barang/${item.id}/perpanjang`,
-      icon: CalendarClock
+      title: "Tandai Tidak Ditebus",
+      description: "Konfirmasi barang tidak ditebus, lalu pindahkan menjadi barang jaminan yang siap dipasarkan.",
+      href: `/admin/barang/${item.id}/jadikan-jaminan`,
+      icon: ShieldAlert
     },
-    {
-      title: "Catat Penebusan",
-      description: "Catat pelunasan nasabah dan tutup proses barang dengan rapi.",
-      href: `/admin/barang/${item.id}/tebus`,
-      icon: ReceiptText
-    },
-    ...(isDueDateReached(item.dueDate)
-      ? [
-          {
-            title: "Jadikan Jaminan",
-            description: "Pindahkan ke aset unit karena masa tebus sudah berakhir tanpa pelunasan.",
-            href: `/admin/barang/${item.id}/jadikan-jaminan`,
-            icon: ShieldAlert
-          }
-        ]
-      : []),
     {
       title: "Edit Data Barang",
-      description: "Rapikan data barang selama masih berada dalam proses gadai.",
+      description: "Rapikan data awal dan media sebelum barang ditayangkan.",
       href: `/admin/barang/${item.id}/edit`,
       icon: PencilLine,
       variant: "secondary" as const
@@ -530,18 +454,18 @@ export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemI
 
   const actions =
     item.status === "GADAI"
-      ? gadaiActions
+      ? legacyGadaiActions
       : item.status === "JAMINAN"
         ? [
             {
-              title: "Tayangkan Barang",
-              description: "Tentukan skema penjualan yang paling pas lalu tayangkan ke katalog.",
+              title: "Pasarkan Barang",
+              description: "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
               href: `/admin/barang/${item.id}/pasarkan`,
               icon: Gavel
             },
             {
               title: "Edit Data Barang",
-              description: "Lengkapi deskripsi, media, dan appraisal agar siap tayang tanpa revisi berulang.",
+              description: "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
               href: `/admin/barang/${item.id}/edit`,
               icon: PencilLine,
               variant: "secondary" as const
@@ -574,7 +498,8 @@ export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemI
                     icon: Wallet
                   }
                 ]
-              : [];
+          : [];
+  const media = Array.isArray(item.media) ? (item.media as AdminBarangMedia[]) : [];
 
   return (
     <div className="space-y-6">
@@ -594,9 +519,11 @@ export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemI
             <DetailTile label="Nilai Gadai" value={currency.format(item.loanValue)} />
             <DetailTile label="Tanggal Gadai" value={item.pawnedAt} />
             <DetailTile label="Jatuh Tempo" value={item.dueDate} />
-            <DetailTile label="Media" value={item.mediaSummary} />
+            <DetailTile label="Media Tersimpan" value={item.mediaSummary} />
             <DetailTile label="Status Barang" value={<AdminStatusBadge status={item.status} />} />
           </div>
+
+          <AdminBarangMediaGallery media={media} />
 
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
@@ -663,8 +590,8 @@ export function AdminInventoryDetailPage({ itemId, item: providedItem }: { itemI
   );
 }
 
-export function AdminInventoryEditPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryEditPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
+  const media = Array.isArray(item.media) ? (item.media as AdminBarangMedia[]) : [];
 
   return (
     <div className="space-y-6">
@@ -710,19 +637,12 @@ export function AdminInventoryEditPage({ itemId, item: providedItem }: { itemId?
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
               <CardTitle className="text-xl sm:text-[1.4rem]">Pengelolaan Media</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                Foto dan video bisa ditambahkan sampai total 4 media. Saat upload berjalan, tombol akan menampilkan progres.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-dashed border-[#9fd0bb] bg-[#f1faf5] p-6">
-                <ImagePlus className="size-7 text-[#0a6a49]" />
-                <p className="mt-3 text-sm leading-7 text-black/65 sm:text-base">
-                  {item.status === "DIPASARKAN"
-                    ? "Media tambahan masih bisa diunggah, tetapi file yang sudah tayang tidak bisa dihapus dari sini."
-                    : "Selama barang belum tayang, media masih bisa ditambah atau dirapikan sesuai kebutuhan."}
-                </p>
-              </div>
-              <Button className="w-full rounded-2xl" variant="secondary">
-                Tambah Foto / Video
-              </Button>
+              <AdminBarangMediaManager barangId={item.id} media={media} />
             </CardContent>
           </Card>
           <AdminUnitActionButton
@@ -781,8 +701,7 @@ function WorkflowFormShell({
   );
 }
 
-export function AdminInventoryExtendPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryExtendPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
 
   return (
     <WorkflowFormShell
@@ -840,8 +759,7 @@ export function AdminInventoryExtendPage({ itemId, item: providedItem }: { itemI
   );
 }
 
-export function AdminInventoryRedeemPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[0].id);
+export function AdminInventoryRedeemPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
 
   return (
     <WorkflowFormShell
@@ -907,8 +825,7 @@ export function AdminInventoryRedeemPage({ itemId, item: providedItem }: { itemI
   );
 }
 
-export function AdminInventoryConvertPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[1].id);
+export function AdminInventoryConvertPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
 
   return (
     <WorkflowFormShell
@@ -960,8 +877,7 @@ export function AdminInventoryConvertPage({ itemId, item: providedItem }: { item
   );
 }
 
-export function AdminInventoryMarketPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[2].id);
+export function AdminInventoryMarketPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
 
   return (
     <WorkflowFormShell
@@ -1036,8 +952,7 @@ export function AdminInventoryMarketPage({ itemId, item: providedItem }: { itemI
   );
 }
 
-export function AdminInventoryRelistPage({ itemId, item: providedItem }: { itemId?: string; item?: AdminInventoryItem }) {
-  const item = providedItem ?? getAdminInventoryById(itemId ?? adminInventory[7].id);
+export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
 
   return (
     <WorkflowFormShell
@@ -1095,7 +1010,7 @@ export function AdminInventoryRelistPage({ itemId, item: providedItem }: { itemI
   );
 }
 
-export function AdminAuctionListPage({ auctions = adminAuctions }: { auctions?: AdminAuctionItem[] }) {
+export function AdminAuctionListPage({ auctions }: { auctions: AdminAuctionItem[] }) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
@@ -1141,8 +1056,8 @@ export function AdminAuctionListPage({ auctions = adminAuctions }: { auctions?: 
   );
 }
 
-export function AdminAuctionDetailPage({ auctionId, auction: providedAuction }: { auctionId?: string; auction?: AdminAuctionItem }) {
-  const auction = providedAuction ?? getAdminAuctionById(auctionId ?? adminAuctions[0].id);
+export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auctionId?: string; auction: AdminAuctionItem }) {
+  const bidRows = Array.isArray(auction.bids) ? auction.bids : [];
 
   return (
     <div className="space-y-6">
@@ -1194,11 +1109,78 @@ export function AdminAuctionDetailPage({ auctionId, auction: providedAuction }: 
           </CardContent>
         </Card>
       </div>
+
+      <Card className="rounded-2xl border border-black/10">
+        <CardHeader>
+          <CardTitle className="text-xl sm:text-[1.45rem]">Daftar Bid Sesi Ini</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {auction.visibility === "HASIL_DIBUKA" ? (
+            bidRows.length ? (
+              <div className="overflow-x-auto rounded-[1.4rem] border border-black/10">
+                <table className="w-full min-w-[52rem] text-left">
+                  <thead className="bg-[#f5f6f4] text-xs uppercase tracking-[0.16em] text-black/50">
+                    <tr>
+                      <th className="px-5 py-4">Peringkat</th>
+                      <th className="px-5 py-4">Peserta</th>
+                      <th className="px-5 py-4">Nominal Bid</th>
+                      <th className="px-5 py-4">Dikirim Pada</th>
+                      <th className="px-5 py-4">Peran Hasil</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bidRows.map((bid: any) => (
+                      <tr className="border-t border-black/8 text-sm text-black/72 sm:text-base" key={bid.id}>
+                        <td className="px-5 py-4 font-semibold text-[#0a6a49]">#{bid.rank}</td>
+                        <td className="px-5 py-4">
+                          <div>
+                            <p className="font-semibold text-black/85">{bid.bidderName}</p>
+                            <p className="mt-1 text-xs uppercase tracking-[0.16em] text-black/40">
+                              ID {bid.bidderId}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-black/85">
+                          {currency.format(bid.nominal)}
+                        </td>
+                        <td className="px-5 py-4 text-black/55">{bid.submittedAtLabel}</td>
+                        <td className="px-5 py-4">
+                          {bid.isWinner ? (
+                            <span className="inline-flex rounded-full bg-[#e7f6ef] px-3 py-1 text-xs font-semibold text-[#0a6a49]">
+                              Pemenang (B1)
+                            </span>
+                          ) : bid.determinesFinalPrice ? (
+                            <span className="inline-flex rounded-full bg-[#fff3d9] px-3 py-1 text-xs font-semibold text-[#8a5b00]">
+                              Penentu harga bayar (B2)
+                            </span>
+                          ) : (
+                            <span className="inline-flex rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/55">
+                              Arsip bid
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm text-black/55">
+                Deadline sudah lewat, tetapi belum ada bid yang tercatat untuk sesi ini.
+              </div>
+            )
+          ) : (
+            <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm leading-7 text-black/55">
+              Daftar nominal bid baru dibuka setelah deadline terlewati. Selama sesi aktif, admin unit hanya dapat melihat jumlah peserta tanpa nilai penawaran.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-export function AdminTransactionsPage({ transactions = adminTransactions }: { transactions?: AdminTransactionItem[] }) {
+export function AdminTransactionsPage({ transactions }: { transactions: AdminTransactionItem[] }) {
   const filters = [
     "SEMUA",
     "MENUNGGU_PEMBAYARAN",
@@ -1281,8 +1263,7 @@ export function AdminTransactionsPage({ transactions = adminTransactions }: { tr
   );
 }
 
-export function AdminTransactionDetailPage({ transactionId, transaction: providedTransaction }: { transactionId?: string; transaction?: AdminTransactionItem }) {
-  const transaction = providedTransaction ?? getAdminTransactionById(transactionId ?? adminTransactions[0].id);
+export function AdminTransactionDetailPage({ transactionId: _transactionId, transaction }: { transactionId?: string; transaction: AdminTransactionItem }) {
   const canPrint = transaction.printableReceipt || transaction.status === "LUNAS";
   const canVerifyTransfer = transaction.status === "BUKTI_DIUNGGAH" && transaction.method === "TRANSFER_BANK";
   const canConfirmDirect = transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG";
@@ -1458,7 +1439,7 @@ export function AdminTransactionDetailPage({ transactionId, transaction: provide
   );
 }
 
-export function AdminBlacklistPage({ entries = adminBlacklist }: { entries?: AdminBlacklistItem[] }) {
+export function AdminBlacklistPage({ entries }: { entries: AdminBlacklistItem[] }) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
@@ -1506,8 +1487,7 @@ export function AdminBlacklistPage({ entries = adminBlacklist }: { entries?: Adm
   );
 }
 
-export function AdminBlacklistDetailPage({ userId, entry: providedEntry }: { userId?: string; entry?: AdminBlacklistItem }) {
-  const entry = providedEntry ?? getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
+export function AdminBlacklistDetailPage({ userId: _userId, entry }: { userId?: string; entry: AdminBlacklistItem }) {
 
   return (
     <div className="space-y-6">
@@ -1558,8 +1538,7 @@ export function AdminBlacklistDetailPage({ userId, entry: providedEntry }: { use
   );
 }
 
-export function AdminBlacklistExtendPage({ userId, entry: providedEntry }: { userId?: string; entry?: AdminBlacklistItem }) {
-  const entry = providedEntry ?? getAdminBlacklistByUserId(userId ?? adminBlacklist[0].userId);
+export function AdminBlacklistExtendPage({ userId: _userId, entry }: { userId?: string; entry: AdminBlacklistItem }) {
 
   return (
     <div className="space-y-6">

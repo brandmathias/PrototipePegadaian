@@ -5,7 +5,8 @@ import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { currency, type Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/contracts/catalog";
+import { currency } from "@/lib/formatters/currency";
 import { LotFigure } from "./lot-figure";
 
 type LotCardProps = {
@@ -13,6 +14,8 @@ type LotCardProps = {
 };
 
 export function LotCard({ lot }: LotCardProps) {
+  const showAuctionCountdown = lot.mode === "vickrey" && (lot.countdown || lot.endsAt);
+
   return (
     <Card className="group overflow-hidden rounded-[1.75rem] bg-surface-lowest p-0 transition-transform duration-300 hover:-translate-y-1">
       <LotFigure category={lot.category} className="rounded-b-none rounded-t-[1.75rem]" />
@@ -42,7 +45,7 @@ export function LotCard({ lot }: LotCardProps) {
           <p className="font-headline text-2xl font-extrabold tracking-tight text-primary">
             {currency.format(lot.price)}
           </p>
-          {lot.countdown || lot.endsAt ? (
+          {showAuctionCountdown ? (
             <p className="inline-flex items-center gap-1 text-xs font-medium text-tertiary-container">
               <Clock3 className="size-3.5" />
               <LiveCountdown

@@ -1,5 +1,6 @@
-import type { BuyerBid, BuyerBidStatus, BuyerTransaction, Lot } from "@/lib/mock-data";
 import { getCountdownState } from "@/lib/countdown";
+import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
+import type { Lot } from "@/lib/contracts/catalog";
 
 type AccountShape = {
   bankName: string | null;
@@ -144,7 +145,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     countdown: isVickrey
       ? getCountdownState(row.endsAt, { expiredLabel: "Menunggu hasil" }).label
       : undefined,
-    endsAt: row.endsAt?.toISOString(),
+    endsAt: isVickrey ? row.endsAt?.toISOString() : undefined,
     bankName: row.account?.bankName ?? undefined,
     bankAccountNumber: row.account?.accountNumber ?? undefined,
     bankAccountHolder: row.account?.accountHolderName ?? undefined,

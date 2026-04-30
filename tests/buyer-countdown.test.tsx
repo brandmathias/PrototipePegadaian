@@ -6,13 +6,13 @@ import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { getCountdownState } from "@/lib/countdown";
 
 describe("buyer countdown helpers", () => {
-  it("formats long-running auction countdowns with day and hour precision", () => {
+  it("formats long-running auction countdowns with second precision", () => {
     const targetAt = new Date("2026-05-01T16:00:00+08:00");
     const now = new Date("2026-04-29T11:30:00+08:00").getTime();
 
     expect(getCountdownState(targetAt.toISOString(), { now, expiredLabel: "Menunggu hasil" })).toEqual({
       isExpired: false,
-      label: "2 hari 4 jam"
+      label: "2 hari 4 jam 30 menit 0 detik"
     });
   });
 
@@ -58,5 +58,23 @@ describe("LiveCountdown", () => {
     });
 
     expect(screen.getByText("Sesi berakhir 1 menit 4 detik")).toBeInTheDocument();
+  });
+
+  it("keeps long auction countdowns visibly ticking every second", () => {
+    render(
+      <LiveCountdown
+        expiredLabel="Menunggu hasil"
+        prefix="Sesi berakhir"
+        targetAt={new Date("2026-05-01T14:30:05+08:00").toISOString()}
+      />
+    );
+
+    expect(screen.getByText("Sesi berakhir 2 hari 4 jam 30 menit 5 detik")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByText("Sesi berakhir 2 hari 4 jam 30 menit 4 detik")).toBeInTheDocument();
   });
 });

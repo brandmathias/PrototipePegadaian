@@ -1,6 +1,17 @@
 const MONEY_REGEX = /^\d+(\.\d{1,2})?$/;
 const ALLOWED_CATEGORIES = new Set(["emas", "elektronik", "kendaraan", "perhiasan", "logam_mulia", "lainnya"]);
 const ALLOWED_CONDITIONS = new Set(["baik", "cukup", "rusak_ringan"]);
+const ALLOWED_MEDIA_TYPES = new Set(["foto", "video"]);
+
+export const ADMIN_BARANG_MEDIA_LIMIT = 4;
+
+export type AdminBarangMediaInput = {
+  type?: unknown;
+  url?: unknown;
+  fileName?: unknown;
+  sizeBytes?: unknown;
+  sortOrder?: unknown;
+};
 
 function requiredText(value: unknown, message: string) {
   const result = String(value ?? "").trim();
@@ -76,6 +87,54 @@ export function validateAdminBarangPayload(input: {
     customerNumber: String(input.customerNumber ?? "").trim(),
     description: String(input.description ?? "").trim()
   };
+}
+
+export function validateAdminBarangMediaList(input: unknown): Array<{
+  type: "foto" | "video";
+  url: string;
+  fileName: string;
+  sizeBytes: number;
+  sortOrder: number;
+}> {
+  if (input === undefined || input === null) {
+    return [];
+  }
+
+  if (!Array.isArray(input)) {
+    throw new Error("Media barang belum valid.");
+  }
+
+  if (input.length > ADMIN_BARANG_MEDIA_LIMIT) {
+    throw new Error(`Maksimal ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video untuk satu barang.`);
+  }
+
+  return input.map((item, index) => {
+    const media = item as AdminBarangMediaInput;
+    const type = String(media.type ?? "foto").trim().toLowerCase();
+    const url = requiredText(media.url, "URL media wajib diisi.");
+    const sizeBytes = Number(media.sizeBytes ?? 0);
+    const sortOrder = Number(media.sortOrder ?? index);
+
+    if (!ALLOWED_MEDIA_TYPES.has(type)) {
+      throw new Error("Jenis media hanya bisa foto atau video.");
+    }
+
+    if (!Number.isFinite(sizeBytes) || sizeBytes < 0) {
+      throw new Error("Ukuran media belum valid.");
+    }
+
+    if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+      throw new Error("Urutan media belum valid.");
+    }
+
+    return {
+      type: type as "foto" | "video",
+      url,
+      fileName: String(media.fileName ?? "").trim(),
+      sizeBytes,
+      sortOrder
+    };
+  });
 }
 
 export function validatePerpanjanganPayload(input: { newDueDate?: unknown; note?: unknown }, currentDueDate: string) {

@@ -7,7 +7,7 @@ import { Gavel, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { LotCard } from "@/components/shared/lot-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
-import type { Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/contracts/catalog";
 
 const sortOptions = [
   { value: "latest", label: "Terbaru" },

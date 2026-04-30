@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import { currency, userSummary, type Lot } from "@/lib/mock-data";
+import type { Lot } from "@/lib/contracts/catalog";
+import { currency } from "@/lib/formatters/currency";
 
 type VickreyBidFormProps = {
   lot: Lot;
@@ -25,7 +26,7 @@ export function VickreyBidForm({
   lot,
   existingBidAmount,
   existingBidStatus,
-  isBlacklisted = userSummary.blacklist.active,
+  isBlacklisted = false,
   blacklistUntil
 }: VickreyBidFormProps) {
   const router = useRouter();
@@ -48,7 +49,7 @@ export function VickreyBidForm({
     if (blocked) {
       const untilLabel = blacklistUntil
         ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeZone: "Asia/Makassar" }).format(blacklistUntil)
-        : userSummary.blacklist.until;
+        : "batas waktu belum tersedia";
       return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
     }
 
