@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarClock,
   CheckCircle2,
   Clock3,
   FileCheck2,
@@ -17,6 +18,7 @@ import {
   ShieldAlert,
   ShieldEllipsis,
   ShoppingBag,
+  ReceiptText,
   UploadCloud,
   UserRound,
   Wallet
@@ -26,6 +28,7 @@ import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
+import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -436,16 +439,30 @@ export function AdminInventoryCreatePage() {
 }
 
 export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-  const legacyGadaiActions = [
+  const jaminanActions = [
     {
-      title: "Tandai Tidak Ditebus",
-      description: "Konfirmasi barang tidak ditebus, lalu pindahkan menjadi barang jaminan yang siap dipasarkan.",
-      href: `/admin/barang/${item.id}/jadikan-jaminan`,
-      icon: ShieldAlert
+      title: "Catat Perpanjangan",
+      description: "Perbarui jatuh tempo bila nasabah memperpanjang masa gadai sebelum barang dipasarkan.",
+      href: `/admin/barang/${item.id}/perpanjang`,
+      icon: CalendarClock,
+      variant: "secondary" as const
+    },
+    {
+      title: "Catat Penebusan",
+      description: "Tutup alur barang bila nasabah sudah melunasi kewajiban dan mengambil barangnya.",
+      href: `/admin/barang/${item.id}/tebus`,
+      icon: ReceiptText,
+      variant: "secondary" as const
+    },
+    {
+      title: "Pasarkan Barang Tidak Ditebus",
+      description: "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
+      href: `/admin/barang/${item.id}/pasarkan`,
+      icon: Gavel
     },
     {
       title: "Edit Data Barang",
-      description: "Rapikan data awal dan media sebelum barang ditayangkan.",
+      description: "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
       href: `/admin/barang/${item.id}/edit`,
       icon: PencilLine,
       variant: "secondary" as const
@@ -453,24 +470,8 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
   ];
 
   const actions =
-    item.status === "GADAI"
-      ? legacyGadaiActions
-      : item.status === "JAMINAN"
-        ? [
-            {
-              title: "Pasarkan Barang",
-              description: "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
-              href: `/admin/barang/${item.id}/pasarkan`,
-              icon: Gavel
-            },
-            {
-              title: "Edit Data Barang",
-              description: "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
-              href: `/admin/barang/${item.id}/edit`,
-              icon: PencilLine,
-              variant: "secondary" as const
-            }
-          ]
+    item.status === "GADAI" || item.status === "JAMINAN"
+      ? jaminanActions
         : item.status === "GAGAL"
           ? [
               {
@@ -887,67 +888,15 @@ export function AdminInventoryMarketPage({ itemId: _itemId, item }: { itemId?: s
       itemStatus={item.status}
       title="Tayangkan ke Katalog"
     >
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Pilih Cara Menjual" />
-          <CardContent className="space-y-4 p-6">
-            <div className="rounded-[1.5rem] border border-[#0a6a49]/20 bg-[#f4faf7] p-5">
-              <p className="font-semibold text-black/85">Fixed Price</p>
-              <p className="mt-2 text-sm leading-6 text-black/65">
-                Cocok untuk barang yang siap dijual langsung dengan harga pasti dan alur transaksi yang lebih singkat.
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] border border-black/10 bg-[#fafaf8] p-5">
-              <p className="font-semibold text-black/85">Vickrey Auction</p>
-              <p className="mt-2 text-sm leading-6 text-black/65">
-                Gunakan saat Anda ingin membuka lelang tertutup dengan harga dasar dan durasi yang terukur.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Atur Harga dan Jadwal" />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Mode yang dipilih</FieldLabel>
-              <Input className="h-12" placeholder="Pilih fixed price atau vickrey" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Harga jual / harga dasar</FieldLabel>
-              <Input className="h-12" placeholder="0" type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Durasi lelang (hari)</FieldLabel>
-              <Input className="h-12" placeholder="Isi jika menggunakan lelang vickrey" type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Tanggal mulai</FieldLabel>
-              <Input className="h-12" type="datetime-local" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Estimasi selesai</FieldLabel>
-              <Input className="h-12" readOnly value="Terisi otomatis mengikuti durasi" />
-            </div>
-            <div className="md:col-span-2">
-            <AdminUnitActionButton
-              className="h-12 w-full rounded-2xl"
-              endpoint={`/api/admin/barang/${item.id}/pasarkan`}
-              pendingDescription="Sistem sedang menyiapkan tayangan katalog dan detail harga awal."
-              pendingTitle="Mempublikasikan barang"
-              payload={{
-                mode: "fixed_price",
-                price: Number(item.price ?? item.appraisalValue ?? 1000000)
-              }}
-              redirectTo="/admin/lelang"
-              successDescription="Barang sudah dipublikasikan sebagai fixed price."
-              successTitle="Barang tayang di katalog"
-            >
-              Tayangkan ke katalog
-            </AdminUnitActionButton>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <AdminMarketingForm
+        barangId={item.id}
+        defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
+        endpoint={`/api/admin/barang/${item.id}/pasarkan`}
+        redirectTo="/admin/lelang"
+        submitLabel="Tayangkan ke katalog"
+        successDescription="Barang sudah aktif di katalog sesuai mode pemasaran yang dipilih."
+        successTitle="Barang tayang di katalog"
+      />
     </WorkflowFormShell>
   );
 }
@@ -962,49 +911,26 @@ export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: s
       itemStatus={item.status}
       title="Siapkan Penayangan Ulang"
     >
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
+      <div className="space-y-6">
         <Card className="rounded-2xl border border-black/10 bg-white">
           <PanelTitle title="Ringkasan Barang Gagal" />
-          <CardContent className="grid gap-4 p-6 md:grid-cols-2">
+          <CardContent className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-4">
             <DetailTile label="Barang" value={item.name} />
             <DetailTile label="Iterasi Pemasaran" value={`Siklus ke-${item.marketingIteration}`} />
             <DetailTile label="Mode Sebelumnya" value={item.marketingMode ?? "-"} />
             <DetailTile label="Aksi Berikutnya" value={item.nextAction} />
           </CardContent>
         </Card>
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Konfigurasi Re-Listing" />
-          <div className="grid gap-5 p-6">
-            <div className="space-y-2">
-              <FieldLabel>Mode pemasaran baru</FieldLabel>
-              <Input className="h-12" placeholder="fixed_price / vickrey" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Harga baru</FieldLabel>
-              <Input className="h-12" type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Catatan evaluasi</FieldLabel>
-              <Textarea className="min-h-32" placeholder="Tambahkan catatan evaluasi bila ada perubahan harga, mode, atau pertimbangan lain." />
-            </div>
-            <AdminUnitActionButton
-              className="h-12 w-full rounded-2xl"
-              endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
-              pendingDescription="Strategi pemasaran baru sedang diterapkan agar barang bisa tayang kembali."
-              pendingTitle="Menayangkan ulang barang"
-              payload={{
-                mode: "fixed_price",
-                price: Number(item.price ?? item.appraisalValue ?? 1000000)
-              }}
-              redirectTo="/admin/lelang"
-              successDescription="Barang sudah aktif kembali dengan strategi pemasaran baru."
-              successTitle="Barang ditayangkan ulang"
-            >
-              <RotateCcw className="size-4" />
-              Tayangkan ulang barang
-            </AdminUnitActionButton>
-          </div>
-        </Card>
+        <AdminMarketingForm
+          barangId={item.id}
+          defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
+          endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
+          redirectTo="/admin/lelang"
+          submitIcon={<RotateCcw className="size-4" />}
+          submitLabel="Tayangkan ulang barang"
+          successDescription="Barang sudah aktif kembali dengan strategi pemasaran baru."
+          successTitle="Barang ditayangkan ulang"
+        />
       </div>
     </WorkflowFormShell>
   );

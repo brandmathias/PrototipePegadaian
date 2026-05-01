@@ -190,8 +190,8 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
 
 export async function extendAdminBarang(unitId: string, userId: string, barangId: string, input: { newDueDate?: unknown; note?: unknown }) {
   const current = await assertBarangForUnit(barangId, unitId);
-  if (current.status !== "gadai") {
-    throw new Error("Perpanjangan hanya bisa dilakukan untuk barang gadai.");
+  if (current.status !== "gadai" && current.status !== "jaminan") {
+    throw new Error("Perpanjangan hanya bisa dilakukan sebelum barang dipasarkan.");
   }
 
   const payload = validatePerpanjanganPayload(input, current.dueDate.toISOString().slice(0, 10));
@@ -214,10 +214,10 @@ export async function extendAdminBarang(unitId: string, userId: string, barangId
 
   await recordStatusChange({
     barangId,
-    oldStatus: "gadai",
-    newStatus: "gadai",
+    oldStatus: current.status,
+    newStatus: current.status,
     userId,
-    note: "Tanggal jatuh tempo barang gadai diperpanjang."
+    note: "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran."
   });
 
   return serializeAdminBarang(updated);
@@ -225,8 +225,8 @@ export async function extendAdminBarang(unitId: string, userId: string, barangId
 
 export async function redeemAdminBarang(unitId: string, userId: string, barangId: string, input: { reference?: unknown; redeemedAt?: unknown }) {
   const current = await assertBarangForUnit(barangId, unitId);
-  if (current.status !== "gadai") {
-    throw new Error("Penebusan hanya bisa dicatat untuk barang gadai.");
+  if (current.status !== "gadai" && current.status !== "jaminan") {
+    throw new Error("Penebusan hanya bisa dicatat sebelum barang dipasarkan.");
   }
 
   const payload = validateTebusPayload(input);

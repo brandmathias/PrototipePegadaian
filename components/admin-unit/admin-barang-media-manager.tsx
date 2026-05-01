@@ -42,6 +42,7 @@ export function AdminBarangMediaManager({
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const remainingSlots = Math.max(0, ADMIN_BARANG_MEDIA_LIMIT - media.length);
 
   async function uploadFiles(files: File[]) {
@@ -114,6 +115,54 @@ export function AdminBarangMediaManager({
     event.target.value = "";
   }
 
+  async function deleteMedia(mediaId: string, fileName?: string) {
+    const confirmed = window.confirm(
+      `Hapus ${fileName ? `"${fileName}"` : "media ini"} dari galeri barang?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(mediaId);
+    toast({
+      title: "Menghapus media",
+      description: "Media sedang dilepas dari galeri barang.",
+      variant: "info",
+      scope: "admin-unit",
+      duration: 2200
+    });
+
+    try {
+      const response = await fetch(`/api/admin/barang/${barangId}/media/${mediaId}`, {
+        method: "DELETE"
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result?.message ?? "Media belum berhasil dihapus.");
+      }
+
+      toast({
+        title: "Media berhasil dihapus",
+        description: "Galeri barang sudah diperbarui.",
+        variant: "success",
+        scope: "admin-unit"
+      });
+      router.refresh();
+    } catch (error) {
+      toast({
+        title: "Media belum terhapus",
+        description: error instanceof Error ? error.message : "Coba ulangi beberapa saat lagi.",
+        variant: "error",
+        scope: "admin-unit",
+        duration: 5600
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <input
@@ -146,9 +195,19 @@ export function AdminBarangMediaManager({
         <div className="grid gap-3 sm:grid-cols-2">
           {media.map((item) => {
             const isVideo = item.type === "video" || item.url.match(/\.(mp4|mov|webm)$/i);
+            const isDeleting = deletingId === item.id;
             return (
               <div className="overflow-hidden rounded-2xl border border-black/10 bg-white" key={item.id}>
-                <div className="aspect-video bg-[#edf3ef]">
+                <div className="relative aspect-video bg-[#edf3ef]">
+                  <button
+                    aria-label={`Hapus ${item.fileName || "media barang"}`}
+                    className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-white/95 text-black shadow-sm transition hover:scale-105 hover:bg-[#fff0f0] hover:text-[#9f1239] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={isUploading || Boolean(deletingId)}
+                    onClick={() => void deleteMedia(item.id, item.fileName)}
+                    type="button"
+                  >
+                    {isDeleting ? <LoaderCircle className="size-4 animate-spin" /> : <X className="size-4" />}
+                  </button>
                   {isVideo ? (
                     <video className="size-full object-cover" controls src={item.url} />
                   ) : (
@@ -169,7 +228,7 @@ export function AdminBarangMediaManager({
 
       <Button
         className="w-full rounded-2xl"
-        disabled={isUploading || remainingSlots === 0}
+        disabled={isUploading || Boolean(deletingId) || remainingSlots === 0}
         onClick={() => inputRef.current?.click()}
         type="button"
         variant="secondary"

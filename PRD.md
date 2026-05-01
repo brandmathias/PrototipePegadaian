@@ -93,6 +93,8 @@ Pengguna publik yang telah mendaftar dan login.
 Berikut adalah state machine **lengkap** yang merepresentasikan seluruh siklus hidup barang, mulai dari barang masuk sebagai jaminan unit hingga selesai.
 
 > **Revisi implementasi:** istilah **barang gadai** hanya digunakan pada konteks intake/form input karena barang berasal dari proses gadai offline. Setelah berhasil dicatat di sistem, klasifikasi operasional barang langsung menjadi `JAMINAN`. Status `GADAI` tidak digunakan sebagai kategori utama admin unit.
+>
+> Selama status `JAMINAN` dan barang **belum** `DIPASARKAN`, Admin Unit tetap dapat mencatat perpanjangan atau penebusan bila nasabah menyelesaikan kewajiban secara offline. Keputusan “pasarkan barang” berarti barang dianggap tidak ditebus dan siap dijual melalui Fixed Price atau Vickrey Auction.
 
 ```
                     ┌─────────────────────────────────────────────────┐
@@ -228,7 +230,7 @@ Admin unit menginput barang nasabah yang masuk sebagai gadai
 | --------------------- | ----------------------------------------------------------------------- | ------------------------ | ----------------------------------- |
 | `GADAI`               | Legacy/opsional. Tidak digunakan sebagai klasifikasi utama UI admin unit pada implementasi ini. | Sistem lama / migrasi    | ✅ Harus dinormalisasi ke `JAMINAN` |
 | `DITEBUS`             | Nasabah menebus barang. Selesai.                                        | Admin Unit               | ❌ Terminal state                    |
-| `JAMINAN`             | Barang resmi milik Pegadaian. Belum dipasarkan.                         | Admin Unit               | ❌ Tidak bisa kembali ke GADAI       |
+| `JAMINAN`             | Barang hasil input gadai yang belum dipasarkan; masih bisa dicatat perpanjangan/penebusan sebelum tayang. | Admin Unit               | ❌ Tidak bisa kembali ke GADAI       |
 | `DIPASARKAN`          | Barang aktif di katalog publik (fixed price atau vickrey).              | Admin Unit               | ❌ Tidak bisa kembali ke JAMINAN     |
 | `MENUNGGU_PEMBAYARAN` | Pemenang Vickrey ditentukan, menunggu pembayaran ≤24 jam.               | Sistem (otomatis)        | ❌                                   |
 | `TERJUAL`             | Transaksi selesai & terverifikasi. Nota dapat dicetak.                  | Admin Unit (verifikasi)  | ❌ Terminal state                    |
@@ -242,6 +244,8 @@ Admin unit menginput barang nasabah yang masuk sebagai gadai
 ```
 INPUT        → JAMINAN            : Admin mencatat barang hasil gadai/tidak ditebus sebagai aset unit
 GADAI        → JAMINAN            : Normalisasi data legacy bila masih ada status GADAI lama
+JAMINAN      → JAMINAN            : Admin mencatat perpanjangan sebelum barang dipasarkan
+JAMINAN      → DITEBUS            : Admin mencatat penebusan sebelum barang dipasarkan
 JAMINAN      → DIPASARKAN         : Admin memilih mode & mempublikasikan barang
 DIPASARKAN   → MENUNGGU_PEMBAYARAN: Cron job (otomatis, hanya untuk mode vickrey saat deadline)
 DIPASARKAN   → TERJUAL            : Admin verifikasi pembayaran (fixed price)
@@ -317,11 +321,11 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 
 **Konteks:** Nasabah datang ke Pegadaian dan meminta perpanjangan masa gadai sebelum atau saat jatuh tempo. Admin Unit mencatat perpanjangan tersebut di sistem.
 
-**Prasyarat:** Status barang = `GADAI`.
+**Prasyarat:** Status barang = `JAMINAN` dan belum `DIPASARKAN`. Status `GADAI` hanya didukung sebagai data legacy/migrasi.
 
 **Workflow Lengkap:**
 
-1. Admin Unit membuka halaman daftar barang dengan filter status `GADAI`.
+1. Admin Unit membuka halaman daftar barang dengan filter status `JAMINAN`.
 2. Admin mencari barang milik nasabah (by nama nasabah atau nomor nasabah).
 3. Admin membuka detail barang, memeriksa `tanggal_jatuh_tempo` saat ini.
 4. Admin mengklik tombol **"Catat Perpanjangan"**.
@@ -333,7 +337,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 7. **Sistem memvalidasi:** `tanggal_jatuh_tempo_baru` harus lebih besar dari tanggal saat ini.
 8. Sistem memperbarui kolom `tanggal_jatuh_tempo` pada record barang.
 9. Sistem mencatat riwayat perpanjangan di tabel `riwayat_perpanjangan`.
-10. Status barang **tetap `GADAI`** — tidak ada perubahan status.
+10. Status barang **tetap `JAMINAN`** — tidak ada perubahan status pemasaran.
 
 **Catatan Penting:**
 
@@ -347,7 +351,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 
 **Konteks:** Nasabah datang ke Pegadaian, membayar pokok pinjaman beserta bunga, dan mengambil kembali barangnya. Admin Unit mencatat penebusan tersebut di sistem.
 
-**Prasyarat:** Status barang = `GADAI`.
+**Prasyarat:** Status barang = `JAMINAN` dan belum `DIPASARKAN`. Status `GADAI` hanya didukung sebagai data legacy/migrasi.
 
 **Workflow Lengkap:**
 
@@ -370,7 +374,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 
 - Status `DITEBUS` adalah **terminal state** — barang tidak dapat diproses lebih lanjut dalam sistem.
 - Barang berstatus `DITEBUS` **tidak muncul** di katalog publik maupun di antrian lelang.
-- Penebusan masih dapat dilakukan **setelah** tanggal jatuh tempo selama admin belum mengkonversi barang ke status `JAMINAN`.
+- Penebusan masih dapat dilakukan selama barang belum `DIPASARKAN`; setelah tayang ke katalog, alur penjualan/pembayaran pembeli yang berlaku.
 
 ---
 
@@ -780,7 +784,7 @@ Tindakan tambahan yang bisa dilakukan Super Admin:
 | `/admin/barang/tambah`                    | Form input barang gadai baru (termasuk upload foto & video).                                                |
 | `/admin/barang/[id]`                      | Detail barang lengkap + tombol aksi sesuai status saat ini (lihat tabel transisi).                          |
 | `/admin/barang/[id]/edit`                 | Edit data dan tambah media barang (utama saat status `JAMINAN`, sebelum tayang).                            |
-| `/admin/barang/[id]/perpanjang`           | Legacy/opsional bila data lama masih memakai status `GADAI`.                                                |
+| `/admin/barang/[id]/perpanjang`           | Catat perpanjangan sebelum barang `DIPASARKAN` (utama pada status `JAMINAN`, mendukung `GADAI` legacy).     |
 | `/admin/barang/[id]/riwayat-perpanjangan` | Riwayat semua perpanjangan untuk barang ini.                                                                |
 | `/admin/lelang`                           | Daftar semua sesi pemasaran unit (aktif & historis).                                                        |
 | `/admin/lelang/[id]`                      | Detail sesi pemasaran: daftar bid (setelah deadline untuk Vickrey), info pemenang, status.                  |
@@ -1352,7 +1356,7 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 
 - `tanggal_jatuh_tempo` harus setelah `tanggal_gadai`.
 - `nilai_gadai` harus ≤ `nilai_taksiran`.
-- Perpanjangan hanya dapat dilakukan jika status = `GADAI`.
+- Perpanjangan hanya dapat dilakukan jika status = `JAMINAN` dan barang belum `DIPASARKAN`; status `GADAI` hanya didukung sebagai legacy.
 - `tanggal_jatuh_tempo_baru` harus lebih besar dari `tanggal_jatuh_tempo` saat ini.
 - Admin hanya dapat mengelola barang milik `unit_id`-nya (diverifikasi dari JWT token, bukan dari request body).
 - `nama_penggadai` dan `nomor_nasabah` tidak boleh hadir dalam response endpoint publik.
@@ -1449,10 +1453,10 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 
 | Istilah             | Definisi                                                                                                                                                                |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barang Gadai**    | Barang yang diserahkan nasabah kepada Pegadaian sebagai jaminan pinjaman. Status awal di sistem adalah `GADAI`.                                                         |
+| **Barang Gadai**    | Barang yang diserahkan nasabah kepada Pegadaian sebagai jaminan pinjaman. Dalam implementasi prototype, istilah ini dipakai pada form input; status operasional setelah tersimpan adalah `JAMINAN`. |
 | **Penebusan**       | Proses nasabah membayar pokok + bunga pinjaman dan mengambil kembali barangnya. Status barang menjadi `DITEBUS`.                                                        |
-| **Perpanjangan**    | Proses nasabah memperpanjang masa gadai sebelum jatuh tempo. Status barang tetap `GADAI` dengan tanggal jatuh tempo baru.                                               |
-| **Barang Jaminan**  | Barang gadai yang tidak ditebus setelah jatuh tempo, sehingga resmi menjadi milik Pegadaian. Status `JAMINAN`.                                                          |
+| **Perpanjangan**    | Proses nasabah memperpanjang masa gadai sebelum barang dipasarkan. Status barang tetap `JAMINAN` dengan tanggal jatuh tempo baru.                                               |
+| **Barang Jaminan**  | Barang hasil input gadai yang menjadi objek kerja Admin Unit sebelum dipasarkan. Status `JAMINAN`.                                                          |
 | **Pemasaran**       | Proses Admin Unit mempublikasikan barang jaminan ke katalog publik dengan mode Fixed Price atau Vickrey Auction. Status `DIPASARKAN`.                                   |
 | **Fixed Price**     | Mode penjualan di mana harga ditetapkan tetap oleh Admin Unit.                                                                                                          |
 | **Vickrey Auction** | Mekanisme lelang tertutup di mana pemenang adalah penawar tertinggi (B1) namun hanya membayar sebesar penawaran tertinggi kedua (B2).                                   |
