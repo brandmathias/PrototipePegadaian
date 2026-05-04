@@ -96,7 +96,7 @@ describe("admin unit validation", () => {
     });
   });
 
-  it("limits barang media uploads to four foto or video files", () => {
+  it("limits barang media uploads to five foto or video files", () => {
     expect(
       validateAdminBarangMediaList([
         { type: "foto", url: "/uploads/barang/foto-1.jpg", fileName: "foto-1.jpg", sizeBytes: 1000 },

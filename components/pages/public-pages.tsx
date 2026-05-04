@@ -13,7 +13,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
-import { LotFigure } from "@/components/shared/lot-figure";
+import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,13 @@ export function LotDetailPage({
     <div className="container space-y-10 py-10 md:space-y-12 md:py-12">
       <div className="grid gap-8 xl:grid-cols-[1.12fr_0.88fr]">
         <div className="space-y-5">
-          <LotFigure category={lot.category} className="min-h-[22rem] rounded-[2rem] md:min-h-[34rem]" />
+          <LotMediaGallery
+            category={lot.category}
+            className="min-h-[22rem] rounded-[2rem] md:min-h-[34rem]"
+            title={lot.name}
+            media={lot.media}
+            showVideoControls
+          />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {lot.specs.map((spec) => (
               <Card className="border border-border/70 p-4" key={spec.label}>

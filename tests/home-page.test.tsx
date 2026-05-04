@@ -21,6 +21,7 @@ describe("HomePage", () => {
             condition: "Baik",
             status: "Tersedia",
             description: "Lot uji dari service database.",
+            media: [],
             specs: [{ label: "Kategori", value: "Perhiasan" }]
           }
         ]}

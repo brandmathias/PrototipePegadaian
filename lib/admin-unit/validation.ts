@@ -3,7 +3,7 @@ const ALLOWED_CATEGORIES = new Set(["emas", "elektronik", "kendaraan", "perhiasa
 const ALLOWED_CONDITIONS = new Set(["baik", "cukup", "rusak_ringan"]);
 const ALLOWED_MEDIA_TYPES = new Set(["foto", "video"]);
 
-export const ADMIN_BARANG_MEDIA_LIMIT = 4;
+export const ADMIN_BARANG_MEDIA_LIMIT = 5;
 
 export type AdminBarangMediaInput = {
   type?: unknown;

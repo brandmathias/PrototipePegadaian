@@ -18,7 +18,11 @@ export function LotCard({ lot }: LotCardProps) {
 
   return (
     <Card className="group overflow-hidden rounded-[1.75rem] bg-surface-lowest p-0 transition-transform duration-300 hover:-translate-y-1">
-      <LotFigure category={lot.category} className="rounded-b-none rounded-t-[1.75rem]" />
+      <LotFigure
+        category={lot.category}
+        className="aspect-[4/3] rounded-b-none rounded-t-[1.75rem]"
+        media={lot.media}
+      />
       <div className="space-y-5 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">

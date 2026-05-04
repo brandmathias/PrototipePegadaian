@@ -5,6 +5,7 @@ import { FileVideo, Image as ImageIcon, LoaderCircle, UploadCloud, X } from "luc
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import { ADMIN_BARANG_MEDIA_LIMIT } from "@/lib/admin-unit/validation";
 
@@ -43,6 +44,7 @@ export function AdminBarangMediaManager({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AdminBarangMedia | null>(null);
   const remainingSlots = Math.max(0, ADMIN_BARANG_MEDIA_LIMIT - media.length);
 
   async function uploadFiles(files: File[]) {
@@ -72,8 +74,8 @@ export function AdminBarangMediaManager({
     supported.forEach((file) => formData.append("media", file));
     setIsUploading(true);
     toast({
-      title: "Mengunggah media",
-      description: "Foto atau video sedang disimpan ke data barang.",
+      title: "Mengunggah media barang",
+      description: "Foto atau video sedang ditambahkan ke galeri. Tetap di halaman ini sebentar.",
       variant: "info",
       scope: "admin-unit",
       duration: 2600
@@ -92,7 +94,7 @@ export function AdminBarangMediaManager({
 
       toast({
         title: "Media berhasil ditambahkan",
-        description: "Galeri barang sudah diperbarui.",
+        description: "Galeri barang sudah diperbarui dan siap ditinjau sebelum tayang.",
         variant: "success",
         scope: "admin-unit"
       });
@@ -115,26 +117,22 @@ export function AdminBarangMediaManager({
     event.target.value = "";
   }
 
-  async function deleteMedia(mediaId: string, fileName?: string) {
-    const confirmed = window.confirm(
-      `Hapus ${fileName ? `"${fileName}"` : "media ini"} dari galeri barang?`
-    );
-
-    if (!confirmed) {
+  async function deleteMedia(target: AdminBarangMedia | null) {
+    if (!target) {
       return;
     }
 
-    setDeletingId(mediaId);
+    setDeletingId(target.id);
     toast({
-      title: "Menghapus media",
-      description: "Media sedang dilepas dari galeri barang.",
+      title: "Menghapus media dari galeri",
+      description: "Sebentar, kami sedang merapikan galeri barang ini.",
       variant: "info",
       scope: "admin-unit",
       duration: 2200
     });
 
     try {
-      const response = await fetch(`/api/admin/barang/${barangId}/media/${mediaId}`, {
+      const response = await fetch(`/api/admin/barang/${barangId}/media/${target.id}`, {
         method: "DELETE"
       });
       const result = await response.json().catch(() => ({}));
@@ -144,8 +142,8 @@ export function AdminBarangMediaManager({
       }
 
       toast({
-        title: "Media berhasil dihapus",
-        description: "Galeri barang sudah diperbarui.",
+        title: "Media dihapus",
+        description: "Galeri barang sudah diperbarui. Anda masih bisa menambahkan media pengganti bila diperlukan.",
         variant: "success",
         scope: "admin-unit"
       });
@@ -153,13 +151,14 @@ export function AdminBarangMediaManager({
     } catch (error) {
       toast({
         title: "Media belum terhapus",
-        description: error instanceof Error ? error.message : "Coba ulangi beberapa saat lagi.",
+        description: error instanceof Error ? error.message : "Coba ulangi setelah memastikan koneksi dan hak akses aktif.",
         variant: "error",
         scope: "admin-unit",
         duration: 5600
       });
     } finally {
       setDeletingId(null);
+      setPendingDelete(null);
     }
   }
 
@@ -203,7 +202,7 @@ export function AdminBarangMediaManager({
                     aria-label={`Hapus ${item.fileName || "media barang"}`}
                     className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-white/95 text-black shadow-sm transition hover:scale-105 hover:bg-[#fff0f0] hover:text-[#9f1239] disabled:cursor-not-allowed disabled:opacity-60"
                     disabled={isUploading || Boolean(deletingId)}
-                    onClick={() => void deleteMedia(item.id, item.fileName)}
+                    onClick={() => setPendingDelete(item)}
                     type="button"
                   >
                     {isDeleting ? <LoaderCircle className="size-4 animate-spin" /> : <X className="size-4" />}
@@ -245,6 +244,26 @@ export function AdminBarangMediaManager({
           </>
         )}
       </Button>
+
+      <ConfirmDialog
+        cancelLabel="Batal"
+        confirmLabel="Ya, hapus media"
+        description={
+          pendingDelete
+            ? `Media ${pendingDelete.fileName ? `"${pendingDelete.fileName}"` : "ini"} akan dilepas dari galeri barang. Data barang tetap aman, dan Anda masih bisa mengunggah media pengganti selama slot tersedia.`
+            : "Media akan dilepas dari galeri barang."
+        }
+        loading={Boolean(deletingId)}
+        onConfirm={() => void deleteMedia(pendingDelete)}
+        onOpenChange={(open) => {
+          if (!open && !deletingId) {
+            setPendingDelete(null);
+          }
+        }}
+        open={Boolean(pendingDelete)}
+        title="Hapus media dari barang?"
+        variant="destructive"
+      />
     </div>
   );
 }

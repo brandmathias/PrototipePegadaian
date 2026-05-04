@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Gem, Laptop, Car, Coins, Package } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -5,6 +6,12 @@ import { cn } from "@/lib/utils";
 type LotFigureProps = {
   category: string;
   className?: string;
+  media?: Array<{
+    type: "foto" | "video";
+    url: string;
+    fileName: string;
+  }>;
+  showVideoControls?: boolean;
 };
 
 const categoryMap = {
@@ -30,9 +37,68 @@ const categoryMap = {
   }
 } as const;
 
-export function LotFigure({ category, className }: LotFigureProps) {
+export function LotFigure({ category, className, media = [], showVideoControls = false }: LotFigureProps) {
   const config = categoryMap[category as keyof typeof categoryMap] ?? categoryMap.Lainnya;
   const Icon = config.icon;
+  const primaryMedia = media.find((item) => item.type === "foto") ?? media[0];
+  const primaryMediaLabel = primaryMedia ? `${category} ${primaryMedia.type === "video" ? "video" : "foto"} utama` : category;
+  const mediaToneClass =
+    primaryMedia?.type === "video"
+      ? "bg-[#050505]"
+      : "bg-[linear-gradient(180deg,#f8f4ec_0%,#f2ece2_100%)]";
+
+  if (primaryMedia) {
+    return (
+      <div
+        className={cn(
+          "group relative overflow-hidden rounded-[1.25rem] text-white",
+          mediaToneClass,
+          className
+        )}
+      >
+        {primaryMedia.type === "video" ? (
+          <video
+            aria-label={primaryMediaLabel}
+            autoPlay={!showVideoControls}
+            className="absolute inset-0 h-full w-full object-cover"
+            controls={showVideoControls}
+            loop={!showVideoControls}
+            muted
+            playsInline
+            preload="metadata"
+            src={primaryMedia.url}
+          />
+        ) : (
+          <Image
+            alt={primaryMediaLabel}
+            fill
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+            sizes="(min-width: 1280px) 34vw, (min-width: 768px) 50vw, 100vw"
+            src={primaryMedia.url}
+          />
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.02)_48%,rgba(0,0,0,0.22))]" />
+        <div className="pointer-events-none relative flex h-full min-h-40 flex-col justify-between p-4 sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur">
+              {category}
+            </span>
+            {media.length > 1 ? (
+              <span className="rounded-full bg-black/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 backdrop-blur">
+                {media.length} media
+              </span>
+            ) : null}
+          </div>
+          <div className="flex items-end justify-between">
+            <div className="space-y-1 opacity-75">
+              <div className="h-2 w-20 rounded-full bg-white/35" />
+              <div className="h-2 w-28 rounded-full bg-white/25" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

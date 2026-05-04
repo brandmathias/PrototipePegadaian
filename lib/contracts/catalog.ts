@@ -20,5 +20,11 @@ export type Lot = {
   bankAccountHolder?: string;
   bankBranch?: string;
   unitAddress?: string;
+  media: Array<{
+    id: string;
+    type: "foto" | "video";
+    url: string;
+    fileName: string;
+  }>;
   specs: Array<{ label: string; value: string }>;
 };

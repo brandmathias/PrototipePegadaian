@@ -104,8 +104,8 @@ export function AdminInventoryCreateForm() {
 
     if (rejectedCount > 0) {
       toast({
-        title: "Sebagian file belum bisa dipakai",
-        description: "Gunakan file foto atau video agar bisa disimpan sebagai media barang.",
+        title: "Ada file yang belum bisa dipakai",
+        description: "Pilih foto atau video saja agar galeri barang tetap rapi dan mudah dicek.",
         variant: "error",
         scope: "admin-unit"
       });
@@ -113,8 +113,8 @@ export function AdminInventoryCreateForm() {
 
     if (remainingSlots <= 0) {
       toast({
-        title: "Batas media sudah penuh",
-        description: `Satu barang maksimal memiliki ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video.`,
+        title: "Slot media sudah penuh",
+        description: `Satu barang hanya bisa memiliki ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video. Hapus salah satu media bila ingin mengganti.`,
         variant: "error",
         scope: "admin-unit"
       });
@@ -123,8 +123,8 @@ export function AdminInventoryCreateForm() {
 
     if (supported.length > remainingSlots) {
       toast({
-        title: "Sebagian media tidak ditambahkan",
-        description: `Batas upload adalah ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video per barang.`,
+        title: "Sebagian media belum ditambahkan",
+        description: `Kami hanya mengambil file sesuai sisa slot. Batas upload tetap ${ADMIN_BARANG_MEDIA_LIMIT} media per barang.`,
         variant: "info",
         scope: "admin-unit"
       });
@@ -171,8 +171,8 @@ export function AdminInventoryCreateForm() {
 
     if (media.length === 0) {
       toast({
-        title: "Tambahkan minimal satu media",
-        description: "Foto utama membantu admin dan pembeli memahami kondisi barang sejak awal.",
+        title: "Media barang belum dipilih",
+        description: "Tambahkan minimal satu foto atau video agar barang punya bukti visual sebelum disimpan.",
         variant: "error",
         scope: "admin-unit"
       });
@@ -186,8 +186,8 @@ export function AdminInventoryCreateForm() {
 
     setIsSubmitting(true);
     toast({
-      title: "Menyimpan barang dan media",
-      description: "File sedang diunggah, lalu data barang akan dicatat ke unit Anda.",
+      title: "Sedang menyimpan barang jaminan",
+      description: "Kami mengunggah media dan mencatat data appraisal. Tetap di halaman ini sebentar.",
       variant: "info",
       scope: "admin-unit",
       duration: 2600
@@ -205,8 +205,8 @@ export function AdminInventoryCreateForm() {
       }
 
       toast({
-        title: "Barang gadai tersimpan",
-      description: "Data barang dan media pendukung sudah masuk ke daftar barang jaminan unit.",
+        title: "Barang berhasil dicatat",
+        description: "Data dan media sudah masuk ke daftar barang jaminan. Anda bisa lanjut cek detail atau siapkan pemasaran.",
         variant: "success",
         scope: "admin-unit"
       });
@@ -214,8 +214,8 @@ export function AdminInventoryCreateForm() {
       router.refresh();
     } catch (error) {
       toast({
-        title: "Upload belum berhasil",
-        description: error instanceof Error ? error.message : "Coba ulangi beberapa saat lagi.",
+        title: "Barang belum bisa disimpan",
+        description: error instanceof Error ? error.message : "Periksa kembali data dan media, lalu coba simpan lagi.",
         variant: "error",
         scope: "admin-unit",
         duration: 5600

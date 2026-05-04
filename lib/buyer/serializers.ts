@@ -25,6 +25,12 @@ type PublicLotShape = {
   unitName: string;
   unitAddress: string;
   account?: AccountShape;
+  media?: Array<{
+    id: string;
+    type: string;
+    url: string;
+    fileName: string | null;
+  }>;
 };
 
 type BuyerTransactionShape = {
@@ -151,6 +157,13 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     bankAccountHolder: row.account?.accountHolderName ?? undefined,
     bankBranch: row.account?.branchName ?? undefined,
     unitAddress: row.unitAddress,
+    media:
+      row.media?.map((item) => ({
+        id: item.id,
+        type: item.type === "video" ? "video" : "foto",
+        url: item.url,
+        fileName: item.fileName || row.itemName
+      })) ?? [],
     specs: [
       { label: "Kode barang", value: row.itemCode },
       { label: "Kategori", value: row.category },

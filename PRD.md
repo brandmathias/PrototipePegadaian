@@ -302,7 +302,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 | `nomor_nasabah`       | string  | ✅     | ID nasabah internal — **tidak ditampilkan ke publik**                  |
 | `tanggal_gadai`       | date    | ✅     | Tanggal barang masuk sebagai gadai                                     |
 | `tanggal_jatuh_tempo` | date    | ✅     | Batas waktu nasabah menebus (harus > tanggal_gadai)                    |
-| `media`               | file[]  | ✅     | Min. 1, maks. 4 file gabungan foto/video. Foto: `jpg`, `png`, `webp`. Video: `mp4`, `mov`, `webm`. |
+| `media`               | file[]  | ✅     | Min. 1, maks. 5 file gabungan foto/video. Foto: `jpg`, `png`, `webp`. Video: `mp4`, `mov`, `webm`. |
 
 
 **Setelah disimpan:** Status barang otomatis = `JAMINAN`.
@@ -310,7 +310,7 @@ GAGAL        → DIPASARKAN         : Admin mengaktifkan ulang pemasaran (re-lis
 **Aturan Media (Foto & Video):**
 
 - Minimal 1 foto/video wajib ada saat input.
-- Total media barang maksimal 4 file (gabungan foto dan video).
+- Total media barang maksimal 5 file (gabungan foto dan video).
 - Selama status `JAMINAN`: admin dapat menambah atau menghapus media sesuai batas maksimal.
 - Setelah status `DIPASARKAN`: media hanya dapat ditambah, tidak dapat dihapus.
 - Seluruh media disimpan di server dan diakses via URL publik.
@@ -1272,7 +1272,7 @@ created_at    TIMESTAMP NOT NULL DEFAULT NOW()
 | POST   | `/api/admin/barang`                      | Input barang gadai baru                         | Admin |
 | GET    | `/api/admin/barang/[id]`                 | Detail barang (termasuk data nasabah)           | Admin |
 | PUT    | `/api/admin/barang/[id]`                 | Edit barang sebelum tayang katalog              | Admin |
-| POST   | `/api/admin/barang/[id]/media`           | Upload foto/video ke barang (maks. 4 total)     | Admin |
+| POST   | `/api/admin/barang/[id]/media`           | Upload foto/video ke barang (maks. 5 total)     | Admin |
 | DELETE | `/api/admin/barang/[id]/media/[mediaId]` | Hapus media sebelum barang tayang               | Admin |
 | POST   | `/api/admin/barang/[id]/perpanjang`      | Catat perpanjangan masa gadai                   | Admin |
 | POST   | `/api/admin/barang/[id]/tebus`           | Catat penebusan oleh nasabah                    | Admin |

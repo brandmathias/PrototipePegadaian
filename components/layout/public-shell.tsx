@@ -3,17 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Gavel, Search } from "lucide-react";
+import { Gavel, LogOut, Search } from "lucide-react";
 
+import { LogoutButton } from "@/components/auth/logout-button";
+import { AlertCenter } from "@/components/ui/alert-center";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
 
 type PublicShellProps = {
   children: ReactNode;
+  viewer?: {
+    name: string;
+    role: AuthRole;
+    homeHref: string;
+  } | null;
 };
 
-const globalNav = [
+const guestNav = [
   {
     href: "/",
     label: "Beranda"
@@ -24,8 +32,31 @@ const globalNav = [
   }
 ];
 
-export function PublicShell({ children }: PublicShellProps) {
+const buyerNav = [
+  {
+    href: "/dashboard",
+    label: "Beranda"
+  },
+  {
+    href: "/katalog",
+    label: "Katalog"
+  },
+  {
+    href: "/transaksi",
+    label: "Transaksi"
+  }
+];
+
+function getViewerLabel(role: AuthRole) {
+  if (role === "super_admin") return "Control Center";
+  if (role === "admin_unit") return "Area Admin";
+  return "Akun Pembeli";
+}
+
+export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
+  const isBuyer = viewer?.role === "buyer";
+  const navItems = isBuyer ? buyerNav : guestNav;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
@@ -42,7 +73,7 @@ export function PublicShell({ children }: PublicShellProps) {
               Pegadaian Lelang
             </Link>
             <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex">
-              {globalNav.map((item) => {
+              {navItems.map((item) => {
                 const active =
                   pathname === item.href ||
                   (item.href !== "/" && pathname.startsWith(item.href));
@@ -74,12 +105,31 @@ export function PublicShell({ children }: PublicShellProps) {
                 placeholder="Cari lot atau unit..."
               />
             </div>
-            <Link
-              className={cn(buttonVariants({ variant: "default" }), "min-w-[6.25rem]")}
-              href="/login"
-            >
-              Masuk
-            </Link>
+            {viewer ? (
+              <>
+                {isBuyer ? <AlertCenter className="shrink-0" scope="buyer" /> : null}
+                <Link
+                  className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
+                  href={viewer.homeHref}
+                >
+                  {isBuyer ? viewer.name : getViewerLabel(viewer.role)}
+                </Link>
+                <LogoutButton
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+                  redirectTo="/login"
+                >
+                  <LogOut className="size-4" />
+                  Keluar
+                </LogoutButton>
+              </>
+            ) : (
+              <Link
+                className={cn(buttonVariants({ variant: "default" }), "min-w-[6.25rem]")}
+                href="/login"
+              >
+                Masuk
+              </Link>
+            )}
           </div>
         </div>
       </header>

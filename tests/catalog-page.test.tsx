@@ -21,6 +21,7 @@ describe("CatalogPage", () => {
             condition: "Baik",
             status: "Tersedia",
             description: "Data katalog dari database.",
+            media: [],
             specs: [{ label: "Kategori", value: "Logam Mulia" }]
           }
         ]}
@@ -53,6 +54,7 @@ describe("CatalogPage", () => {
             status: "Tersedia",
             description: "Data fixed price dari database.",
             endsAt: new Date("2026-05-05T10:00:00+08:00").toISOString(),
+            media: [],
             specs: [{ label: "Kategori", value: "Perhiasan" }]
           }
         ]}
@@ -61,5 +63,41 @@ describe("CatalogPage", () => {
 
     expect(screen.getByText("Cincin Fixed Price")).toBeInTheDocument();
     expect(screen.queryByText(/sesi berakhir/i)).not.toBeInTheDocument();
+  });
+
+  it("renders uploaded lot media instead of the category placeholder when media exists", () => {
+    render(
+      <CatalogPage
+        lots={[
+          {
+            id: "lot-media",
+            code: "LOT-MEDIA",
+            name: "Kalung Dengan Foto",
+            category: "Perhiasan",
+            mode: "fixed_price",
+            price: 12500000,
+            location: "Manado",
+            unitName: "Pegadaian Manado",
+            city: "Manado",
+            condition: "Baik",
+            status: "Tersedia",
+            description: "Data media berasal dari upload admin.",
+            media: [
+              {
+                id: "media-1",
+                type: "foto",
+                url: "/uploads/barang/kalung.jpg",
+                fileName: "kalung.jpg"
+              }
+            ],
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("img", { name: "Perhiasan foto utama" }).getAttribute("src")).toContain(
+      "%2Fuploads%2Fbarang%2Fkalung.jpg"
+    );
   });
 });

@@ -26,9 +26,12 @@ import {
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
+import { AdminBarangEditForm } from "@/components/admin-unit/admin-barang-edit-form";
 import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
+import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
+import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,21 +65,6 @@ type AdminBlacklistItem = Record<string, any>;
 
 function dateAfter(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-function buildBarangPayload(item?: AdminInventoryItem) {
-  return {
-    name: item?.name ?? "Barang Gadai Baru",
-    category: item?.category ?? "Perhiasan",
-    condition: item?.condition ?? "baik",
-    description: item?.description ?? "Barang gadai dicatat oleh admin unit untuk diproses sesuai workflow PRD.",
-    appraisalValue: Number(item?.appraisalValue ?? item?.price ?? 1000000),
-    loanValue: Number(item?.loanValue ?? 750000),
-    ownerName: item?.ownerName ?? "Nasabah Unit",
-    customerNumber: item?.customerNumber ?? `NAS-${Date.now().toString().slice(-6)}`,
-    pawnedAt: String(item?.pawnedAt ?? new Date().toISOString().slice(0, 10)),
-    dueDate: String(item?.dueDate ?? dateAfter(30))
-  };
 }
 
 function AdminPageIntro({
@@ -604,61 +592,34 @@ export function AdminInventoryEditPage({ itemId: _itemId, item }: { itemId?: str
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle description="Form ini sudah terisi dari data barang yang sedang Anda buka." title="Form Edit Barang" />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Nama barang</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue={item.name} />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Kategori</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue={item.category} />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Kondisi</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue={item.condition} />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nilai taksiran</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue={item.appraisalValue} type="number" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nilai gadai</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue={item.loanValue} type="number" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Deskripsi</FieldLabel>
-              <Textarea className="min-h-40 text-sm sm:text-base" defaultValue={item.description} />
-            </div>
-          </div>
-        </div>
+        <AdminBarangEditForm
+          item={{
+            id: String(item.id),
+            name: String(item.name ?? ""),
+            category: String(item.category ?? "emas"),
+            condition: String(item.condition ?? "baik"),
+            appraisalValue: item.appraisalValue ?? item.price ?? "",
+            loanValue: item.loanValue ?? "",
+            description: String(item.description ?? ""),
+            ownerName: String(item.ownerName ?? ""),
+            customerNumber: String(item.customerNumber ?? ""),
+            pawnedAt: String(item.pawnedAt ?? new Date().toISOString().slice(0, 10)),
+            dueDate: String(item.dueDate ?? dateAfter(30))
+          }}
+        />
 
         <div className="space-y-6">
           <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
+              <CardHeader>
               <CardTitle className="text-xl sm:text-[1.4rem]">Pengelolaan Media</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Foto dan video bisa ditambahkan sampai total 4 media. Saat upload berjalan, tombol akan menampilkan progres.
+                Foto dan video bisa ditambahkan sampai total 5 media. Saat upload berjalan, tombol akan menampilkan progres.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <AdminBarangMediaManager barangId={item.id} media={media} />
             </CardContent>
           </Card>
-          <AdminUnitActionButton
-            className="h-12 w-full rounded-2xl text-sm sm:text-base"
-            endpoint={`/api/admin/barang/${item.id}`}
-            method="PUT"
-            pendingTitle="Memperbarui data barang"
-            pendingDescription="Perubahan data barang sedang diselaraskan dengan workflow unit."
-            payload={buildBarangPayload(item)}
-            refresh
-            successDescription="Data barang sudah diperbarui dan siap dilanjutkan sesuai statusnya."
-            successTitle="Perubahan barang tersimpan"
-          >
-            Simpan Perubahan
-          </AdminUnitActionButton>
         </div>
       </div>
     </div>
@@ -712,50 +673,7 @@ export function AdminInventoryExtendPage({ itemId: _itemId, item }: { itemId?: s
       itemStatus={item.status}
       title="Perpanjang Masa Gadai"
     >
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Form Perpanjangan" />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <FieldLabel>Tanggal jatuh tempo saat ini</FieldLabel>
-              <Input className="h-12" defaultValue={item.dueDate} readOnly />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Tanggal jatuh tempo baru</FieldLabel>
-              <Input className="h-12" type="date" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Catatan perpanjangan</FieldLabel>
-              <Textarea className="min-h-32" placeholder="Tambahkan catatan singkat jika ada referensi kontrak atau informasi penting lainnya." />
-            </div>
-          </div>
-        </Card>
-        <Card className="rounded-2xl border border-black/10 bg-[#f8faf8]">
-          <CardHeader>
-            <CardTitle className="text-xl">Pengecekan Sebelum Simpan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm leading-7 text-black/70">
-            <p>- Pastikan barang masih berada dalam masa gadai aktif.</p>
-            <p>- Tanggal jatuh tempo baru harus lebih akhir dari jadwal yang berjalan saat ini.</p>
-            <p>- Riwayat perpanjangan perlu dicatat agar pelacakan proses tetap lengkap.</p>
-            <AdminUnitActionButton
-              className="mt-4 w-full rounded-2xl"
-              endpoint={`/api/admin/barang/${item.id}/perpanjang`}
-              pendingTitle="Mencatat perpanjangan"
-              pendingDescription="Tanggal jatuh tempo baru sedang diperbarui di riwayat barang."
-              payload={{
-                newDueDate: dateAfter(30),
-                note: "Perpanjangan dicatat melalui dashboard admin unit."
-              }}
-              redirectTo={`/admin/barang/${item.id}`}
-              successDescription="Tanggal jatuh tempo sudah diperbarui."
-              successTitle="Perpanjangan tersimpan"
-            >
-              Simpan perpanjangan
-            </AdminUnitActionButton>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminExtensionForm currentDueDate={item.dueDate} itemId={item.id} />
     </WorkflowFormShell>
   );
 }
@@ -770,58 +688,11 @@ export function AdminInventoryRedeemPage({ itemId: _itemId, item }: { itemId?: s
       itemStatus={item.status}
       title="Selesaikan Penebusan"
     >
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Data Penebusan" />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <FieldLabel>Nama penggadai</FieldLabel>
-              <Input className="h-12" defaultValue={item.ownerName} readOnly />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nomor nasabah</FieldLabel>
-              <Input className="h-12" defaultValue={item.customerNumber} readOnly />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Tanggal penebusan</FieldLabel>
-              <Input className="h-12" type="date" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nomor referensi penebusan</FieldLabel>
-              <Input className="h-12" placeholder="Ref kuitansi / transaksi offline" />
-            </div>
-          </div>
-        </Card>
-        <Card className="rounded-2xl border border-black/10 bg-[#f8faf8]">
-          <CardHeader>
-            <CardTitle className="text-xl">Yang Akan Terjadi</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm leading-7 text-black/70">
-            <p>- Barang ditandai selesai ditebus.</p>
-            <p>- Setelah itu, barang tidak lagi masuk ke alur penjualan atau lelang.</p>
-            <p>- Riwayat tetap tersimpan untuk kebutuhan pelacakan internal.</p>
-            <AdminUnitActionButton
-              className="mt-4 w-full rounded-2xl"
-              confirmDescription="Setelah penebusan dikonfirmasi, barang keluar dari alur penjualan unit dan tercatat sebagai riwayat selesai."
-              confirmLabel="Ya, konfirmasi tebus"
-              confirmTitle="Konfirmasi penebusan barang"
-              confirmVariant="destructive"
-              endpoint={`/api/admin/barang/${item.id}/tebus`}
-              pendingDescription="Sistem sedang menutup alur barang ini sebagai barang yang ditebus nasabah."
-              pendingTitle="Mengonfirmasi penebusan"
-              payload={{
-                redeemedAt: new Date().toISOString().slice(0, 10),
-                reference: `TEBUS-${Date.now().toString().slice(-6)}`
-              }}
-              redirectTo={`/admin/barang/${item.id}`}
-              successDescription="Barang keluar dari alur penjualan dan tersimpan sebagai riwayat tebus."
-              successTitle="Penebusan dikonfirmasi"
-            >
-              Konfirmasi Penebusan
-            </AdminUnitActionButton>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminRedeemForm
+        customerNumber={item.customerNumber}
+        itemId={item.id}
+        ownerName={item.ownerName}
+      />
     </WorkflowFormShell>
   );
 }
