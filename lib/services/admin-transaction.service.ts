@@ -3,20 +3,26 @@ import { and, desc, eq } from "drizzle-orm";
 import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
 import { validateTransactionRejectPayload, validateTransactionVerificationPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
-import { barang, pemasaran, transaksi, unitAccounts, users } from "@/lib/db/schema";
+import { barang, buyerProfiles, mediaBarang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 
 async function getTransactionForUnit(unitId: string, transactionId: string) {
   const [row] = await db
     .select({
       transaction: transaksi,
       item: barang,
+      media: mediaBarang,
+      unit: units,
       buyer: users,
+      buyerProfile: buyerProfiles,
       account: unitAccounts
     })
     .from(transaksi)
     .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
+    .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)))
     .limit(1);
@@ -31,9 +37,16 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
 function serializeTransactionJoin(row: Awaited<ReturnType<typeof getTransactionForUnit>>) {
   return serializeAdminTransaction({
     ...row.transaction,
-    buyerName: row.buyer.name,
+    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
+    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
+    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
+    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
+    imageUrl: row.media?.url ?? null,
+    unitName: row.unit.name,
+    unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
     accountName: row.account?.accountHolderName ?? null
@@ -45,13 +58,19 @@ export async function listAdminTransactions(unitId: string) {
     .select({
       transaction: transaksi,
       item: barang,
+      media: mediaBarang,
+      unit: units,
       buyer: users,
+      buyerProfile: buyerProfiles,
       account: unitAccounts
     })
     .from(transaksi)
     .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
+    .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(eq(barang.unitId, unitId))
     .orderBy(desc(transaksi.createdAt));
@@ -59,9 +78,16 @@ export async function listAdminTransactions(unitId: string) {
   return rows.map((row) =>
     serializeAdminTransaction({
       ...row.transaction,
-      buyerName: row.buyer.name,
+      buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
+      buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
+      buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
+      buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+      buyerAddress: null,
       lotName: row.item.name,
       lotId: row.item.id,
+      imageUrl: row.media?.url ?? null,
+      unitName: row.unit.name,
+      unitAddress: row.unit.address,
       bankName: row.account?.bankName ?? null,
       accountNumber: row.account?.accountNumber ?? null,
       accountName: row.account?.accountHolderName ?? null
@@ -74,8 +100,8 @@ export async function getAdminTransactionById(unitId: string, transactionId: str
 }
 
 async function ensureTransactionMutable(status: string) {
-  if (status === "lunas") {
-    throw new Error("Transaksi yang sudah lunas tidak dapat diubah.");
+  if (status === "lunas" || status === "selesai") {
+    throw new Error("Transaksi yang sudah terverifikasi tidak dapat diubah.");
   }
 }
 
@@ -105,9 +131,16 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
 
   return serializeAdminTransaction({
     ...updated,
-    buyerName: row.buyer.name,
+    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
+    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
+    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
+    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
+    imageUrl: row.media?.url ?? null,
+    unitName: row.unit.name,
+    unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
     accountName: row.account?.accountHolderName ?? null
@@ -135,9 +168,16 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
 
   return serializeAdminTransaction({
     ...updated,
-    buyerName: row.buyer.name,
+    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
+    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
+    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
+    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
+    imageUrl: row.media?.url ?? null,
+    unitName: row.unit.name,
+    unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
     accountName: row.account?.accountHolderName ?? null

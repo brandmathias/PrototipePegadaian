@@ -35,6 +35,51 @@ describe("admin unit serializers", () => {
     expect(item.appraisalValue).toBe(8500000);
   });
 
+  it("returns fixed price marketing data without auction-only fields", () => {
+    const row: any = {
+      id: "pm-fixed",
+      barangId: "barang-1",
+      mode: "fixed_price",
+      price: "12500000",
+      basePrice: null,
+      durationDays: null,
+      startsAt: new Date("2026-05-01T00:00:00Z"),
+      endsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 1,
+      status: "aktif",
+      createdByUserId: "admin-1",
+      createdAt: new Date("2026-05-01T00:00:00Z"),
+      updatedAt: new Date("2026-05-01T00:00:00Z")
+    };
+
+    const fixedPrice = serializeAdminPemasaran(row, {
+      lotName: "Kalung Emas",
+      media: [
+        { id: "media-1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
+        { id: "media-2", type: "video", url: "/uploads/kalung.mp4", fileName: "kalung.mp4" }
+      ],
+      transaction: {
+        buyerName: "Raras",
+        paymentMethod: "transfer",
+        status: "bukti_diunggah",
+        proofUrl: "/uploads/bukti.jpg",
+        reference: "TRX-001",
+        paymentDeadline: new Date("2026-05-03T00:00:00Z")
+      }
+    });
+
+    expect(fixedPrice.mode).toBe("FIXED_PRICE");
+    expect(fixedPrice.lot).toBe("Kalung Emas");
+    expect(fixedPrice.media).toHaveLength(2);
+    expect(fixedPrice.primaryMedia?.url).toBe("/uploads/kalung.jpg");
+    expect(fixedPrice.price).toBe(12500000);
+    expect(fixedPrice.transactionStatus).toBe("BUKTI_DIUNGGAH");
+    expect(fixedPrice.bids).toBeUndefined();
+    expect(fixedPrice.visibility).toBeUndefined();
+  });
+
   it("hides bid nominal while vickrey result is locked", () => {
     const auction = serializeAdminPemasaran(
       {
@@ -150,6 +195,47 @@ describe("admin unit serializers", () => {
     });
   });
 
+  it("keeps vickrey winner payment data connected to the marketing session", () => {
+    const auction = serializeAdminPemasaran(
+      {
+        id: "pm-vickrey-payment",
+        barangId: "barang-1",
+        mode: "vickrey",
+        price: null,
+        basePrice: "10000000",
+        durationDays: 7,
+        startsAt: new Date("2026-04-01T00:00:00Z"),
+        endsAt: new Date("2026-04-08T00:00:00Z"),
+        winnerId: "buyer-1",
+        finalPrice: "13250000",
+        iteration: 1,
+        status: "selesai",
+        createdByUserId: "admin-1",
+        createdAt: new Date("2026-04-01T00:00:00Z"),
+        updatedAt: new Date("2026-04-08T00:00:00Z")
+      },
+      {
+        lotName: "Cincin",
+        winnerName: "Raras",
+        transaction: {
+          id: "trx-vickrey-1",
+          buyerName: "Raras",
+          paymentMethod: "transfer",
+          status: "menunggu_pembayaran",
+          proofUrl: null,
+          reference: "VCK-001",
+          paymentDeadline: new Date("2026-04-09T00:00:00Z")
+        }
+      }
+    );
+
+    expect(auction.transactionId).toBe("trx-vickrey-1");
+    expect(auction.transactionStatus).toBe("MENUNGGU_PEMBAYARAN");
+    expect(auction.buyerName).toBe("Raras");
+    expect(auction.paymentMethod).toBe("TRANSFER_BANK");
+    expect(auction.paymentDeadline).toBe("2026-04-09T00:00:00.000Z");
+  });
+
   it("serializes transaction status labels", () => {
     const transaction = serializeAdminTransaction({
       id: "TRX-001",
@@ -169,12 +255,70 @@ describe("admin unit serializers", () => {
       verifiedByUserId: null,
       verifiedAt: null,
       createdAt: new Date("2026-04-24T00:00:00Z"),
-      updatedAt: new Date("2026-04-24T00:00:00Z")
+      updatedAt: new Date("2026-04-24T00:00:00Z"),
+      buyerEmail: "raras@example.com",
+      buyerPhone: "+62 812 1111 2222",
+      buyerNationalId: "7171010101010001"
     });
 
     expect(transaction.status).toBe("BUKTI_DIUNGGAH");
     expect(transaction.method).toBe("TRANSFER_BANK");
     expect(transaction.total).toBe(12500000);
     expect(transaction.deadlineAt).toBe("2026-04-25T00:00:00.000Z");
+    expect(transaction.buyerEmail).toBe("raras@example.com");
+    expect(transaction.printableReceipt).toBe(false);
+  });
+
+  it("keeps legacy proof URLs separate from transfer references", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-LEGACY",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      buyerName: "Raras",
+      lotName: "Cincin",
+      lotId: "barang-1",
+      type: "fixed_price",
+      amount: "12500000",
+      paymentMethod: "transfer",
+      status: "lunas",
+      proofUrl: "/uploads/bukti.jpg (BRI-8888)",
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: new Date("2026-04-25T00:00:00Z"),
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-04-25T01:00:00Z"),
+      createdAt: new Date("2026-04-24T00:00:00Z"),
+      updatedAt: new Date("2026-04-25T01:00:00Z")
+    });
+
+    expect(transaction.proofFile).toBe("/uploads/bukti.jpg");
+    expect(transaction.reference).toBe("BRI-8888");
+    expect(transaction.printableReceipt).toBe(true);
+  });
+
+  it("treats buyer-completed transactions as printable final receipts", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-SELESAI",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      buyerName: "Raras",
+      lotName: "Kalung Emas",
+      lotId: "barang-1",
+      type: "fixed_price",
+      amount: "100000000",
+      paymentMethod: "transfer",
+      status: "selesai",
+      proofUrl: "/uploads/bukti.jpg",
+      rejectionReason: null,
+      referenceNumber: "BRI-7777",
+      paymentDeadline: null,
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-05-04T14:11:00Z"),
+      createdAt: new Date("2026-05-04T14:07:00Z"),
+      updatedAt: new Date("2026-05-04T14:15:00Z")
+    });
+
+    expect(transaction.status).toBe("SELESAI");
+    expect(transaction.printableReceipt).toBe(true);
   });
 });

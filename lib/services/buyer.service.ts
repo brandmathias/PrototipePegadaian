@@ -15,6 +15,7 @@ import {
   bids,
   blacklists,
   buyerProfiles,
+  mediaBarang,
   pemasaran,
   transaksi,
   unitAccounts,
@@ -50,6 +51,7 @@ function transactionSelection() {
     createdAt: transaksi.createdAt,
     lotName: barang.name,
     lotId: barang.id,
+    imageUrl: mediaBarang.url,
     unitName: units.name,
     unitAddress: units.address,
     account: unitAccounts
@@ -62,11 +64,13 @@ async function getMarketingForBuyer(pemasaranId: string) {
       marketing: pemasaran,
       item: barang,
       unit: units,
-      account: unitAccounts
+      account: unitAccounts,
+      media: mediaBarang
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(and(eq(pemasaran.id, pemasaranId), eq(units.isActive, true)))
     .limit(1);
@@ -107,6 +111,7 @@ async function getTransactionRows(userId: string) {
     .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(eq(transaksi.userId, userId))
     .orderBy(desc(transaksi.createdAt));
@@ -119,6 +124,7 @@ async function getTransactionRowById(userId: string, transactionId: string) {
     .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(and(eq(transaksi.userId, userId), eq(transaksi.id, transactionId)))
     .limit(1);
@@ -172,7 +178,7 @@ export async function getBuyerSummary(userId: string) {
   const transactions = await listBuyerTransactions(userId);
   const bidHistory = await listBuyerBids(userId);
   const needsAction = transactions.filter((transaction) =>
-    ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(transaction.status)
+    ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
   ).length;
 
   return {
@@ -203,10 +209,18 @@ export async function getBuyerSummary(userId: string) {
         : "Tidak ada pembatasan aktif. Akun dapat mengikuti fixed price dan lelang."
     },
     metrics: [
-      { label: "Transaksi aktif", value: String(transactions.filter((item) => item.status !== "LUNAS" && item.status !== "GAGAL").length), accent: "primary" },
+      {
+        label: "Transaksi aktif",
+        value: String(transactions.filter((item) => !["LUNAS", "SELESAI", "GAGAL"].includes(item.status)).length),
+        accent: "primary"
+      },
       { label: "Perlu ditindaklanjuti", value: String(needsAction), accent: "secondary" },
       { label: "Lelang yang diikuti", value: String(bidHistory.length), accent: "neutral" },
-      { label: "Nota siap diunduh", value: String(transactions.filter((item) => item.status === "LUNAS").length), accent: "primary" }
+      {
+        label: "Nota siap diunduh",
+        value: String(transactions.filter((item) => item.status === "LUNAS" || item.status === "SELESAI").length),
+        accent: "primary"
+      }
     ],
     highlights: [
       "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat.",
@@ -285,6 +299,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     ...created,
     lotName: row.item.name,
     lotId: row.item.id,
+    imageUrl: row.media?.url ?? null,
     unitName: row.unit.name,
     unitAddress: row.unit.address,
     account: row.account
@@ -358,7 +373,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  if (row.status === "lunas" || row.status === "gagal") {
+  if (row.status === "lunas" || row.status === "selesai" || row.status === "gagal") {
     throw new Error("Transaksi ini sudah tidak dapat diperbarui.");
   }
 
@@ -370,7 +385,8 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     .update(transaksi)
     .set({
       status: "bukti_diunggah",
-      proofUrl: payload.reference ? `${payload.fileName} (${payload.reference})` : payload.fileName,
+      proofUrl: payload.fileName,
+      referenceNumber: payload.reference ?? row.referenceNumber,
       rejectionReason: null,
       updatedAt: new Date()
     })
@@ -381,6 +397,53 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     ...updated,
     lotName: row.lotName,
     lotId: row.lotId,
+    imageUrl: row.imageUrl,
+    unitName: row.unitName,
+    unitAddress: row.unitAddress,
+    account: row.account
+  });
+}
+
+export async function completeBuyerTransaction(userId: string, transactionId: string) {
+  const row = await getTransactionRowById(userId, transactionId);
+
+  if (!row) {
+    throw new Error("Transaksi tidak ditemukan.");
+  }
+
+  if (row.status === "selesai") {
+    return serializeBuyerTransaction(row);
+  }
+
+  if (row.status !== "lunas") {
+    throw new Error("Transaksi baru bisa diselesaikan setelah admin memverifikasi pembayaran.");
+  }
+
+  const updated = await db.transaction(async (tx) => {
+    const [updatedTransaction] = await tx
+      .update(transaksi)
+      .set({
+        status: "selesai",
+        updatedAt: new Date()
+      })
+      .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
+      .returning();
+
+    if (!updatedTransaction) {
+      throw new Error("Transaksi tidak ditemukan.");
+    }
+
+    await tx.update(pemasaran).set({ status: "selesai", updatedAt: new Date() }).where(eq(pemasaran.id, row.pemasaranId));
+    await tx.update(barang).set({ status: "terjual", updatedAt: new Date() }).where(eq(barang.id, row.lotId));
+
+    return updatedTransaction;
+  });
+
+  return serializeBuyerTransaction({
+    ...updated,
+    lotName: row.lotName,
+    lotId: row.lotId,
+    imageUrl: row.imageUrl,
     unitName: row.unitName,
     unitAddress: row.unitAddress,
     account: row.account

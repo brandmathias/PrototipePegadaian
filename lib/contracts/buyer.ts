@@ -7,6 +7,7 @@ export type BuyerTransactionStatus =
   | "MENUNGGU_KONFIRMASI_LANGSUNG"
   | "MENUNGGU_PEMBAYARAN"
   | "LUNAS"
+  | "SELESAI"
   | "GAGAL";
 
 export type BuyerPaymentMethod = "TRANSFER_BANK" | "BAYAR_LANGSUNG";
@@ -16,6 +17,7 @@ export type BuyerTransaction = {
   lotId: string;
   kind: BuyerTransactionKind;
   title: string;
+  imageUrl?: string;
   amount: number;
   status: BuyerTransactionStatus;
   method: BuyerPaymentMethod;

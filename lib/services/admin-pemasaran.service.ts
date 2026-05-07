@@ -1,9 +1,9 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
-import { barang, bids, pemasaran, riwayatStatusBarang, users } from "@/lib/db/schema";
+import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, users } from "@/lib/db/schema";
 
 async function getBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
@@ -15,6 +15,102 @@ async function getBarangForUnit(barangId: string, unitId: string) {
     throw new Error("Barang tidak ditemukan di unit Anda.");
   }
   return row;
+}
+
+async function getMarketingMediaByBarangIds(barangIds: string[]) {
+  if (!barangIds.length) {
+    return new Map<string, Array<{ id: string; type: string; url: string; fileName?: string }>>();
+  }
+
+  const rows = await db
+    .select({
+      id: mediaBarang.id,
+      barangId: mediaBarang.barangId,
+      type: mediaBarang.type,
+      url: mediaBarang.url,
+      fileName: mediaBarang.fileName,
+      sortOrder: mediaBarang.sortOrder,
+      createdAt: mediaBarang.createdAt
+    })
+    .from(mediaBarang)
+    .where(inArray(mediaBarang.barangId, barangIds))
+    .orderBy(asc(mediaBarang.sortOrder), asc(mediaBarang.createdAt));
+
+  return rows.reduce((map, media) => {
+    const collection = map.get(media.barangId) ?? [];
+    collection.push({
+      id: media.id,
+      type: media.type,
+      url: media.url,
+      fileName: media.fileName
+    });
+    map.set(media.barangId, collection);
+    return map;
+  }, new Map<string, Array<{ id: string; type: string; url: string; fileName?: string }>>());
+}
+
+async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
+  if (!pemasaranIds.length) {
+    return new Map<
+      string,
+      {
+        id?: string | null;
+        buyerName?: string | null;
+        paymentMethod?: string | null;
+        status?: string | null;
+        proofUrl?: string | null;
+        reference?: string | null;
+        soldAt?: Date | null;
+        paymentDeadline?: Date | null;
+      }
+    >();
+  }
+
+  const rows = await db
+    .select({
+      id: transaksi.id,
+      pemasaranId: transaksi.pemasaranId,
+      status: transaksi.status,
+      paymentMethod: transaksi.paymentMethod,
+      proofUrl: transaksi.proofUrl,
+      reference: transaksi.referenceNumber,
+      paymentDeadline: transaksi.paymentDeadline,
+      soldAt: transaksi.verifiedAt,
+      buyerName: users.name,
+      createdAt: transaksi.createdAt
+    })
+    .from(transaksi)
+    .innerJoin(users, eq(users.id, transaksi.userId))
+    .where(inArray(transaksi.pemasaranId, pemasaranIds))
+    .orderBy(desc(transaksi.createdAt));
+
+  return rows.reduce((map, row) => {
+    if (!map.has(row.pemasaranId)) {
+      map.set(row.pemasaranId, {
+        id: row.id,
+        buyerName: row.buyerName,
+        paymentMethod: row.paymentMethod,
+        status: row.status,
+        proofUrl: row.proofUrl,
+        reference: row.reference,
+        soldAt: row.soldAt,
+        paymentDeadline: row.paymentDeadline
+      });
+    }
+    return map;
+  }, new Map<
+    string,
+    {
+      id?: string | null;
+      buyerName?: string | null;
+      paymentMethod?: string | null;
+      status?: string | null;
+      proofUrl?: string | null;
+      reference?: string | null;
+      soldAt?: Date | null;
+      paymentDeadline?: Date | null;
+    }
+  >());
 }
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
@@ -83,11 +179,19 @@ export async function listAdminPemasaran(unitId: string) {
     .groupBy(pemasaran.id, barang.id, users.name)
     .orderBy(desc(pemasaran.createdAt));
 
+  const mediaByBarangId = await getMarketingMediaByBarangIds(rows.map((row) => row.item.id));
+  const transactionByPemasaranId = await getLatestTransactionsByPemasaranIds(rows.map((row) => row.marketing.id));
+
   return rows.map((row) =>
     serializeAdminPemasaran(row.marketing, {
       lotName: row.item.name,
+      lotCode: row.item.code,
+      lotCategory: row.item.category,
+      lotCondition: row.item.condition,
+      media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
-      winnerName: row.winnerName ?? null
+      winnerName: row.winnerName ?? null,
+      transaction: transactionByPemasaranId.get(row.marketing.id) ?? null
     })
   );
 }
@@ -112,6 +216,11 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
+  const [mediaByBarangId, transactionByPemasaranId] = await Promise.all([
+    getMarketingMediaByBarangIds([row.item.id]),
+    getLatestTransactionsByPemasaranIds([row.marketing.id])
+  ]);
+
   const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
   const bidRows = shouldRevealBids
     ? await db
@@ -127,8 +236,13 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
 
   return serializeAdminPemasaran(row.marketing, {
     lotName: row.item.name,
+    lotCode: row.item.code,
+    lotCategory: row.item.category,
+    lotCondition: row.item.condition,
+    media: mediaByBarangId.get(row.item.id) ?? [],
     bidCount: Number(row.bidCount ?? 0),
     winnerName: row.winnerName ?? null,
+    transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
     bids: bidRows
   });
 }

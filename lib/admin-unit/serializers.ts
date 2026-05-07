@@ -7,6 +7,24 @@ type PemasaranRow = InferSelectModel<typeof pemasaran>;
 type TransaksiRow = InferSelectModel<typeof transaksi>;
 type AdminBidRow = InferSelectModel<typeof bids>;
 
+type AdminPemasaranMedia = {
+  id: string;
+  type: string;
+  url: string;
+  fileName?: string;
+};
+
+type AdminPemasaranTransaction = {
+  id?: string | null;
+  buyerName?: string | null;
+  paymentMethod?: string | null;
+  status?: string | null;
+  proofUrl?: string | null;
+  reference?: string | null;
+  soldAt?: Date | string | null;
+  paymentDeadline?: Date | string | null;
+};
+
 const witaDateTime = new Intl.DateTimeFormat("id-ID", {
   dateStyle: "medium",
   timeStyle: "short",
@@ -33,6 +51,46 @@ function toNumber(value: string | null | undefined) {
 
 function upper(value: string | null | undefined) {
   return String(value ?? "").toUpperCase();
+}
+
+function splitLegacyProofValue(value: string | null | undefined) {
+  if (!value) {
+    return { proofUrl: "", reference: null };
+  }
+
+  const match = value.match(/^(.*)\s+\(([^)]+)\)$/);
+  if (!match) {
+    return { proofUrl: value, reference: null };
+  }
+
+  return {
+    proofUrl: match[1],
+    reference: match[2]
+  };
+}
+
+function formatPaymentMethod(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+  if (value === "transfer") {
+    return "TRANSFER_BANK";
+  }
+  if (value === "langsung") {
+    return "BAYAR_LANGSUNG";
+  }
+  return upper(value);
+}
+
+function toIsoOrNull(value: Date | string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 export function serializeAdminBarang(row: BarangRow, extra?: { marketingMode?: string | null; mediaCount?: number }) {
@@ -79,8 +137,13 @@ export function serializeAdminPemasaran(
   row: PemasaranRow,
   extra: {
     lotName: string;
+    lotCode?: string | null;
+    lotCategory?: string | null;
+    lotCondition?: string | null;
+    media?: AdminPemasaranMedia[];
     bidCount?: number;
     winnerName?: string | null;
+    transaction?: AdminPemasaranTransaction | null;
     bids?: Array<{
       bid: AdminBidRow;
       bidderName?: string | null;
@@ -88,6 +151,13 @@ export function serializeAdminPemasaran(
   } = { lotName: "-" }
 ) {
   const isVickrey = row.mode === "vickrey";
+  const media = (extra.media ?? []).map((item) => ({
+    id: item.id,
+    type: item.type === "video" ? "video" : "foto",
+    url: item.url,
+    fileName: item.fileName ?? ""
+  }));
+  const primaryMedia = media[0] ?? null;
   const ended = row.endsAt ? row.endsAt.getTime() <= Date.now() : true;
   const visibility = isVickrey && !ended ? "TERKUNCI" : "HASIL_DIBUKA";
   const sortedBids = [...(extra.bids ?? [])].sort((left, right) => {
@@ -118,54 +188,116 @@ export function serializeAdminPemasaran(
           };
         })
       : [];
+  const transactionStatus = extra.transaction?.status ? upper(extra.transaction.status) : null;
+  const transactionNote = (() => {
+    if (row.mode === "fixed_price") {
+      if (extra.transaction?.status === "lunas" || extra.transaction?.status === "selesai") {
+        return "Pembayaran sudah terverifikasi dan barang siap dinyatakan terjual.";
+      }
+      if (extra.transaction) {
+        return "Pembeli sudah mulai proses pembayaran dan menunggu verifikasi admin.";
+      }
+      return "Belum ada transaksi pembeli pada sesi fixed price ini.";
+    }
+
+    if (visibility === "TERKUNCI") {
+      return "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati.";
+    }
+    if (transactionStatus === "MENUNGGU_PEMBAYARAN") {
+      return "Pemenang sudah ditentukan dan sedang berada dalam batas pembayaran 24 jam.";
+    }
+    if (transactionStatus === "BUKTI_DIUNGGAH" || transactionStatus === "MENUNGGU_KONFIRMASI_LANGSUNG") {
+      return "Pemenang sudah mengirim tindak lanjut pembayaran dan menunggu keputusan admin.";
+    }
+    if (transactionStatus === "LUNAS" || transactionStatus === "SELESAI") {
+      return "Pembayaran pemenang sudah terverifikasi dan nota dapat diproses dari transaksi.";
+    }
+    if (!row.winnerId) {
+      return "Sesi berakhir tanpa transaksi pemenang. Barang dapat disiapkan untuk pemasaran ulang.";
+    }
+    return "Hasil pemasaran dapat ditinjau oleh admin unit.";
+  })();
 
   return {
     id: row.id,
     lotId: row.barangId,
     lot: extra.lotName,
+    code: extra.lotCode ?? "-",
+    category: extra.lotCategory ?? "-",
+    condition: extra.lotCondition ?? "-",
     status: upper(row.status),
+    media,
+    primaryMedia,
+    startsAt: row.startsAt?.toISOString() ?? null,
     ending: toDateLabel(row.endsAt),
     endingAt: row.endsAt?.toISOString(),
     participants: extra.bidCount ?? 0,
     mode: row.mode === "fixed_price" ? "FIXED_PRICE" : "VICKREY_AUCTION",
-    basePrice: toNumber(row.basePrice ?? row.price),
-    finalPrice: visibility === "HASIL_DIBUKA" ? toNumber(row.finalPrice) || null : null,
-    winner: visibility === "HASIL_DIBUKA" ? extra.winnerName ?? null : null,
-    visibility,
-    bids: bidEntries,
-    note:
-      visibility === "TERKUNCI"
-        ? "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati."
-        : "Hasil pemasaran dapat ditinjau oleh admin unit."
+    price: row.mode === "fixed_price" ? toNumber(row.price) : null,
+    transactionId: extra.transaction?.id ?? null,
+    transactionStatus,
+    buyerName: extra.transaction?.buyerName ?? null,
+    paymentMethod: formatPaymentMethod(extra.transaction?.paymentMethod),
+    proofUrl: extra.transaction?.proofUrl ?? null,
+    reference: extra.transaction?.reference ?? null,
+    soldAt: toIsoOrNull(extra.transaction?.soldAt),
+    paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
+    basePrice: row.mode === "fixed_price" ? null : toNumber(row.basePrice ?? row.price),
+    finalPrice: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? toNumber(row.finalPrice) || null : null,
+    winner: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? extra.winnerName ?? null : null,
+    visibility: row.mode === "fixed_price" ? undefined : visibility,
+    bids: row.mode === "fixed_price" ? undefined : bidEntries,
+    note: transactionNote
   };
 }
 
 export function serializeAdminTransaction(
   row: TransaksiRow & {
     buyerName?: string;
+    buyerEmail?: string | null;
+    buyerPhone?: string | null;
+    buyerNationalId?: string | null;
+    buyerAddress?: string | null;
     lotName?: string;
     lotId?: string;
+    imageUrl?: string | null;
+    unitName?: string | null;
+    unitAddress?: string | null;
     bankName?: string | null;
     accountNumber?: string | null;
     accountName?: string | null;
   }
 ) {
+  const proof = splitLegacyProofValue(row.proofUrl);
+  const printableReceipt = row.status === "lunas" || row.status === "selesai";
+
   return {
     id: row.id,
     lotId: row.lotId ?? "-",
     buyer: row.buyerName ?? "-",
+    buyerEmail: row.buyerEmail ?? "-",
+    buyerPhone: row.buyerPhone ?? "-",
+    buyerNationalId: row.buyerNationalId ?? "-",
+    buyerAddress: row.buyerAddress ?? "-",
     lot: row.lotName ?? "-",
+    imageUrl: row.imageUrl ?? undefined,
     status: upper(row.status),
     method: row.paymentMethod === "langsung" ? "BAYAR_LANGSUNG" : "TRANSFER_BANK",
     total: toNumber(row.amount),
-    reference: row.referenceNumber ?? "-",
+    reference: row.referenceNumber ?? proof.reference ?? "-",
+    unit: row.unitName ?? "-",
+    unitAddress: row.unitAddress ?? "-",
     deadline: toDateLabel(row.paymentDeadline),
     deadlineAt: row.paymentDeadline?.toISOString(),
-    proofFile: row.proofUrl ?? "",
+    proofFile: proof.proofUrl,
     rejectionReason: row.rejectionReason,
     pemasaranMode: row.type === "fixed_price" ? "Fixed Price" : "Vickrey",
     bankName: row.bankName ?? "-",
     accountNumber: row.accountNumber ?? "-",
-    accountName: row.accountName ?? "-"
+    accountName: row.accountName ?? "-",
+    createdAt: toDateTimeLabel(row.createdAt),
+    verifiedAt: toDateTimeLabel(row.verifiedAt),
+    receiptNumber: printableReceipt ? `PEG-${row.createdAt.getFullYear()}${String(row.createdAt.getMonth() + 1).padStart(2, "0")}${String(row.createdAt.getDate()).padStart(2, "0")}-${row.id.slice(0, 3).toUpperCase()}` : undefined,
+    printableReceipt
   };
 }

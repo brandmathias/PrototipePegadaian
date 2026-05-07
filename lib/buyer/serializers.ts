@@ -48,6 +48,7 @@ type BuyerTransactionShape = {
   createdAt: Date;
   lotName: string;
   lotId: string;
+  imageUrl?: string | null;
   unitName: string;
   unitAddress: string;
   account?: AccountShape;
@@ -86,12 +87,45 @@ function toTransactionStatus(status: string): BuyerTransaction["status"] {
   if (status === "bukti_diunggah") return "BUKTI_DIUNGGAH";
   if (status === "menunggu_konfirmasi_langsung") return "MENUNGGU_KONFIRMASI_LANGSUNG";
   if (status === "lunas") return "LUNAS";
+  if (status === "selesai") return "SELESAI";
   if (status === "gagal") return "GAGAL";
   if (status === "ditolak_bukti") return "DITOLAK_BUKTI";
   return "MENUNGGU_PEMBAYARAN";
 }
 
+function splitLegacyProofValue(value: string | null | undefined) {
+  if (!value) {
+    return { proofUrl: undefined, reference: undefined };
+  }
+
+  const match = value.match(/^(.*)\s+\(([^)]+)\)$/);
+  if (!match) {
+    return { proofUrl: value, reference: undefined };
+  }
+
+  return {
+    proofUrl: match[1],
+    reference: match[2]
+  };
+}
+
 function getPaymentNotes(row: BuyerTransactionShape) {
+  if (row.status === "selesai") {
+    return [
+      "Pembelian sudah ditandai selesai oleh pembeli.",
+      "Nota digital tetap tersedia untuk dicetak atau disimpan.",
+      "Hubungi unit jika membutuhkan bantuan setelah transaksi selesai."
+    ];
+  }
+
+  if (row.status === "lunas") {
+    return [
+      "Pembayaran sudah diverifikasi admin unit.",
+      "Tekan Pembelian Selesai setelah barang dan nota sudah Anda terima.",
+      "Nota digital tersedia selama transaksi menunggu penyelesaian buyer."
+    ];
+  }
+
   if (row.status === "ditolak_bukti") {
     return [
       "Bukti sebelumnya belum bisa diverifikasi admin.",
@@ -179,12 +213,15 @@ export function serializePublicLot(row: PublicLotShape): Lot {
 export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTransaction {
   const isVickrey = row.type === "vickrey";
   const method = row.paymentMethod === "langsung" ? "BAYAR_LANGSUNG" : "TRANSFER_BANK";
+  const proof = splitLegacyProofValue(row.proofUrl);
+  const hasFinalReceipt = row.status === "lunas" || row.status === "selesai";
 
   return {
     id: row.id,
     lotId: row.pemasaranId,
     kind: isVickrey ? "VICKREY_WIN" : "FIXED_PRICE",
     title: row.lotName,
+    imageUrl: row.imageUrl ?? undefined,
     amount: toNumber(row.amount),
     status: toTransactionStatus(row.status),
     method,
@@ -192,13 +229,13 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     unitAddress: row.unitAddress,
     createdAt: toDateTimeLabel(row.createdAt),
     deadline:
-      row.status === "lunas"
+      hasFinalReceipt
         ? "Selesai"
         : getCountdownState(row.paymentDeadline, {
             expiredLabel: "Waktu pembayaran berakhir"
           }).label,
-    deadlineAt: row.status === "lunas" ? undefined : row.paymentDeadline?.toISOString(),
-    reference: row.referenceNumber ?? "-",
+    deadlineAt: hasFinalReceipt ? undefined : row.paymentDeadline?.toISOString(),
+    reference: row.referenceNumber ?? proof.reference ?? "-",
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
     paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",
     paymentNotes: getPaymentNotes(row),
@@ -206,12 +243,12 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     bankAccountNumber: row.account?.accountNumber ?? undefined,
     bankAccountHolder: row.account?.accountHolderName ?? undefined,
     bankBranch: row.account?.branchName ?? undefined,
-    paymentProof: row.proofUrl ?? undefined,
+    paymentProof: proof.proofUrl,
     winnerContext: isVickrey
       ? "Pemenang Vickrey membayar harga final yang dihitung sistem."
       : undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
-    receiptNumber: row.status === "lunas" ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined
+    receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined
   };
 }
 

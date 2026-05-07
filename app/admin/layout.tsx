@@ -9,8 +9,24 @@ import { units } from "@/lib/db/schema";
 const nav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "dashboard" },
   { href: "/admin/barang", label: "Kelola Barang", icon: "barang" },
-  { href: "/admin/lelang", label: "Pantau Penjualan", icon: "lelang" },
-  { href: "/admin/transaksi", label: "Pembayaran", icon: "transaksi" },
+  {
+    href: "/admin/pemasaran",
+    label: "Pemasaran",
+    icon: "lelang",
+    children: [
+      { href: "/admin/pemasaran/fixed-price", label: "Fixed Price", icon: "shopping" },
+      { href: "/admin/pemasaran/vickrey-auction", label: "Vickrey Auction", icon: "lelang" }
+    ]
+  },
+  {
+    href: "/admin/transaksi",
+    label: "Transaksi",
+    icon: "transaksi",
+    children: [
+      { href: "/admin/transaksi/verifikasi-pembayaran", label: "Verifikasi Pembayaran", icon: "transaksi" },
+      { href: "/admin/transaksi/riwayat", label: "Riwayat", icon: "rekening" }
+    ]
+  },
   { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" },
   { href: "/admin/profil", label: "Profil", icon: "profil" }
 ];

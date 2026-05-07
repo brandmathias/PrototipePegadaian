@@ -1,0 +1,241 @@
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+
+import {
+  AdminFixedPriceListPage,
+  AdminFixedPriceDetailPage,
+  AdminVickreyAuctionListPage,
+  AdminVickreyAuctionDetailPage
+} from "@/components/pages/admin-marketing-pages";
+
+describe("admin pemasaran pages", () => {
+  it("renders fixed price cards without auction-only language", () => {
+    render(
+      <AdminFixedPriceListPage
+        auctions={[
+          {
+            id: "pm-fixed",
+            lotId: "barang-1",
+            lot: "Kalung Emas",
+            code: "BRG-001",
+            category: "emas",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "FIXED_PRICE",
+            price: 12500000,
+            transactionStatus: "BUKTI_DIUNGGAH",
+            buyerName: "Raras",
+            paymentMethod: "TRANSFER_BANK",
+            proofUrl: "/uploads/bukti.jpg",
+            reference: "TRX-001",
+            soldAt: null,
+            paymentDeadline: "2026-05-03T00:00:00.000Z",
+            media: [{ id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" }],
+            primaryMedia: { id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
+            note: "Pembeli menunggu verifikasi"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText(/kalung emas/i)).toBeInTheDocument();
+    expect(screen.queryByText(/visibilitas bid/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/peserta/i)).not.toBeInTheDocument();
+  });
+
+  it("renders fixed price detail media with the buyer-style gallery", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-detail",
+          lotId: "barang-1",
+          lot: "Kalung Emas",
+          code: "BRG-001",
+          category: "emas",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-01T00:00:00.000Z",
+          ending: "-",
+          endingAt: null,
+          price: 12500000,
+          transactionStatus: "BUKTI_DIUNGGAH",
+          buyerName: "Raras",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: "/uploads/bukti.jpg",
+          reference: "TRX-001",
+          soldAt: null,
+          paymentDeadline: "2026-05-03T00:00:00.000Z",
+          media: [
+            { id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
+            { id: "m2", type: "video", url: "/uploads/kalung.mp4", fileName: "kalung.mp4" }
+          ],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
+          note: "Pembeli menunggu verifikasi"
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("lot-media-active")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
+  });
+
+  it("keeps vickrey bids locked before deadline", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey",
+          lotId: "barang-2",
+          lot: "Cincin Emas",
+          code: "BRG-002",
+          category: "emas",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "VICKREY_AUCTION",
+          ending: "1 hari 2 jam",
+          endingAt: new Date("2026-05-06T12:00:00+08:00").toISOString(),
+          participants: 3,
+          basePrice: 10000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "TERKUNCI",
+          note: "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati.",
+          media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+          primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
+          bids: []
+        }}
+      />
+    );
+
+    expect(screen.getByText(/tetap tersembunyi sampai deadline selesai/i)).toBeInTheDocument();
+    expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
+  });
+
+  it("renders vickrey as an operational workspace for admin unit", () => {
+    render(
+      <AdminVickreyAuctionListPage
+        auctions={[
+          {
+            id: "pm-active",
+            lotId: "barang-active",
+            lot: "Cincin Emas",
+            code: "BRG-002",
+            category: "emas",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-08",
+            endingAt: "2099-05-08T00:00:00.000Z",
+            participants: 3,
+            basePrice: 10000000,
+            finalPrice: null,
+            winner: null,
+            visibility: "TERKUNCI",
+            media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+            primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
+            bids: []
+          },
+          {
+            id: "pm-payment",
+            lotId: "barang-payment",
+            lot: "Gelang Berlian",
+            code: "BRG-003",
+            category: "perhiasan",
+            condition: "sangat baik",
+            status: "SELESAI",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-04",
+            endingAt: "2026-05-04T00:00:00.000Z",
+            participants: 2,
+            basePrice: 50000000,
+            finalPrice: 62000000,
+            winner: "Raras",
+            visibility: "HASIL_DIBUKA",
+            transactionId: "trx-vickrey-1",
+            transactionStatus: "MENUNGGU_PEMBAYARAN",
+            buyerName: "Raras",
+            paymentMethod: "TRANSFER_BANK",
+            paymentDeadline: "2099-05-09T00:00:00.000Z",
+            media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
+            primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" },
+            bids: []
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText(/ruang kerja lelang tertutup/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/sesi aktif/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/antrian pembayaran/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /buka transaksi pemenang/i })).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-vickrey-1?from=vickrey"
+    );
+  });
+
+  it("shows vickrey payment operations on the detail page after a winner exists", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-payment",
+          lotId: "barang-payment",
+          lot: "Gelang Berlian",
+          code: "BRG-003",
+          category: "perhiasan",
+          condition: "sangat baik",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "2026-05-04",
+          endingAt: "2026-05-04T00:00:00.000Z",
+          participants: 2,
+          basePrice: 50000000,
+          finalPrice: 62000000,
+          winner: "Raras",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-1",
+          transactionStatus: "BUKTI_DIUNGGAH",
+          buyerName: "Raras",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: "/uploads/bukti/vickrey.jpg",
+          paymentDeadline: "2099-05-09T00:00:00.000Z",
+          media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
+          primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" },
+          bids: [
+            {
+              id: "bid-1",
+              bidderId: "buyer-1",
+              bidderName: "Raras",
+              nominal: 70000000,
+              submittedAtLabel: "4 Mei 2026, 08.00",
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-2",
+              bidderId: "buyer-2",
+              bidderName: "Alya",
+              nominal: 62000000,
+              submittedAtLabel: "4 Mei 2026, 08.05",
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/pembayaran pemenang/i)).toBeInTheDocument();
+    expect(screen.getByText(/bukti diunggah/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /buka transaksi pemenang/i })).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-vickrey-1?from=vickrey"
+    );
+    expect(screen.getByRole("link", { name: /buka bukti pembayaran/i })).toHaveAttribute(
+      "href",
+      "/uploads/bukti/vickrey.jpg"
+    );
+  });
+});

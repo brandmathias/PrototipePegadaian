@@ -56,7 +56,11 @@ async function getMediaByBarangId(barangIds: string[]) {
 }
 
 export async function listPublicLots() {
-  const rows = await db
+  return listPublicLotsWithLimit();
+}
+
+export async function listPublicLotsWithLimit(limit?: number) {
+  const baseQuery = db
     .select(publicLotSelection())
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
@@ -65,9 +69,11 @@ export async function listPublicLots() {
     .where(and(eq(pemasaran.status, "aktif"), eq(barang.status, "dipasarkan"), eq(units.isActive, true)))
     .orderBy(desc(pemasaran.createdAt));
 
-  const mediaByBarangId = await getMediaByBarangId(rows.map((row) => row.itemId));
+  const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
 
-  return rows.map((row) =>
+  const mediaByBarangId = await getMediaByBarangId(limitedRows.map((row) => row.itemId));
+
+  return limitedRows.map((row) =>
     serializePublicLot({
       ...row,
       media: mediaByBarangId.get(row.itemId) ?? []

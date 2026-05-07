@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
+import { FileCheck2, LoaderCircle, UploadCloud } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
@@ -21,7 +21,7 @@ export function BuyerPaymentProofForm({
   const router = useRouter();
   const { toast } = useToast();
   const [reference, setReference] = useState("");
-  const [fileName, setFileName] = useState(currentProof ?? "bukti-transfer.pdf");
+  const [fileName, setFileName] = useState(currentProof ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -30,6 +30,8 @@ export function BuyerPaymentProofForm({
     description: string;
     variant: "success" | "error" | "info";
   } | null>(null);
+  const proofInputId = `payment-proof-${transactionId}`;
+  const hasProofInput = Boolean(file || fileName.trim());
 
   useEffect(() => {
     setIsHydrated(true);
@@ -97,14 +99,34 @@ export function BuyerPaymentProofForm({
         autoComplete="off"
         name="proofFileName"
         onChange={(event) => setFileName(event.target.value)}
-        placeholder="bukti-transfer.pdf"
+        placeholder="Nama file akan muncul setelah dipilih"
         value={fileName}
       />
+      <label
+        className="block cursor-pointer rounded-[1.5rem] border border-dashed border-primary/25 bg-primary/[0.03] p-5 text-center transition hover:border-primary/45 hover:bg-primary/[0.06]"
+        htmlFor={proofInputId}
+      >
+        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-primary shadow-ambient">
+          {file || currentProof ? <FileCheck2 className="size-6" /> : <UploadCloud className="size-6" />}
+        </span>
+        <span className="mt-4 block font-semibold text-foreground">
+          {file ? file.name : currentProof ? "Bukti pembayaran tersimpan" : "Klik atau seret file ke sini"}
+        </span>
+        <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          JPG, PNG, PDF maks. 5 MB
+        </span>
+      </label>
       <Input
         accept=".jpg,.jpeg,.png,.pdf"
         aria-label="File bukti transfer"
+        className="sr-only"
+        id={proofInputId}
         name="proofFile"
-        onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+        onChange={(event) => {
+          const nextFile = event.target.files?.[0] ?? null;
+          setFile(nextFile);
+          setFileName(nextFile?.name ?? currentProof ?? "");
+        }}
         type="file"
       />
       <Input
@@ -115,7 +137,7 @@ export function BuyerPaymentProofForm({
         placeholder="Nomor referensi transfer"
         value={reference}
       />
-      <Button className="w-full" disabled={!isHydrated || isPending || !fileName.trim()} onClick={handleSubmit}>
+      <Button className="w-full" disabled={!isHydrated || isPending || !hasProofInput} onClick={handleSubmit}>
         {!isHydrated
           ? "Menyiapkan\u2026"
           : isPending

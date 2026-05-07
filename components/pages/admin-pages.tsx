@@ -300,10 +300,10 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
                 Input Barang Gadai
               </Button>
             </Link>
-            <Link href="/admin/lelang">
+            <Link href="/admin/pemasaran">
               <Button className="h-12 rounded-2xl px-4 text-sm sm:text-base" variant="secondary">
                 <Gavel className="size-4" />
-                Pantau penjualan
+                Pemasaran
               </Button>
             </Link>
           </>
@@ -474,7 +474,7 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
                 {
                   title: "Buka Sesi Pemasaran",
                   description: "Lihat perkembangan sesi, tenggat waktu, dan status keterbukaan hasil.",
-                  href: "/admin/lelang",
+                  href: "/admin/pemasaran",
                   icon: Gavel
                 }
               ]
@@ -763,7 +763,7 @@ export function AdminInventoryMarketPage({ itemId: _itemId, item }: { itemId?: s
         barangId={item.id}
         defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
         endpoint={`/api/admin/barang/${item.id}/pasarkan`}
-        redirectTo="/admin/lelang"
+        redirectTo="/admin/pemasaran"
         submitLabel="Tayangkan ke katalog"
         successDescription="Barang sudah aktif di katalog sesuai mode pemasaran yang dipilih."
         successTitle="Barang tayang di katalog"
@@ -796,7 +796,7 @@ export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: s
           barangId={item.id}
           defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
           endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
-          redirectTo="/admin/lelang"
+          redirectTo="/admin/pemasaran"
           submitIcon={<RotateCcw className="size-4" />}
           submitLabel="Tayangkan ulang barang"
           successDescription="Barang sudah aktif kembali dengan strategi pemasaran baru."
@@ -807,17 +807,90 @@ export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: s
   );
 }
 
-export function AdminAuctionListPage({ auctions }: { auctions: AdminAuctionItem[] }) {
+export function AdminMarketingHubPage({
+  fixedPriceCount,
+  vickreyCount
+}: {
+  fixedPriceCount: number;
+  vickreyCount: number;
+}) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
         eyebrow="Admin Unit / Pemasaran"
-        title="Pantau Penjualan & Lelang"
-        description="Pantau seluruh sesi penjualan unit, baik yang masih berjalan, sudah selesai, maupun yang perlu dievaluasi ulang."
+        title="Pemasaran"
+        description="Pilih jalur pemasaran yang mau dipantau. Fixed Price untuk harga tetap, Vickrey Auction untuk sesi lelang tertutup."
       />
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        {auctions.map((auction) => (
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card className="rounded-2xl border border-black/10">
+          <CardContent className="space-y-4 p-6">
+            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-[#eef6f1] text-[#0a6a49]">
+              <ShoppingBag className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-black/85">Fixed Price</h3>
+              <p className="mt-2 text-sm leading-6 text-black/60">
+                {fixedPriceCount} sesi aktif atau tersimpan di jalur harga tetap.
+              </p>
+            </div>
+            <Link href="/admin/pemasaran/fixed-price">
+              <Button className="w-full rounded-2xl">Buka Fixed Price</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border border-black/10">
+          <CardContent className="space-y-4 p-6">
+            <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-[#fff3d9] text-[#8a5b00]">
+              <Gavel className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-black/85">Vickrey Auction</h3>
+              <p className="mt-2 text-sm leading-6 text-black/60">
+                {vickreyCount} sesi aktif atau tersimpan di jalur lelang tertutup.
+              </p>
+            </div>
+            <Link href="/admin/pemasaran/vickrey-auction">
+              <Button className="w-full rounded-2xl" variant="secondary">
+                Buka Vickrey Auction
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export function AdminAuctionListPage({
+  auctions,
+  eyebrow = "Admin Unit / Pemasaran",
+  title = "Pemasaran",
+  description = "Pilih jalur pemasaran yang mau dipantau.",
+  emptyTitle = "Belum ada sesi pemasaran",
+  emptyDescription = "Belum ada sesi yang cocok di halaman ini."
+}: {
+  auctions: AdminAuctionItem[];
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+}) {
+  const visibleAuctions = auctions;
+
+  return (
+    <div className="space-y-6">
+      <AdminPageIntro
+        eyebrow={eyebrow}
+        title={title}
+        description={description}
+      />
+
+      {visibleAuctions.length ? (
+        <div className="grid gap-5 lg:grid-cols-3">
+          {visibleAuctions.map((auction) => (
           <Card className="rounded-2xl border border-black/10" key={auction.id}>
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
@@ -848,7 +921,10 @@ export function AdminAuctionListPage({ auctions }: { auctions: AdminAuctionItem[
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      ) : (
+        <EmptyPanel text={`${emptyTitle}. ${emptyDescription}`} />
+      )}
     </div>
   );
 }

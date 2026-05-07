@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
+import { AdminFixedPriceDetailPage } from "@/components/pages/admin-marketing-pages";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
 
@@ -11,9 +12,10 @@ export default async function Page({
   const { id } = await params;
   const { unitId } = await getAdminUnitPageContext();
   const auction = await getAdminPemasaranById(unitId, id);
-  redirect(
-    auction.mode === "FIXED_PRICE"
-      ? `/admin/pemasaran/fixed-price/${id}`
-      : `/admin/pemasaran/vickrey-auction/${id}`
-  );
+
+  if (auction.mode !== "FIXED_PRICE") {
+    notFound();
+  }
+
+  return <AdminFixedPriceDetailPage auction={auction} />;
 }

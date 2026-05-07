@@ -13,7 +13,8 @@ export type AdminTransactionStatus =
   | "BUKTI_DIUNGGAH"
   | "MENUNGGU_KONFIRMASI_LANGSUNG"
   | "DITOLAK_BUKTI"
-  | "LUNAS";
+  | "LUNAS"
+  | "SELESAI";
 export type AdminAuctionStatus = "AKTIF" | "SELESAI" | "GAGAL";
 export type AdminBlacklistStatus = "AKTIF" | "TIDAK_AKTIF";
 
@@ -70,7 +71,7 @@ const statusMeta: Record<AdminStatus, AdminStatusMeta> = {
     className: "bg-rose-100 text-rose-700"
   },
   LUNAS: {
-    label: "LUNAS",
+    label: "TERVERIFIKASI",
     className: "bg-emerald-100 text-emerald-700"
   },
   AKTIF: {
