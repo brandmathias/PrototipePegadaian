@@ -16,16 +16,38 @@ import { currency } from "@/lib/formatters/currency";
 
 type VickreyBidFormProps = {
   lot: Lot;
+  buyerId?: string | null;
   existingBidAmount?: number;
   existingBidStatus?: string;
+  hasExistingBid?: boolean;
   isBlacklisted?: boolean;
   blacklistUntil?: Date | null;
 };
 
+function createClientSalt() {
+  const browserCrypto = globalThis.crypto;
+
+  if (browserCrypto.randomUUID) {
+    return browserCrypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  browserCrypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Hex(value: string) {
+  const data = new TextEncoder().encode(value);
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 export function VickreyBidForm({
   lot,
+  buyerId,
   existingBidAmount,
   existingBidStatus,
+  hasExistingBid: hasExistingBidProp = false,
   isBlacklisted = false,
   blacklistUntil
 }: VickreyBidFormProps) {
@@ -33,13 +55,15 @@ export function VickreyBidForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isHydrated, setIsHydrated] = useState(false);
+  const hasExistingBid = hasExistingBidProp || typeof existingBidAmount === "number";
   const [bidAmount, setBidAmount] = useState(
-    existingBidAmount ? String(existingBidAmount) : String(lot.price)
+    typeof existingBidAmount === "number" ? String(existingBidAmount) : String(lot.price)
   );
 
   const numericBid = Number(bidAmount || 0);
   const invalidBid = Number.isNaN(numericBid) || numericBid < lot.price;
   const blocked = isBlacklisted;
+  const bidLocked = hasExistingBid;
 
   useEffect(() => {
     setIsHydrated(true);
@@ -53,8 +77,12 @@ export function VickreyBidForm({
       return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
     }
 
-    if (existingBidAmount) {
-      return `Bid terakhir Anda sebesar ${currency.format(existingBidAmount)} dan saat ini tercatat dengan status ${existingBidStatus?.toLowerCase()}.`;
+    if (hasExistingBid) {
+      if (typeof existingBidAmount === "number") {
+        return `Bid Anda sudah terkunci sebesar ${currency.format(existingBidAmount)} dan saat ini tercatat dengan status ${existingBidStatus?.toLowerCase()}.`;
+      }
+
+      return "Bid terenkripsi Anda sudah terkunci. Setelah deadline, sistem membuka escrow otomatis untuk menghitung pemenang.";
     }
 
     if (invalidBid) {
@@ -62,16 +90,24 @@ export function VickreyBidForm({
     }
 
     return "Penawaran bersifat tertutup dan baru dibuka sistem setelah sesi lelang berakhir.";
-  }, [blacklistUntil, blocked, existingBidAmount, existingBidStatus, invalidBid, lot.price]);
+  }, [blacklistUntil, blocked, existingBidAmount, existingBidStatus, hasExistingBid, invalidBid, lot.price]);
 
   function handleSubmitBid() {
     startTransition(async () => {
+      if (!buyerId) {
+        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/bid`)}`);
+        return;
+      }
+
+      const salt = createClientSalt();
+      const normalizedAmount = String(Number(numericBid));
+      const bidHash = await sha256Hex(`${lot.id}:${buyerId}:${normalizedAmount}:${salt}`);
       const response = await fetch(`/api/user/bid/${lot.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ amount: numericBid })
+        body: JSON.stringify({ amount: Number(normalizedAmount), bidHash, salt })
       });
 
       const payload = await response.json().catch(() => ({}));
@@ -91,9 +127,21 @@ export function VickreyBidForm({
         return;
       }
 
+      localStorage.setItem(
+        `pegadaian:vickrey-reveal:${buyerId}:${lot.id}`,
+        JSON.stringify({
+          amount: numericBid,
+          bidHash,
+          lotId: lot.id,
+          lotName: lot.name,
+          salt,
+          storedAt: new Date().toISOString()
+        })
+      );
+
       toast({
         title: "Bid tertutup tersimpan",
-        description: "Anda bisa memantau hasilnya dari riwayat bid.",
+        description: "Nominal dikunci sebagai escrow terenkripsi. Sistem akan membuka otomatis setelah deadline.",
         variant: "success",
         scope: "buyer"
       });
@@ -150,7 +198,7 @@ export function VickreyBidForm({
                 <p className="font-semibold text-foreground">Yang perlu Anda perhatikan</p>
                 <p>Penawaran tidak terlihat peserta lain selama sesi masih berjalan.</p>
                 <p>Bid yang sudah dikonfirmasi tidak dapat diubah atau dibatalkan.</p>
-                <p>Pemenang wajib menyelesaikan pembayaran maksimal 24 jam setelah hasil keluar.</p>
+                <p>Pemenang wajib menyelesaikan pembayaran langsung di unit maksimal 24 jam setelah hasil keluar.</p>
               </div>
             </div>
           </div>
@@ -168,6 +216,7 @@ export function VickreyBidForm({
               <Input
                 autoComplete="off"
                 id="bid-amount"
+                disabled={bidLocked}
                 min={lot.price}
                 name="bidAmount"
                 onChange={(event) => setBidAmount(event.target.value)}
@@ -184,8 +233,8 @@ export function VickreyBidForm({
                 {currency.format(Number.isNaN(numericBid) ? 0 : numericBid)}
               </p>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Sistem menyimpan nominal bid secara tertutup dan hanya memproses hasil saat
-                deadline berakhir.
+                Sistem menyimpan nominal sebagai escrow terenkripsi dan hanya membukanya otomatis
+                saat deadline berakhir. Hash tetap dipakai sebagai bukti integritas.
               </p>
             </div>
             <div className="mt-4 flex items-start gap-3 rounded-2xl border border-border/70 p-4">
@@ -233,11 +282,13 @@ export function VickreyBidForm({
           <div className="flex flex-wrap gap-3">
             <Button
               className="min-w-[14rem]"
-              disabled={!isHydrated || blocked || invalidBid || isPending}
+              disabled={!isHydrated || blocked || invalidBid || isPending || bidLocked}
               onClick={handleSubmitBid}
             >
               {!isHydrated ? (
                 "Menyiapkan\u2026"
+              ) : bidLocked ? (
+                "Bid sudah terkunci"
               ) : isPending ? (
                 <>
                   <LoaderCircle aria-hidden="true" className="button-spinner size-4" />

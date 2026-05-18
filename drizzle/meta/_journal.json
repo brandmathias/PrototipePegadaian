@@ -29,6 +29,27 @@
       "when": 1777452801073,
       "tag": "0003_keen_lord_tyger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778595359108,
+      "tag": "0004_complex_morph",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778602641689,
+      "tag": "0005_last_moondragon",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778635619698,
+      "tag": "0006_bizarre_millenium_guard",
+      "breakpoints": true
     }
   ]
 }

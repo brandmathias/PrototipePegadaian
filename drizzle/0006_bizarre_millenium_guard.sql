@@ -1,0 +1,1 @@
+ALTER TABLE "bids" ADD COLUMN "encrypted_bid_payload" text;

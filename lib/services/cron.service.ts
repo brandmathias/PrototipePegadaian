@@ -13,13 +13,15 @@ import {
   riwayatStatusBarang,
   transaksi
 } from "@/lib/db/schema";
+import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
+import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 type BidOutcomeInput = {
   basePrice: string | number | null;
   bids: Array<{
     id: string;
     userId: string;
-    nominal: string | number;
+    nominal: string | number | null;
     createdAt?: Date | null;
   }>;
 };
@@ -50,6 +52,7 @@ type ExpiredAuctionSummary = {
   processed: number;
   completed: number;
   failed: number;
+  pendingReveal: number;
 };
 
 type OverduePaymentSummary = {
@@ -80,6 +83,25 @@ function plusDays(base: Date, days: number) {
   return new Date(base.getTime() + days * 86_400_000);
 }
 
+export function canSettleVickreySession(
+  input: { endsAt: Date | null; revealEndsAt?: Date | null; hasUnrevealedBids: boolean },
+  now = new Date()
+) {
+  if (!input.endsAt || input.endsAt.getTime() > now.getTime()) {
+    return false;
+  }
+
+  if (!input.hasUnrevealedBids) {
+    return true;
+  }
+
+  if (!input.revealEndsAt) {
+    return true;
+  }
+
+  return input.revealEndsAt.getTime() <= now.getTime();
+}
+
 export function getBlacklistDurationDays(totalViolations: number) {
   if (totalViolations <= 1) {
     return 7;
@@ -97,7 +119,10 @@ export function getBlacklistDurationDays(totalViolations: number) {
 }
 
 export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
-  const sortedBids = [...input.bids].sort((left, right) => {
+  const revealedBids = input.bids.filter(
+    (bid): bid is BidOutcomeInput["bids"][number] & { nominal: string | number } => bid.nominal != null
+  );
+  const sortedBids = revealedBids.sort((left, right) => {
     const amountDifference = toMoneyNumber(right.nominal) - toMoneyNumber(left.nominal);
     if (amountDifference !== 0) {
       return amountDifference;
@@ -184,7 +209,8 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
   const summary: ExpiredAuctionSummary = {
     processed: expiredSessions.length,
     completed: 0,
-    failed: 0
+    failed: 0,
+    pendingReveal: 0
   };
 
   for (const session of expiredSessions) {
@@ -194,11 +220,66 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           id: bids.id,
           userId: bids.userId,
           nominal: bids.nominal,
+          salt: bids.salt,
+          bidHash: bids.bidHash,
+          encryptedBidPayload: bids.encryptedBidPayload,
           createdAt: bids.createdAt
         })
         .from(bids)
         .where(eq(bids.pemasaranId, session.marketing.id))
         .orderBy(desc(bids.nominal), asc(bids.createdAt), asc(bids.id));
+
+      for (const bid of marketingBids) {
+        if (bid.nominal != null || !bid.encryptedBidPayload) {
+          continue;
+        }
+
+        try {
+          const escrow = decryptVickreyBidPayload(bid.encryptedBidPayload, {
+            pemasaranId: session.marketing.id,
+            userId: bid.userId,
+            bidHash: bid.bidHash
+          });
+          const verification = verifyBidIntegrityHash({
+            pemasaranId: session.marketing.id,
+            userId: bid.userId,
+            amount: escrow.amount,
+            salt: escrow.salt,
+            bidHash: bid.bidHash
+          });
+
+          if (!verification.isMatch || escrow.amount < toMoneyNumber(session.marketing.basePrice)) {
+            continue;
+          }
+
+          bid.nominal = formatMoney(escrow.amount);
+          bid.salt = escrow.salt;
+
+          await tx
+            .update(bids)
+            .set({
+              nominal: bid.nominal,
+              salt: bid.salt,
+              revealedAt: now
+            })
+            .where(eq(bids.id, bid.id));
+        } catch {
+          // Invalid escrow payload is treated like an unrevealed legacy bid.
+        }
+      }
+
+      if (
+        !canSettleVickreySession(
+          {
+            endsAt: session.marketing.endsAt,
+            revealEndsAt: session.marketing.revealEndsAt,
+            hasUnrevealedBids: marketingBids.some((bid) => bid.nominal == null)
+          },
+          now
+        )
+      ) {
+        return "pending_reveal" as const;
+      }
 
       const outcome = resolveVickreyOutcome({
         basePrice: session.marketing.basePrice,
@@ -257,8 +338,8 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
             userId: outcome.winnerId,
             type: "vickrey",
             amount: outcome.finalPrice,
-            paymentMethod: "transfer",
-            status: "menunggu_pembayaran",
+            paymentMethod: "langsung",
+            status: "menunggu_konfirmasi_langsung",
             proofUrl: null,
             rejectionReason: null,
             referenceNumber: null,
@@ -275,8 +356,8 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           userId: outcome.winnerId,
           type: "vickrey",
           amount: outcome.finalPrice,
-          paymentMethod: "transfer",
-          status: "menunggu_pembayaran",
+          paymentMethod: "langsung",
+          status: "menunggu_konfirmasi_langsung",
           paymentDeadline: plusHours(now, 24)
         });
       }
@@ -293,7 +374,7 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
         barangId: session.item.id,
         oldStatus: session.item.status,
         newStatus: "menunggu_pembayaran",
-        note: "Sesi Vickrey selesai dan sistem membuat transaksi pembayaran untuk pemenang."
+        note: "Sesi Vickrey selesai dan sistem membuat transaksi bayar langsung untuk pemenang."
       });
 
       return "selesai" as const;
@@ -301,8 +382,10 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
 
     if (settledStatus === "selesai") {
       summary.completed += 1;
-    } else {
+    } else if (settledStatus === "gagal") {
       summary.failed += 1;
+    } else {
+      summary.pendingReveal += 1;
     }
   }
 

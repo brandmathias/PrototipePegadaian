@@ -3,14 +3,20 @@
 import { useRouter } from "next/navigation";
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
+  CarFront,
+  Cpu,
   FileVideo,
+  Gem,
   Image as ImageIcon,
   LoaderCircle,
+  Medal,
   PackagePlus,
+  Shapes,
   UploadCloud,
   X
 } from "lucide-react";
 
+import { AdminOptionGrid } from "@/components/admin-unit/admin-option-grid";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -75,6 +81,21 @@ function isSupportedMedia(file: File) {
   return file.type.startsWith("image/") || file.type.startsWith("video/");
 }
 
+const categoryOptions = [
+  { value: "emas", label: "Emas", description: "Perhiasan emas dasar dan emas batangan kecil.", icon: Gem },
+  { value: "perhiasan", label: "Perhiasan", description: "Cincin, kalung, gelang, anting, dan sejenisnya.", icon: Shapes },
+  { value: "logam_mulia", label: "Logam Mulia", description: "Batangan bernilai tinggi dengan pasar harga ketat.", icon: Medal },
+  { value: "elektronik", label: "Elektronik", description: "Gawai, laptop, kamera, atau perangkat rumah tangga.", icon: Cpu },
+  { value: "kendaraan", label: "Kendaraan", description: "Motor atau kendaraan lain yang siap dinilai unit.", icon: CarFront },
+  { value: "lainnya", label: "Lainnya", description: "Barang jaminan lain di luar kategori utama.", icon: PackagePlus }
+] as const;
+
+const conditionOptions = [
+  { value: "baik", label: "Baik", description: "Siap tampil ke katalog tanpa catatan mayor.", icon: Gem },
+  { value: "cukup", label: "Cukup", description: "Ada jejak pakai ringan, masih layak dipasarkan.", icon: Shapes },
+  { value: "rusak_ringan", label: "Rusak Ringan", description: "Perlu catatan kondisi agar ekspektasi buyer jelas.", icon: Cpu }
+] as const;
+
 export function AdminInventoryCreateForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -83,6 +104,8 @@ export function AdminInventoryCreateForm() {
   const [media, setMedia] = useState<MediaPreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [category, setCategory] = useState<(typeof categoryOptions)[number]["value"]>("emas");
+  const [condition, setCondition] = useState<(typeof conditionOptions)[number]["value"]>("baik");
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const defaultDueDate = useMemo(() => dateAfter(30), []);
@@ -243,36 +266,23 @@ export function AdminInventoryCreateForm() {
               required
             />
           </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="category">Kategori</FieldLabel>
-            <select
-              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-base"
-              defaultValue="emas"
-              id="category"
+          <div className="md:col-span-2">
+            <AdminOptionGrid
+              label="Kategori"
               name="category"
-              required
-            >
-              <option value="emas">Emas</option>
-              <option value="perhiasan">Perhiasan</option>
-              <option value="logam_mulia">Logam Mulia</option>
-              <option value="elektronik">Elektronik</option>
-              <option value="kendaraan">Kendaraan</option>
-              <option value="lainnya">Lainnya</option>
-            </select>
+              onChange={(nextValue) => setCategory(nextValue as (typeof categoryOptions)[number]["value"])}
+              options={[...categoryOptions]}
+              value={category}
+            />
           </div>
-          <div className="space-y-2">
-            <FieldLabel htmlFor="condition">Kondisi</FieldLabel>
-            <select
-              className="h-12 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:text-base"
-              defaultValue="baik"
-              id="condition"
+          <div className="md:col-span-2">
+            <AdminOptionGrid
+              label="Kondisi"
               name="condition"
-              required
-            >
-              <option value="baik">Baik</option>
-              <option value="cukup">Cukup</option>
-              <option value="rusak_ringan">Rusak ringan</option>
-            </select>
+              onChange={(nextValue) => setCondition(nextValue as (typeof conditionOptions)[number]["value"])}
+              options={[...conditionOptions]}
+              value={condition}
+            />
           </div>
           <div className="space-y-2">
             <FieldLabel htmlFor="appraisalValue">Nilai taksiran</FieldLabel>

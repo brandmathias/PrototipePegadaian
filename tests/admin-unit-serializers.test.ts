@@ -43,6 +43,7 @@ describe("admin unit serializers", () => {
       price: "12500000",
       basePrice: null,
       durationDays: null,
+      durationSeconds: null,
       startsAt: new Date("2026-05-01T00:00:00Z"),
       endsAt: null,
       winnerId: null,
@@ -89,8 +90,10 @@ describe("admin unit serializers", () => {
         price: null,
         basePrice: "10000000",
         durationDays: 7,
+        durationSeconds: 604800,
         startsAt: new Date("2026-04-01T00:00:00Z"),
         endsAt: new Date("2099-04-08T00:00:00Z"),
+        revealEndsAt: new Date("2099-04-08T00:10:00Z"),
         winnerId: null,
         finalPrice: null,
         iteration: 1,
@@ -111,6 +114,7 @@ describe("admin unit serializers", () => {
               bidHash: "hash-1",
               nominal: "12500000",
               salt: "salt-1",
+              revealedAt: null,
               createdAt: new Date("2026-04-05T00:00:00Z")
             },
             bidderName: "Raras"
@@ -125,7 +129,73 @@ describe("admin unit serializers", () => {
     expect(auction.bids).toEqual([]);
   });
 
-  it("reveals ranked bids after vickrey deadline has passed", () => {
+  it("shows a waiting reveal phase after deadline without exposing bid values", () => {
+    const auction = serializeAdminPemasaran(
+      {
+        id: "pm-reveal",
+        barangId: "barang-1",
+        mode: "vickrey",
+        price: null,
+        basePrice: "10000000",
+        durationDays: 7,
+        durationSeconds: 604800,
+        startsAt: new Date("2026-04-01T00:00:00Z"),
+        endsAt: new Date("2026-04-08T00:00:00Z"),
+        revealEndsAt: new Date("2099-04-08T00:10:00Z"),
+        winnerId: null,
+        finalPrice: null,
+        iteration: 1,
+        status: "aktif",
+        createdByUserId: "admin-1",
+        createdAt: new Date("2026-04-01T00:00:00Z"),
+        updatedAt: new Date("2026-04-01T00:00:00Z")
+      },
+      {
+        lotName: "Cincin",
+        bidCount: 2,
+        bids: [
+          {
+            bid: {
+              id: "bid-1",
+              pemasaranId: "pm-reveal",
+              userId: "buyer-1",
+              bidHash: "hash-1",
+              nominal: null,
+              salt: null,
+              revealedAt: null,
+              createdAt: new Date("2026-04-05T00:00:00Z")
+            },
+            bidderName: "Raras"
+          },
+          {
+            bid: {
+              id: "bid-2",
+              pemasaranId: "pm-reveal",
+              userId: "buyer-2",
+              bidHash: "hash-2",
+              nominal: "13250000",
+              salt: "salt-2",
+              revealedAt: new Date("2026-04-08T00:04:00Z"),
+              createdAt: new Date("2026-04-05T01:00:00Z")
+            },
+            bidderName: "Alya"
+          }
+        ]
+      }
+    );
+
+    expect(auction.visibility).toBe("MENUNGGU_REVEAL");
+    expect(auction.finalPrice).toBeNull();
+    expect(auction.winner).toBeNull();
+    expect(auction.note).toMatch(/menunggu buyer reveal/i);
+    expect(auction.revealedBidCount).toBe(1);
+    expect(auction.pendingRevealCount).toBe(1);
+    expect(auction.bids?.[0]).toMatchObject({ isRevealed: false });
+    expect(auction.bids?.[1]).toMatchObject({ isRevealed: true });
+    expect(auction.bids?.[1]).not.toHaveProperty("nominal");
+  });
+
+  it("redacts individual bid values from admin output after vickrey deadline has passed", () => {
     const auction = serializeAdminPemasaran(
       {
         id: "pm-2",
@@ -134,8 +204,10 @@ describe("admin unit serializers", () => {
         price: null,
         basePrice: "10000000",
         durationDays: 7,
+        durationSeconds: 604800,
         startsAt: new Date("2026-04-01T00:00:00Z"),
         endsAt: new Date("2026-04-08T00:00:00Z"),
+        revealEndsAt: new Date("2026-04-08T00:10:00Z"),
         winnerId: "buyer-1",
         finalPrice: "13250000",
         iteration: 1,
@@ -157,6 +229,7 @@ describe("admin unit serializers", () => {
               bidHash: "hash-1",
               nominal: "15000000",
               salt: "salt-1",
+              revealedAt: new Date("2026-04-08T00:05:00Z"),
               createdAt: new Date("2026-04-05T00:00:00Z")
             },
             bidderName: "Raras"
@@ -169,6 +242,7 @@ describe("admin unit serializers", () => {
               bidHash: "hash-2",
               nominal: "13250000",
               salt: "salt-2",
+              revealedAt: new Date("2026-04-08T00:08:00Z"),
               createdAt: new Date("2026-04-05T01:00:00Z")
             },
             bidderName: "Alya"
@@ -178,21 +252,23 @@ describe("admin unit serializers", () => {
     );
 
     expect(auction.visibility).toBe("HASIL_DIBUKA");
-    expect(auction.bids).toHaveLength(2);
-    expect(auction.bids[0]).toMatchObject({
+    expect(auction.bids!).toHaveLength(2);
+    expect(auction.bids![0]).toMatchObject({
       rank: 1,
       bidderName: "Raras",
-      nominal: 15000000,
       isWinner: true,
       determinesFinalPrice: false
     });
-    expect(auction.bids[1]).toMatchObject({
+    expect(auction.bids![0]).not.toHaveProperty("nominal");
+    expect(auction.bids![0]).not.toHaveProperty("salt");
+    expect(auction.bids![0]).not.toHaveProperty("bidHash");
+    expect(auction.bids![1]).toMatchObject({
       rank: 2,
       bidderName: "Alya",
-      nominal: 13250000,
       isWinner: false,
-      determinesFinalPrice: true
+      determinesFinalPrice: false
     });
+    expect(auction.bids![1]).not.toHaveProperty("nominal");
   });
 
   it("keeps vickrey winner payment data connected to the marketing session", () => {
@@ -204,8 +280,10 @@ describe("admin unit serializers", () => {
         price: null,
         basePrice: "10000000",
         durationDays: 7,
+        durationSeconds: 604800,
         startsAt: new Date("2026-04-01T00:00:00Z"),
         endsAt: new Date("2026-04-08T00:00:00Z"),
+        revealEndsAt: new Date("2026-04-08T00:10:00Z"),
         winnerId: "buyer-1",
         finalPrice: "13250000",
         iteration: 1,
@@ -220,8 +298,8 @@ describe("admin unit serializers", () => {
         transaction: {
           id: "trx-vickrey-1",
           buyerName: "Raras",
-          paymentMethod: "transfer",
-          status: "menunggu_pembayaran",
+          paymentMethod: "langsung",
+          status: "menunggu_konfirmasi_langsung",
           proofUrl: null,
           reference: "VCK-001",
           paymentDeadline: new Date("2026-04-09T00:00:00Z")
@@ -230,9 +308,9 @@ describe("admin unit serializers", () => {
     );
 
     expect(auction.transactionId).toBe("trx-vickrey-1");
-    expect(auction.transactionStatus).toBe("MENUNGGU_PEMBAYARAN");
+    expect(auction.transactionStatus).toBe("MENUNGGU_KONFIRMASI_LANGSUNG");
     expect(auction.buyerName).toBe("Raras");
-    expect(auction.paymentMethod).toBe("TRANSFER_BANK");
+    expect(auction.paymentMethod).toBe("BAYAR_LANGSUNG");
     expect(auction.paymentDeadline).toBe("2026-04-09T00:00:00.000Z");
   });
 

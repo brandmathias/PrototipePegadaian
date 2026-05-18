@@ -1,7 +1,12 @@
 import { CatalogPage } from "@/components/pages/catalog-page";
 import { listPublicLots } from "@/lib/services/public-catalog.service";
 
-export default async function Page() {
+export default async function Page({
+  searchParams
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
   const lots = await listPublicLots();
-  return <CatalogPage lots={lots} />;
+  const query = searchParams ? await searchParams : undefined;
+  return <CatalogPage initialQuery={query?.q ?? ""} lots={lots} />;
 }

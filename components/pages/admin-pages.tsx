@@ -52,7 +52,6 @@ type AdminAuctionItem = Record<string, any> & {
     id: string;
     bidderId: string;
     bidderName: string;
-    nominal: number;
     submittedAt: string;
     submittedAtLabel: string;
     rank: number;
@@ -994,9 +993,9 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
                 <table className="w-full min-w-[52rem] text-left">
                   <thead className="bg-[#f5f6f4] text-xs uppercase tracking-[0.16em] text-black/50">
                     <tr>
-                      <th className="px-5 py-4">Peringkat</th>
+                      <th className="px-5 py-4">Urutan</th>
                       <th className="px-5 py-4">Peserta</th>
-                      <th className="px-5 py-4">Nominal Bid</th>
+                      <th className="px-5 py-4">Nilai Bid</th>
                       <th className="px-5 py-4">Dikirim Pada</th>
                       <th className="px-5 py-4">Peran Hasil</th>
                     </tr>
@@ -1013,8 +1012,10 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
                             </p>
                           </div>
                         </td>
-                        <td className="px-5 py-4 font-semibold text-black/85">
-                          {currency.format(bid.nominal)}
+                        <td className="px-5 py-4">
+                          <span className="inline-flex rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/55">
+                            Tidak dikirim ke admin
+                          </span>
                         </td>
                         <td className="px-5 py-4 text-black/55">{bid.submittedAtLabel}</td>
                         <td className="px-5 py-4">
@@ -1022,13 +1023,9 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
                             <span className="inline-flex rounded-full bg-[#e7f6ef] px-3 py-1 text-xs font-semibold text-[#0a6a49]">
                               Pemenang (B1)
                             </span>
-                          ) : bid.determinesFinalPrice ? (
-                            <span className="inline-flex rounded-full bg-[#fff3d9] px-3 py-1 text-xs font-semibold text-[#8a5b00]">
-                              Penentu harga bayar (B2)
-                            </span>
                           ) : (
                             <span className="inline-flex rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/55">
-                              Arsip bid
+                              Peserta
                             </span>
                           )}
                         </td>

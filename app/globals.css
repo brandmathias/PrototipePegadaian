@@ -160,6 +160,11 @@
   .status-pulse {
     animation: status-pulse 1800ms ease-out infinite;
   }
+
+  .payment-flow-progress {
+    background-size: 180% 100%;
+    animation: payment-flow-progress 1800ms ease-in-out infinite;
+  }
 }
 
 @keyframes toast-enter {
@@ -258,6 +263,20 @@
   100% {
     transform: scale(1.8);
     opacity: 0;
+  }
+}
+
+@keyframes payment-flow-progress {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
   }
 }
 

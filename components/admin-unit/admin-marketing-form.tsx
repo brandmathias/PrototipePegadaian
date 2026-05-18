@@ -12,9 +12,9 @@ import { currency } from "@/lib/formatters/currency";
 
 type MarketingMode = "fixed_price" | "vickrey";
 
-function FieldLabel({ children }: { children: ReactNode }) {
+function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/50 sm:text-xs">
+    <label className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/50 sm:text-xs" htmlFor={htmlFor}>
       {children}
     </label>
   );
@@ -35,6 +35,7 @@ function ModeCard({
 }) {
   return (
     <button
+      aria-pressed={active}
       className={[
         "group rounded-[1.5rem] border p-5 text-left transition duration-200",
         active
@@ -80,23 +81,42 @@ export function AdminMarketingForm({
   const { toast } = useToast();
   const [mode, setMode] = useState<MarketingMode>("fixed_price");
   const [price, setPrice] = useState(String(Math.max(1, Math.round(defaultPrice || 0))));
-  const [durationDays, setDurationDays] = useState("7");
+  const [durationDays, setDurationDays] = useState("0");
+  const [durationHours, setDurationHours] = useState("0");
+  const [durationMinutes, setDurationMinutes] = useState("5");
+  const [durationSeconds, setDurationSeconds] = useState("0");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const normalizedPrice = Number(price);
-  const normalizedDuration = Number(durationDays);
+  const normalizedDurationDays = Number(durationDays);
+  const normalizedDurationHours = Number(durationHours);
+  const normalizedDurationMinutes = Number(durationMinutes);
+  const normalizedDurationSeconds = Number(durationSeconds);
+  const normalizedDurationTotalSeconds =
+    normalizedDurationDays * 24 * 60 * 60 +
+    normalizedDurationHours * 60 * 60 +
+    normalizedDurationMinutes * 60 +
+    normalizedDurationSeconds;
+  const durationSummary = `${durationDays || "0"} hari ${durationHours || "0"} jam ${durationMinutes || "0"} menit ${durationSeconds || "0"} detik`;
   const estimatedEnd = useMemo(() => {
-    if (mode !== "vickrey" || !Number.isFinite(normalizedDuration) || normalizedDuration < 1) {
+    if (
+      mode !== "vickrey" ||
+      !Number.isFinite(normalizedDurationTotalSeconds) ||
+      normalizedDurationTotalSeconds <= 0
+    ) {
       return "Tidak memakai countdown";
     }
 
-    const date = new Date(Date.now() + normalizedDuration * 24 * 60 * 60 * 1000);
-    return date.toLocaleDateString("id-ID", {
+    const date = new Date(Date.now() + normalizedDurationTotalSeconds * 1000);
+    return date.toLocaleString("id-ID", {
       day: "2-digit",
       month: "long",
-      year: "numeric"
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
     });
-  }, [mode, normalizedDuration]);
+  }, [mode, normalizedDurationTotalSeconds]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -111,10 +131,26 @@ export function AdminMarketingForm({
       return;
     }
 
-    if (mode === "vickrey" && (!Number.isInteger(normalizedDuration) || normalizedDuration < 1 || normalizedDuration > 30)) {
+    if (
+      mode === "vickrey" &&
+      (!Number.isInteger(normalizedDurationDays) ||
+        !Number.isInteger(normalizedDurationHours) ||
+        !Number.isInteger(normalizedDurationMinutes) ||
+        !Number.isInteger(normalizedDurationSeconds) ||
+        normalizedDurationDays < 0 ||
+        normalizedDurationDays > 30 ||
+        normalizedDurationHours < 0 ||
+        normalizedDurationHours > 23 ||
+        normalizedDurationMinutes < 0 ||
+        normalizedDurationMinutes > 59 ||
+        normalizedDurationSeconds < 0 ||
+        normalizedDurationSeconds > 59 ||
+        normalizedDurationTotalSeconds <= 0 ||
+        normalizedDurationTotalSeconds > 30 * 24 * 60 * 60)
+    ) {
       toast({
         title: "Durasi lelang belum sesuai",
-        description: "Durasi Vickrey perlu diisi 1 sampai 30 hari.",
+        description: "Durasi Vickrey perlu diisi lebih presisi dengan batas maksimal 30 hari.",
         variant: "error",
         scope: "admin-unit"
       });
@@ -141,8 +177,11 @@ export function AdminMarketingForm({
         },
         body: JSON.stringify({
           mode,
-          price: normalizedPrice,
-          durationDays: mode === "vickrey" ? normalizedDuration : undefined
+          price: price.trim(),
+          durationDays: mode === "vickrey" ? durationDays.trim() : undefined,
+          durationHours: mode === "vickrey" ? durationHours.trim() : undefined,
+          durationMinutes: mode === "vickrey" ? durationMinutes.trim() : undefined,
+          durationSeconds: mode === "vickrey" ? durationSeconds.trim() : undefined
         })
       });
       const result = await response.json().catch(() => ({}));
@@ -218,9 +257,10 @@ export function AdminMarketingForm({
             </div>
           </div>
           <div className="space-y-2">
-            <FieldLabel>{mode === "fixed_price" ? "Harga jual" : "Harga dasar"}</FieldLabel>
+            <FieldLabel htmlFor="marketing-price">{mode === "fixed_price" ? "Harga jual" : "Harga dasar"}</FieldLabel>
             <Input
               className="h-12"
+              id="marketing-price"
               min={1}
               onChange={(event) => setPrice(event.target.value)}
               placeholder="0"
@@ -228,18 +268,63 @@ export function AdminMarketingForm({
               value={price}
             />
           </div>
-          <div className="space-y-2">
-            <FieldLabel>Durasi lelang (hari)</FieldLabel>
-            <Input
-              className="h-12"
-              disabled={mode !== "vickrey"}
-              max={30}
-              min={1}
-              onChange={(event) => setDurationDays(event.target.value)}
-              placeholder="Isi 1 sampai 30 hari"
-              type="number"
-              value={durationDays}
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-2">
+              <FieldLabel htmlFor="marketing-duration-days">Hari</FieldLabel>
+              <Input
+                aria-label="Hari"
+                className="h-12"
+                disabled={mode !== "vickrey"}
+                id="marketing-duration-days"
+                max={30}
+                min={0}
+                onChange={(event) => setDurationDays(event.target.value)}
+                type="number"
+                value={durationDays}
+              />
+            </div>
+            <div className="space-y-2">
+              <FieldLabel htmlFor="marketing-duration-hours">Jam</FieldLabel>
+              <Input
+                aria-label="Jam"
+                className="h-12"
+                disabled={mode !== "vickrey"}
+                id="marketing-duration-hours"
+                max={23}
+                min={0}
+                onChange={(event) => setDurationHours(event.target.value)}
+                type="number"
+                value={durationHours}
+              />
+            </div>
+            <div className="space-y-2">
+              <FieldLabel htmlFor="marketing-duration-minutes">Menit</FieldLabel>
+              <Input
+                aria-label="Menit"
+                className="h-12"
+                disabled={mode !== "vickrey"}
+                id="marketing-duration-minutes"
+                max={59}
+                min={0}
+                onChange={(event) => setDurationMinutes(event.target.value)}
+                type="number"
+                value={durationMinutes}
+              />
+            </div>
+            <div className="space-y-2">
+              <FieldLabel htmlFor="marketing-duration-seconds">Detik</FieldLabel>
+              <Input
+                aria-label="Detik"
+                className="h-12"
+                disabled={mode !== "vickrey"}
+                id="marketing-duration-seconds"
+                max={59}
+                min={0}
+                onChange={(event) => setDurationSeconds(event.target.value)}
+                type="number"
+                value={durationSeconds}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <FieldLabel>Ringkasan harga</FieldLabel>
@@ -247,6 +332,15 @@ export function AdminMarketingForm({
               {Number.isFinite(normalizedPrice) && normalizedPrice > 0
                 ? currency.format(normalizedPrice)
                 : "Masukkan nominal"}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Ringkasan durasi</FieldLabel>
+            <div
+              aria-live="polite"
+              className="rounded-2xl bg-[#f3f3f3] px-4 py-3 font-semibold text-black/65"
+            >
+              {mode === "vickrey" ? durationSummary : "Tidak memakai countdown"}
             </div>
           </div>
           <div className="space-y-2">

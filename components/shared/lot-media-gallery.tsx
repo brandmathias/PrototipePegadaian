@@ -43,12 +43,12 @@ export function LotMediaGallery({
     setActiveIndex(getInitialIndex(media));
   }, [media]);
 
-  const activeMedia = media[activeIndex];
-  const activeMediaLabel = `${title} ${activeMedia.type === "video" ? "video" : "foto"} ${activeIndex + 1}`;
-
   if (!media.length) {
     return <LotFigure category={category} className={className} />;
   }
+
+  const activeMedia = media[activeIndex];
+  const activeMediaLabel = `${title} ${activeMedia.type === "video" ? "video" : "foto"} ${activeIndex + 1}`;
 
   return (
     <div className="space-y-4">

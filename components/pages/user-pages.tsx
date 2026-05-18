@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
+import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -24,11 +25,12 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptActions } from "@/components/shared/transaction-receipt-actions";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
+import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
-import type { BuyerBid, BuyerBidStatus, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
+import type { BuyerBid, BuyerBidStatus, BuyerBidVerification, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -119,7 +121,7 @@ const bidStatusMeta: Record<
   MENUNGGU_HASIL: {
     label: "Menunggu Hasil",
     variant: "accent",
-    description: "Bid tertutup sudah masuk dan menunggu pembukaan hasil."
+    description: "Bid tertutup menunggu reveal nominal atau settlement hasil."
   },
   MENANG: {
     label: "Menang",
@@ -130,6 +132,11 @@ const bidStatusMeta: Record<
     label: "Tidak Menang",
     variant: "muted",
     description: "Bid tidak menghasilkan transaksi baru."
+  },
+  GAGAL: {
+    label: "Pembayaran Gagal",
+    variant: "danger",
+    description: "Anda menang, tetapi transaksi pembayaran Vickrey melewati batas waktu."
   }
 };
 
@@ -155,6 +162,82 @@ function StatusPill({
 
 function BidPill({ status }: { status: BuyerBidStatus }) {
   return <Badge variant={bidStatusMeta[status].variant}>{bidStatusMeta[status].label}</Badge>;
+}
+
+function getBidPaymentAmount(item: BuyerBid) {
+  return item.paymentAmount ?? item.finalPrice;
+}
+
+function getBidAmountLabel(item: BuyerBid) {
+  if (typeof item.bidAmount === "number") {
+    return `Bid ${currency.format(item.bidAmount)}`;
+  }
+
+  return "Hash bid tersimpan";
+}
+
+function getBidTransactionActionLabel(item: BuyerBid) {
+  if (item.status === "MENANG" && item.transactionStatus !== "LUNAS" && item.transactionStatus !== "SELESAI") {
+    return "Lanjutkan Pembayaran";
+  }
+
+  if (item.status === "GAGAL") {
+    return "Lihat Detail Gagal";
+  }
+
+  return "Lihat Transaksi";
+}
+
+function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverted?: boolean }) {
+  const paymentAmount = getBidPaymentAmount(item);
+
+  if (!paymentAmount && !item.transactionStatus && !item.paymentDeadlineAt) {
+    return null;
+  }
+
+  return (
+    <div
+      className={cn(
+        "grid gap-3 rounded-[1.25rem] border p-4 sm:grid-cols-3",
+        inverted
+          ? "border-white/15 bg-white/10 text-white"
+          : "border-primary/10 bg-primary/[0.03] text-foreground"
+      )}
+    >
+      {paymentAmount ? (
+        <div>
+          <p className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", inverted ? "text-white/60" : "text-muted-foreground")}>
+            Harga bayar Vickrey
+          </p>
+          <p className={cn("mt-2 font-semibold", inverted ? "text-white" : "text-primary")}>
+            {currency.format(paymentAmount)}
+          </p>
+        </div>
+      ) : null}
+      {item.transactionStatus ? (
+        <div>
+          <p className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", inverted ? "text-white/60" : "text-muted-foreground")}>
+            Status transaksi
+          </p>
+          <p className="mt-2 font-semibold">{transactionStatusMeta[item.transactionStatus].label}</p>
+        </div>
+      ) : null}
+      {item.paymentDeadlineAt || item.paymentDeadline ? (
+        <div>
+          <p className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", inverted ? "text-white/60" : "text-muted-foreground")}>
+            Batas pembayaran
+          </p>
+          <p className="mt-2 font-semibold">
+            <LiveCountdown
+              expiredLabel={item.paymentDeadline ?? "Waktu pembayaran berakhir"}
+              fallbackLabel={item.paymentDeadline}
+              targetAt={item.paymentDeadlineAt}
+            />
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function getTimelineLabels(transaction: BuyerTransaction) {
@@ -268,59 +351,71 @@ function TransactionTimeline({ transaction }: { transaction: BuyerTransaction })
 }
 
 function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction }) {
-  const steps = [
-    { label: "Melakukan Pembayaran", icon: Landmark },
-    { label: "Verifikasi", icon: ShieldCheck },
-    { label: "Selesai", icon: CheckCircle2 }
-  ];
+  const isTransfer = transaction.method === "TRANSFER_BANK";
+  const isVickreyWin = transaction.kind === "VICKREY_WIN";
+  const completed = transaction.status === "SELESAI";
   const currentStep =
-    transaction.status === "SELESAI"
+    transaction.status === "SELESAI" || transaction.status === "LUNAS"
       ? 2
-      : transaction.status === "LUNAS" ||
-          transaction.status === "BUKTI_DIUNGGAH" ||
-          transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG"
+      : transaction.status === "BUKTI_DIUNGGAH"
         ? 1
         : 0;
+  const paymentDetail = isTransfer
+    ? transaction.status === "DITOLAK_BUKTI"
+      ? "Bukti sebelumnya ditolak. Unggah ulang bukti transfer yang jelas dan sesuai nominal."
+      : "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
+    : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
+  const verificationDetail = isTransfer
+    ? "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
+    : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
+  const finishDetail =
+    transaction.status === "LUNAS"
+      ? "Pembayaran sudah diverifikasi. Tekan Pembelian Selesai setelah nota dan pengambilan barang siap."
+      : completed
+        ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
+        : "Tahap ini aktif setelah admin memverifikasi pembayaran.";
+  const steps: PaymentWorkflowStep[] = [
+    {
+      id: "payment",
+      label: "Melakukan Pembayaran",
+      headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Vickrey di Unit" : "Bayar di Loket Unit",
+      detail: paymentDetail,
+      meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Vickrey bayar di loket" : "Bayar di loket",
+      icon: Landmark
+    },
+    {
+      id: "verification",
+      label: "Verifikasi",
+      headline: "Menunggu Verifikasi Admin",
+      detail: verificationDetail,
+      meta: "Aksi admin unit",
+      icon: ShieldCheck
+    },
+    {
+      id: "finished",
+      label: "Selesai & Nota",
+      headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai & Nota",
+      detail: finishDetail,
+      meta: "Aksi akhir buyer",
+      icon: CheckCircle2
+    }
+  ];
 
   return (
-    <section className="rounded-[1.75rem] border border-border/70 bg-surface-low p-5 md:p-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-          const complete = index < currentStep;
-          const active = index === currentStep;
-
-          return (
-            <div className="relative text-center" key={step.label}>
-              {index > 0 ? (
-                <span className="absolute left-0 top-5 hidden h-px w-1/2 bg-border md:block" />
-              ) : null}
-              {index < steps.length - 1 ? (
-                <span className="absolute right-0 top-5 hidden h-px w-1/2 bg-border md:block" />
-              ) : null}
-              <div
-                className={cn(
-                  "relative z-10 mx-auto grid size-11 place-items-center rounded-full border text-sm transition",
-                  complete && "border-primary bg-primary text-white",
-                  active && "border-accent bg-accent text-accent-foreground",
-                  !complete && !active && "border-border bg-white text-muted-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-              </div>
-              <p
-                className={cn(
-                  "mt-3 text-xs font-bold uppercase tracking-[0.16em]",
-                  complete || active ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {step.label}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    <PaymentWorkflowRail
+      completed={completed}
+      currentStep={currentStep}
+      description={
+        isVickreyWin
+          ? "Vickrey hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
+          : isTransfer
+            ? "Fixed price transfer membutuhkan bukti pembayaran sebelum admin memverifikasi."
+            : "Fixed price bayar langsung diverifikasi admin setelah pembayaran diterima di unit."
+      }
+      steps={steps}
+      title="Workflow Pembayaran"
+      tone="buyer"
+    />
   );
 }
 
@@ -512,8 +607,11 @@ export function UserDashboardPage({
                     <BidPill status={item.status} />
                   </div>
                   <p className="mt-2 text-sm text-white/80">{item.note}</p>
+                  <div className="mt-4">
+                    <BidPaymentContext inverted item={item} />
+                  </div>
                   <p className="mt-4 text-sm font-semibold">
-                    Bid {currency.format(item.bidAmount)}
+                    {getBidAmountLabel(item)}
                   </p>
                   <p className="text-xs text-white/70">Tutup {item.closing}</p>
                 </div>
@@ -544,7 +642,8 @@ export function TransactionsPage({
         BID_TERCATAT: 0,
         MENUNGGU_HASIL: 0,
         MENANG: 0,
-        TIDAK_MENANG: 0
+        TIDAK_MENANG: 0,
+        GAGAL: 0
       }
     )
   );
@@ -609,7 +708,7 @@ export function TransactionsPage({
             {bids.slice(0, 3).map((item) => (
               <div
                 className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
-                key={`${item.lot}-${item.bidAmount}-${item.closing}`}
+                key={`${item.lot}-${item.bidHash ?? item.bidAmount ?? item.closing}`}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="space-y-3">
@@ -622,7 +721,7 @@ export function TransactionsPage({
                   </div>
                   <div className="space-y-2 text-left md:text-right">
                     <p className="font-semibold text-primary">
-                      Bid {currency.format(item.bidAmount)}
+                      {getBidAmountLabel(item)}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Harga dasar {currency.format(item.basePrice)}
@@ -630,13 +729,16 @@ export function TransactionsPage({
                     <p className="text-sm text-muted-foreground">Tutup {item.closing}</p>
                   </div>
                 </div>
+                <div className="mt-5">
+                  <BidPaymentContext item={item} />
+                </div>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link href={`/katalog/${item.lotId}`}>
                     <Button variant="secondary">Lihat Lot</Button>
                   </Link>
                   {item.linkedTransactionId ? (
                     <Link href={`/transaksi/${item.linkedTransactionId}`}>
-                      <Button>Lihat Transaksi</Button>
+                      <Button>{getBidTransactionActionLabel(item)}</Button>
                     </Link>
                   ) : null}
                 </div>
@@ -721,6 +823,7 @@ export function TransactionDetailPage({
   const isVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
   const isCompleted = transaction.status === "SELESAI";
   const showReceipt = isVerified;
+  const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
 
   return (
@@ -754,6 +857,35 @@ export function TransactionDetailPage({
         </div>
 
         <PaymentProgressRail transaction={transaction} />
+        {isVickreyWin ? (
+          <Card className="overflow-hidden border border-accent/35 bg-[radial-gradient(circle_at_top_left,rgba(255,205,76,0.22),transparent_34%),linear-gradient(135deg,#ffffff_0%,#f8f3e6_100%)]">
+            <CardContent className="grid gap-5 p-5 md:grid-cols-[0.72fr_1.28fr] md:p-6">
+              <div className="rounded-[1.5rem] bg-primary p-5 text-white">
+                <div className="flex items-center gap-3">
+                  <Gavel className="size-5" />
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
+                    Pemenang Vickrey
+                  </p>
+                </div>
+                <p className="mt-4 font-headline text-3xl font-black tracking-tight">
+                  {currency.format(transaction.amount)}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-white/75">Harga yang perlu dibayar</p>
+              </div>
+              <div className="space-y-3">
+                <CardTitle>Harga final Vickrey</CardTitle>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  Jumlah pembayaran ini bukan nominal bid tertinggi Anda. Sistem memakai penawaran
+                  tertinggi kedua, atau harga dasar jika hanya ada satu penawar.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="accent">Batas pembayaran 24 jam</Badge>
+                  <Badge variant="muted">Transaksi dibuat otomatis setelah hasil dibuka</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_0.95fr_0.9fr]">
@@ -1167,7 +1299,8 @@ export function BidHistoryPage({
               BID_TERCATAT: 0,
               MENUNGGU_HASIL: 0,
               MENANG: 0,
-              TIDAK_MENANG: 0
+              TIDAK_MENANG: 0,
+              GAGAL: 0
             }
           )
         ).map(([status, value]) => (
@@ -1185,7 +1318,7 @@ export function BidHistoryPage({
           {bids.map((item) => (
             <div
               className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
-              key={`${item.lot}-${item.bidAmount}-${item.closing}`}
+              key={`${item.lot}-${item.bidHash ?? item.bidAmount ?? item.closing}`}
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-3">
@@ -1198,7 +1331,7 @@ export function BidHistoryPage({
                 </div>
                 <div className="space-y-2 text-left md:text-right">
                   <p className="font-semibold text-primary">
-                    Bid {currency.format(item.bidAmount)}
+                    {getBidAmountLabel(item)}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Harga dasar {currency.format(item.basePrice)}
@@ -1206,18 +1339,148 @@ export function BidHistoryPage({
                   <p className="text-sm text-muted-foreground">Tutup {item.closing}</p>
                 </div>
               </div>
+              <div className="mt-5">
+                <BidPaymentContext item={item} />
+              </div>
+              {item.escrowed && item.status === "MENUNGGU_HASIL" && !item.isRevealed ? (
+                <div className="mt-5 rounded-[1.25rem] border border-primary/15 bg-primary/[0.03] p-4 text-sm leading-6 text-primary">
+                  <p className="font-semibold">Escrow otomatis aktif</p>
+                  <p className="mt-1">
+                    Bid Anda sudah tersimpan terenkripsi. Sistem akan membuka nominal otomatis setelah deadline dan membuat transaksi bayar langsung jika Anda menang.
+                  </p>
+                </div>
+              ) : item.canReveal || (item.revealDeadlineAt && item.status === "MENUNGGU_HASIL" && !item.isRevealed) ? (
+                <div className="mt-5 rounded-[1.25rem] border border-[#ead8b5] bg-[#fffaf0] p-4 text-sm leading-6 text-[#5d4300]">
+                  <p className="font-semibold text-[#7a5600]">
+                    {item.canReveal ? "Reveal nominal dibutuhkan" : "Periode reveal sudah dipantau sistem"}
+                  </p>
+                  <p className="mt-1">
+                    {item.canReveal
+                      ? "Buka halaman verifikasi, kirim nominal dan salt agar bid ikut penentuan pemenang."
+                      : "Jika belum reveal sampai batas waktu, bid tidak ikut settlement."}
+                  </p>
+                  {item.revealDeadlineAt ? (
+                    <p className="mt-2 font-semibold">
+                      <LiveCountdown
+                        expiredLabel={item.revealDeadline ?? "Batas reveal selesai"}
+                        fallbackLabel={item.revealDeadline}
+                        prefix="Batas reveal"
+                        targetAt={item.revealDeadlineAt}
+                      />
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <div className="mt-5 flex flex-wrap gap-3">
                 <Link href={`/katalog/${item.lotId}`}>
                   <Button variant="secondary">Lihat Lot</Button>
                 </Link>
                 {item.linkedTransactionId ? (
                   <Link href={`/transaksi/${item.linkedTransactionId}`}>
-                    <Button>Lihat Transaksi</Button>
+                    <Button>{getBidTransactionActionLabel(item)}</Button>
                   </Link>
                 ) : null}
+                <Link href={`/riwayat-bid/${item.lotId}/verifikasi`}>
+                  <Button variant={item.canReveal ? "default" : "secondary"}>
+                    {item.canReveal ? "Reveal Nominal" : "Verifikasi Bid"}
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function IntegrityValue({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className="mt-2 break-all text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+export function BidVerificationPage({
+  buyer,
+  verification
+}: {
+  buyer: BuyerSessionUser;
+  verification: BuyerBidVerification;
+}) {
+  const verificationBadgeLabel = verification.isRevealed
+    ? verification.isMatch
+      ? "Bid Anda tercatat dengan benar"
+      : "Hash tidak cocok"
+    : verification.canReveal
+      ? "Siap reveal nominal"
+      : "Escrow terenkripsi tersimpan";
+
+  return (
+    <div className="space-y-8 md:space-y-10">
+      <SectionHeading
+        action={
+          <Link href="/riwayat-bid">
+            <Button variant="secondary">Kembali ke Riwayat</Button>
+          </Link>
+        }
+        description="Cocokkan nominal, salt, dan hash setelah escrow dibuka agar Anda dapat melihat bid tertutup tidak berubah."
+        eyebrow="Verifikasi Bid"
+        title="Bukti integritas penawaran"
+      />
+
+      <Card className="border border-border/70 bg-white">
+        <CardContent className="space-y-6 p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">{verification.unit}</p>
+              <h2 className="mt-2 font-headline text-3xl font-extrabold text-foreground">{verification.lot}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Tutup {verification.closing}</p>
+            </div>
+            <Badge
+              variant={
+                verification.isRevealed
+                  ? verification.isMatch
+                    ? "default"
+                    : "danger"
+                  : verification.canReveal
+                    ? "accent"
+                    : "muted"
+              }
+            >
+              {verificationBadgeLabel}
+            </Badge>
+          </div>
+
+          {!verification.canVerify ? (
+            <div className="rounded-[1.25rem] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              Nominal masih dalam escrow terenkripsi sampai deadline. Admin tidak menerima nominal terbuka
+              sebelum sistem membuka hasil.
+            </div>
+          ) : null}
+
+          {verification.canReveal ? (
+            <BidRevealForm buyerId={buyer.id} lotId={verification.lotId} />
+          ) : null}
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <IntegrityValue label="Hash tersimpan" value={verification.bidHash} />
+            <IntegrityValue label="Algoritma" value={verification.algorithm} />
+            <IntegrityValue label="Formula" value={verification.formula} />
+            <IntegrityValue
+              label="Status reveal"
+              value={verification.isRevealed ? "Nominal sudah dibuka setelah deadline" : "Nominal masih terenkripsi"}
+            />
+            {verification.isRevealed && typeof verification.bidAmount === "number" ? (
+              <IntegrityValue label="Nominal bid Anda" value={currency.format(verification.bidAmount)} />
+            ) : null}
+            {verification.salt ? <IntegrityValue label="Salt" value={verification.salt} /> : null}
+            {verification.computedHash ? (
+              <IntegrityValue label="Hash hasil hitung ulang" value={verification.computedHash} />
+            ) : null}
+          </div>
         </CardContent>
       </Card>
     </div>

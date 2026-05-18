@@ -3,6 +3,15 @@ import { render, screen } from "@testing-library/react";
 
 import { CatalogPage } from "@/components/pages/catalog-page";
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/katalog",
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn()
+  }),
+  useSearchParams: () => new URLSearchParams("")
+}));
+
 describe("CatalogPage", () => {
   it("shows filters, sort controls, and categories derived from real lots", () => {
     render(
@@ -30,7 +39,7 @@ describe("CatalogPage", () => {
 
     expect(screen.getByText(/pilih alur yang ingin anda ikuti/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /semua mode/i })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: /urutkan/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /urutkan/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Logam Mulia" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Perhiasan" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toBeInTheDocument();
@@ -99,5 +108,51 @@ describe("CatalogPage", () => {
     expect(screen.getByRole("img", { name: "Perhiasan foto utama" }).getAttribute("src")).toContain(
       "%2Fuploads%2Fbarang%2Fkalung.jpg"
     );
+  });
+
+  it("filters catalog items with the incoming buyer search query", () => {
+    render(
+      <CatalogPage
+        initialQuery="manado"
+        lots={[
+          {
+            id: "lot-1",
+            code: "LOT-1",
+            name: "Kalung Emas",
+            category: "Perhiasan",
+            mode: "fixed_price",
+            price: 100000000,
+            location: "Ranotana",
+            unitName: "UPC Ranotana",
+            city: "Manado",
+            condition: "Baik",
+            status: "Tersedia",
+            description: "Barang emas premium.",
+            media: [],
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
+          },
+          {
+            id: "lot-2",
+            code: "LOT-2",
+            name: "Laptop Kantor",
+            category: "Elektronik",
+            mode: "fixed_price",
+            price: 15000000,
+            location: "Makassar",
+            unitName: "UPC Makassar",
+            city: "Makassar",
+            condition: "Baik",
+            status: "Tersedia",
+            description: "Perangkat kerja.",
+            media: [],
+            specs: [{ label: "Kategori", value: "Elektronik" }]
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Kalung Emas")).toBeInTheDocument();
+    expect(screen.queryByText("Laptop Kantor")).not.toBeInTheDocument();
+    expect(screen.getByText(/keyword "manado" ikut dipakai/i)).toBeInTheDocument();
   });
 });

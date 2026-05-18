@@ -126,24 +126,20 @@ describe("admin transaction pages", () => {
     );
   });
 
-  it("lets admin switch the verification panel inline from the queue", async () => {
-    const user = userEvent.setup();
+  it("renders verification records as compact rows that open detail pages", () => {
     render(<AdminTransactionVerificationPage transactions={transactions} />);
 
     expect(screen.getAllByText(/kalung emas/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/cincin emas/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/liontin emas/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/panel verifikasi pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/melakukan pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/^verifikasi$/i)).toBeInTheDocument();
+    expect(screen.getByText(/status kerja/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-verify?from=verification"
+    );
     expect(screen.queryByText(/nota & selesai/i)).not.toBeInTheDocument();
 
-    expect(screen.getByText(/raras@example.com/i)).toBeInTheDocument();
-
-    await user.click(screen.getAllByRole("button", { name: /tinjau di panel/i })[1]);
-
-    expect(screen.getAllByText(/anting berlian/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/langsung di unit/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/raras@example.com/i)).not.toBeInTheDocument();
   });
 
   it("filters fixed price verification records by payment status", async () => {
@@ -155,7 +151,10 @@ describe("admin transaction pages", () => {
     expect(screen.getAllByText(/liontin emas/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/^kalung emas$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/anting berlian/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/belum ada tindakan yang perlu dijalankan admin/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-waiting?from=verification"
+    );
   });
 
   it("separates verified transactions from buyer-completed transactions", async () => {
@@ -176,6 +175,9 @@ describe("admin transaction pages", () => {
 
     expect(screen.getByText(/cincin emas/i)).toBeInTheDocument();
     expect(screen.getByText(/kalung emas selesai/i)).toBeInTheDocument();
+    expect(screen.getByText(/terverifikasi admin/i)).toBeInTheDocument();
+    expect(screen.getByText(/diverifikasi 2 mei 2026 15.30/i)).toBeInTheDocument();
+    expect(screen.queryByText(/batas waktu terlewati/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^kalung emas$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/liontin emas/i)).not.toBeInTheDocument();
   });

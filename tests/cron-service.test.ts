@@ -1,13 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
 
 describe("cron service", () => {
-  it("marks auction as failed when there are no bids", async () => {
-    const { resolveVickreyOutcome } = await import("@/lib/services/cron.service");
+  let cronService: Awaited<typeof import("@/lib/services/cron.service")>;
 
+  beforeAll(async () => {
+    cronService = await import("@/lib/services/cron.service");
+  }, 20_000);
+
+  it("marks auction as failed when there are no bids", async () => {
     expect(
-      resolveVickreyOutcome({
+      cronService.resolveVickreyOutcome({
         basePrice: "10000000",
         bids: []
       })
@@ -24,10 +28,8 @@ describe("cron service", () => {
   });
 
   it("uses base price as payable amount when only one bid exists", async () => {
-    const { resolveVickreyOutcome } = await import("@/lib/services/cron.service");
-
     expect(
-      resolveVickreyOutcome({
+      cronService.resolveVickreyOutcome({
         basePrice: "10000000",
         bids: [
           {
@@ -50,10 +52,8 @@ describe("cron service", () => {
   });
 
   it("uses the second highest bid as final payable amount", async () => {
-    const { resolveVickreyOutcome } = await import("@/lib/services/cron.service");
-
     expect(
-      resolveVickreyOutcome({
+      cronService.resolveVickreyOutcome({
         basePrice: "10000000",
         bids: [
           {
@@ -85,13 +85,51 @@ describe("cron service", () => {
     });
   });
 
-  it("maps blacklist duration by accumulated violation count", async () => {
-    const { getBlacklistDurationDays } = await import("@/lib/services/cron.service");
+  it("ignores unrevealed bid commitments when resolving vickrey outcome", async () => {
+    expect(
+      cronService.resolveVickreyOutcome({
+        basePrice: "10000000",
+        bids: [
+          {
+            id: "bid-hidden",
+            userId: "buyer-hidden",
+            nominal: null
+          },
+          {
+            id: "bid-1",
+            userId: "buyer-1",
+            nominal: "15000000"
+          }
+        ]
+      })
+    ).toEqual({
+      bidCount: 1,
+      finalPrice: "10000000.00",
+      runnerUpBidId: null,
+      runnerUpUserId: null,
+      status: "menunggu_pembayaran",
+      topBidId: "bid-1",
+      winnerBidAmount: "15000000.00",
+      winnerId: "buyer-1"
+    });
+  });
 
-    expect(getBlacklistDurationDays(1)).toBe(7);
-    expect(getBlacklistDurationDays(2)).toBe(30);
-    expect(getBlacklistDurationDays(3)).toBe(90);
-    expect(getBlacklistDurationDays(4)).toBe(365);
-    expect(getBlacklistDurationDays(9)).toBe(365);
+  it("waits for reveal window unless every commitment has been revealed", async () => {
+    const endsAt = new Date("2026-05-12T10:00:00.000Z");
+    const revealEndsAt = new Date("2026-05-12T10:10:00.000Z");
+    const afterDeadline = new Date("2026-05-12T10:02:00.000Z");
+    const afterRevealWindow = new Date("2026-05-12T10:11:00.000Z");
+
+    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: true }, afterDeadline)).toBe(false);
+    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: false }, afterDeadline)).toBe(true);
+    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: true }, afterRevealWindow)).toBe(true);
+  });
+
+  it("maps blacklist duration by accumulated violation count", async () => {
+    expect(cronService.getBlacklistDurationDays(1)).toBe(7);
+    expect(cronService.getBlacklistDurationDays(2)).toBe(30);
+    expect(cronService.getBlacklistDurationDays(3)).toBe(90);
+    expect(cronService.getBlacklistDurationDays(4)).toBe(365);
+    expect(cronService.getBlacklistDurationDays(9)).toBe(365);
   });
 });

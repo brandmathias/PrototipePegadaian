@@ -1,9 +1,11 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
+import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import {
+  validateBuyerBidEscrowPayload,
   validateBuyerBidPayload,
   validateBuyerPaymentProofPayload,
   validateBuyerProfileUpdatePayload,
@@ -22,7 +24,9 @@ import {
   units,
   users
 } from "@/lib/db/schema";
-import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
+import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
+import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const ACTIVE_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",
@@ -148,14 +152,24 @@ export async function getBuyerTransactionById(userId: string, transactionId: str
 }
 
 export async function listBuyerBids(userId: string) {
+  await processExpiredVickreyAuctions();
+
   const rows = await db
     .select({
       pemasaranId: pemasaran.id,
       lotName: barang.name,
       unitName: units.name,
       bidAmount: bids.nominal,
+      bidHash: bids.bidHash,
+      encryptedBidPayload: bids.encryptedBidPayload,
+      revealedAt: bids.revealedAt,
       basePrice: pemasaran.basePrice,
+      finalPrice: pemasaran.finalPrice,
+      paymentAmount: transaksi.amount,
+      paymentDeadline: transaksi.paymentDeadline,
+      transactionStatus: transaksi.status,
       endsAt: pemasaran.endsAt,
+      revealEndsAt: pemasaran.revealEndsAt,
       marketingStatus: pemasaran.status,
       winnerId: pemasaran.winnerId,
       transactionId: transaksi.id,
@@ -170,6 +184,65 @@ export async function listBuyerBids(userId: string) {
     .orderBy(desc(bids.createdAt));
 
   return rows.map(serializeBuyerBid);
+}
+
+export async function getBuyerBidVerification(userId: string, pemasaranId: string): Promise<BuyerBidVerification> {
+  const [row] = await db
+    .select({
+      pemasaranId: pemasaran.id,
+      lotName: barang.name,
+      unitName: units.name,
+      bidAmount: bids.nominal,
+      bidHash: bids.bidHash,
+      encryptedBidPayload: bids.encryptedBidPayload,
+      salt: bids.salt,
+      revealedAt: bids.revealedAt,
+      endsAt: pemasaran.endsAt,
+      revealEndsAt: pemasaran.revealEndsAt,
+      userId: bids.userId
+    })
+    .from(bids)
+    .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)))
+    .limit(1);
+
+  if (!row) {
+    throw new Error("Bid tidak ditemukan.");
+  }
+
+  const isRevealed = row.bidAmount != null && Boolean(row.salt);
+  const canVerify = row.endsAt ? row.endsAt.getTime() <= Date.now() : true;
+  const revealEnded = row.revealEndsAt ? row.revealEndsAt.getTime() <= Date.now() : false;
+  const hasEscrowPayload = Boolean(row.encryptedBidPayload);
+  const canReveal = canVerify && !isRevealed && !revealEnded && !hasEscrowPayload;
+  const verification = isRevealed
+    ? verifyBidIntegrityHash({
+        pemasaranId: row.pemasaranId,
+        userId: row.userId,
+        amount: row.bidAmount ?? 0,
+        salt: row.salt ?? "",
+        bidHash: row.bidHash
+      })
+    : null;
+
+  return {
+    lotId: row.pemasaranId,
+    lot: row.lotName,
+    unit: row.unitName,
+    closing: row.endsAt ? row.endsAt.toISOString() : "-",
+    ...(isRevealed ? { bidAmount: Number(row.bidAmount) } : {}),
+    bidHash: row.bidHash,
+    ...(verification ? { computedHash: verification.computedHash } : {}),
+    ...(row.salt ? { salt: row.salt } : {}),
+    algorithm: "SHA-256",
+    formula: "sha256(pemasaranId:userId:nominal:salt)",
+    isMatch: verification?.isMatch ?? false,
+    canVerify,
+    canReveal,
+    isRevealed
+  };
 }
 
 export async function getBuyerSummary(userId: string) {
@@ -324,7 +397,18 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
   }
 
   const basePrice = Number(row.marketing.basePrice ?? 0);
-  const payload = validateBuyerBidPayload(input, basePrice);
+  const payload = validateBuyerBidEscrowPayload(input, basePrice);
+  const verification = verifyBidIntegrityHash({
+    pemasaranId,
+    userId,
+    amount: payload.amount,
+    salt: payload.salt,
+    bidHash: payload.bidHash
+  });
+
+  if (!verification.isMatch) {
+    throw new Error("Hash bid tidak cocok dengan nominal dan salt.");
+  }
 
   const [existingBid] = await db
     .select()
@@ -336,18 +420,20 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     throw new Error("Anda sudah mengirim bid untuk sesi ini.");
   }
 
-  const salt = randomUUID();
-  const bidHash = createHash("sha256").update(`${pemasaranId}:${userId}:${payload.amount}:${salt}`).digest("hex");
-
   const [created] = await db
     .insert(bids)
     .values({
       id: randomUUID(),
       pemasaranId,
       userId,
-      bidHash,
-      nominal: String(payload.amount),
-      salt
+      bidHash: payload.bidHash,
+      encryptedBidPayload: encryptVickreyBidPayload(
+        { amount: payload.amount, salt: payload.salt },
+        { pemasaranId, userId, bidHash: payload.bidHash }
+      ),
+      nominal: null,
+      salt: null,
+      revealedAt: null
     })
     .returning();
 
@@ -356,13 +442,88 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     lotName: row.item.name,
     unitName: row.unit.name,
     bidAmount: created.nominal,
+    bidHash: created.bidHash,
+    encryptedBidPayload: created.encryptedBidPayload,
+    revealedAt: created.revealedAt,
     basePrice: row.marketing.basePrice,
     endsAt: row.marketing.endsAt,
+    revealEndsAt: row.marketing.revealEndsAt,
     marketingStatus: row.marketing.status,
     winnerId: row.marketing.winnerId,
     transactionId: null,
     userId
   });
+}
+
+export async function revealBuyerBid(userId: string, pemasaranId: string, input: unknown): Promise<BuyerBidVerification> {
+  const [row] = await db
+    .select({
+      bid: bids,
+      marketing: pemasaran,
+      item: barang,
+      unit: units
+    })
+    .from(bids)
+    .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)))
+    .limit(1);
+
+  if (!row) {
+    throw new Error("Bid tidak ditemukan.");
+  }
+
+  if (!row.marketing.endsAt || row.marketing.endsAt.getTime() > Date.now()) {
+    throw new Error("Reveal bid baru dibuka setelah deadline lelang.");
+  }
+
+  if (row.bid.nominal != null && row.bid.salt) {
+    return getBuyerBidVerification(userId, pemasaranId);
+  }
+
+  if (row.bid.encryptedBidPayload) {
+    await processExpiredVickreyAuctions();
+    return getBuyerBidVerification(userId, pemasaranId);
+  }
+
+  if (row.marketing.revealEndsAt && row.marketing.revealEndsAt.getTime() <= Date.now()) {
+    throw new Error("Periode reveal bid sudah berakhir.");
+  }
+
+  const basePrice = Number(row.marketing.basePrice ?? 0);
+  const payload = validateBuyerBidPayload(input, basePrice);
+  const inputRecord = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
+  const salt = typeof inputRecord.salt === "string" ? inputRecord.salt.trim() : "";
+
+  if (!salt) {
+    throw new Error("Salt reveal wajib dikirim.");
+  }
+
+  const verification = verifyBidIntegrityHash({
+    pemasaranId,
+    userId,
+    amount: payload.amount,
+    salt,
+    bidHash: row.bid.bidHash
+  });
+
+  if (!verification.isMatch) {
+    throw new Error("Nominal atau salt tidak cocok dengan hash bid tersimpan.");
+  }
+
+  await db
+    .update(bids)
+    .set({
+      nominal: String(payload.amount),
+      salt,
+      revealedAt: new Date()
+    })
+    .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)));
+
+  await processExpiredVickreyAuctions();
+
+  return getBuyerBidVerification(userId, pemasaranId);
 }
 
 export async function uploadBuyerPaymentProof(userId: string, transactionId: string, input: unknown) {

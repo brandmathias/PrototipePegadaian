@@ -58,7 +58,7 @@ describe("admin pemasaran pages", () => {
           mode: "FIXED_PRICE",
           startsAt: "2026-05-01T00:00:00.000Z",
           ending: "-",
-          endingAt: null,
+          endingAt: undefined,
           price: 12500000,
           transactionStatus: "BUKTI_DIUNGGAH",
           buyerName: "Raras",
@@ -112,6 +112,63 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
   });
 
+  it("shows waiting reveal state after deadline without winner data", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-waiting-reveal",
+          lotId: "barang-2",
+          lot: "Mobil",
+          code: "BRG-004",
+          category: "kendaraan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "VICKREY_AUCTION",
+          ending: "13 Mei 2026",
+          endingAt: "2026-05-12T22:29:31.032Z",
+          revealDeadline: "13 Mei 2026, 06.39",
+          revealDeadlineAt: "2099-05-12T22:39:31.032Z",
+          participants: 2,
+          revealedBidCount: 1,
+          pendingRevealCount: 1,
+          basePrice: 100000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "MENUNGGU_REVEAL",
+          note: "Deadline sudah lewat. Sistem menunggu buyer reveal nominal sebelum pemenang dihitung.",
+          media: [{ id: "m2", type: "foto", url: "/uploads/mobil.jpg", fileName: "mobil.jpg" }],
+          bids: [
+            {
+              id: "bid-1",
+              bidderId: "buyer-1",
+              bidderName: "Buyer A",
+              submittedAtLabel: "13 Mei 2026, 06.01",
+              isRevealed: true,
+              rank: 1,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-2",
+              bidderId: "buyer-2",
+              bidderName: "Buyer B",
+              submittedAtLabel: "13 Mei 2026, 06.06",
+              isRevealed: false,
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: false
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getAllByText(/menunggu buyer reveal nominal/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/sudah reveal/i)).toBeInTheDocument();
+    expect(screen.getByText(/belum reveal/i)).toBeInTheDocument();
+    expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
+  });
+
   it("renders vickrey as an operational workspace for admin unit", () => {
     render(
       <AdminVickreyAuctionListPage
@@ -153,9 +210,9 @@ describe("admin pemasaran pages", () => {
             winner: "Raras",
             visibility: "HASIL_DIBUKA",
             transactionId: "trx-vickrey-1",
-            transactionStatus: "MENUNGGU_PEMBAYARAN",
+            transactionStatus: "MENUNGGU_KONFIRMASI_LANGSUNG",
             buyerName: "Raras",
-            paymentMethod: "TRANSFER_BANK",
+            paymentMethod: "BAYAR_LANGSUNG",
             paymentDeadline: "2099-05-09T00:00:00.000Z",
             media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
             primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" },
@@ -194,10 +251,10 @@ describe("admin pemasaran pages", () => {
           winner: "Raras",
           visibility: "HASIL_DIBUKA",
           transactionId: "trx-vickrey-1",
-          transactionStatus: "BUKTI_DIUNGGAH",
+          transactionStatus: "MENUNGGU_KONFIRMASI_LANGSUNG",
           buyerName: "Raras",
-          paymentMethod: "TRANSFER_BANK",
-          proofUrl: "/uploads/bukti/vickrey.jpg",
+          paymentMethod: "BAYAR_LANGSUNG",
+          proofUrl: null,
           paymentDeadline: "2099-05-09T00:00:00.000Z",
           media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
           primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" },
@@ -206,7 +263,6 @@ describe("admin pemasaran pages", () => {
               id: "bid-1",
               bidderId: "buyer-1",
               bidderName: "Raras",
-              nominal: 70000000,
               submittedAtLabel: "4 Mei 2026, 08.00",
               rank: 1,
               isWinner: true,
@@ -216,11 +272,10 @@ describe("admin pemasaran pages", () => {
               id: "bid-2",
               bidderId: "buyer-2",
               bidderName: "Alya",
-              nominal: 62000000,
               submittedAtLabel: "4 Mei 2026, 08.05",
               rank: 2,
               isWinner: false,
-              determinesFinalPrice: true
+              determinesFinalPrice: false
             }
           ]
         }}
@@ -228,14 +283,11 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/pembayaran pemenang/i)).toBeInTheDocument();
-    expect(screen.getByText(/bukti diunggah/i)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /buka transaksi pemenang/i })).toHaveAttribute(
       "href",
       "/admin/transaksi/trx-vickrey-1?from=vickrey"
     );
-    expect(screen.getByRole("link", { name: /buka bukti pembayaran/i })).toHaveAttribute(
-      "href",
-      "/uploads/bukti/vickrey.jpg"
-    );
+    expect(screen.queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
   });
 });

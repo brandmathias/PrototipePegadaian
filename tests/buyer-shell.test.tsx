@@ -9,7 +9,8 @@ vi.mock("next/navigation", () => ({
     push: vi.fn(),
     replace: vi.fn(),
     refresh: vi.fn()
-  })
+  }),
+  useSearchParams: () => new URLSearchParams("")
 }));
 
 describe("BuyerShell", () => {

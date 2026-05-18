@@ -12,6 +12,16 @@ export type BuyerBidPayload = {
   amount: number;
 };
 
+export type BuyerBidCommitmentPayload = {
+  bidHash: string;
+};
+
+export type BuyerBidEscrowPayload = {
+  amount: number;
+  bidHash: string;
+  salt: string;
+};
+
 export type BuyerPaymentProofPayload = {
   fileName: string;
   reference?: string;
@@ -55,6 +65,30 @@ export function validateBuyerBidPayload(input: unknown, basePrice: number): Buye
   }
 
   return { amount };
+}
+
+export function validateBuyerBidCommitmentPayload(input: unknown): BuyerBidCommitmentPayload {
+  const payload = readRecord(input);
+  const bidHash = typeof payload.bidHash === "string" ? payload.bidHash.trim().toLowerCase() : "";
+
+  if (!/^[a-f0-9]{64}$/.test(bidHash)) {
+    throw new Error("Hash bid belum valid.");
+  }
+
+  return { bidHash };
+}
+
+export function validateBuyerBidEscrowPayload(input: unknown, basePrice: number): BuyerBidEscrowPayload {
+  const payload = readRecord(input);
+  const { amount } = validateBuyerBidPayload(payload, basePrice);
+  const { bidHash } = validateBuyerBidCommitmentPayload(payload);
+  const salt = typeof payload.salt === "string" ? payload.salt.trim() : "";
+
+  if (salt.length < 16) {
+    throw new Error("Salt bid belum valid.");
+  }
+
+  return { amount, bidHash, salt };
 }
 
 export function validateBuyerPaymentProofPayload(input: unknown): BuyerPaymentProofPayload {

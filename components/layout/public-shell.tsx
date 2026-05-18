@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Gavel, LogOut, Search } from "lucide-react";
+import { Gavel, LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { AlertCenter } from "@/components/ui/alert-center";
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import type { AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
 
@@ -97,14 +97,12 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative hidden w-72 lg:block xl:w-80">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                aria-label="Cari lot atau unit"
-                className="border-border/70 bg-white pl-10"
-                placeholder="Cari lot atau unit..."
-              />
-            </div>
+            <CatalogSearchInput
+              inputClassName="hidden w-72 lg:block xl:w-80"
+              placeholder="Cari lot atau unit..."
+              submitLabel="Cari"
+              wrapperClassName="hidden lg:block"
+            />
             {viewer ? (
               <>
                 {isBuyer ? <AlertCenter className="shrink-0" scope="buyer" /> : null}

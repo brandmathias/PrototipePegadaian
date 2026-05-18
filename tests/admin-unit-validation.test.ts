@@ -43,6 +43,19 @@ describe("admin unit validation", () => {
         ownerName: "Budi"
       })
     ).toThrow("Nilai gadai tidak boleh melebihi nilai taksiran.");
+
+    expect(() =>
+      validateAdminBarangPayload({
+        name: "Laptop",
+        category: "elektronik",
+        condition: "baik",
+        appraisalValue: "5000000",
+        loanValue: "4500000",
+        pawnedAt: "2026-02-31",
+        dueDate: "2026-03-15",
+        ownerName: "Budi"
+      })
+    ).toThrow("Tanggal gadai belum valid.");
   });
 
   it("validates perpanjangan date must move forward", () => {
@@ -64,19 +77,108 @@ describe("admin unit validation", () => {
     );
   });
 
-  it("validates pemasaran fixed price and vickrey payloads", () => {
-    expect(validatePemasaranPayload({ mode: "fixed_price", price: "12500000" })).toMatchObject({
+  it("validates pemasaran fixed price and structured vickrey durations", () => {
+    expect(validatePemasaranPayload({ mode: "fixed_price", price: "12500000" })).toEqual({
       mode: "fixed_price",
       price: "12500000"
     });
 
-    expect(validatePemasaranPayload({ mode: "vickrey", price: "10000000", durationDays: "7" })).toMatchObject({
+    expect(
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "7",
+        durationHours: "4",
+        durationMinutes: "30",
+        durationSeconds: "15"
+      })
+    ).toEqual({
       mode: "vickrey",
       price: "10000000",
-      durationDays: 7
+      durationDays: 7,
+      durationHours: 4,
+      durationMinutes: 30,
+      durationSeconds: 15,
+      totalSeconds: 621015
     });
 
-    expect(() => validatePemasaranPayload({ mode: "vickrey", price: "0", durationDays: "31" })).toThrow(
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationHours: "24"
+      })
+    ).toThrow("Jam lelang harus 0 sampai 23.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationHours: true
+      })
+    ).toThrow("Jam lelang harus 0 sampai 23.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationMinutes: "60"
+      })
+    ).toThrow("Menit lelang harus 0 sampai 59.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationMinutes: []
+      })
+    ).toThrow("Menit lelang harus 0 sampai 59.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationSeconds: "60"
+      })
+    ).toThrow("Detik lelang harus 0 sampai 59.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationSeconds: "1e2"
+      })
+    ).toThrow("Detik lelang harus 0 sampai 59.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "0",
+        durationHours: "0",
+        durationMinutes: "0",
+        durationSeconds: "0"
+      })
+    ).toThrow("Durasi lelang harus lebih dari 0 detik.");
+
+    expect(() =>
+      validatePemasaranPayload({
+        mode: "vickrey",
+        price: "10000000",
+        durationDays: "30",
+        durationHours: "0",
+        durationMinutes: "0",
+        durationSeconds: "1"
+      })
+    ).toThrow("Durasi lelang maksimal 30 hari.");
+
+    expect(() => validatePemasaranPayload({ mode: "vickrey", price: "0", durationDays: "7" })).toThrow(
       "Harga pemasaran harus lebih dari 0."
     );
   });
@@ -131,5 +233,7 @@ describe("admin unit validation", () => {
     expect(() => validateAdminBarangMediaList([{ type: "dokumen", url: "/uploads/barang/file.pdf" }])).toThrow(
       "Jenis media hanya bisa foto atau video."
     );
+
+    expect(() => validateAdminBarangMediaList([null])).toThrow("Media barang belum valid.");
   });
 });

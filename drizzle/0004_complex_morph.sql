@@ -1,0 +1,1 @@
+ALTER TABLE "pemasaran" ADD COLUMN "duration_seconds" integer;

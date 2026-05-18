@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  validateBuyerBidCommitmentPayload,
+  validateBuyerBidEscrowPayload,
   validateBuyerBidPayload,
   validateBuyerPaymentProofPayload,
   validateBuyerPurchasePayload
@@ -26,6 +28,39 @@ describe("buyer validation", () => {
   it("accepts bid payloads above the base price", () => {
     expect(validateBuyerBidPayload({ amount: 1500000 }, 1000000)).toEqual({
       amount: 1500000
+    });
+  });
+
+  it("accepts client-side bid commitments without receiving nominal", () => {
+    expect(
+      validateBuyerBidCommitmentPayload({
+        bidHash: "864c8c7761ec3f2dc6c9f9fb35f7161915406597a38871d4b2b78cf231b87f6d"
+      })
+    ).toEqual({
+      bidHash: "864c8c7761ec3f2dc6c9f9fb35f7161915406597a38871d4b2b78cf231b87f6d"
+    });
+  });
+
+  it("rejects bid commitments that include malformed hashes", () => {
+    expect(() => validateBuyerBidCommitmentPayload({ bidHash: "not-a-hash" })).toThrow(
+      "Hash bid belum valid."
+    );
+  });
+
+  it("accepts encrypted escrow bid payload metadata", () => {
+    expect(
+      validateBuyerBidEscrowPayload(
+        {
+          amount: 1500000,
+          bidHash: "864c8c7761ec3f2dc6c9f9fb35f7161915406597a38871d4b2b78cf231b87f6d",
+          salt: "client-salt-value-123"
+        },
+        1000000
+      )
+    ).toEqual({
+      amount: 1500000,
+      bidHash: "864c8c7761ec3f2dc6c9f9fb35f7161915406597a38871d4b2b78cf231b87f6d",
+      salt: "client-salt-value-123"
     });
   });
 

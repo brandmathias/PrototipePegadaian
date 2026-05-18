@@ -40,7 +40,7 @@ describe("AdminAuctionDetailPage", () => {
     expect(screen.queryByRole("cell", { name: /pemenang/i })).not.toBeInTheDocument();
   });
 
-  it("renders ranked bids after results are open", () => {
+  it("renders redacted bid participants after results are open", () => {
     render(
       <AdminAuctionDetailPage
         auction={{
@@ -62,7 +62,6 @@ describe("AdminAuctionDetailPage", () => {
               id: "bid-1",
               bidderId: "buyer-1",
               bidderName: "Raras",
-              nominal: 15000000,
               submittedAt: "2026-04-28T02:00:00.000Z",
               submittedAtLabel: "28 Apr 2026, 10.00",
               rank: 1,
@@ -73,12 +72,11 @@ describe("AdminAuctionDetailPage", () => {
               id: "bid-2",
               bidderId: "buyer-2",
               bidderName: "Alya",
-              nominal: 13250000,
               submittedAt: "2026-04-28T01:55:00.000Z",
               submittedAtLabel: "28 Apr 2026, 09.55",
               rank: 2,
               isWinner: false,
-              determinesFinalPrice: true
+              determinesFinalPrice: false
             }
           ]
         }}
@@ -86,8 +84,8 @@ describe("AdminAuctionDetailPage", () => {
     );
 
     expect(screen.getByText(/pemenang \(b1\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/penentu harga bayar \(b2\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/rp\s?15\.000\.000/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/rp\s?13\.250\.000/i)).toHaveLength(2);
+    expect(screen.getAllByText(/tidak dikirim ke admin/i)).toHaveLength(2);
+    expect(screen.queryByText(/penentu harga bayar \(b2\)/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/rp\s?15\.000\.000/i)).not.toBeInTheDocument();
   });
 });

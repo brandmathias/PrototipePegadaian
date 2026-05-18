@@ -44,7 +44,11 @@ export type MarketingSession = {
   startsAt?: string | null;
   ending?: string;
   endingAt?: string;
+  revealDeadline?: string | null;
+  revealDeadlineAt?: string | null;
   participants?: number;
+  revealedBidCount?: number;
+  pendingRevealCount?: number;
   price?: number | null;
   transactionId?: string | null;
   transactionStatus?: string | null;
@@ -63,8 +67,8 @@ export type MarketingSession = {
     id: string;
     bidderId: string;
     bidderName: string;
-    nominal: number;
     submittedAtLabel: string;
+    isRevealed?: boolean;
     rank: number;
     isWinner: boolean;
     determinesFinalPrice: boolean;
@@ -195,6 +199,15 @@ function getVickreyStage(auction: MarketingSession) {
     };
   }
 
+  if (auction.visibility === "MENUNGGU_REVEAL") {
+    return {
+      label: "Menunggu reveal",
+      detail: "Deadline lewat. Buyer perlu reveal nominal sebelum pemenang dihitung.",
+      tone: "amber" as const,
+      icon: ShieldCheck
+    };
+  }
+
   if (VICKREY_PAYMENT_STATUSES.has(transactionStatus)) {
     return {
       label: transactionStatus === "BUKTI_DIUNGGAH" ? "Perlu verifikasi" : "Antrian pembayaran",
@@ -235,6 +248,7 @@ function getVickreyStage(auction: MarketingSession) {
 function getVickreySummary(auctions: MarketingSession[]) {
   return {
     active: auctions.filter((auction) => auction.visibility === "TERKUNCI").length,
+    pendingReveal: auctions.filter((auction) => auction.visibility === "MENUNGGU_REVEAL").length,
     revealed: auctions.filter((auction) => auction.visibility === "HASIL_DIBUKA").length,
     paymentQueue: auctions.filter((auction) => VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? "")).length,
     completed: auctions.filter((auction) => ["LUNAS", "SELESAI"].includes(auction.transactionStatus ?? "")).length
@@ -308,6 +322,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
   const media = toBuyerMedia(auction.media ?? []);
   const stage = getVickreyStage(auction);
   const StageIcon = stage.icon;
+  const waitingReveal = auction.visibility === "MENUNGGU_REVEAL";
 
   return (
     <Card className="group w-full max-w-[23.5rem] overflow-hidden rounded-[1.55rem] bg-white p-0 transition-transform duration-300 hover:-translate-y-1">
@@ -343,9 +358,10 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
             <Clock3 className="size-3.5" />
             <AdminLiveCountdown
               className="text-xs font-medium"
-              expiredLabel="Deadline terlewati"
-              fallbackLabel={auction.ending || "-"}
-              targetAt={auction.endingAt}
+              expiredLabel={waitingReveal ? "Batas reveal terlewati" : "Deadline terlewati"}
+              fallbackLabel={waitingReveal ? auction.revealDeadline ?? "-" : auction.ending || "-"}
+              prefix={waitingReveal ? "Batas reveal" : undefined}
+              targetAt={waitingReveal ? auction.revealDeadlineAt ?? undefined : auction.endingAt}
             />
           </p>
         </div>
@@ -363,7 +379,12 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
         </div>
 
         <div className="rounded-2xl bg-surface-low p-3 text-sm text-muted-foreground">
-          <p className="font-semibold text-foreground">{auction.winner || `${auction.participants ?? 0} peserta`}</p>
+          <p className="font-semibold text-foreground">
+            {auction.winner ||
+              (waitingReveal
+                ? `${auction.revealedBidCount ?? 0}/${auction.participants ?? 0} reveal`
+                : `${auction.participants ?? 0} peserta`)}
+          </p>
           <p className="mt-1">
             {auction.finalPrice ? currency.format(auction.finalPrice) : visibilityLabel}
           </p>
@@ -445,6 +466,16 @@ export function AdminVickreyAuctionListPage({
             <span className="inline-flex items-center gap-2">
               <Clock3 className="size-4 text-[#8a5b00]" />
               {summary.active} sesi
+            </span>
+          }
+        />
+        <SessionMetric
+          label="Menunggu reveal"
+          tone="amber"
+          value={
+            <span className="inline-flex items-center gap-2">
+              <ShieldCheck className="size-4 text-[#8a5b00]" />
+              {summary.pendingReveal} sesi
             </span>
           }
         />
@@ -715,7 +746,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
         </CardTitle>
         <CardDescription>
           {hasTransaction
-            ? "Transaksi pemenang terbaca dari database dan dapat diteruskan ke verifikasi pembayaran."
+            ? "Transaksi pemenang terbaca dari database. Untuk lelang Vickrey, pembayaran diproses langsung di unit."
             : "Belum ada transaksi pemenang yang perlu diverifikasi dari sesi ini."}
         </CardDescription>
       </CardHeader>
@@ -788,6 +819,8 @@ export function AdminVickreyAuctionDetailPage({
 }) {
   const bidRows = Array.isArray(auction.bids) ? auction.bids : [];
   const revealed = auction.visibility === "HASIL_DIBUKA";
+  const waitingReveal = auction.visibility === "MENUNGGU_REVEAL";
+  const showBidRows = revealed || waitingReveal;
   const buyerMedia = toBuyerMedia(auction.media ?? []);
 
   return (
@@ -847,15 +880,17 @@ export function AdminVickreyAuctionDetailPage({
 
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  {revealed ? "Hasil terbuka" : "Hasil terkunci"}
+                  {revealed ? "Hasil terbuka" : waitingReveal ? "Menunggu reveal" : "Hasil terkunci"}
                 </p>
                 <p className="mt-3 font-headline text-5xl font-extrabold tracking-tight text-primary">
                   {currency.format(auction.basePrice ?? 0)}
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {auction.visibility === "HASIL_DIBUKA"
-                    ? "Nominal bid sudah bisa ditinjau."
-                    : "Nominal bid tetap tersembunyi sampai deadline selesai."}
+                  {revealed
+                    ? "Hasil final sudah terbentuk dan transaksi pemenang dapat dipantau."
+                    : waitingReveal
+                      ? "Deadline lewat. Sistem menunggu buyer reveal nominal tanpa membuka nilai ke admin."
+                      : "Nominal bid tetap tersembunyi sampai deadline selesai."}
                 </p>
               </div>
 
@@ -867,10 +902,10 @@ export function AdminVickreyAuctionDetailPage({
                 <p className="mt-2">
                   <AdminLiveCountdown
                     className="font-semibold text-foreground"
-                    expiredLabel="Deadline terlewati"
-                    fallbackLabel={auction.ending || "-"}
+                    expiredLabel={waitingReveal ? "Batas reveal terlewati" : "Deadline terlewati"}
+                    fallbackLabel={waitingReveal ? auction.revealDeadline ?? "-" : auction.ending || "-"}
                     prefix="Sisa"
-                    targetAt={auction.endingAt}
+                    targetAt={waitingReveal ? auction.revealDeadlineAt ?? undefined : auction.endingAt}
                   />
                 </p>
                 <p className="mt-2">{humanize(auction.visibility)}</p>
@@ -897,15 +932,21 @@ export function AdminVickreyAuctionDetailPage({
             <CardContent className="space-y-4">
               <div className="rounded-2xl border border-[#ead8b5] bg-white p-5">
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#8a5b00]/55">
-                  {revealed ? "Hasil terbuka" : "Hasil terkunci"}
+                  {revealed ? "Hasil terbuka" : waitingReveal ? "Reveal window" : "Hasil terkunci"}
                 </p>
                 <p className="mt-2 text-lg font-semibold text-black/85">
-                  {revealed ? "Nominal bid sudah bisa ditinjau" : "Nominal bid belum dapat dibuka"}
+                  {revealed
+                    ? "Pemenang dan harga final sudah terbentuk"
+                    : waitingReveal
+                      ? "Menunggu buyer reveal nominal"
+                      : "Nominal bid belum dapat dibuka"}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-black/60">
                   {revealed
-                    ? "Admin dapat melihat pemenang, final price, dan urutan bid setelah deadline selesai."
-                    : "Selama sesi aktif, admin hanya melihat jumlah peserta dan status sesi tanpa nominal bid."}
+                    ? "Admin melihat pemenang, harga final, dan status pembayaran setelah settlement selesai."
+                    : waitingReveal
+                      ? "Buyer perlu membuka nominal dari sisi akunnya. Admin tetap tidak menerima nominal individual sebelum settlement."
+                      : "Selama sesi aktif, admin hanya melihat jumlah peserta dan status sesi tanpa nominal bid."}
                 </p>
               </div>
 
@@ -921,15 +962,15 @@ export function AdminVickreyAuctionDetailPage({
               <CardTitle className="text-xl sm:text-[1.45rem]">Daftar Bid</CardTitle>
             </CardHeader>
             <CardContent>
-              {revealed ? (
+              {showBidRows ? (
                 bidRows.length ? (
                   <div className="overflow-x-auto rounded-[1.35rem] border border-black/10">
                     <table className="w-full min-w-[48rem] text-left">
                       <thead className="bg-[#fff6e5] text-xs uppercase tracking-[0.16em] text-black/45">
                         <tr>
-                          <th className="px-4 py-3">Peringkat</th>
+                          <th className="px-4 py-3">Urutan</th>
                           <th className="px-4 py-3">Peserta</th>
-                          <th className="px-4 py-3">Nominal</th>
+                          <th className="px-4 py-3">Nilai bid</th>
                           <th className="px-4 py-3">Waktu</th>
                           <th className="px-4 py-3">Peran</th>
                         </tr>
@@ -946,22 +987,26 @@ export function AdminVickreyAuctionDetailPage({
                                 </p>
                               </div>
                             </td>
-                            <td className="px-4 py-3 font-semibold text-black/85">
-                              {currency.format(bid.nominal)}
+                            <td className="px-4 py-3">
+                              <span className="inline-flex rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/55">
+                                Tidak dikirim ke admin
+                              </span>
                             </td>
                             <td className="px-4 py-3 text-black/55">{bid.submittedAtLabel}</td>
                             <td className="px-4 py-3">
-                              {bid.isWinner ? (
+                              {waitingReveal ? (
+                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                  bid.isRevealed ? "bg-[#eef7f1] text-[#0a6a49]" : "bg-[#fff7dc] text-[#8a5b00]"
+                                }`}>
+                                  {bid.isRevealed ? "Sudah reveal" : "Belum reveal"}
+                                </span>
+                              ) : bid.isWinner ? (
                                 <span className="inline-flex rounded-full bg-[#eef7f1] px-3 py-1 text-xs font-semibold text-[#0a6a49]">
                                   Pemenang (B1)
                                 </span>
-                              ) : bid.determinesFinalPrice ? (
-                                <span className="inline-flex rounded-full bg-[#fff1d7] px-3 py-1 text-xs font-semibold text-[#8a5b00]">
-                                  Penentu harga bayar (B2)
-                                </span>
                               ) : (
                                 <span className="inline-flex rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-black/55">
-                                  Arsip bid
+                                  Peserta
                                 </span>
                               )}
                             </td>
@@ -971,7 +1016,7 @@ export function AdminVickreyAuctionDetailPage({
                     </table>
                   </div>
                 ) : (
-                  <EmptyPanel text="Deadline sudah lewat, tetapi belum ada bid yang tercatat untuk sesi ini." />
+                  <EmptyPanel text={waitingReveal ? "Deadline lewat, tetapi belum ada commitment bid untuk direveal." : "Deadline sudah lewat, tetapi belum ada bid yang tercatat untuk sesi ini."} />
                 )
               ) : (
                 <div className="rounded-[1.5rem] border border-dashed border-[#ead8b5] bg-[#fffcf7] p-5 text-sm leading-7 text-black/55">

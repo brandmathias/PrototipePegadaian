@@ -156,17 +156,27 @@ export function LotDetailPage({
                 </div>
               )}
 
-      {bidState ? (
+              {bidState ? (
                 <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
                     Aktivitas akun Anda
                   </p>
-                  <p className="mt-3 text-lg font-bold text-foreground">
-                    Bid {currency.format(bidState.bidAmount)}
-                  </p>
+                  <p className="mt-3 text-lg font-bold text-foreground">Bid sudah terkunci</p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {bidState.note}
                   </p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-primary">
+                    <span className="rounded-full bg-primary/10 px-3 py-1">
+                      {typeof bidState.bidAmount === "number"
+                        ? `Bid ${currency.format(bidState.bidAmount)}`
+                        : "Hash bid tersimpan"}
+                    </span>
+                    {bidState.paymentAmount ? (
+                      <span className="rounded-full bg-primary/10 px-3 py-1">
+                        Harga bayar Vickrey {currency.format(bidState.paymentAmount)}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
 
@@ -178,8 +188,10 @@ export function LotDetailPage({
 
               <div className="flex flex-wrap gap-3">
                 {isVickrey ? (
-                  <Link href={`/katalog/${lot.id}/bid`}>
-                    <Button className="min-w-[12rem]">Ikut Lelang Sekarang</Button>
+                  <Link href={bidState ? "/riwayat-bid" : `/katalog/${lot.id}/bid`}>
+                    <Button className="min-w-[12rem]">
+                      {bidState ? "Pantau Riwayat Bid" : "Ikut Lelang Sekarang"}
+                    </Button>
                   </Link>
                 ) : (
                   <Link href={`/katalog/${lot.id}/beli`}>
@@ -257,10 +269,12 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
 export function BidPage({
   lot,
   bidState,
+  buyerId,
   buyerStatus = null
 }: {
   lot: Lot | null;
   bidState: BuyerBid | null;
+  buyerId?: string | null;
   buyerStatus?: BuyerPublicStatus;
 }) {
   if (!lot) notFound();
@@ -278,8 +292,10 @@ export function BidPage({
         title="Kirim penawaran untuk sesi Vickrey"
       />
       <VickreyBidForm
+        buyerId={buyerId}
         existingBidAmount={bidState?.bidAmount}
         existingBidStatus={bidState?.status}
+        hasExistingBid={Boolean(bidState)}
         isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
         blacklistUntil={buyerStatus?.blacklist.until ?? null}
         lot={lot}

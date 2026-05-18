@@ -4,6 +4,9 @@ import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, users } from "@/lib/db/schema";
+import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+
+const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 
 async function getBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
@@ -121,10 +124,17 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
 
   const payload = validatePemasaranPayload(input);
   const now = new Date();
-  const endsAt =
-    payload.mode === "vickrey" && payload.durationDays
-      ? new Date(now.getTime() + payload.durationDays * 24 * 60 * 60 * 1000)
-      : null;
+  let derivedDurationDays: number | null = null;
+  let derivedDurationSeconds: number | null = null;
+  let endsAt: Date | null = null;
+  let revealEndsAt: Date | null = null;
+
+  if (payload.mode === "vickrey") {
+    derivedDurationDays = Math.floor(payload.totalSeconds / 86_400);
+    derivedDurationSeconds = payload.totalSeconds;
+    endsAt = new Date(now.getTime() + payload.totalSeconds * 1000);
+    revealEndsAt = new Date(endsAt.getTime() + VICKREY_REVEAL_WINDOW_SECONDS * 1000);
+  }
 
   const [{ nextIteration }] = await db
     .select({
@@ -141,9 +151,11 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
       mode: payload.mode,
       price: payload.mode === "fixed_price" ? payload.price : null,
       basePrice: payload.mode === "vickrey" ? payload.price : null,
-      durationDays: payload.mode === "vickrey" ? payload.durationDays : null,
+      durationDays: derivedDurationDays,
+      durationSeconds: derivedDurationSeconds,
       startsAt: now,
       endsAt,
+      revealEndsAt,
       iteration: Number(nextIteration ?? 1),
       status: "aktif",
       createdByUserId: userId
@@ -164,6 +176,8 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
 }
 
 export async function listAdminPemasaran(unitId: string) {
+  await processExpiredVickreyAuctions();
+
   const rows = await db
     .select({
       marketing: pemasaran,
@@ -197,6 +211,8 @@ export async function listAdminPemasaran(unitId: string) {
 }
 
 export async function getAdminPemasaranById(unitId: string, pemasaranId: string) {
+  await processExpiredVickreyAuctions();
+
   const [row] = await db
     .select({
       marketing: pemasaran,
@@ -223,15 +239,20 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
 
   const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
   const bidRows = shouldRevealBids
-    ? await db
+      ? await db
         .select({
-          bid: bids,
+          bid: {
+            id: bids.id,
+            userId: bids.userId,
+            createdAt: bids.createdAt,
+            revealedAt: bids.revealedAt
+          },
           bidderName: users.name
         })
         .from(bids)
         .innerJoin(users, eq(users.id, bids.userId))
         .where(eq(bids.pemasaranId, row.marketing.id))
-        .orderBy(desc(bids.nominal), asc(bids.createdAt))
+        .orderBy(asc(bids.createdAt))
     : [];
 
   return serializeAdminPemasaran(row.marketing, {

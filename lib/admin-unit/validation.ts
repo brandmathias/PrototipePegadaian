@@ -31,8 +31,12 @@ function normalizeMoney(value: unknown, message: string) {
 
 function normalizeDate(value: unknown, message: string) {
   const result = String(value ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(result)) {
+    throw new Error(message);
+  }
+
   const date = new Date(`${result}T00:00:00.000Z`);
-  if (!result || Number.isNaN(date.getTime())) {
+  if (!result || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== result) {
     throw new Error(message);
   }
   return result;
@@ -109,6 +113,10 @@ export function validateAdminBarangMediaList(input: unknown): Array<{
   }
 
   return input.map((item, index) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      throw new Error("Media barang belum valid.");
+    }
+
     const media = item as AdminBarangMediaInput;
     const type = String(media.type ?? "foto").trim().toLowerCase();
     const url = requiredText(media.url, "URL media wajib diisi.");
@@ -159,7 +167,48 @@ export function validateTebusPayload(input: { reference?: unknown; redeemedAt?: 
   };
 }
 
-export function validatePemasaranPayload(input: { mode?: unknown; price?: unknown; durationDays?: unknown }) {
+function normalizeWholeNumber(value: unknown, fallback: number, message: string) {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(message);
+  }
+
+  const normalized = value.trim();
+  if (normalized === "") {
+    return fallback;
+  }
+
+  if (!/^\d+$/.test(normalized)) {
+    throw new Error(message);
+  }
+
+  return Number(normalized);
+}
+
+export function validatePemasaranPayload(input: {
+  mode?: unknown;
+  price?: unknown;
+  durationDays?: unknown;
+  durationHours?: unknown;
+  durationMinutes?: unknown;
+  durationSeconds?: unknown;
+}):
+  | {
+      mode: "fixed_price";
+      price: string;
+    }
+  | {
+      mode: "vickrey";
+      price: string;
+      durationDays: number;
+      durationHours: number;
+      durationMinutes: number;
+      durationSeconds: number;
+      totalSeconds: number;
+    } {
   const mode = requiredText(input.mode, "Mode pemasaran wajib dipilih.");
   const price = normalizeMoney(input.price, "Harga pemasaran harus lebih dari 0.");
 
@@ -168,15 +217,45 @@ export function validatePemasaranPayload(input: { mode?: unknown; price?: unknow
   }
 
   if (mode === "fixed_price") {
-    return { mode, price, durationDays: null };
+    return { mode: "fixed_price", price };
   }
 
-  const durationDays = Number(input.durationDays);
-  if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > 30) {
-    throw new Error("Durasi lelang harus 1 sampai 30 hari.");
+  const durationDays = normalizeWholeNumber(input.durationDays, 0, "Durasi lelang maksimal 30 hari.");
+  const durationHours = normalizeWholeNumber(input.durationHours, 0, "Jam lelang harus 0 sampai 23.");
+  const durationMinutes = normalizeWholeNumber(input.durationMinutes, 0, "Menit lelang harus 0 sampai 59.");
+  const durationSeconds = normalizeWholeNumber(input.durationSeconds, 0, "Detik lelang harus 0 sampai 59.");
+
+  if (durationHours > 23) {
+    throw new Error("Jam lelang harus 0 sampai 23.");
   }
 
-  return { mode, price, durationDays };
+  if (durationMinutes > 59) {
+    throw new Error("Menit lelang harus 0 sampai 59.");
+  }
+
+  if (durationSeconds > 59) {
+    throw new Error("Detik lelang harus 0 sampai 59.");
+  }
+
+  const totalSeconds = durationDays * 24 * 60 * 60 + durationHours * 60 * 60 + durationMinutes * 60 + durationSeconds;
+
+  if (totalSeconds <= 0) {
+    throw new Error("Durasi lelang harus lebih dari 0 detik.");
+  }
+
+  if (totalSeconds > 30 * 24 * 60 * 60) {
+    throw new Error("Durasi lelang maksimal 30 hari.");
+  }
+
+  return {
+    mode: "vickrey",
+    price,
+    durationDays,
+    durationHours,
+    durationMinutes,
+    durationSeconds,
+    totalSeconds
+  };
 }
 
 export function validateTransactionVerificationPayload(input: { reference?: unknown }) {

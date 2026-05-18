@@ -1,14 +1,14 @@
 "use client";
 
 import { FormEvent, ReactNode, useState } from "react";
-import { LoaderCircle, Save } from "lucide-react";
+import { CarFront, Cpu, Gem, LoaderCircle, Medal, Save, Shapes } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { AdminOptionGrid } from "@/components/admin-unit/admin-option-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
-import { cn } from "@/lib/utils";
 
 type AdminBarangEditValue = {
   id: string;
@@ -25,18 +25,18 @@ type AdminBarangEditValue = {
 };
 
 const categories = [
-  { value: "emas", label: "Emas" },
-  { value: "perhiasan", label: "Perhiasan" },
-  { value: "elektronik", label: "Elektronik" },
-  { value: "kendaraan", label: "Kendaraan" },
-  { value: "logam_mulia", label: "Logam Mulia" },
-  { value: "lainnya", label: "Lainnya" }
+  { value: "emas", label: "Emas", description: "Perhiasan emas dasar dan emas batangan kecil.", icon: Gem },
+  { value: "perhiasan", label: "Perhiasan", description: "Cincin, kalung, gelang, anting, dan sejenisnya.", icon: Shapes },
+  { value: "elektronik", label: "Elektronik", description: "Gawai, laptop, kamera, atau perangkat rumah tangga.", icon: Cpu },
+  { value: "kendaraan", label: "Kendaraan", description: "Motor atau kendaraan lain yang siap dinilai unit.", icon: CarFront },
+  { value: "logam_mulia", label: "Logam Mulia", description: "Batangan bernilai tinggi dengan pasar harga ketat.", icon: Medal },
+  { value: "lainnya", label: "Lainnya", description: "Barang jaminan lain di luar kategori utama.", icon: Save }
 ];
 
 const conditions = [
-  { value: "baik", label: "Baik" },
-  { value: "cukup", label: "Cukup" },
-  { value: "rusak_ringan", label: "Rusak ringan" }
+  { value: "baik", label: "Baik", description: "Siap tampil ke katalog tanpa catatan mayor.", icon: Gem },
+  { value: "cukup", label: "Cukup", description: "Ada jejak pakai ringan, masih layak dipasarkan.", icon: Shapes },
+  { value: "rusak_ringan", label: "Rusak ringan", description: "Perlu catatan kondisi agar ekspektasi buyer jelas.", icon: Cpu }
 ];
 
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
@@ -47,41 +47,6 @@ function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: stri
     >
       {children}
     </label>
-  );
-}
-
-function SelectField({
-  id,
-  label,
-  onChange,
-  options,
-  value
-}: {
-  id: string;
-  label: string;
-  onChange: (value: string) => void;
-  options: Array<{ value: string; label: string }>;
-  value: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <select
-        className={cn(
-          "flex h-12 w-full rounded-md border border-input bg-[#f3f3f3] px-4 py-2 text-sm font-medium text-black/78",
-          "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        )}
-        id={id}
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 }
 
@@ -172,20 +137,24 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
             value={name}
           />
         </div>
-        <SelectField
-          id="admin-barang-category"
-          label="Kategori"
-          onChange={setCategory}
-          options={categories}
-          value={category}
-        />
-        <SelectField
-          id="admin-barang-condition"
-          label="Kondisi"
-          onChange={setCondition}
-          options={conditions}
-          value={condition}
-        />
+        <div className="md:col-span-2">
+          <AdminOptionGrid
+            label="Kategori"
+            name="adminBarangCategory"
+            onChange={setCategory}
+            options={categories}
+            value={category}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <AdminOptionGrid
+            label="Kondisi"
+            name="adminBarangCondition"
+            onChange={setCondition}
+            options={conditions}
+            value={condition}
+          />
+        </div>
         <div className="space-y-2">
           <FieldLabel htmlFor="admin-barang-appraisal">Nilai taksiran</FieldLabel>
           <Input

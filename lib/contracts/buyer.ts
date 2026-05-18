@@ -44,7 +44,8 @@ export type BuyerBidStatus =
   | "BID_TERCATAT"
   | "MENUNGGU_HASIL"
   | "MENANG"
-  | "TIDAK_MENANG";
+  | "TIDAK_MENANG"
+  | "GAGAL";
 
 export type BuyerBid = {
   lotId: string;
@@ -52,8 +53,36 @@ export type BuyerBid = {
   unit: string;
   status: BuyerBidStatus;
   closing: string;
-  bidAmount: number;
+  revealDeadline?: string;
+  revealDeadlineAt?: string;
+  bidAmount?: number;
   basePrice: number;
+  finalPrice?: number;
+  paymentAmount?: number;
+  transactionStatus?: BuyerTransactionStatus;
+  paymentDeadline?: string;
+  paymentDeadlineAt?: string;
   note: string;
   linkedTransactionId?: string;
+  bidHash?: string;
+  isRevealed?: boolean;
+  escrowed?: boolean;
+  canReveal?: boolean;
+};
+
+export type BuyerBidVerification = {
+  lotId: string;
+  lot: string;
+  unit: string;
+  closing: string;
+  bidAmount?: number;
+  bidHash: string;
+  computedHash?: string;
+  salt?: string;
+  algorithm: "SHA-256";
+  formula: string;
+  isMatch: boolean;
+  canVerify: boolean;
+  canReveal: boolean;
+  isRevealed: boolean;
 };
