@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, inArray, isNotNull, lte } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -11,9 +11,11 @@ import {
   pelanggaranUser,
   pemasaran,
   riwayatStatusBarang,
-  transaksi
+  transaksi,
+  users
 } from "@/lib/db/schema";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
+import { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
 import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 type BidOutcomeInput = {
@@ -102,21 +104,7 @@ export function canSettleVickreySession(
   return input.revealEndsAt.getTime() <= now.getTime();
 }
 
-export function getBlacklistDurationDays(totalViolations: number) {
-  if (totalViolations <= 1) {
-    return 7;
-  }
-
-  if (totalViolations === 2) {
-    return 30;
-  }
-
-  if (totalViolations === 3) {
-    return 90;
-  }
-
-  return 365;
-}
+export { getBlacklistDurationDays };
 
 export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
   const revealedBids = input.bids.filter(
@@ -397,11 +385,13 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
     .select({
       transaction: transaksi,
       marketing: pemasaran,
-      item: barang
+      item: barang,
+      buyerNationalId: users.nationalId
     })
     .from(transaksi)
     .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(users, eq(users.id, transaksi.userId))
     .where(
       and(
         eq(transaksi.type, "vickrey"),
@@ -462,7 +452,11 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
       const [existingBlacklist] = await tx
         .select()
         .from(blacklists)
-        .where(eq(blacklists.userId, row.transaction.userId))
+        .where(
+          row.buyerNationalId
+            ? or(eq(blacklists.userId, row.transaction.userId), eq(blacklists.nationalId, row.buyerNationalId))
+            : eq(blacklists.userId, row.transaction.userId)
+        )
         .limit(1);
 
       const totalViolations = (existingBlacklist?.totalViolations ?? 0) + 1;
@@ -474,6 +468,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           .update(blacklists)
           .set({
             unitId: row.item.unitId,
+            nationalId: row.buyerNationalId ?? existingBlacklist.nationalId,
             totalViolations,
             isActive: true,
             blockedAt: now,
@@ -488,6 +483,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           id: blacklistId,
           unitId: row.item.unitId,
           userId: row.transaction.userId,
+          nationalId: row.buyerNationalId,
           totalViolations,
           isActive: true,
           blockedAt: now,

@@ -14,8 +14,18 @@ export type BuyerLoginPayload = {
   password: string;
 };
 
-function normalizeEmail(email: string) {
+export function normalizeBuyerEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+export function validateBuyerEmail(email: string) {
+  const normalized = normalizeBuyerEmail(email);
+
+  if (!EMAIL_PATTERN.test(normalized)) {
+    throw new Error("Format email belum valid.");
+  }
+
+  return normalized;
 }
 
 export function normalizeBuyerPhoneNumber(phoneNumber: string) {
@@ -54,15 +64,11 @@ export function normalizeBuyerNationalId(nationalId: string) {
 
 export function validateBuyerRegisterPayload(payload: BuyerRegisterPayload) {
   const name = payload.name.trim();
-  const email = normalizeEmail(payload.email);
+  const email = validateBuyerEmail(payload.email);
   const password = payload.password.trim();
 
   if (name.length < 3) {
     throw new Error("Nama lengkap minimal 3 karakter.");
-  }
-
-  if (!EMAIL_PATTERN.test(email)) {
-    throw new Error("Format email belum valid.");
   }
 
   if (password.length < 8) {
@@ -79,12 +85,8 @@ export function validateBuyerRegisterPayload(payload: BuyerRegisterPayload) {
 }
 
 export function validateBuyerLoginPayload(payload: BuyerLoginPayload) {
-  const email = normalizeEmail(payload.email);
+  const email = validateBuyerEmail(payload.email);
   const password = payload.password.trim();
-
-  if (!EMAIL_PATTERN.test(email)) {
-    throw new Error("Format email belum valid.");
-  }
 
   if (!password) {
     throw new Error("Kata sandi wajib diisi.");

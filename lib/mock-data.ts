@@ -968,7 +968,7 @@ export const adminBlacklist: Array<{
     status: "AKTIF",
     reason: "Mengulang pelanggaran pada dua sesi lelang berturut-turut.",
     lastIncident: "20 April 2026",
-    activeAuctionRestriction: "Masih dapat membeli fixed price, tetapi tidak bisa submit bid.",
+    activeAuctionRestriction: "Level 2: tidak bisa submit bid Vickrey atau membuat transaksi fixed price baru.",
     history: [
       {
         date: "15 Maret 2026",

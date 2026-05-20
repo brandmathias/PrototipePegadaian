@@ -4,6 +4,7 @@ import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
 
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
+import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import {
   validateBuyerBidEscrowPayload,
   validateBuyerBidPayload,
@@ -248,6 +249,7 @@ export async function getBuyerBidVerification(userId: string, pemasaranId: strin
 export async function getBuyerSummary(userId: string) {
   const [profile] = await db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
   const blacklist = await getActiveBlacklist(userId);
+  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
   const transactions = await listBuyerTransactions(userId);
   const bidHistory = await listBuyerBids(userId);
   const needsAction = transactions.filter((transaction) =>
@@ -278,7 +280,9 @@ export async function getBuyerSummary(userId: string) {
           )
         : "-",
       reason: blacklist
-        ? "Akun masih dibatasi untuk mengikuti lelang Vickrey. Pembelian fixed price tetap tersedia."
+        ? blacklistPolicy.blocksFixedPrice
+          ? "Akun sedang dibatasi untuk membuat transaksi baru. Transaksi yang sudah berjalan tetap bisa diselesaikan."
+          : "Akun masih dibatasi untuk mengikuti lelang Vickrey. Pembelian fixed price tetap tersedia."
         : "Tidak ada pembatasan aktif. Akun dapat mengikuti fixed price dan lelang."
     },
     metrics: [
@@ -298,7 +302,7 @@ export async function getBuyerSummary(userId: string) {
     highlights: [
       "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat.",
       "Bid Vickrey tersimpan tertutup dan hanya diproses setelah sesi berakhir.",
-      "Blacklist hanya membatasi akses lelang, bukan pembelian fixed price."
+      "Pembatasan akun berlaku bertingkat sesuai jumlah pelanggaran pembayaran."
     ]
   };
 }
@@ -344,6 +348,13 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     }
 
     throw new Error("Barang sedang dalam proses pembelian oleh pembeli lain.");
+  }
+
+  const blacklist = await getActiveBlacklist(userId);
+  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+
+  if (blacklist && blacklistPolicy.blocksFixedPrice) {
+    throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi fixed price baru.");
   }
 
   const amount = Number(row.marketing.price ?? 0);
@@ -393,7 +404,12 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
 
   const blacklist = await getActiveBlacklist(userId);
   if (blacklist) {
-    throw new Error("Akun Anda sedang dibatasi untuk mengikuti lelang Vickrey.");
+    const restriction = getBlacklistRestrictionPolicy(blacklist.totalViolations);
+    throw new Error(
+      restriction.requiresManualReview
+        ? "Akun Anda sedang dalam pembatasan level 3 dan perlu review admin sebelum ikut lelang Vickrey."
+        : "Akun Anda sedang dibatasi untuk mengikuti lelang Vickrey."
+    );
   }
 
   const basePrice = Number(row.marketing.basePrice ?? 0);

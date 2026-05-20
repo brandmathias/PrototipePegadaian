@@ -8,8 +8,26 @@ import { FormEvent, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { getSafeBuyerNextPath } from "@/lib/auth/guards";
 import { validateBuyerRegisterPayload } from "@/lib/auth/buyer-auth-validation";
+import { BUYER_REGISTRATION_DUPLICATE_MESSAGE } from "@/lib/auth/buyer-registration-guard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+function getFriendlyRegistrationError(message: string | undefined) {
+  const fallback = "Registrasi belum berhasil. Coba lagi.";
+  const value = message ?? fallback;
+  const normalized = value.toLowerCase();
+
+  if (
+    normalized.includes("duplicate") ||
+    normalized.includes("unique") ||
+    normalized.includes("already exists") ||
+    normalized.includes("sudah terdaftar")
+  ) {
+    return BUYER_REGISTRATION_DUPLICATE_MESSAGE;
+  }
+
+  return value;
+}
 
 export function RegisterForm() {
   const router = useRouter();
@@ -63,7 +81,7 @@ export function RegisterForm() {
     setIsPending(false);
 
     if (result.error) {
-      setError(result.error.message ?? "Registrasi belum berhasil. Coba lagi.");
+      setError(getFriendlyRegistrationError(result.error.message));
       return;
     }
 

@@ -298,6 +298,7 @@ export function BidPage({
         hasExistingBid={Boolean(bidState)}
         isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
         blacklistUntil={buyerStatus?.blacklist.until ?? null}
+        blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
         lot={lot}
       />
     </div>

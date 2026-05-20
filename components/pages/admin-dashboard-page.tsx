@@ -269,7 +269,7 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
                   <Clock3 className="mt-1 size-5 text-[#0a6a49]" />
                   <div className="space-y-2 text-sm leading-6 text-black/65">
                     <p>{blacklist.filter((entry) => entry.status === "AKTIF").length} akun sedang dibatasi di unit ini.</p>
-                    <p>Mereka masih dapat membeli fixed price, tetapi akses ikut lelang Vickrey tetap ditahan sampai masa blokir berakhir.</p>
+                    <p>Pembatasan berlaku bertingkat: level awal menahan Vickrey, level berulang juga menahan transaksi fixed price baru.</p>
                   </div>
                 </div>
               </div>

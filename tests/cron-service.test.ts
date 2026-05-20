@@ -128,7 +128,7 @@ describe("cron service", () => {
   it("maps blacklist duration by accumulated violation count", async () => {
     expect(cronService.getBlacklistDurationDays(1)).toBe(7);
     expect(cronService.getBlacklistDurationDays(2)).toBe(30);
-    expect(cronService.getBlacklistDurationDays(3)).toBe(90);
+    expect(cronService.getBlacklistDurationDays(3)).toBe(365);
     expect(cronService.getBlacklistDurationDays(4)).toBe(365);
     expect(cronService.getBlacklistDurationDays(9)).toBe(365);
   });

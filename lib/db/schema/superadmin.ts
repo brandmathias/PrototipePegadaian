@@ -50,6 +50,7 @@ export const blacklists = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    nationalId: text("national_id"),
     totalViolations: integer("total_violations").notNull().default(1),
     isActive: boolean("is_active").notNull().default(true),
     blockedAt: timestamp("blocked_at", { withTimezone: true }).notNull().defaultNow(),
@@ -61,9 +62,13 @@ export const blacklists = pgTable(
   (table) => ({
     unitIdIdx: index("blacklist_unit_id_idx").on(table.unitId),
     userIdIdx: index("blacklist_user_id_idx").on(table.userId),
+    nationalIdIdx: index("blacklist_national_id_idx").on(table.nationalId),
     activeUserIdx: uniqueIndex("blacklist_active_user_unique")
       .on(table.userId)
-      .where(sql`${table.isActive} = true`)
+      .where(sql`${table.isActive} = true`),
+    activeNationalIdIdx: uniqueIndex("blacklist_active_national_id_unique")
+      .on(table.nationalId)
+      .where(sql`${table.isActive} = true and ${table.nationalId} is not null`)
   })
 );
 

@@ -981,8 +981,8 @@ export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlackl
               <CardTitle>Pengingat kebijakan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm leading-relaxed text-muted-foreground">
-              <p>Blacklist global memengaruhi akses user untuk mengikuti lelang Vickrey.</p>
-              <p>User yang sedang diblokir tetap dapat melihat katalog dan membeli fixed price.</p>
+              <p>Blacklist global memakai pembatasan bertingkat sesuai jumlah pelanggaran pembayaran.</p>
+              <p>Level 1 menahan bid Vickrey, level 2 menahan transaksi baru, dan level 3 memerlukan review manual.</p>
               <p>Pastikan keputusan pencabutan mempertimbangkan riwayat pelanggaran lintas unit.</p>
             </CardContent>
           </Card>

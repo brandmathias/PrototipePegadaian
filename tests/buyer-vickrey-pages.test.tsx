@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -74,6 +75,54 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText(/bid anda sudah terkunci/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /bid sudah terkunci/i })).toBeDisabled();
     expect(screen.getByRole("link", { name: /lihat riwayat bid/i })).toHaveAttribute("href", "/riwayat-bid");
+  });
+
+  it("opens bid terms from the main confirmation button before final vickrey submission", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <BidPage
+        bidState={null}
+        buyerId="buyer-1"
+        buyerStatus={{ blacklist: { active: false, until: null, totalViolations: 0 } }}
+        lot={vickreyLot}
+      />
+    );
+
+    const submitButton = await screen.findByRole("button", { name: /konfirmasi bid tertutup/i });
+    await waitFor(() => {
+      expect(submitButton).toBeEnabled();
+    });
+    expect(screen.queryByRole("button", { name: /baca dan setujui syarat/i })).not.toBeInTheDocument();
+
+    await user.click(submitButton);
+
+    const dialog = screen.getByRole("dialog", { name: /syarat & ketentuan penawaran/i });
+    expect(dialog).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/baca dan cermati syarat dan ketentuan di bawah ini/i)
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/pembayaran langsung di unit maksimal 24 jam setelah hasil lelang diumumkan/i)
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText(/status pelanggaran anda saat ini:\s*0x/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/level 1/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/7 hari/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/tidak bisa ikut vickrey\./i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/level 2/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/30 hari/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/tidak bisa membuat pembelian fixed price baru/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/level 3\+/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/365 hari/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/review admin/i)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/escrow terenkripsi/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/admin unit tidak dapat melihat nominal bid/i)).not.toBeInTheDocument();
+
+    const modalAction = screen.getByRole("button", { name: /setujui dan kirim bid/i });
+    expect(modalAction).toBeDisabled();
+
+    await user.click(screen.getByRole("checkbox", { name: /saya telah membaca dan menyetujui/i }));
+    expect(modalAction).toBeEnabled();
   });
 
   it("shows winner payment context in vickrey bid history", () => {

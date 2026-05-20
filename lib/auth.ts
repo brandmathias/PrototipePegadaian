@@ -2,7 +2,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth, APIError } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { eq } from "drizzle-orm";
+import { and, eq, gt, isNull, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
@@ -10,6 +10,7 @@ import {
   normalizeBuyerNationalId,
   normalizeBuyerPhoneNumber
 } from "@/lib/auth/buyer-auth-validation";
+import { ensureBuyerRegistrationIdentityIsAvailable } from "@/lib/auth/buyer-registration-guard";
 
 export const auth = betterAuth({
   appName: "Pegadaian Lelang",
@@ -23,31 +24,73 @@ export const auth = betterAuth({
   plugins: [nextCookies()],
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path !== "/sign-in/email") {
+      if (ctx.path === "/sign-up/email") {
+        try {
+          await ensureBuyerRegistrationIdentityIsAvailable(ctx.body ?? {}, {
+            async findExistingIdentity(identity) {
+              const [existingUser] = await db
+                .select({ id: schema.users.id })
+                .from(schema.users)
+                .where(
+                  or(
+                    eq(schema.users.email, identity.email),
+                    eq(schema.users.phoneNumber, identity.phoneNumber),
+                    eq(schema.users.nationalId, identity.nationalId)
+                  )
+                )
+                .limit(1);
+
+              return Boolean(existingUser);
+            },
+            async findActiveBlacklistByNationalId(nationalId) {
+              const [activeBlacklist] = await db
+                .select({ id: schema.blacklists.id })
+                .from(schema.blacklists)
+                .innerJoin(schema.users, eq(schema.users.id, schema.blacklists.userId))
+                .where(
+                  and(
+                    eq(schema.blacklists.isActive, true),
+                    or(isNull(schema.blacklists.blockedUntil), gt(schema.blacklists.blockedUntil, new Date())),
+                    or(eq(schema.blacklists.nationalId, nationalId), eq(schema.users.nationalId, nationalId))
+                  )
+                )
+                .limit(1);
+
+              return Boolean(activeBlacklist);
+            }
+          });
+        } catch (error) {
+          throw new APIError("BAD_REQUEST", {
+            message: error instanceof Error ? error.message : "Data registrasi pembeli belum valid."
+          });
+        }
+
         return;
       }
 
-      const email = String(ctx.body?.email ?? "")
-        .trim()
-        .toLowerCase();
+      if (ctx.path === "/sign-in/email") {
+        const email = String(ctx.body?.email ?? "")
+          .trim()
+          .toLowerCase();
 
-      if (!email) {
-        return;
-      }
+        if (!email) {
+          return;
+        }
 
-      const [existingUser] = await db
-        .select({
-          id: schema.users.id,
-          isActive: schema.users.isActive
-        })
-        .from(schema.users)
-        .where(eq(schema.users.email, email))
-        .limit(1);
+        const [existingUser] = await db
+          .select({
+            id: schema.users.id,
+            isActive: schema.users.isActive
+          })
+          .from(schema.users)
+          .where(eq(schema.users.email, email))
+          .limit(1);
 
-      if (existingUser && existingUser.isActive === false) {
-        throw new APIError("FORBIDDEN", {
-          message: "Akun ini sudah dinonaktifkan. Hubungi super admin untuk bantuan akses."
-        });
+        if (existingUser && existingUser.isActive === false) {
+          throw new APIError("FORBIDDEN", {
+            message: "Akun ini sudah dinonaktifkan. Hubungi super admin untuk bantuan akses."
+          });
+        }
       }
     })
   },
