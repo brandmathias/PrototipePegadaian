@@ -1,27 +1,44 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Bell, CheckCheck, Clock3, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
+import { useBuyerNotifications, type BuyerNotification } from "@/components/ui/use-buyer-notifications";
 
 type AlertCenterProps = {
   scope: "buyer" | "admin-unit" | "superadmin";
   className?: string;
 };
 
-function formatTimeLabel(timestamp: number) {
+function formatTimeLabel(timestamp: number | string) {
+  const value = typeof timestamp === "number" ? timestamp : new Date(timestamp).getTime();
+
   return new Intl.DateTimeFormat("id-ID", {
     hour: "2-digit",
     minute: "2-digit"
-  }).format(timestamp);
+  }).format(value);
+}
+
+function getPersistedVariant(type: string) {
+  if (type === "payment_rejected" || type === "blacklist_active") {
+    return "error" as const;
+  }
+
+  if (type === "payment_deadline") {
+    return "info" as const;
+  }
+
+  return "success" as const;
 }
 
 export function AlertCenter({ scope, className }: AlertCenterProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const { notifications, markAllAsRead, markAsRead } = useToast();
+  const buyerNotifications = useBuyerNotifications(scope === "buyer");
 
   const scopedNotifications = React.useMemo(
     () =>
@@ -32,9 +49,53 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     [notifications, scope]
   );
 
-  const unreadCount = React.useMemo(
-    () => scopedNotifications.filter((notification) => !notification.read).length,
+  const persistedNotifications = React.useMemo(
+    () =>
+      scope === "buyer"
+        ? buyerNotifications.notifications.map((notification) => ({
+            id: notification.id,
+            title: notification.title,
+            description: notification.message,
+            variant: getPersistedVariant(notification.type),
+            createdAt: notification.createdAt,
+            read: notification.isRead,
+            href: notification.actionHref ?? undefined,
+            source: "server" as const,
+            raw: notification
+          }))
+        : [],
+    [buyerNotifications.notifications, scope]
+  );
+  const localNotifications = React.useMemo(
+    () =>
+      scopedNotifications.map((notification) => ({
+        id: notification.id,
+        title: notification.title,
+        description: notification.description,
+        variant: notification.variant,
+        createdAt: notification.createdAt,
+        read: notification.read,
+        href: undefined,
+        source: "local" as const,
+        raw: null as BuyerNotification | null
+      })),
     [scopedNotifications]
+  );
+  const displayedNotifications = React.useMemo(
+    () =>
+      [...persistedNotifications, ...localNotifications]
+        .sort((left, right) => {
+          const leftTime = typeof left.createdAt === "number" ? left.createdAt : new Date(left.createdAt).getTime();
+          const rightTime = typeof right.createdAt === "number" ? right.createdAt : new Date(right.createdAt).getTime();
+
+          return rightTime - leftTime;
+        })
+        .slice(0, 12),
+    [localNotifications, persistedNotifications]
+  );
+  const unreadCount = React.useMemo(
+    () => displayedNotifications.filter((notification) => !notification.read).length,
+    [displayedNotifications]
   );
   const copy = React.useMemo(() => {
     if (scope === "buyer") {
@@ -82,11 +143,67 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     };
   }, [isOpen]);
 
-  React.useEffect(() => {
-    if (isOpen && unreadCount > 0) {
-      markAllAsRead(scope);
+  const handleMarkAllAsRead = React.useCallback(() => {
+    markAllAsRead(scope);
+    if (scope === "buyer") {
+      void buyerNotifications.markAllAsRead();
     }
-  }, [isOpen, unreadCount, markAllAsRead, scope]);
+  }, [buyerNotifications, markAllAsRead, scope]);
+
+  const handleMarkAsRead = React.useCallback(
+    (notification: (typeof displayedNotifications)[number]) => {
+      if (notification.source === "server") {
+        void buyerNotifications.markAsRead(notification.id);
+      } else {
+        markAsRead(notification.id);
+      }
+    },
+    [buyerNotifications, markAsRead]
+  );
+
+  const renderNotificationContent = React.useCallback(
+    (notification: (typeof displayedNotifications)[number]) => (
+      <>
+        <div
+          className={cn(
+            "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
+            notification.variant === "success"
+              ? "bg-primary/12 text-primary"
+              : notification.variant === "error"
+                ? "bg-destructive/12 text-destructive"
+                : "bg-accent/20 text-accent-foreground"
+          )}
+        >
+          <Sparkles aria-hidden="true" className="size-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm font-semibold text-black/82">
+              {notification.title}
+            </p>
+            {!notification.read ? (
+              <span className="mt-1 size-2 rounded-full bg-[#0f7a57]" />
+            ) : null}
+          </div>
+          {notification.description ? (
+            <p className="mt-1 text-sm leading-6 text-black/58">
+              {notification.description}
+            </p>
+          ) : null}
+          <div className="mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42">
+            <span className="inline-flex items-center gap-2">
+              <Clock3 aria-hidden="true" className="size-3.5" />
+              {formatTimeLabel(notification.createdAt)}
+            </span>
+            {notification.href ? (
+              <span className="font-semibold text-[#0a6a49]">Buka detail</span>
+            ) : null}
+          </div>
+        </div>
+      </>
+    ),
+    []
+  );
 
   return (
     <div className={cn("relative", className)} ref={panelRef}>
@@ -129,7 +246,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
               </div>
               <button
                 className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1]"
-                onClick={() => markAllAsRead(scope)}
+                onClick={handleMarkAllAsRead}
                 type="button"
               >
                 <CheckCheck className="size-4" />
@@ -139,54 +256,42 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
           </div>
 
           <div className="max-h-[26rem] overflow-y-auto px-3 py-3">
-            {scopedNotifications.length ? (
+            {displayedNotifications.length ? (
               <div className="space-y-2">
-                {scopedNotifications.map((notification, index) => (
-                  <button
-                    className={cn(
-                      "group interactive-card flex w-full items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
-                      notification.read
-                        ? "border-black/6 bg-white/70"
-                        : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)]"
-                    )}
-                    key={notification.id}
-                    onClick={() => markAsRead(notification.id)}
-                    style={{ animationDelay: `${index * 40}ms` }}
-                    type="button"
-                  >
-                    <div
-                      className={cn(
-                        "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
-                        notification.variant === "success"
-                          ? "bg-primary/12 text-primary"
-                          : notification.variant === "error"
-                            ? "bg-destructive/12 text-destructive"
-                            : "bg-accent/20 text-accent-foreground"
-                      )}
+                {displayedNotifications.map((notification, index) => {
+                  const className = cn(
+                    "group interactive-card flex w-full items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
+                    notification.read
+                      ? "border-black/6 bg-white/70"
+                      : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)]"
+                  );
+
+                  if (notification.href) {
+                    return (
+                      <Link
+                        className={className}
+                        href={notification.href}
+                        key={notification.id}
+                        onClick={() => handleMarkAsRead(notification)}
+                        style={{ animationDelay: `${index * 40}ms` }}
+                      >
+                        {renderNotificationContent(notification)}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      className={className}
+                      key={notification.id}
+                      onClick={() => handleMarkAsRead(notification)}
+                      style={{ animationDelay: `${index * 40}ms` }}
+                      type="button"
                     >
-                      <Sparkles aria-hidden="true" className="size-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm font-semibold text-black/82">
-                          {notification.title}
-                        </p>
-                        {!notification.read ? (
-                          <span className="mt-1 size-2 rounded-full bg-[#0f7a57]" />
-                        ) : null}
-                      </div>
-                      {notification.description ? (
-                        <p className="mt-1 text-sm leading-6 text-black/58">
-                          {notification.description}
-                        </p>
-                      ) : null}
-                      <div className="mt-2 flex items-center gap-2 text-xs font-medium text-black/42">
-                        <Clock3 aria-hidden="true" className="size-3.5" />
-                        {formatTimeLabel(notification.createdAt)}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                      {renderNotificationContent(notification)}
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/70 px-5 py-8 text-center">

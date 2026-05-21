@@ -688,6 +688,34 @@ Aturan:
 - `total_violations` menentukan level pembatasan.
 - Action log menyimpan riwayat blokir otomatis, perpanjang manual, dan cabut manual.
 
+### 8.9 Notifikasi In-App
+
+Tabel:
+
+- `notifications`
+
+Field penting:
+
+- `id`
+- `user_id`
+- `title`
+- `message`
+- `type`
+- `entity_type`
+- `entity_id`
+- `action_href`
+- `is_read`
+- `created_at`
+- `read_at`
+- `metadata`
+
+Aturan:
+
+- Notifikasi buyer disimpan persisten di database.
+- Notifikasi dibuat otomatis untuk pemenang Vickrey, transaksi dibuat, pembayaran diverifikasi/ditolak, deadline pembayaran mendekat, dan blacklist aktif.
+- `entity_id` dipakai untuk idempotency agar cron tidak membuat notifikasi duplikat untuk event yang sama.
+- Endpoint notifikasi harus selalu mengambil `user_id` dari session buyer.
+
 ---
 
 ## 9. API dan Route Aplikasi
@@ -770,6 +798,10 @@ Aturan:
 | `POST` | `/api/user/transaksi/[id]/selesai` | Buyer menutup transaksi sebagai selesai. |
 | `GET` | `/api/user/riwayat-bid` | Riwayat bid buyer. |
 | `PUT` | `/api/user/profil` | Perbarui profil buyer. |
+| `GET` | `/api/user/notifikasi` | List notifikasi buyer, mendukung filter unread. |
+| `GET` | `/api/user/notifikasi/unread-count` | Jumlah notifikasi belum dibaca. |
+| `PATCH` | `/api/user/notifikasi/[id]` | Tandai satu notifikasi sebagai dibaca. |
+| `POST` | `/api/user/notifikasi/read-all` | Tandai semua notifikasi buyer sebagai dibaca. |
 
 ### 9.6 API Admin Unit
 
@@ -890,6 +922,7 @@ Aturan:
 | Vickrey integrity | Hash integrity mengikat pemasaran, user, nominal, dan salt. |
 | Upload | File media dan bukti harus divalidasi ukuran/tipe dan disimpan dengan nama aman. |
 | Cron | Endpoint cron dilindungi secret bearer token. |
+| Notifikasi | Endpoint notifikasi buyer hanya boleh membaca/mutasi data milik session buyer. |
 | Mutasi status | Transisi status dilakukan dari service layer, bukan update bebas dari client. |
 | Nota | Print/download hanya menampilkan dokumen nota, bukan UI navigasi. |
 | Waktu | Client tidak boleh menjadi sumber kebenaran deadline; server time dan UTC timestamp harus menjadi acuan. |
@@ -910,6 +943,8 @@ Aturan:
 ### 12.2 Buyer
 
 - Navbar publik menyediakan Beranda, Katalog, Transaksi, notifikasi, profil, dan logout.
+- Bell notifikasi buyer menampilkan badge unread dari database dan refresh berkala dengan polling ringan.
+- Membuka panel notifikasi tidak otomatis menandai semua dibaca; buyer harus klik notifikasi atau tombol tandai dibaca.
 - Detail barang memakai media gallery seperti katalog.
 - Detail pembayaran menampilkan workflow 3 tahap.
 - Riwayat bid menampilkan status: bid tercatat, menunggu hasil, menang, tidak menang, gagal.
@@ -934,6 +969,7 @@ Aturan:
 | Maintainability | Business logic berada di `lib/services`, route handler hanya tipis. |
 | Auditability | Riwayat status barang, blacklist action, dan transaksi penting harus tercatat. |
 | Data consistency | Cron settlement dan overdue payment memakai transaksi database. |
+| Notifications | Notifikasi in-app persisten di database dan diambil dengan polling 30 detik, bukan WebSocket. |
 | Accessibility | Tombol, checkbox, link, dan form harus dapat diakses dengan label/role yang jelas. |
 | Performance | Katalog dan daftar admin harus tetap ringan dengan query terfilter. |
 | Print | Nota harus punya layout khusus print dan menghindari pemecahan halaman yang tidak perlu. |
@@ -980,6 +1016,8 @@ Aturan:
 - Admin tidak melihat nominal sebelum deadline.
 - Cron membuka escrow otomatis setelah deadline.
 - Sistem membuat transaksi bayar langsung untuk pemenang.
+- Buyer pemenang menerima notifikasi in-app dan diarahkan ke detail transaksi pembayaran.
+- Buyer menerima notifikasi saat pembayaran diverifikasi, ditolak, deadline hampir habis, atau blacklist aktif.
 - Jika pemenang tidak membayar 24 jam, sistem mencatat pelanggaran dan blacklist.
 
 ### Blacklist
@@ -1009,3 +1047,4 @@ Aturan:
 | Blacklist | Pembatasan akun akibat gagal membayar hasil Vickrey. |
 | Pelanggaran | Kejadian pemenang Vickrey tidak membayar dalam 24 jam. |
 | Cron | Proses server terjadwal untuk settlement lelang dan blacklist otomatis. |
+| Notifikasi In-App | Pesan persisten di dalam aplikasi yang muncul di bell buyer dan disimpan di database. |

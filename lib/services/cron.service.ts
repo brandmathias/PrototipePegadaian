@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, inArray, isNotNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -12,10 +12,13 @@ import {
   pemasaran,
   riwayatStatusBarang,
   transaksi,
+  units,
   users
 } from "@/lib/db/schema";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import { getBlacklistBlockedUntil, getBlacklistDurationLabel } from "@/lib/blacklist/restrictions";
+import { notifyBlacklistActivated, notifyPaymentDeadlineSoon, notifyVickreyWinner } from "@/lib/services/notification-events";
+import { formatAppDateTime } from "@/lib/timezone";
 import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 type BidOutcomeInput = {
@@ -60,6 +63,11 @@ type ExpiredAuctionSummary = {
 type OverduePaymentSummary = {
   processed: number;
   blacklisted: number;
+};
+
+type PaymentDeadlineSummary = {
+  processed: number;
+  notified: number;
 };
 
 const UNPAID_VICKREY_STATUSES = [
@@ -178,10 +186,12 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
   const expiredSessions = await db
     .select({
       marketing: pemasaran,
-      item: barang
+      item: barang,
+      unit: units
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
     .where(
       and(
         eq(pemasaran.mode, "vickrey"),
@@ -200,6 +210,16 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
   };
 
   for (const session of expiredSessions) {
+    let winnerNotification:
+      | {
+          userId: string;
+          transactionId: string;
+          lotName: string;
+          finalPrice: string;
+          unitName: string;
+        }
+      | null = null;
+
     const settledStatus = await db.transaction(async (tx) => {
       const marketingBids = await tx
         .select({
@@ -335,9 +355,17 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
             updatedAt: now
           })
           .where(eq(transaksi.id, existingTransaction.id));
+        winnerNotification = {
+          userId: outcome.winnerId,
+          transactionId: existingTransaction.id,
+          lotName: session.item.name,
+          finalPrice: outcome.finalPrice,
+          unitName: session.unit.name
+        };
       } else {
+        const transactionId = randomUUID();
         await tx.insert(transaksi).values({
-          id: randomUUID(),
+          id: transactionId,
           pemasaranId: session.marketing.id,
           userId: outcome.winnerId,
           type: "vickrey",
@@ -346,6 +374,13 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           status: "menunggu_konfirmasi_langsung",
           paymentDeadline: plusHours(now, 24)
         });
+        winnerNotification = {
+          userId: outcome.winnerId,
+          transactionId,
+          lotName: session.item.name,
+          finalPrice: outcome.finalPrice,
+          unitName: session.unit.name
+        };
       }
 
       await tx
@@ -368,11 +403,51 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
 
     if (settledStatus === "selesai") {
       summary.completed += 1;
+      if (winnerNotification) {
+        await notifyVickreyWinner(winnerNotification);
+      }
     } else if (settledStatus === "gagal") {
       summary.failed += 1;
     } else {
       summary.pendingReveal += 1;
     }
+  }
+
+  return summary;
+}
+
+export async function processPaymentDeadlineNotifications(now = new Date()): Promise<PaymentDeadlineSummary> {
+  const warningDeadline = plusHours(now, 3);
+  const dueSoonTransactions = await db
+    .select({
+      transaction: transaksi,
+      item: barang
+    })
+    .from(transaksi)
+    .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .where(
+      and(
+        inArray(transaksi.status, [...UNPAID_VICKREY_STATUSES]),
+        isNotNull(transaksi.paymentDeadline),
+        gt(transaksi.paymentDeadline, now),
+        lte(transaksi.paymentDeadline, warningDeadline)
+      )
+    )
+    .orderBy(asc(transaksi.paymentDeadline));
+
+  const summary: PaymentDeadlineSummary = {
+    processed: dueSoonTransactions.length,
+    notified: 0
+  };
+
+  for (const row of dueSoonTransactions) {
+    await notifyPaymentDeadlineSoon({
+      userId: row.transaction.userId,
+      transactionId: row.transaction.id,
+      lotName: row.item.name
+    });
+    summary.notified += 1;
   }
 
   return summary;
@@ -406,6 +481,15 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
   };
 
   for (const row of overdueTransactions) {
+    let blacklistNotification:
+      | {
+          userId: string;
+          transactionId: string;
+          totalViolations: number;
+          blockedUntilLabel: string;
+        }
+      | null = null;
+
     await db.transaction(async (tx) => {
       await tx
         .update(transaksi)
@@ -491,6 +575,12 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           updatedAt: now
         });
       }
+      blacklistNotification = {
+        userId: row.transaction.userId,
+        transactionId: row.transaction.id,
+        totalViolations,
+        blockedUntilLabel: formatAppDateTime(blockedUntil)
+      };
 
       await tx.insert(blacklistActionLogs).values({
         id: randomUUID(),
@@ -504,19 +594,24 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
     });
 
     summary.blacklisted += 1;
+    if (blacklistNotification) {
+      await notifyBlacklistActivated(blacklistNotification);
+    }
   }
 
   return summary;
 }
 
 export async function runAuctionSettlementCron(now = new Date()) {
-  const [expiredAuctions, overduePayments] = await Promise.all([
+  const [expiredAuctions, paymentDeadlineWarnings, overduePayments] = await Promise.all([
     processExpiredVickreyAuctions(now),
+    processPaymentDeadlineNotifications(now),
     processOverdueVickreyPayments(now)
   ]);
 
   return {
     expiredAuctions,
+    paymentDeadlineWarnings,
     overduePayments
   };
 }

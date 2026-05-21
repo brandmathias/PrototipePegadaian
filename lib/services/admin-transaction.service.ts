@@ -4,6 +4,7 @@ import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
 import { validateTransactionRejectPayload, validateTransactionVerificationPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { barang, buyerProfiles, mediaBarang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
+import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
 
 async function getTransactionForUnit(unitId: string, transactionId: string) {
   const [row] = await db
@@ -128,6 +129,11 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
 
   await db.update(barang).set({ status: "terjual", updatedAt: new Date() }).where(eq(barang.id, row.item.id));
   await db.update(pemasaran).set({ status: "selesai", updatedAt: new Date() }).where(eq(pemasaran.id, row.transaction.pemasaranId));
+  await notifyPaymentVerified({
+    userId: updated.userId,
+    transactionId: updated.id,
+    lotName: row.item.name
+  });
 
   return serializeAdminTransaction({
     ...updated,
@@ -165,6 +171,12 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
     })
     .where(eq(transaksi.id, transactionId))
     .returning();
+  await notifyPaymentRejected({
+    userId: updated.userId,
+    transactionId: updated.id,
+    lotName: row.item.name,
+    reason: payload.reason
+  });
 
   return serializeAdminTransaction({
     ...updated,
