@@ -85,6 +85,43 @@ describe("cron service", () => {
     });
   });
 
+  it("breaks equal highest Vickrey bids by earliest submitted bid and charges the tied bid amount", async () => {
+    expect(
+      cronService.resolveVickreyOutcome({
+        basePrice: "10000000",
+        bids: [
+          {
+            id: "bid-late",
+            userId: "buyer-late",
+            nominal: "15000000",
+            createdAt: new Date("2026-05-21T10:05:00.000Z")
+          },
+          {
+            id: "bid-early",
+            userId: "buyer-early",
+            nominal: "15000000",
+            createdAt: new Date("2026-05-21T10:00:00.000Z")
+          },
+          {
+            id: "bid-third",
+            userId: "buyer-third",
+            nominal: "14000000",
+            createdAt: new Date("2026-05-21T09:55:00.000Z")
+          }
+        ]
+      })
+    ).toEqual({
+      bidCount: 3,
+      finalPrice: "15000000.00",
+      runnerUpBidId: "bid-late",
+      runnerUpUserId: "buyer-late",
+      status: "menunggu_pembayaran",
+      topBidId: "bid-early",
+      winnerBidAmount: "15000000.00",
+      winnerId: "buyer-early"
+    });
+  });
+
   it("ignores unrevealed bid commitments when resolving vickrey outcome", async () => {
     expect(
       cronService.resolveVickreyOutcome({

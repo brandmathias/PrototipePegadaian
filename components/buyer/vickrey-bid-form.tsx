@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
+import { formatAppDate } from "@/lib/timezone";
 
 type VickreyBidFormProps = {
   lot: Lot;
@@ -32,6 +33,7 @@ type VickreyBidFormProps = {
   isBlacklisted?: boolean;
   blacklistUntil?: Date | null;
   blacklistViolations?: number;
+  serverNow?: string;
 };
 
 const VICKREY_TERMS = [
@@ -86,7 +88,8 @@ export function VickreyBidForm({
   hasExistingBid: hasExistingBidProp = false,
   isBlacklisted = false,
   blacklistUntil,
-  blacklistViolations = 0
+  blacklistViolations = 0,
+  serverNow
 }: VickreyBidFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -133,9 +136,7 @@ export function VickreyBidForm({
 
   const helperText = useMemo(() => {
     if (blocked) {
-      const untilLabel = blacklistUntil
-        ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeZone: "Asia/Makassar" }).format(blacklistUntil)
-        : "batas waktu belum tersedia";
+      const untilLabel = blacklistUntil ? formatAppDate(blacklistUntil) : "batas waktu belum tersedia";
       return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
     }
 
@@ -268,6 +269,7 @@ export function VickreyBidForm({
                     <LiveCountdown
                       expiredLabel="Menunggu hasil"
                       fallbackLabel={lot.countdown}
+                      serverNow={serverNow}
                       targetAt={lot.endsAt}
                     />
                   </div>

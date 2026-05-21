@@ -11,9 +11,10 @@ import { LotFigure } from "./lot-figure";
 
 type LotCardProps = {
   lot: Lot;
+  serverNow?: string;
 };
 
-export function LotCard({ lot }: LotCardProps) {
+export function LotCard({ lot, serverNow }: LotCardProps) {
   const showAuctionCountdown = lot.mode === "vickrey" && (lot.countdown || lot.endsAt);
 
   return (
@@ -56,6 +57,7 @@ export function LotCard({ lot }: LotCardProps) {
                 expiredLabel="Menunggu hasil"
                 fallbackLabel={lot.countdown}
                 prefix="Sesi berakhir"
+                serverNow={serverNow}
                 targetAt={lot.endsAt}
               />
             </p>

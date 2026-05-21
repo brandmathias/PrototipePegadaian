@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
+import { formatAppDate } from "@/lib/timezone";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -39,10 +40,7 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
     return "Akun sedang dibatasi untuk mengikuti lelang Vickrey.";
   }
 
-  return `Akun sedang dibatasi sampai ${new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeZone: "Asia/Makassar"
-  }).format(status.blacklist.until)}. Selama blacklist aktif, Anda tidak dapat mengirim bid baru.`;
+  return `Akun sedang dibatasi sampai ${formatAppDate(status.blacklist.until)}. Selama blacklist aktif, Anda tidak dapat mengirim bid baru.`;
 }
 
 export function LotDetailPage({
@@ -60,6 +58,7 @@ export function LotDetailPage({
 
   const isVickrey = lot.mode === "vickrey";
   const showAuctionCountdown = isVickrey && (lot.countdown || lot.endsAt);
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="container space-y-10 py-10 md:space-y-12 md:py-12">
@@ -119,6 +118,7 @@ export function LotDetailPage({
                       <LiveCountdown
                         expiredLabel="Menunggu hasil"
                         fallbackLabel={lot.countdown}
+                        serverNow={serverNow}
                         targetAt={lot.endsAt}
                       />
                     </div>
@@ -278,6 +278,7 @@ export function BidPage({
   buyerStatus?: BuyerPublicStatus;
 }) {
   if (!lot) notFound();
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
@@ -300,6 +301,7 @@ export function BidPage({
         blacklistUntil={buyerStatus?.blacklist.until ?? null}
         blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
         lot={lot}
+        serverNow={serverNow}
       />
     </div>
   );

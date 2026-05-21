@@ -23,6 +23,7 @@ type AdminDashboardData = {
 
 export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
   const { summary, inventory, transactions, blacklist } = data;
+  const serverNow = new Date().toISOString();
 
   const jaminan = inventory.filter((item) => item.status === "JAMINAN");
   const dipasarkan = inventory.filter((item) => item.status === "DIPASARKAN");
@@ -230,6 +231,7 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
                         expiredLabel="Batas waktu terlewati"
                         fallbackLabel={transaction.deadline}
                         prefix="Sisa waktu"
+                        serverNow={serverNow}
                         targetAt={transaction.deadlineAt}
                       />
                     </span>

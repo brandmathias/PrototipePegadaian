@@ -55,6 +55,17 @@ type BuyerSummary = {
   metrics: Array<{ label: string; value: string; accent?: string }>;
 };
 
+type BuyerProfileStatus = {
+  blacklist: {
+    active: boolean;
+    until: Date | null;
+    totalViolations: number;
+  };
+};
+
+const BUYER_SETTLEMENT_LOCKED_MESSAGE =
+  "Akun Anda sedang dalam masa pembatasan. Transaksi belum dapat diselesaikan sampai masa blacklist berakhir.";
+
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
   {
@@ -190,6 +201,7 @@ function getBidTransactionActionLabel(item: BuyerBid) {
 
 function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverted?: boolean }) {
   const paymentAmount = getBidPaymentAmount(item);
+  const serverNow = new Date().toISOString();
 
   if (!paymentAmount && !item.transactionStatus && !item.paymentDeadlineAt) {
     return null;
@@ -231,6 +243,7 @@ function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverte
             <LiveCountdown
               expiredLabel={item.paymentDeadline ?? "Waktu pembayaran berakhir"}
               fallbackLabel={item.paymentDeadline}
+              serverNow={serverNow}
               targetAt={item.paymentDeadlineAt}
             />
           </p>
@@ -246,6 +259,24 @@ function getTimelineLabels(transaction: BuyerTransaction) {
     "Verifikasi",
     "Selesai"
   ];
+}
+
+function BuyerSettlementLockNotice({ message }: { message: string }) {
+  return (
+    <div className="rounded-[1.5rem] border border-amber-200 bg-[linear-gradient(135deg,#fff7dd_0%,#fffdf4_100%)] p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-amber-800">
+          <AlertTriangle className="size-5" />
+        </span>
+        <div className="space-y-2">
+          <p className="text-sm font-black uppercase tracking-[0.16em] text-amber-900">
+            Aksi transaksi dikunci
+          </p>
+          <p className="text-sm leading-7 text-amber-950/80">{message}</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function getCurrentStep(transaction: BuyerTransaction) {
@@ -295,12 +326,15 @@ function BuyerPaymentCountdown({
   prefix?: string;
   className?: string;
 }) {
+  const serverNow = new Date().toISOString();
+
   return (
     <LiveCountdown
       className={className}
       expiredLabel={transaction.status === "LUNAS" || transaction.status === "SELESAI" ? "Selesai" : "Waktu pembayaran berakhir"}
       fallbackLabel={transaction.deadline}
       prefix={prefix}
+      serverNow={serverNow}
       targetAt={transaction.deadlineAt}
     />
   );
@@ -802,10 +836,12 @@ export function TransactionsPage({
 
 export function TransactionDetailPage({
   buyer,
+  buyerStatus,
   transactionId: _transactionId,
   transaction: loadedTransaction
 }: {
   buyer: BuyerSessionUser;
+  buyerStatus?: BuyerProfileStatus;
   transactionId: string;
   transaction?: BuyerTransaction | null;
 }) {
@@ -825,6 +861,9 @@ export function TransactionDetailPage({
   const showReceipt = isVerified;
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
+  const settlementLockMessage = buyerStatus?.blacklist.active
+    ? BUYER_SETTLEMENT_LOCKED_MESSAGE
+    : null;
 
   return (
     <div className="space-y-7 md:space-y-8">
@@ -1034,7 +1073,11 @@ export function TransactionDetailPage({
                 </div>
                 {!isCompleted ? (
                   <div className="mt-5">
-                    <CompletePurchaseButton transactionId={transaction.id} />
+                    {settlementLockMessage ? (
+                      <BuyerSettlementLockNotice message={settlementLockMessage} />
+                    ) : (
+                      <CompletePurchaseButton transactionId={transaction.id} />
+                    )}
                   </div>
                 ) : null}
                 <Link className="mt-5 block" href={`/transaksi/${transaction.id}/nota`}>
@@ -1061,10 +1104,14 @@ export function TransactionDetailPage({
                       : "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat."}
                   </p>
                 </div>
-                <BuyerPaymentProofForm
-                  currentProof={transaction.paymentProof}
-                  transactionId={transaction.id}
-                />
+                {settlementLockMessage ? (
+                  <BuyerSettlementLockNotice message={settlementLockMessage} />
+                ) : (
+                  <BuyerPaymentProofForm
+                    currentProof={transaction.paymentProof}
+                    transactionId={transaction.id}
+                  />
+                )}
               </>
             ) : (
               <div className="space-y-4">
@@ -1365,6 +1412,7 @@ export function BidHistoryPage({
                         expiredLabel={item.revealDeadline ?? "Batas reveal selesai"}
                         fallbackLabel={item.revealDeadline}
                         prefix="Batas reveal"
+                        serverNow={new Date().toISOString()}
                         targetAt={item.revealDeadlineAt}
                       />
                     </p>

@@ -5,6 +5,7 @@ import type {
   AdminTransactionStatus
 } from "@/lib/admin";
 import { getCountdownState } from "@/lib/countdown";
+import { formatAppDateTime } from "@/lib/timezone";
 
 export type AuctionMode = "fixed_price" | "vickrey";
 
@@ -37,12 +38,6 @@ export const currency = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0
 });
 
-const witaDateTime = new Intl.DateTimeFormat("id-ID", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Makassar"
-});
-
 function offsetDate({
   days = 0,
   hours = 0,
@@ -55,8 +50,8 @@ function offsetDate({
   return new Date(Date.now() + (((days * 24 + hours) * 60 + minutes) * 60 * 1000));
 }
 
-function toWitaDateTime(value: Date) {
-  return witaDateTime.format(value);
+function toAppDateTime(value: Date) {
+  return formatAppDateTime(value);
 }
 
 const demoAuctionEndsAt = {
@@ -125,7 +120,7 @@ export const publicLots: Lot[] = [
       { label: "Processor", value: "Apple M2 Pro" },
       { label: "RAM", value: "16 GB" },
       { label: "Penyimpanan", value: "512 GB SSD" },
-      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.macbook) }
+      { label: "Batas Lelang", value: toAppDateTime(demoAuctionEndsAt.macbook) }
     ]
   },
   {
@@ -192,7 +187,7 @@ export const publicLots: Lot[] = [
       { label: "Baterai", value: "32 jam" },
       { label: "Warna", value: "Midnight Black" },
       { label: "Aksesori", value: "Box + kabel original" },
-      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.headphone) }
+      { label: "Batas Lelang", value: toAppDateTime(demoAuctionEndsAt.headphone) }
     ]
   },
   {
@@ -217,7 +212,7 @@ export const publicLots: Lot[] = [
       { label: "Batu", value: "Diamond 1.2 ct" },
       { label: "Ring Size", value: "16" },
       { label: "Material", value: "White gold" },
-      { label: "Batas Lelang", value: toWitaDateTime(demoAuctionEndsAt.cincin) }
+      { label: "Batas Lelang", value: toAppDateTime(demoAuctionEndsAt.cincin) }
     ]
   }
 ];
@@ -325,7 +320,7 @@ export const userTransactions: BuyerTransaction[] = [
     method: "TRANSFER_BANK",
     unit: "Pegadaian CP Medan Baru",
     unitAddress: "Jl. Gajah Mada No. 88, Medan Baru",
-    createdAt: "21 April 2026, 09.10 WITA",
+    createdAt: "21 April 2026, 09.10 WIB",
     deadline: getCountdownState(demoPaymentDeadlines.trx0051.toISOString(), {
       expiredLabel: "Waktu pembayaran berakhir"
     }).label,
@@ -353,7 +348,7 @@ export const userTransactions: BuyerTransaction[] = [
     method: "TRANSFER_BANK",
     unit: "Pegadaian CP Sudirman",
     unitAddress: "Jl. Jend. Sudirman No. 45, Jakarta Pusat",
-    createdAt: "21 April 2026, 10.35 WITA",
+    createdAt: "21 April 2026, 10.35 WIB",
     deadline: getCountdownState(demoPaymentDeadlines.trx0045.toISOString(), {
       expiredLabel: "Waktu pembayaran berakhir"
     }).label,
@@ -382,7 +377,7 @@ export const userTransactions: BuyerTransaction[] = [
     method: "BAYAR_LANGSUNG",
     unit: "Pegadaian CP Basuki Rahmat",
     unitAddress: "Jl. Basuki Rahmat No. 119, Surabaya",
-    createdAt: "20 April 2026, 14.00 WITA",
+    createdAt: "20 April 2026, 14.00 WIB",
     deadline: getCountdownState(demoPaymentDeadlines.trx0039.toISOString(), {
       expiredLabel: "Waktu pembayaran berakhir"
     }).label,
@@ -406,7 +401,7 @@ export const userTransactions: BuyerTransaction[] = [
     method: "TRANSFER_BANK",
     unit: "Pegadaian UPC Malioboro",
     unitAddress: "Jl. Malioboro No. 17, Yogyakarta",
-    createdAt: "21 April 2026, 08.45 WITA",
+    createdAt: "21 April 2026, 08.45 WIB",
     deadline: getCountdownState(demoPaymentDeadlines.trx0033.toISOString(), {
       expiredLabel: "Waktu pembayaran berakhir"
     }).label,
@@ -435,7 +430,7 @@ export const userTransactions: BuyerTransaction[] = [
     method: "TRANSFER_BANK",
     unit: "Pegadaian CP Medan Baru",
     unitAddress: "Jl. Gajah Mada No. 88, Medan Baru",
-    createdAt: "18 April 2026, 13.20 WITA",
+    createdAt: "18 April 2026, 13.20 WIB",
     deadline: "Selesai",
     reference: "FP-2026-0027",
     applicationNumber: "PGJ-FP-2026-0027",
@@ -449,7 +444,7 @@ export const userTransactions: BuyerTransaction[] = [
     bankAccountHolder: "PT Pegadaian (Persero) CP Medan Baru",
     bankBranch: "Cabang Medan Baru",
     paymentProof: "bukti-transfer-antam.jpg",
-    verifiedAt: "19 April 2026, 11.50 WITA",
+    verifiedAt: "19 April 2026, 11.50 WIB",
     receiptNumber: "INV/2026/FP/0027"
   }
 ];
@@ -460,7 +455,7 @@ export const bidHistory: BuyerBid[] = [
     lot: "MacBook Pro 14 inci M2 Pro 16/512",
     unit: "UPC Malioboro, Yogyakarta",
     status: "MENANG",
-    closing: "24 April 2026, 16.00 WITA",
+    closing: "24 April 2026, 16.00 WIB",
     bidAmount: 19400000,
     basePrice: 18200000,
     note: "Bid dinyatakan menang dan sudah dipindahkan ke workflow transaksi.",
@@ -471,7 +466,7 @@ export const bidHistory: BuyerBid[] = [
     lot: "Headphone Studio Wireless Noise Cancelling",
     unit: "UPC Panakkukang, Makassar",
     status: "MENUNGGU_HASIL",
-    closing: "21 April 2026, 23.30 WITA",
+    closing: "21 April 2026, 23.30 WIB",
     bidAmount: 3525000,
     basePrice: 3150000,
     note: "Bid tersimpan dan akan dibuka setelah batas lelang berakhir."
@@ -481,7 +476,7 @@ export const bidHistory: BuyerBid[] = [
     lot: "Cincin Berlian Solitaire 1.2 ct",
     unit: "CP Diponegoro, Bandung",
     status: "BID_TERCATAT",
-    closing: "27 April 2026, 10.00 WITA",
+    closing: "27 April 2026, 10.00 WIB",
     bidAmount: 28600000,
     basePrice: 27800000,
     note: "Penawaran tertutup sudah masuk dan dapat dilihat pada riwayat bid."
@@ -491,7 +486,7 @@ export const bidHistory: BuyerBid[] = [
     lot: "MacBook Pro 14 inci M2 Pro 16/512",
     unit: "UPC Malioboro, Yogyakarta",
     status: "TIDAK_MENANG",
-    closing: "16 April 2026, 14.00 WITA",
+    closing: "16 April 2026, 14.00 WIB",
     bidAmount: 18450000,
     basePrice: 18200000,
     note: "Bid sebelumnya tidak menang dan tidak menimbulkan transaksi."
@@ -905,7 +900,7 @@ export const adminAuctions: Array<{
     lotId: "lot-107",
     lot: "Cincin Berlian Solitaire 1.2 ct",
     status: "SELESAI",
-    ending: "27 April 2026, 10.00 WITA",
+    ending: "27 April 2026, 10.00 WIB",
     participants: 8,
     mode: "VICKREY_AUCTION",
     visibility: "HASIL_DIBUKA",
@@ -918,7 +913,7 @@ export const adminAuctions: Array<{
     lotId: "lot-108",
     lot: "Headphone Studio Wireless Noise Cancelling",
     status: "GAGAL",
-    ending: "21 April 2026, 23.30 WITA",
+    ending: "21 April 2026, 23.30 WIB",
     participants: 5,
     mode: "VICKREY_AUCTION",
     visibility: "HASIL_DIBUKA",
@@ -1171,7 +1166,7 @@ export const superAdminAdmins = [
     email: "suci.alpha@pegadaian.test",
     phone: "0812-1122-8891",
     status: "Aktif",
-    lastLogin: "22 April 2026, 08.14 WITA"
+    lastLogin: "22 April 2026, 08.14 WIB"
   },
   {
     id: "adm-rangga",
@@ -1181,7 +1176,7 @@ export const superAdminAdmins = [
     email: "rangga.beta@pegadaian.test",
     phone: "0813-5577-2041",
     status: "Aktif",
-    lastLogin: "22 April 2026, 07.46 WITA"
+    lastLogin: "22 April 2026, 07.46 WIB"
   },
   {
     id: "adm-yola",
@@ -1191,7 +1186,7 @@ export const superAdminAdmins = [
     email: "yola.gamma@pegadaian.test",
     phone: "0812-9981-3391",
     status: "Nonaktif",
-    lastLogin: "18 April 2026, 16.20 WITA"
+    lastLogin: "18 April 2026, 16.20 WIB"
   },
   {
     id: "adm-reza",

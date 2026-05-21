@@ -8,5 +8,5 @@ export default async function Page({
 }) {
   const lots = await listPublicLots();
   const query = searchParams ? await searchParams : undefined;
-  return <CatalogPage initialQuery={query?.q ?? ""} lots={lots} />;
+  return <CatalogPage initialQuery={query?.q ?? ""} lots={lots} serverNow={new Date().toISOString()} />;
 }

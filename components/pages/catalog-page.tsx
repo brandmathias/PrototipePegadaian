@@ -80,10 +80,12 @@ function getCategoryIcon(category: string) {
 
 export function CatalogPage({
   initialQuery = "",
-  lots: initialLots
+  lots: initialLots,
+  serverNow
 }: {
   initialQuery?: string;
   lots: Lot[];
+  serverNow?: string;
 }) {
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [sortBy, setSortBy] = useState("latest");
@@ -324,7 +326,7 @@ export function CatalogPage({
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {lots.map((lot) => (
-          <LotCard key={lot.id} lot={lot} />
+          <LotCard key={lot.id} lot={lot} serverNow={serverNow} />
         ))}
       </div>
       {lots.length === 0 ? (

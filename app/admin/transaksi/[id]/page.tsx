@@ -31,6 +31,7 @@ export default async function Page({
     <AdminTransactionDetailWorkspacePage
       backHref={backHref}
       backLabel={backLabel}
+      serverNow={new Date().toISOString()}
       transaction={transaction}
     />
   );

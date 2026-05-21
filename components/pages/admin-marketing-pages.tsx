@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { currency } from "@/lib/formatters/currency";
+import { formatAppDateTime } from "@/lib/timezone";
 
 type MarketingMedia = {
   id: string;
@@ -173,11 +174,7 @@ function dateLabel(value?: string | null) {
   if (Number.isNaN(date.getTime())) {
     return "-";
   }
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Makassar"
-  }).format(date);
+  return formatAppDateTime(date);
 }
 
 const VICKREY_PAYMENT_STATUSES = new Set([
@@ -323,6 +320,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
   const stage = getVickreyStage(auction);
   const StageIcon = stage.icon;
   const waitingReveal = auction.visibility === "MENUNGGU_REVEAL";
+  const serverNow = new Date().toISOString();
 
   return (
     <Card className="group w-full max-w-[23.5rem] overflow-hidden rounded-[1.55rem] bg-white p-0 transition-transform duration-300 hover:-translate-y-1">
@@ -361,6 +359,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
               expiredLabel={waitingReveal ? "Batas reveal terlewati" : "Deadline terlewati"}
               fallbackLabel={waitingReveal ? auction.revealDeadline ?? "-" : auction.ending || "-"}
               prefix={waitingReveal ? "Batas reveal" : undefined}
+              serverNow={serverNow}
               targetAt={waitingReveal ? auction.revealDeadlineAt ?? undefined : auction.endingAt}
             />
           </p>
@@ -448,6 +447,7 @@ export function AdminVickreyAuctionListPage({
 }) {
   const summary = getVickreySummary(auctions);
   const paymentQueue = auctions.filter((auction) => VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? ""));
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="space-y-6">
@@ -544,6 +544,7 @@ export function AdminVickreyAuctionListPage({
                       expiredLabel="Batas bayar terlewati"
                       fallbackLabel={dateLabel(auction.paymentDeadline)}
                       prefix="Sisa"
+                      serverNow={serverNow}
                       targetAt={auction.paymentDeadline}
                     />
                   </span>
@@ -583,6 +584,7 @@ export function AdminFixedPriceDetailPage({
   const media = auction.media ?? [];
   const sold = auction.transactionStatus === "LUNAS";
   const buyerMedia = toBuyerMedia(media);
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="space-y-6">
@@ -670,6 +672,7 @@ export function AdminFixedPriceDetailPage({
                       expiredLabel="Batas waktu terlewati"
                       fallbackLabel={auction.paymentDeadline || "-"}
                       prefix="Sisa"
+                      serverNow={serverNow}
                       targetAt={auction.paymentDeadline}
                     />
                   ) : (
@@ -736,6 +739,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
 
   const hasTransaction = Boolean(auction.transactionId);
   const statusLabel = auction.transactionStatus ? humanize(auction.transactionStatus) : "Belum ada transaksi";
+  const serverNow = new Date().toISOString();
 
   return (
     <Card className="border border-border/70 bg-white">
@@ -768,6 +772,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
                   expiredLabel="Batas bayar terlewati"
                   fallbackLabel={dateLabel(auction.paymentDeadline)}
                   prefix="Sisa"
+                  serverNow={serverNow}
                   targetAt={auction.paymentDeadline}
                 />
               ) : (
@@ -822,6 +827,7 @@ export function AdminVickreyAuctionDetailPage({
   const waitingReveal = auction.visibility === "MENUNGGU_REVEAL";
   const showBidRows = revealed || waitingReveal;
   const buyerMedia = toBuyerMedia(auction.media ?? []);
+  const serverNow = new Date().toISOString();
 
   return (
     <div className="space-y-6">
@@ -905,6 +911,7 @@ export function AdminVickreyAuctionDetailPage({
                     expiredLabel={waitingReveal ? "Batas reveal terlewati" : "Deadline terlewati"}
                     fallbackLabel={waitingReveal ? auction.revealDeadline ?? "-" : auction.ending || "-"}
                     prefix="Sisa"
+                    serverNow={serverNow}
                     targetAt={waitingReveal ? auction.revealDeadlineAt ?? undefined : auction.endingAt}
                   />
                 </p>

@@ -30,8 +30,8 @@ const transaction: BuyerTransaction = {
   method: "TRANSFER_BANK",
   unit: "UPC Ranotana",
   unitAddress: "Jl. Sam Ratulangi, Manado",
-  createdAt: "4 Mei 2026 10.30 WITA",
-  deadline: "5 Mei 2026 10.30 WITA",
+  createdAt: "4 Mei 2026 10.30 WIB",
+  deadline: "5 Mei 2026 10.30 WIB",
   deadlineAt: "2026-05-05T02:30:00.000Z",
   reference: "-",
   applicationNumber: "ORD-2026-0001",
@@ -74,7 +74,7 @@ describe("buyer transaction detail page", () => {
         transaction={{
           ...transaction,
           status: "LUNAS",
-          verifiedAt: "4 Mei 2026 22.11 WITA",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
         transactionId={transaction.id}
@@ -87,5 +87,38 @@ describe("buyer transaction detail page", () => {
       "href",
       `/transaksi/${transaction.id}/nota`
     );
+  });
+
+  it("blocks settlement actions while the buyer has an active blacklist", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        buyerStatus={{ blacklist: { active: true, until: new Date("2026-05-28T00:00:00.000Z"), totalViolations: 1 } }}
+        transaction={{
+          ...transaction,
+          status: "LUNAS",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/transaksi belum dapat diselesaikan/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
+  });
+
+  it("blocks proof upload while the buyer has an active blacklist", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        buyerStatus={{ blacklist: { active: true, until: new Date("2026-05-28T00:00:00.000Z"), totalViolations: 1 } }}
+        transaction={transaction}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/transaksi belum dapat diselesaikan/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 });

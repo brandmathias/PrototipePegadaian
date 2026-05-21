@@ -163,13 +163,15 @@ function SuperAdminCountdown({
   countdownLabel,
   className,
   expiredLabel = "Waktu terlewati",
-  prefix = "Sisa waktu"
+  prefix = "Sisa waktu",
+  serverNow
 }: {
   countdownAt?: string;
   countdownLabel?: string;
   expiredLabel?: string;
   prefix?: string;
   className?: string;
+  serverNow?: string;
 }) {
   if (!countdownAt && !countdownLabel) {
     return null;
@@ -183,6 +185,7 @@ function SuperAdminCountdown({
         expiredLabel={expiredLabel}
         fallbackLabel={countdownLabel ?? expiredLabel}
         prefix={prefix}
+        serverNow={serverNow}
         targetAt={countdownAt}
       />
     </div>
@@ -289,8 +292,9 @@ function EditableAdminCard({
 export function SuperAdminDashboardPage({
   summary,
   unitsNeedAttention,
-  pendingMonitoring
-}: SuperAdminMonitoringData) {
+  pendingMonitoring,
+  serverNow
+}: SuperAdminMonitoringData & { serverNow?: string }) {
   return (
     <div className="space-y-8 md:space-y-10">
       <Card className="overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(8,90,65,0.12),transparent_42%),linear-gradient(135deg,#ffffff_0%,#f4f2ed_100%)]">
@@ -373,6 +377,7 @@ export function SuperAdminDashboardPage({
                         countdownAt={item.countdownAt}
                         countdownLabel={item.countdownLabel}
                         expiredLabel={item.expiredLabel}
+                        serverNow={serverNow}
                       />
                     </div>
                     <Link href={item.href}>
@@ -419,6 +424,7 @@ export function SuperAdminDashboardPage({
                         countdownAt={unit.countdownAt}
                         countdownLabel={unit.countdownLabel}
                         expiredLabel={unit.expiredLabel}
+                        serverNow={serverNow}
                       />
                     </div>
                   </div>
@@ -456,6 +462,7 @@ export function SuperAdminDashboardPage({
                         countdownAt={item.countdownAt}
                         countdownLabel={item.countdownLabel}
                         expiredLabel={item.expiredLabel}
+                        serverNow={serverNow}
                       />
                     </div>
                   </div>
@@ -811,7 +818,13 @@ export function SuperAdminAdminsPage({
   );
 }
 
-export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringData }) {
+export function SuperAdminMonitoringPage({
+  data,
+  serverNow
+}: {
+  data: SuperAdminMonitoringData;
+  serverNow?: string;
+}) {
   return (
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
@@ -856,6 +869,7 @@ export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringD
                     countdownAt={item.countdownAt}
                     countdownLabel={item.countdownLabel}
                     expiredLabel={item.expiredLabel}
+                    serverNow={serverNow}
                   />
                 </div>
                 <div className="space-y-3 rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5">
@@ -875,7 +889,13 @@ export function SuperAdminMonitoringPage({ data }: { data: SuperAdminMonitoringD
   );
 }
 
-export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlacklistItem[] }) {
+export function SuperAdminBlacklistPage({
+  entries,
+  serverNow
+}: {
+  entries: SuperAdminBlacklistItem[];
+  serverNow?: string;
+}) {
   const expiringEntry = entries.find((entry) => entry.status === "Aktif" && entry.countdownAt);
 
   return (
@@ -920,6 +940,7 @@ export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlackl
                       countdownAt={item.countdownAt}
                       countdownLabel={item.countdownLabel}
                       expiredLabel={item.expiredLabel}
+                      serverNow={serverNow}
                     />
                   </div>
                 </div>
@@ -958,6 +979,7 @@ export function SuperAdminBlacklistPage({ entries }: { entries: SuperAdminBlackl
                       countdownAt={expiringEntry.countdownAt}
                       countdownLabel={expiringEntry.countdownLabel}
                       expiredLabel={expiringEntry.expiredLabel}
+                      serverNow={serverNow}
                     />
                   </div>
                 </div>

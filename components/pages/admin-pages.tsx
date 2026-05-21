@@ -155,12 +155,15 @@ function AdminAuctionDeadline({
   prefix?: string;
   className?: string;
 }) {
+  const serverNow = new Date().toISOString();
+
   return (
     <AdminLiveCountdown
       className={className}
       expiredLabel="Deadline terlewati"
       fallbackLabel={auction.ending}
       prefix={prefix}
+      serverNow={serverNow}
       targetAt={auction.endingAt}
     />
   );
@@ -175,12 +178,15 @@ function AdminTransactionDeadline({
   prefix?: string;
   className?: string;
 }) {
+  const serverNow = new Date().toISOString();
+
   return (
     <AdminLiveCountdown
       className={className}
       expiredLabel="Batas waktu terlewati"
       fallbackLabel={transaction.deadline}
       prefix={prefix}
+      serverNow={serverNow}
       targetAt={transaction.deadlineAt}
     />
   );

@@ -6,5 +6,5 @@ export default async function Page() {
   const { unitId } = await getAdminUnitPageContext();
   const transactions = await listAdminTransactions(unitId);
 
-  return <AdminTransactionHistoryPage transactions={transactions} />;
+  return <AdminTransactionHistoryPage serverNow={new Date().toISOString()} transactions={transactions} />;
 }

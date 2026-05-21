@@ -1,6 +1,7 @@
 import { getCountdownState } from "@/lib/countdown";
 import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
+import { formatAppDateTime } from "@/lib/timezone";
 
 type AccountShape = {
   bankName: string | null;
@@ -80,15 +81,7 @@ function toNumber(value: string | number | null | undefined) {
 }
 
 function toDateTimeLabel(value: Date | null | undefined) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Makassar"
-  }).format(value);
+  return formatAppDateTime(value);
 }
 
 function formatRupiah(value: number) {

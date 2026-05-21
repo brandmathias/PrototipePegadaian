@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
+import {
+  getBlacklistBlockedUntil,
+  getBlacklistDurationLabel,
+  getBlacklistRestrictionPolicy
+} from "@/lib/blacklist/restrictions";
 
 describe("blacklist restriction policy", () => {
   it("uses three graduated levels with fixed price blocked from the second violation", () => {
@@ -14,19 +18,22 @@ describe("blacklist restriction policy", () => {
       level: 1,
       durationDays: 7,
       blocksVickrey: true,
-      blocksFixedPrice: false
+      blocksFixedPrice: false,
+      blocksTransactionSettlement: true
     });
     expect(getBlacklistRestrictionPolicy(2)).toMatchObject({
       level: 2,
       durationDays: 30,
       blocksVickrey: true,
-      blocksFixedPrice: true
+      blocksFixedPrice: true,
+      blocksTransactionSettlement: true
     });
     expect(getBlacklistRestrictionPolicy(3)).toMatchObject({
       level: 3,
       durationDays: 365,
       blocksVickrey: true,
       blocksFixedPrice: true,
+      blocksTransactionSettlement: true,
       requiresManualReview: true
     });
     expect(getBlacklistRestrictionPolicy(9)).toMatchObject({
@@ -34,5 +41,13 @@ describe("blacklist restriction policy", () => {
       durationDays: 365,
       requiresManualReview: true
     });
+  });
+
+  it("can shorten blacklist duration to hours for demo testing without changing level rules", () => {
+    const base = new Date("2026-05-21T00:00:00.000Z");
+
+    expect(getBlacklistBlockedUntil(base, 1, "hours").toISOString()).toBe("2026-05-21T07:00:00.000Z");
+    expect(getBlacklistBlockedUntil(base, 2, "hours").toISOString()).toBe("2026-05-22T06:00:00.000Z");
+    expect(getBlacklistDurationLabel(3, "hours")).toBe("365 jam");
   });
 });

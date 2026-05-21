@@ -10,6 +10,7 @@ type LiveCountdownProps = {
   expiredLabel: string;
   prefix?: string;
   className?: string;
+  serverNow?: string;
 };
 
 export function LiveCountdown({
@@ -17,8 +18,28 @@ export function LiveCountdown({
   fallbackLabel,
   expiredLabel,
   prefix,
-  className
+  className,
+  serverNow
 }: LiveCountdownProps) {
+  const syncedClock = useMemo(() => {
+    const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
+    const performanceStart = typeof performance !== "undefined" ? performance.now() : 0;
+    const dateStart = Date.now();
+
+    return () => {
+      if (Number.isNaN(serverNowMs)) {
+        return Date.now();
+      }
+
+      const elapsedMs =
+        typeof performance !== "undefined"
+          ? performance.now() - performanceStart
+          : Date.now() - dateStart;
+
+      return serverNowMs + Math.max(0, elapsedMs);
+    };
+  }, [serverNow]);
+
   const initialState = useMemo(
     () =>
       fallbackLabel
@@ -26,15 +47,15 @@ export function LiveCountdown({
             isExpired: !targetAt || fallbackLabel === expiredLabel,
             label: fallbackLabel
           }
-        : getCountdownState(targetAt, { expiredLabel }),
-    [expiredLabel, fallbackLabel, targetAt]
+        : getCountdownState(targetAt, { expiredLabel, now: syncedClock() }),
+    [expiredLabel, fallbackLabel, syncedClock, targetAt]
   );
 
   const [state, setState] = useState(initialState);
 
   useEffect(() => {
     const update = () => {
-      setState(getCountdownState(targetAt, { expiredLabel }));
+      setState(getCountdownState(targetAt, { expiredLabel, now: syncedClock() }));
     };
 
     update();
@@ -43,7 +64,7 @@ export function LiveCountdown({
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [expiredLabel, targetAt]);
+  }, [expiredLabel, syncedClock, targetAt]);
 
   const text = state.isExpired || !prefix ? state.label : `${prefix} ${state.label}`;
 

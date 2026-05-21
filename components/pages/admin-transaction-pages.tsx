@@ -56,7 +56,7 @@ function isPaymentVerified(transaction: AdminTransactionItem) {
   return transaction.status === "LUNAS" || transaction.status === "SELESAI";
 }
 
-function transactionDeadlineLabel(transaction: AdminTransactionItem) {
+function transactionDeadlineLabel(transaction: AdminTransactionItem, serverNow?: string) {
   if (isPaymentVerified(transaction)) {
     return (
       <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#bfe8cf] bg-[#effbf4] px-3 py-1.5 text-xs font-black leading-5 text-[#075b3f]">
@@ -72,6 +72,7 @@ function transactionDeadlineLabel(transaction: AdminTransactionItem) {
       expiredLabel="Batas waktu terlewati"
       fallbackLabel={transaction.deadline}
       prefix="Sisa"
+      serverNow={serverNow}
       targetAt={transaction.deadlineAt}
     />
   );
@@ -253,10 +254,12 @@ function getAdminWorkspaceStatusText(transaction: AdminTransactionItem) {
 
 function TransactionSummaryDossier({
   transaction,
-  backHref
+  backHref,
+  serverNow
 }: {
   transaction: AdminTransactionItem;
   backHref: string;
+  serverNow?: string;
 }) {
   return (
     <Card className="self-start overflow-hidden rounded-[1.9rem] border border-black/10 bg-white shadow-[0_24px_60px_-48px_rgba(10,74,51,0.44)] xl:sticky xl:top-28">
@@ -304,7 +307,7 @@ function TransactionSummaryDossier({
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
           <DetailStat label="Referensi" value={buildTransactionReference(transaction)} />
-          <DetailStat label="Batas pembayaran" value={transactionDeadlineLabel(transaction)} />
+          <DetailStat label="Batas pembayaran" value={transactionDeadlineLabel(transaction, serverNow)} />
           <DetailStat label="Email buyer" value={transaction.buyerEmail || "-"} />
           <DetailStat label="Nomor HP" value={transaction.buyerPhone || "-"} />
         </div>
@@ -511,7 +514,7 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
   };
 }
 
-function LedgerStatusSignal({ transaction }: { transaction: AdminTransactionItem }) {
+function LedgerStatusSignal({ transaction, serverNow }: { transaction: AdminTransactionItem; serverNow?: string }) {
   const signal = getLedgerStatusSignal(transaction);
   const verified = isPaymentVerified(transaction);
   const Icon = signal.icon;
@@ -537,7 +540,7 @@ function LedgerStatusSignal({ transaction }: { transaction: AdminTransactionItem
               ? transaction.verifiedAt && transaction.verifiedAt !== "-"
                 ? `Diverifikasi ${transaction.verifiedAt}`
                 : signal.detail
-              : transactionDeadlineLabel(transaction)}
+              : transactionDeadlineLabel(transaction, serverNow)}
           </span>
         </span>
       </div>
@@ -547,10 +550,12 @@ function LedgerStatusSignal({ transaction }: { transaction: AdminTransactionItem
 
 function TransactionLedgerRow({
   transaction,
-  href
+  href,
+  serverNow
 }: {
   transaction: AdminTransactionItem;
   href: string;
+  serverNow?: string;
 }) {
   return (
     <div className="grid gap-4 px-4 py-4 transition duration-200 hover:bg-[#fbfcfa] lg:grid-cols-[minmax(17rem,1.35fr)_minmax(9rem,0.55fr)_minmax(9rem,0.65fr)_minmax(15rem,0.95fr)_auto] lg:items-center lg:px-5">
@@ -595,7 +600,7 @@ function TransactionLedgerRow({
         <p className="mb-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 lg:hidden">
           Status
         </p>
-        <LedgerStatusSignal transaction={transaction} />
+        <LedgerStatusSignal serverNow={serverNow} transaction={transaction} />
       </div>
 
       <div className="flex lg:justify-end">
@@ -614,11 +619,13 @@ function TransactionLedgerRow({
 function TransactionLedgerList({
   transactions,
   getHref,
-  emptyText
+  emptyText,
+  serverNow
 }: {
   transactions: AdminTransactionItem[];
   getHref: (transaction: AdminTransactionItem) => string;
   emptyText: string;
+  serverNow?: string;
 }) {
   if (!transactions.length) {
     return <EmptyPanel text={emptyText} />;
@@ -638,6 +645,7 @@ function TransactionLedgerList({
           <TransactionLedgerRow
             href={getHref(transaction)}
             key={transaction.id}
+            serverNow={serverNow}
             transaction={transaction}
           />
         ))}
@@ -649,11 +657,13 @@ function TransactionLedgerList({
 export function VerificationWorkspace({
   transaction,
   title = "Panel Verifikasi Pembayaran",
-  description = "Periksa pembayaran fixed price, cocokkan bukti atau pembayaran langsung, lalu putuskan status transaksi."
+  description = "Periksa pembayaran fixed price, cocokkan bukti atau pembayaran langsung, lalu putuskan status transaksi.",
+  serverNow
 }: {
   transaction: AdminTransactionItem;
   title?: string;
   description?: string;
+  serverNow?: string;
 }) {
   const needsDecision = VERIFICATION_STATUSES.has(transaction.status);
 
@@ -700,7 +710,7 @@ export function VerificationWorkspace({
                 <DetailStat label="Barang" value={transaction.lot} />
                 <DetailStat label="Nominal" value={currency.format(transaction.total)} />
                 <DetailStat label="Metode bayar" value={paymentChannelLabel(transaction.method)} />
-                <DetailStat label="Deadline" value={transactionDeadlineLabel(transaction)} />
+                <DetailStat label="Deadline" value={transactionDeadlineLabel(transaction, serverNow)} />
                 <DetailStat label="Status" value={<AdminStatusBadge status={transaction.status} />} />
                 <DetailStat label="Referensi" value={buildTransactionReference(transaction)} />
               </div>
@@ -912,7 +922,13 @@ export function AdminTransactionHubPage({ transactions }: { transactions: AdminT
   );
 }
 
-export function AdminTransactionVerificationPage({ transactions }: { transactions: AdminTransactionItem[] }) {
+export function AdminTransactionVerificationPage({
+  transactions,
+  serverNow
+}: {
+  transactions: AdminTransactionItem[];
+  serverNow?: string;
+}) {
   const fixedPriceTransactions = getFixedPriceTransactions(transactions);
   const actionableQueue = getVerificationTransactions(fixedPriceTransactions);
   const [activeFilter, setActiveFilter] = useState<string>("SEMUA");
@@ -956,13 +972,20 @@ export function AdminTransactionVerificationPage({ transactions }: { transaction
       <TransactionLedgerList
         emptyText="Belum ada transaksi yang menunggu verifikasi pembayaran. Jika semua sudah selesai, Anda bisa membuka halaman riwayat untuk melihat arsip transaksi unit."
         getHref={(transaction) => `/admin/transaksi/${transaction.id}?from=verification`}
+        serverNow={serverNow}
         transactions={verificationQueue}
       />
     </div>
   );
 }
 
-export function AdminTransactionHistoryPage({ transactions }: { transactions: AdminTransactionItem[] }) {
+export function AdminTransactionHistoryPage({
+  transactions,
+  serverNow
+}: {
+  transactions: AdminTransactionItem[];
+  serverNow?: string;
+}) {
   const history = getHistoryTransactions(transactions);
 
   return (
@@ -977,6 +1000,7 @@ export function AdminTransactionHistoryPage({ transactions }: { transactions: Ad
       <TransactionLedgerList
         emptyText="Belum ada transaksi arsip untuk unit ini."
         getHref={(transaction) => `/admin/transaksi/${transaction.id}?from=history`}
+        serverNow={serverNow}
         transactions={history}
       />
     </div>
@@ -986,11 +1010,13 @@ export function AdminTransactionHistoryPage({ transactions }: { transactions: Ad
 export function AdminTransactionDetailWorkspacePage({
   transaction,
   backHref = "/admin/transaksi",
-  backLabel = "Kembali ke transaksi"
+  backLabel = "Kembali ke transaksi",
+  serverNow
 }: {
   transaction: AdminTransactionItem;
   backHref?: string;
   backLabel?: string;
+  serverNow?: string;
 }) {
   return (
     <div className="space-y-6">
@@ -1009,9 +1035,10 @@ export function AdminTransactionDetailWorkspacePage({
       />
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(22rem,0.72fr)_minmax(0,1.28fr)]">
-        <TransactionSummaryDossier backHref={backHref} transaction={transaction} />
+        <TransactionSummaryDossier backHref={backHref} serverNow={serverNow} transaction={transaction} />
         <VerificationWorkspace
           description="Panel ini menampilkan bukti, ringkasan, dan tombol aksi yang semuanya tetap tersambung ke endpoint verifikasi transaksi admin unit."
+          serverNow={serverNow}
           title="Panel Verifikasi"
           transaction={transaction}
         />

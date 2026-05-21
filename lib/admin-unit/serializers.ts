@@ -1,6 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 
 import type { barang, bids, pemasaran, transaksi } from "@/lib/db/schema/admin";
+import { formatAppDateTime } from "@/lib/timezone";
 
 type BarangRow = InferSelectModel<typeof barang>;
 type PemasaranRow = InferSelectModel<typeof pemasaran>;
@@ -27,12 +28,6 @@ type AdminPemasaranTransaction = {
   paymentDeadline?: Date | string | null;
 };
 
-const witaDateTime = new Intl.DateTimeFormat("id-ID", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Asia/Makassar"
-});
-
 function toDateLabel(value: Date | null | undefined) {
   if (!value) {
     return "-";
@@ -41,10 +36,7 @@ function toDateLabel(value: Date | null | undefined) {
 }
 
 function toDateTimeLabel(value: Date | null | undefined) {
-  if (!value) {
-    return "-";
-  }
-  return witaDateTime.format(value);
+  return formatAppDateTime(value);
 }
 
 function toNumber(value: string | null | undefined) {

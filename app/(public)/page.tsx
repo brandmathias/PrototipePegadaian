@@ -3,5 +3,5 @@ import { getPublicHomeData } from "@/lib/services/public-home.service";
 
 export default async function Page() {
   const data = await getPublicHomeData();
-  return <HomePage featuredLots={data.featuredLots} stats={data.stats} />;
+  return <HomePage featuredLots={data.featuredLots} serverNow={new Date().toISOString()} stats={data.stats} />;
 }

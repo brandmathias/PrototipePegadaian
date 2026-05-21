@@ -77,4 +77,25 @@ describe("LiveCountdown", () => {
 
     expect(screen.getByText("Sesi berakhir 2 hari 4 jam 30 menit 4 detik")).toBeInTheDocument();
   });
+
+  it("uses server time and monotonic elapsed time so device clock changes do not expire the countdown", () => {
+    render(
+      <LiveCountdown
+        expiredLabel="Menunggu hasil"
+        prefix="Sesi berakhir"
+        serverNow={new Date("2026-04-29T10:00:00+08:00").toISOString()}
+        targetAt={new Date("2026-04-29T10:01:00+08:00").toISOString()}
+      />
+    );
+
+    expect(screen.getByText("Sesi berakhir 1 menit 0 detik")).toBeInTheDocument();
+
+    vi.setSystemTime(new Date("2026-04-29T12:00:00+08:00"));
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByText("Sesi berakhir 59 detik")).toBeInTheDocument();
+    expect(screen.queryByText("Menunggu hasil")).not.toBeInTheDocument();
+  });
 });

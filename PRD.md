@@ -2,9 +2,9 @@
 
 ## Prototipe Pegadaian Lelang
 
-**Versi:** 5.0
+**Versi:** 5.1
 **Status:** Living PRD, disesuaikan dengan implementasi saat ini
-**Tanggal pembaruan:** 19 Mei 2026
+**Tanggal pembaruan:** 21 Mei 2026
 **Stack:** Next.js App Router, React, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth
 
 ---
@@ -161,7 +161,7 @@ Catatan:
 
 ### 3.3 Buyer Vickrey Auction
 
-Vickrey Auction adalah lelang tertutup. Pemenang adalah bid tertinggi, tetapi harga final mengikuti bid tertinggi kedua. Jika hanya ada satu penawar valid, harga final mengikuti harga dasar.
+Vickrey Auction adalah lelang tertutup. Pemenang adalah bid tertinggi, tetapi harga final mengikuti bid tertinggi kedua. Jika hanya ada satu penawar valid, harga final mengikuti harga dasar. Jika dua atau lebih buyer memasukkan nominal bid tertinggi yang sama, pemenang adalah buyer yang submit bid lebih dahulu berdasarkan timestamp `bids.created_at`, dan harga final yang dibayar adalah nominal bid yang sama tersebut.
 
 Alur buyer:
 
@@ -194,6 +194,8 @@ Ketentuan Vickrey:
 - Bid tidak dapat diubah atau dibatalkan.
 - Nominal bid tidak terlihat sebelum deadline.
 - Bid baru memakai encrypted escrow dan hash integrity.
+- Jika terdapat nominal bid tertinggi yang sama, sistem memakai aturan tie-breaker timestamp: bid yang masuk lebih awal menang.
+- Pada kasus tie nominal tertinggi, bid sama yang masuk lebih lambat menjadi runner-up, sehingga harga final Vickrey sama dengan nominal bid tertinggi tersebut.
 - Form reveal manual tetap ada untuk kompatibilitas bid legacy hash-only, tetapi alur utama baru tidak membutuhkan buyer reveal.
 - Pembayaran Vickrey hanya bayar langsung di unit, tanpa upload bukti transfer.
 
@@ -439,7 +441,19 @@ Setelah deadline:
 - Harga final dan pemenang tersedia.
 - Data bid dapat dipakai untuk audit sesuai aturan tampilan dan endpoint admin.
 
-### 6.3 Legacy Reveal
+### 6.3 Settlement dan Tie-Breaker
+
+Aturan settlement Vickrey:
+
+- Bid valid adalah bid yang berhasil didecrypt, lolos hash integrity, dan nominalnya minimal sama dengan harga dasar.
+- Bid diurutkan berdasarkan nominal tertinggi.
+- Jika nominal berbeda, pemenang adalah nominal tertinggi dan harga final adalah nominal tertinggi kedua.
+- Jika hanya ada satu bid valid, pemenang membayar harga dasar.
+- Jika dua atau lebih bid valid memiliki nominal tertinggi yang sama, pemenang adalah bid dengan `created_at` paling awal.
+- Pada kondisi nominal tertinggi sama, harga final adalah nominal yang sama tersebut karena runner-up bernilai sama dengan pemenang.
+- Jika timestamp juga sama sampai presisi database, sistem memakai `bids.id` sebagai fallback deterministik agar hasil settlement tetap stabil.
+
+### 6.4 Legacy Reveal
 
 Form reveal buyer tetap disediakan untuk bid lama yang masih memakai mekanisme hash-only.
 
@@ -852,6 +866,16 @@ Aturan:
 - Level 3 memakai durasi 365 hari dan membutuhkan review/cabut manual.
 - Transaksi yang sudah berjalan tetap dapat diselesaikan walaupun akun sedang dibatasi.
 
+### 10.6 Standar Waktu Operasional
+
+- Semua timestamp di database disimpan sebagai nilai absolut UTC.
+- Zona waktu operasional aplikasi adalah WIB (`Asia/Jakarta`, UTC+7).
+- Semua tampilan tanggal/jam di buyer, Admin Unit, Super Admin, nota, dan mock data harus dikonversi ke WIB secara konsisten.
+- Input durasi lelang dari Admin Unit dihitung dari waktu server, bukan jam device client.
+- Countdown frontend menerima snapshot waktu server (`serverNow`) dan menghitung elapsed time dengan monotonic timer browser (`performance.now`).
+- Jika user mengubah tanggal/jam device, countdown tidak boleh langsung meloncat ke expired; keputusan final tetap mengikuti timestamp backend.
+- Backend/cron tetap menjadi sumber kebenaran untuk deadline Vickrey, settlement pemenang, batas pembayaran 24 jam, dan blacklist.
+
 ---
 
 ## 11. Security dan Privacy
@@ -868,6 +892,7 @@ Aturan:
 | Cron | Endpoint cron dilindungi secret bearer token. |
 | Mutasi status | Transisi status dilakukan dari service layer, bukan update bebas dari client. |
 | Nota | Print/download hanya menampilkan dokumen nota, bukan UI navigasi. |
+| Waktu | Client tidak boleh menjadi sumber kebenaran deadline; server time dan UTC timestamp harus menjadi acuan. |
 
 ---
 

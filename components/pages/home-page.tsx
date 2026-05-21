@@ -16,10 +16,12 @@ type HomePageStat = {
 
 export function HomePage({
   featuredLots,
-  stats
+  stats,
+  serverNow
 }: {
   featuredLots: Lot[];
   stats: HomePageStat[];
+  serverNow?: string;
 }) {
   return (
     <div className="space-y-20 pb-10">
@@ -178,7 +180,7 @@ export function HomePage({
         />
         <div className="grid gap-6 lg:grid-cols-3">
           {featuredLots.map((lot) => (
-            <LotCard key={lot.id} lot={lot} />
+            <LotCard key={lot.id} lot={lot} serverNow={serverNow} />
           ))}
         </div>
         {featuredLots.length === 0 ? (

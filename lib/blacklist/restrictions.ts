@@ -5,9 +5,15 @@ export type BlacklistRestrictionPolicy = {
   durationDays: 0 | 7 | 30 | 365;
   blocksVickrey: boolean;
   blocksFixedPrice: boolean;
+  blocksTransactionSettlement: boolean;
   requiresManualReview: boolean;
   label: string;
 };
+
+export type BlacklistDurationUnit = "days" | "hours";
+
+const HOUR_MS = 3_600_000;
+const DAY_MS = 24 * HOUR_MS;
 
 export function getBlacklistRestrictionPolicy(totalViolations: number | null | undefined): BlacklistRestrictionPolicy {
   const violations = Math.max(0, Math.floor(Number(totalViolations ?? 0)));
@@ -18,6 +24,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       durationDays: 0,
       blocksVickrey: false,
       blocksFixedPrice: false,
+      blocksTransactionSettlement: false,
       requiresManualReview: false,
       label: "Tidak ada pembatasan"
     };
@@ -29,6 +36,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       durationDays: 7,
       blocksVickrey: true,
       blocksFixedPrice: false,
+      blocksTransactionSettlement: true,
       requiresManualReview: false,
       label: "Level 1: Vickrey dibatasi"
     };
@@ -40,6 +48,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       durationDays: 30,
       blocksVickrey: true,
       blocksFixedPrice: true,
+      blocksTransactionSettlement: true,
       requiresManualReview: false,
       label: "Level 2: Transaksi baru dibatasi"
     };
@@ -50,6 +59,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
     durationDays: 365,
     blocksVickrey: true,
     blocksFixedPrice: true,
+    blocksTransactionSettlement: true,
     requiresManualReview: true,
     label: "Level 3: Review manual"
   };
@@ -57,4 +67,25 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
 
 export function getBlacklistDurationDays(totalViolations: number) {
   return getBlacklistRestrictionPolicy(totalViolations).durationDays;
+}
+
+export function getBlacklistDurationUnit(value = process.env.BLACKLIST_DURATION_UNIT): BlacklistDurationUnit {
+  return value === "hours" || value === "jam" || value === "demo" ? "hours" : "days";
+}
+
+export function getBlacklistDurationLabel(
+  totalViolations: number,
+  unit: BlacklistDurationUnit = getBlacklistDurationUnit()
+) {
+  const duration = getBlacklistDurationDays(totalViolations);
+  return unit === "hours" ? `${duration} jam` : `${duration} hari`;
+}
+
+export function getBlacklistBlockedUntil(
+  base: Date,
+  totalViolations: number,
+  unit: BlacklistDurationUnit = getBlacklistDurationUnit()
+) {
+  const duration = getBlacklistDurationDays(totalViolations);
+  return new Date(base.getTime() + duration * (unit === "hours" ? HOUR_MS : DAY_MS));
 }

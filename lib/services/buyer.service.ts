@@ -27,6 +27,7 @@ import {
 } from "@/lib/db/schema";
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+import { formatAppDate, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const ACTIVE_TRANSACTION_STATUSES = [
@@ -35,6 +36,9 @@ const ACTIVE_TRANSACTION_STATUSES = [
   "ditolak_bukti",
   "menunggu_konfirmasi_langsung"
 ];
+
+const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
+  "Akun Anda sedang dalam masa pembatasan. Transaksi yang sedang berjalan belum dapat diselesaikan sampai masa blacklist berakhir.";
 
 function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
@@ -107,6 +111,15 @@ async function getActiveBlacklist(userId: string) {
     .limit(1);
 
   return row ?? null;
+}
+
+async function ensureCanSettleBuyerTransaction(userId: string) {
+  const blacklist = await getActiveBlacklist(userId);
+  const restriction = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+
+  if (blacklist && restriction.blocksTransactionSettlement) {
+    throw new Error(BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE);
+  }
 }
 
 async function getTransactionRows(userId: string) {
@@ -267,22 +280,16 @@ export async function getBuyerSummary(userId: string) {
       ? `${profile.nationalId.slice(0, 4)}********${profile.nationalId.slice(-4)}`
       : "-",
     address: "Belum dilengkapi",
-    memberSince: profile?.createdAt
-      ? new Intl.DateTimeFormat("id-ID", { dateStyle: "long", timeZone: "Asia/Makassar" }).format(profile.createdAt)
-      : "-",
+    memberSince: formatAppLongDate(profile?.createdAt),
     verificationStatus: profile?.status === "active" ? "Terverifikasi" : "Perlu verifikasi",
     blacklist: {
       active: Boolean(blacklist),
       violations: blacklist?.totalViolations ?? 0,
-      until: blacklist?.blockedUntil
-        ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeZone: "Asia/Makassar" }).format(
-            blacklist.blockedUntil
-          )
-        : "-",
+      until: formatAppDate(blacklist?.blockedUntil),
       reason: blacklist
         ? blacklistPolicy.blocksFixedPrice
-          ? "Akun sedang dibatasi untuk membuat transaksi baru. Transaksi yang sudah berjalan tetap bisa diselesaikan."
-          : "Akun masih dibatasi untuk mengikuti lelang Vickrey. Pembelian fixed price tetap tersedia."
+          ? "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
+          : "Akun masih dibatasi untuk mengikuti lelang Vickrey dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
         : "Tidak ada pembatasan aktif. Akun dapat mengikuti fixed price dan lelang."
     },
     metrics: [
@@ -544,6 +551,7 @@ export async function revealBuyerBid(userId: string, pemasaranId: string, input:
 
 export async function uploadBuyerPaymentProof(userId: string, transactionId: string, input: unknown) {
   const payload = validateBuyerPaymentProofPayload(input);
+  await ensureCanSettleBuyerTransaction(userId);
   const row = await getTransactionRowById(userId, transactionId);
 
   if (!row) {
@@ -582,6 +590,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 }
 
 export async function completeBuyerTransaction(userId: string, transactionId: string) {
+  await ensureCanSettleBuyerTransaction(userId);
   const row = await getTransactionRowById(userId, transactionId);
 
   if (!row) {

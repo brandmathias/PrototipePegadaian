@@ -6,5 +6,5 @@ export default async function Page() {
   const { unitId } = await getAdminUnitPageContext();
   const transactions = await listAdminTransactions(unitId);
 
-  return <AdminTransactionVerificationPage transactions={transactions} />;
+  return <AdminTransactionVerificationPage serverNow={new Date().toISOString()} transactions={transactions} />;
 }

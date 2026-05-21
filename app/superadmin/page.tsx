@@ -3,5 +3,5 @@ import { getSuperAdminMonitoring } from "@/lib/services/monitoring.service";
 
 export default async function Page() {
   const data = await getSuperAdminMonitoring();
-  return <SuperAdminDashboardPage {...data} />;
+  return <SuperAdminDashboardPage {...data} serverNow={new Date().toISOString()} />;
 }

@@ -15,7 +15,7 @@ import {
   users
 } from "@/lib/db/schema";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
-import { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
+import { getBlacklistBlockedUntil, getBlacklistDurationLabel } from "@/lib/blacklist/restrictions";
 import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 type BidOutcomeInput = {
@@ -81,10 +81,6 @@ function plusHours(base: Date, hours: number) {
   return new Date(base.getTime() + hours * 3_600_000);
 }
 
-function plusDays(base: Date, days: number) {
-  return new Date(base.getTime() + days * 86_400_000);
-}
-
 export function canSettleVickreySession(
   input: { endsAt: Date | null; revealEndsAt?: Date | null; hasUnrevealedBids: boolean },
   now = new Date()
@@ -104,7 +100,7 @@ export function canSettleVickreySession(
   return input.revealEndsAt.getTime() <= now.getTime();
 }
 
-export { getBlacklistDurationDays };
+export { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
 
 export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
   const revealedBids = input.bids.filter(
@@ -116,6 +112,8 @@ export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
       return amountDifference;
     }
 
+    // Tie-breaker policy: equal bid amounts are won by the earliest submitted bid.
+    // The later equal bid remains runner-up, so the Vickrey final price equals the tied amount.
     const leftTime = left.createdAt?.getTime() ?? 0;
     const rightTime = right.createdAt?.getTime() ?? 0;
     if (leftTime !== rightTime) {
@@ -460,7 +458,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         .limit(1);
 
       const totalViolations = (existingBlacklist?.totalViolations ?? 0) + 1;
-      const blockedUntil = plusDays(now, getBlacklistDurationDays(totalViolations));
+      const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
       const blacklistId = existingBlacklist?.id ?? randomUUID();
 
       if (existingBlacklist) {
@@ -501,7 +499,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         action: "blokir_otomatis",
         performedByType: "system",
         performedByUserId: null,
-        note: `Sistem otomatis memblokir buyer selama ${getBlacklistDurationDays(totalViolations)} hari karena tidak membayar hasil lelang Vickrey.`
+        note: `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil lelang Vickrey.`
       });
     });
 

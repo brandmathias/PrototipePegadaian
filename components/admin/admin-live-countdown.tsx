@@ -8,6 +8,7 @@ type AdminLiveCountdownProps = {
   expiredLabel: string;
   prefix?: string;
   className?: string;
+  serverNow?: string;
 };
 
 export function AdminLiveCountdown({
@@ -15,7 +16,8 @@ export function AdminLiveCountdown({
   fallbackLabel,
   expiredLabel,
   prefix,
-  className
+  className,
+  serverNow
 }: AdminLiveCountdownProps) {
   return (
     <LiveCountdown
@@ -23,6 +25,7 @@ export function AdminLiveCountdown({
       expiredLabel={expiredLabel}
       fallbackLabel={fallbackLabel}
       prefix={prefix}
+      serverNow={serverNow}
       targetAt={targetAt}
     />
   );

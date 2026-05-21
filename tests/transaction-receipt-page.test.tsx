@@ -25,7 +25,7 @@ const transaction: BuyerTransaction = {
   method: "TRANSFER_BANK",
   unit: "Pegadaian UPC Gading Serpong",
   unitAddress: "Ruko Dalton, Gading Serpong",
-  createdAt: "5 Mei 2026 10.30 WITA",
+  createdAt: "5 Mei 2026 10.30 WIB",
   deadline: "Selesai",
   reference: "BRI-8888",
   applicationNumber: "PGJ-FP-TRXFIXED",
@@ -35,7 +35,7 @@ const transaction: BuyerTransaction = {
   bankAccountNumber: "0123-4567-8901-234",
   bankAccountHolder: "PT Pegadaian (Persero)",
   bankBranch: "Serpong",
-  verifiedAt: "5 Mei 2026 11.00 WITA",
+  verifiedAt: "5 Mei 2026 11.00 WIB",
   receiptNumber: "PEG-20260518-001"
 };
 
