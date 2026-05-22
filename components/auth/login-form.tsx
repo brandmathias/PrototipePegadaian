@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
@@ -10,15 +10,19 @@ import { getRoleHomePath, getSafeBuyerNextPath, getSafeRoleNextPath, isAuthRole 
 import { validateBuyerLoginPayload } from "@/lib/auth/buyer-auth-validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const rawNext = searchParams.get("next");
   const nextPath = getSafeBuyerNextPath(rawNext);
   const registerHref = rawNext ? `/register?next=${encodeURIComponent(nextPath)}` : "/register";
@@ -30,6 +34,7 @@ export function LoginForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setIsSuccess(false);
 
     let payload;
     try {
@@ -39,87 +44,183 @@ export function LoginForm() {
         password: String(formData.get("password") ?? "")
       });
     } catch (validationError) {
-      setError(validationError instanceof Error ? validationError.message : "Periksa lagi email dan kata sandi.");
+      const message = validationError instanceof Error ? validationError.message : "Periksa lagi email dan kata sandi.";
+      setError(message);
+      toast({
+        description: message,
+        duration: 5200,
+        scope: "global",
+        title: "Data masuk belum lengkap",
+        variant: "error"
+      });
       return;
     }
 
     setIsPending(true);
-    const result = await authClient.signIn.email(payload);
-    setIsPending(false);
 
-    if (result.error) {
-      setError(result.error.message ?? "Masuk belum berhasil. Coba lagi.");
-      return;
+    try {
+      const result = await authClient.signIn.email(payload);
+
+      if (result.error) {
+        const message = result.error.message ?? "Masuk belum berhasil. Coba lagi.";
+        setError(message);
+        toast({
+          description: message,
+          duration: 5200,
+          scope: "global",
+          title: "Masuk belum berhasil",
+          variant: "error"
+        });
+        return;
+      }
+
+      const meResponse = await fetch("/api/auth/me", {
+        cache: "no-store",
+        credentials: "include"
+      });
+
+      if (!meResponse.ok) {
+        throw new Error("Profil akun belum bisa diverifikasi.");
+      }
+
+      const me = (await meResponse.json()) as {
+        user: {
+          role?: string | null;
+        } | null;
+      };
+      const role = isAuthRole(me.user?.role) ? me.user.role : "buyer";
+
+      setIsSuccess(true);
+      toast({
+        description: "Kredensial valid. Anda sedang diarahkan ke area akun yang sesuai.",
+        duration: 3600,
+        scope: "global",
+        title: "Login berhasil",
+        variant: "success"
+      });
+      await new Promise((resolve) => setTimeout(resolve, 860));
+      router.push(rawNext ? getSafeRoleNextPath(role, rawNext) : getRoleHomePath(role));
+      router.refresh();
+    } catch {
+      const message = "Proses masuk belum berhasil. Pastikan koneksi stabil, lalu coba lagi.";
+      setError(message);
+      toast({
+        description: message,
+        duration: 5200,
+        scope: "global",
+        title: "Masuk belum berhasil",
+        variant: "error"
+      });
+    } finally {
+      setIsPending(false);
     }
-
-    const meResponse = await fetch("/api/auth/me", {
-      cache: "no-store",
-      credentials: "include"
-    });
-    const me = (await meResponse.json()) as {
-      user: {
-        role?: string | null;
-      } | null;
-    };
-    const role = isAuthRole(me.user?.role) ? me.user.role : "buyer";
-
-    router.push(rawNext ? getSafeRoleNextPath(role, rawNext) : getRoleHomePath(role));
-    router.refresh();
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label
-          className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+          className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68"
           htmlFor="buyer-login-email"
         >
-          Email
+          Email akun
         </label>
-        <Input
-          autoComplete="email"
-          id="buyer-login-email"
-          name="email"
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Masukkan email"
-          type="email"
-          value={email}
-        />
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <Input
+            autoComplete="email"
+            className="h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
+            disabled={isPending || isSuccess}
+            id="buyer-login-email"
+            name="email"
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (error) setError(null);
+            }}
+            placeholder="nama@email.com"
+            type="email"
+            value={email}
+          />
+        </div>
       </div>
       <div className="space-y-2">
-        <label
-          className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-          htmlFor="buyer-login-password"
-        >
-          Password
-        </label>
-        <Input
-          autoComplete="current-password"
-          id="buyer-login-password"
-          name="password"
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="Masukkan kata sandi"
-          type="password"
-          value={password}
-        />
-      </div>
-      {error ? (
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-          {error}
+        <div className="flex items-center justify-between gap-3">
+          <label
+            className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68"
+            htmlFor="buyer-login-password"
+          >
+            Kata sandi
+          </label>
+          <span className="text-xs font-semibold text-amber-100/70">
+            Hubungi unit jika lupa akses
+          </span>
         </div>
-      ) : null}
-      <Button className="w-full" disabled={!isHydrated || isPending} type="submit">
-        {!isHydrated ? "Menyiapkan\u2026" : isPending ? "Memproses\u2026" : "Masuk"}
-      </Button>
-      <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-surface-low p-4 text-sm text-muted-foreground">
-        <ShieldCheck className="mt-0.5 size-4 text-primary" />
-        Akun pembeli yang lolos registrasi dapat langsung mengakses workflow transaksi
-        fixed price dan lelang.
+        <div className="relative">
+          <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <Input
+            autoComplete="current-password"
+            className="h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 pr-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
+            disabled={isPending || isSuccess}
+            id="buyer-login-password"
+            name="password"
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) setError(null);
+            }}
+            placeholder="Masukkan kata sandi"
+            type={showPassword ? "text" : "password"}
+            value={password}
+          />
+          <button
+            aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+            aria-pressed={showPassword}
+            className="absolute right-4 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-xl text-emerald-50/52 transition hover:bg-white/10 hover:text-white active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+            disabled={isPending || isSuccess}
+            onClick={() => setShowPassword((current) => !current)}
+            type="button"
+          >
+            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
       </div>
-      <div className="text-center text-sm text-muted-foreground">
+      <Button
+        aria-busy={isPending}
+        className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#1fb36d] text-base text-white shadow-[0_18px_42px_rgba(31,179,109,0.28)] hover:bg-[#24c27a] disabled:opacity-75"
+        disabled={!isHydrated || isPending || isSuccess}
+        type="submit"
+      >
+        {isPending ? (
+          <span className="absolute inset-0 translate-x-[-55%] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.28)_48%,transparent_68%)] motion-safe:animate-[toast-sheen_1.15s_ease-in-out_infinite]" />
+        ) : null}
+        <span className="relative inline-flex items-center gap-2" aria-live="polite">
+          {isSuccess ? (
+            <>
+              <CheckCircle2 className="size-4" />
+              Login berhasil
+            </>
+          ) : !isHydrated ? (
+            "Menyiapkan..."
+          ) : isPending ? (
+            <>
+              <Loader2 className="button-spinner size-4" />
+              Memverifikasi akun...
+            </>
+          ) : (
+            <>
+              Masuk
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </>
+          )}
+        </span>
+      </Button>
+      <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 text-sm leading-7 text-emerald-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+        Kelola pembelian harga tetap, pantau sesi Vickrey, cek status pembayaran,
+        dan buka nota transaksi dari satu area akun pembeli.
+      </div>
+      <div className="text-center text-sm text-emerald-50/62">
         Belum punya akun?{" "}
-        <Link className="font-semibold text-primary" href={registerHref}>
-          Daftar sebagai pembeli
+        <Link className="font-semibold text-amber-100 hover:text-white" href={registerHref}>
+          Daftar sekarang
         </Link>
       </div>
     </form>

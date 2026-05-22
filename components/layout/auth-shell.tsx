@@ -18,6 +18,11 @@ const authLinks = [
 
 export function AuthShell({ children }: AuthShellProps) {
   const pathname = usePathname();
+  const isStandaloneAuthPage = pathname === "/login" || pathname === "/register";
+
+  if (isStandaloneAuthPage) {
+    return <div className="min-h-screen overflow-hidden bg-[#04150d]">{children}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(0,92,52,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(191,146,0,0.14),transparent_28%),linear-gradient(180deg,#fbfaf6_0%,#f3efe4_100%)]">
