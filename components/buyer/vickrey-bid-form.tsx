@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTransition } from "react";
 
+import { DirectPaymentDisclaimer } from "@/components/buyer/direct-payment-disclaimer";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -451,6 +452,13 @@ export function VickreyBidForm({
                 </p>
               </div>
 
+              <DirectPaymentDisclaimer
+                className="mt-4"
+                context="bid"
+                unitAddress={lot.unitAddress ?? lot.location}
+                unitName={lot.unitName}
+              />
+
               <ol className="mt-4 space-y-2.5 text-sm leading-relaxed text-foreground">
                 {VICKREY_TERMS.map((term, index) => (
                   <li
@@ -508,7 +516,8 @@ export function VickreyBidForm({
                   type="checkbox"
                 />
                 <span>
-                  Saya telah membaca dan menyetujui syarat dan ketentuan yang berlaku untuk mengikuti lelang ini.
+                  Saya telah membaca dan menyetujui syarat lelang ini, termasuk kewajiban
+                  pembayaran langsung di unit yang tertera jika saya menang.
                 </span>
               </label>
 

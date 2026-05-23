@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Bell, CheckCheck, Clock3, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  BadgeCheck,
+  Bell,
+  CheckCheck,
+  CheckCircle2,
+  Clock3,
+  Info,
+  Trophy
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
@@ -34,6 +44,38 @@ function getPersistedVariant(type: string) {
   return "success" as const;
 }
 
+function getNotificationIcon(type: string, variant: "success" | "error" | "info") {
+  if (type === "vickrey_win") {
+    return Trophy;
+  }
+
+  if (type === "payment_verified") {
+    return BadgeCheck;
+  }
+
+  if (type === "payment_rejected") {
+    return AlertTriangle;
+  }
+
+  if (type === "payment_deadline") {
+    return Clock3;
+  }
+
+  if (type === "blacklist_active") {
+    return Ban;
+  }
+
+  if (variant === "success") {
+    return CheckCircle2;
+  }
+
+  if (variant === "error") {
+    return AlertTriangle;
+  }
+
+  return Info;
+}
+
 export function AlertCenter({ scope, className }: AlertCenterProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -60,6 +102,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             createdAt: notification.createdAt,
             read: notification.isRead,
             href: notification.actionHref ?? undefined,
+            type: notification.type,
             source: "server" as const,
             raw: notification
           }))
@@ -76,6 +119,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         createdAt: notification.createdAt,
         read: notification.read,
         href: undefined,
+        type: `local_${notification.variant}`,
         source: "local" as const,
         raw: null as BuyerNotification | null
       })),
@@ -100,20 +144,20 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   const copy = React.useMemo(() => {
     if (scope === "buyer") {
       return {
-        label: "Pusat Alert Pembeli",
-        title: "Aktivitas akun terbaru",
-        description: "Ringkasan transaksi, bid, pembayaran, dan profil tersimpan di sini.",
-        emptyTitle: "Belum ada alert akun.",
-        emptyDescription: "Setelah Anda membeli, bid, atau memperbarui profil, respon sistem akan muncul di sini."
+        label: "Pusat Notifikasi Pembeli",
+        title: "Notifikasi penting",
+        description: "Ringkasan penting dari lelang, pembayaran, dan pembatasan akun tersimpan di sini.",
+        emptyTitle: "Belum ada notifikasi penting.",
+        emptyDescription: "Notifikasi akan muncul saat ada hasil lelang, perubahan pembayaran, deadline, atau pembatasan akun."
       };
     }
 
     return {
-      label: "Pusat Alert",
-      title: "Respons sistem terbaru",
-      description: "Semua notifikasi penting dari aksi admin unit tersimpan di sini.",
-      emptyTitle: "Belum ada alert baru.",
-      emptyDescription: "Saat admin memproses aksi, ringkasan respon sistem akan muncul di sini."
+      label: "Pusat Notifikasi",
+      title: "Notifikasi operasional",
+      description: "Notifikasi hanya berisi kejadian penting yang membutuhkan perhatian antar peran.",
+      emptyTitle: "Belum ada notifikasi baru.",
+      emptyDescription: "Aksi rutin seperti menambah katalog atau menyimpan form tidak disimpan sebagai notifikasi."
     };
   }, [scope]);
 
@@ -162,20 +206,23 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   );
 
   const renderNotificationContent = React.useCallback(
-    (notification: (typeof displayedNotifications)[number]) => (
-      <>
-        <div
-          className={cn(
-            "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
-            notification.variant === "success"
-              ? "bg-primary/12 text-primary"
-              : notification.variant === "error"
-                ? "bg-destructive/12 text-destructive"
-                : "bg-accent/20 text-accent-foreground"
-          )}
-        >
-          <Sparkles aria-hidden="true" className="size-4" />
-        </div>
+    (notification: (typeof displayedNotifications)[number]) => {
+      const Icon = getNotificationIcon(notification.type, notification.variant);
+
+      return (
+        <>
+          <div
+            className={cn(
+              "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
+              notification.variant === "success"
+                ? "bg-primary/12 text-primary"
+                : notification.variant === "error"
+                  ? "bg-destructive/12 text-destructive"
+                  : "bg-accent/20 text-accent-foreground"
+            )}
+          >
+            <Icon aria-hidden="true" className="size-4" />
+          </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <p className="text-sm font-semibold text-black/82">
@@ -200,8 +247,9 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             ) : null}
           </div>
         </div>
-      </>
-    ),
+        </>
+      );
+    },
     []
   );
 

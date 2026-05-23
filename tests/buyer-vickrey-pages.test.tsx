@@ -105,6 +105,9 @@ describe("buyer vickrey pages", () => {
     expect(
       within(dialog).getByText(/pembayaran langsung di unit maksimal 24 jam setelah hasil lelang diumumkan/i)
     ).toBeInTheDocument();
+    expect(within(dialog).getByText(/konfirmasi lokasi bayar langsung/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Jl\. Sam Ratulangi, Manado/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Sabtu 08\.00-12\.00/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/status pelanggaran anda saat ini:\s*0x/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 1/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/7 hari/i)).toBeInTheDocument();

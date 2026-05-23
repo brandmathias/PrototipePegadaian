@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -13,8 +13,8 @@ function ToastTrigger() {
     <button
       onClick={() =>
         toast({
-          title: "Profil diperbarui",
-          description: "Data akun tersimpan.",
+          title: "Katalog berhasil ditambahkan",
+          description: "Barang baru tersimpan.",
           variant: "success",
           scope: "buyer"
         })
@@ -110,14 +110,18 @@ describe("buyer alert center", () => {
     });
   });
 
-  it("keeps local toast notifications visible beside persisted notifications", async () => {
+  it("keeps routine local toast feedback out of the alert center", async () => {
     const user = userEvent.setup();
     renderAlertCenter();
 
     await user.click(screen.getByRole("button", { name: /buat toast/i }));
+    expect(await screen.findByRole("status")).toHaveTextContent(/katalog berhasil ditambahkan/i);
+
     await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
 
+    const dialog = await screen.findByRole("dialog");
     expect(await screen.findByText(/anda memenangkan lelang motor racing/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/profil diperbarui/i).length).toBeGreaterThan(0);
+    expect(within(dialog).queryByText(/katalog berhasil ditambahkan/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/barang baru tersimpan/i)).not.toBeInTheDocument();
   });
 });

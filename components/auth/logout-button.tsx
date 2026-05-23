@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useState } from "react";
 
+import { LogoutSuccessTransition } from "@/components/auth/login-success-transition";
+
 type LogoutButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   redirectTo?: string;
@@ -18,6 +20,7 @@ export function LogoutButton({
 }: LogoutButtonProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   async function handleLogout() {
     setIsPending(true);
@@ -28,21 +31,26 @@ export function LogoutButton({
         credentials: "include"
       });
     } finally {
-      setIsPending(false);
+      setIsSuccess(true);
+      await new Promise((resolve) => setTimeout(resolve, 1050));
       router.push(redirectTo);
       router.refresh();
+      setIsPending(false);
     }
   }
 
   return (
-    <button
-      {...props}
-      className={className}
-      disabled={isPending || props.disabled}
-      onClick={handleLogout}
-      type={type}
-    >
-      {isPending ? "Memproses..." : children}
-    </button>
+    <>
+      {isSuccess ? <LogoutSuccessTransition /> : null}
+      <button
+        {...props}
+        className={className}
+        disabled={isPending || props.disabled}
+        onClick={handleLogout}
+        type={type}
+      >
+        {isPending ? "Memproses..." : children}
+      </button>
+    </>
   );
 }

@@ -9,10 +9,10 @@ import {
   Building2,
   CheckCircle2,
   Landmark,
-  LoaderCircle,
-  MapPinned
+  LoaderCircle
 } from "lucide-react";
 
+import { DirectPaymentDisclaimer } from "@/components/buyer/direct-payment-disclaimer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
@@ -46,11 +46,18 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [method, setMethod] =
     useState<(typeof methods)[number]["id"]>(lot.bankAccountNumber ? "TRANSFER_BANK" : "BAYAR_LANGSUNG");
+  const [acceptedDirectPayment, setAcceptedDirectPayment] = useState(false);
   const hasActiveAccount = Boolean(lot.bankAccountNumber);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (method !== "BAYAR_LANGSUNG") {
+      setAcceptedDirectPayment(false);
+    }
+  }, [method]);
 
   const preview = useMemo(() => {
     if (method === "TRANSFER_BANK") {
@@ -81,6 +88,16 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   }, [method]);
 
   function handlePurchase() {
+    if (method === "BAYAR_LANGSUNG" && !acceptedDirectPayment) {
+      toast({
+        title: "Konfirmasi lokasi belum dicentang",
+        description: "Centang persetujuan bayar langsung setelah membaca alamat dan jam operasional unit.",
+        variant: "error",
+        scope: "buyer"
+      });
+      return;
+    }
+
     startTransition(async () => {
       const response = await fetch(`/api/user/beli/${lot.id}`, {
         method: "POST",
@@ -261,28 +278,41 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
               </div>
             </div>
           ) : (
-            <div className="rounded-[1.75rem] border border-accent/35 bg-accent/15 p-5">
-              <div className="flex items-start gap-3">
-                <MapPinned className="mt-1 size-5 text-accent-foreground" />
-                <div className="space-y-3">
-                  <p className="font-semibold text-foreground">Bayar langsung di unit</p>
-                  <div className="rounded-2xl bg-white p-4 shadow-ambient">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Nomor pengajuan
-                    </p>
-                    <p className="mt-2 text-lg font-bold text-primary">Dibuat otomatis setelah konfirmasi</p>
-                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                      Simpan nomor pengajuan ini. Anda akan membutuhkannya saat datang ke
-                      unit untuk pembayaran langsung dan konfirmasi petugas.
-                    </p>
-                  </div>
+            <div className="space-y-4">
+              <DirectPaymentDisclaimer
+                checked={acceptedDirectPayment}
+                checkboxId="purchase-direct-payment-confirmation"
+                onCheckedChange={setAcceptedDirectPayment}
+                showCheckbox
+                unitAddress={lot.unitAddress ?? lot.location}
+                unitName={lot.unitName}
+              />
+              <div className="rounded-[1.75rem] border border-accent/35 bg-accent/15 p-5">
+                <p className="font-semibold text-foreground">Nomor pengajuan bayar langsung</p>
+                <div className="mt-3 rounded-2xl bg-white p-4 shadow-ambient">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    Nomor pengajuan
+                  </p>
+                  <p className="mt-2 text-lg font-bold text-primary">Dibuat otomatis setelah konfirmasi</p>
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                    Simpan nomor pengajuan ini. Anda akan membutuhkannya saat datang ke
+                    unit untuk pembayaran langsung dan konfirmasi petugas.
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button className="min-w-[13rem]" disabled={!isHydrated || isPending} onClick={handlePurchase}>
+            <Button
+              className="min-w-[13rem]"
+              disabled={
+                !isHydrated ||
+                isPending ||
+                (method === "BAYAR_LANGSUNG" && !acceptedDirectPayment)
+              }
+              onClick={handlePurchase}
+            >
               {!isHydrated ? (
                 "Menyiapkan\u2026"
               ) : isPending ? (

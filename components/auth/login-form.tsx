@@ -8,6 +8,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { getRoleHomePath, getSafeBuyerNextPath, getSafeRoleNextPath, isAuthRole } from "@/lib/auth/guards";
 import { validateBuyerLoginPayload } from "@/lib/auth/buyer-auth-validation";
+import { LoginSuccessTransition } from "@/components/auth/login-success-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
@@ -89,17 +90,11 @@ export function LoginForm() {
         } | null;
       };
       const role = isAuthRole(me.user?.role) ? me.user.role : "buyer";
+      const destinationPath = rawNext ? getSafeRoleNextPath(role, rawNext) : getRoleHomePath(role);
 
       setIsSuccess(true);
-      toast({
-        description: "Kredensial valid. Anda sedang diarahkan ke area akun yang sesuai.",
-        duration: 3600,
-        scope: "global",
-        title: "Login berhasil",
-        variant: "success"
-      });
-      await new Promise((resolve) => setTimeout(resolve, 860));
-      router.push(rawNext ? getSafeRoleNextPath(role, rawNext) : getRoleHomePath(role));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      router.push(destinationPath);
       router.refresh();
     } catch {
       const message = "Proses masuk belum berhasil. Pastikan koneksi stabil, lalu coba lagi.";
@@ -117,7 +112,9 @@ export function LoginForm() {
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+    <>
+      {isSuccess ? <LoginSuccessTransition /> : null}
+      <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label
           className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68"
@@ -223,6 +220,7 @@ export function LoginForm() {
           Daftar sekarang
         </Link>
       </div>
-    </form>
+      </form>
+    </>
   );
 }

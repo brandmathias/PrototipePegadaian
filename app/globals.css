@@ -165,6 +165,123 @@
     background-size: 180% 100%;
     animation: payment-flow-progress 1800ms ease-in-out infinite;
   }
+
+  .auth-success-stage {
+    animation: auth-success-stage 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .auth-success-aurora {
+    background:
+      radial-gradient(circle at 24% 18%, rgba(223, 184, 66, 0.28), transparent 30%),
+      radial-gradient(circle at 78% 20%, rgba(14, 133, 91, 0.22), transparent 34%),
+      radial-gradient(circle at 52% 80%, rgba(4, 80, 56, 0.16), transparent 42%);
+    animation: auth-success-aurora 3200ms cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
+  }
+
+  .auth-success-grid {
+    background-image:
+      linear-gradient(rgba(6, 61, 43, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6, 61, 43, 0.045) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: linear-gradient(to bottom, transparent, black 28%, black 78%, transparent);
+  }
+
+  .auth-success-city {
+    background:
+      linear-gradient(to top, rgba(6, 61, 43, 0.12), transparent 74%),
+      linear-gradient(90deg, transparent 0 8%, rgba(6, 61, 43, 0.1) 8% 13%, transparent 13% 18%, rgba(6, 61, 43, 0.08) 18% 24%, transparent 24% 31%, rgba(6, 61, 43, 0.12) 31% 38%, transparent 38% 100%);
+    clip-path: polygon(0 100%, 0 64%, 8% 64%, 8% 48%, 16% 48%, 16% 70%, 26% 70%, 26% 52%, 34% 52%, 34% 38%, 42% 38%, 42% 72%, 51% 72%, 51% 58%, 59% 58%, 59% 44%, 68% 44%, 68% 66%, 78% 66%, 78% 50%, 87% 50%, 87% 62%, 100% 62%, 100% 100%);
+    opacity: 0.5;
+  }
+
+  .auth-success-card {
+    animation: auth-success-card 680ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
+  }
+
+  .auth-success-card-sheen {
+    background:
+      radial-gradient(circle at 20% 6%, rgba(255, 255, 255, 0.9), transparent 18%),
+      linear-gradient(110deg, transparent 0%, rgba(216, 173, 56, 0.1) 42%, transparent 62%);
+    background-size: 100% 100%, 240% 100%;
+    animation: auth-success-sheen 1700ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
+  }
+
+  .auth-success-seal {
+    animation: auth-success-seal 820ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
+  }
+
+  .auth-success-check {
+    animation: auth-success-check 760ms cubic-bezier(0.16, 1, 0.3, 1) 360ms both;
+  }
+
+  .auth-success-confetti {
+    animation: auth-success-confetti 1300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(180ms + var(--confetti-index) * 70ms);
+  }
+
+  .auth-success-progress {
+    transform-origin: left;
+    animation: auth-success-progress 1400ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+  }
+
+  .auth-logout-stage {
+    animation: auth-success-stage 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .auth-logout-aurora {
+    background:
+      radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.9), transparent 22%),
+      radial-gradient(circle at 18% 22%, rgba(216, 173, 56, 0.16), transparent 22%),
+      radial-gradient(circle at 82% 24%, rgba(39, 156, 116, 0.12), transparent 24%);
+    animation: auth-logout-aurora 2600ms cubic-bezier(0.16, 1, 0.3, 1) infinite alternate;
+  }
+
+  .auth-logout-rings {
+    background:
+      radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.8) 0 12%, transparent 13% 17%, rgba(255, 255, 255, 0.5) 18% 20%, transparent 21% 100%);
+    opacity: 0.72;
+    transform-origin: center top;
+    animation: auth-logout-rings 2000ms ease-in-out infinite;
+  }
+
+  .auth-logout-landscape {
+    background:
+      radial-gradient(circle at 18% 100%, rgba(173, 208, 189, 0.85), transparent 23%),
+      radial-gradient(circle at 82% 100%, rgba(173, 208, 189, 0.85), transparent 22%),
+      linear-gradient(to top, rgba(197, 222, 208, 0.7), transparent 72%);
+    clip-path: polygon(0 100%, 0 68%, 10% 76%, 19% 60%, 30% 72%, 40% 56%, 50% 70%, 61% 50%, 72% 68%, 83% 58%, 91% 74%, 100% 64%, 100% 100%);
+    opacity: 0.9;
+  }
+
+  .auth-logout-card {
+    animation: auth-logout-card 620ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+  }
+
+  .auth-logout-card-sheen {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), transparent 34%),
+      linear-gradient(115deg, transparent 0%, rgba(216, 173, 56, 0.1) 44%, transparent 63%);
+    background-size: 100% 100%, 220% 100%;
+    animation: auth-success-sheen 1600ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both;
+  }
+
+  .auth-logout-particle {
+    animation: auth-logout-particle 1240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(120ms + var(--logout-particle-index) * 80ms);
+    box-shadow: 0 6px 14px rgba(11, 81, 63, 0.1);
+  }
+
+  .auth-logout-icon-shell {
+    animation: auth-logout-icon-shell 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+  }
+
+  .auth-logout-icon {
+    animation: auth-logout-icon 760ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
+  }
+
+  .auth-logout-pill {
+    animation: auth-logout-pill 820ms cubic-bezier(0.16, 1, 0.3, 1) 280ms both;
+  }
 }
 
 @keyframes toast-enter {
@@ -277,6 +394,225 @@
 
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes auth-success-stage {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes auth-success-aurora {
+  from {
+    opacity: 0.78;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes auth-success-card {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.012);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes auth-success-sheen {
+  from {
+    background-position: 0 0, -130% 0;
+  }
+
+  to {
+    background-position: 0 0, 130% 0;
+  }
+}
+
+@keyframes auth-success-seal {
+  from {
+    opacity: 0;
+    transform: scale(0.48) rotate(-16deg);
+  }
+
+  58% {
+    opacity: 1;
+    transform: scale(1.12) rotate(5deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes auth-success-check {
+  from {
+    opacity: 0;
+    transform: scale(0.55) rotate(-10deg);
+  }
+
+  58% {
+    opacity: 1;
+    transform: scale(1.14) rotate(3deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes auth-success-confetti {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.4) rotate(0deg);
+  }
+
+  38% {
+    opacity: 1;
+    transform: translate3d(0, -14px, 0) scale(1) rotate(28deg);
+  }
+
+  to {
+    opacity: 0.82;
+    transform: translate3d(0, 2px, 0) scale(1) rotate(54deg);
+  }
+}
+
+@keyframes auth-success-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes auth-logout-aurora {
+  from {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes auth-logout-rings {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: scale(1.03);
+  }
+
+  100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes auth-logout-card {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.95);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.015);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes auth-logout-particle {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.4) rotate(0deg);
+  }
+
+  42% {
+    opacity: 1;
+    transform: translate3d(0, -10px, 0) scale(1) rotate(18deg);
+  }
+
+  to {
+    opacity: 0.78;
+    transform: translate3d(0, 0, 0) scale(1) rotate(30deg);
+  }
+}
+
+@keyframes auth-logout-icon-shell {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  55% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes auth-logout-icon {
+  from {
+    opacity: 0;
+    transform: translateX(-6px) scale(0.74);
+  }
+
+  58% {
+    opacity: 1;
+    transform: translateX(2px) scale(1.08);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes auth-logout-pill {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 

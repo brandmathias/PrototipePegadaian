@@ -31,6 +31,7 @@ vi.mock("@/lib/auth-client", () => ({
 }));
 
 import { LoginForm } from "@/components/auth/login-form";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { RegisterForm } from "@/components/auth/register-form";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { ToastProvider } from "@/components/ui/toast";
@@ -85,7 +86,7 @@ describe("LoginForm", () => {
     expect(screen.queryByText("Akses aman untuk pembeli")).not.toBeInTheDocument();
   });
 
-  it("shows a smooth verification state while sign in is pending", async () => {
+  it("shows a fullscreen success transition before entering the dashboard", async () => {
     let resolveSignIn: (value: { error: null }) => void = () => {};
     authMocks.signInEmail.mockReturnValue(
       new Promise((resolve) => {
@@ -122,14 +123,18 @@ describe("LoginForm", () => {
     resolveSignIn({ error: null });
 
     await waitFor(() => {
-      expect(screen.getByRole("status")).toHaveTextContent("Login berhasil");
+      const status = screen.getByRole("status");
+      expect(status).toHaveTextContent("Login Berhasil");
+      expect(status).toHaveTextContent("Akun Anda siap digunakan");
+      expect(status).toHaveTextContent("kami sedang mengarahkan Anda");
+      expect(status).toHaveClass("auth-success-stage");
     });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /login berhasil/i })).toBeDisabled();
     });
     await waitFor(() => {
       expect(navigationMocks.push).toHaveBeenCalledWith("/dashboard");
-    }, { timeout: 2200 });
+    }, { timeout: 2600 });
     expect(navigationMocks.refresh).toHaveBeenCalled();
   });
 
@@ -214,5 +219,28 @@ describe("LoginForm", () => {
       password: "password-rahasia",
       phoneNumber: "6281200009999"
     });
+  });
+
+  it("uses a dedicated logout transition instead of the regular activity toast", async () => {
+    renderWithToast(<LogoutButton>Keluar</LogoutButton>);
+
+    fireEvent.click(screen.getByRole("button", { name: /keluar/i }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith("/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+    });
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("Logout Berhasil");
+    expect(status).toHaveTextContent("Sesi Anda sudah ditutup dengan aman");
+    expect(status).toHaveTextContent("Sampai jumpa kembali");
+    expect(status).toHaveClass("auth-logout-stage");
+    await waitFor(() => {
+      expect(navigationMocks.push).toHaveBeenCalledWith("/login");
+    }, { timeout: 1800 });
+    expect(navigationMocks.refresh).toHaveBeenCalled();
   });
 });

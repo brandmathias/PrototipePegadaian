@@ -58,6 +58,7 @@ type BuyerTransactionShape = {
 type BuyerBidShape = {
   pemasaranId: string;
   lotName: string;
+  imageUrl?: string | null;
   unitName: string;
   bidAmount: string | null;
   bidHash?: string | null;
@@ -314,9 +315,11 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   return {
     lotId: row.pemasaranId,
     lot: row.lotName,
+    imageUrl: row.imageUrl ?? undefined,
     unit: row.unitName,
     status,
     closing: toDateTimeLabel(row.endsAt),
+    closingAt: row.endsAt?.toISOString(),
     revealDeadline,
     revealDeadlineAt,
     ...(isRevealed ? { bidAmount: toNumber(row.bidAmount) } : {}),

@@ -340,6 +340,113 @@ function BuyerPaymentCountdown({
   );
 }
 
+function getDashboardActionLabel(transaction: BuyerTransaction) {
+  if (transaction.status === "LUNAS") return "Selesaikan pembelian";
+  if (transaction.status === "DITOLAK_BUKTI") return "Upload ulang";
+  if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") return "Lihat detail";
+  return "Bayar sekarang";
+}
+
+function getDashboardActionDescription(transaction: BuyerTransaction) {
+  if (transaction.status === "LUNAS") {
+    return "Pembayaran sudah diverifikasi. Tutup pembelian setelah barang dan nota diterima.";
+  }
+
+  if (transaction.status === "DITOLAK_BUKTI") {
+    return "Admin meminta bukti pembayaran diperbaiki. Buka detail transaksi untuk unggah ulang.";
+  }
+
+  if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") {
+    return "Pembayaran dilakukan langsung di unit. Simpan nomor pengajuan saat datang ke loket.";
+  }
+
+  return "Selesaikan pembayaran sebelum batas waktu agar transaksi tetap aktif.";
+}
+
+function isDashboardActiveTransaction(transaction: BuyerTransaction) {
+  return !["SELESAI", "GAGAL"].includes(transaction.status);
+}
+
+function isDashboardPaymentWaiting(transaction: BuyerTransaction) {
+  return ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
+    transaction.status
+  );
+}
+
+function isDashboardActiveBid(bid: BuyerBid) {
+  return bid.status === "BID_TERCATAT" || bid.status === "MENUNGGU_HASIL";
+}
+
+function getUrgentTransactionRank(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) return 0;
+  if (transaction.status === "DITOLAK_BUKTI") return 1;
+  if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") return 2;
+  if (transaction.status === "MENUNGGU_PEMBAYARAN") return 3;
+  return 9;
+}
+
+function getUrgentDashboardCopy(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) {
+    return {
+      eyebrow: "Pemenang Vickrey",
+      title: `Anda memenangkan lelang ${transaction.title}.`,
+      detail: `Bayar ${currency.format(transaction.amount)} sebelum batas waktu berakhir.`,
+      tone: "danger" as const
+    };
+  }
+
+  if (transaction.status === "DITOLAK_BUKTI") {
+    return {
+      eyebrow: "Bukti transfer ditolak",
+      title: `Bukti pembayaran untuk ${transaction.title} ditolak.`,
+      detail: "Silakan unggah ulang bukti yang lebih jelas dari halaman detail transaksi.",
+      tone: "warning" as const
+    };
+  }
+
+  if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") {
+    return {
+      eyebrow: "Bayar langsung di unit",
+      title: `Kunjungi ${transaction.unit} untuk menyelesaikan pembayaran ${transaction.title}.`,
+      detail: "Bawa nomor pengajuan dan pastikan Anda datang sebelum batas pembayaran.",
+      tone: "info" as const
+    };
+  }
+
+  return {
+    eyebrow: "Pembayaran menunggu",
+    title: `Transaksi ${transaction.title} menunggu pembayaran.`,
+    detail: "Transfer sesuai nominal lalu unggah bukti dari halaman detail transaksi.",
+    tone: "default" as const
+  };
+}
+
+function DashboardThumb({
+  alt,
+  icon,
+  src
+}: {
+  alt: string;
+  icon: ReactNode;
+  src?: string;
+}) {
+  return (
+    <div className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-[1.1rem] border border-primary/10 bg-primary/[0.04] text-primary">
+      {src ? (
+        <Image
+          alt={alt}
+          className="object-cover"
+          height={64}
+          src={src}
+          width={64}
+        />
+      ) : (
+        icon
+      )}
+    </div>
+  );
+}
+
 function TransactionTimeline({ transaction }: { transaction: BuyerTransaction }) {
   const steps = getTimelineLabels(transaction);
   const currentStep = getCurrentStep(transaction);
@@ -487,173 +594,283 @@ export function UserDashboardPage({
   data: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
 }) {
   const { summary, transactions, bids } = data;
-  const needsAction = transactions.filter((transaction) =>
-    ["MENUNGGU_VERIFIKASI", "MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
-      transaction.status
-    )
-  );
+  const activeTransactions = transactions.filter(isDashboardActiveTransaction);
+  const paymentWaitingCount = transactions.filter(isDashboardPaymentWaiting).length;
+  const activeBids = bids.filter(isDashboardActiveBid);
+  const receiptCount = transactions.filter((transaction) => transaction.status === "LUNAS" || transaction.status === "SELESAI").length;
+  const urgentTransaction =
+    [...activeTransactions]
+      .filter(isDashboardPaymentWaiting)
+      .sort((first, second) => getUrgentTransactionRank(first) - getUrgentTransactionRank(second))[0] ?? null;
+  const urgentCopy = urgentTransaction ? getUrgentDashboardCopy(urgentTransaction) : null;
+  const firstName = buyer.name.split(" ")[0] || buyer.name;
+  const serverNow = new Date().toISOString();
+  const urgentToneClass = urgentCopy
+    ? {
+        danger: "border-red-200 bg-[linear-gradient(135deg,#fff5f5_0%,#fff_100%)] text-red-950",
+        default: "border-primary/15 bg-[linear-gradient(135deg,#f2fbf5_0%,#fff_100%)] text-primary",
+        info: "border-sky-200 bg-[linear-gradient(135deg,#eff8ff_0%,#fff_100%)] text-sky-950",
+        warning: "border-[#ead8b5] bg-[linear-gradient(135deg,#fff9e8_0%,#fff_100%)] text-[#5d4300]"
+      }[urgentCopy.tone]
+    : "";
+  const urgentIconClass = urgentCopy
+    ? {
+        danger: "bg-red-100 text-red-700",
+        default: "bg-primary/10 text-primary",
+        info: "bg-sky-100 text-sky-700",
+        warning: "bg-[#fff1bf] text-[#9a6a00]"
+      }[urgentCopy.tone]
+    : "";
+  const metricCards = [
+    {
+      icon: Clock3,
+      label: "Menunggu Bayar",
+      value: String(paymentWaitingCount),
+      detail: "Pembayaran atau verifikasi aktif"
+    },
+    {
+      icon: Gavel,
+      label: "Bid Aktif",
+      value: String(activeBids.length),
+      detail: "Lelang berjalan yang Anda ikuti"
+    },
+    {
+      icon: FileCheck2,
+      label: "Nota Tersedia",
+      value: String(receiptCount),
+      detail: "Bisa dicetak setelah lunas"
+    }
+  ];
+  const quickActions = [
+    {
+      href: "/katalog",
+      label: "Jelajahi Katalog",
+      icon: ShoppingBag
+    },
+    {
+      href: "/transaksi",
+      label: "Pantau Transaksi",
+      icon: ReceiptText
+    },
+    {
+      href: "/riwayat-bid",
+      label: "Riwayat Bid",
+      icon: Gavel
+    }
+  ];
 
   return (
-    <div className="space-y-8 md:space-y-10">
-      <Card className="overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(14,98,71,0.08),transparent_45%),linear-gradient(135deg,#ffffff_0%,#f6f2e8_100%)]">
-        <CardContent className="grid gap-8 p-6 md:p-8 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="default">Akun Pembeli</Badge>
-              <Badge variant={summary.blacklist.active ? "danger" : "muted"}>
-                {summary.blacklist.active
-                  ? `Blacklist aktif sampai ${summary.blacklist.until}`
-                  : "Akun siap bertransaksi"}
-              </Badge>
+    <div className="space-y-7 md:space-y-8">
+      <section className="rounded-[2rem] border border-primary/10 bg-[linear-gradient(135deg,#ffffff_0%,#f8fbf4_58%,#fff7df_100%)] p-6 shadow-[0_24px_60px_-42px_rgba(8,69,50,0.5)] md:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="default">Akun Terverifikasi</Badge>
+              {summary.blacklist.active ? (
+                <Badge variant="danger">Pembatasan level {summary.blacklist.violations}</Badge>
+              ) : null}
             </div>
-            <div className="space-y-2">
-              <h2 className="font-headline text-3xl font-extrabold tracking-tight text-primary md:text-5xl">
-                Halo, {buyer.name}
-              </h2>
-              <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                Pantau pembelian fixed price, hasil lelang Vickrey, status pembayaran, dan
-                nota transaksi dari satu tempat yang sama.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/katalog">
-                <Button>Lihat Katalog Aktif</Button>
-              </Link>
-              <Link href="/transaksi">
-                <Button variant="secondary">Cek Status Pembayaran</Button>
-              </Link>
-            </div>
+            <h2 className="mt-4 font-headline text-3xl font-extrabold tracking-tight text-primary md:text-5xl">
+              Selamat datang, {firstName}.
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+              {buyer.email} | Member sejak {summary.memberSince}
+            </p>
           </div>
+          <Link href="/profil">
+            <Button variant="secondary">Kelola profil</Button>
+          </Link>
+        </div>
+      </section>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {summary.highlights.map((item) => (
-              <div
-                className="rounded-[1.5rem] border border-border/70 bg-white/85 p-5"
-                key={item}
-              >
-                <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
+      {urgentTransaction && urgentCopy ? (
+        <section className={cn("rounded-[1.75rem] border p-5 shadow-[0_22px_50px_-38px_rgba(8,69,50,0.38)]", urgentToneClass)}>
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex gap-4">
+              <span className={cn("grid size-12 shrink-0 place-items-center rounded-[1.1rem]", urgentIconClass)}>
+                {urgentCopy.tone === "info" ? <MapPinned className="size-5" /> : <AlertTriangle className="size-5" />}
+              </span>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] opacity-70">
+                  {urgentCopy.eyebrow}
+                </p>
+                <h3 className="mt-2 font-headline text-xl font-extrabold tracking-tight text-foreground">
+                  {urgentCopy.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 opacity-80">{urgentCopy.detail}</p>
+                {urgentTransaction.deadlineAt ? (
+                  <p className="mt-3 text-sm font-semibold">
+                    <BuyerPaymentCountdown prefix="Sisa waktu" transaction={urgentTransaction} />
+                  </p>
+                ) : null}
               </div>
-            ))}
+            </div>
+            <Link href={`/transaksi/${urgentTransaction.id}`}>
+              <Button className="w-full md:w-auto">
+                {getDashboardActionLabel(urgentTransaction)}
+                <ExternalLink className="size-4" />
+              </Button>
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+        </section>
+      ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {summary.metrics.map((metric) => (
-          <Card className="border border-border/70 bg-white p-6" key={metric.label}>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {metric.label}
-            </p>
-            <p className="mt-4 font-headline text-4xl font-extrabold tracking-tight text-primary">
-              {metric.value}
-            </p>
-          </Card>
-        ))}
-      </div>
+      <section className="grid gap-3 sm:grid-cols-3">
+        {metricCards.map((metric) => {
+          const Icon = metric.icon;
 
-      <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
-        <Card className="border border-border/70 bg-white">
+          return (
+            <div className="rounded-[1.5rem] border border-border/70 bg-white p-5 shadow-[0_18px_45px_-38px_rgba(8,69,50,0.4)]" key={metric.label}>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
+                  {metric.label}
+                </p>
+                <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+                  <Icon className="size-4" />
+                </span>
+              </div>
+              <p className="mt-3 font-headline text-3xl font-extrabold tracking-tight text-primary">
+                {metric.value}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
+            </div>
+          );
+        })}
+      </section>
+
+      <section className="grid gap-5 xl:grid-cols-2">
+        <Card className="border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <CardTitle>Transaksi yang perlu tindakan</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Fokus pada transaksi yang masih menunggu pembayaran, unggah bukti, atau
-                kunjungan ke unit.
-              </p>
+              <CardTitle>Transaksi aktif</CardTitle>
+              <p className="text-sm text-muted-foreground">Maksimal tiga transaksi terbaru yang belum selesai.</p>
             </div>
             <Link href="/transaksi">
-              <Button variant="secondary">Lihat semua transaksi</Button>
+              <Button variant="secondary">Lihat semua</Button>
             </Link>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {needsAction.map((transaction) => (
-              <div
-                className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
-                key={transaction.id}
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="font-semibold text-foreground">{transaction.title}</p>
-                      <StatusPill status={transaction.status} />
+          <CardContent className="space-y-3">
+            {activeTransactions.slice(0, 3).map((transaction) => (
+              <div className="rounded-[1.4rem] border border-border/70 bg-surface-low/35 p-4" key={transaction.id}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 gap-4">
+                    <DashboardThumb
+                      alt={`Foto barang ${transaction.title}`}
+                      icon={<ReceiptText className="size-6" />}
+                      src={transaction.imageUrl}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-foreground">{transaction.title}</p>
+                        <StatusPill status={transaction.status} />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">{currency.format(transaction.amount)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{transaction.unit}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {transaction.id} | {transaction.unit}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <BuyerPaymentCountdown prefix="Sisa waktu" transaction={transaction} />
-                    </p>
                   </div>
                   <Link href={`/transaksi/${transaction.id}`}>
-                    <Button>Lanjutkan</Button>
+                    <Button variant="secondary">Lihat Detail</Button>
                   </Link>
                 </div>
               </div>
             ))}
+
+            {activeTransactions.length === 0 ? (
+              <div className="rounded-[1.4rem] border border-dashed border-primary/20 bg-primary/[0.03] p-6">
+                <p className="font-semibold text-foreground">Belum ada transaksi aktif.</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Barang yang dibeli atau dimenangkan nanti akan muncul di sini.
+                </p>
+                <Link className="mt-4 inline-flex" href="/katalog">
+                  <Button>Jelajahi Katalog</Button>
+                </Link>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Status akun pembeli</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Verifikasi akun
-                </p>
-                <p className="mt-3 text-xl font-bold text-primary">
-                  {summary.verificationStatus}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">{buyer.email}</p>
-              </div>
-              <div
-                className={cn(
-                  "rounded-[1.5rem] border p-5",
-                  summary.blacklist.active
-                    ? "border-tertiary-container/25 bg-tertiary-container/10"
-                    : "border-primary/15 bg-primary/[0.03]"
-                )}
-              >
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Status blacklist
-                </p>
-                <p className="mt-3 text-xl font-bold text-foreground">
-                  {summary.blacklist.active ? "Aktif" : "Tidak aktif"}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {summary.blacklist.reason}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border/70 bg-primary text-white">
-            <CardHeader>
-              <CardTitle className="text-white">Aktivitas bid terbaru</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {bids.slice(0, 3).map((item) => (
-                <div className="rounded-[1.5rem] bg-white/10 p-5" key={`${item.lot}-${item.closing}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-semibold">{item.lot}</p>
-                    <BidPill status={item.status} />
+        <Card className="border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
+          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle>Lelang Vickrey yang diikuti</CardTitle>
+              <p className="text-sm text-muted-foreground">Maksimal tiga sesi berjalan yang sudah Anda ikuti.</p>
+            </div>
+            <Link href="/riwayat-bid">
+              <Button variant="secondary">Riwayat bid</Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {activeBids.slice(0, 3).map((bid) => (
+              <div className="rounded-[1.4rem] border border-border/70 bg-primary/[0.03] p-4" key={`${bid.lotId}-${bid.bidHash ?? bid.closing}`}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 gap-4">
+                    <DashboardThumb
+                      alt={`Foto barang ${bid.lot}`}
+                      icon={<Gavel className="size-6" />}
+                      src={bid.imageUrl}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-foreground">{bid.lot}</p>
+                        <BidPill status={bid.status} />
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">{bid.unit}</p>
+                      <p className="mt-1 text-xs font-semibold text-primary">
+                        <LiveCountdown
+                          expiredLabel="Menunggu hasil"
+                          fallbackLabel={bid.closing}
+                          prefix="Tutup"
+                          serverNow={serverNow}
+                          targetAt={bid.closingAt}
+                        />
+                      </p>
+                    </div>
                   </div>
-                  <p className="mt-2 text-sm text-white/80">{item.note}</p>
-                  <div className="mt-4">
-                    <BidPaymentContext inverted item={item} />
-                  </div>
-                  <p className="mt-4 text-sm font-semibold">
-                    {getBidAmountLabel(item)}
-                  </p>
-                  <p className="text-xs text-white/70">Tutup {item.closing}</p>
+                  <Link href="/riwayat-bid">
+                    <Button variant="secondary">Pantau</Button>
+                  </Link>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </div>
+            ))}
+
+            {activeBids.length === 0 ? (
+              <div className="rounded-[1.4rem] border border-dashed border-primary/20 bg-primary/[0.03] p-6">
+                <p className="font-semibold text-foreground">Belum ada lelang yang diikuti.</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Bid Vickrey aktif akan tampil setelah Anda mengirim penawaran tertutup.
+                </p>
+                <Link className="mt-4 inline-flex" href="/katalog">
+                  <Button>Cari Lelang</Button>
+                </Link>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-border/70 bg-white p-4 shadow-[0_18px_45px_-40px_rgba(8,69,50,0.38)]">
+        <div className="grid gap-3 md:grid-cols-3">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+
+            return (
+              <Link
+                className="group flex items-center justify-between rounded-[1.25rem] border border-border/70 bg-surface-low/45 px-4 py-3 font-semibold text-primary transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/[0.04] active:translate-y-0"
+                href={action.href}
+                key={action.href}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="grid size-9 place-items-center rounded-full bg-white ring-1 ring-primary/10">
+                    <Icon className="size-4" />
+                  </span>
+                  {action.label}
+                </span>
+                <ExternalLink className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+              </Link>
+            );
+          })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

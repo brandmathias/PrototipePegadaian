@@ -28,6 +28,7 @@ type ToastInput = {
   variant: ToastVariant;
   scope?: ToastScope;
   duration?: number;
+  persist?: boolean;
 };
 
 type ToastContextValue = {
@@ -63,27 +64,42 @@ function getToastIcon(variant: ToastVariant) {
 function getToastClasses(variant: ToastVariant) {
   if (variant === "success") {
     return {
+      chrome: "",
       container:
         "border-primary/20 bg-[linear-gradient(135deg,rgba(8,90,65,0.14),rgba(255,255,255,0.98)_46%,rgba(240,249,244,0.98))]",
+      close: "text-muted-foreground hover:bg-black/5 hover:text-foreground focus-visible:ring-primary/30",
+      description: "text-muted-foreground",
       icon: "bg-primary/12 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]",
-      accent: "bg-primary"
+      accent: "bg-primary",
+      progressTrack: "bg-black/6",
+      title: "text-foreground"
     };
   }
 
   if (variant === "error") {
     return {
+      chrome: "",
       container:
         "border-destructive/20 bg-[linear-gradient(135deg,rgba(184,28,28,0.12),rgba(255,255,255,0.98)_48%,rgba(255,246,246,0.98))]",
+      close: "text-muted-foreground hover:bg-black/5 hover:text-foreground focus-visible:ring-primary/30",
+      description: "text-muted-foreground",
       icon: "bg-destructive/12 text-destructive shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]",
-      accent: "bg-destructive"
+      accent: "bg-destructive",
+      progressTrack: "bg-black/6",
+      title: "text-foreground"
     };
   }
 
   return {
+    chrome: "",
     container:
       "border-accent/30 bg-[linear-gradient(135deg,rgba(180,140,12,0.14),rgba(255,255,255,0.98)_48%,rgba(255,250,232,0.98))]",
+    close: "text-muted-foreground hover:bg-black/5 hover:text-foreground focus-visible:ring-primary/30",
+    description: "text-muted-foreground",
     icon: "bg-accent/20 text-accent-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]",
-    accent: "bg-accent"
+    accent: "bg-accent",
+    progressTrack: "bg-black/6",
+    title: "text-foreground"
   };
 }
 
@@ -115,6 +131,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = React.useCallback((input: ToastInput) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const shouldPersist = input.persist ?? false;
     const item: ToastItem = {
       id,
       title: input.title,
@@ -126,7 +143,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     };
 
     setToasts((current) => [...current, item]);
-    setNotifications((current) => [{ ...item, read: false }, ...current].slice(0, 12));
+    if (shouldPersist) {
+      setNotifications((current) => [{ ...item, read: false }, ...current].slice(0, 12));
+    }
 
     window.setTimeout(() => {
       setToasts((current) => current.filter((toastItem) => toastItem.id !== id));
@@ -165,7 +184,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             return (
               <div
                 className={cn(
-                  "toast-enter pointer-events-auto relative overflow-hidden rounded-[1.35rem] border shadow-[0_18px_44px_rgba(15,23,42,0.16)] backdrop-blur-xl",
+                  "pointer-events-auto relative overflow-hidden rounded-[1.35rem] border backdrop-blur-xl",
+                  "toast-enter shadow-[0_18px_44px_rgba(15,23,42,0.16)]",
                   classes.container
                 )}
                 key={item.id}
@@ -176,6 +196,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   } as React.CSSProperties
                 }
               >
+                {classes.chrome ? <div className={cn("pointer-events-none absolute inset-0", classes.chrome)} /> : null}
                 <div className="toast-sheen pointer-events-none absolute inset-0" />
                 <div className={cn("absolute inset-y-0 left-0 w-1.5", classes.accent)} />
                 <div className="flex items-start gap-3 p-4 pl-5">
@@ -188,23 +209,28 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <Icon aria-hidden="true" className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="break-words text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className={cn("break-words text-sm font-semibold", classes.title)}>
+                      {item.title}
+                    </p>
                     {item.description ? (
-                      <p className="mt-1 break-words text-sm leading-relaxed text-muted-foreground">
+                      <p className={cn("mt-1 break-words text-sm leading-relaxed", classes.description)}>
                         {item.description}
                       </p>
                     ) : null}
                   </div>
                   <button
                     aria-label="Tutup notifikasi"
-                    className="interactive-tap rounded-full p-1 text-muted-foreground transition-[background-color,color,transform] duration-200 hover:bg-black/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                    className={cn(
+                      "interactive-tap rounded-full p-1 transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2",
+                      classes.close
+                    )}
                     onClick={() => dismiss(item.id)}
                     type="button"
                   >
                     <X aria-hidden="true" className="size-4" />
                   </button>
                 </div>
-                <div className="toast-progress absolute inset-x-0 bottom-0 h-[3px] bg-black/6">
+                <div className={cn("toast-progress absolute inset-x-0 bottom-0 h-[3px]", classes.progressTrack)}>
                   <div className={cn("toast-progress-bar h-full origin-left", classes.accent)} />
                 </div>
               </div>

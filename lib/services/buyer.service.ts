@@ -172,6 +172,7 @@ export async function listBuyerBids(userId: string) {
     .select({
       pemasaranId: pemasaran.id,
       lotName: barang.name,
+      imageUrl: mediaBarang.url,
       unitName: units.name,
       bidAmount: bids.nominal,
       bidHash: bids.bidHash,
@@ -193,6 +194,7 @@ export async function listBuyerBids(userId: string) {
     .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(transaksi, and(eq(transaksi.pemasaranId, pemasaran.id), eq(transaksi.userId, userId)))
     .where(eq(bids.userId, userId))
     .orderBy(desc(bids.createdAt));
@@ -464,6 +466,7 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     pemasaranId,
     lotName: row.item.name,
     unitName: row.unit.name,
+    imageUrl: row.media?.url ?? null,
     bidAmount: created.nominal,
     bidHash: created.bidHash,
     encryptedBidPayload: created.encryptedBidPayload,

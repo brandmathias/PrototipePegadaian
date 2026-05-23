@@ -50,9 +50,11 @@ export type BuyerBidStatus =
 export type BuyerBid = {
   lotId: string;
   lot: string;
+  imageUrl?: string;
   unit: string;
   status: BuyerBidStatus;
   closing: string;
+  closingAt?: string;
   revealDeadline?: string;
   revealDeadlineAt?: string;
   bidAmount?: number;
