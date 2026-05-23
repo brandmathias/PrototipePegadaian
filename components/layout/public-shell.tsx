@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Gavel, LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
+import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
 import { AlertCenter } from "@/components/ui/alert-center";
 import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
@@ -106,19 +107,25 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
             {viewer ? (
               <>
                 {isBuyer ? <AlertCenter className="shrink-0" scope="buyer" /> : null}
-                <Link
-                  className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
-                  href={viewer.homeHref}
-                >
-                  {isBuyer ? viewer.name : getViewerLabel(viewer.role)}
-                </Link>
-                <LogoutButton
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
-                  redirectTo="/login"
-                >
-                  <LogOut className="size-4" />
-                  Keluar
-                </LogoutButton>
+                {isBuyer ? (
+                  <BuyerProfileMenu name={viewer.name} profileHref="/profil" />
+                ) : (
+                  <>
+                    <Link
+                      className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
+                      href={viewer.homeHref}
+                    >
+                      {getViewerLabel(viewer.role)}
+                    </Link>
+                    <LogoutButton
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+                      redirectTo="/login"
+                    >
+                      <LogOut className="size-4" />
+                      Keluar
+                    </LogoutButton>
+                  </>
+                )}
               </>
             ) : (
               <Link

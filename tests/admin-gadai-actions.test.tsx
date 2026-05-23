@@ -114,9 +114,7 @@ describe("admin gadai action forms", () => {
     fireEvent.change(screen.getByLabelText("Nama barang"), {
       target: { value: "Cincin Emas 18K" }
     });
-    fireEvent.change(screen.getByLabelText("Kondisi"), {
-      target: { value: "cukup" }
-    });
+    fireEvent.click(screen.getByRole("radio", { name: "Cukup" }));
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
 
     await waitFor(() => {

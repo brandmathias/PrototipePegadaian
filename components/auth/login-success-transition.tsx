@@ -35,8 +35,8 @@ export function LoginSuccessTransition() {
           />
         ))}
 
-        <div className="mx-auto mb-6 flex size-32 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_25%,#5df39b,#08764f_54%,#03442f)] shadow-[inset_0_2px_18px_rgba(255,255,255,0.42),0_20px_52px_rgba(6,92,60,0.34)] ring-8 ring-emerald-100/90">
-          <div className="auth-success-seal grid size-[5.6rem] place-items-center rounded-full bg-white/12 ring-1 ring-white/24">
+        <div className="auth-success-medallion relative mx-auto mb-6 flex size-32 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_25%,#5df39b,#08764f_54%,#03442f)] shadow-[inset_0_2px_18px_rgba(255,255,255,0.42),0_20px_52px_rgba(6,92,60,0.34)] ring-8 ring-emerald-100/90">
+          <div className="auth-success-seal relative z-[1] grid size-[5.6rem] place-items-center rounded-full bg-white/12 ring-1 ring-white/24">
             <Check aria-hidden="true" className="auth-success-check size-16 text-white" strokeWidth={3.2} />
           </div>
         </div>
@@ -52,7 +52,7 @@ export function LoginSuccessTransition() {
         </p>
 
         <div className="mt-7 overflow-hidden rounded-full bg-emerald-950/10 p-1">
-          <div className="auth-success-progress h-3 rounded-full bg-[linear-gradient(90deg,#006b45,#22b76f,#d8ad38)]" />
+          <div className="auth-success-progress h-3 rounded-full bg-[linear-gradient(90deg,#006b45,#22b76f,#d8ad38,#006b45)]" />
         </div>
         <p className="mt-3 text-xs font-semibold text-emerald-950/54">
           Mohon tunggu sebentar, kami sedang mengarahkan Anda.
@@ -94,8 +94,8 @@ export function LogoutSuccessTransition() {
           />
         ))}
 
-        <div className="mx-auto mb-6 flex size-32 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.98),rgba(248,250,247,0.96)_55%,rgba(223,235,229,0.9))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_18px_45px_rgba(76,112,93,0.14)] ring-8 ring-white/80">
-          <div className="auth-logout-icon-shell grid size-24 place-items-center rounded-full bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_24px_rgba(11,81,63,0.08)] ring-1 ring-[#dbe7df]">
+        <div className="auth-logout-medallion relative mx-auto mb-6 flex size-32 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.98),rgba(248,250,247,0.96)_55%,rgba(223,235,229,0.9))] shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_18px_45px_rgba(76,112,93,0.14)] ring-8 ring-white/80">
+          <div className="auth-logout-icon-shell relative z-[1] grid size-24 place-items-center rounded-full bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_10px_24px_rgba(11,81,63,0.08)] ring-1 ring-[#dbe7df]">
             <LogOut aria-hidden="true" className="auth-logout-icon size-12 text-[#0b7a61]" strokeWidth={2.3} />
           </div>
         </div>
@@ -112,7 +112,7 @@ export function LogoutSuccessTransition() {
         </div>
 
         <div className="mt-7 overflow-hidden rounded-full bg-[#dce8e1] p-1">
-          <div className="auth-success-progress h-2.5 rounded-full bg-[linear-gradient(90deg,#0b7a61,#41b883,#d8ad38)]" />
+          <div className="auth-success-progress h-2.5 rounded-full bg-[linear-gradient(90deg,#0b7a61,#41b883,#d8ad38,#0b7a61)]" />
         </div>
       </div>
     </div>

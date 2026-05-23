@@ -3,17 +3,22 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
+  CalendarDays,
   CheckCircle2,
   Clock3,
   ExternalLink,
   FileCheck2,
   Gavel,
+  IdCard,
   Landmark,
+  Mail,
   MapPinned,
+  Phone,
   Printer,
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
+  UserRound,
 } from "lucide-react";
 
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
@@ -65,6 +70,10 @@ type BuyerProfileStatus = {
 
 const BUYER_SETTLEMENT_LOCKED_MESSAGE =
   "Akun Anda sedang dalam masa pembatasan. Transaksi belum dapat diselesaikan sampai masa blacklist berakhir.";
+
+const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png";
+const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
+const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -595,19 +604,50 @@ export function UserDashboardPage({
 }) {
   const { summary, transactions, bids } = data;
   const activeTransactions = transactions.filter(isDashboardActiveTransaction);
-  const paymentWaitingCount = transactions.filter(isDashboardPaymentWaiting).length;
-  const activeBids = bids.filter(isDashboardActiveBid);
-  const receiptCount = transactions.filter((transaction) => transaction.status === "LUNAS" || transaction.status === "SELESAI").length;
+  const paymentWaitingTransactions = transactions.filter(isDashboardPaymentWaiting);
+  const activeBidCount = bids.filter(isDashboardActiveBid).length;
   const urgentTransaction =
-    [...activeTransactions]
-      .filter(isDashboardPaymentWaiting)
-      .sort((first, second) => getUrgentTransactionRank(first) - getUrgentTransactionRank(second))[0] ?? null;
+    [...paymentWaitingTransactions].sort(
+      (first, second) => getUrgentTransactionRank(first) - getUrgentTransactionRank(second)
+    )[0] ?? null;
   const urgentCopy = urgentTransaction ? getUrgentDashboardCopy(urgentTransaction) : null;
-  const firstName = buyer.name.split(" ")[0] || buyer.name;
-  const serverNow = new Date().toISOString();
+  const violationCount = summary.blacklist.violations ?? 0;
+  const restrictionLevel = summary.blacklist.active ? Math.min(Math.max(violationCount, 1), 3) : 0;
+  const restrictionLabel =
+    restrictionLevel === 1
+      ? "Level 1 - Peringatan"
+      : restrictionLevel === 2
+        ? "Level 2 - Pembatasan"
+        : restrictionLevel >= 3
+          ? "Level 3 - Review admin"
+          : "Normal";
+  const restrictionRules = summary.blacklist.active
+    ? [
+        "Akses lelang Vickrey dibatasi selama masa pembatasan.",
+        ...(restrictionLevel >= 2 ? ["Pembelian Fixed Price baru ikut dibatasi sementara."] : []),
+        ...(restrictionLevel >= 3 ? ["Akun perlu peninjauan admin sebelum dipulihkan."] : [])
+      ]
+    : ["Akun dapat mengikuti fixed price, Vickrey, transaksi, dan nota sesuai aturan layanan."];
+  const importantNotes = [
+    {
+      icon: Clock3,
+      title: "Selesaikan pembayaran tepat waktu",
+      detail: "Ikuti instruksi pembayaran sebelum batas waktu agar transaksi tetap aman dan tidak masuk arsip gagal."
+    },
+    {
+      icon: Gavel,
+      title: "Pantau jadwal lelang",
+      detail: "Bid Vickrey tetap tertutup sampai deadline. Hasil dan instruksi pembayaran tampil otomatis setelah sesi selesai."
+    },
+    {
+      icon: ShieldCheck,
+      title: "Jaga status akun",
+      detail: "Selesaikan kewajiban pembayaran agar akun tetap bebas pembatasan dan bisa mengikuti transaksi berikutnya."
+    }
+  ];
   const urgentToneClass = urgentCopy
     ? {
-        danger: "border-red-200 bg-[linear-gradient(135deg,#fff5f5_0%,#fff_100%)] text-red-950",
+        danger: "border-red-200 bg-[linear-gradient(135deg,#fff4f4_0%,#fffafa_56%,#fff6e9_100%)] text-red-950",
         default: "border-primary/15 bg-[linear-gradient(135deg,#f2fbf5_0%,#fff_100%)] text-primary",
         info: "border-sky-200 bg-[linear-gradient(135deg,#eff8ff_0%,#fff_100%)] text-sky-950",
         warning: "border-[#ead8b5] bg-[linear-gradient(135deg,#fff9e8_0%,#fff_100%)] text-[#5d4300]"
@@ -621,256 +661,284 @@ export function UserDashboardPage({
         warning: "bg-[#fff1bf] text-[#9a6a00]"
       }[urgentCopy.tone]
     : "";
-  const metricCards = [
-    {
-      icon: Clock3,
-      label: "Menunggu Bayar",
-      value: String(paymentWaitingCount),
-      detail: "Pembayaran atau verifikasi aktif"
-    },
-    {
-      icon: Gavel,
-      label: "Bid Aktif",
-      value: String(activeBids.length),
-      detail: "Lelang berjalan yang Anda ikuti"
-    },
-    {
-      icon: FileCheck2,
-      label: "Nota Tersedia",
-      value: String(receiptCount),
-      detail: "Bisa dicetak setelah lunas"
-    }
-  ];
-  const quickActions = [
-    {
-      href: "/katalog",
-      label: "Jelajahi Katalog",
-      icon: ShoppingBag
-    },
-    {
-      href: "/transaksi",
-      label: "Pantau Transaksi",
-      icon: ReceiptText
-    },
-    {
-      href: "/riwayat-bid",
-      label: "Riwayat Bid",
-      icon: Gavel
-    }
-  ];
-
   return (
-    <div className="space-y-7 md:space-y-8">
-      <section className="rounded-[2rem] border border-primary/10 bg-[linear-gradient(135deg,#ffffff_0%,#f8fbf4_58%,#fff7df_100%)] p-6 shadow-[0_24px_60px_-42px_rgba(8,69,50,0.5)] md:p-7">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="default">Akun Terverifikasi</Badge>
-              {summary.blacklist.active ? (
-                <Badge variant="danger">Pembatasan level {summary.blacklist.violations}</Badge>
-              ) : null}
-            </div>
-            <h2 className="mt-4 font-headline text-3xl font-extrabold tracking-tight text-primary md:text-5xl">
-              Selamat datang, {firstName}.
-            </h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-              {buyer.email} | Member sejak {summary.memberSince}
-            </p>
+    <div className="space-y-6 md:space-y-7">
+      <section className="relative min-h-[340px] overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(90deg,#fffdf8_0%,#f8f3ff_58%,#efe9ff_100%)] shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46)] md:min-h-[380px]">
+        <Image
+          alt="Ilustrasi beranda pembeli"
+          className="object-contain object-right"
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 1280px"
+          src={BUYER_HOME_HERO_IMAGE}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,249,0.98)_0%,rgba(255,255,249,0.86)_42%,rgba(255,255,249,0.18)_78%)]" />
+        <div className="relative flex min-h-[340px] max-w-3xl flex-col justify-center px-6 py-8 md:min-h-[380px] md:px-10">
+          <p className="text-sm font-bold text-foreground">Selamat datang kembali,</p>
+          <h1 className="mt-2 font-headline text-4xl font-black tracking-tight text-primary md:text-5xl">
+            Halo, {buyer.name}
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
+            Kami siap membantu Anda menemukan aset terbaik, memantau pembayaran, dan membuka nota
+            transaksi dari satu ruang pembeli yang lebih ringkas.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Badge className="gap-2 rounded-2xl border border-primary/20 bg-white/85 px-4 py-2 text-primary shadow-sm" variant="default">
+              <ShieldCheck className="size-4" />
+              Akun Terverifikasi
+            </Badge>
+            {summary.blacklist.active ? (
+              <Badge className="gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800" variant="accent">
+                <AlertTriangle className="size-4" />
+                Akun Dibatasi
+              </Badge>
+            ) : null}
           </div>
-          <Link href="/profil">
-            <Button variant="secondary">Kelola profil</Button>
-          </Link>
         </div>
       </section>
 
       {urgentTransaction && urgentCopy ? (
-        <section className={cn("rounded-[1.75rem] border p-5 shadow-[0_22px_50px_-38px_rgba(8,69,50,0.38)]", urgentToneClass)}>
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+        <section
+          className={cn(
+            "overflow-hidden rounded-[1.75rem] border shadow-[0_22px_60px_-42px_rgba(8,69,50,0.42)]",
+            urgentToneClass
+          )}
+        >
+          <div className="grid gap-5 p-5 md:grid-cols-[1.2fr_0.8fr_0.7fr] md:items-center md:p-6">
             <div className="flex gap-4">
-              <span className={cn("grid size-12 shrink-0 place-items-center rounded-[1.1rem]", urgentIconClass)}>
-                {urgentCopy.tone === "info" ? <MapPinned className="size-5" /> : <AlertTriangle className="size-5" />}
+              <span className={cn("grid size-14 shrink-0 place-items-center rounded-full", urgentIconClass)}>
+                {urgentCopy.tone === "info" ? <MapPinned className="size-6" /> : <AlertTriangle className="size-6" />}
               </span>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] opacity-70">
-                  {urgentCopy.eyebrow}
-                </p>
-                <h3 className="mt-2 font-headline text-xl font-extrabold tracking-tight text-foreground">
-                  {urgentCopy.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 opacity-80">{urgentCopy.detail}</p>
-                {urgentTransaction.deadlineAt ? (
-                  <p className="mt-3 text-sm font-semibold">
-                    <BuyerPaymentCountdown prefix="Sisa waktu" transaction={urgentTransaction} />
-                  </p>
-                ) : null}
+                <h2 className="font-headline text-xl font-black tracking-tight text-foreground md:text-2xl">
+                  {urgentCopy.eyebrow} - {urgentCopy.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{urgentCopy.detail}</p>
               </div>
             </div>
-            <Link href={`/transaksi/${urgentTransaction.id}`}>
-              <Button className="w-full md:w-auto">
-                {getDashboardActionLabel(urgentTransaction)}
-                <ExternalLink className="size-4" />
-              </Button>
-            </Link>
+
+            <div className="rounded-[1.25rem] border border-current/10 bg-white/60 px-5 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                Batas waktu pembayaran
+              </p>
+              <p className="mt-2 text-lg font-black text-foreground">
+                {urgentTransaction.deadlineAt ? (
+                  <BuyerPaymentCountdown prefix="Sisa" transaction={urgentTransaction} />
+                ) : (
+                  urgentTransaction.deadline
+                )}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 md:items-end">
+              <p className="text-sm text-muted-foreground">Harus dibayar</p>
+              <p className="font-headline text-2xl font-black text-foreground">
+                {currency.format(urgentTransaction.amount)}
+              </p>
+              <Link className="w-full md:w-auto" href={`/transaksi/${urgentTransaction.id}`}>
+                <Button className="w-full md:min-w-44">
+                  {getDashboardActionLabel(urgentTransaction)}
+                  <ExternalLink className="size-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       ) : null}
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {metricCards.map((metric) => {
-          const Icon = metric.icon;
-
-          return (
-            <div className="rounded-[1.5rem] border border-border/70 bg-white p-5 shadow-[0_18px_45px_-38px_rgba(8,69,50,0.4)]" key={metric.label}>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground">
-                  {metric.label}
-                </p>
-                <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
-                  <Icon className="size-4" />
-                </span>
-              </div>
-              <p className="mt-3 font-headline text-3xl font-extrabold tracking-tight text-primary">
-                {metric.value}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
-            </div>
-          );
-        })}
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-2">
-        <Card className="border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
-          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle>Transaksi aktif</CardTitle>
-              <p className="text-sm text-muted-foreground">Maksimal tiga transaksi terbaru yang belum selesai.</p>
-            </div>
-            <Link href="/transaksi">
-              <Button variant="secondary">Lihat semua</Button>
-            </Link>
+      <section className="grid gap-5 xl:grid-cols-[1.03fr_0.97fr]">
+        <Card className="overflow-hidden border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
+          <CardHeader className="flex flex-row items-center gap-3 pb-4">
+            <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+              <ShieldCheck className="size-5" />
+            </span>
+            <CardTitle>Status Akun</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {activeTransactions.slice(0, 3).map((transaction) => (
-              <div className="rounded-[1.4rem] border border-border/70 bg-surface-low/35 p-4" key={transaction.id}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 gap-4">
-                    <DashboardThumb
-                      alt={`Foto barang ${transaction.title}`}
-                      icon={<ReceiptText className="size-6" />}
-                      src={transaction.imageUrl}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-semibold text-foreground">{transaction.title}</p>
-                        <StatusPill status={transaction.status} />
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{currency.format(transaction.amount)}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{transaction.unit}</p>
-                    </div>
+          <CardContent>
+            <div className="grid gap-5 rounded-[1.5rem] border border-primary/15 bg-[linear-gradient(135deg,#ffffff_0%,#f6fbf7_100%)] p-5 lg:grid-cols-[0.92fr_1.08fr]">
+              <div className="space-y-5">
+                <div className="flex gap-4">
+                  <span className="grid size-14 shrink-0 place-items-center rounded-[1.1rem] bg-primary/10 text-primary">
+                    <ShieldCheck className="size-7" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Verifikasi Akun
+                    </p>
+                    <p className="mt-2 text-xl font-black text-primary">{summary.verificationStatus}</p>
+                    <p className="mt-1 break-all text-sm text-muted-foreground">{buyer.email}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Member sejak {summary.memberSince}</p>
                   </div>
-                  <Link href={`/transaksi/${transaction.id}`}>
-                    <Button variant="secondary">Lihat Detail</Button>
-                  </Link>
+                </div>
+
+                <div className="flex gap-4 border-t border-border/70 pt-5">
+                  <span
+                    className={cn(
+                      "grid size-14 shrink-0 place-items-center rounded-[1.1rem]",
+                      summary.blacklist.active ? "bg-amber-100 text-amber-800" : "bg-primary/10 text-primary"
+                    )}
+                  >
+                    {summary.blacklist.active ? <AlertTriangle className="size-7" /> : <CheckCircle2 className="size-7" />}
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Status Restriksi
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-2 text-lg font-black",
+                        summary.blacklist.active ? "text-amber-800" : "text-primary"
+                      )}
+                    >
+                      {summary.blacklist.active ? restrictionLabel : "Tidak ada pembatasan"}
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {summary.blacklist.active
+                        ? `${summary.blacklist.reason} Berlaku sampai ${summary.blacklist.until}.`
+                        : summary.blacklist.reason}
+                    </p>
+                  </div>
                 </div>
               </div>
-            ))}
 
-            {activeTransactions.length === 0 ? (
-              <div className="rounded-[1.4rem] border border-dashed border-primary/20 bg-primary/[0.03] p-6">
-                <p className="font-semibold text-foreground">Belum ada transaksi aktif.</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Barang yang dibeli atau dimenangkan nanti akan muncul di sini.
+              <div className="rounded-[1.25rem] bg-white/80 p-5 ring-1 ring-border/70">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Pembatasan Aktif
                 </p>
-                <Link className="mt-4 inline-flex" href="/katalog">
-                  <Button>Jelajahi Katalog</Button>
-                </Link>
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
+                  {restrictionRules.map((rule) => (
+                    <li className="flex gap-3" key={rule}>
+                      <CheckCircle2 className="mt-1 size-4 shrink-0 text-primary" />
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+                {summary.blacklist.active ? (
+                  <div className="mt-5 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                    Hindari pelanggaran berikutnya agar level pembatasan tidak meningkat.
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
-          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle>Lelang Vickrey yang diikuti</CardTitle>
-              <p className="text-sm text-muted-foreground">Maksimal tiga sesi berjalan yang sudah Anda ikuti.</p>
+        <Card className="overflow-hidden border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-4">
+            <div className="flex items-center gap-3">
+              <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+                <FileCheck2 className="size-5" />
+              </span>
+              <CardTitle>Riwayat Pelanggaran</CardTitle>
             </div>
-            <Link href="/riwayat-bid">
-              <Button variant="secondary">Riwayat bid</Button>
+            <Link className="text-sm font-semibold text-primary hover:underline" href="/profil">
+              Lihat semua
             </Link>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {activeBids.slice(0, 3).map((bid) => (
-              <div className="rounded-[1.4rem] border border-border/70 bg-primary/[0.03] p-4" key={`${bid.lotId}-${bid.bidHash ?? bid.closing}`}>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 gap-4">
-                    <DashboardThumb
-                      alt={`Foto barang ${bid.lot}`}
-                      icon={<Gavel className="size-6" />}
-                      src={bid.imageUrl}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-semibold text-foreground">{bid.lot}</p>
-                        <BidPill status={bid.status} />
+          <CardContent>
+            <div className="rounded-[1.5rem] border border-border/70 bg-white p-5">
+              <p className="text-sm text-muted-foreground">Total Pelanggaran</p>
+              <p
+                className={cn(
+                  "mt-2 font-headline text-3xl font-black",
+                  violationCount > 0 ? "text-red-700" : "text-primary"
+                )}
+              >
+                {violationCount} kali
+              </p>
+
+              <div className="mt-5 divide-y divide-border/70">
+                {summary.blacklist.active ? (
+                  <div className="flex items-start justify-between gap-4 py-4">
+                    <div className="flex gap-3">
+                      <span className="mt-1 size-2.5 rounded-full bg-red-600" />
+                      <div>
+                        <p className="font-semibold text-foreground">{summary.blacklist.reason}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{restrictionLabel}</p>
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{bid.unit}</p>
-                      <p className="mt-1 text-xs font-semibold text-primary">
-                        <LiveCountdown
-                          expiredLabel="Menunggu hasil"
-                          fallbackLabel={bid.closing}
-                          prefix="Tutup"
-                          serverNow={serverNow}
-                          targetAt={bid.closingAt}
-                        />
+                    </div>
+                    <p className="shrink-0 text-right text-sm text-muted-foreground">{summary.blacklist.until}</p>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3 py-4">
+                    <span className="mt-1 size-2.5 rounded-full bg-primary" />
+                    <div>
+                      <p className="font-semibold text-foreground">Tidak ada pelanggaran aktif</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Akun berada dalam status baik dan tidak sedang dibatasi.
                       </p>
                     </div>
                   </div>
-                  <Link href="/riwayat-bid">
-                    <Button variant="secondary">Pantau</Button>
-                  </Link>
-                </div>
+                )}
               </div>
-            ))}
 
-            {activeBids.length === 0 ? (
-              <div className="rounded-[1.4rem] border border-dashed border-primary/20 bg-primary/[0.03] p-6">
-                <p className="font-semibold text-foreground">Belum ada lelang yang diikuti.</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Bid Vickrey aktif akan tampil setelah Anda mengirim penawaran tertutup.
-                </p>
-                <Link className="mt-4 inline-flex" href="/katalog">
-                  <Button>Cari Lelang</Button>
-                </Link>
-              </div>
-            ) : null}
+              {violationCount > 0 ? (
+                <div className="mt-5 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                  Jika melakukan pelanggaran lagi, akun dapat masuk ke level pembatasan berikutnya.
+                </div>
+              ) : null}
+            </div>
           </CardContent>
         </Card>
       </section>
 
-      <section className="rounded-[1.75rem] border border-border/70 bg-white p-4 shadow-[0_18px_45px_-40px_rgba(8,69,50,0.38)]">
-        <div className="grid gap-3 md:grid-cols-3">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
+      <section className="relative overflow-hidden rounded-[1.9rem] border border-primary/10 bg-[#faf9ef] p-5 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.42)] md:p-6">
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="object-cover object-right opacity-80"
+          fill
+          sizes="(max-width: 768px) 100vw, 1280px"
+          src={BUYER_NOTES_BACKGROUND_IMAGE}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,249,0.98)_0%,rgba(255,255,249,0.93)_50%,rgba(255,255,249,0.66)_100%)]" />
+        <div className="absolute -left-10 top-8 size-40 rounded-full bg-primary/[0.06] blur-2xl" />
+        <div className="relative">
+          <div className="mb-5 max-w-2xl">
+            <div className="flex items-center gap-3">
+              <span className="grid size-11 place-items-center rounded-[1.05rem] border border-primary/15 bg-white/85 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+                <ReceiptText className="size-5" />
+              </span>
+              <div>
+                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-primary/70">
+                  Informasi Pembeli
+                </p>
+                <h2 className="font-headline text-xl font-black text-primary">Catatan Penting</h2>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Ringkasan hal yang perlu Anda ingat saat mengikuti fixed price, Vickrey, dan pembayaran di Pegadaian Lelang.
+            </p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-[1.12fr_0.94fr_0.94fr]">
+            {importantNotes.map((item) => {
+              const Icon = item.icon;
 
-            return (
-              <Link
-                className="group flex items-center justify-between rounded-[1.25rem] border border-border/70 bg-surface-low/45 px-4 py-3 font-semibold text-primary transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/[0.04] active:translate-y-0"
-                href={action.href}
-                key={action.href}
-              >
-                <span className="flex items-center gap-3">
-                  <span className="grid size-9 place-items-center rounded-full bg-white ring-1 ring-primary/10">
-                    <Icon className="size-4" />
+              return (
+                <div
+                  className="group rounded-[1.45rem] border border-primary/10 bg-white/90 p-5 shadow-[0_18px_48px_-38px_rgba(8,69,50,0.38)] ring-1 ring-white/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/20 hover:bg-white/95"
+                  key={item.title}
+                >
+                  <span className="grid size-11 place-items-center rounded-[1rem] bg-primary/10 text-primary transition duration-500 group-hover:scale-105 group-hover:bg-primary group-hover:text-white">
+                    <Icon className="size-5" />
                   </span>
-                  {action.label}
-                </span>
-                <ExternalLink className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-              </Link>
-            );
-          })}
+                  <h3 className="mt-4 font-semibold text-foreground">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
+
+      {activeTransactions.length === 0 && activeBidCount === 0 && !urgentTransaction ? (
+        <section className="rounded-[1.5rem] border border-dashed border-primary/20 bg-primary/[0.03] p-6">
+          <p className="font-semibold text-foreground">Belum ada aktivitas yang perlu ditindaklanjuti.</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Beranda akan menampilkan peringatan hanya ketika ada pembayaran, bid, atau pembatasan yang membutuhkan perhatian.
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 }
@@ -1752,6 +1820,42 @@ export function BidVerificationPage({
   );
 }
 
+function getBuyerInitials(name: string) {
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length === 0) return "BD";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+
+  return `${words[0][0]}${words[1][0]}`.toUpperCase();
+}
+
+function ProfileInfoLine({
+  icon,
+  label,
+  value
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-[1.15rem] border border-white/55 bg-white/68 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.68)]">
+      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-[0.67rem] font-black uppercase tracking-[0.2em] text-primary/50">
+          {label}
+        </p>
+        <div className="mt-1 break-words text-sm font-semibold leading-6 text-foreground">{value}</div>
+      </div>
+    </div>
+  );
+}
+
 export function ProfilePage({
   buyer,
   summary
@@ -1759,81 +1863,183 @@ export function ProfilePage({
   buyer: BuyerSessionUser;
   summary: BuyerSummary;
 }) {
+  const phone = getBuyerPhone(buyer, summary.phone);
+  const nationalId = summary.nationalId ?? "-";
+  const initials = getBuyerInitials(buyer.name);
+  const hasRestriction = summary.blacklist.active;
+  const restrictionLabel = hasRestriction ? "Pembatasan aktif" : "Tidak ada pembatasan";
+  const restrictionTone = hasRestriction
+    ? "border-amber-300/70 bg-amber-50/88 text-amber-900"
+    : "border-emerald-200/80 bg-emerald-50/86 text-primary";
+
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        description="Kelola identitas akun, cek status verifikasi, dan pahami pembatasan yang dapat memengaruhi akses Anda ke lelang."
-        eyebrow="Profil Akun"
-        title="Kelola identitas dan keamanan akun"
+    <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 overflow-hidden bg-[#f5f1e8] py-8 md:-my-10 md:py-10">
+      <Image
+        alt=""
+        aria-hidden="true"
+        className="object-cover object-center"
+        fill
+        priority
+        sizes="100vw"
+        src={BUYER_PROFILE_BACKGROUND_IMAGE}
       />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,250,0.78)_0%,rgba(255,255,250,0.70)_46%,rgba(246,241,229,0.86)_100%)]" />
+      <div className="absolute inset-x-0 top-0 h-60 bg-[radial-gradient(circle_at_78%_12%,rgba(216,173,56,0.22),transparent_32%),radial-gradient(circle_at_16%_18%,rgba(8,91,62,0.12),transparent_35%)]" />
 
-      <BuyerProfileSettingsForm
-        email={buyer.email}
-        initialName={buyer.name}
-        initialNationalId={summary.nationalId ?? ""}
-        initialPhone={getBuyerPhone(buyer, summary.phone)}
-      />
+      <div className="container relative space-y-6 md:space-y-7">
+        <section className="grid gap-5 xl:grid-cols-[0.68fr_1.32fr] xl:items-end">
+          <div className="space-y-3">
+            <p className="inline-flex rounded-full border border-primary/10 bg-white/72 px-4 py-2 text-[0.68rem] font-black uppercase tracking-[0.24em] text-primary shadow-[0_14px_38px_-30px_rgba(8,69,50,0.55)]">
+              Profil Pembeli
+            </p>
+            <h1 className="font-headline text-4xl font-black tracking-[-0.045em] text-[#13211c] md:text-5xl">
+              Profil Saya
+            </h1>
+            <p className="max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
+              Kelola identitas akun, keamanan, dan status akses pembelian dari satu ruang profil yang ringkas.
+            </p>
+          </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Status verifikasi</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="mt-1 size-5 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">{summary.verificationStatus}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Akun dapat mengikuti fixed price, melihat detail transaksi, dan menerima
-                      nota digital ketika pembayaran selesai diverifikasi.
-                    </p>
+          <div className="rounded-[2.35rem] border border-white/60 bg-white/68 p-2 shadow-[0_28px_90px_-58px_rgba(8,69,50,0.58)] backdrop-blur-sm">
+            <div className="relative overflow-hidden rounded-[calc(2.35rem-0.5rem)] border border-primary/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(244,250,245,0.78)_58%,rgba(255,249,226,0.74)_100%)] p-5 md:p-6">
+              <div className="absolute -right-14 -top-16 size-44 rounded-full bg-[#d8ad38]/20 blur-2xl" />
+              <div className="relative grid gap-5 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+                <div className="grid size-28 place-items-center rounded-[2rem] bg-[radial-gradient(circle_at_35%_24%,#eff9ef,#bddfca_60%,#84b591)] text-4xl font-black tracking-[-0.08em] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_22px_45px_-34px_rgba(8,69,50,0.72)] ring-1 ring-primary/10 md:size-32 md:text-5xl">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="font-headline text-3xl font-black tracking-[-0.04em] text-foreground md:text-4xl">
+                    {buyer.name}
+                  </h2>
+                  <p className="mt-2 break-all text-sm font-medium text-muted-foreground">{buyer.email}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Badge className="rounded-full bg-primary/10 px-3 py-1.5 text-primary" variant="default">
+                      <UserRound className="size-3.5" />
+                      Buyer
+                    </Badge>
+                    <Badge className="rounded-full bg-emerald-50 px-3 py-1.5 text-primary" variant="default">
+                      <ShieldCheck className="size-3.5" />
+                      {summary.verificationStatus}
+                    </Badge>
+                    <Badge className={cn("rounded-full px-3 py-1.5", restrictionTone)} variant="muted">
+                      {hasRestriction ? <AlertTriangle className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
+                      {restrictionLabel}
+                    </Badge>
                   </div>
                 </div>
+                <div className="rounded-[1.45rem] border border-primary/10 bg-white/78 p-4 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:min-w-56">
+                  <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-primary/50">
+                    Member sejak
+                  </p>
+                  <p className="mt-2 font-bold text-foreground">{summary.memberSince}</p>
+                  <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                    Data profil digunakan untuk transaksi, nota, dan verifikasi pembayaran unit.
+                  </p>
+                </div>
               </div>
-              <div className="rounded-[1.5rem] border border-border/70 p-5">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Member sejak
-                </p>
-                <p className="mt-3 font-semibold text-foreground">{summary.memberSince}</p>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </section>
 
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Status blacklist</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div
-                className={cn(
-                  "rounded-[1.5rem] border p-5",
-                  summary.blacklist.active
-                    ? "border-tertiary-container/25 bg-tertiary-container/10"
-                    : "border-border/70 bg-surface-low"
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  {summary.blacklist.active ? (
-                    <AlertTriangle className="mt-1 size-5 text-tertiary-container" />
-                  ) : (
-                    <CheckCircle2 className="mt-1 size-5 text-primary" />
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+          <BuyerProfileSettingsForm
+            email={buyer.email}
+            initialName={buyer.name}
+            initialNationalId={summary.nationalId ?? ""}
+            initialPhone={phone}
+          />
+
+          <aside className="space-y-5">
+            <div className="rounded-[2rem] border border-white/60 bg-white/70 p-2 shadow-[0_24px_70px_-52px_rgba(8,69,50,0.52)] backdrop-blur-sm">
+              <div className="rounded-[calc(2rem-0.5rem)] border border-primary/10 bg-white/78 p-5">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+                    <IdCard className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/50">
+                      Dossier Akun
+                    </p>
+                    <h3 className="font-headline text-xl font-black text-foreground">Informasi utama</h3>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-3">
+                  <ProfileInfoLine icon={<UserRound className="size-4" />} label="Nama lengkap" value={buyer.name} />
+                  <ProfileInfoLine icon={<Mail className="size-4" />} label="Email" value={buyer.email} />
+                  <ProfileInfoLine icon={<Phone className="size-4" />} label="Nomor telepon" value={phone} />
+                  <ProfileInfoLine icon={<IdCard className="size-4" />} label="Nomor KTP" value={nationalId} />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/60 bg-white/70 p-2 shadow-[0_24px_70px_-52px_rgba(8,69,50,0.52)] backdrop-blur-sm">
+              <div className="rounded-[calc(2rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.84),rgba(246,251,246,0.72))] p-5">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "grid size-11 place-items-center rounded-full",
+                      hasRestriction ? "bg-amber-100 text-amber-800" : "bg-primary/10 text-primary"
+                    )}
+                  >
+                    {hasRestriction ? <AlertTriangle className="size-5" /> : <ShieldCheck className="size-5" />}
+                  </span>
+                  <div>
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/50">
+                      Akses & Pembatasan
+                    </p>
+                    <h3 className="font-headline text-xl font-black text-foreground">
+                      {hasRestriction ? "Perlu perhatian" : "Akun aman"}
+                    </h3>
+                  </div>
+                </div>
+                <div className="mt-5 space-y-3">
+                  <ProfileInfoLine
+                    icon={<CheckCircle2 className="size-4" />}
+                    label="Status pembatasan"
+                    value={restrictionLabel}
+                  />
+                  <ProfileInfoLine
+                    icon={<CalendarDays className="size-4" />}
+                    label="Sisa waktu"
+                    value={hasRestriction ? summary.blacklist.until : "-"}
+                  />
+                  <ProfileInfoLine
+                    icon={<AlertTriangle className="size-4" />}
+                    label="Riwayat pelanggaran"
+                    value={`${summary.blacklist.violations ?? 0} kali`}
+                  />
+                </div>
+                <div
+                  className={cn(
+                    "mt-4 rounded-[1.2rem] border p-4 text-sm leading-6",
+                    hasRestriction
+                      ? "border-amber-200 bg-amber-50/80 text-amber-900"
+                      : "border-primary/10 bg-primary/[0.04] text-primary"
                   )}
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {summary.blacklist.active ? "Blacklist aktif" : "Tidak ada blacklist aktif"}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {summary.blacklist.reason}
-                    </p>
-                  </div>
+                >
+                  {summary.blacklist.reason}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </aside>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/60 bg-white/70 p-2 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.5)] backdrop-blur-sm">
+          <div className="flex flex-col gap-4 rounded-[calc(2rem-0.5rem)] border border-primary/10 bg-white/76 p-5 md:flex-row md:items-center">
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <ReceiptText className="size-5" />
+            </span>
+            <div className="min-w-0 md:border-l md:border-primary/10 md:pl-5">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/50">
+                Catatan Penting
+              </p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Pastikan data identitas selalu akurat. Informasi ini dipakai untuk pembayaran,
+                pengambilan barang, nota transaksi, dan verifikasi jika terjadi pembatasan akun.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

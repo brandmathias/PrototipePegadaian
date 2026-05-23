@@ -103,12 +103,12 @@ export function BuyerProfileSettingsForm({
     if (password.newPassword !== password.confirmPassword) {
       setPasswordFeedback({
         title: "Konfirmasi belum cocok",
-        description: "Samakan password baru dan konfirmasinya sebelum menyimpan.",
+        description: "Samakan kata sandi baru dan konfirmasinya sebelum menyimpan.",
         variant: "error"
       });
       toast({
-        title: "Konfirmasi password belum cocok",
-        description: "Samakan password baru dan konfirmasinya sebelum menyimpan.",
+        title: "Konfirmasi kata sandi belum cocok",
+        description: "Samakan kata sandi baru dan konfirmasinya sebelum menyimpan.",
         variant: "error",
         scope: "buyer"
       });
@@ -129,14 +129,14 @@ export function BuyerProfileSettingsForm({
 
       if (!response.ok) {
         const description =
-          payload.message ?? "Pastikan password saat ini benar dan password baru minimal 8 karakter.";
+          payload.message ?? "Pastikan kata sandi saat ini benar dan kata sandi baru minimal 8 karakter.";
         setPasswordFeedback({
-          title: "Password belum berubah",
+          title: "Kata sandi belum berubah",
           description,
           variant: "error"
         });
         toast({
-          title: "Password belum berubah",
+          title: "Kata sandi belum berubah",
           description,
           variant: "error",
           scope: "buyer"
@@ -146,13 +146,13 @@ export function BuyerProfileSettingsForm({
 
       setPassword({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setPasswordFeedback({
-        title: "Password diperbarui",
-        description: "Akun pembeli tetap aktif dan password baru sudah tersimpan.",
+        title: "Kata sandi diperbarui",
+        description: "Akun pembeli tetap aktif dan kata sandi baru sudah tersimpan.",
         variant: "success"
       });
       toast({
-        title: "Password diperbarui",
-        description: "Password akun pembeli berhasil diganti.",
+        title: "Kata sandi diperbarui",
+        description: "Kata sandi akun pembeli berhasil diganti.",
         variant: "success",
         scope: "buyer"
       });
@@ -160,171 +160,196 @@ export function BuyerProfileSettingsForm({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-      <div className="rounded-[1.5rem] border border-border/70 bg-white p-6">
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-foreground">Data akun pembeli</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Perubahan profil langsung tersimpan ke akun dan data profil pembeli.
-          </p>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2">
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-profile-name"
-            >
-              Nama lengkap
-            </label>
-            <Input
-              autoComplete="name"
-              id="buyer-profile-name"
-              name="name"
-              onChange={(event) => updateProfileField("name", event.target.value)}
-              value={profile.name}
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-profile-email"
-            >
-              Email
-            </label>
-            <Input autoComplete="email" disabled id="buyer-profile-email" name="email" value={email} />
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Email menjadi identitas login dan tidak diubah dari form profil ini.
+    <div className="space-y-5">
+      <div className="rounded-[2rem] border border-white/60 bg-white/72 p-2 shadow-[0_24px_70px_-52px_rgba(8,69,50,0.52)] backdrop-blur-sm">
+        <div className="rounded-[calc(2rem-0.5rem)] border border-primary/10 bg-white/82 p-5 md:p-6">
+          <div className="mb-6">
+            <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-foreground">
+              Edit informasi pribadi
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Perubahan profil langsung tersimpan ke akun pembeli dan digunakan pada proses transaksi.
             </p>
           </div>
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-profile-phone"
-            >
-              Nomor telepon
-            </label>
-            <Input
-              autoComplete="tel"
-              id="buyer-profile-phone"
-              name="phoneNumber"
-              onChange={(event) => updateProfileField("phoneNumber", event.target.value)}
-              value={profile.phoneNumber}
-            />
-          </div>
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-profile-national-id"
-            >
-              Nomor KTP
-            </label>
-            <Input
-              autoComplete="off"
-              id="buyer-profile-national-id"
-              inputMode="numeric"
-              name="nationalId"
-              onChange={(event) => updateProfileField("nationalId", event.target.value)}
-              value={profile.nationalId}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Button disabled={!isHydrated || isProfilePending} onClick={saveProfile} type="button">
-              {isProfilePending ? (
-                <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-              ) : (
-                <User aria-hidden="true" className="size-4" />
-              )}
-              {!isHydrated ? "Menyiapkan\u2026" : isProfilePending ? "Menyimpan\u2026" : "Simpan Perubahan"}
-            </Button>
-            {profileFeedback ? (
-              <InlineFeedback
-                className="feedback-lift mt-4"
-                description={profileFeedback.description}
-                title={profileFeedback.title}
-                variant={profileFeedback.variant}
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-profile-name"
+              >
+                Nama lengkap
+              </label>
+              <Input
+                autoComplete="name"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-profile-name"
+                name="name"
+                onChange={(event) => updateProfileField("name", event.target.value)}
+                value={profile.name}
               />
-            ) : null}
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-profile-email"
+              >
+                Email
+              </label>
+              <Input
+                autoComplete="email"
+                className="h-12 rounded-2xl bg-surface-low/70"
+                disabled
+                id="buyer-profile-email"
+                name="email"
+                value={email}
+              />
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Email menjadi identitas login dan tidak diubah dari form profil ini.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-profile-phone"
+              >
+                Nomor telepon
+              </label>
+              <Input
+                autoComplete="tel"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-profile-phone"
+                name="phoneNumber"
+                onChange={(event) => updateProfileField("phoneNumber", event.target.value)}
+                value={profile.phoneNumber}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-profile-national-id"
+              >
+                Nomor KTP
+              </label>
+              <Input
+                autoComplete="off"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-profile-national-id"
+                inputMode="numeric"
+                name="nationalId"
+                onChange={(event) => updateProfileField("nationalId", event.target.value)}
+                value={profile.nationalId}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Button
+                className="h-12 rounded-2xl px-5"
+                disabled={!isHydrated || isProfilePending}
+                onClick={saveProfile}
+                type="button"
+              >
+                {isProfilePending ? (
+                  <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                ) : (
+                  <User aria-hidden="true" className="size-4" />
+                )}
+                {!isHydrated ? "Menyiapkan\u2026" : isProfilePending ? "Menyimpan\u2026" : "Simpan Perubahan"}
+              </Button>
+              {profileFeedback ? (
+                <InlineFeedback
+                  className="feedback-lift mt-4"
+                  description={profileFeedback.description}
+                  title={profileFeedback.title}
+                  variant={profileFeedback.variant}
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[1.5rem] border border-border/70 bg-white p-6">
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-foreground">Keamanan akun</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ganti password dengan validasi Better Auth agar session tetap aman.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-current-password"
-            >
-              Password saat ini
-            </label>
-            <Input
-              autoComplete="current-password"
-              id="buyer-current-password"
-              name="currentPassword"
-              onChange={(event) => updatePasswordField("currentPassword", event.target.value)}
-              type="password"
-              value={password.currentPassword}
-            />
+      <div className="rounded-[2rem] border border-white/60 bg-white/72 p-2 shadow-[0_24px_70px_-52px_rgba(8,69,50,0.52)] backdrop-blur-sm">
+        <div className="rounded-[calc(2rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.86),rgba(246,251,246,0.78))] p-5 md:p-6">
+          <div className="mb-6">
+            <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-foreground">Keamanan akun</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Perbarui kata sandi secara berkala untuk menjaga akses akun tetap aman.
+            </p>
           </div>
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-new-password"
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-current-password"
+              >
+                Kata sandi saat ini
+              </label>
+              <Input
+                autoComplete="current-password"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-current-password"
+                name="currentPassword"
+                onChange={(event) => updatePasswordField("currentPassword", event.target.value)}
+                type="password"
+                value={password.currentPassword}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-new-password"
+              >
+                Kata sandi baru
+              </label>
+              <Input
+                autoComplete="new-password"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-new-password"
+                name="newPassword"
+                onChange={(event) => updatePasswordField("newPassword", event.target.value)}
+                type="password"
+                value={password.newPassword}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="buyer-confirm-password"
+              >
+                Konfirmasi kata sandi baru
+              </label>
+              <Input
+                autoComplete="new-password"
+                className="h-12 rounded-2xl bg-white/80"
+                id="buyer-confirm-password"
+                name="confirmPassword"
+                onChange={(event) => updatePasswordField("confirmPassword", event.target.value)}
+                type="password"
+                value={password.confirmPassword}
+              />
+            </div>
+            <Button
+              className="h-12 rounded-2xl px-5"
+              disabled={!isHydrated || isPasswordPending}
+              onClick={changePassword}
+              type="button"
+              variant="secondary"
             >
-              Password baru
-            </label>
-            <Input
-              autoComplete="new-password"
-              id="buyer-new-password"
-              name="newPassword"
-              onChange={(event) => updatePasswordField("newPassword", event.target.value)}
-              type="password"
-              value={password.newPassword}
-            />
+              {isPasswordPending ? (
+                <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+              ) : (
+                <KeyRound aria-hidden="true" className="size-4" />
+              )}
+              {!isHydrated ? "Menyiapkan\u2026" : isPasswordPending ? "Memperbarui\u2026" : "Perbarui Kata Sandi"}
+            </Button>
+            {passwordFeedback ? (
+              <InlineFeedback
+                className="feedback-lift"
+                description={passwordFeedback.description}
+                title={passwordFeedback.title}
+                variant={passwordFeedback.variant}
+              />
+            ) : null}
           </div>
-          <div className="space-y-2">
-            <label
-              className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground"
-              htmlFor="buyer-confirm-password"
-            >
-              Konfirmasi password baru
-            </label>
-            <Input
-              autoComplete="new-password"
-              id="buyer-confirm-password"
-              name="confirmPassword"
-              onChange={(event) => updatePasswordField("confirmPassword", event.target.value)}
-              type="password"
-              value={password.confirmPassword}
-            />
-          </div>
-          <Button
-            disabled={!isHydrated || isPasswordPending}
-            onClick={changePassword}
-            type="button"
-            variant="secondary"
-          >
-            {isPasswordPending ? (
-              <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-            ) : (
-              <KeyRound aria-hidden="true" className="size-4" />
-            )}
-            {!isHydrated ? "Menyiapkan\u2026" : isPasswordPending ? "Memperbarui\u2026" : "Perbarui Password"}
-          </Button>
-          {passwordFeedback ? (
-            <InlineFeedback
-              className="feedback-lift"
-              description={passwordFeedback.description}
-              title={passwordFeedback.title}
-              variant={passwordFeedback.variant}
-            />
-          ) : null}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { PublicShell } from "@/components/layout/public-shell";
 import { ToastProvider } from "@/components/ui/toast";
@@ -32,8 +32,13 @@ describe("PublicShell", () => {
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
-    expect(screen.getByRole("link", { name: "Raras Maheswari" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("button", { name: /keluar/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Raras Maheswari" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^keluar$/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /raras maheswari/i }));
+
+    expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
+    expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
   });
 });

@@ -1,10 +1,10 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/dashboard",
+  usePathname: () => "/transaksi",
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -43,5 +43,11 @@ describe("BuyerShell", () => {
     expect(screen.getByText(/member sejak 29 april 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/blacklist aktif sampai 5 mei 2026/i)).toBeInTheDocument();
     expect(screen.getByText("Konten akun")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^keluar$/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /raras maheswari/i }));
+
+    expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
+    expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
   });
 });

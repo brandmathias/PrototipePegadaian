@@ -83,7 +83,7 @@ const latestBid: BuyerBid = {
 };
 
 describe("buyer dashboard page", () => {
-  it("renders the ideal buyer dashboard zones without dense account panels", () => {
+  it("renders the focused buyer home with account status and an urgent payment banner", () => {
     render(
       <UserDashboardPage
         buyer={buyer}
@@ -95,26 +95,29 @@ describe("buyer dashboard page", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: /selamat datang, raras/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /halo, raras maheswari/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /ilustrasi beranda pembeli/i })).toBeInTheDocument();
     expect(screen.getByText(/akun terverifikasi/i)).toBeInTheDocument();
-    expect(screen.getByText(/raras@example\.com \| member sejak 4 mei 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/member sejak 4 mei 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/raras@example\.com/i)).toBeInTheDocument();
     expect(screen.getByText(/pembayaran menunggu/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /bayar sekarang/i })).toHaveAttribute(
       "href",
       "/transaksi/trx-fixed-1"
     );
-    expect(screen.getByText(/menunggu bayar/i)).toBeInTheDocument();
-    expect(screen.getByText(/bid aktif/i)).toBeInTheDocument();
-    expect(screen.getByText(/nota tersedia/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /transaksi aktif/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /lelang vickrey yang diikuti/i })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /foto barang motor racing/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /jelajahi katalog/i })).toHaveAttribute("href", "/katalog");
-    expect(screen.queryByText(/status akun pembeli/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/aktivitas bid terbaru/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^status akun$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /catatan penting/i })).toBeInTheDocument();
+    expect(screen.getByText(/ringkasan hal yang perlu anda ingat/i)).toBeInTheDocument();
+    expect(screen.queryByText(/menunggu bayar:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/bid aktif:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nota tersedia:/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /transaksi aktif/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /lelang vickrey yang diikuti/i })).not.toBeInTheDocument();
   });
 
-  it("hides the urgent banner and shows calm empty lists when nothing requires action", () => {
+  it("hides the urgent banner and shows a calm empty state when nothing requires action", () => {
     render(
       <UserDashboardPage
         buyer={buyer}
@@ -132,8 +135,8 @@ describe("buyer dashboard page", () => {
     );
 
     expect(screen.queryByText(/pembayaran menunggu/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/belum ada transaksi aktif/i)).toBeInTheDocument();
-    expect(screen.getByText(/belum ada lelang yang diikuti/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /jelajahi katalog/i })).toHaveAttribute("href", "/katalog");
+    expect(screen.getByText(/belum ada aktivitas yang perlu ditindaklanjuti/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak ada pelanggaran aktif/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
   });
 });
