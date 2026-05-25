@@ -87,7 +87,10 @@ function toIsoOrNull(value: Date | string | null | undefined) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-export function serializeAdminBarang(row: BarangRow, extra?: { marketingMode?: string | null; mediaCount?: number }) {
+export function serializeAdminBarang(
+  row: BarangRow,
+  extra?: { marketingMode?: string | null; mediaCount?: number; previewImageUrl?: string | null }
+) {
   const displayStatus = row.status === "gadai" ? "jaminan" : row.status;
 
   return {
@@ -108,6 +111,7 @@ export function serializeAdminBarang(row: BarangRow, extra?: { marketingMode?: s
     description: row.description,
     marketingMode: extra?.marketingMode ?? null,
     mediaSummary: `${extra?.mediaCount ?? 0} media`,
+    previewImageUrl: extra?.previewImageUrl ?? null,
     redeemedAt: toDateLabel(row.redeemedAt),
     redemptionReference: row.redemptionReference ?? "-",
     nextAction: getBarangNextAction(displayStatus)

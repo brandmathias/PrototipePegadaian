@@ -2,10 +2,16 @@ import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
+import {
+  getAdminInventoryMetrics,
+  isAdminMarketingActionable,
+  isAdminTransactionActionable
+} from "@/lib/admin-unit/operational-metrics";
 import { getAdminSessionUser, getAppPathFromRequestHeaders } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { units } from "@/lib/db/schema";
 import { listAdminBarang } from "@/lib/services/admin-barang.service";
+import { listAdminPemasaran } from "@/lib/services/admin-pemasaran.service";
 import { listAdminTransactions } from "@/lib/services/admin-transaction.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
@@ -41,52 +47,43 @@ const baseNav: NavItem[] = [
   { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" }
 ];
 
-function daysUntil(dateLabel: string | null | undefined) {
-  if (!dateLabel || dateLabel === "-") return null;
-
-  const date = new Date(`${dateLabel}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const today = new Date();
-  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  const targetUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-
-  return Math.ceil((targetUtc - todayUtc) / 86_400_000);
-}
-
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
   const currentUser = await getAdminSessionUser(currentPath);
   const [unit] = currentUser.unitId
     ? await db.select().from(units).where(eq(units.id, currentUser.unitId)).limit(1)
     : [];
-  const [items, transactions] = currentUser.unitId
+  const [items, marketingSessions, transactions] = currentUser.unitId
     ? await Promise.all([
         listAdminBarang(currentUser.unitId),
+        listAdminPemasaran(currentUser.unitId),
         listAdminTransactions(currentUser.unitId)
       ])
-    : [[], []];
-  const dueSoonCount = items.filter((item) => {
-    const days = daysUntil(item.dueDate);
-    return days !== null && days >= 0 && days <= 7 && ["JAMINAN", "GADAI"].includes(item.status);
-  }).length;
-  const actionItemCount = items.filter((item) => {
-    const days = daysUntil(item.dueDate);
-    return item.status === "GAGAL" || item.status === "JAMINAN" || (days !== null && days >= 0 && days <= 7);
-  }).length;
-  const activeMarketingCount = items.filter((item) => item.status === "DIPASARKAN").length;
-  const transactionActionCount = transactions.filter((transaction) =>
-    ["BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(transaction.status)
-  ).length;
+    : [[], [], []];
+  const inventoryMetrics = getAdminInventoryMetrics(items);
+  const marketingActionCount = marketingSessions.filter((session) => isAdminMarketingActionable(session)).length;
+  const transactionActionCount = transactions.filter(isAdminTransactionActionable).length;
   const nav = baseNav.map((item) => {
     if (item.href === "/admin/barang") {
-      return { ...item, badge: actionItemCount, badgeTone: dueSoonCount > 0 ? "warning" : "default" } satisfies NavItem;
+      return {
+        ...item,
+        badge: inventoryMetrics.dueSoon || undefined,
+        badgeTone: inventoryMetrics.dueSoon > 0 ? "warning" : "default"
+      } satisfies NavItem;
     }
     if (item.href === "/admin/pemasaran") {
-      return { ...item, badge: activeMarketingCount, badgeTone: "default" } satisfies NavItem;
+      return {
+        ...item,
+        badge: marketingActionCount || undefined,
+        badgeTone: marketingActionCount > 0 ? "warning" : "default"
+      } satisfies NavItem;
     }
     if (item.href === "/admin/transaksi") {
-      return { ...item, badge: transactionActionCount, badgeTone: transactionActionCount > 0 ? "warning" : "default" } satisfies NavItem;
+      return {
+        ...item,
+        badge: transactionActionCount || undefined,
+        badgeTone: transactionActionCount > 0 ? "warning" : "default"
+      } satisfies NavItem;
     }
     return item;
   });
@@ -95,16 +92,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <DashboardShell
       currentUser={currentUser}
       profileHref="/admin/profil"
-      quickActions={[
-        { href: "/admin/barang/tambah", label: "Tambah Barang", icon: "barang" },
-        { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" },
-        { href: "/admin/transaksi/verifikasi-pembayaran", label: "Verifikasi Bayar", icon: "transaksi" }
-      ]}
       showHeaderSearch={false}
       sidebarMetrics={[
-        { label: "Total Barang", value: items.length },
-        { label: "Perlu Tindakan", value: actionItemCount, tone: actionItemCount > 0 ? "warning" : "default" },
-        { label: "Jatuh Tempo Dekat", value: dueSoonCount, tone: dueSoonCount > 0 ? "danger" : "default" }
+        { label: "Total Barang", value: inventoryMetrics.total },
+        { label: "Siap Dipasarkan", value: inventoryMetrics.readyForMarketing },
+        {
+          label: "Jatuh Tempo Dekat",
+          value: inventoryMetrics.dueSoon,
+          tone: inventoryMetrics.dueSoon > 0 ? "danger" : "default"
+        }
       ]}
       sidebarUpdatedAt={formatAppDateTime(new Date())}
       subtitle="Pusat kendali operasional unit"

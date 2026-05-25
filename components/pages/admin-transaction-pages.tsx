@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
@@ -627,6 +628,11 @@ function TransactionLedgerList({
   emptyText: string;
   serverNow?: string;
 }) {
+  const pagination = useAdminPagination(
+    transactions,
+    transactions.map((transaction) => transaction.id).join("|")
+  );
+
   if (!transactions.length) {
     return <EmptyPanel text={emptyText} />;
   }
@@ -641,7 +647,7 @@ function TransactionLedgerList({
         <span className="text-right">Aksi</span>
       </div>
       <div className="divide-y divide-black/8">
-        {transactions.map((transaction) => (
+        {pagination.visibleItems.map((transaction) => (
           <TransactionLedgerRow
             href={getHref(transaction)}
             key={transaction.id}
@@ -650,6 +656,14 @@ function TransactionLedgerList({
           />
         ))}
       </div>
+      <AdminPaginationFooter
+        itemLabel="transaksi"
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        totalItems={pagination.totalItems}
+        onPageIndexChange={pagination.setPageIndex}
+        onPageSizeChange={pagination.setPageSize}
+      />
     </div>
   );
 }
@@ -943,7 +957,7 @@ export function AdminTransactionVerificationPage({
         actions={<Badge variant="accent">{actionableQueue.length} perlu tindakan</Badge>}
       />
 
-      <div className="flex gap-2 overflow-x-auto rounded-[1.35rem] bg-white p-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+      <div className="admin-choice-shell flex gap-2 overflow-x-auto rounded-[1.35rem] p-2">
         {VERIFICATION_FILTERS.map((filter) => {
           const count =
             filter.id === "SEMUA"
@@ -953,9 +967,9 @@ export function AdminTransactionVerificationPage({
 
           return (
             <button
-              className={`shrink-0 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
-                active ? "bg-[#0a6a49] text-white" : "text-black/58 hover:bg-[#f3f3f0] hover:text-black/82"
-              }`}
+              className="admin-choice-button shrink-0 rounded-[1.05rem] px-4 py-2.5 text-sm font-bold"
+              aria-pressed={active}
+              data-active={active}
               key={filter.id}
               type="button"
               onClick={() => {
@@ -963,7 +977,7 @@ export function AdminTransactionVerificationPage({
               }}
             >
               {filter.label}
-              <span className={active ? "ml-2 text-white/72" : "ml-2 text-black/38"}>{count}</span>
+              <span className="admin-choice-count">{count}</span>
             </button>
           );
         })}

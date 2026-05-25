@@ -1,13 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
   Ban,
   Building2,
-  ChevronDown,
   FileCheck2,
   Gavel,
   LayoutDashboard,
@@ -54,19 +52,12 @@ type SidebarMetric = {
   tone?: "default" | "warning" | "danger";
 };
 
-type QuickAction = {
-  href: string;
-  label: string;
-  icon?: NavIconName;
-};
-
 type DashboardShellProps = {
   title: string;
   subtitle: string;
   nav: NavItem[];
   sidebarMetrics?: SidebarMetric[];
   sidebarUpdatedAt?: string;
-  quickActions?: QuickAction[];
   showHeaderSearch?: boolean;
   currentUser?: {
     name: string;
@@ -83,7 +74,6 @@ export function DashboardShell({
   nav,
   sidebarMetrics,
   sidebarUpdatedAt,
-  quickActions,
   showHeaderSearch = true,
   currentUser,
   profileHref,
@@ -171,25 +161,47 @@ export function DashboardShell({
     const isActive = isNavItemActive(item);
 
     if (item.children?.length) {
-      const isGroupOpen = openGroups[item.href] ?? item.children.some((child) => isNavItemActive(child));
+      const isGroupOpen = openGroups[item.href] ?? isActive;
+      const setGroupOpen = (open: boolean, element?: HTMLElement | null) => {
+        setOpenGroups((current) => ({
+          ...current,
+          [item.href]: open
+        }));
+
+        if (open && element?.scrollIntoView) {
+          window.setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 160);
+        }
+      };
 
       return (
-        <div className="space-y-1.5" key={item.href}>
+        <div
+          className="space-y-1.5"
+          key={item.href}
+          onFocus={(event) => setGroupOpen(true, event.currentTarget)}
+          onMouseEnter={(event) => setGroupOpen(true, event.currentTarget)}
+          onMouseLeave={() => {
+            if (!isActive) {
+              setGroupOpen(false);
+            }
+          }}
+        >
           <div
             className={cn(
-              "group flex w-full items-center gap-2 rounded-[1.15rem] px-2 py-1.5 text-left text-[0.92rem] font-semibold text-white/70 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white lg:text-[0.97rem]",
+              "group flex w-full items-center gap-2 rounded-[1rem] px-1.5 py-1 text-left text-[0.9rem] font-semibold text-white/70 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white lg:text-[0.94rem]",
               isActive &&
                 "bg-[linear-gradient(135deg,rgba(29,148,108,0.92),rgba(11,101,72,0.94))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_32px_-24px_rgba(0,0,0,0.58)]"
             )}
           >
             <Link
-              className="flex min-w-0 flex-1 items-center gap-3 rounded-[1rem] px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-[0.9rem] px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               href={item.href}
               onClick={() => setIsMenuOpen(false)}
             >
               <span
                 className={cn(
-                  "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
+                  "grid size-8 shrink-0 place-items-center rounded-[0.95rem] border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
                   isActive && "border-white/16 bg-white/[0.14] text-white"
                 )}
               >
@@ -198,40 +210,31 @@ export function DashboardShell({
               <span className="min-w-0 truncate">{item.label}</span>
               {renderBadge(item)}
             </Link>
-            <button
-              aria-label={isGroupOpen ? `Tutup submenu ${item.label}` : `Buka submenu ${item.label}`}
-              className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-              type="button"
-              onClick={() =>
-                setOpenGroups((current) => ({
-                  ...current,
-                  [item.href]: !isGroupOpen
-                }))
-              }
-            >
-              <ChevronDown
-                aria-hidden="true"
-                className={cn("size-4 shrink-0 transition duration-200", isGroupOpen && "rotate-180")}
-              />
-            </button>
           </div>
 
-          {isGroupOpen ? (
-            <div className="space-y-1.5 pl-4">
+          <div
+            aria-hidden={!isGroupOpen}
+            className={cn(
+              "grid overflow-hidden pl-3.5 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              isGroupOpen ? "max-h-44 translate-y-0 opacity-100" : "max-h-0 -translate-y-1.5 opacity-0"
+            )}
+          >
+            <div className="space-y-1">
               {item.children.map((child) => (
                 <Link
                   className={cn(
-                    "group inline-flex w-full items-center gap-3 rounded-[1rem] px-4 py-2 text-[0.84rem] font-medium text-white/62 transition duration-200 hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.88rem]",
+                    "group inline-flex w-full items-center gap-3 rounded-[0.95rem] px-3.5 py-1.5 text-[0.82rem] font-medium text-white/62 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.86rem]",
                     isNavItemActive(child) &&
                       "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                   )}
                   href={child.href}
                   key={child.href}
                   onClick={() => setIsMenuOpen(false)}
+                  tabIndex={isGroupOpen ? undefined : -1}
                 >
                   <span
                     className={cn(
-                      "grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.05] text-white/68 transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
+                      "grid size-7 shrink-0 place-items-center rounded-[0.85rem] border border-white/10 bg-white/[0.05] text-white/68 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
                       isNavItemActive(child) && "border-white/15 bg-white/[0.12] text-white"
                     )}
                   >
@@ -242,7 +245,7 @@ export function DashboardShell({
                 </Link>
               ))}
             </div>
-          ) : null}
+          </div>
         </div>
       );
     }
@@ -250,7 +253,7 @@ export function DashboardShell({
     return (
       <Link
         className={cn(
-          "group inline-flex items-center gap-3 rounded-[1.1rem] px-4 py-2.5 text-[0.92rem] font-semibold text-white/70 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.97rem]",
+          "group inline-flex items-center gap-3 rounded-[1rem] px-3.5 py-2 text-[0.9rem] font-semibold text-white/70 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.94rem]",
           isActive &&
             "bg-[linear-gradient(135deg,rgba(29,148,108,0.92),rgba(11,101,72,0.94))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_32px_-24px_rgba(0,0,0,0.58)]"
         )}
@@ -260,7 +263,7 @@ export function DashboardShell({
       >
         <span
           className={cn(
-            "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
+            "grid size-8 shrink-0 place-items-center rounded-[0.95rem] border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
             isActive && "border-white/16 bg-white/[0.14] text-white"
           )}
         >
@@ -273,7 +276,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="min-h-dvh bg-[#efefed] text-foreground print:bg-white lg:pl-[18rem] print:lg:pl-0">
+    <div className="min-h-dvh bg-[#efefed] text-foreground print:bg-white lg:pl-[17rem] print:lg:pl-0">
       {isMenuOpen ? (
         <button
           aria-label="Tutup menu"
@@ -284,18 +287,18 @@ export function DashboardShell({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-4 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 print:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-3 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 print:hidden",
           isMenuOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
         )}
       >
-        <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
+        <div className="shrink-0 rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
           <div className="flex items-center gap-3">
-            <div className="grid size-11 shrink-0 place-items-center rounded-[1.15rem] bg-white text-[#07563f] shadow-sm">
-              <ShieldCheck aria-hidden="true" className="size-6" />
+            <div className="grid size-10 shrink-0 place-items-center rounded-[1rem] bg-white text-[#07563f] shadow-sm">
+              <ShieldCheck aria-hidden="true" className="size-5.5" />
             </div>
             <div className="min-w-0">
-              <p className="font-headline text-[1.45rem] font-black uppercase leading-[0.92] tracking-[0.08em] text-white">
+              <p className="font-headline text-[1.28rem] font-black uppercase leading-[0.92] tracking-[0.07em] text-white">
                 Pegadaian
                 <br />
                 Lelang
@@ -303,61 +306,42 @@ export function DashboardShell({
             </div>
           </div>
 
-          <div className="relative mt-4 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-4 py-4">
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-[radial-gradient(circle_at_bottom_right,rgba(136,255,206,0.18),transparent_62%)]" />
-            <div className="pointer-events-none absolute bottom-0 right-0 h-20 w-28 opacity-40 mix-blend-screen">
-              <Image
-                alt=""
-                className="object-contain object-bottom-right"
-                fill
-                src="/uploads/Sidebar%20Kantor.svg"
-              />
-            </div>
-            <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-white/46">Unit Aktif</p>
-            <div className="mt-1 flex items-center justify-between gap-3">
-              <p className="truncate text-[1.15rem] font-semibold text-white/92">{title}</p>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-50">
-                <span className="size-1.5 rounded-full bg-emerald-300" />
-                Aktif
-              </span>
-            </div>
-            <p className="mt-3 max-w-[10.5rem] text-[0.76rem] leading-5 text-white/58">
-              Pusat kendali operasional unit dengan jejak barang, pemasaran, dan transaksi.
-            </p>
+          <div className="relative mt-4 min-h-[6.05rem] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[linear-gradient(150deg,rgba(255,255,255,0.075),rgba(255,255,255,0.026)_58%,rgba(75,214,152,0.08))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_45px_-36px_rgba(0,0,0,0.85)]">
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-36 bg-[radial-gradient(circle_at_bottom_right,rgba(137,255,207,0.28),transparent_62%)]" />
+            <div className="pointer-events-none absolute -bottom-7 right-2 h-14 w-36 rounded-full bg-emerald-200/14 blur-xl" />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-1 right-0 top-1 w-36 opacity-95 brightness-125 contrast-125 drop-shadow-[0_18px_18px_rgba(65,255,177,0.14)]"
+              style={{
+                backgroundImage: "url('/uploads/Sidebar%20Kantor.svg')",
+                backgroundPosition: "right bottom",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "contain"
+              }}
+            />
+            <div className="pointer-events-none absolute inset-x-4 bottom-3 h-px bg-gradient-to-r from-transparent via-emerald-100/22 to-transparent" />
+            <p className="relative text-[0.68rem] font-bold uppercase tracking-[0.2em] text-white/46">Unit Aktif</p>
+            <p className="relative mt-1 max-w-[10rem] text-[1.02rem] font-semibold leading-tight text-white/92">{title}</p>
+            <span className="relative mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-50">
+              <span className="size-1.5 rounded-full bg-emerald-300" />
+              Aktif
+            </span>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-1 flex-col">
+        <div className="mt-4 flex min-h-0 flex-1 flex-col">
           <p className="px-2 text-[0.68rem] font-bold uppercase tracking-[0.22em] text-white/42">Navigasi</p>
-          <nav className="mt-2 flex flex-col gap-1.5 pr-1">{nav.map((item) => renderNavItem(item))}</nav>
+          <nav className="sidebar-scrollbar mt-2 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-2 pr-1">
+            {nav.map((item) => renderNavItem(item))}
+          </nav>
         </div>
-
-        {quickActions?.length ? (
-          <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-            <p className="px-1 text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/46">Quick Actions</p>
-            <div className="mt-2 space-y-2">
-              {quickActions.map((action) => (
-                <Link
-                  className="group inline-flex w-full items-center gap-2.5 rounded-[1rem] border border-white/10 bg-black/10 px-3 py-2.5 text-[0.82rem] font-semibold text-white/86 transition duration-300 hover:border-white/16 hover:bg-white/10"
-                  href={action.href}
-                  key={action.href}
-                >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-white/90">
-                    {renderNavIcon(action.icon)}
-                  </span>
-                  <span className="truncate">{action.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ) : null}
 
         {sidebarMetrics?.length ? (
-          <div className="mt-3 rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="mt-2.5 shrink-0 rounded-[1.2rem] border border-white/10 bg-white/[0.045] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
             <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/46">Ringkasan Unit</p>
-            <div className="mt-2.5 space-y-2">
+            <div className="mt-2 space-y-1.5">
               {sidebarMetrics.map((metric) => (
-                <div className="flex items-center justify-between gap-3 text-[0.82rem]" key={metric.label}>
+                <div className="flex items-center justify-between gap-3 text-[0.78rem]" key={metric.label}>
                   <span
                     className={cn(
                       "truncate text-white/70",
@@ -380,7 +364,7 @@ export function DashboardShell({
               ))}
             </div>
             {sidebarUpdatedAt ? (
-              <p className="mt-3 border-t border-white/10 pt-2.5 text-[0.7rem] leading-5 text-white/42">
+              <p className="mt-2.5 border-t border-white/10 pt-2 text-[0.68rem] leading-5 text-white/42">
                 Data per {sidebarUpdatedAt}
               </p>
             ) : null}

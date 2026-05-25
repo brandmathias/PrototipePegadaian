@@ -112,6 +112,16 @@ export async function listAdminBarang(unitId: string) {
     .from(mediaBarang)
     .where(inArray(mediaBarang.barangId, ids))
     .groupBy(mediaBarang.barangId);
+  const mediaRows = await db
+    .select({
+      barangId: mediaBarang.barangId,
+      type: mediaBarang.type,
+      url: mediaBarang.url,
+      sortOrder: mediaBarang.sortOrder
+    })
+    .from(mediaBarang)
+    .where(inArray(mediaBarang.barangId, ids))
+    .orderBy(mediaBarang.barangId, mediaBarang.sortOrder);
   const activeMarketing = await db
     .select()
     .from(pemasaran)
@@ -119,11 +129,25 @@ export async function listAdminBarang(unitId: string) {
 
   const mediaMap = new Map(mediaCounts.map((row) => [row.barangId, Number(row.count)]));
   const marketingMap = new Map(activeMarketing.map((row) => [row.barangId, row.mode]));
+  const previewImageMap = new Map<string, string>();
+
+  for (const media of mediaRows) {
+    const isLikelyImage =
+      media.type !== "video" &&
+      !/\.(mp4|mov|webm|mkv)$/i.test(media.url);
+
+    if (!isLikelyImage || previewImageMap.has(media.barangId)) {
+      continue;
+    }
+
+    previewImageMap.set(media.barangId, media.url);
+  }
 
   return rows.map((row) =>
     serializeAdminBarang(row, {
       mediaCount: mediaMap.get(row.id) ?? 0,
-      marketingMode: marketingMap.get(row.id) ?? null
+      marketingMode: marketingMap.get(row.id) ?? null,
+      previewImageUrl: previewImageMap.get(row.id) ?? null
     })
   );
 }

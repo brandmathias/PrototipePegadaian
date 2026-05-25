@@ -6,9 +6,18 @@ import { CalendarDays, ChevronRight, Clock3, MonitorCheck, X } from "lucide-reac
 type LoginHistoryDialogProps = {
   activeSessionCount: number;
   entries: string[];
+  accessLabel?: string;
+  description?: string;
+  sessionTitle?: string;
 };
 
-export function LoginHistoryDialog({ activeSessionCount, entries }: LoginHistoryDialogProps) {
+export function LoginHistoryDialog({
+  activeSessionCount,
+  entries,
+  accessLabel = "Akses pembeli",
+  description = "Lihat riwayat akses akun",
+  sessionTitle = "Sesi Login"
+}: LoginHistoryDialogProps) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
   const visibleEntries = entries.slice(0, 8);
@@ -47,9 +56,9 @@ export function LoginHistoryDialog({ activeSessionCount, entries }: LoginHistory
               <CalendarDays className="size-4" />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">Sesi Login</p>
+              <p className="text-sm font-semibold text-foreground">{sessionTitle}</p>
               <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-                Lihat riwayat akses akun
+                {description}
               </p>
             </div>
           </div>
@@ -134,7 +143,7 @@ export function LoginHistoryDialog({ activeSessionCount, entries }: LoginHistory
                               <Clock3 className="size-4" />
                             </span>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground">Akses pembeli</p>
+                              <p className="text-sm font-semibold text-foreground">{accessLabel}</p>
                               <p className="mt-0.5 text-xs text-muted-foreground">Sesi login tercatat sistem</p>
                             </div>
                           </div>

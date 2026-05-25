@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import {
@@ -15,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotFigure } from "@/components/shared/lot-figure";
@@ -416,6 +419,8 @@ export function AdminFixedPriceListPage({
   auctions: MarketingSession[];
   emptyDescription?: string;
 }) {
+  const pagination = useAdminPagination(auctions, "fixed-price");
+
   return (
     <div className="space-y-6">
       <SessionHeader
@@ -426,11 +431,21 @@ export function AdminFixedPriceListPage({
       />
 
       {auctions.length ? (
-        <div className="grid justify-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
-          {auctions.map((auction) => (
-            <FixedPriceCard auction={auction} key={auction.id} />
-          ))}
-        </div>
+        <section className="overflow-hidden rounded-[1.7rem] border border-black/8 bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
+          <div className="grid justify-start gap-4 p-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
+            {pagination.visibleItems.map((auction) => (
+              <FixedPriceCard auction={auction} key={auction.id} />
+            ))}
+          </div>
+          <AdminPaginationFooter
+            itemLabel="sesi"
+            pageIndex={pagination.pageIndex}
+            pageSize={pagination.pageSize}
+            totalItems={pagination.totalItems}
+            onPageIndexChange={pagination.setPageIndex}
+            onPageSizeChange={pagination.setPageSize}
+          />
+        </section>
       ) : (
         <EmptyPanel text={emptyDescription} />
       )}
@@ -448,6 +463,7 @@ export function AdminVickreyAuctionListPage({
   const summary = getVickreySummary(auctions);
   const paymentQueue = auctions.filter((auction) => VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? ""));
   const serverNow = new Date().toISOString();
+  const pagination = useAdminPagination(auctions, "vickrey-auction");
 
   return (
     <div className="space-y-6">
@@ -564,11 +580,21 @@ export function AdminVickreyAuctionListPage({
       ) : null}
 
       {auctions.length ? (
-        <div className="grid justify-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
-          {auctions.map((auction) => (
-            <VickreyCard auction={auction} key={auction.id} />
-          ))}
-        </div>
+        <section className="overflow-hidden rounded-[1.7rem] border border-black/8 bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
+          <div className="grid justify-start gap-4 p-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
+            {pagination.visibleItems.map((auction) => (
+              <VickreyCard auction={auction} key={auction.id} />
+            ))}
+          </div>
+          <AdminPaginationFooter
+            itemLabel="sesi"
+            pageIndex={pagination.pageIndex}
+            pageSize={pagination.pageSize}
+            totalItems={pagination.totalItems}
+            onPageIndexChange={pagination.setPageIndex}
+            onPageSizeChange={pagination.setPageSize}
+          />
+        </section>
       ) : (
         <EmptyPanel text={emptyDescription} />
       )}

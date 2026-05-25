@@ -16,17 +16,17 @@ import {
   Printer,
   RotateCcw,
   ScrollText,
-  ShieldAlert,
   ShieldEllipsis,
   ShoppingBag,
   ReceiptText,
   UploadCloud,
-  UserRound,
   Wallet
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
+import { AdminProfileWorkspace, type AdminProfileData } from "@/components/admin/admin-profile-workspace";
 import { AdminBarangEditForm } from "@/components/admin-unit/admin-barang-edit-form";
 import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -318,18 +319,7 @@ export function AdminInventoryPage({
 }: {
   items: AdminInventoryItem[];
 }) {
-  const readyItems = items.filter((item) => item.status === "JAMINAN");
-  const dueSoonItems = items.filter((item) => {
-    const dueDate = item?.dueDate ? new Date(`${item.dueDate}T00:00:00.000Z`) : null;
-    if (!dueDate || Number.isNaN(dueDate.getTime())) {
-      return false;
-    }
-    const today = new Date();
-    const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-    const targetUtc = Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate());
-    const days = Math.ceil((targetUtc - todayUtc) / 86_400_000);
-    return days !== null && days >= 0 && days <= 7 && ["JAMINAN", "GADAI"].includes(item.status);
-  });
+  const inventoryMetrics = getAdminInventoryMetrics(items);
 
   return (
     <div className="space-y-5">
@@ -370,21 +360,21 @@ export function AdminInventoryPage({
           description="Seluruh barang yang tercatat pada unit aktif."
           icon={PackagePlus}
           label="Total Barang"
-          value={items.length}
+          value={inventoryMetrics.total}
         />
         <InventoryMetricCard
           description="Barang jaminan yang sudah siap disiapkan ke pemasaran."
           icon={BadgeCheck}
           label="Siap Dipasarkan"
           tone="success"
-          value={readyItems.length}
+          value={inventoryMetrics.readyForMarketing}
         />
         <InventoryMetricCard
           description="Barang dengan batas jatuh tempo dalam tujuh hari."
           icon={CalendarClock}
           label="Jatuh Tempo Dekat"
           tone="warning"
-          value={dueSoonItems.length}
+          value={inventoryMetrics.dueSoon}
         />
       </section>
 
@@ -1350,41 +1340,7 @@ export function AdminBlacklistPage({ entries }: { entries: AdminBlacklistItem[] 
       description="Pantau akun yang sedang dibatasi di unit Anda, baca riwayat pelanggarannya, dan perpanjang masa pembatasan bila memang diperlukan."
       />
 
-      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        {entries.map((entry) => (
-          <Card className="rounded-2xl border border-black/10" key={entry.userId}>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle className="text-xl sm:text-[1.35rem]">{entry.name}</CardTitle>
-                  <CardDescription className="mt-2 text-sm sm:text-base">
-                    {entry.violations} pelanggaran - Unit {entry.unit}
-                  </CardDescription>
-                </div>
-                <AdminStatusBadge status={entry.status} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm leading-7 text-black/70 sm:text-base">
-              <p>
-                <span className="font-semibold text-black/80">Masa blokir:</span> {entry.until}
-              </p>
-              <p>{entry.activeAuctionRestriction}</p>
-              <div className="flex flex-wrap gap-3">
-                <Link href={`/admin/blacklist/${entry.userId}`}>
-                  <Button className="rounded-2xl" variant="secondary">
-                    Lihat detail
-                  </Button>
-                </Link>
-                <Link href={`/admin/blacklist/${entry.userId}/perpanjang`}>
-                  <Button className="rounded-2xl">
-                    Perpanjang masa blokir
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <AdminBlacklistList entries={entries} />
     </div>
   );
 }
@@ -1503,90 +1459,6 @@ export function AdminBlacklistExtendPage({ userId: _userId, entry }: { userId?: 
   );
 }
 
-export function AdminProfilePage() {
-  return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Profil"
-        title="Profil Admin Unit"
-        description="Kelola identitas admin, informasi unit, dan pengingat operasional agar seluruh pekerjaan tetap berjalan sesuai cakupan unit Anda."
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_0.82fr]">
-        <Card className="rounded-2xl border border-black/10">
-          <PanelTitle description="Data identitas admin untuk kebutuhan operasional harian." title="Informasi Profil" />
-          <div className="grid gap-5 p-6 md:grid-cols-2">
-            <div className="space-y-2">
-              <FieldLabel>Nama Admin</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue="Admin Unit Manado" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Email Kerja</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue="admin.manado@pegadaian.test" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Unit</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue="Pegadaian Unit Manado" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Nomor Petugas</FieldLabel>
-              <Input className="h-12 text-sm sm:text-base" defaultValue="ADM-MND-01" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <FieldLabel>Alamat Unit</FieldLabel>
-              <Textarea
-                className="min-h-28 text-sm sm:text-base"
-                defaultValue="Jl. Sam Ratulangi No. 88, Manado, Sulawesi Utara"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Button className="h-12 rounded-2xl text-sm sm:text-base">Simpan Perubahan Profil</Button>
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="rounded-2xl border border-black/10 bg-[#f6faf7]">
-            <CardHeader>
-              <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-white text-[#0a6a49] shadow-sm">
-                <UserRound className="size-6" />
-              </div>
-              <CardTitle className="text-xl sm:text-[1.4rem]">Panduan Singkat</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
-              <p>- Halaman barang dipakai untuk mengelola perpindahan dari barang masuk sampai selesai ditawarkan.</p>
-              <p>- Halaman transaksi membantu Anda menuntaskan pembayaran hingga nota siap dicetak.</p>
-              <p>- Seluruh data dan tindakan tetap dibatasi pada unit Anda agar pengelolaan tetap akurat.</p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.4rem]">Akses Cepat</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href="/admin/barang/tambah">
-                <Button className="w-full rounded-2xl" variant="secondary">
-                  <ShoppingBag className="size-4" />
-                  Input Barang Gadai
-                </Button>
-              </Link>
-              <Link href="/admin/transaksi">
-                <Button className="w-full rounded-2xl" variant="secondary">
-                  <Wallet className="size-4" />
-                  Buka antrian pembayaran
-                </Button>
-              </Link>
-              <Link href="/admin/blacklist">
-                <Button className="w-full rounded-2xl" variant="secondary">
-                  <ShieldAlert className="size-4" />
-                  Tinjau blacklist
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+export function AdminProfilePage({ profile }: { profile: AdminProfileData }) {
+  return <AdminProfileWorkspace profile={profile} />;
 }
