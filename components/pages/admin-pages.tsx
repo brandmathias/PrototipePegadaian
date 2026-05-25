@@ -15,6 +15,7 @@ import {
   PencilLine,
   Printer,
   RotateCcw,
+  ScrollText,
   ShieldAlert,
   ShieldEllipsis,
   ShoppingBag,
@@ -33,7 +34,7 @@ import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventor
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { AdminInventoryWorkspace } from "@/components/admin/admin-inventory-workspace";
+import { AdminInventoryHistoryWorkspace, AdminInventoryWorkspace } from "@/components/admin/admin-inventory-workspace";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -313,25 +314,9 @@ function InventoryMetricCard({
 }
 
 export function AdminInventoryPage({
-  items,
-  history
+  items
 }: {
   items: AdminInventoryItem[];
-  history: Array<{
-    id: string;
-    barangId: string;
-    barangCode: string;
-    barangName: string;
-    ownerName: string;
-    customerNumber: string;
-    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
-    actionLabel: string;
-    actionTone: "default" | "success" | "warning" | "danger";
-    note: string;
-    actorName: string;
-    createdAt: string;
-    createdAtLabel: string;
-  }>;
 }) {
   const readyItems = items.filter((item) => item.status === "JAMINAN");
   const dueSoonItems = items.filter((item) => {
@@ -403,7 +388,57 @@ export function AdminInventoryPage({
         />
       </section>
 
-      <AdminInventoryWorkspace history={history} items={items} />
+      <AdminInventoryWorkspace items={items} />
+    </div>
+  );
+}
+
+export function AdminInventoryHistoryPage({
+  history
+}: {
+  history: Array<{
+    id: string;
+    barangId: string;
+    barangCode: string;
+    barangName: string;
+    ownerName: string;
+    customerNumber: string;
+    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+    actionLabel: string;
+    actionTone: "default" | "success" | "warning" | "danger";
+    note: string;
+    actorName: string;
+    createdAt: string;
+    createdAtLabel: string;
+  }>;
+}) {
+  return (
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-start gap-4 md:items-center">
+            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/6">
+              <ScrollText className="size-7" />
+            </span>
+            <div className="min-w-0">
+              <p className="page-heading-eyebrow">Admin Unit / Kelola Barang</p>
+              <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
+                Riwayat Barang
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
+                Audit trail khusus untuk jejak input barang baru, perpanjangan, penebusan, dan pemasaran dari unit aktif.
+              </p>
+            </div>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-black/6 backdrop-blur">
+            <Clock3 className="size-4" />
+            {history.length} catatan operasional
+          </div>
+        </div>
+      </section>
+
+      <AdminInventoryHistoryWorkspace history={history} />
     </div>
   );
 }

@@ -11,7 +11,15 @@ import { formatAppDateTime } from "@/lib/timezone";
 
 const baseNav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "dashboard" },
-  { href: "/admin/barang", label: "Kelola Barang", icon: "barang" },
+  {
+    href: "/admin/barang",
+    label: "Kelola Barang",
+    icon: "barang",
+    children: [
+      { href: "/admin/barang", label: "Daftar Barang", icon: "barang" },
+      { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" }
+    ]
+  },
   {
     href: "/admin/pemasaran",
     label: "Pemasaran",
@@ -30,8 +38,7 @@ const baseNav: NavItem[] = [
       { href: "/admin/transaksi/riwayat", label: "Riwayat", icon: "rekening" }
     ]
   },
-  { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" },
-  { href: "/admin/profil", label: "Profil", icon: "profil" }
+  { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" }
 ];
 
 function daysUntil(dateLabel: string | null | undefined) {
@@ -88,6 +95,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <DashboardShell
       currentUser={currentUser}
       profileHref="/admin/profil"
+      quickActions={[
+        { href: "/admin/barang/tambah", label: "Tambah Barang", icon: "barang" },
+        { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" },
+        { href: "/admin/transaksi/verifikasi-pembayaran", label: "Verifikasi Bayar", icon: "transaksi" }
+      ]}
       showHeaderSearch={false}
       sidebarMetrics={[
         { label: "Total Barang", value: items.length },

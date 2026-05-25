@@ -1,0 +1,33 @@
+<svg width="320" height="220" viewBox="0 0 320 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustrasi Gedung Unit Transparan</title>
+  <desc id="desc">SVG vector dekoratif berupa gedung kantor/unit untuk background sidebar dashboard admin unit.</desc>
+
+  <g opacity="0.18">
+    <path d="M18 202H302" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+
+    <path d="M58 96L132 56L206 96V202H58V96Z" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M132 56L206 96H58L132 56Z" fill="currentColor" fill-opacity="0.36"/>
+
+    <path d="M92 122H112V146H92V122Z" fill="currentColor" fill-opacity="0.38"/>
+    <path d="M122 122H142V146H122V122Z" fill="currentColor" fill-opacity="0.38"/>
+    <path d="M152 122H172V146H152V122Z" fill="currentColor" fill-opacity="0.38"/>
+
+    <path d="M92 160H112V184H92V160Z" fill="currentColor" fill-opacity="0.38"/>
+    <path d="M152 160H172V184H152V160Z" fill="currentColor" fill-opacity="0.38"/>
+    <path d="M124 162C124 154.268 130.268 148 138 148C145.732 148 152 154.268 152 162V202H124V162Z" fill="currentColor" fill-opacity="0.45"/>
+
+    <path d="M212 82H278V202H212V82Z" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M225 105H241V121H225V105Z" fill="currentColor" fill-opacity="0.42"/>
+    <path d="M250 105H266V121H250V105Z" fill="currentColor" fill-opacity="0.42"/>
+    <path d="M225 136H241V152H225V136Z" fill="currentColor" fill-opacity="0.42"/>
+    <path d="M250 136H266V152H250V136Z" fill="currentColor" fill-opacity="0.42"/>
+    <path d="M225 167H241V183H225V167Z" fill="currentColor" fill-opacity="0.42"/>
+    <path d="M250 167H266V183H250V167Z" fill="currentColor" fill-opacity="0.42"/>
+
+    <path d="M34 201C34 186.641 45.6406 175 60 175C74.3594 175 86 186.641 86 201" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+    <path d="M252 201C252 188.85 261.85 179 274 179C286.15 179 296 188.85 296 201" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+
+    <path d="M132 34V56" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <path d="M132 34H170L160 47H132V34Z" fill="currentColor" fill-opacity="0.36"/>
+  </g>
+</svg>
