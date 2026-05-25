@@ -3,7 +3,6 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
-  CalendarDays,
   CheckCircle2,
   Clock3,
   ExternalLink,
@@ -25,6 +24,7 @@ import {
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
+import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -1898,7 +1898,6 @@ export function ProfilePage({
   const nationalId = summary.nationalId ?? "-";
   const hasRestriction = summary.blacklist.active;
   const restrictionLabel = hasRestriction ? "Pembatasan aktif" : "Tidak ada pembatasan";
-  const loginHistory = summary.security.sessionHistory.slice(0, 3);
 
   return (
     <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 overflow-hidden bg-[#f8f4ea] py-8 md:-my-10 md:py-10">
@@ -1971,38 +1970,10 @@ export function ProfilePage({
                 </div>
               </div>
 
-              <div className="rounded-[1.35rem] border border-primary/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/[0.08] text-primary">
-                      <CalendarDays className="size-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">Sesi Login</p>
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {summary.security.activeSessionCount} sesi aktif
-                  </p>
-                </div>
-                <div className="mt-4 rounded-[1rem] border border-primary/8 bg-white/85 p-3">
-                  <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary/45">
-                    Riwayat login terbaru
-                  </p>
-                  <div className="mt-3 space-y-2.5">
-                    {loginHistory.length > 0 ? (
-                      loginHistory.map((entry) => (
-                        <div className="flex items-center justify-between gap-3 text-sm" key={entry}>
-                          <span className="text-foreground">Akses pembeli</span>
-                          <span className="text-right text-muted-foreground">{entry}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-muted-foreground">Belum ada riwayat sesi yang tercatat.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <LoginHistoryDialog
+                activeSessionCount={summary.security.activeSessionCount}
+                entries={summary.security.sessionHistory}
+              />
             </div>
           </ProfileDetailCard>
 
