@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 type BuyerProfileMenuProps = {
   name: string;
+  image?: string | null;
   profileHref?: string;
   className?: string;
 };
@@ -25,7 +26,12 @@ function getInitials(name: string) {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
-export function BuyerProfileMenu({ name, profileHref = "/profil", className }: BuyerProfileMenuProps) {
+export function BuyerProfileMenu({
+  name,
+  image,
+  profileHref = "/profil",
+  className
+}: BuyerProfileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -63,8 +69,15 @@ export function BuyerProfileMenu({ name, profileHref = "/profil", className }: B
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <span className="grid size-7 place-items-center rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-          {getInitials(name)}
+        <span className="relative grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+          {image ? (
+            <img
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              src={image}
+            />
+          ) : null}
+          <span className={cn(image ? "opacity-0" : "opacity-100")}>{getInitials(name)}</span>
         </span>
         <span className="hidden max-w-[11rem] truncate md:inline">{name}</span>
         <ChevronDown
@@ -83,10 +96,24 @@ export function BuyerProfileMenu({ name, profileHref = "/profil", className }: B
           role="menu"
         >
           <div className="px-3 pb-2 pt-2">
-            <p className="text-[0.62rem] font-black uppercase tracking-[0.24em] text-primary/45">
-              Akun Pembeli
-            </p>
-            <p className="mt-1 truncate font-bold text-foreground">{name}</p>
+            <div className="flex items-center gap-3">
+              <span className="relative grid size-11 place-items-center overflow-hidden rounded-full bg-primary text-xs font-black tracking-[-0.04em] text-white">
+                {image ? (
+                  <img
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                    src={image}
+                  />
+                ) : null}
+                <span className={cn(image ? "opacity-0" : "opacity-100")}>{getInitials(name)}</span>
+              </span>
+              <div className="min-w-0">
+                <p className="text-[0.62rem] font-black uppercase tracking-[0.24em] text-primary/45">
+                  Akun Pembeli
+                </p>
+                <p className="mt-1 truncate font-bold text-foreground">{name}</p>
+              </div>
+            </div>
           </div>
           <div className="my-1 h-px bg-border/70" />
           <Link

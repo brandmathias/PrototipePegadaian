@@ -14,12 +14,14 @@ import {
 } from "@/lib/buyer/validation";
 import { db } from "@/lib/db/client";
 import {
+  accounts,
   barang,
   bids,
   blacklists,
   buyerProfiles,
   mediaBarang,
   pemasaran,
+  sessions,
   transaksi,
   unitAccounts,
   units,
@@ -27,7 +29,7 @@ import {
 } from "@/lib/db/schema";
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
-import { formatAppDate, formatAppLongDate } from "@/lib/timezone";
+import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const ACTIVE_TRANSACTION_STATUSES = [
@@ -262,7 +264,48 @@ export async function getBuyerBidVerification(userId: string, pemasaranId: strin
 }
 
 export async function getBuyerSummary(userId: string) {
-  const [profile] = await db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1);
+  const now = new Date();
+  const [[profile], [buyerUser], [latestCredentialAccount], recentSessions, activeSessions] = await Promise.all([
+    db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1),
+    db
+      .select({
+        image: users.image,
+        name: users.name,
+        email: users.email,
+        phoneNumber: users.phoneNumber,
+        nationalId: users.nationalId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1),
+    db
+      .select({
+        updatedAt: accounts.updatedAt
+      })
+      .from(accounts)
+      .where(eq(accounts.userId, userId))
+      .orderBy(desc(accounts.updatedAt))
+      .limit(1),
+    db
+      .select({
+        id: sessions.id,
+        createdAt: sessions.createdAt,
+        updatedAt: sessions.updatedAt,
+        expiresAt: sessions.expiresAt
+      })
+      .from(sessions)
+      .where(eq(sessions.userId, userId))
+      .orderBy(desc(sessions.updatedAt), desc(sessions.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: sessions.id
+      })
+      .from(sessions)
+      .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, now)))
+  ]);
   const blacklist = await getActiveBlacklist(userId);
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
   const transactions = await listBuyerTransactions(userId);
@@ -270,20 +313,28 @@ export async function getBuyerSummary(userId: string) {
   const needsAction = transactions.filter((transaction) =>
     ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
   ).length;
+  const nationalId = profile?.nationalId ?? buyerUser?.nationalId ?? "";
+  const sessionHistory = recentSessions.map((sessionRow) =>
+    formatAppDateTime(sessionRow.updatedAt ?? sessionRow.createdAt)
+  );
 
   return {
-    name: profile?.fullName ?? "Pembeli Pegadaian",
+    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Pegadaian",
     unit: "Pembeli terverifikasi",
     accountId: `USR-${userId.slice(0, 8).toUpperCase()}`,
-    email: profile?.email ?? "-",
-    phone: profile?.phoneNumber ?? "-",
-    nationalId: profile?.nationalId ?? "",
-    nikMasked: profile?.nationalId
-      ? `${profile.nationalId.slice(0, 4)}********${profile.nationalId.slice(-4)}`
-      : "-",
+    email: profile?.email ?? buyerUser?.email ?? "-",
+    image: buyerUser?.image ?? null,
+    phone: profile?.phoneNumber ?? buyerUser?.phoneNumber ?? "-",
+    nationalId,
+    nikMasked: nationalId ? `${nationalId.slice(0, 4)}********${nationalId.slice(-4)}` : "-",
     address: "Belum dilengkapi",
-    memberSince: formatAppLongDate(profile?.createdAt),
+    memberSince: formatAppLongDate(profile?.createdAt ?? buyerUser?.createdAt),
     verificationStatus: profile?.status === "active" ? "Terverifikasi" : "Perlu verifikasi",
+    security: {
+      passwordUpdatedAt: formatAppLongDate(latestCredentialAccount?.updatedAt),
+      activeSessionCount: activeSessions.length,
+      sessionHistory
+    },
     blacklist: {
       active: Boolean(blacklist),
       violations: blacklist?.totalViolations ?? 0,
@@ -674,6 +725,7 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
       name: payload.name,
       phoneNumber: payload.phoneNumber,
       nationalId: payload.nationalId,
+      ...(payload.image !== undefined ? { image: payload.image } : {}),
       updatedAt: new Date()
     })
     .where(eq(users.id, userId));

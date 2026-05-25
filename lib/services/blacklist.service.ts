@@ -1,5 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 
+import { shouldSuspendLoginForBlacklist } from "@/lib/blacklist/restrictions";
 import { db } from "@/lib/db/client";
 import { blacklistActionLogs, blacklists, units, users } from "@/lib/db/schema";
 import { serializeBlacklistEntry } from "@/lib/superadmin/serializers";
@@ -51,6 +52,9 @@ export async function revokeBlacklist(userId: string, actorUserId: string, input
     throw new Error("Blacklist aktif untuk user ini tidak ditemukan.");
   }
 
+  const now = new Date();
+  const shouldReactivateUser = shouldSuspendLoginForBlacklist(activeBlacklist.totalViolations);
+
   await db.transaction(async (tx) => {
     await tx
       .update(blacklists)
@@ -58,9 +62,19 @@ export async function revokeBlacklist(userId: string, actorUserId: string, input
         isActive: false,
         revokedByUserId: actorUserId,
         revokeReason: payload.reason,
-        updatedAt: new Date()
+        updatedAt: now
       })
       .where(eq(blacklists.id, activeBlacklist.id));
+
+    if (shouldReactivateUser) {
+      await tx
+        .update(users)
+        .set({
+          isActive: true,
+          updatedAt: now
+        })
+        .where(eq(users.id, userId));
+    }
 
     await tx.insert(blacklistActionLogs).values({
       id: crypto.randomUUID(),

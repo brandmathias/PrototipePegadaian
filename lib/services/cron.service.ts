@@ -11,12 +11,18 @@ import {
   pelanggaranUser,
   pemasaran,
   riwayatStatusBarang,
+  sessions,
   transaksi,
   units,
   users
 } from "@/lib/db/schema";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
-import { getBlacklistBlockedUntil, getBlacklistDurationLabel } from "@/lib/blacklist/restrictions";
+import {
+  getBlacklistBlockedUntil,
+  getBlacklistDurationLabel,
+  getBlacklistRestrictionPolicy,
+  shouldSuspendLoginForBlacklist
+} from "@/lib/blacklist/restrictions";
 import { notifyBlacklistActivated, notifyPaymentDeadlineSoon, notifyVickreyWinner } from "@/lib/services/notification-events";
 import { formatAppDateTime } from "@/lib/timezone";
 import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
@@ -543,6 +549,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
 
       const totalViolations = (existingBlacklist?.totalViolations ?? 0) + 1;
       const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
+      const restriction = getBlacklistRestrictionPolicy(totalViolations);
+      const shouldSuspendLogin = shouldSuspendLoginForBlacklist(totalViolations);
       const blacklistId = existingBlacklist?.id ?? randomUUID();
 
       if (existingBlacklist) {
@@ -582,6 +590,18 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         blockedUntilLabel: formatAppDateTime(blockedUntil)
       };
 
+      if (shouldSuspendLogin) {
+        await tx
+          .update(users)
+          .set({
+            isActive: false,
+            updatedAt: now
+          })
+          .where(eq(users.id, row.transaction.userId));
+
+        await tx.delete(sessions).where(eq(sessions.userId, row.transaction.userId));
+      }
+
       await tx.insert(blacklistActionLogs).values({
         id: randomUUID(),
         blacklistId,
@@ -589,7 +609,9 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         action: "blokir_otomatis",
         performedByType: "system",
         performedByUserId: null,
-        note: `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil lelang Vickrey.`
+        note: shouldSuspendLogin
+          ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3 dan membutuhkan review manual.`
+          : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil lelang Vickrey.`
       });
     });
 

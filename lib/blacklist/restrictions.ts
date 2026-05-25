@@ -69,6 +69,10 @@ export function getBlacklistDurationDays(totalViolations: number) {
   return getBlacklistRestrictionPolicy(totalViolations).durationDays;
 }
 
+export function shouldSuspendLoginForBlacklist(totalViolations: number | null | undefined) {
+  return getBlacklistRestrictionPolicy(totalViolations).requiresManualReview;
+}
+
 export function getBlacklistDurationUnit(value = process.env.BLACKLIST_DURATION_UNIT): BlacklistDurationUnit {
   return value === "hours" || value === "jam" || value === "demo" ? "hours" : "days";
 }

@@ -32,6 +32,11 @@ const summary = {
   address: "Belum dilengkapi",
   memberSince: "4 Mei 2026",
   verificationStatus: "Terverifikasi",
+  security: {
+    passwordUpdatedAt: "13 Mei 2026",
+    activeSessionCount: 1,
+    sessionHistory: ["24 Mei 2026, 09.10 WIB"]
+  },
   blacklist: {
     active: false,
     until: "-",

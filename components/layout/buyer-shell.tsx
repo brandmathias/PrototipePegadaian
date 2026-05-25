@@ -19,6 +19,7 @@ type BuyerShellProps = {
   description: string;
   summary: {
     memberSince: string;
+    image?: string | null;
     blacklist: {
       active: boolean;
       until: string;
@@ -48,7 +49,7 @@ const buyerNav = [
 
 export function BuyerShell({ buyer, children, title, description, summary }: BuyerShellProps) {
   const pathname = usePathname();
-  const showIntro = pathname !== "/dashboard";
+  const showIntro = pathname !== "/dashboard" && pathname !== "/profil";
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
@@ -97,7 +98,7 @@ export function BuyerShell({ buyer, children, title, description, summary }: Buy
               wrapperClassName="hidden lg:block"
             />
             <AlertCenter className="shrink-0" scope="buyer" />
-            <BuyerProfileMenu name={buyer.name} profileHref="/profil" />
+            <BuyerProfileMenu image={summary.image} name={buyer.name} profileHref="/profil" />
           </div>
         </div>
       </header>

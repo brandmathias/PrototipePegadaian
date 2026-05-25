@@ -17,6 +17,7 @@ type PublicShellProps = {
   children: ReactNode;
   viewer?: {
     name: string;
+    image?: string | null;
     role: AuthRole;
     homeHref: string;
   } | null;
@@ -101,14 +102,13 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
             <CatalogSearchInput
               inputClassName="hidden w-72 lg:block xl:w-80"
               placeholder="Cari lot atau unit..."
-              submitLabel="Cari"
               wrapperClassName="hidden lg:block"
             />
             {viewer ? (
               <>
                 {isBuyer ? <AlertCenter className="shrink-0" scope="buyer" /> : null}
                 {isBuyer ? (
-                  <BuyerProfileMenu name={viewer.name} profileHref="/profil" />
+                  <BuyerProfileMenu image={viewer.image} name={viewer.name} profileHref="/profil" />
                 ) : (
                   <>
                     <Link

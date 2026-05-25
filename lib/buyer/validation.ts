@@ -31,6 +31,7 @@ export type BuyerProfileUpdatePayload = {
   name: string;
   phoneNumber: string;
   nationalId: string;
+  image?: string | null;
 };
 
 function readRecord(input: unknown) {
@@ -113,14 +114,27 @@ export function validateBuyerPaymentProofPayload(input: unknown): BuyerPaymentPr
 export function validateBuyerProfileUpdatePayload(input: unknown): BuyerProfileUpdatePayload {
   const payload = readRecord(input);
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const rawImage = "image" in payload ? payload.image : undefined;
+  const image = typeof rawImage === "string" ? rawImage.trim() : rawImage === null ? null : undefined;
 
   if (name.length < 3) {
     throw new Error("Nama lengkap minimal 3 karakter.");
   }
 
+  if (typeof image === "string") {
+    if (image.length > 1_500_000) {
+      throw new Error("Ukuran foto profil terlalu besar. Gunakan gambar maksimal sekitar 1 MB.");
+    }
+
+    if (!/^data:image\/(png|jpe?g|webp);base64,/i.test(image)) {
+      throw new Error("Format foto profil harus PNG, JPG, atau WebP.");
+    }
+  }
+
   return {
     name,
     phoneNumber: normalizeBuyerPhoneNumber(String(payload.phoneNumber ?? "")),
-    nationalId: normalizeBuyerNationalId(String(payload.nationalId ?? ""))
+    nationalId: normalizeBuyerNationalId(String(payload.nationalId ?? "")),
+    ...(image !== undefined ? { image } : {})
   };
 }

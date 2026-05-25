@@ -23,6 +23,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
       }}
       description="Pantau pengajuan fixed price, hasil lelang Vickrey, status pembayaran, dan nota transaksi dalam satu area akun."
       summary={{
+        image: summary.image,
         memberSince: summary.memberSince,
         blacklist: {
           active: summary.blacklist.active,

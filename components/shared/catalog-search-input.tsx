@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -45,22 +45,25 @@ export function CatalogSearchInput({
 
   return (
     <form className={cn("relative", wrapperClassName)} onSubmit={handleSubmit}>
-      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2">
+        <span className="grid size-10 place-items-center rounded-2xl border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,251,246,0.8))] text-primary shadow-[0_16px_32px_-24px_rgba(8,69,50,0.65)] ring-1 ring-primary/5">
+          <Search className="size-4" />
+        </span>
+      </div>
       <Input
         aria-label="Cari katalog buyer"
         autoComplete="off"
-        className={cn("border-border/70 bg-white pl-10 pr-28", inputClassName)}
+        className={cn(
+          "h-14 rounded-[1.75rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(249,252,249,0.88))] pl-14 pr-5 text-[0.96rem] shadow-[0_24px_64px_-48px_rgba(8,69,50,0.65)] ring-1 ring-primary/5 placeholder:text-muted-foreground/80 focus-visible:border-primary/15 focus-visible:ring-primary/15",
+          inputClassName
+        )}
         name="catalogSearch"
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
         type="search"
         value={value}
       />
-      <button
-        className="absolute right-1.5 top-1/2 inline-flex h-8 -translate-y-1/2 items-center gap-1 rounded-full bg-primary px-3 text-xs font-semibold text-white transition hover:bg-primary/90 active:scale-[0.98]"
-        type="submit"
-      >
-        <ArrowUpRight className="size-3.5" />
+      <button aria-label={submitLabel} className="sr-only" type="submit">
         {submitLabel}
       </button>
     </form>

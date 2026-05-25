@@ -4,6 +4,7 @@ export type AppSessionUser = {
   id: string;
   name: string;
   email: string;
+  image?: string | null;
   role: AuthRole;
   phoneNumber?: string | null;
   unitId?: string | null;

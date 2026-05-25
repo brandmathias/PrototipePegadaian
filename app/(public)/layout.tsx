@@ -11,6 +11,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
     session?.user && role
       ? {
           name: session.user.name,
+          image: "image" in session.user && typeof session.user.image === "string" ? session.user.image : null,
           role,
           homeHref: getRoleHomePath(role)
         }

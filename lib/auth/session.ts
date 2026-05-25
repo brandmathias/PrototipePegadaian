@@ -37,6 +37,7 @@ function toSessionUser(session: NonNullable<Awaited<ReturnType<typeof getServerS
     id: session.user.id,
     name: session.user.name,
     email: session.user.email,
+    image: "image" in session.user && typeof session.user.image === "string" ? session.user.image : null,
     role,
     phoneNumber:
       "phoneNumber" in session.user && typeof session.user.phoneNumber === "string"

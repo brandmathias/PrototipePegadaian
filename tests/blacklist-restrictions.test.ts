@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   getBlacklistBlockedUntil,
   getBlacklistDurationLabel,
-  getBlacklistRestrictionPolicy
+  getBlacklistRestrictionPolicy,
+  shouldSuspendLoginForBlacklist
 } from "@/lib/blacklist/restrictions";
 
 describe("blacklist restriction policy", () => {
@@ -49,5 +50,13 @@ describe("blacklist restriction policy", () => {
     expect(getBlacklistBlockedUntil(base, 1, "hours").toISOString()).toBe("2026-05-21T07:00:00.000Z");
     expect(getBlacklistBlockedUntil(base, 2, "hours").toISOString()).toBe("2026-05-22T06:00:00.000Z");
     expect(getBlacklistDurationLabel(3, "hours")).toBe("365 jam");
+  });
+
+  it("suspends login only when the blacklist reaches level 3 manual review", () => {
+    expect(shouldSuspendLoginForBlacklist(0)).toBe(false);
+    expect(shouldSuspendLoginForBlacklist(1)).toBe(false);
+    expect(shouldSuspendLoginForBlacklist(2)).toBe(false);
+    expect(shouldSuspendLoginForBlacklist(3)).toBe(true);
+    expect(shouldSuspendLoginForBlacklist(9)).toBe(true);
   });
 });
