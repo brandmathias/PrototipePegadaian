@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -8,13 +8,13 @@ import {
   Clock3,
   FileCheck2,
   FileWarning,
+  FolderOpen,
   Gavel,
   Landmark,
   PackagePlus,
   PencilLine,
   Printer,
   RotateCcw,
-  Search,
   ShieldAlert,
   ShieldEllipsis,
   ShoppingBag,
@@ -33,11 +33,13 @@ import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventor
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { AdminInventoryWorkspace } from "@/components/admin/admin-inventory-workspace";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { currency } from "@/lib/formatters/currency";
+import { cn } from "@/lib/utils";
 
 type AdminInventoryItem = Record<string, any>;
 type AdminBarangMedia = {
@@ -251,7 +253,7 @@ function WorkflowActionCard({
   title: string;
   description: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   variant?: "default" | "secondary";
 }) {
   return (
@@ -272,147 +274,136 @@ function WorkflowActionCard({
   );
 }
 
-export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
-  const statusGroups = [
-    {
-      label: "JAMINAN",
-      items: items.filter((item) => item.status === "JAMINAN"),
-      description: "Barang jaminan unit yang siap dilengkapi sebelum ditayangkan."
-    },
-    {
-      label: "DIPASARKAN",
-      items: items.filter((item) => item.status === "DIPASARKAN"),
-      description: "Sudah tayang di katalog dan sedang berjalan di pasar."
-    },
-    {
-      label: "GAGAL",
-      items: items.filter((item) => item.status === "GAGAL"),
-      description: "Perlu evaluasi ulang sebelum dipasarkan kembali."
+function InventoryMetricCard({
+  label,
+  value,
+  description,
+  icon: Icon,
+  tone = "default"
+}: {
+  label: string;
+  value: string | number;
+  description: string;
+  icon: ComponentType<{ className?: string }>;
+  tone?: "default" | "success" | "warning";
+}) {
+  return (
+    <div className="group rounded-[1.7rem] border border-black/8 bg-white p-1.5 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.45)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20">
+      <div className="flex h-full items-center gap-4 rounded-[calc(1.7rem-0.375rem)] border border-black/[0.035] bg-[linear-gradient(145deg,#ffffff,#fbfaf5)] p-4">
+        <span
+          className={cn(
+            "grid size-12 shrink-0 place-items-center rounded-[1.15rem] border",
+            tone === "success"
+              ? "border-emerald-200 bg-emerald-50 text-[#0a6a49]"
+              : tone === "warning"
+                ? "border-amber-200 bg-amber-50 text-amber-800"
+                : "border-black/8 bg-[#f2f6f2] text-[#0a6a49]"
+          )}
+        >
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/45">{label}</p>
+          <p className="mt-1 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c]">{value}</p>
+          <p className="mt-1 text-sm leading-5 text-black/56">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AdminInventoryPage({
+  items,
+  history
+}: {
+  items: AdminInventoryItem[];
+  history: Array<{
+    id: string;
+    barangId: string;
+    barangCode: string;
+    barangName: string;
+    ownerName: string;
+    customerNumber: string;
+    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+    actionLabel: string;
+    actionTone: "default" | "success" | "warning" | "danger";
+    note: string;
+    actorName: string;
+    createdAt: string;
+    createdAtLabel: string;
+  }>;
+}) {
+  const readyItems = items.filter((item) => item.status === "JAMINAN");
+  const dueSoonItems = items.filter((item) => {
+    const dueDate = item?.dueDate ? new Date(`${item.dueDate}T00:00:00.000Z`) : null;
+    if (!dueDate || Number.isNaN(dueDate.getTime())) {
+      return false;
     }
-  ];
+    const today = new Date();
+    const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    const targetUtc = Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate());
+    const days = Math.ceil((targetUtc - todayUtc) / 86_400_000);
+    return days !== null && days >= 0 && days <= 7 && ["JAMINAN", "GADAI"].includes(item.status);
+  });
 
   return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Barang"
-        title="Kelola Barang Unit"
-        description="Semua alur barang unit dikelola di sini, mulai dari pencatatan awal, tindak lanjut jatuh tempo, perpindahan ke aset unit, penayangan ke katalog, hingga evaluasi barang yang belum laku."
-        actions={
-          <>
-            <Link href="/admin/barang/tambah">
-              <Button className="h-12 rounded-2xl px-4 text-sm sm:text-base">
-                <PackagePlus className="size-4" />
-                Input Barang Gadai
-              </Button>
-            </Link>
-            <Link href="/admin/pemasaran">
-              <Button className="h-12 rounded-2xl px-4 text-sm sm:text-base" variant="secondary">
-                <Gavel className="size-4" />
-                Pemasaran
-              </Button>
-            </Link>
-          </>
-        }
-      />
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {statusGroups.map((group) => (
-          <Card className="border border-black/8 bg-white shadow-[0_14px_34px_rgba(0,0,0,0.03)]" key={group.label}>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/48">
-                  {group.label}
-                </p>
-                <AdminStatusBadge status={group.label as any} />
-              </div>
-              <p className="mt-5 font-headline text-[2.6rem] font-black leading-none text-[#0a6a49]">
-                {group.items.length}
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-start gap-4 md:items-center">
+            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/6">
+              <FolderOpen className="size-7" />
+            </span>
+            <div className="min-w-0">
+              <p className="page-heading-eyebrow">Admin Unit / Barang</p>
+              <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
+                Daftar Barang Unit
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
+                Kelola barang jaminan, baca tahap operasional terbaru, dan buka detail saat admin perlu mengambil keputusan berikutnya.
               </p>
-              <p className="mt-3 text-sm leading-6 text-black/60">{group.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
-        <PanelTitle
-          action={
-            <div className="flex flex-wrap gap-2">
-              {["SEMUA", "JAMINAN", "DIPASARKAN", "TERJUAL", "GAGAL", "DITEBUS"].map((filter) => (
-                <button
-                  className="rounded-full border border-black/15 px-3 py-2 text-xs font-semibold text-black/65 hover:border-[#0a6a49] hover:text-[#0a6a49] sm:text-sm"
-                  key={filter}
-                  type="button"
-                >
-                  {filter}
-                </button>
-              ))}
             </div>
-          }
-          description="Buka detail barang untuk melihat langkah berikutnya yang tersedia pada setiap status."
-          title="Daftar Barang Unit"
-        />
-        <div className="border-b border-black/10 px-6 py-4">
-          <div className="relative max-w-xl">
-            <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-black/40" />
-            <Input
-              className="h-12 rounded-2xl bg-[#f3f3f3] pl-12 text-sm sm:text-base"
-              placeholder="Cari kode, nama barang, kategori, atau nomor nasabah..."
-            />
+          </div>
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-black/6 backdrop-blur">
+              <BadgeCheck className="size-4" />
+              Workspace operasional barang
+            </div>
+            <Link href="/admin/barang/tambah">
+              <Button className="h-12 w-full rounded-2xl px-5 text-sm shadow-[0_18px_32px_-24px_rgba(10,106,73,0.55)] sm:w-auto sm:text-base">
+                <PackagePlus className="size-4" />
+                Tambah Barang
+              </Button>
+            </Link>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[76rem] text-left lg:min-w-[86rem]">
-            <thead className="bg-[#f3f3f3] text-xs uppercase tracking-[0.12em] text-black/50 sm:text-sm">
-              <tr>
-                <th className="px-6 py-4">Kode</th>
-                <th className="px-6 py-4">Barang</th>
-                <th className="px-6 py-4">Nilai Taksiran</th>
-                <th className="px-6 py-4">Nilai Gadai</th>
-                <th className="px-6 py-4">Jatuh Tempo</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Mode Pemasaran</th>
-                <th className="px-6 py-4">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr className="border-t border-black/10 text-sm sm:text-base" key={item.id}>
-                  <td className="px-6 py-4 font-semibold text-[#0a6a49]">{item.code}</td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-semibold text-black/85">{item.name}</p>
-                      <p className="mt-1 text-sm text-black/55">
-                        {item.category} - {item.ownerName}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-black/80">
-                    {currency.format(item.appraisalValue)}
-                  </td>
-                  <td className="px-6 py-4 text-black/65">{currency.format(item.loanValue)}</td>
-                  <td className="px-6 py-4 text-black/65">{item.dueDate}</td>
-                  <td className="px-6 py-4">
-                    <AdminStatusBadge status={item.status} />
-                  </td>
-                  <td className="px-6 py-4 text-black/65">
-                    {item.marketingMode ? item.marketingMode : "-"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-xl border border-black/15 px-3 py-2 text-xs font-semibold text-[#0a6a49] sm:text-sm"
-                      href={`/admin/barang/${item.id}`}
-                    >
-                      Detail
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <InventoryMetricCard
+          description="Seluruh barang yang tercatat pada unit aktif."
+          icon={PackagePlus}
+          label="Total Barang"
+          value={items.length}
+        />
+        <InventoryMetricCard
+          description="Barang jaminan yang sudah siap disiapkan ke pemasaran."
+          icon={BadgeCheck}
+          label="Siap Dipasarkan"
+          tone="success"
+          value={readyItems.length}
+        />
+        <InventoryMetricCard
+          description="Barang dengan batas jatuh tempo dalam tujuh hari."
+          icon={CalendarClock}
+          label="Jatuh Tempo Dekat"
+          tone="warning"
+          value={dueSoonItems.length}
+        />
+      </section>
+
+      <AdminInventoryWorkspace history={history} items={items} />
     </div>
   );
 }

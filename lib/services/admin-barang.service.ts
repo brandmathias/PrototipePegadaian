@@ -9,7 +9,9 @@ import {
   validateTebusPayload
 } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
+import { users } from "@/lib/db/schema/auth";
 import { barang, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang } from "@/lib/db/schema";
+import { formatAppDateTime } from "@/lib/timezone";
 
 function toUtcDate(value: string) {
   return new Date(`${value}T00:00:00.000Z`);
@@ -50,6 +52,50 @@ async function recordStatusChange(input: {
   });
 }
 
+export type AdminBarangHistoryEntry = {
+  id: string;
+  barangId: string;
+  barangCode: string;
+  barangName: string;
+  ownerName: string;
+  customerNumber: string;
+  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+  actionLabel: string;
+  actionTone: "default" | "success" | "warning" | "danger";
+  note: string;
+  actorName: string;
+  createdAt: string;
+  createdAtLabel: string;
+};
+
+function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
+  if (!oldStatus && newStatus === "jaminan") {
+    return {
+      actionKey: "input_baru" as const,
+      actionLabel: "Input Baru",
+      actionTone: "default" as const
+    };
+  }
+
+  if (newStatus === "dipasarkan") {
+    return {
+      actionKey: "dipasarkan" as const,
+      actionLabel: "Dipasarkan",
+      actionTone: "success" as const
+    };
+  }
+
+  if (newStatus === "ditebus") {
+    return {
+      actionKey: "ditebus" as const,
+      actionLabel: "Ditebus",
+      actionTone: "warning" as const
+    };
+  }
+
+  return null;
+}
+
 export async function listAdminBarang(unitId: string) {
   const rows = await db.select().from(barang).where(eq(barang.unitId, unitId)).orderBy(desc(barang.createdAt));
 
@@ -80,6 +126,92 @@ export async function listAdminBarang(unitId: string) {
       marketingMode: marketingMap.get(row.id) ?? null
     })
   );
+}
+
+export async function listAdminBarangHistory(unitId: string, limit = 24): Promise<AdminBarangHistoryEntry[]> {
+  const [statusRows, extensionRows] = await Promise.all([
+    db
+      .select({
+        id: riwayatStatusBarang.id,
+        barangId: barang.id,
+        barangCode: barang.code,
+        barangName: barang.name,
+        ownerName: barang.ownerName,
+        customerNumber: barang.customerNumber,
+        oldStatus: riwayatStatusBarang.oldStatus,
+        newStatus: riwayatStatusBarang.newStatus,
+        note: riwayatStatusBarang.note,
+        createdAt: riwayatStatusBarang.createdAt,
+        actorName: users.name
+      })
+      .from(riwayatStatusBarang)
+      .innerJoin(barang, eq(barang.id, riwayatStatusBarang.barangId))
+      .leftJoin(users, eq(users.id, riwayatStatusBarang.changedByUserId))
+      .where(eq(barang.unitId, unitId))
+      .orderBy(desc(riwayatStatusBarang.createdAt)),
+    db
+      .select({
+        id: riwayatPerpanjangan.id,
+        barangId: barang.id,
+        barangCode: barang.code,
+        barangName: barang.name,
+        ownerName: barang.ownerName,
+        customerNumber: barang.customerNumber,
+        note: riwayatPerpanjangan.note,
+        createdAt: riwayatPerpanjangan.createdAt,
+        actorName: users.name
+      })
+      .from(riwayatPerpanjangan)
+      .innerJoin(barang, eq(barang.id, riwayatPerpanjangan.barangId))
+      .leftJoin(users, eq(users.id, riwayatPerpanjangan.extendedByUserId))
+      .where(eq(barang.unitId, unitId))
+      .orderBy(desc(riwayatPerpanjangan.createdAt))
+  ]);
+
+  const normalizedStatusRows: AdminBarangHistoryEntry[] = [];
+
+  for (const row of statusRows) {
+    const action = mapStatusHistoryAction(row.oldStatus, row.newStatus);
+    if (!action) {
+      continue;
+    }
+
+    normalizedStatusRows.push({
+      id: row.id,
+      barangId: row.barangId,
+      barangCode: row.barangCode,
+      barangName: row.barangName,
+      ownerName: row.ownerName,
+      customerNumber: row.customerNumber,
+      actionKey: action.actionKey,
+      actionLabel: action.actionLabel,
+      actionTone: action.actionTone,
+      note: row.note,
+      actorName: row.actorName ?? "Admin Unit",
+      createdAt: row.createdAt.toISOString(),
+      createdAtLabel: formatAppDateTime(row.createdAt)
+    });
+  }
+
+  const normalizedExtensionRows = extensionRows.map((row) => ({
+    id: row.id,
+    barangId: row.barangId,
+    barangCode: row.barangCode,
+    barangName: row.barangName,
+    ownerName: row.ownerName,
+    customerNumber: row.customerNumber,
+    actionKey: "perpanjangan" as const,
+    actionLabel: "Diperpanjang",
+    actionTone: "warning" as const,
+    note: row.note || "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran.",
+    actorName: row.actorName ?? "Admin Unit",
+    createdAt: row.createdAt.toISOString(),
+    createdAtLabel: formatAppDateTime(row.createdAt)
+  }));
+
+  return [...normalizedStatusRows, ...normalizedExtensionRows]
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+    .slice(0, limit);
 }
 
 export async function getAdminBarangById(unitId: string, barangId: string) {

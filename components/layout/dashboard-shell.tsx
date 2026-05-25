@@ -45,13 +45,24 @@ export type NavItem = {
   href: string;
   label: string;
   icon?: NavIconName;
+  badge?: number | string;
+  badgeTone?: "default" | "warning" | "danger";
   children?: NavItem[];
+};
+
+type SidebarMetric = {
+  label: string;
+  value: string | number;
+  tone?: "default" | "warning" | "danger";
 };
 
 type DashboardShellProps = {
   title: string;
   subtitle: string;
   nav: NavItem[];
+  sidebarMetrics?: SidebarMetric[];
+  sidebarUpdatedAt?: string;
+  showHeaderSearch?: boolean;
   currentUser?: {
     name: string;
     role: AuthRole;
@@ -64,6 +75,9 @@ export function DashboardShell({
   title,
   subtitle,
   nav,
+  sidebarMetrics,
+  sidebarUpdatedAt,
+  showHeaderSearch = true,
   currentUser,
   profileHref,
   children
@@ -115,6 +129,37 @@ export function DashboardShell({
       : pathname === item.href || pathname.startsWith(`${item.href}/`);
   };
 
+  const renderBadge = (item: Pick<NavItem, "badge" | "badgeTone">) => {
+    if (item.badge === undefined || item.badge === null || item.badge === "" || item.badge === 0) {
+      return null;
+    }
+
+    return (
+      <span
+        className={cn(
+          "ml-auto inline-flex min-w-8 shrink-0 items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-[0.67rem] font-black tabular-nums tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_12px_24px_-20px_rgba(0,0,0,0.5)] transition duration-300 group-hover:scale-[1.03]",
+          item.badgeTone === "danger"
+            ? "border-rose-200/28 bg-[linear-gradient(180deg,rgba(251,113,133,0.34),rgba(251,113,133,0.18))] text-rose-50"
+            : item.badgeTone === "warning"
+              ? "border-amber-200/28 bg-[linear-gradient(180deg,rgba(251,191,36,0.3),rgba(245,158,11,0.16))] text-amber-50"
+              : "border-white/14 bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.08))] text-white"
+        )}
+      >
+        <span
+          className={cn(
+            "size-1.5 rounded-full",
+            item.badgeTone === "danger"
+              ? "bg-rose-200"
+              : item.badgeTone === "warning"
+                ? "bg-amber-200"
+                : "bg-emerald-200"
+          )}
+        />
+        {item.badge}
+      </span>
+    );
+  };
+
   const renderNavItem = (item: NavItem) => {
     const isActive = isNavItemActive(item);
 
@@ -125,9 +170,9 @@ export function DashboardShell({
         <div className="space-y-2" key={item.href}>
           <div
             className={cn(
-              "group flex w-full items-center gap-2 rounded-[1.15rem] px-2 py-2 text-left text-[0.95rem] font-semibold text-white/70 transition duration-200 hover:bg-white/8 hover:text-white lg:text-base",
+              "group flex w-full items-center gap-2 rounded-[1.25rem] px-2 py-2 text-left text-[0.95rem] font-semibold text-white/70 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white lg:text-base",
               isActive &&
-                "bg-[#1d946c] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_24px_rgba(0,0,0,0.1)]"
+                "bg-[linear-gradient(135deg,rgba(29,148,108,0.92),rgba(11,101,72,0.94))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_32px_-24px_rgba(0,0,0,0.58)]"
             )}
           >
             <Link
@@ -137,13 +182,14 @@ export function DashboardShell({
             >
               <span
                 className={cn(
-                  "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
-                  isActive && "border-white/15 bg-white/[0.12] text-white"
+                  "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
+                  isActive && "border-white/16 bg-white/[0.14] text-white"
                 )}
               >
                 {renderNavIcon(item.icon)}
               </span>
               <span className="min-w-0 truncate">{item.label}</span>
+              {renderBadge(item)}
             </Link>
             <button
               aria-label={isGroupOpen ? `Tutup submenu ${item.label}` : `Buka submenu ${item.label}`}
@@ -178,13 +224,14 @@ export function DashboardShell({
                 >
                   <span
                     className={cn(
-                      "grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 text-white/68 transition group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
+                      "grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.05] text-white/68 transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
                       isNavItemActive(child) && "border-white/15 bg-white/[0.12] text-white"
                     )}
                   >
                     {renderNavIcon(child.icon)}
                   </span>
                   <span className="min-w-0 truncate">{child.label}</span>
+                  {renderBadge(child)}
                 </Link>
               ))}
             </div>
@@ -196,9 +243,9 @@ export function DashboardShell({
     return (
       <Link
         className={cn(
-          "group inline-flex items-center gap-3 rounded-[1.15rem] px-4 py-2.5 text-[0.95rem] font-semibold text-white/70 transition duration-200 hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-base",
+          "group inline-flex items-center gap-3 rounded-[1.2rem] px-4 py-3 text-[0.95rem] font-semibold text-white/70 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-base",
           isActive &&
-            "bg-[#1d946c] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_12px_24px_rgba(0,0,0,0.1)]"
+            "bg-[linear-gradient(135deg,rgba(29,148,108,0.92),rgba(11,101,72,0.94))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_18px_32px_-24px_rgba(0,0,0,0.58)]"
         )}
         href={item.href}
         key={item.href}
@@ -206,13 +253,14 @@ export function DashboardShell({
       >
         <span
           className={cn(
-            "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition group-hover:border-white/15 group-hover:bg-white/10 group-hover:text-white",
-            isActive && "border-white/15 bg-white/[0.12] text-white"
+            "grid size-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-white/76 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition duration-300 group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/[0.12] group-hover:text-white",
+            isActive && "border-white/16 bg-white/[0.14] text-white"
           )}
         >
           {renderNavIcon(item.icon)}
         </span>
         <span className="min-w-0 truncate">{item.label}</span>
+        {renderBadge(item)}
       </Link>
     );
   };
@@ -231,12 +279,12 @@ export function DashboardShell({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col overflow-hidden bg-[linear-gradient(180deg,#07563f_0%,#064a35_100%)] px-4 py-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 print:hidden lg:px-4 lg:py-4",
+          "fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-4 py-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 print:hidden lg:px-4 lg:py-4",
           isMenuOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
         )}
       >
-        <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.045] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+        <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
           <div className="flex items-center gap-3">
             <div className="grid size-11 shrink-0 place-items-center rounded-[1.15rem] bg-white text-[#07563f] shadow-sm">
               <ShieldCheck aria-hidden="true" className="size-6" />
@@ -253,9 +301,15 @@ export function DashboardShell({
             <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-white/46">
               Unit Aktif
             </p>
-            <p className="mt-1 truncate text-[1.15rem] font-semibold text-white/92">
-              {title}
-            </p>
+            <div className="mt-1 flex items-center justify-between gap-3">
+              <p className="truncate text-[1.15rem] font-semibold text-white/92">
+                {title}
+              </p>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-50">
+                <span className="size-1.5 rounded-full bg-emerald-300" />
+                Aktif
+              </span>
+            </div>
           </div>
         </div>
         <div className="mt-5 flex min-h-0 flex-1 flex-col">
@@ -269,6 +323,42 @@ export function DashboardShell({
             {navItems}
           </nav>
         </div>
+        {sidebarMetrics?.length ? (
+          <div className="mt-4 rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/46">
+              Ringkasan Unit
+            </p>
+            <div className="mt-3 space-y-2.5">
+              {sidebarMetrics.map((metric) => (
+                <div className="flex items-center justify-between gap-3 text-sm" key={metric.label}>
+                  <span
+                    className={cn(
+                      "truncate text-white/70",
+                      metric.tone === "warning" && "text-amber-100",
+                      metric.tone === "danger" && "text-rose-100"
+                    )}
+                  >
+                    {metric.label}
+                  </span>
+                  <span
+                    className={cn(
+                      "font-black tabular-nums text-white",
+                      metric.tone === "warning" && "text-amber-200",
+                      metric.tone === "danger" && "text-rose-200"
+                    )}
+                  >
+                    {metric.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {sidebarUpdatedAt ? (
+              <p className="mt-4 border-t border-white/10 pt-3 text-[0.72rem] leading-5 text-white/42">
+                Data per {sidebarUpdatedAt}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
           <button className="inline-flex w-full items-center gap-3 rounded-[1.15rem] px-4 py-3 text-left text-[0.95rem] font-medium text-white/78 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-base">
             <span className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/72">
@@ -310,7 +400,8 @@ export function DashboardShell({
                 </div>
               </div>
               <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center xl:w-auto">
-                <div className="relative min-w-0 flex-1 xl:w-[32rem]">
+                {showHeaderSearch ? (
+                  <div className="relative min-w-0 flex-1 xl:w-[32rem]">
                   <label className="sr-only" htmlFor="admin-search">
                     Cari transaksi atau barang
                   </label>
@@ -323,7 +414,8 @@ export function DashboardShell({
                     placeholder="Cari transaksi atau barang…"
                     type="search"
                   />
-                </div>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-end gap-2">
                   <AlertCenter
                     scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"}
