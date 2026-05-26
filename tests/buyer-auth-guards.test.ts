@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getAuthenticatedLoginRedirectPath,
   getRoleHomePath,
   getSafeAdminNextPath,
   getSafeBuyerNextPath,
@@ -36,5 +37,17 @@ describe("buyer auth guards", () => {
       "/superadmin/unit/unit-alpha-central"
     );
     expect(getSafeSuperAdminNextPath("/admin")).toBe(getRoleHomePath("super_admin"));
+  });
+
+  it("redirects authenticated users away from the login page", () => {
+    expect(getAuthenticatedLoginRedirectPath({ role: "buyer", isActive: true }, "/katalog/lot-1/bid")).toBe(
+      "/katalog/lot-1/bid"
+    );
+    expect(getAuthenticatedLoginRedirectPath({ role: "buyer", isActive: true })).toBe("/dashboard");
+    expect(getAuthenticatedLoginRedirectPath({ role: "admin_unit", isActive: true }, "/katalog/lot-1/bid")).toBe(
+      "/admin"
+    );
+    expect(getAuthenticatedLoginRedirectPath({ role: "buyer", isActive: false }, "/dashboard")).toBeNull();
+    expect(getAuthenticatedLoginRedirectPath(null, "/dashboard")).toBeNull();
   });
 });

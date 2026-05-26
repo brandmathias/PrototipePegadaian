@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
+import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDate } from "@/lib/timezone";
 
@@ -59,6 +60,11 @@ export function LotDetailPage({
   const isVickrey = lot.mode === "vickrey";
   const showAuctionCountdown = isVickrey && (lot.countdown || lot.endsAt);
   const serverNow = new Date().toISOString();
+  const blacklistPolicy = getBlacklistRestrictionPolicy(buyerStatus?.blacklist.totalViolations ?? 0);
+  const hasActiveRestriction = Boolean(buyerStatus?.blacklist.active);
+  const isActionBlocked =
+    hasActiveRestriction &&
+    ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
 
   return (
     <div className="container space-y-10 py-10 md:space-y-12 md:py-12">
@@ -188,14 +194,28 @@ export function LotDetailPage({
 
               <div className="flex flex-wrap gap-3">
                 {isVickrey ? (
-                  <Link href={bidState ? "/riwayat-bid" : `/katalog/${lot.id}/bid`}>
-                    <Button className="min-w-[12rem]">
-                      {bidState ? "Pantau Riwayat Bid" : "Ikut Lelang Sekarang"}
+                  bidState ? (
+                    <Link href="/riwayat-bid">
+                      <Button className="min-w-[12rem]">Pantau Riwayat Bid</Button>
+                    </Link>
+                  ) : isActionBlocked ? (
+                    <Button className="min-w-[12rem]" disabled>
+                      Lelang Sedang Dibatasi
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href={`/katalog/${lot.id}/bid`}>
+                      <Button className="min-w-[12rem]">Ikut Lelang Sekarang</Button>
+                    </Link>
+                  )
+                ) : isActionBlocked ? (
+                  <Button className="min-w-[12rem]" disabled>
+                    Pembelian Sedang Dibatasi
+                  </Button>
                 ) : (
                   <Link href={`/katalog/${lot.id}/beli`}>
-                    <Button className="min-w-[12rem]">Beli Sekarang</Button>
+                    <Button className="min-w-[12rem]">
+                      Beli Sekarang
+                    </Button>
                   </Link>
                 )}
                 <Link href="/transaksi">

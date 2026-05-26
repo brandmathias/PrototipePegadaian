@@ -69,6 +69,29 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["level 1", 1],
+    ["level 2", 2]
+  ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations) => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            totalViolations,
+            until: new Date("2026-05-31T00:00:00.000Z")
+          }
+        }}
+        lot={vickreyLot}
+      />
+    );
+
+    expect(screen.getByText(/anda tidak dapat mengirim bid baru/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
+  });
+
   it("locks the bid form when buyer already submitted a sealed bid", () => {
     render(<BidPage bidState={winningBid} buyerStatus={null} lot={vickreyLot} />);
 

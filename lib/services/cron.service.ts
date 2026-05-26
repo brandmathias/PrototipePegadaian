@@ -76,6 +76,11 @@ type PaymentDeadlineSummary = {
   notified: number;
 };
 
+type BlacklistExpirySummary = {
+  processed: number;
+  expired: number;
+};
+
 const UNPAID_VICKREY_STATUSES = [
   "menunggu_pembayaran",
   "bukti_diunggah",
@@ -624,16 +629,66 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
   return summary;
 }
 
+export async function processExpiredBlacklistRestrictions(now = new Date()): Promise<BlacklistExpirySummary> {
+  const expiredRows = await db
+    .select({
+      id: blacklists.id,
+      userId: blacklists.userId,
+      totalViolations: blacklists.totalViolations
+    })
+    .from(blacklists)
+    .where(
+      and(
+        eq(blacklists.isActive, true),
+        isNotNull(blacklists.blockedUntil),
+        lte(blacklists.blockedUntil, now)
+      )
+    );
+  const autoExpiredRows = expiredRows.filter(
+    (row) => !getBlacklistRestrictionPolicy(row.totalViolations).requiresManualReview
+  );
+
+  for (const row of autoExpiredRows) {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(blacklists)
+        .set({
+          isActive: false,
+          revokeReason: "Masa pembatasan berakhir sesuai durasi level pelanggaran.",
+          updatedAt: now
+        })
+        .where(eq(blacklists.id, row.id));
+
+      await tx.insert(blacklistActionLogs).values({
+        id: randomUUID(),
+        blacklistId: row.id,
+        targetUserId: row.userId,
+        action: "selesai_otomatis",
+        performedByType: "system",
+        performedByUserId: null,
+        note: "Masa pembatasan berakhir otomatis. Riwayat blacklist tetap tersimpan."
+      });
+    });
+  }
+
+  return {
+    processed: expiredRows.length,
+    expired: autoExpiredRows.length
+  };
+}
+
 export async function runAuctionSettlementCron(now = new Date()) {
-  const [expiredAuctions, paymentDeadlineWarnings, overduePayments] = await Promise.all([
+  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists] = await Promise.all([
     processExpiredVickreyAuctions(now),
     processPaymentDeadlineNotifications(now),
-    processOverdueVickreyPayments(now)
+    processOverdueVickreyPayments(now),
+    processExpiredBlacklistRestrictions(now)
   ]);
 
   return {
     expiredAuctions,
     paymentDeadlineWarnings,
-    overduePayments
+    overduePayments,
+    expiredBlacklists
   };
 }

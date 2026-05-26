@@ -20,13 +20,18 @@ import {
   ShoppingBag,
   ReceiptText,
   UploadCloud,
-  Wallet
+  Wallet,
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { AdminPageHero } from "@/components/admin/admin-page-hero";
+import { AdminBlacklistDetailWorkspace } from "@/components/admin/admin-blacklist-detail-workspace";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
-import { AdminProfileWorkspace, type AdminProfileData } from "@/components/admin/admin-profile-workspace";
+import {
+  AdminProfileWorkspace,
+  type AdminProfileData,
+} from "@/components/admin/admin-profile-workspace";
 import { AdminBarangEditForm } from "@/components/admin-unit/admin-barang-edit-form";
 import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
@@ -34,9 +39,18 @@ import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventor
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
-import { AdminInventoryHistoryWorkspace, AdminInventoryWorkspace } from "@/components/admin/admin-inventory-workspace";
+import {
+  AdminInventoryHistoryWorkspace,
+  AdminInventoryWorkspace,
+} from "@/components/admin/admin-inventory-workspace";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
@@ -67,14 +81,16 @@ type AdminTransactionItem = Record<string, any>;
 type AdminBlacklistItem = Record<string, any>;
 
 function dateAfter(days: number) {
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
 }
 
 function AdminPageIntro({
   eyebrow,
   title,
   description,
-  actions
+  actions,
 }: {
   eyebrow: string;
   title: string;
@@ -85,9 +101,7 @@ function AdminPageIntro({
     <section className="hero-surface section-reveal p-5 sm:p-6 lg:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-4xl">
-          <p className="page-heading-eyebrow">
-            {eyebrow}
-          </p>
+          <p className="page-heading-eyebrow">{eyebrow}</p>
           <h2 className="page-heading-title mt-3 font-headline text-3xl font-black tracking-tight text-[#0a6a49] sm:text-4xl lg:text-[2.85rem]">
             {title}
           </h2>
@@ -101,10 +115,34 @@ function AdminPageIntro({
   );
 }
 
+function AdminHeroPill({
+  icon: Icon,
+  children,
+  tone = "default"
+}: {
+  icon?: ComponentType<{ className?: string }>;
+  children: ReactNode;
+  tone?: "default" | "danger";
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 backdrop-blur",
+        tone === "danger"
+          ? "bg-rose-50/92 text-rose-700 ring-rose-200"
+          : "bg-white/75 text-[#0a6a49] ring-[#6cb6ff]/55"
+      )}
+    >
+      {Icon ? <Icon className="size-4" /> : null}
+      {children}
+    </div>
+  );
+}
+
 function PanelTitle({
   title,
   description,
-  action
+  action,
 }: {
   title: string;
   description?: string;
@@ -117,7 +155,9 @@ function PanelTitle({
           {title}
         </h3>
         {description ? (
-          <p className="mt-1 text-sm leading-6 text-black/60 sm:text-base">{description}</p>
+          <p className="mt-1 text-sm leading-6 text-black/60 sm:text-base">
+            {description}
+          </p>
         ) : null}
       </div>
       {action}
@@ -133,19 +173,15 @@ function FieldLabel({ children }: { children: ReactNode }) {
   );
 }
 
-function DetailTile({
-  label,
-  value
-}: {
-  label: string;
-  value: ReactNode;
-}) {
+function DetailTile({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="interactive-card rounded-2xl border border-black/10 bg-[#fbfbfb] p-4 sm:p-5">
       <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/45 sm:text-xs">
         {label}
       </p>
-      <div className="mt-2 text-base font-semibold text-black/80 sm:text-lg">{value}</div>
+      <div className="mt-2 text-base font-semibold text-black/80 sm:text-lg">
+        {value}
+      </div>
     </div>
   );
 }
@@ -153,7 +189,7 @@ function DetailTile({
 function AdminAuctionDeadline({
   auction,
   prefix,
-  className
+  className,
 }: {
   auction: AdminAuctionItem;
   prefix?: string;
@@ -176,7 +212,7 @@ function AdminAuctionDeadline({
 function AdminTransactionDeadline({
   transaction,
   prefix,
-  className
+  className,
 }: {
   transaction: AdminTransactionItem;
   prefix?: string;
@@ -216,26 +252,41 @@ function AdminBarangMediaGallery({ media }: { media: AdminBarangMedia[] }) {
   return (
     <Card className="rounded-2xl border border-black/10">
       <CardHeader>
-        <CardTitle className="text-xl sm:text-[1.45rem]">Galeri Foto & Video</CardTitle>
+        <CardTitle className="text-xl sm:text-[1.45rem]">
+          Galeri Foto & Video
+        </CardTitle>
         <CardDescription className="text-sm sm:text-base">
           Media ini akan menjadi bahan utama saat barang ditayangkan ke katalog.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
         {media.map((item) => {
-          const isVideo = item.type === "video" || item.url.match(/\.(mp4|mov|webm)$/i);
+          const isVideo =
+            item.type === "video" || item.url.match(/\.(mp4|mov|webm)$/i);
           return (
-            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white" key={item.id}>
+            <div
+              className="overflow-hidden rounded-2xl border border-black/10 bg-white"
+              key={item.id}
+            >
               <div className="aspect-video bg-[#edf3ef]">
                 {isVideo ? (
-                  <video className="size-full object-cover" controls src={item.url} />
+                  <video
+                    className="size-full object-cover"
+                    controls
+                    src={item.url}
+                  />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img alt={item.fileName || "Foto barang"} className="size-full object-cover" src={item.url} />
+                  <img
+                    alt={item.fileName || "Foto barang"}
+                    className="size-full object-cover"
+                    src={item.url}
+                  />
                 )}
               </div>
               <div className="p-3 text-xs font-semibold uppercase tracking-[0.14em] text-black/45">
-                {isVideo ? "Video" : "Foto"} {item.fileName ? `- ${item.fileName}` : ""}
+                {isVideo ? "Video" : "Foto"}{" "}
+                {item.fileName ? `- ${item.fileName}` : ""}
               </div>
             </div>
           );
@@ -250,7 +301,7 @@ function WorkflowActionCard({
   description,
   href,
   icon: Icon,
-  variant = "secondary"
+  variant = "secondary",
 }: {
   title: string;
   description: string;
@@ -281,7 +332,7 @@ function InventoryMetricCard({
   value,
   description,
   icon: Icon,
-  tone = "default"
+  tone = "default",
 }: {
   label: string;
   value: string | number;
@@ -299,14 +350,18 @@ function InventoryMetricCard({
               ? "border-emerald-200 bg-emerald-50 text-[#0a6a49]"
               : tone === "warning"
                 ? "border-amber-200 bg-amber-50 text-amber-800"
-                : "border-black/8 bg-[#f2f6f2] text-[#0a6a49]"
+                : "border-black/8 bg-[#f2f6f2] text-[#0a6a49]",
           )}
         >
           <Icon className="size-5" />
         </span>
         <div className="min-w-0">
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/45">{label}</p>
-          <p className="mt-1 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c]">{value}</p>
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/45">
+            {label}
+          </p>
+          <p className="mt-1 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c]">
+            {value}
+          </p>
           <p className="mt-1 text-sm leading-5 text-black/56">{description}</p>
         </div>
       </div>
@@ -314,46 +369,28 @@ function InventoryMetricCard({
   );
 }
 
-export function AdminInventoryPage({
-  items
-}: {
-  items: AdminInventoryItem[];
-}) {
+export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
   const inventoryMetrics = getAdminInventoryMetrics(items);
 
   return (
     <div className="space-y-5">
-      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
-        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex min-w-0 items-start gap-4 md:items-center">
-            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/6">
-              <FolderOpen className="size-7" />
-            </span>
-            <div className="min-w-0">
-              <p className="page-heading-eyebrow">Admin Unit / Barang</p>
-              <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
-                Daftar Barang Unit
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
-                Kelola barang jaminan, baca tahap operasional terbaru, dan buka detail saat admin perlu mengambil keputusan berikutnya.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-black/6 backdrop-blur">
-              <BadgeCheck className="size-4" />
-              Workspace operasional barang
-            </div>
+      <AdminPageHero
+        description="Kelola barang jaminan, baca tahap operasional terbaru, dan buka detail saat admin perlu mengambil keputusan berikutnya."
+        eyebrow="Admin Unit / Barang"
+        icon={FolderOpen}
+        rightRail={
+          <>
+            <AdminHeroPill icon={BadgeCheck}>Workspace operasional barang</AdminHeroPill>
             <Link href="/admin/barang/tambah">
               <Button className="h-12 w-full rounded-2xl px-5 text-sm shadow-[0_18px_32px_-24px_rgba(10,106,73,0.55)] sm:w-auto sm:text-base">
                 <PackagePlus className="size-4" />
                 Tambah Barang
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+        title="Daftar Barang Unit"
+      />
 
       <section className="grid gap-4 md:grid-cols-3">
         <InventoryMetricCard
@@ -384,7 +421,7 @@ export function AdminInventoryPage({
 }
 
 export function AdminInventoryHistoryPage({
-  history
+  history,
 }: {
   history: Array<{
     id: string;
@@ -417,7 +454,8 @@ export function AdminInventoryHistoryPage({
                 Riwayat Barang
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
-                Audit trail khusus untuk jejak input barang baru, perpanjangan, penebusan, dan pemasaran dari unit aktif.
+                Audit trail khusus untuk jejak input barang baru, perpanjangan,
+                penebusan, dan pemasaran dari unit aktif.
               </p>
             </div>
           </div>
@@ -447,69 +485,84 @@ export function AdminInventoryCreatePage() {
   );
 }
 
-export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
+export function AdminInventoryDetailPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   const jaminanActions = [
     {
       title: "Catat Perpanjangan",
-      description: "Perbarui jatuh tempo bila nasabah memperpanjang masa gadai sebelum barang dipasarkan.",
+      description:
+        "Perbarui jatuh tempo bila nasabah memperpanjang masa gadai sebelum barang dipasarkan.",
       href: `/admin/barang/${item.id}/perpanjang`,
       icon: CalendarClock,
-      variant: "secondary" as const
+      variant: "secondary" as const,
     },
     {
       title: "Catat Penebusan",
-      description: "Tutup alur barang bila nasabah sudah melunasi kewajiban dan mengambil barangnya.",
+      description:
+        "Tutup alur barang bila nasabah sudah melunasi kewajiban dan mengambil barangnya.",
       href: `/admin/barang/${item.id}/tebus`,
       icon: ReceiptText,
-      variant: "secondary" as const
+      variant: "secondary" as const,
     },
     {
       title: "Pasarkan Barang Tidak Ditebus",
-      description: "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
+      description:
+        "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
       href: `/admin/barang/${item.id}/pasarkan`,
-      icon: Gavel
+      icon: Gavel,
     },
     {
       title: "Edit Data Barang",
-      description: "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
+      description:
+        "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
       href: `/admin/barang/${item.id}/edit`,
       icon: PencilLine,
-      variant: "secondary" as const
-    }
+      variant: "secondary" as const,
+    },
   ];
 
   const actions =
     item.status === "GADAI" || item.status === "JAMINAN"
       ? jaminanActions
-        : item.status === "GAGAL"
+      : item.status === "GAGAL"
+        ? [
+            {
+              title: "Tayangkan Ulang",
+              description:
+                "Atur ulang strategi penjualan untuk barang yang belum berhasil terjual.",
+              href: `/admin/barang/${item.id}/pasarkan-ulang`,
+              icon: RotateCcw,
+            },
+          ]
+        : item.status === "DIPASARKAN"
           ? [
               {
-                title: "Tayangkan Ulang",
-                description: "Atur ulang strategi penjualan untuk barang yang belum berhasil terjual.",
-                href: `/admin/barang/${item.id}/pasarkan-ulang`,
-                icon: RotateCcw
-              }
+                title: "Buka Sesi Pemasaran",
+                description:
+                  "Lihat perkembangan sesi, tenggat waktu, dan status keterbukaan hasil.",
+                href: "/admin/pemasaran",
+                icon: Gavel,
+              },
             ]
-          : item.status === "DIPASARKAN"
+          : item.status === "MENUNGGU_PEMBAYARAN"
             ? [
                 {
-                  title: "Buka Sesi Pemasaran",
-                  description: "Lihat perkembangan sesi, tenggat waktu, dan status keterbukaan hasil.",
-                  href: "/admin/pemasaran",
-                  icon: Gavel
-                }
+                  title: "Buka Antrian Pembayaran",
+                  description:
+                    "Amankan penyelesaian pembayaran sebelum tenggat 24 jam terlewati.",
+                  href: "/admin/transaksi",
+                  icon: Wallet,
+                },
               ]
-            : item.status === "MENUNGGU_PEMBAYARAN"
-              ? [
-                  {
-                    title: "Buka Antrian Pembayaran",
-                    description: "Amankan penyelesaian pembayaran sebelum tenggat 24 jam terlewati.",
-                    href: "/admin/transaksi",
-                    icon: Wallet
-                  }
-                ]
-          : [];
-  const media = Array.isArray(item.media) ? (item.media as AdminBarangMedia[]) : [];
+            : [];
+  const media = Array.isArray(item.media)
+    ? (item.media as AdminBarangMedia[])
+    : [];
 
   return (
     <div className="space-y-6">
@@ -517,7 +570,9 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
         eyebrow="Admin Unit / Detail Barang"
         title={item.name}
         description="Gunakan halaman ini untuk melihat posisi barang saat ini, memeriksa data pendukung, dan melanjutkan langkah yang memang tersedia."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={item.status} />}
+        actions={
+          <AdminStatusBadge className="text-[0.95rem]" status={item.status} />
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -525,34 +580,51 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
           <div className="grid gap-4 md:grid-cols-2">
             <DetailTile label="Kode Barang" value={item.code} />
             <DetailTile label="Kategori" value={item.category} />
-            <DetailTile label="Nilai Taksiran" value={currency.format(item.appraisalValue)} />
-            <DetailTile label="Nilai Gadai" value={currency.format(item.loanValue)} />
+            <DetailTile
+              label="Nilai Taksiran"
+              value={currency.format(item.appraisalValue)}
+            />
+            <DetailTile
+              label="Nilai Gadai"
+              value={currency.format(item.loanValue)}
+            />
             <DetailTile label="Tanggal Gadai" value={item.pawnedAt} />
             <DetailTile label="Jatuh Tempo" value={item.dueDate} />
             <DetailTile label="Media Tersimpan" value={item.mediaSummary} />
-            <DetailTile label="Status Barang" value={<AdminStatusBadge status={item.status} />} />
+            <DetailTile
+              label="Status Barang"
+              value={<AdminStatusBadge status={item.status} />}
+            />
           </div>
 
           <AdminBarangMediaGallery media={media} />
 
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">Data Internal & Appraisal</CardTitle>
+              <CardTitle className="text-xl sm:text-[1.45rem]">
+                Data Internal & Appraisal
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-5 md:grid-cols-2">
               <div className="space-y-4 md:col-span-2">
                 <div>
                   <FieldLabel>Deskripsi barang</FieldLabel>
-                  <p className="mt-2 text-sm leading-7 text-black/70 sm:text-base">{item.description}</p>
+                  <p className="mt-2 text-sm leading-7 text-black/70 sm:text-base">
+                    {item.description}
+                  </p>
                 </div>
               </div>
               <div>
                 <FieldLabel>Nama penggadai</FieldLabel>
-                <p className="mt-2 text-base font-semibold text-black/80">{item.ownerName}</p>
+                <p className="mt-2 text-base font-semibold text-black/80">
+                  {item.ownerName}
+                </p>
               </div>
               <div>
                 <FieldLabel>Nomor nasabah</FieldLabel>
-                <p className="mt-2 text-base font-semibold text-black/80">{item.customerNumber}</p>
+                <p className="mt-2 text-base font-semibold text-black/80">
+                  {item.customerNumber}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -561,9 +633,12 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
         <div className="space-y-6">
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">Langkah yang Bisa Dilanjutkan</CardTitle>
+              <CardTitle className="text-xl sm:text-[1.45rem]">
+                Langkah yang Bisa Dilanjutkan
+              </CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Tindakan yang muncul di sini sudah disesuaikan dengan status barang saat ini.
+                Tindakan yang muncul di sini sudah disesuaikan dengan status
+                barang saat ini.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -586,12 +661,23 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
 
           <Card className="rounded-2xl border border-black/10 bg-[#f8faf8]">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.4rem]">Catatan proses</CardTitle>
+              <CardTitle className="text-xl sm:text-[1.4rem]">
+                Catatan proses
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
-              <p>- Setiap perubahan tahap perlu dicatat lewat aksi yang tepat agar riwayat proses tetap rapi.</p>
-              <p>- Setelah barang tayang di katalog, alurnya tidak kembali ke tahap gadai atau aset unit.</p>
-              <p>- Jika memakai mode Vickrey, nominal penawaran tetap tertutup sampai sesi berakhir.</p>
+              <p>
+                - Setiap perubahan tahap perlu dicatat lewat aksi yang tepat
+                agar riwayat proses tetap rapi.
+              </p>
+              <p>
+                - Setelah barang tayang di katalog, alurnya tidak kembali ke
+                tahap gadai atau aset unit.
+              </p>
+              <p>
+                - Jika memakai mode Vickrey, nominal penawaran tetap tertutup
+                sampai sesi berakhir.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -600,8 +686,16 @@ export function AdminInventoryDetailPage({ itemId: _itemId, item }: { itemId?: s
   );
 }
 
-export function AdminInventoryEditPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-  const media = Array.isArray(item.media) ? (item.media as AdminBarangMedia[]) : [];
+export function AdminInventoryEditPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
+  const media = Array.isArray(item.media)
+    ? (item.media as AdminBarangMedia[])
+    : [];
 
   return (
     <div className="space-y-6">
@@ -609,7 +703,9 @@ export function AdminInventoryEditPage({ itemId: _itemId, item }: { itemId?: str
         eyebrow="Admin Unit / Edit Barang"
         title="Edit Data Barang"
         description="Perbarui informasi barang selama masih berada di tahap yang memungkinkan. Setelah tayang, perubahan inti dibatasi agar informasi publik tetap konsisten."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={item.status} />}
+        actions={
+          <AdminStatusBadge className="text-[0.95rem]" status={item.status} />
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -624,17 +720,22 @@ export function AdminInventoryEditPage({ itemId: _itemId, item }: { itemId?: str
             description: String(item.description ?? ""),
             ownerName: String(item.ownerName ?? ""),
             customerNumber: String(item.customerNumber ?? ""),
-            pawnedAt: String(item.pawnedAt ?? new Date().toISOString().slice(0, 10)),
-            dueDate: String(item.dueDate ?? dateAfter(30))
+            pawnedAt: String(
+              item.pawnedAt ?? new Date().toISOString().slice(0, 10),
+            ),
+            dueDate: String(item.dueDate ?? dateAfter(30)),
           }}
         />
 
         <div className="space-y-6">
           <Card className="rounded-2xl border border-black/10">
-              <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.4rem]">Pengelolaan Media</CardTitle>
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-[1.4rem]">
+                Pengelolaan Media
+              </CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Foto dan video bisa ditambahkan sampai total 5 media. Saat upload berjalan, tombol akan menampilkan progres.
+                Foto dan video bisa ditambahkan sampai total 5 media. Saat
+                upload berjalan, tombol akan menampilkan progres.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -653,7 +754,7 @@ function WorkflowFormShell({
   description,
   children,
   itemId,
-  itemStatus
+  itemStatus,
 }: {
   eyebrow: string;
   title: string;
@@ -684,8 +785,13 @@ function WorkflowFormShell({
   );
 }
 
-export function AdminInventoryExtendPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-
+export function AdminInventoryExtendPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   return (
     <WorkflowFormShell
       description="Gunakan halaman ini saat nasabah memperpanjang masa gadai. Tanggal baru sebaiknya melanjutkan periode aktif yang sedang berjalan."
@@ -699,8 +805,13 @@ export function AdminInventoryExtendPage({ itemId: _itemId, item }: { itemId?: s
   );
 }
 
-export function AdminInventoryRedeemPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-
+export function AdminInventoryRedeemPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   return (
     <WorkflowFormShell
       description="Catat penebusan saat nasabah melunasi kewajibannya. Setelah dikonfirmasi, barang keluar dari alur penjualan dan tersimpan sebagai riwayat."
@@ -718,8 +829,13 @@ export function AdminInventoryRedeemPage({ itemId: _itemId, item }: { itemId?: s
   );
 }
 
-export function AdminInventoryConvertPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-
+export function AdminInventoryConvertPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   return (
     <WorkflowFormShell
       description="Gunakan halaman ini saat barang tidak ditebus sampai jatuh tempo dan perlu dipindahkan menjadi aset unit."
@@ -735,9 +851,13 @@ export function AdminInventoryConvertPage({ itemId: _itemId, item }: { itemId?: 
             <DetailTile label="Nama Barang" value={item.name} />
             <DetailTile label="Jatuh Tempo" value={item.dueDate} />
             <DetailTile label="Nomor Nasabah" value={item.customerNumber} />
-            <DetailTile label="Status Saat Ini" value={<AdminStatusBadge status={item.status} />} />
+            <DetailTile
+              label="Status Saat Ini"
+              value={<AdminStatusBadge status={item.status} />}
+            />
             <div className="md:col-span-2 rounded-2xl bg-[#f6faf7] p-5 text-sm leading-7 text-black/70">
-              Pastikan tidak ada proses tebus atau perpanjangan yang masih berjalan sebelum status barang diubah.
+              Pastikan tidak ada proses tebus atau perpanjangan yang masih
+              berjalan sebelum status barang diubah.
             </div>
           </CardContent>
         </Card>
@@ -746,9 +866,15 @@ export function AdminInventoryConvertPage({ itemId: _itemId, item }: { itemId?: 
             <CardTitle className="text-xl">Konfirmasi Perubahan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm leading-7 text-black/70">
-            <p>- Perubahan di halaman ini memindahkan barang dari masa gadai ke aset unit.</p>
+            <p>
+              - Perubahan di halaman ini memindahkan barang dari masa gadai ke
+              aset unit.
+            </p>
             <p>- Setelah dipindahkan, barang tidak kembali ke tahap gadai.</p>
-            <p>- Langkah berikutnya adalah menyiapkan skema penjualan saat barang siap ditawarkan.</p>
+            <p>
+              - Langkah berikutnya adalah menyiapkan skema penjualan saat barang
+              siap ditawarkan.
+            </p>
             <AdminUnitActionButton
               className="mt-4 w-full rounded-2xl"
               confirmDescription="Barang akan dipindahkan ke aset unit dan langkah berikutnya adalah menyiapkannya untuk pemasaran."
@@ -770,8 +896,13 @@ export function AdminInventoryConvertPage({ itemId: _itemId, item }: { itemId?: 
   );
 }
 
-export function AdminInventoryMarketPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-
+export function AdminInventoryMarketPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   return (
     <WorkflowFormShell
       description="Tentukan cara barang akan dijual, lengkapi pengaturan harganya, lalu publikasikan ke katalog agar siap dilihat calon pembeli."
@@ -793,8 +924,13 @@ export function AdminInventoryMarketPage({ itemId: _itemId, item }: { itemId?: s
   );
 }
 
-export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: string; item: AdminInventoryItem }) {
-
+export function AdminInventoryRelistPage({
+  itemId: _itemId,
+  item,
+}: {
+  itemId?: string;
+  item: AdminInventoryItem;
+}) {
   return (
     <WorkflowFormShell
       description="Gunakan halaman ini untuk menyiapkan ulang barang yang belum berhasil terjual, lengkap dengan evaluasi harga dan strategi penjualan yang baru."
@@ -808,8 +944,14 @@ export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: s
           <PanelTitle title="Ringkasan Barang Gagal" />
           <CardContent className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-4">
             <DetailTile label="Barang" value={item.name} />
-            <DetailTile label="Iterasi Pemasaran" value={`Siklus ke-${item.marketingIteration}`} />
-            <DetailTile label="Mode Sebelumnya" value={item.marketingMode ?? "-"} />
+            <DetailTile
+              label="Iterasi Pemasaran"
+              value={`Siklus ke-${item.marketingIteration}`}
+            />
+            <DetailTile
+              label="Mode Sebelumnya"
+              value={item.marketingMode ?? "-"}
+            />
             <DetailTile label="Aksi Berikutnya" value={item.nextAction} />
           </CardContent>
         </Card>
@@ -830,17 +972,19 @@ export function AdminInventoryRelistPage({ itemId: _itemId, item }: { itemId?: s
 
 export function AdminMarketingHubPage({
   fixedPriceCount,
-  vickreyCount
+  vickreyCount,
 }: {
   fixedPriceCount: number;
   vickreyCount: number;
 }) {
   return (
     <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Pemasaran"
-        title="Pemasaran"
+      <AdminPageHero
         description="Pilih jalur pemasaran yang mau dipantau. Fixed Price untuk harga tetap, Vickrey Auction untuk sesi lelang tertutup."
+        eyebrow="Admin Unit / Pemasaran"
+        icon={Gavel}
+        rightRail={<AdminHeroPill icon={BadgeCheck}>Workspace pemasaran unit</AdminHeroPill>}
+        title="Pemasaran"
       />
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -852,7 +996,8 @@ export function AdminMarketingHubPage({
             <div>
               <h3 className="text-xl font-bold text-black/85">Fixed Price</h3>
               <p className="mt-2 text-sm leading-6 text-black/60">
-                {fixedPriceCount} sesi aktif atau tersimpan di jalur harga tetap.
+                {fixedPriceCount} sesi aktif atau tersimpan di jalur harga
+                tetap.
               </p>
             </div>
             <Link href="/admin/pemasaran/fixed-price">
@@ -867,9 +1012,12 @@ export function AdminMarketingHubPage({
               <Gavel className="size-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-black/85">Vickrey Auction</h3>
+              <h3 className="text-xl font-bold text-black/85">
+                Vickrey Auction
+              </h3>
               <p className="mt-2 text-sm leading-6 text-black/60">
-                {vickreyCount} sesi aktif atau tersimpan di jalur lelang tertutup.
+                {vickreyCount} sesi aktif atau tersimpan di jalur lelang
+                tertutup.
               </p>
             </div>
             <Link href="/admin/pemasaran/vickrey-auction">
@@ -890,7 +1038,7 @@ export function AdminAuctionListPage({
   title = "Pemasaran",
   description = "Pilih jalur pemasaran yang mau dipantau.",
   emptyTitle = "Belum ada sesi pemasaran",
-  emptyDescription = "Belum ada sesi yang cocok di halaman ini."
+  emptyDescription = "Belum ada sesi yang cocok di halaman ini.",
 }: {
   auctions: AdminAuctionItem[];
   eyebrow?: string;
@@ -903,45 +1051,52 @@ export function AdminAuctionListPage({
 
   return (
     <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow={eyebrow}
-        title={title}
+      <AdminPageHero
         description={description}
+        eyebrow={eyebrow}
+        icon={Gavel}
+        rightRail={<AdminHeroPill icon={Clock3}>Pantau sesi pemasaran</AdminHeroPill>}
+        title={title}
       />
 
       {visibleAuctions.length ? (
         <div className="grid gap-5 lg:grid-cols-3">
           {visibleAuctions.map((auction) => (
-          <Card className="rounded-2xl border border-black/10" key={auction.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <CardTitle className="text-xl sm:text-[1.35rem]">{auction.lot}</CardTitle>
-                  <CardDescription className="mt-2 text-sm sm:text-base">
-                    {auction.id}
-                  </CardDescription>
+            <Card
+              className="rounded-2xl border border-black/10"
+              key={auction.id}
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-xl sm:text-[1.35rem]">
+                      {auction.lot}
+                    </CardTitle>
+                    <CardDescription className="mt-2 text-sm sm:text-base">
+                      {auction.id}
+                    </CardDescription>
+                  </div>
+                  <AdminStatusBadge status={auction.status} />
                 </div>
-                <AdminStatusBadge status={auction.status} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
-              <p>Mode: {auction.mode}</p>
-              <p>Peserta: {auction.participants} user</p>
-              <p>
-                <AdminAuctionDeadline auction={auction} prefix="Sisa waktu" />
-              </p>
-              <p>Visibilitas bid: {auction.visibility}</p>
-              <p>{auction.note}</p>
-              <Link
-                className="inline-flex items-center gap-2 font-semibold text-[#0a6a49]"
-                href={`/admin/lelang/${auction.id}`}
-              >
-                Lihat sesi
-                <ArrowRight className="size-4" />
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
+                <p>Mode: {auction.mode}</p>
+                <p>Peserta: {auction.participants} user</p>
+                <p>
+                  <AdminAuctionDeadline auction={auction} prefix="Sisa waktu" />
+                </p>
+                <p>Visibilitas bid: {auction.visibility}</p>
+                <p>{auction.note}</p>
+                <Link
+                  className="inline-flex items-center gap-2 font-semibold text-[#0a6a49]"
+                  href={`/admin/lelang/${auction.id}`}
+                >
+                  Lihat sesi
+                  <ArrowRight className="size-4" />
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : (
         <EmptyPanel text={`${emptyTitle}. ${emptyDescription}`} />
@@ -950,7 +1105,13 @@ export function AdminAuctionListPage({
   );
 }
 
-export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auctionId?: string; auction: AdminAuctionItem }) {
+export function AdminAuctionDetailPage({
+  auctionId: _auctionId,
+  auction,
+}: {
+  auctionId?: string;
+  auction: AdminAuctionItem;
+}) {
   const bidRows = Array.isArray(auction.bids) ? auction.bids : [];
 
   return (
@@ -959,13 +1120,20 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
         eyebrow="Admin Unit / Detail Pemasaran"
         title={auction.lot}
         description="Gunakan halaman ini untuk memahami kondisi sesi, aturan keterbukaan hasil, dan ringkasan hasil setelah periode berakhir."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={auction.status} />}
+        actions={
+          <AdminStatusBadge
+            className="text-[0.95rem]"
+            status={auction.status}
+          />
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <Card className="rounded-2xl border border-black/10">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Ringkasan Sesi</CardTitle>
+            <CardTitle className="text-xl sm:text-[1.45rem]">
+              Ringkasan Sesi
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <DetailTile label="ID Pemasaran" value={auction.id} />
@@ -974,21 +1142,29 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
               label="Sisa Waktu"
               value={<AdminAuctionDeadline auction={auction} />}
             />
-            <DetailTile label="Peserta" value={`${auction.participants} peserta`} />
+            <DetailTile
+              label="Peserta"
+              value={`${auction.participants} peserta`}
+            />
             <DetailTile label="Keterbukaan Hasil" value={auction.visibility} />
-            <DetailTile label="Status" value={<AdminStatusBadge status={auction.status} />} />
+            <DetailTile
+              label="Status"
+              value={<AdminStatusBadge status={auction.status} />}
+            />
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border border-black/10">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Aturan Buka Hasil</CardTitle>
+            <CardTitle className="text-xl sm:text-[1.45rem]">
+              Aturan Buka Hasil
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm leading-7 text-black/70 sm:text-base">
             <p>
-              Halaman admin tidak menampilkan nominal bid sebelum waktu penutupan
-              terlewati. Selama sesi aktif, admin hanya melihat jumlah peserta dan status
-              sesi, tanpa mengetahui nilai penawaran.
+              Halaman admin tidak menampilkan nominal bid sebelum waktu
+              penutupan terlewati. Selama sesi aktif, admin hanya melihat jumlah
+              peserta dan status sesi, tanpa mengetahui nilai penawaran.
             </p>
             <div className="rounded-2xl bg-[#f5f8f6] p-5">
               <p className="font-semibold text-black/80">Kondisi saat ini</p>
@@ -996,7 +1172,12 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
               {auction.visibility === "HASIL_DIBUKA" ? (
                 <div className="mt-4 space-y-2">
                   <p>Pemenang: {auction.winner ?? "-"}</p>
-                  <p>Harga final: {auction.finalPrice ? currency.format(auction.finalPrice) : "-"}</p>
+                  <p>
+                    Harga final:{" "}
+                    {auction.finalPrice
+                      ? currency.format(auction.finalPrice)
+                      : "-"}
+                  </p>
                 </div>
               ) : null}
             </div>
@@ -1006,7 +1187,9 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
 
       <Card className="rounded-2xl border border-black/10">
         <CardHeader>
-          <CardTitle className="text-xl sm:text-[1.45rem]">Daftar Bid Sesi Ini</CardTitle>
+          <CardTitle className="text-xl sm:text-[1.45rem]">
+            Daftar Bid Sesi Ini
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {auction.visibility === "HASIL_DIBUKA" ? (
@@ -1024,11 +1207,18 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
                   </thead>
                   <tbody>
                     {bidRows.map((bid: any) => (
-                      <tr className="border-t border-black/8 text-sm text-black/72 sm:text-base" key={bid.id}>
-                        <td className="px-5 py-4 font-semibold text-[#0a6a49]">#{bid.rank}</td>
+                      <tr
+                        className="border-t border-black/8 text-sm text-black/72 sm:text-base"
+                        key={bid.id}
+                      >
+                        <td className="px-5 py-4 font-semibold text-[#0a6a49]">
+                          #{bid.rank}
+                        </td>
                         <td className="px-5 py-4">
                           <div>
-                            <p className="font-semibold text-black/85">{bid.bidderName}</p>
+                            <p className="font-semibold text-black/85">
+                              {bid.bidderName}
+                            </p>
                             <p className="mt-1 text-xs uppercase tracking-[0.16em] text-black/40">
                               ID {bid.bidderId}
                             </p>
@@ -1039,7 +1229,9 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
                             Tidak dikirim ke admin
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-black/55">{bid.submittedAtLabel}</td>
+                        <td className="px-5 py-4 text-black/55">
+                          {bid.submittedAtLabel}
+                        </td>
                         <td className="px-5 py-4">
                           {bid.isWinner ? (
                             <span className="inline-flex rounded-full bg-[#e7f6ef] px-3 py-1 text-xs font-semibold text-[#0a6a49]">
@@ -1058,12 +1250,15 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
               </div>
             ) : (
               <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm text-black/55">
-                Deadline sudah lewat, tetapi belum ada bid yang tercatat untuk sesi ini.
+                Deadline sudah lewat, tetapi belum ada bid yang tercatat untuk
+                sesi ini.
               </div>
             )
           ) : (
             <div className="rounded-[1.4rem] border border-dashed border-black/10 bg-[#fcfcfa] p-5 text-sm leading-7 text-black/55">
-              Daftar nominal bid baru dibuka setelah deadline terlewati. Selama sesi aktif, admin unit hanya dapat melihat jumlah peserta tanpa nilai penawaran.
+              Daftar nominal bid baru dibuka setelah deadline terlewati. Selama
+              sesi aktif, admin unit hanya dapat melihat jumlah peserta tanpa
+              nilai penawaran.
             </div>
           )}
         </CardContent>
@@ -1072,22 +1267,28 @@ export function AdminAuctionDetailPage({ auctionId: _auctionId, auction }: { auc
   );
 }
 
-export function AdminTransactionsPage({ transactions }: { transactions: AdminTransactionItem[] }) {
+export function AdminTransactionsPage({
+  transactions,
+}: {
+  transactions: AdminTransactionItem[];
+}) {
   const filters = [
     "SEMUA",
     "MENUNGGU_PEMBAYARAN",
     "BUKTI_DIUNGGAH",
     "MENUNGGU_KONFIRMASI_LANGSUNG",
     "DITOLAK_BUKTI",
-    "LUNAS"
+    "LUNAS",
   ];
 
   return (
     <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Transaksi"
-        title="Kelola Pembayaran & Nota"
+      <AdminPageHero
         description="Kelola seluruh penyelesaian pembayaran dari penjualan langsung maupun hasil lelang, lalu terbitkan nota saat transaksi sudah benar-benar selesai."
+        eyebrow="Admin Unit / Transaksi"
+        icon={Wallet}
+        rightRail={<AdminHeroPill icon={FileCheck2}>Antrian pembayaran unit</AdminHeroPill>}
+        title="Kelola Pembayaran & Nota"
       />
 
       <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
@@ -1124,12 +1325,21 @@ export function AdminTransactionsPage({ transactions }: { transactions: AdminTra
             </thead>
             <tbody>
               {transactions.map((transaction) => (
-                <tr className="border-t border-black/10 text-sm sm:text-base" key={transaction.id}>
-                  <td className="px-6 py-4 font-semibold text-[#0a6a49]">{transaction.id}</td>
+                <tr
+                  className="border-t border-black/10 text-sm sm:text-base"
+                  key={transaction.id}
+                >
+                  <td className="px-6 py-4 font-semibold text-[#0a6a49]">
+                    {transaction.id}
+                  </td>
                   <td className="px-6 py-4">{transaction.buyer}</td>
                   <td className="px-6 py-4">{transaction.lot}</td>
-                  <td className="px-6 py-4 text-black/65">{transaction.pemasaranMode}</td>
-                  <td className="px-6 py-4 text-black/65">{transaction.method}</td>
+                  <td className="px-6 py-4 text-black/65">
+                    {transaction.pemasaranMode}
+                  </td>
+                  <td className="px-6 py-4 text-black/65">
+                    {transaction.method}
+                  </td>
                   <td className="px-6 py-4 text-black/65">
                     <AdminTransactionDeadline transaction={transaction} />
                   </td>
@@ -1155,10 +1365,20 @@ export function AdminTransactionsPage({ transactions }: { transactions: AdminTra
   );
 }
 
-export function AdminTransactionDetailPage({ transactionId: _transactionId, transaction }: { transactionId?: string; transaction: AdminTransactionItem }) {
-  const canPrint = transaction.printableReceipt || transaction.status === "LUNAS";
-  const canVerifyTransfer = transaction.status === "BUKTI_DIUNGGAH" && transaction.method === "TRANSFER_BANK";
-  const canConfirmDirect = transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG";
+export function AdminTransactionDetailPage({
+  transactionId: _transactionId,
+  transaction,
+}: {
+  transactionId?: string;
+  transaction: AdminTransactionItem;
+}) {
+  const canPrint =
+    transaction.printableReceipt || transaction.status === "LUNAS";
+  const canVerifyTransfer =
+    transaction.status === "BUKTI_DIUNGGAH" &&
+    transaction.method === "TRANSFER_BANK";
+  const canConfirmDirect =
+    transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG";
   const canTakePaymentAction = canVerifyTransfer || canConfirmDirect;
 
   return (
@@ -1167,21 +1387,34 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
         eyebrow="Admin Unit / Detail Transaksi"
         title={transaction.id}
         description="Semua konteks pembayaran, dokumen pendukung, dan keputusan verifikasi dirangkum di satu halaman agar tindak lanjut lebih cepat."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={transaction.status} />}
+        actions={
+          <AdminStatusBadge
+            className="text-[0.95rem]"
+            status={transaction.status}
+          />
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
         <div className="space-y-6">
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">Ringkasan Transaksi</CardTitle>
+              <CardTitle className="text-xl sm:text-[1.45rem]">
+                Ringkasan Transaksi
+              </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <DetailTile label="Pembeli" value={transaction.buyer} />
               <DetailTile label="Barang" value={transaction.lot} />
-              <DetailTile label="Mode Pemasaran" value={transaction.pemasaranMode} />
+              <DetailTile
+                label="Mode Pemasaran"
+                value={transaction.pemasaranMode}
+              />
               <DetailTile label="Metode Bayar" value={transaction.method} />
-              <DetailTile label="Total Bayar" value={currency.format(transaction.total)} />
+              <DetailTile
+                label="Total Bayar"
+                value={currency.format(transaction.total)}
+              />
               <DetailTile
                 label="Sisa Waktu"
                 value={<AdminTransactionDeadline transaction={transaction} />}
@@ -1192,17 +1425,28 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
               <CardTitle className="text-xl sm:text-[1.45rem]">
-                {transaction.method === "TRANSFER_BANK" ? "Bukti Pembayaran" : "Panduan Bayar di Unit"}
+                {transaction.method === "TRANSFER_BANK"
+                  ? "Bukti Pembayaran"
+                  : "Panduan Bayar di Unit"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {transaction.method === "TRANSFER_BANK" ? (
                 <>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <DetailTile label="Bank Tujuan" value={transaction.bankName} />
-                    <DetailTile label="Nomor Rekening" value={transaction.accountNumber} />
+                    <DetailTile
+                      label="Bank Tujuan"
+                      value={transaction.bankName}
+                    />
+                    <DetailTile
+                      label="Nomor Rekening"
+                      value={transaction.accountNumber}
+                    />
                     <div className="md:col-span-2">
-                      <DetailTile label="Atas Nama" value={transaction.accountName} />
+                      <DetailTile
+                        label="Atas Nama"
+                        value={transaction.accountName}
+                      />
                     </div>
                   </div>
                   <div className="rounded-2xl border border-dashed border-[#9fcab8] bg-[#f4faf6] p-8 text-center text-sm text-black/50 sm:p-10 sm:text-base">
@@ -1212,13 +1456,15 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
                   </div>
                   {transaction.rejectionReason ? (
                     <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-700">
-                      Catatan penolakan sebelumnya: {transaction.rejectionReason}
+                      Catatan penolakan sebelumnya:{" "}
+                      {transaction.rejectionReason}
                     </div>
                   ) : null}
                 </>
               ) : (
                 <div className="rounded-2xl bg-[#f5f8f6] p-5 text-sm leading-7 text-black/70 sm:text-base">
-                  Pembeli memilih bayar langsung di unit. Pastikan dana benar-benar diterima sebelum transaksi ditandai selesai.
+                  Pembeli memilih bayar langsung di unit. Pastikan dana
+                  benar-benar diterima sebelum transaksi ditandai selesai.
                 </div>
               )}
             </CardContent>
@@ -1228,19 +1474,32 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
         <div className="space-y-6">
           <Card className="rounded-2xl border border-black/10">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">Tindakan Lanjutan</CardTitle>
+              <CardTitle className="text-xl sm:text-[1.45rem]">
+                Tindakan Lanjutan
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {canTakePaymentAction ? (
                 <>
                   <div className="space-y-2">
                     <FieldLabel>Nomor referensi internal</FieldLabel>
-                    <Input className="h-12" defaultValue={transaction.reference === "-" ? "" : transaction.reference} placeholder="Contoh: REF-MND-8821" />
+                    <Input
+                      className="h-12"
+                      defaultValue={
+                        transaction.reference === "-"
+                          ? ""
+                          : transaction.reference
+                      }
+                      placeholder="Contoh: REF-MND-8821"
+                    />
                   </div>
                   {canVerifyTransfer ? (
                     <div className="space-y-2">
                       <FieldLabel>Alasan penolakan</FieldLabel>
-                      <Textarea className="min-h-28" placeholder="Isi bila bukti transfer perlu dikembalikan ke pembeli." />
+                      <Textarea
+                        className="min-h-28"
+                        placeholder="Isi bila bukti transfer perlu dikembalikan ke pembeli."
+                      />
                     </div>
                   ) : null}
 
@@ -1254,7 +1513,12 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
                         endpoint={`/api/admin/transaksi/${transaction.id}/verifikasi`}
                         pendingDescription="Bukti transfer sedang diperiksa dan status transaksi akan diperbarui."
                         pendingTitle="Memverifikasi pembayaran"
-                        payload={{ reference: transaction.reference === "-" ? `REF-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                        payload={{
+                          reference:
+                            transaction.reference === "-"
+                              ? `REF-${Date.now().toString().slice(-6)}`
+                              : transaction.reference,
+                        }}
                         refresh
                         successDescription="Transaksi sudah lunas dan barang ditandai terjual."
                         successTitle="Pembayaran disetujui"
@@ -1271,7 +1535,10 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
                         endpoint={`/api/admin/transaksi/${transaction.id}/tolak-bukti`}
                         pendingDescription="Sistem sedang mengirimkan catatan revisi agar pembeli memperbaiki bukti transfer."
                         pendingTitle="Mengembalikan bukti pembayaran"
-                        payload={{ reason: "Bukti pembayaran perlu diperbaiki oleh pembeli." }}
+                        payload={{
+                          reason:
+                            "Bukti pembayaran perlu diperbaiki oleh pembeli.",
+                        }}
                         refresh
                         successDescription="Pembeli perlu mengunggah bukti pembayaran yang benar."
                         successTitle="Bukti pembayaran dikembalikan"
@@ -1292,7 +1559,12 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
                       endpoint={`/api/admin/transaksi/${transaction.id}/konfirmasi-langsung`}
                       pendingDescription="Status pembayaran langsung sedang ditutup sebagai transaksi selesai."
                       pendingTitle="Mengonfirmasi bayar langsung"
-                      payload={{ reference: transaction.reference === "-" ? `CASH-${Date.now().toString().slice(-6)}` : transaction.reference }}
+                      payload={{
+                        reference:
+                          transaction.reference === "-"
+                            ? `CASH-${Date.now().toString().slice(-6)}`
+                            : transaction.reference,
+                      }}
                       refresh
                       successDescription="Pembayaran langsung sudah dikonfirmasi oleh unit."
                       successTitle="Pembayaran langsung selesai"
@@ -1331,13 +1603,33 @@ export function AdminTransactionDetailPage({ transactionId: _transactionId, tran
   );
 }
 
-export function AdminBlacklistPage({ entries }: { entries: AdminBlacklistItem[] }) {
+export function AdminBlacklistPage({
+  entries,
+}: {
+  entries: AdminBlacklistItem[];
+}) {
+  const activeCount = entries.filter(
+    (entry) => String(entry.status).toUpperCase() === "AKTIF",
+  ).length;
+  const reviewCount = entries.filter(
+    (entry) =>
+      String(entry.status).toUpperCase() === "AKTIF" &&
+      Number(entry.violations ?? 0) >= 3,
+  ).length;
+
   return (
     <div className="space-y-6">
-      <AdminPageIntro
+      <AdminPageHero
+        description="Fokus pada akun yang benar-benar perlu dipantau: status pembatasan, jumlah pelanggaran, batas berlaku, dan tindakan lanjutan."
         eyebrow="Admin Unit / Blacklist"
+        icon={ShieldEllipsis}
+        rightRail={
+          <>
+            <AdminHeroPill icon={BadgeCheck}>{activeCount} aktif</AdminHeroPill>
+            <AdminHeroPill tone="danger">{reviewCount} review</AdminHeroPill>
+          </>
+        }
         title="Pelanggaran Pengguna"
-      description="Pantau akun yang sedang dibatasi di unit Anda, baca riwayat pelanggarannya, dan perpanjang masa pembatasan bila memang diperlukan."
       />
 
       <AdminBlacklistList entries={entries} />
@@ -1345,83 +1637,244 @@ export function AdminBlacklistPage({ entries }: { entries: AdminBlacklistItem[] 
   );
 }
 
-export function AdminBlacklistDetailPage({ userId: _userId, entry }: { userId?: string; entry: AdminBlacklistItem }) {
+function isBlacklistRestrictionActive(entry: AdminBlacklistItem) {
+  return String(entry.status ?? "").toUpperCase() === "AKTIF";
+}
+
+function getBlacklistInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function getBlacklistLevel(entry: AdminBlacklistItem) {
+  return Number(
+    entry.level ?? Math.min(Math.max(Number(entry.violations ?? 0), 0), 3),
+  );
+}
+
+function getBlacklistLevelTone(level: number) {
+  if (level >= 3) return "danger";
+  if (level === 2) return "warning";
+  if (level === 1) return "success";
+
+  return "neutral";
+}
+
+function getBlacklistCountdownTarget(entry: AdminBlacklistItem) {
+  if (!isBlacklistRestrictionActive(entry)) return null;
+  if (entry.blockedUntilAt) return String(entry.blockedUntilAt);
+  if (!entry.until || entry.until === "-") return null;
+
+  return `${entry.until}T23:59:59.000Z`;
+}
+
+function humanizeAdminValue(value?: string | null) {
+  if (!value) return "-";
+
+  return value
+    .toLowerCase()
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(" ");
+}
+
+function BlacklistLevelBadge({ level }: { level: number }) {
+  const tone = getBlacklistLevelTone(level);
 
   return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Detail Blacklist"
-        title={entry.name}
-        description="Lihat ringkasan pelanggaran, status pembatasan aktif, dan jejak tindakan yang sudah tercatat pada akun ini."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={entry.status} />}
-      />
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em]",
+        tone === "danger" && "bg-rose-50 text-rose-700",
+        tone === "warning" && "bg-amber-50 text-amber-700",
+        tone === "success" && "bg-[#e9f6ef] text-[#0a6a49]",
+        tone === "neutral" && "bg-[#f0f0ee] text-black/58",
+      )}
+    >
+      Level {level}
+    </span>
+  );
+}
 
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <Card className="rounded-2xl border border-black/10">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Ringkasan User</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <DetailTile label="User ID" value={entry.userId} />
-            <DetailTile label="Status" value={<AdminStatusBadge status={entry.status} />} />
-            <DetailTile label="Total Pelanggaran" value={entry.violations} />
-            <DetailTile label="Blokir Sampai" value={entry.until} />
-            <div className="md:col-span-2">
-              <DetailTile label="Pembatasan Aktif" value={entry.activeAuctionRestriction} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-black/10">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Riwayat Tindakan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {(entry.history ?? []).map((history: { date: string; action: string; actionLabel?: string; note: string; actorLabel?: string; actorType?: string }) => (
-              <div className="rounded-[1.4rem] border border-black/10 bg-[#fafaf8] p-4" key={`${history.date}-${history.action}`}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold text-black/85">{history.actionLabel ?? history.action}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.24em] text-black/45">{history.actorLabel ?? (history.actorType === "system" ? "Sistem otomatis" : "Admin internal")}</p>
-                  </div>
-                  <p className="text-sm text-black/55">{history.date}</p>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-black/65">{history.note}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+function BlacklistDetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[2.55rem_minmax(0,1fr)] gap-3 rounded-[1.2rem] bg-[#f7f6f1] p-3.5 ring-1 ring-black/5">
+      <span className="grid size-10 place-items-center rounded-2xl bg-white text-[#0a6a49] shadow-[0_14px_30px_-26px_rgba(8,69,50,0.48)]">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-[0.66rem] font-black uppercase tracking-[0.16em] text-black/38">
+          {label}
+        </p>
+        <div className="mt-1 text-sm font-bold leading-6 text-[#122018] sm:text-base">
+          {value}
+        </div>
       </div>
     </div>
   );
 }
 
-export function AdminBlacklistExtendPage({ userId: _userId, entry }: { userId?: string; entry: AdminBlacklistItem }) {
+function BlacklistTraceCard({ trace }: { trace: Record<string, any> }) {
+  return (
+    <article className="rounded-[1.35rem] border border-black/8 bg-white p-4 shadow-[0_18px_44px_-40px_rgba(8,69,50,0.5)]">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#0a6a49]/62">
+            {trace.lotLabel ?? trace.lotCode ?? "-"}
+          </p>
+          <h4 className="mt-1 font-headline text-lg font-black tracking-[-0.02em] text-[#122018]">
+            {trace.itemName ?? "Barang lelang"}
+          </h4>
+          <p className="mt-1 text-sm font-semibold text-black/46">
+            {humanizeAdminValue(trace.itemCategory)}
+          </p>
+        </div>
+        <span className="rounded-full bg-[#f0f0ee] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/58">
+          {humanizeAdminValue(trace.transactionStatus)}
+        </span>
+      </div>
 
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div>
+          <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-black/38">
+            Nominal menang
+          </p>
+          <p className="mt-1 text-sm font-black text-[#122018]">
+            {currency.format(Number(trace.amount ?? 0))}
+          </p>
+        </div>
+        <div>
+          <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-black/38">
+            Batas bayar
+          </p>
+          <p className="mt-1 text-sm font-black text-[#122018]">
+            {trace.paymentDeadlineLabel ?? "-"}
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-4 rounded-[1.1rem] bg-[#f7f6f1] px-3 py-2 text-sm font-semibold leading-6 text-black/58">
+        {trace.note ??
+          "Pemenang lelang tidak menyelesaikan pembayaran sampai batas waktu."}
+      </p>
+    </article>
+  );
+}
+
+export function AdminBlacklistDetailPage({
+  userId: _userId,
+  entry,
+}: {
+  userId?: string;
+  entry: AdminBlacklistItem;
+}) {
+  const level = getBlacklistLevel(entry);
+
+  return (
+    <div className="space-y-6">
+      <section className="rounded-[1.5rem] border border-black/8 bg-white p-5 shadow-[0_18px_54px_-48px_rgba(8,69,50,0.34)] sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="page-heading-eyebrow">
+              Admin Unit / Detail Blacklist
+            </p>
+            <h2 className="mt-3 font-headline text-3xl font-black tracking-[-0.03em] text-[#122018] sm:text-4xl">
+              Detail Kasus Nasabah
+            </h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-black/58">
+              Ringkasan akun, level pelanggaran, dan barang lelang yang belum
+              diselesaikan pembayarannya.
+            </p>
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-3 rounded-[1.25rem] bg-[#f8f7f3] p-3 ring-1 ring-black/6 sm:min-w-[24rem]">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#e9f6ef] text-sm font-black text-[#0a6a49]">
+                {getBlacklistInitials(entry.name || "User")}
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate font-headline text-xl font-black tracking-[-0.03em] text-[#122018]">
+                  {entry.name}
+                </h3>
+                <p className="truncate text-sm font-semibold text-black/52">
+                  {entry.email ?? entry.userId}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <BlacklistLevelBadge level={level} />
+              <AdminStatusBadge
+                className="text-[0.75rem]"
+                status={entry.status}
+              />
+              <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/54 ring-1 ring-black/6">
+                {isBlacklistRestrictionActive(entry)
+                  ? "Pembatasan aktif"
+                  : "Pembatasan selesai"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <AdminBlacklistDetailWorkspace entry={entry} />
+    </div>
+  );
+}
+
+export function AdminBlacklistExtendPage({
+  userId: _userId,
+  entry,
+}: {
+  userId?: string;
+  entry: AdminBlacklistItem;
+}) {
   return (
     <div className="space-y-6">
       <AdminPageIntro
         eyebrow="Admin Unit / Perpanjang Blacklist"
-      title={`Perpanjang masa pembatasan ${entry.name}`}
+        title={`Perpanjang masa pembatasan ${entry.name}`}
         description="Perpanjang masa pembatasan bila masih ada alasan operasional yang kuat. Riwayat pelanggaran tetap disimpan sebagai catatan."
-        actions={<AdminStatusBadge className="text-[0.95rem]" status={entry.status} />}
+        actions={
+          <AdminStatusBadge className="text-[0.95rem]" status={entry.status} />
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
         <Card className="rounded-2xl border border-black/10 bg-white">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Ringkasan User</CardTitle>
+            <CardTitle className="text-xl sm:text-[1.45rem]">
+              Ringkasan User
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <DetailTile label="Nama User" value={entry.name} />
-            <DetailTile label="Status Saat Ini" value={<AdminStatusBadge status={entry.status} />} />
+            <DetailTile
+              label="Status Saat Ini"
+              value={<AdminStatusBadge status={entry.status} />}
+            />
             <DetailTile label="Pelanggaran" value={entry.violations} />
             <DetailTile label="Blokir Sampai" value={entry.until} />
           </CardContent>
         </Card>
         <Card className="rounded-2xl border border-black/10 bg-white">
           <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">Form Perpanjangan</CardTitle>
+            <CardTitle className="text-xl sm:text-[1.45rem]">
+              Form Perpanjangan
+            </CardTitle>
           </CardHeader>
           <div className="grid gap-5 p-6">
             <div className="space-y-2">
@@ -1430,7 +1883,10 @@ export function AdminBlacklistExtendPage({ userId: _userId, entry }: { userId?: 
             </div>
             <div className="space-y-2">
               <FieldLabel>Alasan perpanjangan</FieldLabel>
-              <Textarea className="min-h-32" placeholder="Tuliskan alasan yang jelas agar tim lain mudah menelusuri keputusan ini." />
+              <Textarea
+                className="min-h-32"
+                placeholder="Tuliskan alasan yang jelas agar tim lain mudah menelusuri keputusan ini."
+              />
             </div>
             <AdminUnitActionButton
               className="h-12 w-full rounded-2xl"
@@ -1443,7 +1899,8 @@ export function AdminBlacklistExtendPage({ userId: _userId, entry }: { userId?: 
               pendingTitle="Memperpanjang blacklist"
               payload={{
                 blockedUntil: dateAfter(30),
-                reason: "Masa blokir diperpanjang berdasarkan evaluasi admin unit."
+                reason:
+                  "Masa blokir diperpanjang berdasarkan evaluasi admin unit.",
               }}
               redirectTo={`/admin/blacklist/${entry.userId}`}
               successDescription="Masa pembatasan akun sudah diperbarui."

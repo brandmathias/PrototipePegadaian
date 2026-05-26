@@ -97,13 +97,18 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
 }
 
 export async function listAdminBarang(unitId: string) {
-  const rows = await db.select().from(barang).where(eq(barang.unitId, unitId)).orderBy(desc(barang.createdAt));
+  const rows = await db
+    .select()
+    .from(barang)
+    .where(eq(barang.unitId, unitId))
+    .orderBy(desc(barang.createdAt));
+  const inventoryRows = rows.filter((item) => ["gadai", "jaminan", "gagal"].includes(item.status));
 
-  if (rows.length === 0) {
+  if (inventoryRows.length === 0) {
     return [];
   }
 
-  const ids = rows.map((item) => item.id);
+  const ids = inventoryRows.map((item) => item.id);
   const mediaCounts = await db
     .select({
       barangId: mediaBarang.barangId,
@@ -143,7 +148,7 @@ export async function listAdminBarang(unitId: string) {
     previewImageMap.set(media.barangId, media.url);
   }
 
-  return rows.map((row) =>
+  return inventoryRows.map((row) =>
     serializeAdminBarang(row, {
       mediaCount: mediaMap.get(row.id) ?? 0,
       marketingMode: marketingMap.get(row.id) ?? null,

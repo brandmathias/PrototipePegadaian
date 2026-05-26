@@ -306,12 +306,12 @@ export function DashboardShell({
             </div>
           </div>
 
-          <div className="relative mt-4 min-h-[6.05rem] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[linear-gradient(150deg,rgba(255,255,255,0.075),rgba(255,255,255,0.026)_58%,rgba(75,214,152,0.08))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_45px_-36px_rgba(0,0,0,0.85)]">
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-36 bg-[radial-gradient(circle_at_bottom_right,rgba(137,255,207,0.28),transparent_62%)]" />
-            <div className="pointer-events-none absolute -bottom-7 right-2 h-14 w-36 rounded-full bg-emerald-200/14 blur-xl" />
+          <div className="group relative mt-4 min-h-[6.05rem] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[linear-gradient(150deg,rgba(255,255,255,0.075),rgba(255,255,255,0.028)_58%,rgba(96,226,164,0.1))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_45px_-36px_rgba(0,0,0,0.85)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-36 bg-[radial-gradient(circle_at_bottom_right,rgba(137,255,207,0.22),transparent_62%)]" />
+            <div className="pointer-events-none absolute -bottom-7 right-2 h-14 w-36 rounded-full bg-emerald-200/18 blur-xl" />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-1 right-0 top-1 w-36 opacity-95 brightness-125 contrast-125 drop-shadow-[0_18px_18px_rgba(65,255,177,0.14)]"
+              className="pointer-events-none absolute -bottom-1 right-0 top-1 w-36 opacity-[0.74] brightness-[0.84] contrast-[1.14] saturate-[1.02] drop-shadow-[0_16px_18px_rgba(65,255,177,0.1)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[1px] group-hover:-translate-y-[1px] group-hover:scale-[1.02]"
               style={{
                 backgroundImage: "url('/uploads/Sidebar%20Kantor.svg')",
                 backgroundPosition: "right bottom",
@@ -322,8 +322,8 @@ export function DashboardShell({
             <div className="pointer-events-none absolute inset-x-4 bottom-3 h-px bg-gradient-to-r from-transparent via-emerald-100/22 to-transparent" />
             <p className="relative text-[0.68rem] font-bold uppercase tracking-[0.2em] text-white/46">Unit Aktif</p>
             <p className="relative mt-1 max-w-[10rem] text-[1.02rem] font-semibold leading-tight text-white/92">{title}</p>
-            <span className="relative mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-50">
-              <span className="size-1.5 rounded-full bg-emerald-300" />
+            <span className="relative mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-200/20 bg-emerald-300/12 px-2.5 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-emerald-50 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-emerald-300/14">
+              <span className="size-1.5 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(110,255,180,0.3)]" />
               Aktif
             </span>
           </div>

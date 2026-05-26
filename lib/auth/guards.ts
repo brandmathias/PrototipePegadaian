@@ -37,6 +37,17 @@ export function getRoleHomePath(role: AuthRole) {
   return ROLE_HOME_PATHS[role];
 }
 
+export function getAuthenticatedLoginRedirectPath(
+  user?: { role?: string | null; isActive?: boolean | null } | null,
+  next?: string | null
+) {
+  if (!user || !isAuthRole(user.role) || user.isActive === false) {
+    return null;
+  }
+
+  return getSafeRoleNextPath(user.role, next);
+}
+
 export function getSafeRoleNextPath(role: AuthRole, next?: string | null) {
   if (!next) {
     return getRoleHomePath(role);

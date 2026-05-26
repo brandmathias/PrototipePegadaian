@@ -28,7 +28,7 @@ describe("AdminDashboardPage", () => {
   it("renders operational summary and latest transaction table", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
-    expect(screen.getByText(/ringkasan hari ini/i)).toBeInTheDocument();
+    expect(screen.getByText(/admin unit \/ dashboard/i)).toBeInTheDocument();
     expect(screen.getByText(/barang jaminan siap dipasarkan/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran yang perlu ditangani/i })).toBeInTheDocument();
   });

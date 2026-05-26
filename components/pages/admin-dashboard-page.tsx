@@ -5,11 +5,13 @@ import {
   BadgeCheck,
   Clock3,
   Gavel,
+  Landmark,
   PackagePlus,
   ShieldAlert
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,28 +83,16 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      <section className="hero-surface section-reveal p-6 sm:p-7 lg:p-8">
-        <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr] xl:items-start">
-          <div className="max-w-4xl space-y-5">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="page-heading-eyebrow bg-white/85 shadow-sm">
-                Ringkasan Hari Ini
-              </span>
-              <span className="rounded-full border border-[#cfe2d7] bg-white/70 px-4 py-2 text-xs font-semibold text-[#0a6a49]/80">
-                Rekening aktif {summary.activeBank}
-              </span>
-            </div>
-            <div>
-              <h2 className="page-heading-title font-headline text-[2.35rem] font-black leading-[0.96] tracking-tight text-[#085a41] sm:text-[3rem] xl:text-[4rem]">
-                {summary.unitName}
-              </h2>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-foreground/72 sm:text-lg">
-                Halaman ini membantu tim unit memantau pekerjaan yang paling penting, dari
-                pencatatan barang jaminan, penayangan ke katalog,
-                verifikasi pembayaran, sampai penanganan pelanggaran lelang.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
+      <AdminPageHero
+        description="Halaman ini membantu tim unit memantau pekerjaan yang paling penting, dari pencatatan barang jaminan, penayangan ke katalog, verifikasi pembayaran, sampai penanganan pelanggaran lelang."
+        eyebrow="Admin Unit / Dashboard"
+        icon={Landmark}
+        rightRail={
+          <>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-[#6cb6ff]/55 backdrop-blur">
+              Rekening aktif {summary.activeBank}
+            </span>
+            <div className="flex flex-wrap gap-3 md:justify-end">
               <Link href="/admin/barang/tambah">
                 <Button className="h-12 rounded-2xl px-5 text-sm sm:h-14 sm:text-base">
                   <PackagePlus className="size-4" />
@@ -116,20 +106,21 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
                 </Button>
               </Link>
             </div>
-          </div>
+          </>
+        }
+        title={summary.unitName}
+      />
 
-          <div className="interactive-card rounded-[1.75rem] border border-[#d2e4da] bg-white/80 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur">
-            <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/58">
-              Checklist Harian
-            </p>
-            <div className="mt-4 space-y-4 text-sm leading-7 text-black/70 sm:text-base">
-              <p>1. Pastikan barang baru sudah tercatat lengkap, termasuk foto utama dan hasil appraisal.</p>
-              <p>2. Dahulukan barang yang mendekati jatuh tempo agar keputusan perpanjangan, tebus, atau pindah ke aset unit tidak tertunda.</p>
-              <p>3. Tinjau barang yang siap tayang, lalu pilih skema penjualan yang paling tepat.</p>
-              <p>4. Selesaikan antrian transaksi yang masih menunggu pengecekan agar nota bisa segera diterbitkan.</p>
-              <p>5. Pantau pemenang yang belum menyelesaikan pembayaran dan catat pelanggaran tepat waktu bila diperlukan.</p>
-            </div>
-          </div>
+      <section className="interactive-card rounded-[1.75rem] border border-[#d2e4da] bg-white/80 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur">
+        <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/58">
+          Checklist Harian
+        </p>
+        <div className="mt-4 grid gap-4 text-sm leading-7 text-black/70 sm:text-base lg:grid-cols-2">
+          <p>1. Pastikan barang baru sudah tercatat lengkap, termasuk foto utama dan hasil appraisal.</p>
+          <p>2. Dahulukan barang yang mendekati jatuh tempo agar keputusan perpanjangan, tebus, atau pindah ke aset unit tidak tertunda.</p>
+          <p>3. Tinjau barang yang siap tayang, lalu pilih skema penjualan yang paling tepat.</p>
+          <p>4. Selesaikan antrian transaksi yang masih menunggu pengecekan agar nota bisa segera diterbitkan.</p>
+          <p className="lg:col-span-2">5. Pantau pemenang yang belum menyelesaikan pembayaran dan catat pelanggaran tepat waktu bila diperlukan.</p>
         </div>
       </section>
 
