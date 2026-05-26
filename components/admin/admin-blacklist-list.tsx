@@ -532,7 +532,7 @@ export function AdminBlacklistList({
                         palette.icon,
                       )}
                     >
-                      <CalendarClock className="size-5" />
+                      <CalendarClock className="size-5 text-[#d72b43]" />
                     </span>
                     <div className="min-w-0">
                       <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] opacity-70">

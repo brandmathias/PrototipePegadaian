@@ -46,8 +46,9 @@ describe("BuyerShell", () => {
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
     expect(screen.getByRole("link", { name: /wishlist, 2 barang disukai/i })).toHaveAttribute("href", "/wishlist");
-    expect(screen.getByText(/member sejak 29 april 2026/i)).toBeInTheDocument();
-    expect(screen.getByText(/blacklist aktif sampai 5 mei 2026/i)).toBeInTheDocument();
+    expect(screen.queryByText(/ruang pembeli/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/member sejak 29 april 2026/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/blacklist aktif sampai 5 mei 2026/i)).not.toBeInTheDocument();
     expect(screen.getByText("Konten akun")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^keluar$/i })).not.toBeInTheDocument();
 

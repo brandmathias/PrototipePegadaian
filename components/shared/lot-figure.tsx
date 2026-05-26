@@ -83,11 +83,6 @@ export function LotFigure({ category, className, media = [], showVideoControls =
             <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur">
               {category}
             </span>
-            {media.length > 1 ? (
-              <span className="rounded-full bg-black/25 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 backdrop-blur">
-                {media.length} media
-              </span>
-            ) : null}
           </div>
           <div className="flex items-end justify-between">
             <div className="space-y-1 opacity-75">

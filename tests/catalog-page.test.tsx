@@ -110,6 +110,21 @@ describe("CatalogPage", () => {
     expect(screen.queryByText(/menunggu hasil/i)).not.toBeInTheDocument();
   });
 
+  it("shows a clear unlike affordance on favorited catalog items", () => {
+    render(
+      <CatalogPage
+        initialFavoriteIds={["lot-db-1"]}
+        lots={[makeLot(1, { name: "Cincin Favorit" })]}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /hapus suka cincin favorit/i })).toHaveAttribute(
+      "title",
+      "Hapus dari disukai"
+    );
+    expect(screen.getByText("Hapus dari disukai")).toBeInTheDocument();
+  });
+
   it("renders uploaded lot media instead of the category placeholder when media exists", () => {
     render(
       <CatalogPage

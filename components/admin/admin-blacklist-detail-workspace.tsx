@@ -410,7 +410,7 @@ export function AdminBlacklistDetailWorkspace({
                 }
               />
               <SummaryRow
-                icon={<Clock3 className="size-4" />}
+                icon={<Clock3 className="size-4 text-[#d72b43]" />}
                 label="Masa Pembatasan"
                 value={
                   <span className="inline-flex flex-col gap-1">

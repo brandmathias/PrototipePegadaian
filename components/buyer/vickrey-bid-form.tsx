@@ -266,7 +266,7 @@ export function VickreyBidForm({
                 </div>
                 {lot.countdown || lot.endsAt ? (
                   <div className="inline-flex items-center gap-2 rounded-full bg-tertiary-container/10 px-4 py-2 text-sm font-semibold text-tertiary-container">
-                    <Clock3 className="size-4" />
+                    <Clock3 className="size-4 text-[#d72b43]" />
                     <LiveCountdown
                       expiredLabel="Menunggu hasil"
                       fallbackLabel={lot.countdown}

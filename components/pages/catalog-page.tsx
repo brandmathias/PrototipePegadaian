@@ -34,6 +34,7 @@ import {
 
 import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
+import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
@@ -573,18 +574,7 @@ function CatalogLotCard({
           {mode.label}
         </div>
         <div className="absolute right-3 top-3 rounded-full bg-black/18 p-0.5 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.75)] backdrop-blur-sm">
-          <button
-            aria-pressed={favorite}
-            aria-label={`${favorite ? "Hapus suka" : "Sukai"} ${lot.name}`}
-            className={cn(
-              "grid size-9 place-items-center rounded-full border border-white bg-white text-[#13211c] shadow-[0_12px_24px_-16px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.98)] transition duration-500 hover:-translate-y-0.5 hover:scale-[1.03] hover:text-[#075f42]",
-              favorite && "border-[#f2d17d] bg-[#fff4cf] text-[#bd7a00] shadow-[0_16px_28px_-18px_rgba(189,122,0,0.45),inset_0_1px_0_rgba(255,255,255,0.98)]"
-            )}
-            type="button"
-            onClick={onToggleFavorite}
-          >
-            <Heart className={cn("size-4.5", favorite && "fill-current")} strokeWidth={2.15} />
-          </button>
+          <FavoriteToggleButton favorited={favorite} itemName={lot.name} onClick={onToggleFavorite} />
         </div>
       </div>
 
@@ -636,7 +626,7 @@ function CatalogLotCard({
             {showAuctionCountdown ? (
               <div className="inline-grid min-w-[10.4rem] w-max max-w-full gap-y-0.5 self-center text-left">
                 <span className="flex items-center gap-1.5 whitespace-nowrap text-[0.72rem] font-bold leading-none text-[#5b6761]">
-                  <Timer className="size-3.5 text-[#2f8f6b]" />
+                  <Timer className="size-3.5 text-[#d72b43]" />
                   <span>Berakhir</span>
                   <span className="font-black text-[#34423c] [font-variant-numeric:tabular-nums]">
                     <LiveCountdown

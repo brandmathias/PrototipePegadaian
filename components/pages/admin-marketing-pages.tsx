@@ -291,7 +291,7 @@ function FixedPriceCard({ auction }: { auction: MarketingSession }) {
             {currency.format(auction.price ?? 0)}
           </p>
           <p className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <Clock3 className="size-3.5" />
+            <Clock3 className="size-3.5 text-[#d72b43]" />
             {transactionLabel}
           </p>
         </div>
@@ -356,7 +356,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
             {currency.format(auction.basePrice ?? 0)}
           </p>
           <p className="inline-flex items-center gap-1 text-xs font-medium text-tertiary-container">
-            <Clock3 className="size-3.5" />
+            <Clock3 className="size-3.5 text-[#d72b43]" />
             <AdminLiveCountdown
               className="text-xs font-medium"
               expiredLabel={waitingReveal ? "Batas reveal terlewati" : "Deadline terlewati"}

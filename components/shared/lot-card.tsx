@@ -52,7 +52,7 @@ export function LotCard({ lot, serverNow }: LotCardProps) {
           </p>
           {showAuctionCountdown ? (
             <p className="inline-flex items-center gap-1 text-xs font-medium text-tertiary-container">
-              <Clock3 className="size-3.5" />
+              <Clock3 className="size-3.5 text-[#d72b43]" />
               <LiveCountdown
                 expiredLabel="Menunggu hasil"
                 fallbackLabel={lot.countdown}

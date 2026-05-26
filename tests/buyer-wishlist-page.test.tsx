@@ -100,13 +100,25 @@ describe("WishlistPage", () => {
     );
 
     expect(screen.getByRole("heading", { name: /^wishlist$/i })).toBeInTheDocument();
-    expect(screen.getByText(/3 barang disukai/i)).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /urut/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /semua barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /harga tetap/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lelang vickrey/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tampilan grid/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tampilan daftar/i })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /kategori/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /kondisi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /lokasi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /^harga$/i })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /masih tersedia/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /tidak tersedia/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /tidak tersedia/i })).not.toBeInTheDocument();
     expect(screen.getByText("Cincin Emas 2")).toBeInTheDocument();
     expect(screen.getByText("Kalung Emas 2")).toBeInTheDocument();
-    expect(screen.getByText("Liontin Emas Lama")).toBeInTheDocument();
-    expect(screen.getByText(/barang sudah tidak tersedia/i)).toBeInTheDocument();
+    expect(screen.queryByText("Liontin Emas Lama")).not.toBeInTheDocument();
+    expect(screen.queryByText(/barang sudah tidak tersedia/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/bagikan wishlist/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/arsip/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText("Hapus dari disukai").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /beli sekarang cincin emas 2/i })).toHaveAttribute(
       "href",
       "/katalog/lot-fixed-1"

@@ -179,7 +179,7 @@ function SuperAdminCountdown({
 
   return (
     <div className="flex items-center gap-2 text-sm font-medium text-primary">
-      <Clock3 className="size-4 shrink-0" />
+      <Clock3 className="size-4 shrink-0 text-[#d72b43]" />
       <AdminLiveCountdown
         className={className}
         expiredLabel={expiredLabel}
