@@ -1,16 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Gavel, Grid2X2, Home, ReceiptText } from "lucide-react";
 
-import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
+import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
-import { AlertCenter } from "@/components/ui/alert-center";
 import { Badge } from "@/components/ui/badge";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
-import { cn } from "@/lib/utils";
 
 type BuyerShellProps = {
   buyer: BuyerSessionUser;
@@ -29,79 +25,13 @@ type BuyerShellProps = {
   };
 };
 
-const buyerNav = [
-  {
-    href: "/dashboard",
-    icon: Home,
-    label: "Beranda"
-  },
-  {
-    href: "/katalog",
-    icon: Grid2X2,
-    label: "Katalog"
-  },
-  {
-    href: "/transaksi",
-    icon: ReceiptText,
-    label: "Transaksi"
-  }
-];
-
 export function BuyerShell({ buyer, children, title, description, summary }: BuyerShellProps) {
   const pathname = usePathname();
   const showIntro = pathname !== "/dashboard" && pathname !== "/profil";
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur print:hidden">
-        <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
-          <div className="flex items-center gap-6">
-            <Link
-              className="flex items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
-              href="/"
-            >
-              <span className="rounded-2xl bg-primary p-2 text-white">
-                <Gavel className="size-4" />
-              </span>
-              Pegadaian Lelang
-            </Link>
-            <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 lg:flex">
-              {buyerNav.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(item.href));
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition",
-                      active
-                        ? "bg-white text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-primary"
-                    )}
-                    href={item.href}
-                    key={item.href}
-                  >
-                    <Icon className="size-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <CatalogSearchInput
-              inputClassName="hidden w-72 lg:block xl:w-80"
-              placeholder="Cari barang, unit, kategori..."
-              submitLabel="Telusuri"
-              wrapperClassName="hidden lg:block"
-            />
-            <AlertCenter className="shrink-0" scope="buyer" />
-            <BuyerProfileMenu image={summary.image} name={buyer.name} profileHref="/profil" />
-          </div>
-        </div>
-      </header>
+      <BuyerTopNav image={summary.image} name={buyer.name} />
 
       {showIntro ? (
         <section className="border-b border-black/5 bg-[radial-gradient(circle_at_top_left,rgba(14,98,71,0.10),transparent_45%),linear-gradient(180deg,#fff_0%,#f9f7f1_100%)] print:hidden">

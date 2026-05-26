@@ -194,4 +194,36 @@ describe("CatalogPage", () => {
 
     expect(screen.getByText("Barang Katalog 13")).toBeInTheDocument();
   });
+
+  it("keeps card metadata tidy and shows only top units before expanding the unit list", () => {
+    render(
+      <CatalogPage
+        lots={Array.from({ length: 6 }, (_, index) =>
+          makeLot(index + 1, {
+            unitName: `Unit Prioritas ${index + 1}`,
+            location: `Unit Prioritas ${index + 1}`,
+            category:
+              index === 5
+                ? "Kendaraan"
+                : index === 4
+                  ? "Logam Mulia"
+                  : index % 2 === 0
+                    ? "Elektronik"
+                    : "Emas & Perhiasan"
+          })
+        )}
+      />
+    );
+
+    expect(screen.queryByText("Pembayaran aman")).not.toBeInTheDocument();
+    expect(screen.queryByText("Aturan transparan")).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText("0")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Tidak terbatas")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tampilkan 2 lainnya/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /unit prioritas 5/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /tampilkan 2 lainnya/i }));
+
+    expect(screen.getByRole("button", { name: /unit prioritas 5/i })).toBeInTheDocument();
+  });
 });

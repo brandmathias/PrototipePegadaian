@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   SlidersHorizontal,
+  Sparkles,
   Store,
   Tag,
   Timer,
@@ -87,16 +88,16 @@ function formatCompactCurrency(value: number) {
   return currency.format(value);
 }
 
-function titleCase(value: string) {
-  return value
+function titleCase(value: string | null | undefined) {
+  return (value ?? "")
     .split(/\s+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 }
 
-function normalize(value: string) {
-  return value.trim().toLowerCase();
+function normalize(value: string | null | undefined) {
+  return (value ?? "").trim().toLowerCase();
 }
 
 function getCountLabel(count: number) {
@@ -139,7 +140,8 @@ function getLotInsights(lot: Lot, index: number) {
 function getCategoryIcon(category: string) {
   const normalized = normalize(category);
 
-  if (normalized.includes("emas") || normalized.includes("perhiasan")) return Gem;
+  if (normalized.includes("emas")) return Gem;
+  if (normalized.includes("perhiasan")) return Sparkles;
   if (normalized.includes("logam")) return Medal;
   if (normalized.includes("elektronik")) return Cpu;
   if (normalized.includes("kendaraan")) return CarFront;
@@ -303,7 +305,7 @@ function HeroInfoCard({
   tone?: "green" | "gold";
 }) {
   return (
-    <div className="rounded-md border border-white/80 bg-white/78 p-5 shadow-[0_26px_70px_-54px_rgba(9,55,41,0.5)] backdrop-blur">
+    <div className="rounded-md border border-white/80 bg-white/88 p-5 shadow-[0_26px_70px_-54px_rgba(9,55,41,0.5)]">
       <div className="flex items-start gap-4">
         <span
           className={cn(
@@ -407,19 +409,33 @@ function CatalogLotCard({
           <p className="mt-1 text-xs font-semibold text-black/48">{lot.code}</p>
         </div>
 
-        <div className="mt-3 grid gap-1.5 text-[0.72rem] font-medium text-black/56 sm:grid-cols-2">
-          <p className="inline-flex min-w-0 items-center gap-1.5">
-            <Tag className="size-3.5 shrink-0" />
-            <span className="truncate">{titleCase(lot.category)}</span>
-            <span className="text-black/24">-</span>
-            <span className="truncate">{subtype}</span>
-          </p>
-          <p className="inline-flex min-w-0 items-center gap-1.5">
-            <MapPin className="size-3.5 shrink-0" />
-            <span className="truncate">{lot.unitName}</span>
-            <span className="text-black/24">-</span>
-            <span className="truncate">{titleCase(lot.condition)}</span>
-          </p>
+        <div className="mt-3 flex flex-wrap gap-1.5 text-[0.7rem] font-bold text-black/58">
+          {[
+            {
+              icon: <Tag className="size-3.5" />,
+              label: titleCase(lot.category)
+            },
+            {
+              icon: <Package className="size-3.5" />,
+              label: subtype
+            },
+            {
+              icon: <MapPin className="size-3.5" />,
+              label: lot.unitName
+            },
+            {
+              icon: <BadgeCheck className="size-3.5" />,
+              label: titleCase(lot.condition)
+            }
+          ].map((item) => (
+            <span
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-[#f4f3ef] px-2 py-1"
+              key={`${lot.id}-${item.label}`}
+            >
+              <span className="shrink-0 text-[#075f42]">{item.icon}</span>
+              <span className="min-w-0 truncate">{item.label}</span>
+            </span>
+          ))}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.72rem] font-semibold text-black/56">
@@ -458,7 +474,7 @@ function CatalogLotCard({
               </p>
             </div>
             {showAuctionCountdown ? (
-              <p className="max-w-[11rem] text-right text-[0.72rem] font-semibold text-[#075f42]">
+              <p className="inline-flex max-w-[13rem] items-center rounded-md border border-[#f2bdc7] bg-[#fff1f3] px-2.5 py-1.5 text-right text-[0.72rem] font-black text-[#b4233c]">
                 <Timer className="mr-1 inline size-3.5 align-[-2px]" />
                 <LiveCountdown
                   expiredLabel="Menunggu hasil"
@@ -469,28 +485,6 @@ function CatalogLotCard({
                 />
               </p>
             ) : null}
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {lot.mode === "fixed_price" ? (
-              <>
-                <span className="rounded-md bg-[#eef5ef] px-2 py-1 text-[0.68rem] font-bold text-[#075f42]">
-                  Pembayaran aman
-                </span>
-                <span className="rounded-md bg-[#f7f3e9] px-2 py-1 text-[0.68rem] font-bold text-black/54">
-                  Foto asli
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="rounded-md bg-[#eef5ef] px-2 py-1 text-[0.68rem] font-bold text-[#075f42]">
-                  Penawaran tertutup
-                </span>
-                <span className="rounded-md bg-[#f7f3e9] px-2 py-1 text-[0.68rem] font-bold text-black/54">
-                  Aturan transparan
-                </span>
-              </>
-            )}
           </div>
 
           <Link
@@ -596,6 +590,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [categoryQuery, setCategoryQuery] = useState("");
   const [unitQuery, setUnitQuery] = useState("");
+  const [showAllUnits, setShowAllUnits] = useState(false);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState<SortMode>("latest");
@@ -642,11 +637,13 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
   const units = useMemo(() => {
     const map = new Map<string, number>();
     initialLots.forEach((lot) => map.set(lot.unitName, (map.get(lot.unitName) ?? 0) + 1));
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "id"));
+    return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
   }, [initialLots]);
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
-  const visibleUnits = units.filter(([unit]) => normalize(unit).includes(normalize(unitQuery)));
+  const matchingUnits = units.filter(([unit]) => normalize(unit).includes(normalize(unitQuery)));
+  const hiddenUnitCount = unitQuery.trim() ? 0 : Math.max(0, matchingUnits.length - 4);
+  const visibleUnits = unitQuery.trim() || showAllUnits ? matchingUnits : matchingUnits.slice(0, 4);
 
   const filteredLots = useMemo(() => {
     const normalizedQuery = normalize(query);
@@ -765,6 +762,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
     setSelectedUnits([]);
     setCategoryQuery("");
     setUnitQuery("");
+    setShowAllUnits(false);
     setMinPrice("");
     setMaxPrice("");
     setSortBy("latest");
@@ -783,10 +781,10 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
   return (
     <div className="bg-[#f7f6f1]">
       <section
-        className="relative isolate overflow-hidden border-b border-black/5 bg-[image:var(--catalog-hero-image)] bg-cover bg-center"
+        className="relative isolate overflow-hidden border-b border-black/5 bg-[image:var(--catalog-hero-image)] bg-[length:100%_auto] bg-bottom bg-no-repeat"
         style={heroStyle}
       >
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.94)_0%,rgba(255,255,255,0.86)_42%,rgba(255,255,255,0.58)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.86)_0%,rgba(255,255,255,0.70)_42%,rgba(255,255,255,0.38)_100%)]" />
         <div className="container grid gap-8 py-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-16">
           <div className="max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">Katalog Premium</p>
@@ -932,6 +930,15 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
                     />
                   ))}
                 </div>
+                {hiddenUnitCount > 0 ? (
+                  <button
+                    className="mt-3 inline-flex w-full items-center justify-center rounded-md border border-black/8 bg-white px-3 py-2 text-[0.76rem] font-black text-[#075f42] transition duration-500 hover:border-[#0b6a49]/22 hover:bg-[#eef6f0]"
+                    type="button"
+                    onClick={() => setShowAllUnits(true)}
+                  >
+                    Tampilkan {hiddenUnitCount} lainnya
+                  </button>
+                ) : null}
               </FilterSection>
 
               <FilterSection title="Rentang Harga (Rp)">
@@ -941,7 +948,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
                     <input
                       className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold outline-none transition duration-500 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
                       inputMode="numeric"
-                      placeholder="100.000"
+                      placeholder="0"
                       value={minPrice}
                       onChange={(event) => setMinPrice(event.target.value.replace(/\D/g, ""))}
                     />
@@ -951,7 +958,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
                     <input
                       className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold outline-none transition duration-500 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
                       inputMode="numeric"
-                      placeholder="100.000.000"
+                      placeholder="Tidak terbatas"
                       value={maxPrice}
                       onChange={(event) => setMaxPrice(event.target.value.replace(/\D/g, ""))}
                     />

@@ -29,6 +29,7 @@ describe("PublicShell", () => {
       </ToastProvider>
     );
 
+    expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");

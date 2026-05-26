@@ -6,8 +6,7 @@ import type { ReactNode } from "react";
 import { Gavel, LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
-import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
-import { AlertCenter } from "@/components/ui/alert-center";
+import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import type { AuthRole } from "@/lib/auth/guards";
@@ -34,21 +33,6 @@ const guestNav = [
   }
 ];
 
-const buyerNav = [
-  {
-    href: "/dashboard",
-    label: "Beranda"
-  },
-  {
-    href: "/katalog",
-    label: "Katalog"
-  },
-  {
-    href: "/transaksi",
-    label: "Transaksi"
-  }
-];
-
 function getViewerLabel(role: AuthRole) {
   if (role === "super_admin") return "Control Center";
   if (role === "admin_unit") return "Area Admin";
@@ -58,86 +42,83 @@ function getViewerLabel(role: AuthRole) {
 export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
   const isBuyer = viewer?.role === "buyer";
-  const navItems = isBuyer ? buyerNav : guestNav;
+  const navItems = guestNav;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
-      <header className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
-        <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
-          <div className="flex items-center gap-6">
-            <Link
-              className="flex items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
-              href="/"
-            >
-              <span className="rounded-2xl bg-primary p-2 text-white">
-                <Gavel className="size-4" />
-              </span>
-              Pegadaian Lelang
-            </Link>
-            <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex">
-              {navItems.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href !== "/" && pathname.startsWith(item.href));
-
-                return (
-                  <Link
-                    className={cn(
-                      "rounded-full px-4 py-2 text-sm font-medium transition",
-                      active
-                        ? "bg-white text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-primary"
-                    )}
-                    href={item.href}
-                    key={item.href}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <CatalogSearchInput
-              inputClassName="hidden w-72 lg:block xl:w-80"
-              placeholder="Cari lot atau unit..."
-              wrapperClassName="hidden lg:block"
-            />
-            {viewer ? (
-              <>
-                {isBuyer ? <AlertCenter className="shrink-0" scope="buyer" /> : null}
-                {isBuyer ? (
-                  <BuyerProfileMenu image={viewer.image} name={viewer.name} profileHref="/profil" />
-                ) : (
-                  <>
-                    <Link
-                      className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
-                      href={viewer.homeHref}
-                    >
-                      {getViewerLabel(viewer.role)}
-                    </Link>
-                    <LogoutButton
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
-                      redirectTo="/login"
-                    >
-                      <LogOut className="size-4" />
-                      Keluar
-                    </LogoutButton>
-                  </>
-                )}
-              </>
-            ) : (
+      {isBuyer && viewer ? (
+        <BuyerTopNav image={viewer.image} name={viewer.name} />
+      ) : (
+        <header className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+          <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
+            <div className="flex items-center gap-6">
               <Link
-                className={cn(buttonVariants({ variant: "default" }), "min-w-[6.25rem]")}
-                href="/login"
+                className="flex items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
+                href="/"
               >
-                Masuk
+                <span className="rounded-2xl bg-primary p-2 text-white">
+                  <Gavel className="size-4" />
+                </span>
+                Pegadaian Lelang
               </Link>
-            )}
+              <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex">
+                {navItems.map((item) => {
+                  const active =
+                    pathname === item.href ||
+                    (item.href !== "/" && pathname.startsWith(item.href));
+
+                  return (
+                    <Link
+                      className={cn(
+                        "rounded-full px-4 py-2 text-sm font-medium transition",
+                        active
+                          ? "bg-white text-primary shadow-sm"
+                          : "text-muted-foreground hover:text-primary"
+                      )}
+                      href={item.href}
+                      key={item.href}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <CatalogSearchInput
+                inputClassName="hidden w-72 lg:block xl:w-80"
+                placeholder="Cari lot atau unit..."
+                wrapperClassName="hidden lg:block"
+              />
+              {viewer ? (
+                <>
+                  <Link
+                    className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
+                    href={viewer.homeHref}
+                  >
+                    {getViewerLabel(viewer.role)}
+                  </Link>
+                  <LogoutButton
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+                    redirectTo="/login"
+                  >
+                    <LogOut className="size-4" />
+                    Keluar
+                  </LogoutButton>
+                </>
+              ) : (
+                <Link
+                  className={cn(buttonVariants({ variant: "default" }), "min-w-[6.25rem]")}
+                  href="/login"
+                >
+                  Masuk
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main>{children}</main>
 
