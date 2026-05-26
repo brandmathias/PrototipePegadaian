@@ -25,6 +25,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
       summary={{
         image: summary.image,
         memberSince: summary.memberSince,
+        wishlistCount: summary.wishlistCount,
         blacklist: {
           active: summary.blacklist.active,
           until: summary.blacklist.until

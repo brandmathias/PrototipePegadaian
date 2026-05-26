@@ -48,15 +48,21 @@ describe("CatalogPage", () => {
   it("renders the buyer catalog hero, filter rail, product stats, and premium cards", () => {
     render(
       <CatalogPage
+        serverNow={new Date("2026-05-29T12:15:00+08:00").toISOString()}
         lots={[
           makeLot(1, { name: "Cincin Emas Berlian", category: "Emas & Perhiasan" }),
-          makeLot(2, { name: "Laptop ASUS VivoBook 14", category: "Elektronik", mode: "vickrey" })
+          makeLot(2, {
+            name: "Laptop ASUS VivoBook 14",
+            category: "Elektronik",
+            mode: "vickrey",
+            endsAt: new Date("2026-05-30T10:00:30+08:00").toISOString()
+          })
         ]}
       />
     );
 
     expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /temukan barang terbaik pilihan anda/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
     expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Lelang Vickrey")[0]).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();
@@ -64,7 +70,14 @@ describe("CatalogPage", () => {
     expect(screen.getByRole("button", { name: /emas & perhiasan/i })).toBeInTheDocument();
     expect(screen.getAllByText(/dilihat/i)[0]).toBeInTheDocument();
     expect(screen.getAllByText(/suka/i)[0]).toBeInTheDocument();
-    expect(screen.getAllByText(/stok/i)[0]).toBeInTheDocument();
+    expect(screen.getByText("Harga")).toBeInTheDocument();
+    expect(screen.getByText("Harga Dasar")).toBeInTheDocument();
+    expect(screen.getByText(/peserta/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Pembayaran aman").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Penawaran tertutup").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/stok/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^foto\s+\d+/i)).not.toBeInTheDocument();
+    expect(screen.getByText("21 jam 45 menit")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
   });
 
@@ -215,8 +228,8 @@ describe("CatalogPage", () => {
       />
     );
 
-    expect(screen.queryByText("Pembayaran aman")).not.toBeInTheDocument();
-    expect(screen.queryByText("Aturan transparan")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Pembayaran aman").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Aturan transparan").length).toBeGreaterThan(0);
     expect(screen.getByPlaceholderText("0")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Tidak terbatas")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /tampilkan 2 lainnya/i })).toBeInTheDocument();

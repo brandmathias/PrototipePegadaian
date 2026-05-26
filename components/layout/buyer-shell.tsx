@@ -16,6 +16,7 @@ type BuyerShellProps = {
   summary: {
     memberSince: string;
     image?: string | null;
+    wishlistCount?: number;
     blacklist: {
       active: boolean;
       until: string;
@@ -31,7 +32,7 @@ export function BuyerShell({ buyer, children, title, description, summary }: Buy
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
-      <BuyerTopNav image={summary.image} name={buyer.name} />
+      <BuyerTopNav image={summary.image} name={buyer.name} wishlistCount={summary.wishlistCount} />
 
       {showIntro ? (
         <section className="border-b border-black/5 bg-[radial-gradient(circle_at_top_left,rgba(14,98,71,0.10),transparent_45%),linear-gradient(180deg,#fff_0%,#f9f7f1_100%)] print:hidden">

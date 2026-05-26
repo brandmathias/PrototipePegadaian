@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import type { CountdownState } from "@/lib/countdown";
 import { getCountdownState } from "@/lib/countdown";
 
 type LiveCountdownProps = {
@@ -11,6 +12,7 @@ type LiveCountdownProps = {
   prefix?: string;
   className?: string;
   serverNow?: string;
+  formatLabel?: (label: string, state: CountdownState) => string;
 };
 
 export function LiveCountdown({
@@ -19,7 +21,8 @@ export function LiveCountdown({
   expiredLabel,
   prefix,
   className,
-  serverNow
+  serverNow,
+  formatLabel
 }: LiveCountdownProps) {
   const syncedClock = useMemo(() => {
     const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
@@ -67,6 +70,7 @@ export function LiveCountdown({
   }, [expiredLabel, syncedClock, targetAt]);
 
   const text = state.isExpired || !prefix ? state.label : `${prefix} ${state.label}`;
+  const output = formatLabel ? formatLabel(text, state) : text;
 
-  return <span className={className}>{text}</span>;
+  return <span className={className}>{output}</span>;
 }

@@ -29,6 +29,7 @@ import {
 } from "@/lib/db/schema";
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
@@ -308,6 +309,7 @@ export async function getBuyerSummary(userId: string) {
   ]);
   const blacklist = await getActiveBlacklist(userId);
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+  const wishlistCount = await getBuyerWishlistCount(userId);
   const transactions = await listBuyerTransactions(userId);
   const bidHistory = await listBuyerBids(userId);
   const needsAction = transactions.filter((transaction) =>
@@ -324,6 +326,7 @@ export async function getBuyerSummary(userId: string) {
     accountId: `USR-${userId.slice(0, 8).toUpperCase()}`,
     email: profile?.email ?? buyerUser?.email ?? "-",
     image: buyerUser?.image ?? null,
+    wishlistCount,
     phone: profile?.phoneNumber ?? buyerUser?.phoneNumber ?? "-",
     nationalId,
     nikMasked: nationalId ? `${nationalId.slice(0, 4)}********${nationalId.slice(-4)}` : "-",

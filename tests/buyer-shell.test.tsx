@@ -27,6 +27,7 @@ describe("BuyerShell", () => {
         description="Ringkasan akun pembeli."
         summary={{
           memberSince: "29 April 2026",
+          wishlistCount: 2,
           blacklist: {
             active: true,
             until: "5 Mei 2026",
@@ -44,6 +45,7 @@ describe("BuyerShell", () => {
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
+    expect(screen.getByRole("link", { name: /wishlist, 2 barang disukai/i })).toHaveAttribute("href", "/wishlist");
     expect(screen.getByText(/member sejak 29 april 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/blacklist aktif sampai 5 mei 2026/i)).toBeInTheDocument();
     expect(screen.getByText("Konten akun")).toBeInTheDocument();

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gavel, Grid2X2, Home, ReceiptText } from "lucide-react";
+import { Gavel, Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 type BuyerTopNavProps = {
   image?: string | null;
   name: string;
+  wishlistCount?: number;
 };
 
 const buyerNav = [
@@ -32,7 +33,7 @@ const buyerNav = [
   }
 ];
 
-export function BuyerTopNav({ image, name }: BuyerTopNavProps) {
+export function BuyerTopNav({ image, name, wishlistCount = 0 }: BuyerTopNavProps) {
   const pathname = usePathname();
 
   return (
@@ -81,6 +82,23 @@ export function BuyerTopNav({ image, name }: BuyerTopNavProps) {
             wrapperClassName="hidden lg:block"
           />
           <AlertCenter className="shrink-0" scope="buyer" />
+          <Link
+            aria-label={
+              wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"
+            }
+            className={cn(
+              "interactive-tap relative inline-flex size-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]",
+              pathname === "/wishlist" && "bg-[#eef6f1] text-[#075f42] ring-1 ring-[#0f7a57]/16"
+            )}
+            href="/wishlist"
+          >
+            <Heart aria-hidden="true" className="size-5" />
+            {wishlistCount > 0 ? (
+              <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[#d99900] px-1 text-[0.62rem] font-black leading-5 text-white shadow-[0_10px_22px_-14px_rgba(217,153,0,0.85)]">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            ) : null}
+          </Link>
           <BuyerProfileMenu image={image} name={name} profileHref="/profil" />
         </div>
       </div>

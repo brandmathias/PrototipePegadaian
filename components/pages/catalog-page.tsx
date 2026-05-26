@@ -3,9 +3,9 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
-  BellRing,
   BriefcaseBusiness,
   CarFront,
   CheckCircle2,
@@ -17,20 +17,18 @@ import {
   Gavel,
   Grid3X3,
   Heart,
-  Image as ImageIcon,
   LayoutList,
   MapPin,
   Medal,
-  Package,
+  PackagePlus,
   RotateCcw,
   Search,
-  ShieldCheck,
+  Shapes,
   ShoppingBag,
   SlidersHorizontal,
-  Sparkles,
-  Store,
   Tag,
   Timer,
+  UsersRound,
   X
 } from "lucide-react";
 
@@ -39,13 +37,17 @@ import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
+import type { CountdownState } from "@/lib/countdown";
 import { currency } from "@/lib/formatters/currency";
+import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 type CatalogPageProps = {
   initialQuery?: string;
+  initialFavoriteIds?: string[];
   lots: Lot[];
   serverNow?: string;
+  wishlistSyncEnabled?: boolean;
 };
 
 type SaleMode = "all" | "fixed_price" | "vickrey";
@@ -54,6 +56,8 @@ type ViewMode = "grid" | "list";
 
 const HERO_BACKGROUND = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
 const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
+const EMPTY_FAVORITE_IDS: string[] = [];
+const idNumberFormatter = new Intl.NumberFormat("id-ID");
 
 const sortOptions = [
   { value: "latest", label: "Terbaru" },
@@ -90,6 +94,7 @@ function formatCompactCurrency(value: number) {
 
 function titleCase(value: string | null | undefined) {
   return (value ?? "")
+    .replace(/_/g, " ")
     .split(/\s+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -116,6 +121,43 @@ function getSubtype(lot: Lot) {
   return parts.length > 1 ? titleCase(parts.slice(1, 3).join(" ")) : titleCase(lot.category);
 }
 
+function isCodeLikeChip(value: string, code: string) {
+  const normalizedValue = normalize(value);
+  const normalizedCode = normalize(code);
+  return normalizedValue === normalizedCode || /^brg[-\s]?\d+/i.test(value);
+}
+
+function formatCatalogCountdownLabel(label: string, state: CountdownState) {
+  if (state.isExpired) {
+    return label;
+  }
+
+  const match = label.match(/(?:(\d+)\s+hari\s+)?(?:(\d+)\s+jam\s+)?(?:(\d+)\s+menit\s+)?(?:(\d+)\s+detik)?/i);
+  if (!match) {
+    return label;
+  }
+
+  const [, dayRaw, hourRaw, minuteRaw, secondRaw] = match;
+  const days = Number(dayRaw ?? 0);
+  const hours = Number(hourRaw ?? 0);
+  const minutes = Number(minuteRaw ?? 0);
+  const seconds = Number(secondRaw ?? 0);
+
+  if (days > 0) {
+    return `${days} hari ${hours} jam`;
+  }
+
+  if (hours > 0) {
+    return `${hours} jam ${minutes} menit`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes} menit ${seconds} detik`;
+  }
+
+  return `${Math.max(1, seconds)} detik`;
+}
+
 function getHashSeed(input: string) {
   return input.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
 }
@@ -125,14 +167,10 @@ function getLotInsights(lot: Lot, index: number) {
   const views = 84 + (seed % 168);
   const likes = 12 + (seed % 38);
   const followers = lot.mode === "vickrey" ? 8 + (seed % 34) : 0;
-  const stock = lot.mode === "fixed_price" ? 1 + (seed % 6) : 1;
-  const photoCount = Math.max(1, lot.media.filter((item) => item.type === "foto").length);
 
   return {
     followers,
     likes,
-    photoCount,
-    stock,
     views
   };
 }
@@ -141,11 +179,26 @@ function getCategoryIcon(category: string) {
   const normalized = normalize(category);
 
   if (normalized.includes("emas")) return Gem;
-  if (normalized.includes("perhiasan")) return Sparkles;
+  if (normalized.includes("perhiasan")) return Shapes;
   if (normalized.includes("logam")) return Medal;
   if (normalized.includes("elektronik")) return Cpu;
   if (normalized.includes("kendaraan")) return CarFront;
-  return Package;
+  return PackagePlus;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function parsePriceInput(value: string) {
+  if (!value.trim()) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function formatPriceInput(value: string) {
+  const numeric = parsePriceInput(value);
+  return numeric === null ? "" : idNumberFormatter.format(numeric);
 }
 
 function getPaginationItems(currentPage: number, totalPages: number) {
@@ -305,8 +358,18 @@ function HeroInfoCard({
   tone?: "green" | "gold";
 }) {
   return (
-    <div className="rounded-md border border-white/80 bg-white/88 p-5 shadow-[0_26px_70px_-54px_rgba(9,55,41,0.5)]">
-      <div className="flex items-start gap-4">
+    <div className="relative flex h-full flex-col rounded-[1.1rem] border border-black/8 bg-white/86 p-5 shadow-[0_24px_64px_-50px_rgba(9,55,41,0.48)]">
+      <span
+        className={cn(
+          "absolute right-5 top-5 grid size-5 place-items-center rounded-full border",
+          tone === "gold"
+            ? "border-black/16 bg-white text-transparent"
+            : "border-[#075f42] bg-[#075f42] text-white"
+        )}
+      >
+        {tone === "green" ? <CheckCircle2 className="size-3.5" /> : null}
+      </span>
+      <div className="flex min-h-[4.25rem] items-start gap-4 pr-8">
         <span
           className={cn(
             "grid size-14 shrink-0 place-items-center rounded-full",
@@ -316,16 +379,16 @@ function HeroInfoCard({
           {icon}
         </span>
         <div>
-          <h2 className="font-headline text-2xl font-black text-[#075f42]">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-black/58">
+          <h2 className="font-headline text-xl font-black text-[#075f42]">{title}</h2>
+          <p className="mt-1 text-xs leading-5 text-black/58">
             {tone === "gold" ? "Penawaran tertutup, pemenang ditetapkan secara adil." : "Beli sekarang dengan harga pasti."}
           </p>
         </div>
       </div>
-      <div className="mt-6 space-y-3">
+      <div className="mt-5 grid flex-1 content-start gap-3">
         {items.map((item) => (
-          <p className="flex items-center gap-2 text-sm font-medium text-[#34433c]" key={item}>
-            <CheckCircle2 className={cn("size-4", tone === "gold" ? "text-[#a36d00]" : "text-[#075f42]")} />
+          <p className="flex min-h-5 items-center gap-2 text-xs font-medium text-[#34433c]" key={item}>
+            <CheckCircle2 className={cn("size-3.5", tone === "gold" ? "text-[#a36d00]" : "text-[#075f42]")} />
             {item}
           </p>
         ))}
@@ -344,6 +407,97 @@ function ActiveChip({ children, onRemove }: { children: ReactNode; onRemove: () 
       {children}
       <X className="size-3.5" />
     </button>
+  );
+}
+
+function PriceRangeControl({
+  maxLimit,
+  maxValue,
+  minValue,
+  onMaxValueChange,
+  onMinValueChange,
+  step = 100000
+}: {
+  maxLimit: number;
+  maxValue: string;
+  minValue: string;
+  onMaxValueChange: (value: string) => void;
+  onMinValueChange: (value: string) => void;
+  step?: number;
+}) {
+  const normalizedLimit = Math.max(step, maxLimit);
+  const minNumber = clamp(parsePriceInput(minValue) ?? 0, 0, normalizedLimit);
+  const parsedMax = parsePriceInput(maxValue);
+  const maxNumber = parsedMax === null ? normalizedLimit : clamp(parsedMax, minNumber, normalizedLimit);
+  const minPercent = (minNumber / normalizedLimit) * 100;
+  const maxPercent = (maxNumber / normalizedLimit) * 100;
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <label className="space-y-1">
+          <span className="text-[0.62rem] font-bold text-black/56">Min</span>
+          <input
+            className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold text-[#14211b] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/35 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
+            inputMode="numeric"
+            name="catalogMinPriceInput"
+            placeholder="0"
+            value={formatPriceInput(minValue)}
+            onChange={(event) => onMinValueChange(event.target.value.replace(/\D/g, ""))}
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-[0.62rem] font-bold text-black/56">Maks</span>
+          <input
+            className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold text-[#14211b] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/35 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
+            inputMode="numeric"
+            name="catalogMaxPriceInput"
+            placeholder="Tidak terbatas"
+            value={formatPriceInput(maxValue)}
+            onChange={(event) => onMaxValueChange(event.target.value.replace(/\D/g, ""))}
+          />
+        </label>
+      </div>
+
+      <div className="catalog-range relative h-6">
+        <div className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[#dfe7de]" />
+        <div
+          className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[#075f42]"
+          style={{
+            left: `${minPercent}%`,
+            right: `${100 - maxPercent}%`
+          }}
+        />
+        <input
+          aria-label="Harga minimum"
+          className="catalog-range-thumb"
+          max={normalizedLimit}
+          min={0}
+          name="catalogMinPrice"
+          step={step}
+          type="range"
+          value={minNumber}
+          onChange={(event) => {
+            const nextMin = Math.min(Number(event.target.value), maxNumber);
+            onMinValueChange(String(nextMin));
+          }}
+        />
+        <input
+          aria-label="Harga maksimum"
+          className="catalog-range-thumb"
+          max={normalizedLimit}
+          min={0}
+          name="catalogMaxPrice"
+          step={step}
+          type="range"
+          value={maxNumber}
+          onChange={(event) => {
+            const nextMax = Math.max(Number(event.target.value), minNumber);
+            onMaxValueChange(nextMax >= normalizedLimit ? "" : String(nextMax));
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -366,11 +520,40 @@ function CatalogLotCard({
   const mode = modeCopy[lot.mode];
   const subtype = getSubtype(lot);
   const showAuctionCountdown = lot.mode === "vickrey" && (lot.countdown || lot.endsAt);
+  const CategoryIcon = getCategoryIcon(lot.category);
+  const detailTags =
+    lot.mode === "vickrey"
+      ? [
+          { icon: <Gavel className="size-3" />, label: "Penawaran tertutup" },
+          { icon: <BadgeCheck className="size-3" />, label: "Aturan transparan" }
+        ]
+      : [
+          { icon: <BadgeCheck className="size-3" />, label: "Pembayaran aman" },
+          { icon: <Tag className="size-3" />, label: "Harga pasti" }
+        ];
+  const metadataItems = [
+    {
+      icon: <CategoryIcon className="size-3.5" />,
+      label: titleCase(lot.category)
+    },
+    {
+      icon: <Tag className="size-3.5" />,
+      label: subtype
+    },
+    {
+      icon: <MapPin className="size-3.5" />,
+      label: lot.unitName
+    },
+    {
+      icon: <BadgeCheck className="size-3.5" />,
+      label: titleCase(lot.condition)
+    }
+  ].filter((item) => !isCodeLikeChip(item.label, lot.code));
 
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
+        "group h-full overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
         viewMode === "list" && "grid gap-0 lg:grid-cols-[18rem_1fr]"
       )}
     >
@@ -389,47 +572,32 @@ function CatalogLotCard({
           </span>
           {mode.label}
         </div>
-        <button
-          aria-pressed={favorite}
-          aria-label={`${favorite ? "Hapus suka" : "Sukai"} ${lot.name}`}
-          className={cn(
-            "absolute right-3 top-3 grid size-9 place-items-center rounded-full border border-black/10 bg-white/92 text-black/54 shadow-sm backdrop-blur transition duration-500 hover:-translate-y-0.5 hover:text-[#075f42]",
-            favorite && "border-[#d99900]/24 bg-[#fff7df] text-[#bd7a00]"
-          )}
-          type="button"
-          onClick={onToggleFavorite}
-        >
-          <Heart className={cn("size-4", favorite && "fill-current")} />
-        </button>
+        <div className="absolute right-3 top-3 rounded-full bg-black/18 p-0.5 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.75)] backdrop-blur-sm">
+          <button
+            aria-pressed={favorite}
+            aria-label={`${favorite ? "Hapus suka" : "Sukai"} ${lot.name}`}
+            className={cn(
+              "grid size-9 place-items-center rounded-full border border-white bg-white text-[#13211c] shadow-[0_12px_24px_-16px_rgba(0,0,0,0.72),inset_0_1px_0_rgba(255,255,255,0.98)] transition duration-500 hover:-translate-y-0.5 hover:scale-[1.03] hover:text-[#075f42]",
+              favorite && "border-[#f2d17d] bg-[#fff4cf] text-[#bd7a00] shadow-[0_16px_28px_-18px_rgba(189,122,0,0.45),inset_0_1px_0_rgba(255,255,255,0.98)]"
+            )}
+            type="button"
+            onClick={onToggleFavorite}
+          >
+            <Heart className={cn("size-4.5", favorite && "fill-current")} strokeWidth={2.15} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex min-h-0 flex-col p-4">
-        <div className="min-w-0">
-          <h3 className="truncate font-headline text-base font-black text-[#13211c]">{lot.name}</h3>
-          <p className="mt-1 text-xs font-semibold text-black/48">{lot.code}</p>
-        </div>
+        <div className="flex h-full min-h-0 flex-col p-4">
+          <div className="min-h-[3rem] min-w-0">
+            <h3 className="truncate font-headline text-base font-black text-[#13211c]">{lot.name}</h3>
+            <p className="mt-0.5 text-xs font-semibold text-black/48">{lot.code}</p>
+          </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5 text-[0.7rem] font-bold text-black/58">
-          {[
-            {
-              icon: <Tag className="size-3.5" />,
-              label: titleCase(lot.category)
-            },
-            {
-              icon: <Package className="size-3.5" />,
-              label: subtype
-            },
-            {
-              icon: <MapPin className="size-3.5" />,
-              label: lot.unitName
-            },
-            {
-              icon: <BadgeCheck className="size-3.5" />,
-              label: titleCase(lot.condition)
-            }
-          ].map((item) => (
+        <div className="mt-2.5 flex flex-wrap content-start gap-1.5 overflow-hidden text-[0.7rem] font-bold text-black/58">
+          {metadataItems.map((item) => (
             <span
-              className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-[#f4f3ef] px-2 py-1"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-[#f4f3ef] px-2 py-[0.34rem]"
               key={`${lot.id}-${item.label}`}
             >
               <span className="shrink-0 text-[#075f42]">{item.icon}</span>
@@ -438,60 +606,67 @@ function CatalogLotCard({
           ))}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.72rem] font-semibold text-black/56">
-          <span className="inline-flex items-center gap-1">
+        <div className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56">
+          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
             <Eye className="size-3.5" />
             Dilihat {insights.views}x
           </span>
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
             <Heart className="size-3.5" />
             Suka {insights.likes}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Package className="size-3.5" />
-            Stok {insights.stock}
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <ImageIcon className="size-3.5" />
-            Foto {insights.photoCount}
-          </span>
           {lot.mode === "vickrey" ? (
-            <span className="inline-flex items-center gap-1">
-              <BellRing className="size-3.5" />
-              Diikuti {insights.followers}
+            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
+              <UsersRound className="size-3.5" />
+              Peserta {insights.followers}
             </span>
           ) : null}
         </div>
 
-        <div className="mt-4 flex flex-1 flex-col justify-end">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              {lot.mode === "vickrey" ? (
-                <p className="text-[0.68rem] font-black text-[#075f42]/72">Harga Awal</p>
-              ) : null}
-              <p className={cn("font-headline text-lg font-black", lot.mode === "fixed_price" ? "text-[#d28b00]" : "text-[#075f42]")}>
+        <div className="mt-3 grid content-start gap-2.5">
+          <div className={cn("grid items-start gap-2.5", showAuctionCountdown ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1")}>
+            <div className="min-w-0 flex-1">
+              <p className="text-[0.68rem] font-black text-[#075f42]/72">
+                {lot.mode === "vickrey" ? "Harga Dasar" : "Harga"}
+              </p>
+              <p className={cn("mt-0.5 font-headline text-lg font-black", lot.mode === "fixed_price" ? "text-[#d28b00]" : "text-[#075f42]")}>
                 {currency.format(lot.price)}
               </p>
             </div>
             {showAuctionCountdown ? (
-              <p className="inline-flex max-w-[13rem] items-center rounded-md border border-[#f2bdc7] bg-[#fff1f3] px-2.5 py-1.5 text-right text-[0.72rem] font-black text-[#b4233c]">
-                <Timer className="mr-1 inline size-3.5 align-[-2px]" />
-                <LiveCountdown
-                  expiredLabel="Menunggu hasil"
-                  fallbackLabel={lot.countdown}
-                  prefix="Berakhir"
-                  serverNow={serverNow}
-                  targetAt={lot.endsAt}
-                />
-              </p>
+              <div className="inline-grid min-w-[10.4rem] w-max max-w-full gap-y-0.5 self-center text-left">
+                <span className="flex items-center gap-1.5 whitespace-nowrap text-[0.72rem] font-bold leading-none text-[#5b6761]">
+                  <Timer className="size-3.5 text-[#2f8f6b]" />
+                  <span>Berakhir</span>
+                  <span className="font-black text-[#34423c] [font-variant-numeric:tabular-nums]">
+                    <LiveCountdown
+                      expiredLabel="Menunggu hasil"
+                      fallbackLabel={lot.countdown}
+                      formatLabel={formatCatalogCountdownLabel}
+                      serverNow={serverNow}
+                      targetAt={lot.endsAt}
+                    />
+                  </span>
+                </span>
+                <span className="pl-5 text-[0.62rem] font-semibold leading-tight text-black/46">
+                  {formatAppDateTime(lot.endsAt)}
+                </span>
+              </div>
             ) : null}
           </div>
-
+          <div className="flex min-h-[1.05rem] flex-wrap items-center gap-x-2.5 gap-y-1 text-[0.66rem] font-semibold text-black/56">
+            {detailTags.map((item) => (
+              <span className="inline-flex items-center gap-1 whitespace-nowrap" key={`${lot.id}-${item.label}`}>
+                <span className="text-[#075f42]">{item.icon}</span>
+                {item.label}
+              </span>
+            ))}
+          </div>
           <Link
             aria-label={`Lihat detail ${lot.name}`}
             className={cn(
               buttonVariants({ variant: lot.mode === "fixed_price" ? "accent" : "default" }),
-              "mt-4 h-10 w-full rounded-md text-sm font-black"
+              "h-10 w-full rounded-md text-sm font-black"
             )}
             href={`/katalog/${lot.id}`}
           >
@@ -582,7 +757,14 @@ function PaginationFooter({
   );
 }
 
-export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }: CatalogPageProps) {
+export function CatalogPage({
+  initialFavoriteIds = EMPTY_FAVORITE_IDS,
+  initialQuery = "",
+  lots: initialLots,
+  serverNow,
+  wishlistSyncEnabled = false
+}: CatalogPageProps) {
+  const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [mode, setMode] = useState<SaleMode>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -597,11 +779,48 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZE_OPTIONS[0]);
   const [pageIndex, setPageIndex] = useState(0);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(initialFavoriteIds);
 
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
+
+  useEffect(() => {
+    setFavoriteIds(initialFavoriteIds);
+  }, [initialFavoriteIds]);
+
+  async function handleToggleFavorite(lotId: string) {
+    const wasFavorite = favoriteIds.includes(lotId);
+    setFavoriteIds((current) =>
+      current.includes(lotId) ? current.filter((item) => item !== lotId) : [...current, lotId]
+    );
+
+    if (!wishlistSyncEnabled) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/user/wishlist/${lotId}`, {
+        method: "POST"
+      });
+
+      if (!response.ok) {
+        throw new Error("Wishlist gagal diperbarui.");
+      }
+
+      const result = (await response.json()) as { favorited: boolean };
+      setFavoriteIds((current) =>
+        result.favorited
+          ? Array.from(new Set([...current, lotId]))
+          : current.filter((item) => item !== lotId)
+      );
+      router.refresh();
+    } catch {
+      setFavoriteIds((current) =>
+        wasFavorite ? Array.from(new Set([...current, lotId])) : current.filter((item) => item !== lotId)
+      );
+    }
+  }
 
   const lotsWithInsights = useMemo(
     () =>
@@ -638,6 +857,12 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
     const map = new Map<string, number>();
     initialLots.forEach((lot) => map.set(lot.unitName, (map.get(lot.unitName) ?? 0) + 1));
     return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
+  }, [initialLots]);
+
+  const priceUpperBound = useMemo(() => {
+    const highestPrice = initialLots.reduce((max, lot) => Math.max(max, lot.price), 0);
+    const roundedLimit = Math.ceil(highestPrice / 100000) * 100000;
+    return Math.max(roundedLimit, 1000000);
   }, [initialLots]);
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
@@ -781,50 +1006,32 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
   return (
     <div className="bg-[#f7f6f1]">
       <section
-        className="relative isolate overflow-hidden border-b border-black/5 bg-[image:var(--catalog-hero-image)] bg-[length:100%_auto] bg-bottom bg-no-repeat"
+        className="relative isolate overflow-hidden bg-[image:var(--catalog-hero-image)] bg-[length:100%_auto] bg-bottom bg-no-repeat"
         style={heroStyle}
       >
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.86)_0%,rgba(255,255,255,0.70)_42%,rgba(255,255,255,0.38)_100%)]" />
-        <div className="container grid gap-8 py-12 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-16">
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.76)_42%,rgba(255,255,255,0.50)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(247,246,241,0.94)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-14 rounded-t-[2.4rem] border-t border-black/6 bg-[#fbfaf6]" />
+        <div className="container grid gap-8 pb-20 pt-12 lg:grid-cols-[0.82fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
           <div className="max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">Katalog Premium</p>
-            <h1 className="mt-4 max-w-4xl font-headline text-4xl font-black leading-[1.03] text-[#075f42] md:text-5xl lg:text-[3.3rem]">
-              Temukan barang terbaik pilihan Anda di Pegadaian Lelang
+            <h1 className="mt-4 max-w-4xl font-headline text-4xl font-black leading-[1.03] text-[#075f42] md:text-5xl lg:text-[2.85rem]">
+              Pilih cara pembelian yang tepat untuk Anda
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-[#2f4038]">
-              Jelajahi beragam barang harga tetap dan lelang Vickrey dari berbagai kategori,
-              unit, dan kondisi. Semua barang terverifikasi untuk pengalaman lelang yang aman,
-              transparan, dan terpercaya.
+              Dua cara aman dan transparan untuk mendapatkan barang berkualitas dengan proses terpercaya dari Pegadaian.
             </p>
-
-            <div className="mt-8 grid gap-4 text-sm text-[#314139] sm:grid-cols-3">
-              {[
-                { icon: <ShieldCheck className="size-5" />, title: "Terverifikasi & Aman", body: "Setiap barang telah diverifikasi" },
-                { icon: <BadgeCheck className="size-5" />, title: "Transparan & Terpercaya", body: "Proses lelang terbuka & jelas" },
-                { icon: <Store className="size-5" />, title: "Praktis & Nyaman", body: "Bisa diakses kapan pun" }
-              ].map((item) => (
-                <div className="flex items-start gap-3" key={item.title}>
-                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/82 text-[#075f42] shadow-sm">
-                    {item.icon}
-                  </span>
-                  <span>
-                    <span className="block font-black">{item.title}</span>
-                    <span className="mt-1 block text-xs leading-5 text-black/56">{item.body}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <div className="grid items-stretch gap-5 md:grid-cols-2">
             <HeroInfoCard
               icon={<BriefcaseBusiness className="size-7" />}
-              items={["Pembayaran instan", "Stok terbatas, siap cepat didapat", "Kondisi barang terverifikasi", "Aman, mudah, dan terpercaya"]}
+              items={["Pembayaran instan", "Harga pasti & transparan", "Proses cepat & aman", "Pembayaran aman terjamin"]}
               title="Harga Tetap"
             />
             <HeroInfoCard
               icon={<Gavel className="size-7" />}
-              items={["Penawaran tertutup", "Pemenang dengan harga terbaik", "Aturan jelas & transparan", "Peluang menang lebih besar"]}
+              items={["Penawaran tertutup (sealed-bid)", "Pemenang dengan harga terbaik", "Aturan jelas & transparan", "Peluang menang lebih besar"]}
               title="Lelang Vickrey"
               tone="gold"
             />
@@ -832,7 +1039,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
         </div>
       </section>
 
-      <section className="container -mt-2 pb-12 pt-8">
+      <section className="container relative z-10 -mt-14 pb-12 pt-0">
         <div className="overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_30px_80px_-62px_rgba(8,69,50,0.48)]">
           <div className="grid lg:grid-cols-[18rem_1fr]">
             <aside className="border-b border-black/8 bg-[#fbfaf6] p-5 lg:border-b-0 lg:border-r">
@@ -942,28 +1149,13 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
               </FilterSection>
 
               <FilterSection title="Rentang Harga (Rp)">
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="space-y-1">
-                    <span className="text-[0.68rem] font-bold text-black/48">Min.</span>
-                    <input
-                      className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold outline-none transition duration-500 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
-                      inputMode="numeric"
-                      placeholder="0"
-                      value={minPrice}
-                      onChange={(event) => setMinPrice(event.target.value.replace(/\D/g, ""))}
-                    />
-                  </label>
-                  <label className="space-y-1">
-                    <span className="text-[0.68rem] font-bold text-black/48">Maks.</span>
-                    <input
-                      className="h-10 w-full rounded-md border border-black/10 bg-white px-3 text-[0.78rem] font-semibold outline-none transition duration-500 focus:border-[#0b6a49]/30 focus:ring-4 focus:ring-[#0b6a49]/8"
-                      inputMode="numeric"
-                      placeholder="Tidak terbatas"
-                      value={maxPrice}
-                      onChange={(event) => setMaxPrice(event.target.value.replace(/\D/g, ""))}
-                    />
-                  </label>
-                </div>
+                <PriceRangeControl
+                  maxLimit={priceUpperBound}
+                  maxValue={maxPrice}
+                  minValue={minPrice}
+                  onMaxValueChange={setMaxPrice}
+                  onMinValueChange={setMinPrice}
+                />
               </FilterSection>
             </aside>
 
@@ -1067,13 +1259,7 @@ export function CatalogPage({ initialQuery = "", lots: initialLots, serverNow }:
                       lot={lot}
                       serverNow={serverNow}
                       viewMode={viewMode}
-                      onToggleFavorite={() =>
-                        setFavoriteIds((current) =>
-                          current.includes(lot.id)
-                            ? current.filter((item) => item !== lot.id)
-                            : [...current, lot.id]
-                        )
-                      }
+                      onToggleFavorite={() => void handleToggleFavorite(lot.id)}
                     />
                   ))}
                 </div>
