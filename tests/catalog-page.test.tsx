@@ -1,7 +1,8 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 
 import { CatalogPage } from "@/components/pages/catalog-page";
+import type { Lot } from "@/lib/contracts/catalog";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/katalog",
@@ -13,36 +14,58 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("CatalogPage", () => {
-  it("shows filters, sort controls, and categories derived from real lots", () => {
+  function makeLot(index: number, overrides: Partial<Lot> = {}): Lot {
+    return {
+      id: `lot-db-${index}`,
+      code: `BRG-${String(index).padStart(4, "0")}`,
+      name: `Barang Katalog ${index}`,
+      category: index % 2 === 0 ? "Elektronik" : "Emas & Perhiasan",
+      mode: index % 2 === 0 ? "vickrey" : "fixed_price",
+      price: 5_000_000 + index * 1_000_000,
+      location: index % 2 === 0 ? "UPC Bandung" : "UPC Jakarta Pusat",
+      unitName: index % 2 === 0 ? "UPC Bandung" : "UPC Jakarta Pusat",
+      city: index % 2 === 0 ? "Bandung" : "Jakarta",
+      condition: index % 3 === 0 ? "Bekas Like New" : "Baru",
+      status: "Tersedia",
+      description: "Data katalog dari database.",
+      endsAt: new Date("2026-05-30T10:00:00+08:00").toISOString(),
+      media: [
+        {
+          id: `media-${index}`,
+          type: "foto" as const,
+          url: `/uploads/barang/demo-${index}.jpg`,
+          fileName: `demo-${index}.jpg`
+        }
+      ],
+      specs: [
+        { label: "Jenis", value: index % 2 === 0 ? "Laptop" : "Cincin" },
+        { label: "Kondisi", value: index % 3 === 0 ? "Bekas Like New" : "Baru" }
+      ],
+      ...overrides
+    };
+  }
+
+  it("renders the buyer catalog hero, filter rail, product stats, and premium cards", () => {
     render(
       <CatalogPage
         lots={[
-          {
-            id: "lot-db-001",
-            code: "LOT-DB-001",
-            name: "Emas Antam 5 Gram",
-            category: "Logam Mulia",
-            mode: "fixed_price",
-            price: 7500000,
-            location: "Makassar",
-            unitName: "Pegadaian Makassar",
-            city: "Makassar",
-            condition: "Baik",
-            status: "Tersedia",
-            description: "Data katalog dari database.",
-            media: [],
-            specs: [{ label: "Kategori", value: "Logam Mulia" }]
-          }
+          makeLot(1, { name: "Cincin Emas Berlian", category: "Emas & Perhiasan" }),
+          makeLot(2, { name: "Laptop ASUS VivoBook 14", category: "Elektronik", mode: "vickrey" })
         ]}
       />
     );
 
-    expect(screen.getByText(/pilih alur yang ingin anda ikuti/i)).toBeInTheDocument();
+    expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /temukan barang terbaik pilihan anda/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Lelang Vickrey")[0]).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /semua mode/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /urutkan/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Logam Mulia" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Perhiasan" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /emas & perhiasan/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/dilihat/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/suka/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/stok/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
   });
 
   it("does not show auction countdowns on fixed price lots even if stale endsAt data exists", () => {
@@ -53,7 +76,7 @@ describe("CatalogPage", () => {
             id: "lot-db-fixed",
             code: "LOT-FIXED",
             name: "Cincin Fixed Price",
-            category: "Perhiasan",
+            category: "Emas & Perhiasan",
             mode: "fixed_price",
             price: 12500000,
             location: "Manado",
@@ -64,14 +87,14 @@ describe("CatalogPage", () => {
             description: "Data fixed price dari database.",
             endsAt: new Date("2026-05-05T10:00:00+08:00").toISOString(),
             media: [],
-            specs: [{ label: "Kategori", value: "Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
           }
         ]}
       />
     );
 
     expect(screen.getByText("Cincin Fixed Price")).toBeInTheDocument();
-    expect(screen.queryByText(/sesi berakhir/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/menunggu hasil/i)).not.toBeInTheDocument();
   });
 
   it("renders uploaded lot media instead of the category placeholder when media exists", () => {
@@ -82,7 +105,7 @@ describe("CatalogPage", () => {
             id: "lot-media",
             code: "LOT-MEDIA",
             name: "Kalung Dengan Foto",
-            category: "Perhiasan",
+            category: "Emas & Perhiasan",
             mode: "fixed_price",
             price: 12500000,
             location: "Manado",
@@ -99,18 +122,18 @@ describe("CatalogPage", () => {
                 fileName: "kalung.jpg"
               }
             ],
-            specs: [{ label: "Kategori", value: "Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
           }
         ]}
       />
     );
 
-    expect(screen.getByRole("img", { name: "Perhiasan foto utama" }).getAttribute("src")).toContain(
+    expect(screen.getByRole("img", { name: "Emas & Perhiasan foto utama" }).getAttribute("src")).toContain(
       "%2Fuploads%2Fbarang%2Fkalung.jpg"
     );
   });
 
-  it("filters catalog items with the incoming buyer search query", () => {
+  it("filters catalog items with the incoming buyer search query and visual mode controls", () => {
     render(
       <CatalogPage
         initialQuery="manado"
@@ -119,7 +142,7 @@ describe("CatalogPage", () => {
             id: "lot-1",
             code: "LOT-1",
             name: "Kalung Emas",
-            category: "Perhiasan",
+            category: "Emas & Perhiasan",
             mode: "fixed_price",
             price: 100000000,
             location: "Ranotana",
@@ -129,7 +152,7 @@ describe("CatalogPage", () => {
             status: "Tersedia",
             description: "Barang emas premium.",
             media: [],
-            specs: [{ label: "Kategori", value: "Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
           },
           {
             id: "lot-2",
@@ -153,6 +176,22 @@ describe("CatalogPage", () => {
 
     expect(screen.getByText("Kalung Emas")).toBeInTheDocument();
     expect(screen.queryByText("Laptop Kantor")).not.toBeInTheDocument();
-    expect(screen.getByText(/keyword "manado" ikut dipakai/i)).toBeInTheDocument();
+    expect(screen.getByText(/pencarian: manado/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /lelang vickrey/i }));
+
+    expect(screen.queryByText("Kalung Emas")).not.toBeInTheDocument();
+    expect(screen.getByText(/belum ada barang sesuai filter/i)).toBeInTheDocument();
+  });
+
+  it("paginates catalog cards with twelve items per page", () => {
+    render(<CatalogPage lots={Array.from({ length: 13 }, (_, index) => makeLot(index + 1))} />);
+
+    expect(screen.getByText("Barang Katalog 1")).toBeInTheDocument();
+    expect(screen.queryByText("Barang Katalog 13")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "2" }));
+
+    expect(screen.getByText("Barang Katalog 13")).toBeInTheDocument();
   });
 });
