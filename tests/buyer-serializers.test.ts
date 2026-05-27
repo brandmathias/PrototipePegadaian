@@ -1,8 +1,81 @@
 import { describe, expect, it } from "vitest";
 
-import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
+import { serializeBuyerBid, serializeBuyerTransaction, serializePublicLot } from "@/lib/buyer/serializers";
 
 describe("buyer serializers", () => {
+  it("preserves realtime lot insights from the catalog service", () => {
+    const lot = serializePublicLot({
+      marketingId: "pm-realtime",
+      marketingMode: "vickrey",
+      marketingPrice: null,
+      marketingBasePrice: "14000000",
+      endsAt: new Date("2026-05-30T10:00:00+08:00"),
+      itemId: "barang-realtime",
+      itemCode: "BRG-REALTIME",
+      itemName: "Cincin Realtime",
+      category: "Emas",
+      condition: "Baik",
+      description: "Lot dengan metrik realtime.",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      updatedAt: new Date("2026-05-22T03:30:00Z"),
+      account: null,
+      insights: {
+        likes: 7,
+        participants: 3,
+        views: 42
+      },
+      media: []
+    });
+
+    expect(lot.insights).toEqual({
+      likes: 7,
+      participants: 3,
+      views: 42
+    });
+  });
+
+  it("uses structured category specifications for public lot details without repeating generic metadata", () => {
+    const lot = serializePublicLot({
+      marketingId: "pm-specs",
+      marketingMode: "fixed_price",
+      marketingPrice: "15000000",
+      marketingBasePrice: null,
+      itemId: "barang-specs",
+      itemCode: "BRG-SPECS",
+      itemName: "Cincin Emas 3",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Cincin emas premium.",
+      unitName: "UPC Wanea",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      updatedAt: new Date("2026-05-22T03:30:00Z"),
+      account: null,
+      media: [],
+      specifications: {
+        jenisPerhiasan: "Cincin",
+        material: "Emas Kuning 24K",
+        kadarEmas: "99,9%",
+        berat: "3,20 gram",
+        batuUtama: "Berlian",
+        jumlahBatu: "12 pcs"
+      }
+    });
+
+    expect(lot.updatedAt).toBe("2026-05-22T03:30:00.000Z");
+    expect(lot.specs).toEqual([
+      { label: "Jenis Perhiasan", value: "Cincin" },
+      { label: "Material", value: "Emas Kuning 24K" },
+      { label: "Kadar Emas", value: "99,9%" },
+      { label: "Berat", value: "3,20 gram" },
+      { label: "Batu Utama", value: "Berlian" },
+      { label: "Jumlah Batu", value: "12 pcs" }
+    ]);
+    expect(lot.specs.map((item) => item.label)).not.toEqual(
+      expect.arrayContaining(["Kategori", "Kondisi", "Unit Pegadaian", "Lokasi", "Mode", "Status"])
+    );
+  });
+
   it("splits legacy proof values into payment proof and reference", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-legacy",

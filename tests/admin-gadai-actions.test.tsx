@@ -106,13 +106,20 @@ describe("admin gadai action forms", () => {
           loanValue: 7000000,
           name: "Kalung Emas",
           ownerName: "Nasabah Demo",
-          pawnedAt: "2026-05-01"
+          pawnedAt: "2026-05-01",
+          specifications: {
+            berat: "8 gram",
+            kadarEmas: "18K"
+          }
         }}
       />
     );
 
     fireEvent.change(screen.getByLabelText("Nama barang"), {
       target: { value: "Cincin Emas 18K" }
+    });
+    fireEvent.change(screen.getByLabelText("Berat"), {
+      target: { value: "9 gram" }
     });
     fireEvent.click(screen.getByRole("radio", { name: "Cukup" }));
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
@@ -129,7 +136,11 @@ describe("admin gadai action forms", () => {
     const [, request] = vi.mocked(fetch).mock.calls[0];
     expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
       condition: "cukup",
-      name: "Cincin Emas 18K"
+      name: "Cincin Emas 18K",
+      specifications: {
+        berat: "9 gram",
+        kadarEmas: "18K"
+      }
     });
   });
 });

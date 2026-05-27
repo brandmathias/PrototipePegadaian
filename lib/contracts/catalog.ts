@@ -1,5 +1,11 @@
 export type AuctionMode = "fixed_price" | "vickrey";
 
+export type LotInsights = {
+  views: number;
+  likes: number;
+  participants: number;
+};
+
 export type Lot = {
   id: string;
   code: string;
@@ -13,6 +19,7 @@ export type Lot = {
   condition: string;
   status: string;
   description: string;
+  updatedAt?: string;
   countdown?: string;
   endsAt?: string;
   bankName?: string;
@@ -20,6 +27,7 @@ export type Lot = {
   bankAccountHolder?: string;
   bankBranch?: string;
   unitAddress?: string;
+  insights?: LotInsights;
   media: Array<{
     id: string;
     type: "foto" | "video";

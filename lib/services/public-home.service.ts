@@ -22,8 +22,10 @@ type PublicHomeLotShape = {
   category: string;
   condition: string;
   description: string;
+  specifications?: unknown;
   unitName: string;
   unitAddress: string;
+  updatedAt?: Date | null;
   account: {
     bankName: string | null;
     accountNumber: string | null;
@@ -50,6 +52,8 @@ function publicHomeSelection() {
     category: barang.category,
     condition: barang.condition,
     description: barang.description,
+    specifications: barang.specifications,
+    updatedAt: barang.updatedAt,
     unitName: units.name,
     unitAddress: units.address,
     account: unitAccounts

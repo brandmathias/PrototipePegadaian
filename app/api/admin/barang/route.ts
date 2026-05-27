@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { saveAdminBarangMediaFiles } from "@/lib/admin-unit/media-upload";
+import { getBarangSpecificationFields } from "@/lib/admin-unit/specifications";
 import { requireAdminApiSession } from "@/lib/auth/session";
 import { validateAdminBarangPayload } from "@/lib/admin-unit/validation";
 import { createAdminBarang, listAdminBarang } from "@/lib/services/admin-barang.service";
@@ -19,9 +20,16 @@ async function readBarangPayload(request: Request) {
 
   const formData = await request.formData();
   const files = formData.getAll("media").filter((item): item is File => item instanceof File && item.size > 0);
+  const category = String(formData.get("category") ?? "");
+  const specifications = Object.fromEntries(
+    getBarangSpecificationFields(category).map((field) => [
+      field.key,
+      formData.get(`specifications.${field.key}`)
+    ])
+  );
   const payload = {
     name: formData.get("name"),
-    category: formData.get("category"),
+    category,
     condition: formData.get("condition"),
     description: formData.get("description"),
     appraisalValue: formData.get("appraisalValue"),
@@ -29,7 +37,8 @@ async function readBarangPayload(request: Request) {
     ownerName: formData.get("ownerName"),
     customerNumber: formData.get("customerNumber"),
     pawnedAt: formData.get("pawnedAt"),
-    dueDate: formData.get("dueDate")
+    dueDate: formData.get("dueDate"),
+    specifications
   };
 
   validateAdminBarangPayload(payload);

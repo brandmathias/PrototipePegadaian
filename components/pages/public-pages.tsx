@@ -2,27 +2,32 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
+  CalendarDays,
   Clock3,
-  Gavel,
   Landmark,
-  MapPin
+  Maximize2,
+  MapPin,
+  RefreshCcw,
+  RotateCcw,
+  ShieldCheck,
+  type LucideIcon
 } from "lucide-react";
 
-import { LiveCountdown } from "@/components/buyer/live-countdown";
+import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
 import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
+import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
+import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { currency } from "@/lib/formatters/currency";
-import { formatAppDate } from "@/lib/timezone";
+import { formatAppDate, formatAppDateTime } from "@/lib/timezone";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -44,14 +49,47 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
   return `Akun sedang dibatasi sampai ${formatAppDate(status.blacklist.until)}. Selama blacklist aktif, Anda tidak dapat mengirim bid baru.`;
 }
 
+function formatOptionalDate(value?: string) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return formatAppDate(date);
+}
+
+type DetailInfoItem = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+};
+
+function getPriceChangeCopy(lot: Lot, isVickrey: boolean) {
+  const normalized = lot.category.toLowerCase();
+
+  if (isVickrey) {
+    return "Harga akhir mengikuti hasil lelang tertutup dan verifikasi unit.";
+  }
+
+  if (normalized.includes("emas") || normalized.includes("perhiasan") || normalized.includes("logam")) {
+    return "Sesuai pergerakan harga emas dan kurs harian.";
+  }
+
+  return "Mengikuti appraisal terbaru dan pembaruan unit.";
+}
+
 export function LotDetailPage({
+  initialFavorited = false,
   lot,
   bidState,
-  buyerStatus = null
+  buyerStatus = null,
+  wishlistSyncEnabled = false
 }: {
+  initialFavorited?: boolean;
   lot: Lot | null;
   bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
+  wishlistSyncEnabled?: boolean;
 }) {
   if (!lot) {
     notFound();
@@ -65,120 +103,161 @@ export function LotDetailPage({
   const isActionBlocked =
     hasActiveRestriction &&
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
-
+  const modeLabel = isVickrey ? "Lelang Vickrey" : "Harga Tetap";
+  const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
+  const auctionEndLabel = formatOptionalDate(lot.endsAt);
+  const specificationRows = lot.specs;
+  const priceContext: DetailInfoItem[] = [
+    {
+      icon: ShieldCheck,
+      label: "Harga dapat berubah",
+      value: getPriceChangeCopy(lot, isVickrey)
+    },
+    {
+      icon: CalendarDays,
+      label: "Stok terbatas",
+      value: "Produk premium dengan ketersediaan terbatas."
+    },
+    {
+      icon: RefreshCcw,
+      label: "Update terakhir",
+      value: lot.updatedAt ? formatAppDateTime(lot.updatedAt) : "Mengikuti pembaruan unit."
+    }
+  ];
   return (
-    <div className="container space-y-10 py-10 md:space-y-12 md:py-12">
-      <div className="grid gap-8 xl:grid-cols-[1.12fr_0.88fr]">
-        <div className="space-y-5">
-          <LotMediaGallery
-            category={lot.category}
-            className="min-h-[22rem] rounded-[2rem] md:min-h-[34rem]"
-            title={lot.name}
-            media={lot.media}
-            showVideoControls
-          />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {lot.specs.map((spec) => (
-              <Card className="border border-border/70 p-4" key={spec.label}>
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  {spec.label}
-                </p>
-                <p className="mt-2 text-sm font-semibold text-foreground">{spec.value}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-white text-[#183f32]">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f8faf8_100%)]" />
 
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant={isVickrey ? "accent" : "default"}>
-                {isVickrey ? "Vickrey Auction" : "Fixed Price"}
-              </Badge>
-              <Badge variant="muted">{lot.code}</Badge>
-              <Badge variant="muted">Kondisi {lot.condition}</Badge>
-            </div>
-            <h1 className="font-headline text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
-              {lot.name}
-            </h1>
-            <p className="text-base leading-relaxed text-muted-foreground">{lot.description}</p>
-            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="size-4 text-primary" />
-              {lot.location} | Diselenggarakan oleh {lot.unitName}
+      <div className="container relative space-y-10 py-8 md:space-y-12 md:py-12">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#8a8172]">
+          <Link className="transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#b8892f]" href="/katalog">
+            Katalog
+          </Link>
+          <span className="text-[#c9b991]">/</span>
+          <span>{lot.category}</span>
+          <span className="text-[#c9b991]">/</span>
+          <span className="text-[#b8892f]">{lot.name}</span>
+        </nav>
+
+        <section className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)] xl:items-start">
+          <div className="space-y-6">
+            <div className="relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)]">
+              <LotMediaGallery
+                category={lot.category}
+                className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]"
+                title={lot.name}
+                media={lot.media}
+                priority
+                showCategoryBadge={false}
+                showVideoControls
+                variant="pdp"
+              />
+              <div className="pointer-events-none absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/[0.94] px-4 py-2 text-sm font-semibold text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] backdrop-blur md:left-6 md:top-6">
+                <RotateCcw className="size-4 text-[#075f42]" />
+                360&deg; View
+              </div>
+              <button
+                aria-label="Perbesar media barang"
+                className="absolute right-5 top-5 grid size-10 place-items-center rounded-full bg-white/[0.94] text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] md:right-6 md:top-6"
+                type="button"
+              >
+                <Maximize2 className="size-4" />
+              </button>
             </div>
           </div>
 
-          <Card className="overflow-hidden border border-border/70 bg-white">
-            <CardContent className="space-y-6 p-6">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  {isVickrey ? "Harga dasar lelang" : "Harga jual"}
+          <aside className="xl:sticky xl:top-24">
+            <div className="relative space-y-7 overflow-hidden rounded-[1.9rem] bg-[#042d24] p-6 text-white shadow-[0_30px_90px_rgba(3,45,36,0.26)] ring-1 ring-[#e8c36a]/20 md:p-8">
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(140deg,rgba(232,195,106,0.16),transparent_34%),radial-gradient(circle_at_88%_70%,rgba(232,195,106,0.12),transparent_28%)]" />
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="relative rounded-full bg-[#0d6b4c] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ecfff8] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+                  {modeLabel}
+                </span>
+                <span className="relative rounded-full bg-[#71590d] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ffdf7c] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                  {lot.status}
+                </span>
+              </div>
+
+              <div className="relative space-y-3">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d8aa3f]">
+                  {lot.code}
                 </p>
-                <div className="mt-3 flex flex-wrap items-center gap-4">
-                  <p className="font-headline text-5xl font-extrabold tracking-tight text-primary">
+                <h1 className="max-w-xl font-headline text-4xl font-black leading-[1.05] tracking-tight text-white md:text-5xl">
+                  {lot.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#d9e3dc]">
+                  <MapPin className="size-4 text-[#f0bd51]" />
+                  <span>{lot.unitName}</span>
+                  <span className="text-[#6f857b]">/</span>
+                  <span>{lot.location}</span>
+                </div>
+              </div>
+
+              <div className="relative space-y-3 border-y border-white/10 py-5">
+                <h2 className="font-headline text-lg font-bold text-white">Deskripsi Barang</h2>
+                <p className="max-w-2xl text-sm leading-7 text-[#c4d2cb]">{lot.description}</p>
+              </div>
+
+              <div className="relative space-y-3">
+                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#c4d2cb]">
+                  {priceLabel}
+                </p>
+                <div className="grid gap-4">
+                  <p className="font-headline text-4xl font-black tracking-tight text-[#f0bd51] drop-shadow-[0_10px_24px_rgba(240,189,81,0.18)] md:text-5xl">
                     {currency.format(lot.price)}
                   </p>
+                  <LotRealtimeStats
+                    className="flex flex-wrap items-center gap-3 text-xs text-[#c4d2cb]"
+                    iconClassName="text-[#d9e3dc]"
+                    initialStats={lot.insights}
+                    itemClassName="gap-1.5"
+                    lotId={lot.id}
+                    mode={lot.mode}
+                    separatorClassName="h-4 w-px bg-[#e8c36a]/45"
+                    showFixedStatus
+                    showSeparators
+                    status={lot.status}
+                    trackView
+                    valueClassName="font-semibold text-white"
+                    watchLabel="Watchlist"
+                  />
                   {showAuctionCountdown ? (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-tertiary-container/10 px-4 py-2 text-sm font-semibold text-tertiary-container">
-                      <Clock3 className="size-4 text-[#d72b43]" />
-                      <LiveCountdown
+                    <div className="grid gap-2 rounded-[1rem] bg-[#fff7f8] px-3 py-3 shadow-[0_16px_42px_rgba(8,69,50,0.05)]">
+                      <div className="inline-flex items-center gap-2 text-sm font-bold text-[#5c625b]">
+                        <Clock3 className="size-4 text-[#d72b43]" />
+                        <span className="text-[#7a756d]">Berakhir dalam</span>
+                      </div>
+                      <AuctionCountdownTiles
                         expiredLabel="Menunggu hasil"
                         fallbackLabel={lot.countdown}
                         serverNow={serverNow}
                         targetAt={lot.endsAt}
                       />
+                      {auctionEndLabel ? (
+                        <p className="pl-6 text-xs font-medium text-[#7d766d]">{auctionEndLabel}</p>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
               </div>
 
-              {isVickrey ? (
-                <div className="rounded-[1.5rem] border border-accent/35 bg-accent/15 p-5">
-                  <div className="flex items-start gap-3">
-                    <Gavel className="mt-1 size-5 text-accent-foreground" />
-                    <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-                      <p className="font-semibold text-foreground">Alur lelang tertutup</p>
-                      <p>Bid tidak terlihat peserta lain selama sesi lelang masih aktif.</p>
-                      <p>
-                        Pemenang membayar harga penawar tertinggi kedua dan diberi waktu
-                        maksimal 24 jam untuk menyelesaikan pembayaran.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
-                  <div className="flex items-start gap-3">
-                    <Landmark className="mt-1 size-5 text-primary" />
-                    <div className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-                      <p className="font-semibold text-foreground">Alur fixed price</p>
-                      <p>User memilih metode pembayaran dan sistem langsung membuat transaksi.</p>
-                      <p>
-                        Setelah itu pembeli diarahkan ke halaman transaksi untuk unggah bukti
-                        transfer atau datang langsung ke unit Pegadaian.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {bidState ? (
-                <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                <div className="relative rounded-[1.35rem] bg-white/8 p-5 ring-1 ring-white/10">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#f0bd51]">
                     Aktivitas akun Anda
                   </p>
-                  <p className="mt-3 text-lg font-bold text-foreground">Bid sudah terkunci</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-3 text-lg font-black text-white">Bid sudah terkunci</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#c4d2cb]">
                     {bidState.note}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-primary">
-                    <span className="rounded-full bg-primary/10 px-3 py-1">
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#f0bd51]">
+                    <span className="rounded-full bg-white/10 px-3 py-1.5">
                       {typeof bidState.bidAmount === "number"
                         ? `Bid ${currency.format(bidState.bidAmount)}`
                         : "Hash bid tersimpan"}
                     </span>
                     {bidState.paymentAmount ? (
-                      <span className="rounded-full bg-primary/10 px-3 py-1">
+                      <span className="rounded-full bg-white/10 px-3 py-1.5">
                         Harga bayar Vickrey {currency.format(bidState.paymentAmount)}
                       </span>
                     ) : null}
@@ -187,81 +266,108 @@ export function LotDetailPage({
               ) : null}
 
               {getBlacklistLabel(buyerStatus) ? (
-                <div className="rounded-[1.5rem] border border-tertiary-container/25 bg-tertiary-container/10 p-5 text-sm leading-relaxed text-muted-foreground">
+                <div className="relative rounded-[1.35rem] bg-[#fff0f2] p-5 text-sm leading-relaxed text-[#9f1239]">
                   {getBlacklistLabel(buyerStatus)}
                 </div>
               ) : null}
 
-              <div className="flex flex-wrap gap-3">
+              <div className="relative flex gap-3">
                 {isVickrey ? (
                   bidState ? (
-                    <Link href="/riwayat-bid">
-                      <Button className="min-w-[12rem]">Pantau Riwayat Bid</Button>
+                    <Link className="flex-1" href="/riwayat-bid">
+                      <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
+                        Pantau Riwayat Bid
+                      </Button>
                     </Link>
                   ) : isActionBlocked ? (
-                    <Button className="min-w-[12rem]" disabled>
+                    <Button
+                      className="h-[3.25rem] flex-1 rounded-[0.9rem] bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
+                      disabled
+                    >
                       Lelang Sedang Dibatasi
                     </Button>
                   ) : (
-                    <Link href={`/katalog/${lot.id}/bid`}>
-                      <Button className="min-w-[12rem]">Ikut Lelang Sekarang</Button>
+                    <Link className="flex-1" href={`/katalog/${lot.id}/bid`}>
+                      <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
+                        Ikut Lelang Sekarang
+                      </Button>
                     </Link>
                   )
                 ) : isActionBlocked ? (
-                  <Button className="min-w-[12rem]" disabled>
+                  <Button
+                    className="h-[3.25rem] flex-1 rounded-[0.9rem] bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
+                    disabled
+                  >
                     Pembelian Sedang Dibatasi
                   </Button>
                 ) : (
-                  <Link href={`/katalog/${lot.id}/beli`}>
-                    <Button className="min-w-[12rem]">
+                  <Link className="flex-1" href={`/katalog/${lot.id}/beli`}>
+                    <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
                       Beli Sekarang
                     </Button>
                   </Link>
                 )}
-                <Link href="/transaksi">
-                  <Button variant="secondary">Lihat Transaksi Saya</Button>
-                </Link>
+                <DetailFavoriteToggle
+                  className="h-[3.25rem] w-[3.5rem] shrink-0 rounded-[0.9rem] border border-[#e8c36a]/45 bg-transparent text-white shadow-[0_14px_32px_rgba(0,0,0,0.16)] hover:bg-white/10 [&_svg]:!size-6"
+                  initialFavorited={initialFavorited}
+                  itemName={lot.name}
+                  lotId={lot.id}
+                  wishlistSyncEnabled={wishlistSyncEnabled}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </aside>
+        </section>
 
-      <section className="space-y-5">
-        <SectionHeading
-          description="Halaman detail ini merangkum informasi inti yang dibutuhkan pembeli: media barang, spesifikasi, unit penyelenggara, mode transaksi, dan arahan pembayaran atau bidding."
-          eyebrow="Informasi lengkap"
-          title="Spesifikasi barang dan konteks transaksi"
-        />
-        <Card className="overflow-hidden border border-border/70 bg-white">
-          <table className="w-full text-left text-sm">
-            <tbody>
-              {lot.specs.map((spec) => (
-                <tr className="border-t border-border/70 first:border-t-0" key={spec.label}>
-                  <td className="w-[32%] bg-surface-low px-6 py-4 font-semibold text-muted-foreground">
-                    {spec.label}
-                  </td>
-                  <td className="px-6 py-4">{spec.value}</td>
-                </tr>
-              ))}
-              <tr className="border-t border-border/70">
-                <td className="bg-surface-low px-6 py-4 font-semibold text-muted-foreground">
-                  Unit Pegadaian
-                </td>
-                <td className="px-6 py-4">{lot.unitName}</td>
-              </tr>
-              <tr className="border-t border-border/70">
-                <td className="bg-surface-low px-6 py-4 font-semibold text-muted-foreground">
-                  Mode
-                </td>
-                <td className="px-6 py-4">
-                  {isVickrey ? "Lelang tertutup Vickrey" : "Pembelian fixed price"}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </Card>
-      </section>
+        <section className="space-y-6 pb-12">
+          <div className="relative overflow-hidden rounded-[1.6rem] bg-[#042d24] p-6 text-white shadow-[0_24px_80px_rgba(8,69,50,0.16)] ring-1 ring-[#e8c36a]/20 md:p-7">
+            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-[linear-gradient(90deg,transparent,#e8c36a,transparent)]" />
+            <h2 className="font-headline text-xl font-black tracking-tight text-white">Konteks Transaksi</h2>
+            <div className="mt-6 grid gap-5 md:grid-cols-3">
+              {priceContext.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div
+                    className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:border-r md:border-[#e8c36a]/16 md:pr-6 md:last:border-r-0"
+                    key={item.label}
+                  >
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#0b4a3a] text-[#e8b64d] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                      <Icon className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-black text-white">{item.label}</p>
+                      <p className="mt-1 text-xs leading-5 text-[#c4d2cb]">{item.value}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-[1.6rem] bg-[#052b22] p-6 text-white shadow-[0_24px_80px_rgba(8,69,50,0.14)] ring-1 ring-[#e8c36a]/18 md:p-7">
+            <div className="pointer-events-none absolute inset-y-10 left-1/2 hidden w-px bg-[linear-gradient(180deg,transparent,#e8c36a,transparent)] opacity-80 md:block" />
+            <h2 className="font-headline text-xl font-black tracking-tight text-white">Spesifikasi Produk</h2>
+            <div className="mt-1 h-px w-28 bg-[#e8b64d]" />
+
+            {specificationRows.length > 0 ? (
+              <dl className="mt-5 grid gap-x-12 gap-y-4 md:grid-cols-2">
+                {specificationRows.map((spec) => (
+                  <div className="grid grid-cols-[minmax(0,0.82fr)_auto_minmax(0,1fr)] items-baseline gap-4" key={`${spec.label}-${spec.value}`}>
+                    <dt className="text-sm font-semibold text-[#c4d2cb]">{spec.label}</dt>
+                    <span className="text-[#e8b64d]">•</span>
+                    <dd className="text-sm font-bold leading-6 text-white">{spec.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="mt-5 text-sm leading-7 text-[#c4d2cb]">
+                Spesifikasi produk belum dilengkapi oleh admin unit.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

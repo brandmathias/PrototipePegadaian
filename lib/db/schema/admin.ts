@@ -1,4 +1,4 @@
-import { index, integer, numeric, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { users } from "@/lib/db/schema/auth";
@@ -16,6 +16,7 @@ export const barang = pgTable(
     category: text("category").notNull(),
     condition: text("condition").notNull(),
     description: text("description").notNull().default(""),
+    specifications: jsonb("specifications").$type<Record<string, string>>().notNull().default(sql`'{}'::jsonb`),
     appraisalValue: numeric("appraisal_value", { precision: 15, scale: 2 }).notNull(),
     loanValue: numeric("loan_value", { precision: 15, scale: 2 }).notNull(),
     ownerName: text("owner_name").notNull(),
@@ -107,6 +108,26 @@ export const pemasaran = pgTable(
     activePerBarangIdx: uniqueIndex("pemasaran_active_per_barang_unique")
       .on(table.barangId)
       .where(sql`${table.status} = 'aktif'`)
+  })
+);
+
+export const pemasaranViews = pgTable(
+  "pemasaran_views",
+  {
+    id: text("id").primaryKey(),
+    pemasaranId: text("pemasaran_id")
+      .notNull()
+      .references(() => pemasaran.id, { onDelete: "cascade" }),
+    viewerKey: text("viewer_key").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    pemasaranIdx: index("pemasaran_views_pemasaran_id_idx").on(table.pemasaranId),
+    uniqueViewerIdx: uniqueIndex("pemasaran_views_pemasaran_viewer_unique").on(
+      table.pemasaranId,
+      table.viewerKey
+    )
   })
 );
 

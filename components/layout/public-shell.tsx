@@ -48,9 +48,16 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
       {isBuyer && viewer ? (
-        <BuyerTopNav image={viewer.image} name={viewer.name} wishlistCount={viewer.wishlistCount} />
+        <BuyerTopNav
+          image={viewer.image}
+          name={viewer.name}
+          variant="light"
+          wishlistCount={viewer.wishlistCount}
+        />
       ) : (
-        <header className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur">
+        <header
+          className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur"
+        >
           <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
             <div className="flex items-center gap-6">
               <Link
@@ -62,7 +69,9 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
                 </span>
                 Pegadaian Lelang
               </Link>
-              <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex">
+              <nav
+                className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex"
+              >
                 {navItems.map((item) => {
                   const active =
                     pathname === item.href ||
@@ -123,10 +132,14 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
 
       <main>{children}</main>
 
-      <footer className="mt-20 border-t border-black/5 bg-surface-low py-12">
+      <footer
+        className="mt-20 border-t border-black/5 bg-surface-low py-12"
+      >
         <div className="container grid gap-10 md:grid-cols-4">
           <div className="space-y-4">
-            <h3 className="font-headline text-xl font-bold text-primary">Pegadaian Lelang</h3>
+            <h3 className="font-headline text-xl font-bold text-primary">
+              Pegadaian Lelang
+            </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Platform resmi untuk katalog barang jaminan, pembelian fixed price, dan lelang
               tertutup Vickrey lintas unit Pegadaian.

@@ -30,6 +30,37 @@ describe("admin unit validation", () => {
     expect(payload.loanValue).toBe("6500000");
   });
 
+  it("normalizes category-specific barang specifications", () => {
+    const payload = validateAdminBarangPayload({
+      name: "Cincin Emas Berlian",
+      category: "perhiasan",
+      condition: "baik",
+      appraisalValue: "18500000",
+      loanValue: "12000000",
+      pawnedAt: "2026-04-01",
+      dueDate: "2026-05-01",
+      ownerName: "Raras",
+      specifications: {
+        jenisPerhiasan: "  Cincin ",
+        material: "Emas Kuning 24K",
+        kadarEmas: "99,9%",
+        berat: "3,20 gram",
+        batuUtama: "Berlian",
+        jumlahBatu: "12 pcs",
+        nomorMesin: "Bukan field perhiasan"
+      }
+    });
+
+    expect(payload.specifications).toEqual({
+      batuUtama: "Berlian",
+      berat: "3,20 gram",
+      jenisPerhiasan: "Cincin",
+      jumlahBatu: "12 pcs",
+      kadarEmas: "99,9%",
+      material: "Emas Kuning 24K"
+    });
+  });
+
   it("rejects invalid loan and due date", () => {
     expect(() =>
       validateAdminBarangPayload({

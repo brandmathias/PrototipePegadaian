@@ -11,7 +11,9 @@ type LotFigureProps = {
     url: string;
     fileName: string;
   }>;
+  showCategoryBadge?: boolean;
   showVideoControls?: boolean;
+  variant?: "default" | "dark" | "pdp";
 };
 
 const categoryMap = {
@@ -37,7 +39,14 @@ const categoryMap = {
   }
 } as const;
 
-export function LotFigure({ category, className, media = [], showVideoControls = false }: LotFigureProps) {
+export function LotFigure({
+  category,
+  className,
+  media = [],
+  showCategoryBadge = true,
+  showVideoControls = false,
+  variant = "default"
+}: LotFigureProps) {
   const config = categoryMap[category as keyof typeof categoryMap] ?? categoryMap.Lainnya;
   const Icon = config.icon;
   const primaryMedia = media.find((item) => item.type === "foto") ?? media[0];
@@ -80,9 +89,11 @@ export function LotFigure({ category, className, media = [], showVideoControls =
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.02)_48%,rgba(0,0,0,0.22))]" />
         <div className="pointer-events-none relative flex h-full min-h-40 flex-col justify-between p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
-            <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur">
-              {category}
-            </span>
+            {showCategoryBadge ? (
+              <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur">
+                {category}
+              </span>
+            ) : null}
           </div>
           <div className="flex items-end justify-between">
             <div className="space-y-1 opacity-75">
@@ -100,14 +111,25 @@ export function LotFigure({ category, className, media = [], showVideoControls =
       className={cn(
         "relative overflow-hidden rounded-[1.25rem] bg-gradient-to-br p-6 text-white",
         config.tone,
+        variant === "dark" && "bg-none bg-[#082d24]",
         className
       )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.24),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,214,91,0.24),transparent_30%)]" />
+      <div
+        className={cn(
+          "absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.24),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,214,91,0.24),transparent_30%)]",
+          variant === "dark" &&
+            "bg-[radial-gradient(circle_at_48%_35%,rgba(212,175,55,0.22),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_30%)]"
+        )}
+      />
       <div className="relative flex h-full min-h-40 flex-col justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70">
-          {category}
-        </span>
+        {showCategoryBadge ? (
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70">
+            {category}
+          </span>
+        ) : (
+          <span aria-hidden="true" />
+        )}
         <div className="flex items-end justify-between">
           <div className="space-y-1">
             <div className="h-2 w-20 rounded-full bg-white/20" />

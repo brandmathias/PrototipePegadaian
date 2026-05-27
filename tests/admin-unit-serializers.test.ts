@@ -16,6 +16,9 @@ describe("admin unit serializers", () => {
       status: "gadai",
       condition: "baik",
       description: "Lengkap",
+      specifications: {
+        berat: "3 gram"
+      },
       appraisalValue: "8500000",
       loanValue: "6500000",
       ownerName: "Raras",
@@ -33,6 +36,7 @@ describe("admin unit serializers", () => {
     expect(item.status).toBe("JAMINAN");
     expect(item.ownerName).toBe("Raras");
     expect(item.appraisalValue).toBe(8500000);
+    expect(item.specifications).toEqual({ berat: "3 gram" });
   });
 
   it("returns fixed price marketing data without auction-only fields", () => {

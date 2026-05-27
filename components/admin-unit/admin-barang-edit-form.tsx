@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useMemo, useState } from "react";
 import { CarFront, Cpu, Gem, LoaderCircle, Medal, Save, Shapes } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { getBarangSpecificationFields, type BarangSpecificationRecord } from "@/lib/admin-unit/specifications";
 
 type AdminBarangEditValue = {
   id: string;
@@ -22,6 +23,7 @@ type AdminBarangEditValue = {
   customerNumber: string;
   pawnedAt: string;
   dueDate: string;
+  specifications?: BarangSpecificationRecord;
 };
 
 const categories = [
@@ -59,7 +61,16 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
   const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
   const [loanValue, setLoanValue] = useState(String(item.loanValue ?? ""));
   const [description, setDescription] = useState(String(item.description ?? ""));
+  const [specifications, setSpecifications] = useState<BarangSpecificationRecord>(item.specifications ?? {});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
+
+  function updateSpecification(key: string, value: string) {
+    setSpecifications((current) => ({
+      ...current,
+      [key]: value
+    }));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -88,7 +99,8 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
           ownerName: item.ownerName,
           customerNumber: item.customerNumber,
           pawnedAt: item.pawnedAt,
-          dueDate: item.dueDate
+          dueDate: item.dueDate,
+          specifications
         })
       });
       const result = await response.json().catch(() => ({}));
@@ -154,6 +166,28 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
             options={conditions}
             value={condition}
           />
+        </div>
+        <div className="space-y-4 rounded-2xl border border-black/8 bg-[#fbfaf6] p-4 md:col-span-2">
+          <div>
+            <FieldLabel>Spesifikasi kategori</FieldLabel>
+            <p className="mt-1 text-sm leading-6 text-black/55">
+              Field ini mengikuti kategori aktif dan tampil sebagai spesifikasi produk di katalog buyer.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {specificationFields.map((field) => (
+              <div className="space-y-2" key={field.key}>
+                <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>{field.label}</FieldLabel>
+                <Input
+                  className="h-12 text-sm sm:text-base"
+                  id={`admin-barang-specification-${field.key}`}
+                  onChange={(event) => updateSpecification(field.key, event.target.value)}
+                  placeholder={field.placeholder}
+                  value={specifications[field.key] ?? ""}
+                />
+              </div>
+            ))}
+          </div>
         </div>
         <div className="space-y-2">
           <FieldLabel htmlFor="admin-barang-appraisal">Nilai taksiran</FieldLabel>

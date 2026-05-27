@@ -3,6 +3,7 @@ import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { serializePublicLot } from "@/lib/buyer/serializers";
 import { db } from "@/lib/db/client";
 import { barang, mediaBarang, pemasaran, unitAccounts, units } from "@/lib/db/schema";
+import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 function publicLotSelection() {
   return {
@@ -18,6 +19,8 @@ function publicLotSelection() {
     category: barang.category,
     condition: barang.condition,
     description: barang.description,
+    specifications: barang.specifications,
+    updatedAt: barang.updatedAt,
     unitName: units.name,
     unitAddress: units.address,
     account: unitAccounts
@@ -71,11 +74,15 @@ export async function listPublicLotsWithLimit(limit?: number) {
 
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
 
-  const mediaByBarangId = await getMediaByBarangId(limitedRows.map((row) => row.itemId));
+  const [mediaByBarangId, statsByMarketingId] = await Promise.all([
+    getMediaByBarangId(limitedRows.map((row) => row.itemId)),
+    getLotStatsByIds(limitedRows.map((row) => row.marketingId))
+  ]);
 
   return limitedRows.map((row) =>
     serializePublicLot({
       ...row,
+      insights: statsByMarketingId.get(row.marketingId),
       media: mediaByBarangId.get(row.itemId) ?? []
     })
   );
@@ -95,10 +102,14 @@ export async function getPublicLotById(pemasaranId: string) {
     return null;
   }
 
-  const mediaByBarangId = await getMediaByBarangId([row.itemId]);
+  const [mediaByBarangId, statsByMarketingId] = await Promise.all([
+    getMediaByBarangId([row.itemId]),
+    getLotStatsByIds([row.marketingId])
+  ]);
 
   return serializePublicLot({
     ...row,
+    insights: statsByMarketingId.get(row.marketingId),
     media: mediaByBarangId.get(row.itemId) ?? []
   });
 }

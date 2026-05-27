@@ -1,0 +1,1 @@
+ALTER TABLE "barang" ADD COLUMN "specifications" jsonb DEFAULT '{}'::jsonb NOT NULL;

@@ -50,4 +50,18 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByText(/batas upload tetap 5 media per barang/i)).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /hapus foto-/i })).toHaveLength(5);
   });
+
+  it("shows category-specific specification fields while creating barang gadai", () => {
+    renderWithToast(<AdminInventoryCreateForm />);
+
+    expect(screen.getByLabelText("Jenis Emas")).toBeInTheDocument();
+    expect(screen.getByLabelText("Kadar Emas")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Elektronik" }));
+
+    expect(screen.getByLabelText("Merek")).toBeInTheDocument();
+    expect(screen.getByLabelText("Model")).toBeInTheDocument();
+    expect(screen.getByLabelText("Kelengkapan")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
+  });
 });

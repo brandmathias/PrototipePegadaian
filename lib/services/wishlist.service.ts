@@ -6,6 +6,7 @@ import { serializePublicLot } from "@/lib/buyer/serializers";
 import type { BuyerWishlist, BuyerWishlistItem } from "@/lib/contracts/wishlist";
 import { db } from "@/lib/db/client";
 import { barang, buyerWishlist, mediaBarang, pemasaran, unitAccounts, units } from "@/lib/db/schema";
+import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
 function wishlistLotSelection() {
@@ -26,6 +27,8 @@ function wishlistLotSelection() {
     category: barang.category,
     condition: barang.condition,
     description: barang.description,
+    specifications: barang.specifications,
+    updatedAt: barang.updatedAt,
     unitName: units.name,
     unitAddress: units.address,
     unitIsActive: units.isActive,
@@ -95,11 +98,13 @@ function getUnavailableReason(row: WishlistAvailabilityRow, now: Date) {
 function serializeWishlistItem(
   row: Awaited<ReturnType<typeof getWishlistRows>>[number],
   media: Array<{ id: string; type: string; url: string; fileName: string | null }>,
-  now: Date
+  now: Date,
+  insights?: BuyerWishlistItem["lot"]["insights"]
 ): BuyerWishlistItem {
   const unavailableReason = getUnavailableReason(row, now);
   const lot = serializePublicLot({
     ...row,
+    insights,
     media
   });
 
@@ -144,9 +149,14 @@ export async function getBuyerWishlistCount(userId: string) {
 
 export async function listBuyerWishlist(userId: string): Promise<BuyerWishlist> {
   const rows = await getWishlistRows(userId);
-  const mediaByBarangId = await getMediaByBarangId(rows.map((row) => row.itemId));
+  const [mediaByBarangId, statsByMarketingId] = await Promise.all([
+    getMediaByBarangId(rows.map((row) => row.itemId)),
+    getLotStatsByIds(rows.map((row) => row.marketingId))
+  ]);
   const now = new Date();
-  const items = rows.map((row) => serializeWishlistItem(row, mediaByBarangId.get(row.itemId) ?? [], now));
+  const items = rows.map((row) =>
+    serializeWishlistItem(row, mediaByBarangId.get(row.itemId) ?? [], now, statsByMarketingId.get(row.marketingId))
+  );
 
   return {
     activeItems: items.filter((item) => item.isAvailable),

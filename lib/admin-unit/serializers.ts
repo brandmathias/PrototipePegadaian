@@ -109,6 +109,7 @@ export function serializeAdminBarang(
     ownerName: row.ownerName,
     customerNumber: row.customerNumber,
     description: row.description,
+    specifications: row.specifications ?? {},
     marketingMode: extra?.marketingMode ?? null,
     mediaSummary: `${extra?.mediaCount ?? 0} media`,
     previewImageUrl: extra?.previewImageUrl ?? null,

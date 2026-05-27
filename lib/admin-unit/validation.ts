@@ -1,3 +1,5 @@
+import { normalizeBarangSpecifications } from "@/lib/admin-unit/specifications";
+
 const MONEY_REGEX = /^\d+(\.\d{1,2})?$/;
 const ALLOWED_CATEGORIES = new Set(["emas", "elektronik", "kendaraan", "perhiasan", "logam_mulia", "lainnya"]);
 const ALLOWED_CONDITIONS = new Set(["baik", "cukup", "rusak_ringan"]);
@@ -53,6 +55,7 @@ export function validateAdminBarangPayload(input: {
   ownerName?: unknown;
   customerNumber?: unknown;
   description?: unknown;
+  specifications?: unknown;
 }) {
   const name = requiredText(input.name, "Nama barang wajib diisi.");
   const category = requiredText(input.category, "Kategori barang wajib diisi.").toLowerCase();
@@ -89,7 +92,8 @@ export function validateAdminBarangPayload(input: {
     dueDate,
     ownerName,
     customerNumber: String(input.customerNumber ?? "").trim(),
-    description: String(input.description ?? "").trim()
+    description: String(input.description ?? "").trim(),
+    specifications: normalizeBarangSpecifications(category, input.specifications)
   };
 }
 

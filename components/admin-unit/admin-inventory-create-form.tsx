@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { getBarangSpecificationFields } from "@/lib/admin-unit/specifications";
 import { ADMIN_BARANG_MEDIA_LIMIT } from "@/lib/admin-unit/validation";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +110,7 @@ export function AdminInventoryCreateForm() {
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const defaultDueDate = useMemo(() => dateAfter(30), []);
+  const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
 
   useEffect(() => {
     mediaRef.current = media;
@@ -283,6 +285,27 @@ export function AdminInventoryCreateForm() {
               options={[...conditionOptions]}
               value={condition}
             />
+          </div>
+          <div className="space-y-4 rounded-2xl border border-black/8 bg-[#fbfaf6] p-4 md:col-span-2">
+            <div>
+              <FieldLabel>Spesifikasi kategori</FieldLabel>
+              <p className="mt-1 text-sm leading-6 text-black/55">
+                Field berikut menyesuaikan kategori barang agar detail katalog tidak berisi informasi berulang.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {specificationFields.map((field) => (
+                <div className="space-y-2" key={field.key}>
+                  <FieldLabel htmlFor={`specification-${field.key}`}>{field.label}</FieldLabel>
+                  <Input
+                    className="h-12 text-sm sm:text-base"
+                    id={`specification-${field.key}`}
+                    name={`specifications.${field.key}`}
+                    placeholder={field.placeholder}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="space-y-2">
             <FieldLabel htmlFor="appraisalValue">Nilai taksiran</FieldLabel>

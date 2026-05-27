@@ -1,6 +1,7 @@
 import { getCountdownState } from "@/lib/countdown";
+import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
-import type { Lot } from "@/lib/contracts/catalog";
+import type { Lot, LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 
 type AccountShape = {
@@ -23,9 +24,12 @@ type PublicLotShape = {
   category: string;
   condition: string;
   description: string;
+  specifications?: unknown;
   unitName: string;
   unitAddress: string;
+  updatedAt?: Date | null;
   account?: AccountShape;
+  insights?: LotInsights;
   media?: Array<{
     id: string;
     type: string;
@@ -200,6 +204,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     condition: row.condition,
     status: isVickrey ? "Lelang aktif" : "Tersedia",
     description: row.description,
+    updatedAt: row.updatedAt?.toISOString(),
     countdown: isVickrey
       ? getCountdownState(row.endsAt, { expiredLabel: "Menunggu hasil" }).label
       : undefined,
@@ -209,6 +214,11 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     bankAccountHolder: row.account?.accountHolderName ?? undefined,
     bankBranch: row.account?.branchName ?? undefined,
     unitAddress: row.unitAddress,
+    insights: row.insights ?? {
+      likes: 0,
+      participants: 0,
+      views: 0
+    },
     media:
       row.media?.map((item) => ({
         id: item.id,
@@ -216,15 +226,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
         url: item.url,
         fileName: item.fileName || row.itemName
       })) ?? [],
-    specs: [
-      { label: "Kode barang", value: row.itemCode },
-      { label: "Kategori", value: row.category },
-      { label: "Kondisi", value: row.condition },
-      {
-        label: isVickrey ? "Batas lelang" : "Harga tetap",
-        value: isVickrey ? toDateTimeLabel(row.endsAt) : "Siap dibeli"
-      }
-    ]
+    specs: getBarangSpecificationRows(row.category, row.specifications)
   };
 }
 

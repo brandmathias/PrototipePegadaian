@@ -12,11 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
-  Eye,
   Gem,
   Gavel,
   Grid3X3,
-  Heart,
   LayoutList,
   MapPin,
   Medal,
@@ -28,7 +26,6 @@ import {
   SlidersHorizontal,
   Tag,
   Timer,
-  UsersRound,
   X
 } from "lucide-react";
 
@@ -36,6 +33,7 @@ import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 import { LotFigure } from "@/components/shared/lot-figure";
+import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
 import type { CountdownState } from "@/lib/countdown";
@@ -159,20 +157,11 @@ function formatCatalogCountdownLabel(label: string, state: CountdownState) {
   return `${Math.max(1, seconds)} detik`;
 }
 
-function getHashSeed(input: string) {
-  return input.split("").reduce((total, char) => total + char.charCodeAt(0), 0);
-}
-
-function getLotInsights(lot: Lot, index: number) {
-  const seed = getHashSeed(`${lot.id}-${lot.code}-${lot.name}`) + index * 17;
-  const views = 84 + (seed % 168);
-  const likes = 12 + (seed % 38);
-  const followers = lot.mode === "vickrey" ? 8 + (seed % 34) : 0;
-
+function getLotInsights(lot: Lot) {
   return {
-    followers,
-    likes,
-    views
+    followers: lot.mode === "vickrey" ? (lot.insights?.participants ?? 0) : 0,
+    likes: lot.insights?.likes ?? 0,
+    views: lot.insights?.views ?? 0
   };
 }
 
@@ -504,20 +493,17 @@ function PriceRangeControl({
 
 function CatalogLotCard({
   favorite,
-  index,
   lot,
   serverNow,
   viewMode,
   onToggleFavorite
 }: {
   favorite: boolean;
-  index: number;
   lot: Lot;
   serverNow?: string;
   viewMode: ViewMode;
   onToggleFavorite: () => void;
 }) {
-  const insights = getLotInsights(lot, index);
   const mode = modeCopy[lot.mode];
   const subtype = getSubtype(lot);
   const showAuctionCountdown = lot.mode === "vickrey" && (lot.countdown || lot.endsAt);
@@ -596,22 +582,12 @@ function CatalogLotCard({
           ))}
         </div>
 
-        <div className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56">
-          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-            <Eye className="size-3.5" />
-            Dilihat {insights.views}x
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-            <Heart className="size-3.5" />
-            Suka {insights.likes}
-          </span>
-          {lot.mode === "vickrey" ? (
-            <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
-              <UsersRound className="size-3.5" />
-              Peserta {insights.followers}
-            </span>
-          ) : null}
-        </div>
+        <LotRealtimeStats
+          className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56"
+          initialStats={lot.insights}
+          lotId={lot.id}
+          mode={lot.mode}
+        />
 
         <div className="mt-3 grid content-start gap-2.5">
           <div className={cn("grid items-start gap-2.5", showAuctionCountdown ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1")}>
@@ -804,6 +780,7 @@ export function CatalogPage({
           ? Array.from(new Set([...current, lotId]))
           : current.filter((item) => item !== lotId)
       );
+      window.dispatchEvent(new CustomEvent("pegadaian:lot-stats-refresh", { detail: { lotId } }));
       router.refresh();
     } catch {
       setFavoriteIds((current) =>
@@ -814,9 +791,8 @@ export function CatalogPage({
 
   const lotsWithInsights = useMemo(
     () =>
-      initialLots.map((lot, index) => ({
-        index,
-        insights: getLotInsights(lot, index),
+      initialLots.map((lot) => ({
+        insights: getLotInsights(lot),
         lot
       })),
     [initialLots]
@@ -1241,10 +1217,9 @@ export function CatalogPage({
                     viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
                   )}
                 >
-                  {visibleLots.map(({ index, lot }) => (
+                  {visibleLots.map(({ lot }) => (
                     <CatalogLotCard
                       favorite={favoriteIds.includes(lot.id)}
-                      index={index}
                       key={lot.id}
                       lot={lot}
                       serverNow={serverNow}

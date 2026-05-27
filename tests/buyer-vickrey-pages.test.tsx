@@ -43,6 +43,28 @@ const vickreyLot: Lot = {
   specs: [{ label: "Harga dasar", value: "Rp 90.000.000" }]
 };
 
+const fixedPriceLot: Lot = {
+  id: "pm-fixed-1",
+  code: "BRG-FIX-001",
+  name: "Gelang Emas",
+  category: "Perhiasan",
+  mode: "fixed_price",
+  price: 45000000,
+  location: "Jl. Boulevard, Manado",
+  unitName: "UPC Boulevard",
+  city: "Manado",
+  condition: "Baik",
+  status: "Tersedia",
+  description: "Barang harga tetap siap dibeli.",
+  media: [],
+  specs: [
+    { label: "Jenis Perhiasan", value: "Gelang" },
+    { label: "Material", value: "Emas Kuning 24K" },
+    { label: "Berat", value: "12 gram" }
+  ],
+  updatedAt: "2026-05-22T03:30:00.000Z"
+};
+
 const winningBid: BuyerBid = {
   lotId: "pm-vickrey-1",
   lot: "Cincin Emas",
@@ -61,6 +83,35 @@ const winningBid: BuyerBid = {
 } as BuyerBid;
 
 describe("buyer vickrey pages", () => {
+  it("keeps the sale type pill on lot detail while removing condition, trust badges, and flow panels", () => {
+    const { container } = render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
+    const purchasePanel = container.querySelector("aside");
+
+    expect(purchasePanel).not.toBeNull();
+    expect(within(purchasePanel as HTMLElement).getByText("Harga Tetap")).toBeInTheDocument();
+    expect(within(purchasePanel as HTMLElement).queryByText("Baik")).not.toBeInTheDocument();
+    expect(screen.queryByText(/pembayaran aman/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/harga pasti/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/alur harga tetap/i)).not.toBeInTheDocument();
+  });
+
+  it("shows price-change context and category-specific specs without repeating generic metadata", () => {
+    render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
+
+    expect(screen.getByText("Harga dapat berubah")).toBeInTheDocument();
+    expect(screen.getByText("Stok terbatas")).toBeInTheDocument();
+    expect(screen.getByText("Update terakhir")).toBeInTheDocument();
+    expect(screen.queryByText("Unit penyelenggara")).not.toBeInTheDocument();
+    expect(screen.queryByText("Skema pembelian")).not.toBeInTheDocument();
+    expect(screen.queryByText("Kondisi barang")).not.toBeInTheDocument();
+    expect(screen.getByText("Jenis Perhiasan")).toBeInTheDocument();
+    expect(screen.getByText("Material")).toBeInTheDocument();
+    expect(screen.getByText("Emas Kuning 24K")).toBeInTheDocument();
+    expect(screen.queryByText("Kategori")).not.toBeInTheDocument();
+    expect(screen.queryByText("Lokasi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Mode")).not.toBeInTheDocument();
+  });
+
   it("turns a submitted bid on lot detail into a monitoring state instead of another bid CTA", () => {
     render(<LotDetailPage bidState={winningBid} buyerStatus={null} lot={vickreyLot} />);
 
