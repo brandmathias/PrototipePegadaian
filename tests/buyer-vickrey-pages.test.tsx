@@ -95,15 +95,23 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByText(/alur harga tetap/i)).not.toBeInTheDocument();
   });
 
-  it("shows price-change context and category-specific specs without repeating generic metadata", () => {
+  it("shows the updated transaction context and category-specific specs in separate white cards", () => {
     render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
 
+    expect(screen.getByText("Konteks Transaksi")).toBeInTheDocument();
+    expect(screen.getByText("Metode Penjualan")).toBeInTheDocument();
+    expect(screen.getByText("Barang ini dijual dengan harga tetap. Produk tidak melalui proses lelang.")).toBeInTheDocument();
+    expect(screen.getByText("Pembayaran")).toBeInTheDocument();
+    expect(screen.getByText("Pembayaran dilakukan setelah checkout dengan harga tetap. Konfirmasi otomatis setelah transaksi berhasil.")).toBeInTheDocument();
     expect(screen.getByText("Harga dapat berubah")).toBeInTheDocument();
-    expect(screen.getByText("Stok terbatas")).toBeInTheDocument();
-    expect(screen.getByText("Update terakhir")).toBeInTheDocument();
+    expect(screen.getByText("Sesuai pergerakan harga emas dan kurs harian.")).toBeInTheDocument();
+    expect(screen.queryByText("Stok terbatas")).not.toBeInTheDocument();
+    expect(screen.queryByText("Update terakhir")).not.toBeInTheDocument();
     expect(screen.queryByText("Unit penyelenggara")).not.toBeInTheDocument();
     expect(screen.queryByText("Skema pembelian")).not.toBeInTheDocument();
     expect(screen.queryByText("Kondisi barang")).not.toBeInTheDocument();
+    expect(screen.getByText("Informasi Lengkap")).toBeInTheDocument();
+    expect(screen.getByText("Spesifikasi Produk")).toBeInTheDocument();
     expect(screen.getByText("Jenis Perhiasan")).toBeInTheDocument();
     expect(screen.getByText("Material")).toBeInTheDocument();
     expect(screen.getByText("Emas Kuning 24K")).toBeInTheDocument();

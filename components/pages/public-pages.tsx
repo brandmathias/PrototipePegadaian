@@ -2,14 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
-  CalendarDays,
   Clock3,
+  CreditCard,
+  Gavel,
   Landmark,
   Maximize2,
   MapPin,
-  RefreshCcw,
   RotateCcw,
   ShieldCheck,
+  ShoppingBag,
+  ShoppingCart,
   type LucideIcon
 } from "lucide-react";
 
@@ -27,7 +29,7 @@ import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { currency } from "@/lib/formatters/currency";
-import { formatAppDate, formatAppDateTime } from "@/lib/timezone";
+import { formatAppDate } from "@/lib/timezone";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -64,18 +66,12 @@ type DetailInfoItem = {
   value: string;
 };
 
-function getPriceChangeCopy(lot: Lot, isVickrey: boolean) {
-  const normalized = lot.category.toLowerCase();
-
+function getPriceChangeCopy(isVickrey: boolean) {
   if (isVickrey) {
-    return "Harga akhir mengikuti hasil lelang tertutup dan verifikasi unit.";
+    return "Harga akhir menyesuaikan hasil lelang dan verifikasi transaksi.";
   }
 
-  if (normalized.includes("emas") || normalized.includes("perhiasan") || normalized.includes("logam")) {
-    return "Sesuai pergerakan harga emas dan kurs harian.";
-  }
-
-  return "Mengikuti appraisal terbaru dan pembaruan unit.";
+  return "Sesuai pergerakan harga emas dan kurs harian.";
 }
 
 export function LotDetailPage({
@@ -107,21 +103,25 @@ export function LotDetailPage({
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
   const specificationRows = lot.specs;
-  const priceContext: DetailInfoItem[] = [
+  const transactionContext: DetailInfoItem[] = [
+    {
+      icon: ShoppingCart,
+      label: "Metode Penjualan",
+      value: isVickrey
+        ? "Barang ini dijual dengan mekanisme lelang. Produk tidak melalui proses harga tetap."
+        : "Barang ini dijual dengan harga tetap. Produk tidak melalui proses lelang."
+    },
+    {
+      icon: CreditCard,
+      label: "Pembayaran",
+      value: isVickrey
+        ? "Pembayaran dilakukan setelah pemenang dikonfirmasi dan transaksi berhasil diverifikasi."
+        : "Pembayaran dilakukan setelah checkout dengan harga tetap. Konfirmasi otomatis setelah transaksi berhasil."
+    },
     {
       icon: ShieldCheck,
       label: "Harga dapat berubah",
-      value: getPriceChangeCopy(lot, isVickrey)
-    },
-    {
-      icon: CalendarDays,
-      label: "Stok terbatas",
-      value: "Produk premium dengan ketersediaan terbatas."
-    },
-    {
-      icon: RefreshCcw,
-      label: "Update terakhir",
-      value: lot.updatedAt ? formatAppDateTime(lot.updatedAt) : "Mengikuti pembaruan unit."
+      value: getPriceChangeCopy(isVickrey)
     }
   ];
   return (
@@ -167,13 +167,13 @@ export function LotDetailPage({
           </div>
 
           <aside className="xl:sticky xl:top-24">
-            <div className="relative space-y-7 overflow-hidden rounded-[1.9rem] bg-[#042d24] p-6 text-white shadow-[0_30px_90px_rgba(3,45,36,0.26)] ring-1 ring-[#e8c36a]/20 md:p-8">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(140deg,rgba(232,195,106,0.16),transparent_34%),radial-gradient(circle_at_88%_70%,rgba(232,195,106,0.12),transparent_28%)]" />
+            <div className="relative space-y-7 overflow-hidden rounded-[1.9rem] bg-white p-6 text-[#183f32] shadow-[0_30px_90px_rgba(3,45,36,0.12)] ring-1 ring-[#e8e2d6] md:p-8">
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(140deg,rgba(232,195,106,0.08),transparent_34%),radial-gradient(circle_at_88%_70%,rgba(0,74,35,0.05),transparent_28%)]" />
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="relative rounded-full bg-[#0d6b4c] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ecfff8] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
                   {modeLabel}
                 </span>
-                <span className="relative rounded-full bg-[#71590d] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ffdf7c] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                <span className="relative rounded-full bg-[#f7f2e8] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#9a6a00] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
                   {lot.status}
                 </span>
               </div>
@@ -182,43 +182,42 @@ export function LotDetailPage({
                 <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#d8aa3f]">
                   {lot.code}
                 </p>
-                <h1 className="max-w-xl font-headline text-4xl font-black leading-[1.05] tracking-tight text-white md:text-5xl">
+                <h1 className="max-w-xl font-headline text-4xl font-black leading-[1.05] tracking-tight text-[#0f4735] md:text-5xl">
                   {lot.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#d9e3dc]">
+                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#5f6f68]">
                   <MapPin className="size-4 text-[#f0bd51]" />
                   <span>{lot.unitName}</span>
-                  <span className="text-[#6f857b]">/</span>
+                  <span className="text-[#c9b991]">/</span>
                   <span>{lot.location}</span>
                 </div>
               </div>
 
-              <div className="relative space-y-3 border-y border-white/10 py-5">
-                <h2 className="font-headline text-lg font-bold text-white">Deskripsi Barang</h2>
-                <p className="max-w-2xl text-sm leading-7 text-[#c4d2cb]">{lot.description}</p>
+              <div className="relative space-y-3 border-y border-[#ece5d9] py-5">
+                <h2 className="font-headline text-lg font-bold text-[#0f4735]">Deskripsi Barang</h2>
+                <p className="max-w-2xl text-sm leading-7 text-[#617068]">{lot.description}</p>
               </div>
 
               <div className="relative space-y-3">
-                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#c4d2cb]">
+                <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#9d7b2f]">
                   {priceLabel}
                 </p>
                 <div className="grid gap-4">
-                  <p className="font-headline text-4xl font-black tracking-tight text-[#f0bd51] drop-shadow-[0_10px_24px_rgba(240,189,81,0.18)] md:text-5xl">
+                  <p className="font-headline text-4xl font-black tracking-tight text-[#0f4735] md:text-5xl">
                     {currency.format(lot.price)}
                   </p>
                   <LotRealtimeStats
-                    className="flex flex-wrap items-center gap-3 text-xs text-[#c4d2cb]"
-                    iconClassName="text-[#d9e3dc]"
+                    className="flex flex-wrap items-center gap-3 text-sm text-[#617068]"
+                    iconClassName="size-4 text-[#617068]"
                     initialStats={lot.insights}
-                    itemClassName="gap-1.5"
+                    itemClassName="gap-2"
+                    labelClassName="text-sm font-medium text-[#617068]"
                     lotId={lot.id}
                     mode={lot.mode}
-                    separatorClassName="h-4 w-px bg-[#e8c36a]/45"
-                    showFixedStatus
+                    separatorClassName="h-5 w-px bg-[#e8c36a]/45"
                     showSeparators
-                    status={lot.status}
                     trackView
-                    valueClassName="font-semibold text-white"
+                    valueClassName="text-base font-semibold text-[#183f32]"
                     watchLabel="Watchlist"
                   />
                   {showAuctionCountdown ? (
@@ -242,22 +241,22 @@ export function LotDetailPage({
               </div>
 
               {bidState ? (
-                <div className="relative rounded-[1.35rem] bg-white/8 p-5 ring-1 ring-white/10">
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#f0bd51]">
+                <div className="relative rounded-[1.35rem] bg-[#f8faf8] p-5 ring-1 ring-[#e8e2d6]">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#9d7b2f]">
                     Aktivitas akun Anda
                   </p>
-                  <p className="mt-3 text-lg font-black text-white">Bid sudah terkunci</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#c4d2cb]">
+                  <p className="mt-3 text-lg font-black text-[#0f4735]">Bid sudah terkunci</p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#617068]">
                     {bidState.note}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#f0bd51]">
-                    <span className="rounded-full bg-white/10 px-3 py-1.5">
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#9d7b2f]">
+                    <span className="rounded-full bg-[#f7f2e8] px-3 py-1.5">
                       {typeof bidState.bidAmount === "number"
                         ? `Bid ${currency.format(bidState.bidAmount)}`
                         : "Hash bid tersimpan"}
                     </span>
                     {bidState.paymentAmount ? (
-                      <span className="rounded-full bg-white/10 px-3 py-1.5">
+                      <span className="rounded-full bg-[#f7f2e8] px-3 py-1.5">
                         Harga bayar Vickrey {currency.format(bidState.paymentAmount)}
                       </span>
                     ) : null}
@@ -275,40 +274,43 @@ export function LotDetailPage({
                 {isVickrey ? (
                   bidState ? (
                     <Link className="flex-1" href="/riwayat-bid">
-                      <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
+                      <Button className="h-10 w-full rounded-md text-sm font-black" variant="default">
                         Pantau Riwayat Bid
+                        <Gavel className="size-4" />
                       </Button>
                     </Link>
                   ) : isActionBlocked ? (
                     <Button
-                      className="h-[3.25rem] flex-1 rounded-[0.9rem] bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
+                      className="h-11 flex-1 rounded-md bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
                       disabled
                     >
                       Lelang Sedang Dibatasi
                     </Button>
                   ) : (
                     <Link className="flex-1" href={`/katalog/${lot.id}/bid`}>
-                      <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
-                        Ikut Lelang Sekarang
+                      <Button className="h-10 w-full rounded-md text-sm font-black" variant="default">
+                        Ikut Lelang
+                        <Gavel className="size-4" />
                       </Button>
                     </Link>
                   )
                 ) : isActionBlocked ? (
                   <Button
-                    className="h-[3.25rem] flex-1 rounded-[0.9rem] bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
+                    className="h-11 flex-1 rounded-md bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
                     disabled
                   >
                     Pembelian Sedang Dibatasi
                   </Button>
                 ) : (
                   <Link className="flex-1" href={`/katalog/${lot.id}/beli`}>
-                    <Button className="h-[3.25rem] w-full rounded-[0.9rem] bg-[#e8b64d] px-6 text-base font-black text-[#08251d] shadow-[0_18px_38px_rgba(232,182,77,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f0c96d]">
+                    <Button className="h-10 w-full rounded-md text-sm font-black" variant="accent">
                       Beli Sekarang
+                      <ShoppingBag className="size-4" />
                     </Button>
                   </Link>
                 )}
                 <DetailFavoriteToggle
-                  className="h-[3.25rem] w-[3.5rem] shrink-0 rounded-[0.9rem] border border-[#e8c36a]/45 bg-transparent text-white shadow-[0_14px_32px_rgba(0,0,0,0.16)] hover:bg-white/10 [&_svg]:!size-6"
+                  className="h-[3.25rem] w-[3.5rem] shrink-0 rounded-[0.9rem] border border-[#e8e2d6] bg-white text-[#0f4735] shadow-[0_14px_32px_rgba(0,0,0,0.08)] hover:bg-[#f7faf8] [&_svg]:!size-6"
                   initialFavorited={initialFavorited}
                   itemName={lot.name}
                   lotId={lot.id}
@@ -319,25 +321,32 @@ export function LotDetailPage({
           </aside>
         </section>
 
-        <section className="space-y-6 pb-12">
-          <div className="relative overflow-hidden rounded-[1.6rem] bg-[#042d24] p-6 text-white shadow-[0_24px_80px_rgba(8,69,50,0.16)] ring-1 ring-[#e8c36a]/20 md:p-7">
-            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-[linear-gradient(90deg,transparent,#e8c36a,transparent)]" />
-            <h2 className="font-headline text-xl font-black tracking-tight text-white">Konteks Transaksi</h2>
-            <div className="mt-6 grid gap-5 md:grid-cols-3">
-              {priceContext.map((item) => {
+        <section className="grid gap-6 pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch">
+          <div className="relative h-full overflow-hidden rounded-[1.6rem] bg-white p-6 text-[#183f32] shadow-[0_24px_80px_rgba(8,69,50,0.08)] ring-1 ring-[#ece5d9] md:p-7 lg:order-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#d8aa3f]">Konteks Transaksi</p>
+            <h2 className="mt-3 font-serif text-[2rem] font-semibold tracking-[-0.01em] text-[#0f4735]">
+              Informasi Transaksi
+            </h2>
+            <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
+              Perhiasan ini merupakan bagian dari inventori resmi Pegadaian. Pembayaran dan pembaruan harga
+              mengikuti ketentuan transaksi yang berlaku.
+            </p>
+
+            <div className="mt-7 grid gap-5 sm:grid-cols-3">
+              {transactionContext.map((item) => {
                 const Icon = item.icon;
 
                 return (
                   <div
-                    className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:border-r md:border-[#e8c36a]/16 md:pr-6 md:last:border-r-0"
+                    className="grid gap-3 text-center sm:border-r sm:border-[#ece5d9] sm:px-3 sm:last:border-r-0"
                     key={item.label}
                   >
-                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#0b4a3a] text-[#e8b64d] shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                    <span className="mx-auto grid size-14 shrink-0 place-items-center rounded-full bg-[#f5f1e7] text-[#0f5d43] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                       <Icon className="size-5" />
                     </span>
                     <div>
-                      <p className="text-sm font-black text-white">{item.label}</p>
-                      <p className="mt-1 text-xs leading-5 text-[#c4d2cb]">{item.value}</p>
+                      <p className="font-serif text-[15px] font-semibold tracking-[-0.01em] text-[#0f5d43]">{item.label}</p>
+                      <p className="mt-1 text-[12px] leading-6 text-[#617068]">{item.value}</p>
                     </div>
                   </div>
                 );
@@ -345,23 +354,26 @@ export function LotDetailPage({
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-[1.6rem] bg-[#052b22] p-6 text-white shadow-[0_24px_80px_rgba(8,69,50,0.14)] ring-1 ring-[#e8c36a]/18 md:p-7">
-            <div className="pointer-events-none absolute inset-y-10 left-1/2 hidden w-px bg-[linear-gradient(180deg,transparent,#e8c36a,transparent)] opacity-80 md:block" />
-            <h2 className="font-headline text-xl font-black tracking-tight text-white">Spesifikasi Produk</h2>
-            <div className="mt-1 h-px w-28 bg-[#e8b64d]" />
+          <div className="relative h-full overflow-hidden rounded-[1.6rem] bg-white p-6 text-[#183f32] shadow-[0_24px_80px_rgba(8,69,50,0.08)] ring-1 ring-[#ece5d9] md:p-7 lg:order-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#d8aa3f]">Informasi Lengkap</p>
+            <h2 className="mt-3 font-serif text-[2rem] font-semibold tracking-[-0.01em] text-[#0f4735]">Spesifikasi Produk</h2>
+            <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
+              Detail berikut mengikuti data barang pada sistem Pegadaian Lelang.
+              Susunannya dibuat tanpa garis tabel agar tetap ringan dan mudah dipindai.
+            </p>
 
             {specificationRows.length > 0 ? (
-              <dl className="mt-5 grid gap-x-12 gap-y-4 md:grid-cols-2">
+              <dl className="mt-7 grid gap-x-12 gap-y-4 md:grid-cols-2">
                 {specificationRows.map((spec) => (
                   <div className="grid grid-cols-[minmax(0,0.82fr)_auto_minmax(0,1fr)] items-baseline gap-4" key={`${spec.label}-${spec.value}`}>
-                    <dt className="text-sm font-semibold text-[#c4d2cb]">{spec.label}</dt>
-                    <span className="text-[#e8b64d]">•</span>
-                    <dd className="text-sm font-bold leading-6 text-white">{spec.value}</dd>
+                    <dt className="font-serif text-[14px] font-medium tracking-[-0.01em] text-[#7a817d]">{spec.label}</dt>
+                    <span className="text-[#e8b64d]">&bull;</span>
+                    <dd className="font-serif text-[15px] font-semibold leading-6 tracking-[-0.01em] text-[#0f4735]">{spec.value}</dd>
                   </div>
                 ))}
               </dl>
             ) : (
-              <p className="mt-5 text-sm leading-7 text-[#c4d2cb]">
+              <p className="mt-5 text-sm leading-7 text-[#617068]">
                 Spesifikasi produk belum dilengkapi oleh admin unit.
               </p>
             )}
