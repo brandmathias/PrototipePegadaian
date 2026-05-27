@@ -5,7 +5,7 @@ import {
 import { currency } from "@/lib/formatters/currency";
 
 export type BuyerPurchasePayload = {
-  paymentMethod: "transfer" | "langsung";
+  paymentMethod: "transfer";
 };
 
 export type BuyerBidPayload = {
@@ -44,10 +44,10 @@ function readRecord(input: unknown) {
 
 export function validateBuyerPurchasePayload(input: unknown): BuyerPurchasePayload {
   const payload = readRecord(input);
-  const paymentMethod = payload.paymentMethod;
+  const paymentMethod = payload.paymentMethod ?? "transfer";
 
-  if (paymentMethod !== "transfer" && paymentMethod !== "langsung") {
-    throw new Error("Pilih metode pembayaran yang tersedia.");
+  if (paymentMethod !== "transfer") {
+    throw new Error("Fixed price hanya mendukung pembayaran transfer bank.");
   }
 
   return { paymentMethod };

@@ -254,4 +254,13 @@ describe("CatalogPage", () => {
 
     expect(screen.getByRole("button", { name: /unit prioritas 5/i })).toBeInTheDocument();
   });
+
+  it("supports buyer price filters up to 999999999999", () => {
+    render(<CatalogPage lots={[makeLot(1)]} />);
+
+    const maxInput = screen.getByPlaceholderText("Tidak terbatas");
+    fireEvent.change(maxInput, { target: { value: "999999999999" } });
+
+    expect(maxInput).toHaveValue("999.999.999.999");
+  });
 });

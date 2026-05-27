@@ -9,19 +9,22 @@ import {
 } from "@/lib/buyer/validation";
 
 describe("buyer validation", () => {
-  it("accepts supported buyer payment methods", () => {
+  it("accepts fixed price transfer payment", () => {
     expect(validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toEqual({
       paymentMethod: "transfer"
     });
 
-    expect(validateBuyerPurchasePayload({ paymentMethod: "langsung" })).toEqual({
-      paymentMethod: "langsung"
+    expect(validateBuyerPurchasePayload({})).toEqual({
+      paymentMethod: "transfer"
     });
   });
 
   it("rejects unsupported buyer payment methods", () => {
     expect(() => validateBuyerPurchasePayload({ paymentMethod: "cashless" })).toThrow(
-      "Pilih metode pembayaran yang tersedia."
+      "Fixed price hanya mendukung pembayaran transfer bank."
+    );
+    expect(() => validateBuyerPurchasePayload({ paymentMethod: "langsung" })).toThrow(
+      "Fixed price hanya mendukung pembayaran transfer bank."
     );
   });
 

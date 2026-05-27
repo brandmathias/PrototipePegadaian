@@ -180,6 +180,8 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+const CATALOG_PRICE_FILTER_LIMIT = 999_999_999_999;
+
 function parsePriceInput(value: string) {
   if (!value.trim()) return null;
   const numeric = Number(value);
@@ -826,10 +828,8 @@ export function CatalogPage({
   }, [initialLots]);
 
   const priceUpperBound = useMemo(() => {
-    const highestPrice = initialLots.reduce((max, lot) => Math.max(max, lot.price), 0);
-    const roundedLimit = Math.ceil(highestPrice / 100000) * 100000;
-    return Math.max(roundedLimit, 1000000);
-  }, [initialLots]);
+    return CATALOG_PRICE_FILTER_LIMIT;
+  }, []);
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
   const matchingUnits = units.filter(([unit]) => normalize(unit).includes(normalize(unitQuery)));

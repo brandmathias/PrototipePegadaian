@@ -1,11 +1,13 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+const replaceMock = vi.fn();
+const refreshMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn()
+    replace: replaceMock,
+    refresh: refreshMock
   })
 }));
 
@@ -40,20 +42,40 @@ function renderPurchaseWorkflow() {
 }
 
 describe("PurchaseWorkflow", () => {
-  it("requires direct payment location confirmation before fixed price submit", async () => {
-    const user = userEvent.setup();
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    replaceMock.mockReset();
+    refreshMock.mockReset();
+  });
+
+  it("creates a fixed price transfer transaction and opens payment detail", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ data: { id: "trx-transfer-1" } })
+      })
+    );
 
     renderPurchaseWorkflow();
 
-    expect(screen.getByText(/konfirmasi lokasi bayar langsung/i)).toBeInTheDocument();
-    expect(screen.getByText(/Jl\. Sam Ratulangi No\. 12, Manado/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sabtu 08\.00-12\.00/i)).toBeInTheDocument();
+    expect(screen.getByText(/menyiapkan pembayaran transfer/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/transfer bank/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
 
-    const submitButton = screen.getByRole("button", { name: /konfirmasi pembelian/i });
-    expect(submitButton).toBeDisabled();
-
-    await user.click(screen.getByRole("checkbox", { name: /saya memahami pembayaran langsung/i }));
-
-    expect(submitButton).toBeEnabled();
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/user/beli/fixed-direct-1",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ paymentMethod: "transfer" })
+        })
+      );
+    });
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-transfer-1");
+    });
   });
 });

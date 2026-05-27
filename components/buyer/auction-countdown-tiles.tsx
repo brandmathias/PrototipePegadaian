@@ -10,6 +10,7 @@ type AuctionCountdownTilesProps = {
   className?: string;
   expiredLabel: string;
   fallbackLabel?: string;
+  size?: "default" | "hero";
   serverNow?: string;
   targetAt: string | null | undefined;
 };
@@ -51,6 +52,7 @@ export function AuctionCountdownTiles({
   className,
   expiredLabel,
   fallbackLabel,
+  size = "default",
   serverNow,
   targetAt
 }: AuctionCountdownTilesProps) {
@@ -104,7 +106,7 @@ export function AuctionCountdownTiles({
   return (
     <div
       className={cn(
-        "grid w-full max-w-[18.5rem] gap-1.5",
+        size === "hero" ? "grid w-full max-w-[22.5rem] gap-2" : "grid w-full max-w-[18.5rem] gap-1.5",
         segments.length >= 4 ? "grid-cols-4" : "grid-cols-3",
         className
       )}
@@ -112,15 +114,29 @@ export function AuctionCountdownTiles({
       {segments.map((segment) => (
         <span
           className={cn(
-            "rounded-md bg-[#fff3f4] px-2 py-2 text-center ring-1 ring-[#ffd9df] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            size === "hero"
+              ? "rounded-[1.05rem] bg-[linear-gradient(180deg,#fff8f9,#fff0f2)] px-2.5 py-3 text-center ring-1 ring-[#ffd8df] shadow-[0_18px_36px_-28px_rgba(215,43,67,0.42)] transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              : "rounded-md bg-[#fff3f4] px-2 py-2 text-center ring-1 ring-[#ffd9df] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
             state.isExpired && "col-span-full"
           )}
           key={segment.label}
         >
-          <span className="block font-headline text-sm font-black leading-none text-[#d72b43] [font-variant-numeric:tabular-nums]">
+          <span
+            className={cn(
+              "block font-headline font-black leading-none text-[#d72b43] [font-variant-numeric:tabular-nums]",
+              size === "hero" ? "text-[1.42rem] md:text-[1.82rem]" : "text-sm"
+            )}
+          >
             {segment.value}
           </span>
-          <span className="mt-1 block text-[0.58rem] font-bold text-[#b13a4d]">{segment.label}</span>
+          <span
+            className={cn(
+              "mt-1 block font-bold text-[#b13a4d]",
+              size === "hero" ? "text-[0.61rem] uppercase tracking-[0.12em]" : "text-[0.58rem]"
+            )}
+          >
+            {segment.label}
+          </span>
         </span>
       ))}
     </div>

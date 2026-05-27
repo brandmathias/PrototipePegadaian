@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, gt, isNull, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, ne, or } from "drizzle-orm";
 
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
@@ -33,11 +33,18 @@ import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
-const ACTIVE_TRANSACTION_STATUSES = [
+const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",
   "bukti_diunggah",
   "ditolak_bukti",
   "menunggu_konfirmasi_langsung"
+];
+
+const FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES = [
+  "bukti_diunggah",
+  "menunggu_konfirmasi_langsung",
+  "lunas",
+  "selesai"
 ];
 
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
@@ -398,19 +405,29 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   }
 
   const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
-  const existingActive = activeTransactions.find((item) => ACTIVE_TRANSACTION_STATUSES.includes(item.status));
+  const existingBuyerTransaction = activeTransactions
+    .filter(
+      (item) => item.userId === userId && REUSABLE_BUYER_TRANSACTION_STATUSES.includes(item.status)
+    )
+    .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0];
 
-  if (existingActive) {
-    if (existingActive.userId === userId) {
-      return serializeBuyerTransaction(
-        await getTransactionRowById(userId, existingActive.id).then((transactionRow) => {
-          if (!transactionRow) throw new Error("Transaksi aktif tidak ditemukan.");
-          return transactionRow;
-        })
-      );
-    }
+  const lockedByOtherBuyer = activeTransactions.find(
+    (item) =>
+      item.userId !== userId &&
+      FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES.includes(item.status)
+  );
 
+  if (lockedByOtherBuyer) {
     throw new Error("Barang sedang dalam proses pembelian oleh pembeli lain.");
+  }
+
+  if (existingBuyerTransaction) {
+    return serializeBuyerTransaction(
+      await getTransactionRowById(userId, existingBuyerTransaction.id).then((transactionRow) => {
+        if (!transactionRow) throw new Error("Transaksi aktif tidak ditemukan.");
+        return transactionRow;
+      })
+    );
   }
 
   const blacklist = await getActiveBlacklist(userId);
@@ -425,6 +442,10 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     throw new Error("Harga fixed price belum valid.");
   }
 
+  if (!row.account?.accountNumber) {
+    throw new Error("Rekening tujuan unit belum tersedia untuk pembayaran transfer.");
+  }
+
   const [created] = await db
     .insert(transaksi)
     .values({
@@ -434,10 +455,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       type: "fixed_price",
       amount: String(amount),
       paymentMethod: payload.paymentMethod,
-      status:
-        payload.paymentMethod === "langsung"
-          ? "menunggu_konfirmasi_langsung"
-          : "menunggu_pembayaran",
+      status: "menunggu_pembayaran",
       paymentDeadline: plusHours(24)
     })
     .returning();
@@ -621,6 +639,23 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 
   if (row.paymentMethod !== "transfer") {
     throw new Error("Unggah bukti hanya tersedia untuk metode transfer bank.");
+  }
+
+  const [lockedByOtherBuyer] = await db
+    .select({ id: transaksi.id })
+    .from(transaksi)
+    .where(
+      and(
+        eq(transaksi.pemasaranId, row.pemasaranId),
+        ne(transaksi.id, transactionId),
+        ne(transaksi.userId, userId),
+        inArray(transaksi.status, FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES)
+      )
+    )
+    .limit(1);
+
+  if (lockedByOtherBuyer) {
+    throw new Error("Barang sedang dalam proses pembelian oleh pembeli lain.");
   }
 
   const [updated] = await db

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { FileCheck2, LoaderCircle, UploadCloud } from "lucide-react";
+import { Expand, FileCheck2, FileText, LoaderCircle, UploadCloud, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
@@ -23,6 +24,8 @@ export function BuyerPaymentProofForm({
   const [reference, setReference] = useState("");
   const [fileName, setFileName] = useState(currentProof ?? "");
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -31,11 +34,50 @@ export function BuyerPaymentProofForm({
     variant: "success" | "error" | "info";
   } | null>(null);
   const proofInputId = `payment-proof-${transactionId}`;
+  const previewTitleId = useId();
   const hasProofInput = Boolean(file || fileName.trim());
+  const hasPreview = Boolean(previewUrl);
+  const isImagePreview = Boolean(file?.type.startsWith("image/"));
+  const isPdfPreview = file?.type === "application/pdf";
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
+
+  useEffect(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsPreviewOpen(false);
+      }
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPreviewOpen]);
 
   function handleSubmit() {
     setFeedback(null);
@@ -93,29 +135,91 @@ export function BuyerPaymentProofForm({
   }
 
   return (
-    <div className="space-y-3">
-      <Input
-        aria-label="Nama file bukti transfer"
-        autoComplete="off"
-        name="proofFileName"
-        onChange={(event) => setFileName(event.target.value)}
-        placeholder="Nama file akan muncul setelah dipilih"
-        value={fileName}
-      />
-      <label
-        className="block cursor-pointer rounded-[1.5rem] border border-dashed border-primary/25 bg-primary/[0.03] p-5 text-center transition hover:border-primary/45 hover:bg-primary/[0.06]"
-        htmlFor={proofInputId}
-      >
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-primary shadow-ambient">
-          {file || currentProof ? <FileCheck2 className="size-6" /> : <UploadCloud className="size-6" />}
-        </span>
-        <span className="mt-4 block font-semibold text-foreground">
-          {file ? file.name : currentProof ? "Bukti pembayaran tersimpan" : "Klik atau seret file ke sini"}
-        </span>
-        <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-          JPG, PNG, PDF maks. 5 MB
-        </span>
-      </label>
+    <div className="space-y-4">
+      <div className="rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6] p-4 sm:p-5">
+        <div className="flex min-h-[26rem] flex-col">
+          {hasPreview ? (
+            <button
+              aria-label="Buka preview bukti transfer"
+              className="group relative block flex-1 overflow-hidden rounded-[1.35rem] border border-[#d9ddd7] bg-white text-left shadow-[0_24px_48px_-30px_rgba(8,69,50,0.22)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_28px_54px_-28px_rgba(8,69,50,0.26)] active:scale-[0.995]"
+              onClick={() => setIsPreviewOpen(true)}
+              type="button"
+            >
+              {isImagePreview ? (
+                <img
+                  alt="Preview bukti transfer"
+                  className="h-full min-h-[18rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                  src={previewUrl ?? undefined}
+                />
+              ) : isPdfPreview ? (
+                <iframe
+                  className="h-full min-h-[18rem] w-full bg-white"
+                  src={previewUrl ? `${previewUrl}#toolbar=0&navpanes=0&scrollbar=0` : undefined}
+                  title="Preview PDF bukti transfer"
+                />
+              ) : (
+                <span className="flex h-full min-h-[18rem] items-center justify-center bg-[linear-gradient(180deg,#fafaf7,#f1f2ed)]">
+                  <span className="flex items-center gap-3 rounded-[1.1rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+                    <span className="grid size-11 place-items-center rounded-[0.95rem] bg-[#f1f3ee] text-primary">
+                      <FileText className="size-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-body text-sm font-semibold text-[#1a1c1c]">
+                        {file?.name}
+                      </span>
+                      <span className="block text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
+                        File Tersimpan
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              )}
+              <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,18,0.02),transparent_36%,rgba(12,25,18,0.34))]" />
+              <span className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/88 px-3 py-1.5 font-body text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#0d573e] shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm">
+                <FileCheck2 className="size-3.5" />
+                Preview Aktif
+              </span>
+              <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm transition duration-500 group-hover:scale-[1.04]">
+                <Expand className="size-4" />
+              </span>
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <span className="block rounded-[1.15rem] border border-white/18 bg-[linear-gradient(180deg,rgba(9,35,24,0.72),rgba(7,28,20,0.9))] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
+                  <span className="block truncate font-body text-[1rem] font-semibold">
+                    {file?.name}
+                  </span>
+                  <span className="mt-1 block text-[0.72rem] uppercase tracking-[0.14em] text-white/72">
+                    Tekan untuk membuka tampilan penuh
+                  </span>
+                </span>
+              </span>
+            </button>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fbfbf8,#f3f4ef)] px-5 py-10 text-center">
+              <span className="grid size-24 place-items-center rounded-[1.5rem] bg-[#ececea] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] transition duration-500 group-hover:scale-[1.04]">
+                {file || currentProof ? <FileCheck2 className="size-7" /> : <UploadCloud className="size-7" />}
+              </span>
+              <span className="mt-6 block font-body text-[1.05rem] font-semibold text-[#1a1c1c]">
+                {file ? file.name : currentProof ? "Bukti pembayaran tersimpan" : "Klik atau seret file ke sini"}
+              </span>
+              <span className="mt-2 block max-w-[18rem] font-body text-sm leading-6 text-[#6e716c]">
+                Preview bukti transfer akan tampil besar di area ini setelah file dipilih.
+              </span>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-col items-center gap-3 text-center">
+            <label
+              className="inline-flex h-11 cursor-pointer items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 font-body text-sm font-semibold text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.03] active:scale-[0.98]"
+              htmlFor={proofInputId}
+            >
+              Pilih File
+            </label>
+            <span className="block font-body text-[0.78rem] uppercase tracking-[0.08em] text-[#6e716c]">
+              Format: JPG, PNG, PDF (Maks. 5MB)
+            </span>
+          </div>
+        </div>
+      </div>
       <Input
         accept=".jpg,.jpeg,.png,.pdf"
         aria-label="File bukti transfer"
@@ -126,18 +230,26 @@ export function BuyerPaymentProofForm({
           const nextFile = event.target.files?.[0] ?? null;
           setFile(nextFile);
           setFileName(nextFile?.name ?? currentProof ?? "");
+          if (!nextFile) {
+            setIsPreviewOpen(false);
+          }
         }}
         type="file"
       />
-      <Input
-        aria-label="Nomor referensi transfer"
+      <input
+        aria-hidden="true"
         autoComplete="off"
+        className="sr-only"
         name="paymentReference"
         onChange={(event) => setReference(event.target.value)}
-        placeholder="Nomor referensi transfer"
+        tabIndex={-1}
         value={reference}
       />
-      <Button className="w-full" disabled={!isHydrated || isPending || !hasProofInput} onClick={handleSubmit}>
+      <Button
+        className="h-14 w-full rounded-md font-body text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+        disabled={!isHydrated || isPending || !hasProofInput}
+        onClick={handleSubmit}
+      >
         {!isHydrated
           ? "Menyiapkan\u2026"
           : isPending
@@ -147,9 +259,7 @@ export function BuyerPaymentProofForm({
                 {"Mengirim\u2026"}
               </>
             )
-          : currentProof
-            ? "Perbarui Bukti Pembayaran"
-            : "Kirim Bukti Pembayaran"}
+          : "Kirim Bukti Pembayaran"}
       </Button>
       {feedback ? (
         <InlineFeedback
@@ -159,6 +269,82 @@ export function BuyerPaymentProofForm({
           variant={feedback.variant}
         />
       ) : null}
+      {isPreviewOpen && previewUrl
+        ? createPortal(
+            <div
+              aria-labelledby={previewTitleId}
+              aria-modal="true"
+              className="fixed inset-0 z-[140] flex items-center justify-center bg-[#081b14]/72 p-4 backdrop-blur-md sm:p-6"
+              onClick={() => setIsPreviewOpen(false)}
+              role="dialog"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
+              <div
+                className="relative z-[141] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
+                  <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                      <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
+                        Bukti Pembayaran
+                      </p>
+                      <h3
+                        className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]"
+                        id={previewTitleId}
+                      >
+                        {file?.name ?? "Preview bukti transfer"}
+                      </h3>
+                    </div>
+                    <button
+                      aria-label="Tutup preview bukti transfer"
+                      className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
+                      onClick={() => setIsPreviewOpen(false)}
+                      type="button"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+
+                  <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                      {isImagePreview ? (
+                        <img
+                          alt="Preview bukti transfer"
+                          className="max-h-[78dvh] w-full object-contain bg-[#f8f8f5]"
+                          src={previewUrl ?? undefined}
+                        />
+                      ) : isPdfPreview ? (
+                        <iframe
+                          className="h-[78dvh] w-full bg-white"
+                          src={previewUrl ? `${previewUrl}#toolbar=1&navpanes=0` : undefined}
+                          title="Preview penuh PDF bukti transfer"
+                        />
+                      ) : (
+                        <div className="flex h-[70dvh] items-center justify-center bg-[#f8f8f5]">
+                          <div className="flex items-center gap-3 rounded-[1.15rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_40px_-30px_rgba(8,69,50,0.28)]">
+                            <span className="grid size-12 place-items-center rounded-[1rem] bg-[#f1f3ee] text-primary">
+                              <FileText className="size-5" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-body text-sm font-semibold text-[#1a1c1c]">
+                                {file?.name}
+                              </p>
+                              <p className="text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
+                                File siap ditinjau
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

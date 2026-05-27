@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
+import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
@@ -221,19 +222,25 @@ export function LotDetailPage({
                     watchLabel="Watchlist"
                   />
                   {showAuctionCountdown ? (
-                    <div className="grid gap-2 rounded-[1rem] bg-[#fff7f8] px-3 py-3 shadow-[0_16px_42px_rgba(8,69,50,0.05)]">
-                      <div className="inline-flex items-center gap-2 text-sm font-bold text-[#5c625b]">
-                        <Clock3 className="size-4 text-[#d72b43]" />
-                        <span className="text-[#7a756d]">Berakhir dalam</span>
+                    <div className="grid gap-3 rounded-[1.35rem] border border-[#f4d9df] bg-[linear-gradient(180deg,#fff9fa,#fff3f5)] px-4 py-4 shadow-[0_24px_56px_-42px_rgba(215,43,67,0.42)] md:px-5 md:py-5">
+                      <div className="inline-flex items-center gap-2.5 text-sm font-bold text-[#5c625b]">
+                        <span className="grid size-8 place-items-center rounded-full bg-white text-[#d72b43] shadow-[0_12px_24px_-18px_rgba(215,43,67,0.48)]">
+                          <Clock3 className="size-4" />
+                        </span>
+                        <span className="text-[0.72rem] uppercase tracking-[0.16em] text-[#a25b68]">
+                          Berakhir dalam
+                        </span>
                       </div>
                       <AuctionCountdownTiles
+                        className="mx-auto"
                         expiredLabel="Menunggu hasil"
                         fallbackLabel={lot.countdown}
+                        size="hero"
                         serverNow={serverNow}
                         targetAt={lot.endsAt}
                       />
                       {auctionEndLabel ? (
-                        <p className="pl-6 text-xs font-medium text-[#7d766d]">{auctionEndLabel}</p>
+                        <p className="text-center text-xs font-semibold text-[#8b7b74]">{auctionEndLabel}</p>
                       ) : null}
                     </div>
                   ) : null}
@@ -302,12 +309,9 @@ export function LotDetailPage({
                     Pembelian Sedang Dibatasi
                   </Button>
                 ) : (
-                  <Link className="flex-1" href={`/katalog/${lot.id}/beli`}>
-                    <Button className="h-10 w-full rounded-md text-sm font-black" variant="accent">
-                      Beli Sekarang
-                      <ShoppingBag className="size-4" />
-                    </Button>
-                  </Link>
+                  <div className="flex-1">
+                    <FixedPriceBuyButton lotId={lot.id} />
+                  </div>
                 )}
                 <DetailFavoriteToggle
                   className="h-[3.25rem] w-[3.5rem] shrink-0 rounded-[0.9rem] border border-[#e8e2d6] bg-white text-[#0f4735] shadow-[0_14px_32px_rgba(0,0,0,0.08)] hover:bg-[#f7faf8] [&_svg]:!size-6"
@@ -395,9 +399,9 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
             <Button variant="secondary">Kembali ke Detail Barang</Button>
           </Link>
         }
-        description="Pilih metode pembayaran yang paling sesuai, lalu lanjutkan ke transaksi agar pembayaran bisa diselesaikan sesuai alur fixed price di PRD."
-        eyebrow="Pembelian Fixed Price"
-        title="Konfirmasi pembelian barang"
+        description="Fixed price sekarang menggunakan transfer bank. Sistem akan membuat transaksi dan langsung membuka detail pembayaran."
+        eyebrow="Pembayaran Fixed Price"
+        title="Membuka detail pembayaran"
       />
       <PurchaseWorkflow lot={lot} />
     </div>

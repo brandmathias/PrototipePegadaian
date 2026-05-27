@@ -18,9 +18,11 @@ import {
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
+  UploadCloud,
   UserRound,
 } from "lucide-react";
 
+import { AccountCopyButton } from "@/components/buyer/account-copy-button";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
@@ -1158,7 +1160,7 @@ export function TransactionDetailPage({
     : null;
 
   return (
-    <div className="space-y-7 md:space-y-8">
+    <div className="space-y-7 bg-white md:space-y-8">
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
@@ -1182,9 +1184,11 @@ export function TransactionDetailPage({
                 : "Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai."}
             </p>
           </div>
-          <Link href="/transaksi">
-            <Button variant="secondary">Kembali ke Transaksi</Button>
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link href={`/katalog/${transaction.lotId}`}>
+              <Button variant="ghost">Kembali ke Detail Barang</Button>
+            </Link>
+          </div>
         </div>
 
         <PaymentProgressRail transaction={transaction} />
@@ -1219,212 +1223,206 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_0.95fr_0.9fr]">
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <ReceiptText className="size-5 text-primary" />
-              <CardTitle>Rincian Transaksi</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                ID Transaksi
-              </p>
-              <p className="mt-3 text-xl font-extrabold text-foreground">{transaction.id}</p>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-[1fr_1fr_0.9fr]">
+        <div className="relative h-fit rounded-xl bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
+          <div className="relative z-10">
+            <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
+              <ReceiptText className="size-5" />
+              Rincian Transaksi
+            </h2>
+            <div className="space-y-6">
+              <div>
+                <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
+                  ID Transaksi
+                </p>
+                <p className="break-words font-body text-[1.08rem] font-semibold text-[#1a1c1c]">
+                  {transaction.id}
+                </p>
+              </div>
 
-            <div className="flex gap-4">
-              {transaction.imageUrl ? (
-                <Image
-                  alt={`Foto barang ${transaction.title}`}
-                  className="size-20 shrink-0 rounded-2xl border border-border/70 object-cover shadow-ambient"
-                  height={160}
-                  src={transaction.imageUrl}
-                  unoptimized
-                  width={160}
-                />
-              ) : (
-                <div className="grid size-20 shrink-0 place-items-center rounded-2xl bg-[radial-gradient(circle_at_30%_25%,#ffd45a,#c88619_62%,#6d4305)] text-white shadow-ambient">
-                  <ShoppingBag className="size-8" />
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="font-bold leading-6 text-foreground">{transaction.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{transaction.applicationNumber}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <StatusPill status={transaction.status} />
-                  <Badge variant="muted">
-                    {transaction.kind === "VICKREY_WIN" ? "Vickrey Auction" : "Fixed Price"}
-                  </Badge>
+              <div className="flex gap-4">
+                {transaction.imageUrl ? (
+                  <Image
+                    alt={`Foto barang ${transaction.title}`}
+                    className="size-20 shrink-0 rounded-md bg-[#efefec] object-cover"
+                    height={160}
+                    src={transaction.imageUrl}
+                    unoptimized
+                    width={160}
+                  />
+                ) : (
+                  <div className="grid size-20 shrink-0 place-items-center rounded-md bg-[#efefec] text-primary">
+                    <ShoppingBag className="size-7" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
+                    Nama Barang
+                  </p>
+                  <p className="font-body text-[1.02rem] font-semibold leading-7 text-[#1a1c1c]">
+                    {transaction.title}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <div className="rounded-[1.5rem] border border-border/70 p-4">
-              <PaymentInfoRow label="Total Harga" value={currency.format(transaction.amount)} />
-              <PaymentInfoRow label="Metode Pembayaran" value={isTransfer ? "Transfer Bank" : "Bayar Langsung"} />
-              <PaymentInfoRow label="Dibuat Pada" value={transaction.createdAt} />
-              <PaymentInfoRow
-                label="Batas Waktu"
-                value={<BuyerPaymentCountdown transaction={transaction} />}
-              />
-            </div>
-
-            {transaction.winnerContext ? (
-              <div className="rounded-[1.5rem] border border-accent/35 bg-accent/15 p-4 text-sm leading-7 text-muted-foreground">
-                {transaction.winnerContext}
+              <div>
+                <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
+                  Total Harga
+                </p>
+                <p className="font-headline text-[2.35rem] font-black tracking-tight text-primary">
+                  {currency.format(transaction.amount)}
+                </p>
               </div>
-            ) : null}
-          </CardContent>
-        </Card>
 
-        <Card className="overflow-hidden border border-border/70 bg-white">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              {isTransfer ? <Landmark className="size-5 text-primary" /> : <MapPinned className="size-5 text-primary" />}
-              <CardTitle>{isTransfer ? "Rekening Tujuan" : "Bayar Langsung di Unit"}</CardTitle>
+              <div>
+                <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
+                  Metode Pembayaran
+                </p>
+                <p className="flex items-center gap-2 font-body text-[1rem] text-[#1a1c1c]">
+                  <Landmark className="size-4" />
+                  {isTransfer ? "Transfer Bank" : "Bayar Langsung"}
+                </p>
+              </div>
+
+              {transaction.winnerContext ? (
+                <div className="rounded-lg bg-[#faf4e7] px-4 py-3 text-sm leading-7 text-[#5e5a4c]">
+                  {transaction.winnerContext}
+                </div>
+              ) : null}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
+          </div>
+        </div>
+
+        <div className="relative h-fit overflow-hidden rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[2.9rem] bg-[#f9f1d8]" />
+          <div className="relative z-10">
+            <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
+              {isTransfer ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
+              {isTransfer ? "Rekening Tujuan" : "Bayar Langsung di Unit"}
+            </h2>
+
             {isTransfer ? (
               <>
-                <div className="rounded-[1.5rem] border-l-4 border-l-primary bg-surface-low p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="rounded-lg border-l-4 border-[#735c00] bg-[#f3f3f1] p-5">
+                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                     Bank
                   </p>
-                  <p className="mt-3 text-xl font-extrabold text-foreground">
+                  <p className="mb-4 font-body text-[1.85rem] font-semibold leading-tight text-[#1a1c1c]">
                     {transaction.bankName}
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">{transaction.bankBranch}</p>
-                </div>
 
-                <div className="rounded-[1.5rem] border border-border/70 p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                     Nomor Rekening
                   </p>
-                  <p className="mt-3 font-headline text-2xl font-black tracking-[0.08em] text-primary">
-                    {transaction.bankAccountNumber}
-                  </p>
-                  <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-black/10 bg-white px-4 py-3">
+                    <div className="min-w-0 flex-1 overflow-x-auto">
+                      <p className="whitespace-nowrap font-headline text-[1.55rem] font-black tracking-[0.06em] text-primary sm:text-[1.8rem]">
+                        {transaction.bankAccountNumber ?? "-"}
+                      </p>
+                    </div>
+                    <AccountCopyButton value={transaction.bankAccountNumber ?? "-"} />
+                  </div>
+
+                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                     Atas Nama
                   </p>
-                  <p className="mt-2 font-semibold text-foreground">{transaction.bankAccountHolder}</p>
+                  <p className="font-body text-[1rem] font-semibold uppercase tracking-[0.04em] text-[#1a1c1c]">
+                    {transaction.bankAccountHolder}
+                  </p>
                 </div>
 
-                <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">
-                  Pastikan nominal transfer tepat sebesar <strong>{currency.format(transaction.amount)}</strong>
-                  {" "}agar admin unit dapat memverifikasi lebih cepat.
+                <div className="mt-5 flex items-start gap-3 rounded-lg bg-[#f8eced] p-4">
+                  <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#8f3a47]" />
+                  <p className="font-body text-[0.82rem] leading-6 text-[#4f4b48]">
+                    Pastikan Anda mentransfer tepat sesuai dengan <strong>Total Harga</strong>{" "}
+                    untuk mempercepat proses verifikasi otomatis.
+                  </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="rounded-[1.5rem] border border-accent/35 bg-accent/15 p-5">
-                  <p className="font-semibold text-foreground">Datang ke {transaction.unit}</p>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                <div className="rounded-lg bg-[#f7f7f4] p-5">
+                  <p className="font-body text-[1rem] font-semibold text-[#1a1c1c]">
+                    Datang ke {transaction.unit}
+                  </p>
+                  <p className="mt-2 font-body text-sm leading-7 text-[#62655f]">
                     Bawa nomor pengajuan {transaction.applicationNumber} dan selesaikan pembayaran di loket unit.
                   </p>
                 </div>
-                <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <div className="mt-5 rounded-lg bg-[#f3f3f1] p-5">
+                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                     Alamat Unit
                   </p>
-                  <p className="mt-3 font-semibold text-foreground">{transaction.unitAddress}</p>
-                </div>
-                <div className="rounded-[1.35rem] border border-border/70 p-4 text-sm leading-7 text-muted-foreground">
-                  Admin unit akan menekan konfirmasi pembayaran langsung setelah dana diterima, lalu nota dapat dicetak.
+                  <p className="font-body text-[1rem] font-semibold text-[#1a1c1c]">{transaction.unitAddress}</p>
                 </div>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <FileCheck2 className="size-5 text-primary" />
-              <CardTitle>{isTransfer ? "Unggah Bukti" : "Status Konfirmasi"}</CardTitle>
+        <div className="h-fit rounded-xl bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+          <h2 className="mb-2 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
+            <UploadCloud className="size-5" />
+            {isTransfer ? "Unggah Bukti" : "Status Konfirmasi"}
+          </h2>
+
+          {showReceipt ? (
+            <div className="space-y-5">
+              <p className="font-body text-sm leading-7 text-[#62655f]">
+                {isCompleted
+                  ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
+                  : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
+              </p>
+              <div className="rounded-lg bg-[#f6f7f2] p-5">
+                <p className="font-body text-base font-semibold text-[#1a1c1c]">
+                  {isCompleted ? "Pembelian sudah selesai" : "Nota digital tersedia"}
+                </p>
+              </div>
+              {!isCompleted ? (
+                <div>
+                  {settlementLockMessage ? (
+                    <BuyerSettlementLockNotice message={settlementLockMessage} />
+                  ) : (
+                    <CompletePurchaseButton transactionId={transaction.id} />
+                  )}
+                </div>
+              ) : null}
+              <Link className="block" href={`/transaksi/${transaction.id}/nota`}>
+                <Button className="h-14 w-full rounded-md font-body text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+                  <Printer className="size-4" />
+                  Buka Nota
+                </Button>
+              </Link>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {showReceipt ? (
-              <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
-                <div className="flex items-start gap-3">
-                  <ReceiptText className="mt-1 size-5 text-primary" />
-                  <div className="space-y-2">
-                    <p className="font-semibold text-foreground">
-                      {isCompleted ? "Pembelian sudah selesai" : "Nota digital tersedia"}
-                    </p>
-                    <p className="text-sm leading-7 text-muted-foreground">
-                      {isCompleted
-                        ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
-                        : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
-                    </p>
-                  </div>
+          ) : isTransfer ? (
+            <>
+              <p className="mb-6 font-body text-sm leading-7 text-[#62655f]">
+                Unggah bukti transfer maksimal 24 jam setelah pengajuan.
+              </p>
+              {settlementLockMessage ? (
+                <BuyerSettlementLockNotice message={settlementLockMessage} />
+              ) : (
+                <BuyerPaymentProofForm
+                  currentProof={transaction.paymentProof}
+                  transactionId={transaction.id}
+                />
+              )}
+            </>
+          ) : (
+            <div className="space-y-4">
+              <p className="font-body text-sm leading-7 text-[#62655f]">
+                Pembayaran dilakukan langsung di unit. Setelah dana diterima, admin akan menyelesaikan verifikasi.
+              </p>
+              <div className="rounded-lg border-2 border-dashed border-black/10 bg-[#f8f8f6] p-6 text-center">
+                <div className="mx-auto inline-flex size-14 items-center justify-center rounded-[1rem] bg-[#ececea] text-primary">
+                  <Clock3 className="size-5" />
                 </div>
-                {!isCompleted ? (
-                  <div className="mt-5">
-                    {settlementLockMessage ? (
-                      <BuyerSettlementLockNotice message={settlementLockMessage} />
-                    ) : (
-                      <CompletePurchaseButton transactionId={transaction.id} />
-                    )}
-                  </div>
-                ) : null}
-                <Link className="mt-5 block" href={`/transaksi/${transaction.id}/nota`}>
-                  <Button className="w-full">
-                    <Printer className="size-4" />
-                    Buka Nota
-                  </Button>
-                </Link>
+                <p className="mt-4 font-body text-base font-semibold text-[#1a1c1c]">Menunggu konfirmasi admin</p>
               </div>
-            ) : isTransfer ? (
-              <>
-                <div className="rounded-[1.5rem] border border-dashed border-border p-5 text-center">
-                  <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <FileCheck2 className="size-5" />
-                  </div>
-                  <p className="mt-4 font-semibold text-foreground">
-                    {transaction.paymentProof
-                      ? "Bukti pembayaran sudah diunggah"
-                      : "Belum ada bukti pembayaran"}
-                  </p>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    {transaction.paymentProof
-                      ? transaction.paymentProof
-                      : "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat."}
-                  </p>
-                </div>
-                {settlementLockMessage ? (
-                  <BuyerSettlementLockNotice message={settlementLockMessage} />
-                ) : (
-                  <BuyerPaymentProofForm
-                    currentProof={transaction.paymentProof}
-                    transactionId={transaction.id}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="rounded-[1.5rem] border border-dashed border-border p-5 text-center">
-                  <div className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-accent/30 text-accent-foreground">
-                    <Clock3 className="size-5" />
-                  </div>
-                  <p className="mt-4 font-semibold text-foreground">Menunggu konfirmasi admin</p>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    Setelah pembayaran diterima di unit, admin akan menyelesaikan transaksi di halaman verifikasi.
-                  </p>
-                </div>
-                <div className="rounded-[1.35rem] border border-border/70 p-4">
-                  <PaymentInfoRow label="Nama Pembeli" value={buyer.name} />
-                  <PaymentInfoRow label="Kontak" value={getBuyerPhone(buyer, "-")} />
-                  <PaymentInfoRow label="Email" value={buyer.email} />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+        </div>
       </div>
 
       {showReceipt ? (

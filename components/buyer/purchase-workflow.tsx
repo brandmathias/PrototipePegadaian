@@ -1,125 +1,58 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import {
-  AlertTriangle,
-  ArrowRight,
-  Building2,
-  CheckCircle2,
-  Landmark,
-  LoaderCircle
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, CreditCard, LoaderCircle, ShieldCheck } from "lucide-react";
 
-import { DirectPaymentDisclaimer } from "@/components/buyer/direct-payment-disclaimer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
-import { cn } from "@/lib/utils";
 
 type PurchaseWorkflowProps = {
   lot: Lot;
 };
 
-const methods = [
-  {
-    id: "TRANSFER_BANK",
-    label: "Transfer Bank",
-    description:
-      "Transaksi dibuat lebih dulu, lalu Anda menyelesaikan transfer dan mengunggah bukti dari halaman transaksi."
-  },
-  {
-    id: "BAYAR_LANGSUNG",
-    label: "Bayar Langsung di Pegadaian",
-    description:
-      "Sistem menyiapkan nomor pengajuan yang dibawa ke unit untuk pembayaran langsung bersama petugas."
-  }
-] as const;
+type PurchaseStatus = "loading" | "error";
 
 export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [method, setMethod] =
-    useState<(typeof methods)[number]["id"]>(lot.bankAccountNumber ? "TRANSFER_BANK" : "BAYAR_LANGSUNG");
-  const [acceptedDirectPayment, setAcceptedDirectPayment] = useState(false);
-  const hasActiveAccount = Boolean(lot.bankAccountNumber);
+  const hasSubmittedRef = useRef(false);
+  const [status, setStatus] = useState<PurchaseStatus>("loading");
+  const [message, setMessage] = useState("Membuat detail pembayaran transfer untuk transaksi ini.");
 
   useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (method !== "BAYAR_LANGSUNG") {
-      setAcceptedDirectPayment(false);
-    }
-  }, [method]);
-
-  const preview = useMemo(() => {
-    if (method === "TRANSFER_BANK") {
-      return {
-        title: "Transaksi dibuat dan menunggu pembayaran",
-        status: "MENUNGGU_PEMBAYARAN",
-        points: [
-          "Nomor transaksi dan batas waktu unggah bukti selama 24 jam langsung dibuat.",
-          "Rekening bank unit akan tampil lengkap pada halaman detail transaksi.",
-          "Setelah bukti transfer diunggah, status berubah menjadi BUKTI_DIUNGGAH dan masuk antrean verifikasi admin."
-        ],
-        helper:
-          "Cocok jika Anda ingin menyelesaikan pembayaran dari aplikasi bank, lalu mengirim bukti untuk diperiksa admin unit."
-      };
-    }
-
-    return {
-      title: "Pengajuan siap dibawa ke unit",
-      status: "MENUNGGU_KONFIRMASI_LANGSUNG",
-      points: [
-        "Nomor pengajuan dibuat otomatis dan dapat langsung ditunjukkan ke petugas.",
-        "Alamat unit dan total pembayaran akan tampil pada detail transaksi.",
-        "Setelah pembayaran dikonfirmasi admin, status transaksi berubah menjadi LUNAS."
-      ],
-      helper:
-        "Cocok jika Anda ingin menyelesaikan pembayaran langsung di loket Pegadaian tanpa perlu unggah bukti transfer."
-    };
-  }, [method]);
-
-  function handlePurchase() {
-    if (method === "BAYAR_LANGSUNG" && !acceptedDirectPayment) {
-      toast({
-        title: "Konfirmasi lokasi belum dicentang",
-        description: "Centang persetujuan bayar langsung setelah membaca alamat dan jam operasional unit.",
-        variant: "error",
-        scope: "buyer"
-      });
+    if (hasSubmittedRef.current) {
       return;
     }
 
-    startTransition(async () => {
+    hasSubmittedRef.current = true;
+
+    async function createTransferTransaction() {
       const response = await fetch(`/api/user/beli/${lot.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          paymentMethod: method === "BAYAR_LANGSUNG" ? "langsung" : "transfer"
-        })
+        body: JSON.stringify({ paymentMethod: "transfer" })
       });
-
       const payload = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
-        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/beli`)}`);
+        router.replace(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/beli`)}`);
         return;
       }
 
       if (!response.ok) {
+        const nextMessage = payload.message ?? "Detail pembayaran belum bisa dibuat. Silakan coba lagi.";
+        setStatus("error");
+        setMessage(nextMessage);
         toast({
           title: "Pembelian belum bisa diproses",
-          description: payload.message ?? "Silakan coba lagi setelah beberapa saat.",
+          description: nextMessage,
           variant: "error",
           scope: "buyer"
         });
@@ -127,209 +60,94 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
       }
 
       toast({
-        title: "Transaksi dibuat",
-        description: "Kami arahkan Anda ke detail transaksi untuk menyelesaikan pembayaran.",
+        title: "Detail pembayaran dibuat",
+        description: "Anda diarahkan ke halaman pembayaran transfer.",
         variant: "success",
         scope: "buyer"
       });
-      router.push(`/transaksi/${payload.data.id}`);
+      router.replace(`/transaksi/${payload.data.id}`);
       router.refresh();
-    });
-  }
+    }
+
+    void createTransferTransaction();
+  }, [lot.id, router, toast]);
+
+  const isError = status === "error";
 
   return (
-    <Card className="overflow-hidden border border-border/70 bg-white">
-      <CardHeader className="space-y-3 border-b border-border/60 bg-surface-low/60">
-        <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">
-          Pembelian Fixed Price
-        </p>
-        <CardTitle>Konfirmasi pembelian dan lanjutkan ke transaksi</CardTitle>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Sesuai PRD, pembelian fixed price dilanjutkan dengan memilih metode pembayaran.
-          Setelah dikonfirmasi, sistem membuat transaksi dan Anda melanjutkan prosesnya
-          dari halaman detail transaksi.
-        </p>
-      </CardHeader>
+    <Card className="overflow-hidden border border-primary/10 bg-white shadow-[0_28px_90px_rgba(8,69,50,0.08)]">
+      <CardContent className="relative grid gap-8 p-6 md:grid-cols-[0.92fr_1.08fr] md:p-8">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#004a23_0%,#20b96b_56%,#d7ad2f_100%)]" />
 
-      <CardContent className="grid gap-6 p-6 lg:grid-cols-[0.92fr_1.08fr]">
         <div className="space-y-5">
-          <div className="rounded-[1.75rem] border border-border/70 bg-surface-low p-5">
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-primary">
+            Detail Pembayaran
+          </p>
+          <h2 className="font-headline text-3xl font-black tracking-tight text-[#13211c] md:text-4xl">
+            Menyiapkan pembayaran transfer
+          </h2>
+          <p className="max-w-xl text-sm leading-7 text-muted-foreground">
+            Fixed price sekarang memakai transfer bank. Sistem membuat transaksi dan rekening tujuan
+            otomatis, lalu membawa Anda langsung ke halaman detail pembayaran.
+          </p>
+
+          <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Ringkasan barang
+              Ringkasan Barang
             </p>
-            <h3 className="mt-3 text-xl font-bold text-foreground">{lot.name}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {lot.code} | {lot.unitName}
-            </p>
-            <p className="mt-5 font-headline text-4xl font-extrabold tracking-tight text-primary">
+            <p className="mt-3 text-lg font-bold text-foreground">{lot.name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{lot.code} | {lot.unitName}</p>
+            <p className="mt-4 font-headline text-3xl font-black tracking-tight text-primary">
               {currency.format(lot.price)}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Periksa kembali kondisi barang, unit penyelenggara, dan metode pembayaran yang
-              paling sesuai sebelum pembelian dikonfirmasi.
-            </p>
-          </div>
-
-          {!hasActiveAccount ? (
-            <div className="rounded-[1.75rem] border border-tertiary-container/25 bg-tertiary-container/10 p-5">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-1 size-5 text-tertiary-container" />
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Unit belum memiliki rekening aktif, jadi opsi transfer disembunyikan. Anda
-                  tetap dapat membuat pengajuan bayar langsung di unit.
-                </p>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="space-y-3">
-            {methods.map((option) => (
-              <button
-                className={cn(
-                  "w-full rounded-[1.5rem] border p-5 text-left transition",
-                  method === option.id
-                    ? "border-primary bg-primary text-white shadow-ambient"
-                    : "border-border/70 bg-white hover:border-primary/25 hover:bg-primary/[0.03]"
-                )}
-                disabled={option.id === "TRANSFER_BANK" && !hasActiveAccount}
-                key={option.id}
-                onClick={() => setMethod(option.id)}
-                type="button"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <p className="text-base font-bold">{option.label}</p>
-                    <p
-                      className={cn(
-                        "text-sm leading-relaxed",
-                        method === option.id ? "text-white/78" : "text-muted-foreground"
-                      )}
-                    >
-                      {option.description}
-                    </p>
-                  </div>
-                  <CheckCircle2
-                    className={cn(
-                      "mt-0.5 size-5 shrink-0",
-                      method === option.id ? "text-white" : "text-border"
-                    )}
-                  />
-                </div>
-              </button>
-            ))}
           </div>
         </div>
 
-        <div className="space-y-5">
-          <div className="rounded-[1.75rem] border border-border/70 bg-white p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  Status awal transaksi
-                </p>
-                <p className="mt-2 text-2xl font-extrabold text-primary">{preview.status}</p>
-              </div>
-              <div className="rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-                Nomor transaksi dibuat otomatis
-              </div>
-            </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{preview.helper}</p>
-            <div className="mt-5 space-y-3">
-              {preview.points.map((point) => (
-                <div className="flex items-start gap-3" key={point}>
-                  <span className="mt-1 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <ArrowRight className="size-3.5" />
+        <div className="flex min-h-[24rem] flex-col justify-between rounded-[1.75rem] border border-border/70 bg-[linear-gradient(145deg,#ffffff_0%,#f7faf8_100%)] p-6">
+          <div className="grid gap-4">
+            {[
+              { icon: CreditCard, label: "Metode pembayaran", value: "Transfer Bank" },
+              { icon: ShieldCheck, label: "Status awal", value: "Menunggu Pembayaran" },
+              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Unggah bukti transfer" }
+            ].map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div className="flex items-center gap-4 rounded-[1.25rem] bg-white p-4 shadow-[0_14px_32px_rgba(8,69,50,0.05)]" key={item.label}>
+                  <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+                    <Icon className="size-5" />
                   </span>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{point}</p>
+                  <span>
+                    <span className="block text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block font-semibold text-foreground">{item.value}</span>
+                  </span>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
-          {method === "TRANSFER_BANK" && hasActiveAccount ? (
-            <div className="rounded-[1.75rem] border border-primary/15 bg-primary/[0.03] p-5">
-              <div className="flex items-start gap-3">
-                <Landmark className="mt-1 size-5 text-primary" />
-                <div className="space-y-3">
-                  <p className="font-semibold text-foreground">Ringkasan rekening tujuan unit</p>
-                  <div className="grid gap-3 rounded-2xl bg-white p-4 shadow-ambient sm:grid-cols-2">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        Bank
-                      </p>
-                      <p className="mt-2 font-semibold text-foreground">{lot.bankName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        Nomor rekening
-                      </p>
-                      <p className="mt-2 font-semibold text-foreground">{lot.bankAccountNumber}</p>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        Atas nama
-                      </p>
-                      <p className="mt-2 font-semibold text-foreground">
-                        {lot.bankAccountHolder}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="mt-6 space-y-4">
+            <div className="rounded-[1.25rem] border border-[#e6ddbc] bg-[#fffaf0] px-4 py-3 text-sm font-medium leading-6 text-[#735a0f]">
+              {message}
             </div>
-          ) : (
-            <div className="space-y-4">
-              <DirectPaymentDisclaimer
-                checked={acceptedDirectPayment}
-                checkboxId="purchase-direct-payment-confirmation"
-                onCheckedChange={setAcceptedDirectPayment}
-                showCheckbox
-                unitAddress={lot.unitAddress ?? lot.location}
-                unitName={lot.unitName}
-              />
-              <div className="rounded-[1.75rem] border border-accent/35 bg-accent/15 p-5">
-                <p className="font-semibold text-foreground">Nomor pengajuan bayar langsung</p>
-                <div className="mt-3 rounded-2xl bg-white p-4 shadow-ambient">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    Nomor pengajuan
-                  </p>
-                  <p className="mt-2 text-lg font-bold text-primary">Dibuat otomatis setelah konfirmasi</p>
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    Simpan nomor pengajuan ini. Anda akan membutuhkannya saat datang ke
-                    unit untuk pembayaran langsung dan konfirmasi petugas.
-                  </p>
-                </div>
+            {isError ? (
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => window.location.reload()}>Coba Lagi</Button>
+                <Link href={`/katalog/${lot.id}`}>
+                  <Button variant="secondary">
+                    Kembali ke Detail
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
               </div>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-3">
-            <Button
-              className="min-w-[13rem]"
-              disabled={
-                !isHydrated ||
-                isPending ||
-                (method === "BAYAR_LANGSUNG" && !acceptedDirectPayment)
-              }
-              onClick={handlePurchase}
-            >
-              {!isHydrated ? (
-                "Menyiapkan\u2026"
-              ) : isPending ? (
-                <>
-                  <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-                  {"Memproses\u2026"}
-                </>
-              ) : (
-                "Konfirmasi Pembelian"
-              )}
-            </Button>
-            <Link href="/transaksi">
-              <Button variant="secondary">
-                <Building2 className="size-4" />
-                Lihat Transaksi Saya
+            ) : (
+              <Button className="w-full" disabled>
+                <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                Membuka detail pembayaran
               </Button>
-            </Link>
+            )}
           </div>
         </div>
       </CardContent>
