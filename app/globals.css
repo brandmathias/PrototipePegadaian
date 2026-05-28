@@ -321,6 +321,150 @@
   .auth-logout-pill {
     animation: auth-logout-pill 820ms cubic-bezier(0.16, 1, 0.3, 1) 280ms both;
   }
+
+  .winner-hero-stage {
+    --winner-confetti-x: 0px;
+    --winner-confetti-y: 0px;
+    --winner-ring-x: 0px;
+    --winner-ring-y: 0px;
+    --winner-trophy-tilt: 0deg;
+    --winner-trophy-x: 0px;
+    --winner-trophy-y: 0px;
+    isolation: isolate;
+    overflow: visible;
+  }
+
+  .winner-party-burst {
+    z-index: 20;
+  }
+
+  .winner-party-piece {
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+    animation-name: winner-party-burst;
+    animation-timing-function: cubic-bezier(0.18, 0.78, 0.2, 1);
+    border-radius: 999px;
+    box-shadow:
+      0 18px 28px rgba(15, 26, 19, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    left: var(--winner-burst-origin-x);
+    opacity: 0;
+    position: absolute;
+    transform-origin: center;
+    top: var(--winner-burst-origin-y);
+    will-change: transform, opacity;
+  }
+
+  .winner-party-piece-dot {
+    border-radius: 999px;
+  }
+
+  .winner-party-piece-diamond {
+    border-radius: 0.35rem;
+  }
+
+  .winner-party-piece-flare {
+    animation-name: winner-party-burst;
+  }
+
+  .winner-party-piece-stream {
+    animation-name: winner-party-burst-stream;
+  }
+
+  .winner-party-piece-spark {
+    animation-name: winner-party-burst-spark;
+  }
+
+  .winner-stage-confetti {
+    z-index: 6;
+  }
+
+  .winner-stage-confetti-piece {
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    border-radius: 999px;
+    box-shadow:
+      0 14px 26px rgba(12, 24, 16, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    opacity: var(--winner-piece-opacity, 0.92);
+    position: absolute;
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y)),
+        0
+      )
+      rotate(var(--winner-piece-rotate-start, 0deg));
+    will-change: transform, opacity;
+  }
+
+  .winner-stage-confetti-piece-dot {
+    border-radius: 999px;
+  }
+
+  .winner-stage-confetti-piece-diamond {
+    border-radius: 0.38rem;
+  }
+
+  .winner-stage-confetti-piece-orbit {
+    animation-name: winner-stage-confetti-orbit;
+  }
+
+  .winner-stage-confetti-piece-trail {
+    animation-name: winner-stage-confetti-trail;
+  }
+
+  .winner-stage-confetti-piece-spark {
+    animation-name: winner-stage-confetti-spark;
+    box-shadow:
+      0 0 28px rgba(248, 215, 121, 0.34),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+
+  .winner-hero-halo {
+    animation: winner-hero-halo 4600ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0);
+    will-change: transform, opacity;
+    z-index: 0;
+  }
+
+  .winner-hero-ring {
+    animation: winner-hero-ring 6200ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0);
+    transform-origin: center;
+    will-change: transform, opacity;
+    z-index: 1;
+  }
+
+  .winner-hero-ring-mid {
+    animation-delay: -1100ms;
+  }
+
+  .winner-hero-ring-inner {
+    animation-delay: -2300ms;
+  }
+
+  .winner-hero-spark {
+    animation: winner-hero-spark 2200ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    opacity: 0.86;
+    will-change: transform, opacity;
+    z-index: 4;
+  }
+
+  .winner-trophy-shadow {
+    animation: winner-trophy-shadow 5200ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    transform-origin: center;
+    will-change: transform, opacity;
+  }
+
+  .winner-trophy-float {
+    animation: winner-trophy-float 5200ms cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    transform-origin: 50% 78%;
+    will-change: transform;
+  }
+
+  .winner-count-tick {
+    animation: winner-count-tick 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
 
 @keyframes toast-enter {
@@ -792,6 +936,339 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes winner-hero-halo {
+  0% {
+    opacity: 0.78;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) scale(0.98);
+  }
+
+  48% {
+    opacity: 1;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) scale(1.05);
+  }
+
+  100% {
+    opacity: 0.78;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) scale(0.98);
+  }
+}
+
+@keyframes winner-hero-ring {
+  0% {
+    opacity: 0.48;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) rotate(-2deg) scale(0.98);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) rotate(3deg) scale(1.04);
+  }
+
+  100% {
+    opacity: 0.48;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) rotate(-2deg) scale(0.98);
+  }
+}
+
+@keyframes winner-party-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--winner-burst-rotate-start, 0deg))
+      scale(0.3);
+  }
+
+  12% {
+    opacity: var(--winner-burst-opacity, 0.94);
+    transform: translate3d(0, -24px, 0) rotate(var(--winner-burst-rotate-start, 0deg))
+      scale(1);
+  }
+
+  42% {
+    opacity: var(--winner-burst-opacity, 0.94);
+    transform: translate3d(
+        var(--winner-burst-peak-x),
+        var(--winner-burst-peak-y),
+        0
+      )
+      rotate(var(--winner-burst-rotate-end, 180deg)) scale(1.08);
+  }
+
+  72% {
+    opacity: calc(var(--winner-burst-opacity, 0.94) * 0.9);
+    transform: translate3d(
+        var(--winner-burst-peak-x),
+        calc(var(--winner-burst-peak-y) + 18vh),
+        0
+      )
+      rotate(calc(var(--winner-burst-rotate-end, 180deg) - 26deg)) scale(0.98);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--winner-burst-end-x), var(--winner-burst-end-y), 0)
+      rotate(var(--winner-burst-rotate-end, 180deg)) scale(0.88);
+  }
+}
+
+@keyframes winner-party-burst-stream {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--winner-burst-rotate-start, 0deg))
+      scale(0.38);
+  }
+
+  18% {
+    opacity: var(--winner-burst-opacity, 0.96);
+    transform: translate3d(0, -22px, 0)
+      rotate(calc(var(--winner-burst-rotate-start, 0deg) + 10deg)) scale(1.06);
+  }
+
+  58% {
+    opacity: var(--winner-burst-opacity, 0.96);
+    transform: translate3d(
+        var(--winner-burst-peak-x),
+        var(--winner-burst-peak-y),
+        0
+      )
+      rotate(calc(var(--winner-burst-rotate-end, 180deg) - 18deg)) scale(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--winner-burst-end-x), var(--winner-burst-end-y), 0)
+      rotate(var(--winner-burst-rotate-end, 180deg)) scale(0.82);
+  }
+}
+
+@keyframes winner-party-burst-spark {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(0.2);
+  }
+
+  16% {
+    opacity: var(--winner-burst-opacity, 0.84);
+    transform: translate3d(0, -16px, 0)
+      rotate(0deg) scale(1.4);
+  }
+
+  54% {
+    opacity: calc(var(--winner-burst-opacity, 0.84) * 0.9);
+    transform: translate3d(
+        var(--winner-burst-peak-x),
+        var(--winner-burst-peak-y),
+        0
+      )
+      rotate(0deg) scale(0.96);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--winner-burst-end-x), var(--winner-burst-end-y), 0)
+      rotate(0deg) scale(0.38);
+  }
+}
+
+@keyframes winner-stage-confetti-orbit {
+  0% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.76);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y)),
+        0
+      )
+      rotate(var(--winner-piece-rotate-start, 0deg)) scale(0.92);
+  }
+
+  24% {
+    opacity: var(--winner-piece-opacity, 0.92);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + 6px),
+        calc(-50% + var(--winner-confetti-y) - 8px),
+        0
+      )
+      rotate(calc(var(--winner-piece-rotate-start, 0deg) + 8deg)) scale(1.02);
+  }
+
+  54% {
+    opacity: var(--winner-piece-opacity, 0.92);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + var(--winner-piece-drift-x, 0px)),
+        calc(-50% + var(--winner-confetti-y) + var(--winner-piece-drift-y, -14px)),
+        0
+      )
+      rotate(var(--winner-piece-rotate-end, 16deg)) scale(1.06);
+  }
+
+  82% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.9);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) - 10px),
+        calc(-50% + var(--winner-confetti-y) - 7px),
+        0
+      )
+      rotate(calc(var(--winner-piece-rotate-start, 0deg) - 6deg)) scale(0.96);
+  }
+
+  100% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.76);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y)),
+        0
+      )
+      rotate(var(--winner-piece-rotate-start, 0deg)) scale(0.92);
+  }
+}
+
+@keyframes winner-stage-confetti-trail {
+  0% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.64);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y) + 4px),
+        0
+      )
+      rotate(var(--winner-piece-rotate-start, 0deg)) scale(0.84);
+  }
+
+  32% {
+    opacity: var(--winner-piece-opacity, 0.92);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + 10px),
+        calc(-50% + var(--winner-confetti-y) - 12px),
+        0
+      )
+      rotate(calc(var(--winner-piece-rotate-end, 16deg) - 12deg)) scale(1.08);
+  }
+
+  62% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.96);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + var(--winner-piece-drift-x, 0px)),
+        calc(-50% + var(--winner-confetti-y) + var(--winner-piece-drift-y, -14px)),
+        0
+      )
+      rotate(var(--winner-piece-rotate-end, 16deg)) scale(1.12);
+  }
+
+  100% {
+    opacity: calc(var(--winner-piece-opacity, 0.92) * 0.64);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) - 8px),
+        calc(-50% + var(--winner-confetti-y) - 10px),
+        0
+      )
+      rotate(calc(var(--winner-piece-rotate-start, 0deg) - 10deg)) scale(0.9);
+  }
+}
+
+@keyframes winner-stage-confetti-spark {
+  0% {
+    opacity: 0.32;
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y)),
+        0
+      )
+      rotate(0deg) scale(0.5);
+  }
+
+  30% {
+    opacity: var(--winner-piece-opacity, 0.82);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + 4px),
+        calc(-50% + var(--winner-confetti-y) - 10px),
+        0
+      )
+      rotate(0deg) scale(1.4);
+  }
+
+  74% {
+    opacity: calc(var(--winner-piece-opacity, 0.82) * 0.78);
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x) + var(--winner-piece-drift-x, 0px)),
+        calc(-50% + var(--winner-confetti-y) + var(--winner-piece-drift-y, -14px)),
+        0
+      )
+      rotate(0deg) scale(0.92);
+  }
+
+  100% {
+    opacity: 0.28;
+    transform: translate3d(
+        calc(-50% + var(--winner-confetti-x)),
+        calc(-50% + var(--winner-confetti-y)),
+        0
+      )
+      rotate(0deg) scale(0.5);
+  }
+}
+
+@keyframes winner-hero-spark {
+  0% {
+    opacity: 0.28;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) scale(0.58);
+  }
+
+  42% {
+    opacity: 1;
+    transform: translate3d(var(--winner-ring-x), calc(var(--winner-ring-y) - 16px), 0) scale(1.32);
+  }
+
+  100% {
+    opacity: 0.28;
+    transform: translate3d(var(--winner-ring-x), var(--winner-ring-y), 0) scale(0.58);
+  }
+}
+
+@keyframes winner-trophy-shadow {
+  0% {
+    opacity: 0.46;
+    transform: translate3d(var(--winner-trophy-x), 0, 0) scaleX(0.92);
+  }
+
+  48% {
+    opacity: 0.28;
+    transform: translate3d(var(--winner-trophy-x), 0, 0) scaleX(1.06);
+  }
+
+  100% {
+    opacity: 0.46;
+    transform: translate3d(var(--winner-trophy-x), 0, 0) scaleX(0.92);
+  }
+}
+
+@keyframes winner-trophy-float {
+  0% {
+    transform: translate3d(var(--winner-trophy-x), calc(var(--winner-trophy-y) + 4px), 0) rotate(calc(var(--winner-trophy-tilt) - 0.9deg)) scale(1);
+  }
+
+  44% {
+    transform: translate3d(var(--winner-trophy-x), calc(var(--winner-trophy-y) - 9px), 0) rotate(calc(var(--winner-trophy-tilt) + 0.8deg)) scale(1.018);
+  }
+
+  72% {
+    transform: translate3d(var(--winner-trophy-x), calc(var(--winner-trophy-y) - 4px), 0) rotate(calc(var(--winner-trophy-tilt) - 0.25deg)) scale(1.008);
+  }
+
+  100% {
+    transform: translate3d(var(--winner-trophy-x), calc(var(--winner-trophy-y) + 4px), 0) rotate(calc(var(--winner-trophy-tilt) - 0.9deg)) scale(1);
+  }
+}
+
+@keyframes winner-count-tick {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -1,4 +1,8 @@
 import { createNotificationOnce } from "@/lib/services/notification.service";
+import {
+  getBuyerTransactionsHref,
+  getBuyerWinnerAnnouncementHref,
+} from "@/lib/buyer/transaction-links";
 
 type TransactionEventInput = {
   userId: string;
@@ -19,7 +23,7 @@ export async function notifyVickreyWinner(
     type: "vickrey_win",
     entityType: "transaction",
     entityId: input.transactionId,
-    actionHref: `/transaksi/${input.transactionId}`,
+    actionHref: getBuyerWinnerAnnouncementHref(input.transactionId),
     metadata: {
       finalPrice: input.finalPrice,
       paymentMethod: "langsung"
@@ -84,7 +88,9 @@ export async function notifyBlacklistActivated(
     type: "blacklist_active",
     entityType: input.transactionId ? "transaction" : "blacklist",
     entityId: input.transactionId ?? `blacklist-${input.userId}`,
-    actionHref: input.transactionId ? `/transaksi/${input.transactionId}` : "/riwayat-bid",
+    actionHref: input.transactionId
+      ? `/transaksi/${input.transactionId}`
+      : getBuyerTransactionsHref({ tab: "bids" }),
     metadata: {
       totalViolations: input.totalViolations,
       blockedUntilLabel: input.blockedUntilLabel

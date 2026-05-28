@@ -37,7 +37,7 @@ describe("notification event helpers", () => {
         type: "vickrey_win",
         entityType: "transaction",
         entityId: "trx-vickrey-1",
-        actionHref: "/transaksi/trx-vickrey-1",
+        actionHref: "/transaksi/trx-vickrey-1/pemenang",
         title: "Anda memenangkan lelang Motor Racing",
         message: expect.stringMatching(/bayar langsung di UPC Ranotana/i)
       })
@@ -96,6 +96,21 @@ describe("notification event helpers", () => {
         type: "blacklist_active",
         title: "Akun Anda dikenakan pembatasan",
         message: expect.stringMatching(/Pelanggaran saat ini: 2x/i)
+      })
+    );
+  });
+
+  it("routes blacklist notifications without transaction to the buyer transactions hub", async () => {
+    await notifyBlacklistActivated({
+      userId: "buyer-1",
+      totalViolations: 1,
+      blockedUntilLabel: "2 Juni 2026"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "blacklist_active",
+        actionHref: "/transaksi?tab=bids"
       })
     );
   });

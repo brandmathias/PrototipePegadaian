@@ -6,11 +6,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn()
-  })
+  }),
+  notFound: () => {
+    throw new Error("NEXT_NOT_FOUND");
+  }
 }));
 
-import { BidPage, LotDetailPage } from "@/components/pages/public-pages";
-import { BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
+import { BidPage, LotDetailPage, PurchasePage } from "@/components/pages/public-pages";
+import { AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
@@ -124,7 +127,10 @@ describe("buyer vickrey pages", () => {
     render(<LotDetailPage bidState={winningBid} buyerStatus={null} lot={vickreyLot} />);
 
     expect(screen.getByText(/bid sudah terkunci/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /pantau riwayat bid/i })).toHaveAttribute("href", "/riwayat-bid");
+    expect(screen.getByRole("link", { name: /pantau transaksi/i })).toHaveAttribute(
+      "href",
+      "/transaksi?tab=bids&lot=pm-vickrey-1"
+    );
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
   });
 
@@ -156,7 +162,10 @@ describe("buyer vickrey pages", () => {
 
     expect(screen.getByText(/bid anda sudah terkunci/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /bid sudah terkunci/i })).toBeDisabled();
-    expect(screen.getByRole("link", { name: /lihat riwayat bid/i })).toHaveAttribute("href", "/riwayat-bid");
+    expect(screen.getByRole("link", { name: /lihat transaksi/i })).toHaveAttribute(
+      "href",
+      "/transaksi?tab=bids&lot=pm-vickrey-1"
+    );
   });
 
   it("opens bid terms from the main confirmation button before final vickrey submission", async () => {
@@ -218,7 +227,7 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lanjutkan pembayaran/i })).toHaveAttribute(
       "href",
-      "/transaksi/trx-vickrey-1"
+      "/transaksi/trx-vickrey-1/pemenang"
     );
     expect(screen.getByRole("link", { name: /verifikasi bid/i })).toHaveAttribute(
       "href",
@@ -282,5 +291,82 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText(/bukan nominal bid tertinggi anda/i)).toBeInTheDocument();
     expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /status konfirmasi/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
+  });
+
+  it("renders a dedicated winner announcement page before direct payment detail", () => {
+    const transaction: BuyerTransaction = {
+      id: "trx-vickrey-1",
+      lotId: "pm-vickrey-1",
+      kind: "VICKREY_WIN",
+      title: "Cincin Emas",
+      amount: 100000000,
+      status: "MENUNGGU_KONFIRMASI_LANGSUNG",
+      method: "BAYAR_LANGSUNG",
+      unit: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      createdAt: "4 Mei 2026, 22.07",
+      deadline: "5 Mei 2026, 22.07",
+      deadlineAt: "2099-05-05T14:07:00.000Z",
+      reference: "-",
+      applicationNumber: "PGJ-VIC-TRXVICKR",
+      paymentLabel: "Bayar langsung di unit",
+      paymentNotes: ["Anda memenangkan lelang Vickrey dan membayar langsung di unit."],
+      winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+    };
+
+    render(<AuctionWinnerPage transaction={transaction} transactionId={transaction.id} />);
+
+    expect(screen.getByText(/anda memenangkan lelang/i)).toBeInTheDocument();
+    expect(screen.getByText(/batas waktu pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/ringkasan lelang anda/i)).toBeInTheDocument();
+    expect(screen.getByText("Jam")).toBeInTheDocument();
+    expect(screen.getByText("Menit")).toBeInTheDocument();
+    expect(screen.getByText("Detik")).toBeInTheDocument();
+    expect(screen.queryByText("Hari")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /lanjutkan ke pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat detail transaksi/i })).toHaveAttribute(
+      "href",
+      "/transaksi/trx-vickrey-1"
+    );
+  });
+
+  it("keeps winner hero particle styles deterministic for hydration", () => {
+    const transaction: BuyerTransaction = {
+      id: "trx-vickrey-1",
+      lotId: "pm-vickrey-1",
+      kind: "VICKREY_WIN",
+      title: "Cincin Emas",
+      amount: 100000000,
+      status: "MENUNGGU_KONFIRMASI_LANGSUNG",
+      method: "BAYAR_LANGSUNG",
+      unit: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      createdAt: "4 Mei 2026, 22.07",
+      deadline: "5 Mei 2026, 22.07",
+      deadlineAt: "2099-05-05T14:07:00.000Z",
+      reference: "-",
+      applicationNumber: "PGJ-VIC-TRXVICKR",
+      paymentLabel: "Bayar langsung di unit",
+      paymentNotes: ["Anda memenangkan lelang Vickrey dan membayar langsung di unit."],
+      winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+    };
+
+    const { container } = render(
+      <AuctionWinnerPage transaction={transaction} transactionId={transaction.id} />
+    );
+
+    const confettiPiece = container.querySelector(".winner-stage-confetti-piece");
+    const spark = container.querySelector(".winner-hero-spark");
+
+    expect(confettiPiece).not.toBeNull();
+    expect(spark).not.toBeNull();
+    expect(confettiPiece?.getAttribute("style")).not.toMatch(/\d+\.\d{5,}(px|%|vw|vh)/);
+    expect(spark?.getAttribute("style")).not.toMatch(/\d+\.\d{5,}(px|%|vw|vh)/);
+  });
+
+  it("keeps the fixed-price payment workflow unavailable for vickrey lots", () => {
+    expect(() => render(<PurchasePage lot={vickreyLot} />)).toThrow("NEXT_NOT_FOUND");
   });
 });

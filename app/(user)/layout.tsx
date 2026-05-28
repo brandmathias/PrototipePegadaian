@@ -21,6 +21,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
             ? session.user.phoneNumber
             : null
       }}
+      currentPath={currentPath}
       description="Pantau pengajuan fixed price, hasil lelang Vickrey, status pembayaran, dan nota transaksi dalam satu area akun."
       summary={{
         image: summary.image,

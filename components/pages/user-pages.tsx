@@ -23,11 +23,13 @@ import {
 } from "lucide-react";
 
 import { AccountCopyButton } from "@/components/buyer/account-copy-button";
+import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
+import { TransactionsWorkspace } from "@/components/buyer/transactions-workspace";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptActions } from "@/components/shared/transaction-receipt-actions";
@@ -38,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
+import { getBuyerBidMonitoringHref, getBuyerBidTransactionHref, getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid, BuyerBidStatus, BuyerBidVerification, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
@@ -954,178 +957,45 @@ export function UserDashboardPage({
 
 export function TransactionsPage({
   buyer: _buyer,
-  data
+  data,
+  initialTab = "transactions",
+  highlightedBidLotId
 }: {
   buyer: BuyerSessionUser;
   data: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+  initialTab?: "transactions" | "bids";
+  highlightedBidLotId?: string | null;
 }) {
-  const { summary, transactions, bids } = data;
-  const bidSummary = Object.entries(
-    bids.reduce<Record<BuyerBidStatus, number>>(
-      (accumulator, item) => {
-        accumulator[item.status] += 1;
-        return accumulator;
-      },
-      {
-        BID_TERCATAT: 0,
-        MENUNGGU_HASIL: 0,
-        MENANG: 0,
-        TIDAK_MENANG: 0,
-        GAGAL: 0
-      }
-    )
-  );
+  const { bids, transactions } = data;
 
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        action={
-          <Link href="/katalog">
-            <Button variant="secondary">Cari Barang Lagi</Button>
-          </Link>
-        }
-        description="Daftar ini menggabungkan transaksi fixed price dan transaksi pemenang lelang Vickrey yang sudah masuk workflow pembayaran."
-        eyebrow="Transaksi Saya"
-        title="Pantau seluruh transaksi Anda"
-      />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {summary.metrics.map((metric) => (
-          <Card className="border border-border/70 bg-white p-5" key={metric.label}>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {metric.label}
-            </p>
-            <p className="mt-4 text-3xl font-extrabold text-primary">{metric.value}</p>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Riwayat bid Anda</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Semua penawaran lelang tetap tersusun di area transaksi agar lebih mudah
-              dipantau dari satu tempat.
-            </p>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            {bidSummary.map(([status, value]) => (
-              <div
-                className="rounded-[1.5rem] border border-border/70 bg-surface-low/50 p-5"
-                key={status}
-              >
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  {bidStatusMeta[status as BuyerBidStatus].label}
-                </p>
-                <p className="mt-4 text-3xl font-extrabold text-primary">{value}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Bid terbaru</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Ringkasan penawaran lelang terbaru, termasuk hasil dan transaksi yang terbentuk
-              setelah Anda menang.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {bids.slice(0, 3).map((item) => (
-              <div
-                className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
-                key={`${item.lot}-${item.bidHash ?? item.bidAmount ?? item.closing}`}
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="font-semibold text-foreground">{item.lot}</p>
-                      <BidPill status={item.status} />
-                    </div>
-                    <p className="text-sm text-muted-foreground">{item.unit}</p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{item.note}</p>
-                  </div>
-                  <div className="space-y-2 text-left md:text-right">
-                    <p className="font-semibold text-primary">
-                      {getBidAmountLabel(item)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Harga dasar {currency.format(item.basePrice)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Tutup {item.closing}</p>
-                  </div>
-                </div>
-                <div className="mt-5">
-                  <BidPaymentContext item={item} />
-                </div>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Link href={`/katalog/${item.lotId}`}>
-                    <Button variant="secondary">Lihat Lot</Button>
-                  </Link>
-                  {item.linkedTransactionId ? (
-                    <Link href={`/transaksi/${item.linkedTransactionId}`}>
-                      <Button>{getBidTransactionActionLabel(item)}</Button>
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-5">
-        {transactions.map((transaction) => (
-          <Card className="border border-border/70 bg-white" key={transaction.id}>
-            <CardContent className="grid gap-5 p-6 lg:grid-cols-[1.2fr_0.8fr_0.5fr] lg:items-center">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-lg font-bold text-foreground">{transaction.title}</p>
-                  <StatusPill status={transaction.status} />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {transaction.id} | {transaction.reference}
-                </p>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {transaction.kind === "VICKREY_WIN"
-                    ? "Transaksi hasil kemenangan lelang Vickrey"
-                    : "Transaksi pembelian fixed price"}{" "}
-                  | {transaction.unit}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="font-headline text-3xl font-extrabold tracking-tight text-primary">
-                  {currency.format(transaction.amount)}
-                </p>
-                <p className="text-sm text-muted-foreground">{transaction.paymentLabel}</p>
-                <p className="text-sm text-muted-foreground">
-                  <BuyerPaymentCountdown prefix="Sisa waktu" transaction={transaction} />
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3 lg:items-end">
-                <Link href={`/transaksi/${transaction.id}`}>
-                  <Button className="w-full lg:w-auto">
-                    Lihat Detail
-                    <ExternalLink className="size-4" />
-                  </Button>
-                </Link>
-                {transaction.status === "LUNAS" ? (
-                  <div className="inline-flex items-center gap-2 text-sm font-medium text-primary">
-                    <ReceiptText className="size-4" />
-                    Nota siap
-                  </div>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    <TransactionsWorkspace
+      bids={bids}
+      highlightedBidLotId={highlightedBidLotId}
+      initialTab={initialTab}
+      transactions={transactions}
+    />
   );
+}
+
+export function AuctionWinnerPage({
+  transactionId: _transactionId,
+  transaction: loadedTransaction,
+}: {
+  transactionId: string;
+  transaction?: BuyerTransaction | null;
+}) {
+  const transaction = loadedTransaction ?? null;
+
+  if (!transaction) {
+    return (
+      <Card className="border border-border/70 bg-white p-8">
+        <p className="text-muted-foreground">Transaksi pemenang tidak ditemukan.</p>
+      </Card>
+    );
+  }
+
+  return <AuctionWinnerPageContent transaction={transaction} />;
 }
 
 export function TransactionDetailPage({
@@ -1713,12 +1583,12 @@ export function BidHistoryPage({
                 <Link href={`/katalog/${item.lotId}`}>
                   <Button variant="secondary">Lihat Lot</Button>
                 </Link>
-                {item.linkedTransactionId ? (
-                  <Link href={`/transaksi/${item.linkedTransactionId}`}>
+                {getBuyerBidTransactionHref(item) ? (
+                  <Link href={getBuyerBidTransactionHref(item) ?? "#"}>
                     <Button>{getBidTransactionActionLabel(item)}</Button>
                   </Link>
                 ) : null}
-                <Link href={`/riwayat-bid/${item.lotId}/verifikasi`}>
+              <Link href={`/riwayat-bid/${item.lotId}/verifikasi`}>
                   <Button variant={item.canReveal ? "default" : "secondary"}>
                     {item.canReveal ? "Reveal Nominal" : "Verifikasi Bid"}
                   </Button>
@@ -1760,8 +1630,8 @@ export function BidVerificationPage({
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
         action={
-          <Link href="/riwayat-bid">
-            <Button variant="secondary">Kembali ke Riwayat</Button>
+          <Link href={getBuyerTransactionsHref({ tab: "bids", lotId: verification.lotId })}>
+            <Button variant="secondary">Kembali ke Transaksi</Button>
           </Link>
         }
         description="Cocokkan nominal, salt, dan hash setelah escrow dibuka agar Anda dapat melihat bid tertutup tidak berubah."

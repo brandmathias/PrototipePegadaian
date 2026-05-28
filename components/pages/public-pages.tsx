@@ -26,6 +26,7 @@ import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
+import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
@@ -280,9 +281,12 @@ export function LotDetailPage({
               <div className="relative flex gap-3">
                 {isVickrey ? (
                   bidState ? (
-                    <Link className="flex-1" href="/riwayat-bid">
+                    <Link
+                      className="flex-1"
+                      href={getBuyerTransactionsHref({ tab: "bids", lotId: lot.id })}
+                    >
                       <Button className="h-10 w-full rounded-md text-sm font-black" variant="default">
-                        Pantau Riwayat Bid
+                        Pantau Transaksi
                         <Gavel className="size-4" />
                       </Button>
                     </Link>
@@ -390,6 +394,7 @@ export function LotDetailPage({
 
 export function PurchasePage({ lot }: { lot: Lot | null }) {
   if (!lot) notFound();
+  if (lot.mode !== "fixed_price") notFound();
 
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">

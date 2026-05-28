@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDate } from "@/lib/timezone";
@@ -230,7 +231,7 @@ export function VickreyBidForm({
         variant: "success",
         scope: "buyer"
       });
-      router.push("/riwayat-bid");
+      router.push(getBuyerTransactionsHref({ tab: "bids", lotId: lot.id }));
       router.refresh();
     });
   }
@@ -344,7 +345,7 @@ export function VickreyBidForm({
                     1
                   </span>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    Anda bisa memantau status bid dari halaman riwayat bid pribadi.
+                    Anda bisa memantau status bid dari halaman transaksi buyer.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
@@ -385,8 +386,8 @@ export function VickreyBidForm({
                   "Konfirmasi Bid Tertutup"
                 )}
               </Button>
-              <Link href="/riwayat-bid">
-                <Button variant="secondary">Lihat Riwayat Bid</Button>
+              <Link href={getBuyerTransactionsHref({ tab: "bids", lotId: lot.id })}>
+                <Button variant="secondary">Lihat Transaksi</Button>
               </Link>
             </div>
           </div>
