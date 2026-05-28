@@ -82,7 +82,9 @@ export function LotFigure({
             alt={primaryMediaLabel}
             fill
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-            sizes="(min-width: 1280px) 34vw, (min-width: 768px) 50vw, 100vw"
+            decoding="async"
+            loading="lazy"
+            sizes="(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw"
             src={primaryMedia.url}
           />
         )}
@@ -90,7 +92,7 @@ export function LotFigure({
         <div className="pointer-events-none relative flex h-full min-h-40 flex-col justify-between p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             {showCategoryBadge ? (
-              <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90 backdrop-blur">
+              <span className="w-fit rounded-full bg-black/36 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90">
                 {category}
               </span>
             ) : null}
@@ -135,7 +137,7 @@ export function LotFigure({
             <div className="h-2 w-20 rounded-full bg-white/20" />
             <div className="h-2 w-28 rounded-full bg-white/15" />
           </div>
-          <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
+          <div className="rounded-2xl bg-white/14 p-4">
             <Icon className="size-10" />
           </div>
         </div>

@@ -13,6 +13,7 @@ type LiveCountdownProps = {
   className?: string;
   serverNow?: string;
   formatLabel?: (label: string, state: CountdownState) => string;
+  updateIntervalMs?: number;
 };
 
 export function LiveCountdown({
@@ -22,7 +23,8 @@ export function LiveCountdown({
   prefix,
   className,
   serverNow,
-  formatLabel
+  formatLabel,
+  updateIntervalMs = 1000
 }: LiveCountdownProps) {
   const syncedClock = useMemo(() => {
     const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
@@ -62,12 +64,12 @@ export function LiveCountdown({
     };
 
     update();
-    const intervalId = window.setInterval(update, 1000);
+    const intervalId = window.setInterval(update, Math.max(1000, updateIntervalMs));
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [expiredLabel, syncedClock, targetAt]);
+  }, [expiredLabel, syncedClock, targetAt, updateIntervalMs]);
 
   const text = state.isExpired || !prefix ? state.label : `${prefix} ${state.label}`;
   const output = formatLabel ? formatLabel(text, state) : text;

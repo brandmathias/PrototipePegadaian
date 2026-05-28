@@ -255,12 +255,38 @@ describe("CatalogPage", () => {
     expect(screen.getByRole("button", { name: /unit prioritas 5/i })).toBeInTheDocument();
   });
 
-  it("supports buyer price filters up to 999999999999", () => {
+  it("supports buyer price filters up to 10000000000", () => {
     render(<CatalogPage lots={[makeLot(1)]} />);
 
     const maxInput = screen.getByPlaceholderText("Tidak terbatas");
-    fireEvent.change(maxInput, { target: { value: "999999999999" } });
+    fireEvent.change(maxInput, { target: { value: "10000000000" } });
 
-    expect(maxInput).toHaveValue("999.999.999.999");
+    expect(maxInput).toHaveValue("10.000.000.000");
+  });
+
+  it("keeps catalog CTA blocks visible and stable when cards have different tag counts", () => {
+    render(
+      <CatalogPage
+        lots={[
+          makeLot(1, {
+            name: "Cincin Emas 3",
+            mode: "fixed_price",
+            category: "Perhiasan",
+            condition: "Baik",
+            specs: [{ label: "Jenis", value: "Cincin" }],
+          }),
+          makeLot(2, {
+            name: "Cincin Emas 2",
+            mode: "fixed_price",
+            category: "Emas",
+            condition: "Baik",
+            specs: [{ label: "Jenis", value: "Cincin" }],
+          }),
+        ]}
+      />
+    );
+
+    expect(screen.getAllByText("Beli Sekarang")).toHaveLength(2);
+    expect(screen.getAllByText("Harga")).toHaveLength(2);
   });
 });

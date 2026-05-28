@@ -98,4 +98,29 @@ describe("LiveCountdown", () => {
     expect(screen.getByText("Sesi berakhir 59 detik")).toBeInTheDocument();
     expect(screen.queryByText("Menunggu hasil")).not.toBeInTheDocument();
   });
+
+  it("supports slower update intervals for non-critical countdown lists", () => {
+    render(
+      <LiveCountdown
+        expiredLabel="Menunggu hasil"
+        prefix="Sesi berakhir"
+        targetAt={new Date("2026-04-29T10:03:00+08:00").toISOString()}
+        updateIntervalMs={60_000}
+      />
+    );
+
+    expect(screen.getByText("Sesi berakhir 3 menit 0 detik")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+
+    expect(screen.getByText("Sesi berakhir 3 menit 0 detik")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(30_000);
+    });
+
+    expect(screen.getByText("Sesi berakhir 2 menit 0 detik")).toBeInTheDocument();
+  });
 });

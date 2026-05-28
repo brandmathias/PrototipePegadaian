@@ -438,8 +438,10 @@ function TransactionImage({
         <Image
           alt={`Foto transaksi ${title}`}
           className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+          decoding="async"
           fill
-          sizes="296px"
+          loading="lazy"
+          sizes="(min-width: 1280px) 224px, (min-width: 1024px) 192px, (min-width: 640px) 45vw, 100vw"
           src={imageUrl}
           unoptimized
         />
@@ -531,14 +533,14 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
   const transactionHref = getBuyerTransactionHref(transaction);
 
   return (
-    <article className="group rounded-[1.55rem] bg-white p-4 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
-      <div className="grid gap-5 lg:grid-cols-[14rem_minmax(0,1.18fr)_14.5rem_11.75rem] lg:items-center">
-        <div className="w-full max-w-[14rem]">
+    <article className="group rounded-[1.55rem] bg-white p-3 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:p-4">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] lg:items-center xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1.12fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)]">
+        <div className="w-full max-w-none">
           <TransactionImage imageUrl={transaction.imageUrl} title={transaction.title} />
         </div>
 
         <div className="min-w-0">
-          <h2 className="font-headline text-[1.55rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747]">
+          <h2 className="line-clamp-2 font-headline text-[1.28rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.55rem]">
             {transaction.title}
           </h2>
           <p className="mt-2 text-[0.9rem] font-medium tracking-[-0.01em] text-slate-500">{transaction.id}</p>
@@ -559,7 +561,7 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
           <p className="text-[0.94rem] font-medium tracking-[-0.01em] text-slate-500">{amountMeta.amountLabel}</p>
           <p
             className={cn(
-              "font-headline text-[2rem] font-black leading-none tracking-[-0.04em]",
+              "font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] sm:text-[2rem]",
               transaction.status === "GAGAL" ? "text-slate-400 line-through" : "text-[#006747]"
             )}
           >
@@ -611,14 +613,14 @@ function BidRow({ item }: { item: BuyerBid }) {
         : "Lihat Status";
 
   return (
-    <article className="group rounded-[1.55rem] bg-white p-4 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
-      <div className="grid gap-5 lg:grid-cols-[14rem_minmax(0,1.18fr)_14.5rem_11.75rem] lg:items-center">
-        <div className="w-full max-w-[14rem]">
+    <article className="group rounded-[1.55rem] bg-white p-3 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:p-4">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] lg:items-center xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1.12fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)]">
+        <div className="w-full max-w-none">
           <TransactionImage imageUrl={item.imageUrl} title={item.lot} tone="bid" />
         </div>
 
         <div className="min-w-0">
-          <h2 className="font-headline text-[1.55rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747]">
+          <h2 className="line-clamp-2 font-headline text-[1.28rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.55rem]">
             {item.lot}
           </h2>
           <p className="mt-2 text-[0.9rem] font-medium tracking-[-0.01em] text-slate-500">Riwayat Lelang</p>
@@ -639,7 +641,7 @@ function BidRow({ item }: { item: BuyerBid }) {
           <p className="text-[0.94rem] font-medium tracking-[-0.01em] text-slate-500">
             {item.status === "MENANG" ? "Harga lelang (Vickrey)" : "Nominal bid"}
           </p>
-          <p className="font-headline text-[2rem] font-black leading-none tracking-[-0.04em] text-[#006747]">
+          <p className="font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] text-[#006747] sm:text-[2rem]">
             {currency.format(amount)}
           </p>
           <div className="pt-1.5">

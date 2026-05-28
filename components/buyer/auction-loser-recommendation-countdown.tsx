@@ -36,6 +36,7 @@ export function AuctionLoserRecommendationCountdown({
       formatLabel={formatRecommendationCountdown}
       serverNow={serverNow}
       targetAt={targetAt}
+      updateIntervalMs={60_000}
     />
   );
 }

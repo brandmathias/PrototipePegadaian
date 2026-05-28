@@ -151,7 +151,7 @@ function formatCatalogCountdownLabel(label: string, state: CountdownState) {
   }
 
   if (minutes > 0) {
-    return `${minutes} menit ${seconds} detik`;
+    return `${minutes} menit`;
   }
 
   return `${Math.max(1, seconds)} detik`;
@@ -180,7 +180,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-const CATALOG_PRICE_FILTER_LIMIT = 999_999_999_999;
+const CATALOG_PRICE_FILTER_LIMIT = 10_000_000_000;
 
 function parsePriceInput(value: string) {
   if (!value.trim()) return null;
@@ -542,8 +542,8 @@ function CatalogLotCard({
   return (
     <article
       className={cn(
-        "group h-full overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
-        viewMode === "list" && "grid gap-0 lg:grid-cols-[18rem_1fr]"
+        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
+        viewMode === "list" && "lg:grid lg:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] lg:gap-0"
       )}
     >
       <div className="relative">
@@ -555,24 +555,24 @@ function CatalogLotCard({
           )}
           media={lot.media}
         />
-        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/92 px-2.5 py-1 text-[0.68rem] font-black text-[#075f42] shadow-sm backdrop-blur">
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/94 px-2.5 py-1 text-[0.68rem] font-black text-[#075f42] shadow-sm">
           <span className={cn("grid size-5 place-items-center rounded-[0.35rem]", mode.tone)}>
             {mode.icon}
           </span>
           {mode.label}
         </div>
-        <div className="absolute right-3 top-3 rounded-full bg-black/18 p-0.5 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.75)] backdrop-blur-sm">
+        <div className="absolute right-3 top-3 rounded-full bg-black/18 p-0.5 shadow-[0_18px_30px_-22px_rgba(0,0,0,0.75)]">
           <FavoriteToggleButton favorited={favorite} itemName={lot.name} onClick={onToggleFavorite} />
         </div>
       </div>
 
-        <div className="flex h-full min-h-0 flex-col p-4">
-          <div className="min-h-[3rem] min-w-0">
-            <h3 className="truncate font-headline text-base font-black text-[#13211c]">{lot.name}</h3>
+        <div className="flex min-h-0 flex-1 flex-col p-4">
+          <div className="min-h-[4rem] min-w-0">
+            <h3 className="line-clamp-2 font-headline text-base font-black leading-[1.18] text-[#13211c]">{lot.name}</h3>
             <p className="mt-0.5 text-xs font-semibold text-black/48">{lot.code}</p>
           </div>
 
-        <div className="mt-2.5 flex flex-wrap content-start gap-1.5 overflow-hidden text-[0.7rem] font-bold text-black/58">
+        <div className="mt-2.5 flex min-h-[4.2rem] flex-wrap content-start gap-1.5 overflow-hidden text-[0.7rem] font-bold text-black/58">
           {metadataItems.map((item) => (
             <span
               className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-[#f4f3ef] px-2 py-[0.34rem]"
@@ -613,6 +613,7 @@ function CatalogLotCard({
                       formatLabel={formatCatalogCountdownLabel}
                       serverNow={serverNow}
                       targetAt={lot.endsAt}
+                      updateIntervalMs={60_000}
                     />
                   </span>
                 </span>
@@ -634,7 +635,7 @@ function CatalogLotCard({
             aria-label={`Lihat detail ${lot.name}`}
             className={cn(
               buttonVariants({ variant: lot.mode === "fixed_price" ? "accent" : "default" }),
-              "h-10 w-full rounded-md text-sm font-black"
+              "min-h-11 w-full rounded-md text-sm font-black"
             )}
             href={`/katalog/${lot.id}`}
           >
