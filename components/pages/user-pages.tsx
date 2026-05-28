@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { AccountCopyButton } from "@/components/buyer/account-copy-button";
+import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
@@ -42,6 +43,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import { getBuyerBidMonitoringHref, getBuyerBidTransactionHref, getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid, BuyerBidStatus, BuyerBidVerification, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
+import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -996,6 +998,26 @@ export function AuctionWinnerPage({
   }
 
   return <AuctionWinnerPageContent transaction={transaction} />;
+}
+
+export function AuctionLoserPage({
+  bid: loadedBid,
+  recommendations,
+}: {
+  bid?: BuyerBid | null;
+  recommendations: Lot[];
+}) {
+  const bid = loadedBid ?? null;
+
+  if (!bid) {
+    return (
+      <Card className="border border-border/70 bg-white p-8">
+        <p className="text-muted-foreground">Riwayat bid tidak ditemukan.</p>
+      </Card>
+    );
+  }
+
+  return <AuctionLoserPageContent bid={bid} recommendations={recommendations} />;
 }
 
 export function TransactionDetailPage({

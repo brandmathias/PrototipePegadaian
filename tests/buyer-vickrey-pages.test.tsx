@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { BidPage, LotDetailPage, PurchasePage } from "@/components/pages/public-pages";
-import { AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
+import { AuctionLoserPage, AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
@@ -364,6 +364,55 @@ describe("buyer vickrey pages", () => {
     expect(spark).not.toBeNull();
     expect(confettiPiece?.getAttribute("style")).not.toMatch(/\d+\.\d{5,}(px|%|vw|vh)/);
     expect(spark?.getAttribute("style")).not.toMatch(/\d+\.\d{5,}(px|%|vw|vh)/);
+  });
+
+  it("renders a dedicated non-winner auction result page with supportive next actions", () => {
+    const losingBid: BuyerBid = {
+      lotId: "pm-vickrey-1",
+      lot: "Cincin Emas",
+      unit: "UPC Ranotana",
+      status: "TIDAK_MENANG",
+      closing: "4 Mei 2026, 22.07",
+      closingAt: "2026-05-04T14:07:00.000Z",
+      bidAmount: 95000000,
+      basePrice: 90000000,
+      note: "Bid tidak menjadi pemenang sesi ini.",
+      bidHash: "abc123"
+    };
+    const recommendations: Lot[] = [
+      {
+        ...fixedPriceLot,
+        id: "pm-vickrey-2",
+        code: "BRG-VIC-002",
+        mode: "vickrey",
+        name: "Jam Tangan Rolex Oyster 41",
+        price: 95000000,
+        countdown: "2 jam 51 menit",
+        endsAt: "2099-05-05T14:07:00.000Z"
+      },
+      {
+        ...fixedPriceLot,
+        id: "pm-vickrey-3",
+        code: "BRG-VIC-003",
+        mode: "vickrey",
+        name: "Kalung Emas 24K 10 Gram",
+        price: 18000000,
+        countdown: "1 jam 45 menit",
+        endsAt: "2099-05-05T14:07:00.000Z"
+      }
+    ];
+
+    render(<AuctionLoserPage bid={losingBid} recommendations={recommendations} />);
+
+    expect(screen.getByText(/anda belum beruntung kali ini/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/tidak menang/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/informasi pemenang/i)).toBeInTheDocument();
+    expect(screen.getByText(/pemenang lelang ini telah ditentukan/i)).toBeInTheDocument();
+    expect(screen.getByText(/lelang lainnya untuk anda/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat semua lelang/i })).toHaveAttribute("href", "/katalog");
+    expect(screen.getByText("Jam Tangan Rolex Oyster 41")).toBeInTheDocument();
+    expect(screen.queryByText(/penawaran tertinggi anda/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/selisih/i)).not.toBeInTheDocument();
   });
 
   it("keeps the fixed-price payment workflow unavailable for vickrey lots", () => {

@@ -28,13 +28,15 @@ export function BuyerShell({
   currentPath,
   summary,
 }: BuyerShellProps) {
-  const isAuctionWinnerPage =
-    typeof currentPath === "string" && /\/transaksi\/[^/]+\/pemenang\/?$/.test(currentPath);
+  const isFocusedResultPage =
+    typeof currentPath === "string" &&
+    (/\/transaksi\/[^/]+\/pemenang\/?$/.test(currentPath) ||
+      /\/riwayat-bid\/[^/]+\/bukan-pemenang\/?$/.test(currentPath));
 
   return (
     <div
       className={
-        isAuctionWinnerPage
+        isFocusedResultPage
           ? "min-h-screen bg-white"
           : "min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]"
       }
@@ -43,7 +45,7 @@ export function BuyerShell({
 
       <main
         className={
-          isAuctionWinnerPage
+          isFocusedResultPage
             ? "container py-0 print:py-0"
             : "container py-8 md:py-10 print:py-0"
         }

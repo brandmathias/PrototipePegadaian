@@ -1,0 +1,257 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FiArrowRight, 
+  FiChevronLeft, 
+  FiChevronRight, 
+  FiInfo, 
+  FiFrown, 
+  FiHeart, 
+  FiClock, 
+  FiMapPin, 
+  FiCalendar 
+} from 'react-icons/fi';
+
+// Mock Data Rekomendasi Lelang Aktif Lainnya (Lelang Lainnya untuk Anda)
+const alternativeAuctions = [
+  {
+    id: 'ALT-001',
+    title: 'Jam Tangan Rolex Oyster 41',
+    startPrice: 95000000,
+    timeLeftInitial: 10290, // Detik
+    imageUrl: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=300&q=80'
+  },
+  {
+    id: 'ALT-002',
+    title: 'Kalung Emas 24K 10 Gram',
+    startPrice: 18000000,
+    timeLeftInitial: 6312, // Detik
+    imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=300&q=80'
+  },
+  {
+    id: 'ALT-003',
+    title: 'Canon EOS R6 Body Only',
+    startPrice: 28500000,
+    timeLeftInitial: 12125, // Detik
+    imageUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=300&q=80'
+  }
+];
+
+export default function AuctionLosePage() {
+  const [timers, setTimers] = useState(alternativeAuctions.map(a => a.timeLeftInitial));
+
+  // Efek Tick Timer Berjalan untuk Barang Rekomendasi
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimers(prevTimers => prevTimers.map(time => (time > 0 ? time - 1 : 0)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Konverter Format Waktu Detik ke format HH j MM m SS d
+  const formatCountdown = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-900 pb-12 selection:bg-red-50 selection:text-red-800">
+      <div className="max-w-7xl mx-auto px-8 pt-6 space-y-6">
+        
+        {/* ==================== 1. SYMPATHETIC CONSLATION HERO BANNER ==================== */}
+        <div className="w-full bg-gradient-to-r from-[#0A1E17] via-[#0D261E] to-[#121A17] rounded-[24px] h-64 relative overflow-hidden flex items-center justify-between px-12 shadow-[0_10px_35px_rgba(0,0,0,0.03)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.03),transparent)] pointer-events-none" />
+          
+          {/* Sektor Kiri: Tipografi Simpati */}
+          <div className="z-10 max-w-xl">
+            <span className="text-red-500 font-bold text-sm tracking-wide block mb-1">Terima kasih.</span>
+            <motion.h1 
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-[34px] font-extrabold text-white tracking-tight leading-tight mb-3"
+            >
+              Anda belum beruntung kali ini.
+            </motion.h1>
+            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+              Terus ikuti lelang lainnya. Kesempatan terbaik mungkin ada di lelang berikutnya! Jangan lewatkan aset-aset berharga yang akan segera berakhir di bawah.
+            </p>
+          </div>
+
+          {/* Sektor Kanan: Palu Lelang 3D & Penanda Silang (X) */}
+          <div className="relative h-full w-80 flex items-center justify-center z-10 select-none">
+            <motion.div 
+              animate={{ rotate: [-0.5, 0.5, -0.5], y: [-2, 2, -2] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="relative flex items-center justify-center"
+            >
+              {/* Representasi Visual Penanda Silang (Red X Emblem) */}
+              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(239,68,68,0.25)] border-4 border-white/10 z-10 -mr-6">
+                <span className="text-white text-3xl font-black leading-none">×</span>
+              </div>
+              {/* Representasi Visual Gavel Palu Lelang Terduduk */}
+              <div className="w-32 h-24 bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl shadow-xl flex flex-col justify-between p-3 relative border-t border-slate-600">
+                <div className="w-full h-6 bg-amber-600/30 rounded border border-amber-600/20 absolute top-4 left-0 right-0 transform -rotate-12" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 self-end border border-amber-400/40 shadow" />
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Sesi Ditutup</span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ==================== 2. HISTORICAL CORE CARD (OBJEK TRANS-LAMA) ==================== */}
+        <div className="space-y-3">
+          <motion.div 
+            whileHover={{ y: -1.5 }}
+            className="w-full bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center justify-between"
+          >
+            {/* Sektor Kiri: Gambar Produk & Info Grid */}
+            <div className="flex items-center space-x-8 w-[65%]">
+              <div className="w-44 h-36 bg-[#FAFAFA] rounded-xl flex-shrink-0 flex items-center justify-center p-3 relative border border-slate-100/40">
+                <img 
+                  src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=300&q=80" 
+                  alt="Cincin Berlian Solitaire" 
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+
+              {/* Data Histori Transaksi */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <span className="bg-emerald-50 text-[#006747] text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1.5 inline-block">
+                    Lelang Victory
+                  </span>
+                  <h3 className="text-xl font-bold text-slate-800 tracking-tight">Cincin Berlian Solitaire 1.00 CT</h3>
+                </div>
+                
+                {/* Data Grid Label */}
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs font-semibold text-slate-500 border-t border-slate-50 pt-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 w-24">No. Transaksi</span>
+                    <span className="text-slate-800 font-bold">TRX-250518-0007</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 w-24">Unit</span>
+                    <span className="text-slate-800 font-bold">UPC Ranotana</span>
+                  </div>
+                  <div className="flex items-center space-x-2 col-span-2">
+                    <FiCalendar className="text-slate-400 w-3.5 h-3.5" />
+                    <span className="text-slate-400">Tanggal Lelang Selesai</span>
+                    <span className="text-slate-700 font-bold">18 Mei 2026, 11:20 WIB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sektor Kanan: Status Tidak Menang Container */}
+            <div className="w-[30%] bg-slate-50/70 rounded-2xl p-5 flex items-center space-x-4 border border-slate-100/50">
+              <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600 flex-shrink-0 shadow-sm">
+                <FiFrown className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Status Lelang</span>
+                <span className="text-lg font-black text-red-600 tracking-tight block">Tidak Menang</span>
+                <span className="text-[11px] text-slate-500 font-medium block mt-0.5 leading-tight">Terus semangat, masih banyak lelang menarik lainnya.</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Transparansi Box Banner */}
+          <div className="w-full bg-slate-100/50 rounded-xl p-3.5 flex items-center space-x-3 text-xs font-medium text-slate-500">
+            <FiInfo className="text-slate-400 w-4 h-4 flex-shrink-0" />
+            <span>
+              <strong className="text-slate-700">Informasi Pemenang:</strong> Pemenang lelang ini telah ditentukan secara sah oleh sistem dan akan segera dihubungi oleh pihak unit terkait. Terima kasih telah berpartisipasi bersih.
+            </span>
+          </div>
+        </div>
+
+        {/* ==================== 3. RE-ENGAGEMENT ENGINE (LELANG LAINNYA UNTUK ANDA) ==================== */}
+        <div className="space-y-4 pt-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight flex items-center space-x-2">
+              <span className="w-2 h-2 bg-[#006747] rounded-full" />
+              <span>Lelang Lainnya untuk Anda</span>
+            </h2>
+            
+            {/* Navigasi Control Carousel */}
+            <div className="flex items-center space-x-4">
+              <button className="text-xs font-bold text-[#006747] hover:text-[#005238] flex items-center space-x-1 transition-colors group">
+                <span>Lihat Semua Lelang</span>
+                <FiArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" />
+              </button>
+              <div className="flex space-x-1.5">
+                <button className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 shadow-sm transition-colors"><FiChevronLeft /></button>
+                <button className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 shadow-sm transition-colors"><FiChevronRight /></button>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid Cards List Item Rekomendasi Aktif */}
+          <div className="grid grid-cols-3 gap-5">
+            <AnimatePresence>
+              {alternativeAuctions.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.08 }}
+                  whileHover={{ y: -3 }}
+                  className="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center space-x-4 border border-transparent group cursor-pointer"
+                >
+                  {/* Thumbnail Item */}
+                  <div className="w-24 h-24 bg-[#FAFAFA] rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-2 relative border border-slate-50">
+                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300" />
+                  </div>
+
+                  {/* Konten Data Item */}
+                  <div className="flex-1 flex flex-col justify-between h-24 py-0.5">
+                    <div>
+                      <span className="text-[9px] bg-emerald-50 text-[#006747] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider block w-max mb-1">Lelang Victory</span>
+                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-[#006747] transition-colors line-clamp-1 tracking-tight">{item.title}</h4>
+                    </div>
+
+                    <div className="flex items-end justify-between border-t border-slate-50 pt-2">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold block mb-0.5">Harga Mulai</span>
+                        <span className="text-sm font-extrabold text-[#006747]">Rp {item.startPrice.toLocaleString('id-ID')}</span>
+                      </div>
+                      
+                      {/* Live Ticking Mini Countdown */}
+                      <div className="text-right">
+                        <span className="text-[9px] text-slate-400 font-bold block mb-0.5 flex items-center justify-end space-x-0.5">
+                          <FiClock className="w-2.5 h-2.5 text-slate-300" />
+                          <span>Sisa Waktu</span>
+                        </span>
+                        <span className="text-xs font-bold text-red-600 font-mono bg-red-50/50 px-1.5 py-0.5 rounded">
+                          {formatCountdown(timers[index])}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Inspirational Footer Motivation Card */}
+          <div className="w-full bg-[#FFF5F5]/60 rounded-2xl p-4 flex items-center space-x-4 border border-transparent mt-4">
+            <motion.div 
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500 flex-shrink-0 shadow-sm"
+            >
+              <FiHeart className="w-5 h-5 fill-current" />
+            </motion.div>
+            <div className="text-xs font-semibold text-slate-600">
+              <p className="text-slate-800 font-extrabold mb-0.5">Jangan menyerah! Kesempatan besar berikutnya bisa jadi milik Anda.</p>
+              <p className="text-slate-500 font-medium">Terus ikut dan menangkan lelang aset aman investasi impian Anda bersama Pegadaian Lelang aman tepercaya.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

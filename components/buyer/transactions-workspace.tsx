@@ -21,6 +21,7 @@ import {
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Button } from "@/components/ui/button";
 import {
+  getBuyerLoserAnnouncementHref,
   getBuyerBidMonitoringHref,
   getBuyerBidTransactionHref,
   getBuyerTransactionHref,
@@ -598,6 +599,16 @@ function BidRow({ item }: { item: BuyerBid }) {
   const statusMeta = getBidStatusPill(item.status);
   const amount = item.paymentAmount ?? item.finalPrice ?? item.bidAmount ?? item.basePrice;
   const transactionHref = getBuyerBidTransactionHref(item);
+  const actionHref =
+    item.status === "TIDAK_MENANG"
+      ? getBuyerLoserAnnouncementHref(item.lotId)
+      : transactionHref ?? getBuyerBidMonitoringHref(item);
+  const actionLabel =
+    item.status === "TIDAK_MENANG"
+      ? "Lihat Hasil"
+      : transactionHref
+        ? "Lihat Detail"
+        : "Lihat Status";
 
   return (
     <article className="group rounded-[1.55rem] bg-white p-4 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
@@ -640,21 +651,12 @@ function BidRow({ item }: { item: BuyerBid }) {
         </div>
 
         <div className="space-y-3.5">
-          {transactionHref ? (
-            <Link href={transactionHref}>
-              <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
-                Lihat Detail
-                <ArrowRight className="size-5" />
-              </span>
-            </Link>
-          ) : (
-            <Link href={getBuyerBidMonitoringHref(item)}>
-              <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
-                Lihat Status
-                <ArrowRight className="size-5" />
-              </span>
-            </Link>
-          )}
+          <Link href={actionHref}>
+            <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
+              {actionLabel}
+              <ArrowRight className="size-5" />
+            </span>
+          </Link>
 
           <TransactionNotice
             className="bg-[#f9fbf8] text-[#4f5d56]"

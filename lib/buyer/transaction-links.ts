@@ -13,6 +13,10 @@ export function getBuyerWinnerAnnouncementHref(transactionId: string) {
   return `/transaksi/${transactionId}/pemenang`;
 }
 
+export function getBuyerLoserAnnouncementHref(lotId: string) {
+  return `/riwayat-bid/${lotId}/bukan-pemenang`;
+}
+
 export function getBuyerTransactionsHref(options?: {
   tab?: "transactions" | "bids";
   lotId?: string;
