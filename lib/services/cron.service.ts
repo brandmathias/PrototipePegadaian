@@ -23,7 +23,12 @@ import {
   getBlacklistRestrictionPolicy,
   shouldSuspendLoginForBlacklist
 } from "@/lib/blacklist/restrictions";
-import { notifyBlacklistActivated, notifyPaymentDeadlineSoon, notifyVickreyWinner } from "@/lib/services/notification-events";
+import {
+  notifyBlacklistActivated,
+  notifyPaymentDeadlineSoon,
+  notifyVickreyLoss,
+  notifyVickreyWinner
+} from "@/lib/services/notification-events";
 import { formatAppDateTime } from "@/lib/timezone";
 import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
@@ -230,6 +235,11 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           unitName: string;
         }
       | null = null;
+    let loserNotifications: Array<{
+      userId: string;
+      pemasaranId: string;
+      lotName: string;
+    }> = [];
 
     const settledStatus = await db.transaction(async (tx) => {
       const marketingBids = await tx
@@ -332,6 +342,18 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
         return "gagal" as const;
       }
 
+      loserNotifications = Array.from(
+        new Set(
+          marketingBids
+            .map((bid) => bid.userId)
+            .filter((userId) => userId !== outcome.winnerId)
+        )
+      ).map((userId) => ({
+        userId,
+        pemasaranId: session.marketing.id,
+        lotName: session.item.name
+      }));
+
       const [existingTransaction] = await tx
         .select({ id: transaksi.id })
         .from(transaksi)
@@ -416,6 +438,9 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
       summary.completed += 1;
       if (winnerNotification) {
         await notifyVickreyWinner(winnerNotification);
+      }
+      if (loserNotifications.length) {
+        await Promise.all(loserNotifications.map((notification) => notifyVickreyLoss(notification)));
       }
     } else if (settledStatus === "gagal") {
       summary.failed += 1;

@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { BidPage, LotDetailPage, PurchasePage } from "@/components/pages/public-pages";
+import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
 import { AuctionLoserPage, AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
@@ -402,9 +403,9 @@ describe("buyer vickrey pages", () => {
       }
     ];
 
-    render(<AuctionLoserPage bid={losingBid} recommendations={recommendations} />);
+    const { container } = render(<AuctionLoserPage bid={losingBid} recommendations={recommendations} />);
 
-    expect(screen.getByText(/anda belum beruntung kali ini/i)).toBeInTheDocument();
+    expect(screen.getByText(/anda belum menang lelang ini/i)).toBeInTheDocument();
     expect(screen.getAllByText(/tidak menang/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/informasi pemenang/i)).toBeInTheDocument();
     expect(screen.getByText(/pemenang lelang ini telah ditentukan/i)).toBeInTheDocument();
@@ -413,6 +414,19 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText("Jam Tangan Rolex Oyster 41")).toBeInTheDocument();
     expect(screen.queryByText(/penawaran tertinggi anda/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/selisih/i)).not.toBeInTheDocument();
+    expect(container.querySelector(".loser-stage-piece")).not.toBeNull();
+    expect(container.querySelector(".loser-hero-spark")).not.toBeNull();
+  });
+
+  it("formats loser recommendation countdown labels inside the client wrapper", () => {
+    render(
+      <AuctionLoserRecommendationCountdown
+        serverNow="2026-05-28T00:00:00.000Z"
+        targetAt="2026-05-28T02:51:00.000Z"
+      />
+    );
+
+    expect(screen.getByText(/\d+\s+j\s+\d+\s+m\s+\d+\s+d/i)).toBeInTheDocument();
   });
 
   it("keeps the fixed-price payment workflow unavailable for vickrey lots", () => {

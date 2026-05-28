@@ -12,7 +12,8 @@ import {
   InfoIcon,
   PartyIcon,
 } from "@/components/buyer/auction-loser-icons";
-import { LiveCountdown } from "@/components/buyer/live-countdown";
+import { AuctionLoserHeroStage } from "@/components/buyer/auction-loser-hero-stage";
+import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
@@ -21,14 +22,7 @@ import { formatAppDateTime } from "@/lib/timezone";
 const LOSER_ASSET_BASE =
   "/uploads/Design%20Halaman%20Bukan%20Pemenang%20Lelang";
 const LOSER_GAVEL_ASSET = `${LOSER_ASSET_BASE}/Gambar%20Palu%20Hero%20Section%20Bukan%20Pemenang%20Lelang.png`;
-
-function formatRecommendationCountdown(label: string) {
-  return label
-    .replace(/\bhari\b/gi, "h")
-    .replace(/\bjam\b/gi, "j")
-    .replace(/\bmenit\b/gi, "m")
-    .replace(/\bdetik\b/gi, "d");
-}
+const LOSER_X_ASSET = `${LOSER_ASSET_BASE}/Tanda%20X%20Bukan%20Pemenang%20Lelang%20Hero%20Section.png`;
 
 function ProductImage({
   imageUrl,
@@ -48,7 +42,7 @@ function ProductImage({
   return (
     <Image
       alt={`Foto barang ${title}`}
-      className="object-contain p-3 transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.045]"
+      className="object-cover object-center transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.045]"
       fill
       sizes="(max-width: 768px) 80vw, 260px"
       src={imageUrl}
@@ -97,11 +91,9 @@ function RecommendationCard({
               <ClockIcon className="size-3 text-[#b5bfba]" strokeWidth={1.8} />
               Sisa Waktu
             </p>
-            <LiveCountdown
+            <AuctionLoserRecommendationCountdown
               className="mt-1 block rounded-md bg-[#fff3f3] px-2 py-1 font-mono text-[0.78rem] font-black text-[#e02020]"
-              expiredLabel="Menunggu hasil"
               fallbackLabel={lot.countdown}
-              formatLabel={formatRecommendationCountdown}
               serverNow={serverNow}
               targetAt={lot.endsAt}
             />
@@ -125,45 +117,60 @@ export function AuctionLoserPageContent({
 
   return (
     <div className="relative left-1/2 min-h-screen w-screen -translate-x-1/2 bg-[#fafafa] pb-8">
-      <section className="relative isolate left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-[#06101b]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_8%,rgba(255,255,255,0.08),transparent_25%),linear-gradient(100deg,#07101b_0%,#081523_52%,#101722_100%)]" />
-        <div className="absolute right-[7%] top-[-38%] h-[30rem] w-[30rem] rounded-full border border-white/[0.055]" />
-        <div className="absolute right-[15%] top-[-18%] h-[20rem] w-[20rem] rounded-full border border-white/[0.065]" />
-        <span className="auction-loser-fleck absolute right-[13%] top-[25%] h-5 w-10 rotate-[-18deg] rounded-[0.35rem] bg-white/70 blur-[0.3px]" />
-        <span className="auction-loser-fleck absolute right-[42%] top-[17%] h-4 w-8 rotate-[22deg] rounded-[0.35rem] bg-[#d4af37]/70 blur-[0.2px]" />
-        <span className="auction-loser-fleck absolute right-[25%] top-[48%] h-3 w-7 rotate-[31deg] rounded-[0.35rem] bg-white/55 blur-[0.2px]" />
-        <span className="auction-loser-fleck absolute right-[6%] top-[42%] h-4 w-9 rotate-[-28deg] rounded-[0.35rem] bg-[#d4af37]/75 blur-[0.2px]" />
+      <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-[#09111b]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,145,156,0.18),transparent_28%),radial-gradient(circle_at_72%_22%,rgba(209,219,230,0.12),transparent_24%),linear-gradient(120deg,#09111b_0%,#111c28_48%,#0c1520_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_18%,rgba(0,0,0,0.18)_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.16))]" />
 
-        <div className="container relative grid min-h-[18.6rem] items-center gap-8 py-9 md:grid-cols-[minmax(0,0.9fr)_minmax(26rem,1.1fr)] md:py-10">
-          <div className="section-reveal relative z-10 max-w-[45rem]">
-            <p className="text-[1.28rem] font-black tracking-[-0.025em] text-[#ff3535] md:text-[1.5rem]">
-              Terima kasih.
-            </p>
-            <h1 className="mt-3 max-w-[43rem] font-headline text-[2.55rem] font-black leading-[1.04] tracking-[-0.055em] text-white md:text-[3.35rem]">
-              Anda belum beruntung kali ini.
-            </h1>
-            <p className="mt-5 max-w-[34rem] text-[1rem] font-medium leading-8 text-white/90">
-              Terus ikuti lelang lainnya.
-              <span className="block">Kesempatan terbaik mungkin ada di lelang berikutnya!</span>
-            </p>
-          </div>
+        <div className="container relative py-7 md:py-8 xl:py-10">
+          <div className="grid min-h-[21rem] items-center gap-8 xl:grid-cols-[minmax(0,1.02fr)_minmax(23rem,0.98fr)]">
+            <div className="section-reveal relative z-10 max-w-[46rem] rounded-[2rem] border border-[#ff9aa2]/30 bg-[linear-gradient(145deg,rgba(17,27,39,0.92),rgba(12,18,28,0.86))] p-3 shadow-[0_34px_80px_-46px_rgba(0,0,0,0.72)]">
+              <div className="relative overflow-hidden rounded-[calc(2rem-0.75rem)] border border-white/[0.08] bg-[linear-gradient(135deg,rgba(20,31,44,0.9),rgba(10,16,24,0.88))] px-6 py-6 md:px-8 md:py-8">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_top,rgba(255,255,255,0.08),transparent_30%),linear-gradient(90deg,transparent,rgba(255,143,149,0.08),transparent)]" />
+                <div className="relative flex flex-col gap-5 md:flex-row md:items-center">
+                  <div className="relative shrink-0">
+                    <span className="absolute inset-2 rounded-full bg-[#ff9da3]/[0.22] blur-2xl" />
+                    <div className="relative grid size-[6.2rem] place-items-center rounded-full border border-[#f4b8bd]/50 bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.18),rgba(255,255,255,0.02)_52%,rgba(0,0,0,0.12)_100%)] shadow-[0_0_0_1px_rgba(255,195,201,0.14),0_22px_46px_-34px_rgba(255,143,149,0.36)]">
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        className="h-[4.4rem] w-[4.4rem] object-contain"
+                        height={1254}
+                        priority
+                        src={LOSER_X_ASSET}
+                        unoptimized
+                        width={1254}
+                      />
+                    </div>
+                  </div>
 
-          <div className="relative z-10 hidden min-h-[17rem] md:block">
-            <Image
-              alt="Palu lelang untuk status tidak menang"
-              className="auction-loser-gavel absolute bottom-[-2.75rem] right-[-1rem] h-auto w-[31rem] max-w-none object-contain drop-shadow-[0_32px_54px_rgba(0,0,0,0.55)]"
-              height={1254}
-              priority
-              sizes="560px"
-              src={LOSER_GAVEL_ASSET}
-              unoptimized
-              width={1254}
+                  <div className="min-w-0">
+                    <p className="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-[#ffd3d7]/[0.72]">
+                      Pengumuman hasil lelang
+                    </p>
+                    <h1 className="mt-3 font-headline text-[2.35rem] font-black leading-[1.02] tracking-[-0.055em] text-white md:text-[3rem]">
+                      Terima kasih,
+                      <span className="mt-2 block text-[#ffb7bc]">
+                        Anda Belum Menang Lelang Ini
+                      </span>
+                    </h1>
+                    <p className="mt-4 max-w-[34rem] text-base leading-8 text-white/[0.82]">
+                      Tetap tenang dan terus ikuti sesi berikutnya.
+                      <span className="font-semibold text-[#f9dee2]"> Kesempatan terbaik bisa datang di lelang berikutnya.</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <AuctionLoserHeroStage
+              gavelSrc={LOSER_GAVEL_ASSET}
             />
           </div>
         </div>
       </section>
 
-      <div className="container relative -mt-12 space-y-3 md:-mt-14">
+      <div className="container relative -mt-3 space-y-6 md:-mt-5 md:space-y-7">
         <section className="section-reveal rounded-[1.4rem] border border-[#e7e9e7] bg-white p-5 shadow-[0_20px_55px_-38px_rgba(16,24,40,0.28)] md:p-6">
           <div className="grid gap-6 lg:grid-cols-[minmax(14rem,0.58fr)_minmax(0,1.1fr)_minmax(18rem,0.72fr)] lg:items-center">
             <div className="relative min-h-[13.5rem] overflow-hidden rounded-[1.15rem] bg-[#f8faf9]">

@@ -72,6 +72,20 @@ export function ClockIcon(props: LoserIconProps) {
   );
 }
 
+export function GavelIcon(props: LoserIconProps) {
+  return (
+    <BaseIcon {...props}>
+      <path d="m13.5 5.2 5.3 5.3" />
+      <path d="m10.4 8.3 5.3 5.3" />
+      <path d="m4.1 19.9 6.4-6.4" />
+      <path d="m8.2 4.9 6.8 6.8" />
+      <path d="m6.1 7 4.8-4.8 3.4 3.4-4.8 4.8" />
+      <path d="m14.3 13.1 4.8-4.8 2.7 2.7-4.8 4.8" />
+      <path d="M3 21h8.4" />
+    </BaseIcon>
+  );
+}
+
 export function FrownIcon(props: LoserIconProps) {
   return (
     <BaseIcon {...props}>

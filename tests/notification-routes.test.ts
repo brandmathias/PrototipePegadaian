@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireBuyerApiSession: vi.fn(),
+  ensureVickreyLossNotifications: vi.fn(),
   listUserNotifications: vi.fn(),
   getUnreadNotificationCount: vi.fn(),
   markNotificationRead: vi.fn(),
@@ -19,6 +20,10 @@ vi.mock("@/lib/services/notification.service", () => ({
   markAllNotificationsRead: mocks.markAllNotificationsRead
 }));
 
+vi.mock("@/lib/services/notification-events", () => ({
+  ensureVickreyLossNotifications: mocks.ensureVickreyLossNotifications
+}));
+
 const buyerAccess = {
   ok: true as const,
   userId: "buyer-1",
@@ -33,6 +38,7 @@ describe("buyer notification routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireBuyerApiSession.mockResolvedValue(buyerAccess);
+    mocks.ensureVickreyLossNotifications.mockResolvedValue(undefined);
   });
 
   it("lists buyer notifications with unread filter", async () => {
@@ -61,6 +67,7 @@ describe("buyer notification routes", () => {
       unreadOnly: true,
       limit: 5
     });
+    expect(mocks.ensureVickreyLossNotifications).toHaveBeenCalledWith("buyer-1");
   });
 
   it("returns unread notification count", async () => {

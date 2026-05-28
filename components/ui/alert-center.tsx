@@ -14,6 +14,7 @@ import {
   Trophy
 } from "lucide-react";
 
+import { GavelIcon } from "@/components/buyer/auction-loser-icons";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { useBuyerNotifications, type BuyerNotification } from "@/components/ui/use-buyer-notifications";
@@ -37,7 +38,7 @@ function getPersistedVariant(type: string) {
     return "error" as const;
   }
 
-  if (type === "payment_deadline") {
+  if (type === "payment_deadline" || type === "vickrey_loss") {
     return "info" as const;
   }
 
@@ -47,6 +48,10 @@ function getPersistedVariant(type: string) {
 function getNotificationIcon(type: string, variant: "success" | "error" | "info") {
   if (type === "vickrey_win") {
     return Trophy;
+  }
+
+  if (type === "vickrey_loss") {
+    return GavelIcon;
   }
 
   if (type === "payment_verified") {
@@ -208,6 +213,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   const renderNotificationContent = React.useCallback(
     (notification: (typeof displayedNotifications)[number]) => {
       const Icon = getNotificationIcon(notification.type, notification.variant);
+      const isLoserNotification = notification.type === "vickrey_loss";
 
       return (
         <>
@@ -218,32 +224,35 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                 ? "bg-primary/12 text-primary"
                 : notification.variant === "error"
                   ? "bg-destructive/12 text-destructive"
-                  : "bg-accent/20 text-accent-foreground"
+                  : "bg-accent/20 text-accent-foreground",
+              isLoserNotification
+                ? "border border-[#f1d3d6] bg-[linear-gradient(180deg,rgba(255,250,250,0.98),rgba(255,239,241,0.96))] text-[#c43d48] shadow-[0_14px_28px_-22px_rgba(196,61,72,0.55)]"
+                : ""
             )}
           >
             <Icon aria-hidden="true" className="size-4" />
           </div>
-        <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <p className="text-sm font-semibold text-black/82">
+            <p className={cn("text-sm font-semibold text-black/82", isLoserNotification ? "text-[#3f2529]" : "")}>
               {notification.title}
             </p>
             {!notification.read ? (
-              <span className="mt-1 size-2 rounded-full bg-[#0f7a57]" />
+              <span className={cn("mt-1 size-2 rounded-full bg-[#0f7a57]", isLoserNotification ? "bg-[#d14f59]" : "")} />
             ) : null}
           </div>
           {notification.description ? (
-            <p className="mt-1 text-sm leading-6 text-black/58">
+            <p className={cn("mt-1 text-sm leading-6 text-black/58", isLoserNotification ? "text-[#6f5054]" : "")}>
               {notification.description}
             </p>
           ) : null}
-          <div className="mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42">
+          <div className={cn("mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42", isLoserNotification ? "text-[#8d6c70]" : "")}>
             <span className="inline-flex items-center gap-2">
               <Clock3 aria-hidden="true" className="size-3.5" />
               {formatTimeLabel(notification.createdAt)}
             </span>
             {notification.href ? (
-              <span className="font-semibold text-[#0a6a49]">Buka detail</span>
+              <span className={cn("font-semibold text-[#0a6a49]", isLoserNotification ? "text-[#c43d48]" : "")}>Buka detail</span>
             ) : null}
           </div>
         </div>
@@ -307,11 +316,16 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             {displayedNotifications.length ? (
               <div className="space-y-2">
                 {displayedNotifications.map((notification, index) => {
+                  const isLoserNotification = notification.type === "vickrey_loss";
                   const className = cn(
                     "group interactive-card flex w-full items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
                     notification.read
                       ? "border-black/6 bg-white/70"
-                      : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)]"
+                      : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)]",
+                    isLoserNotification &&
+                      (notification.read
+                        ? "border-[#f0d9dc] bg-[linear-gradient(180deg,rgba(255,249,249,0.9),rgba(255,244,244,0.82))] shadow-[0_10px_24px_-24px_rgba(196,61,72,0.25)]"
+                        : "border-[#f1c7cd] bg-[linear-gradient(180deg,rgba(255,247,248,1),rgba(255,238,240,0.98))] shadow-[0_18px_36px_-28px_rgba(196,61,72,0.38)]")
                   );
 
                   if (notification.href) {

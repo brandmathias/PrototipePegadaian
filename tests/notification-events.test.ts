@@ -13,6 +13,7 @@ import {
   notifyPaymentDeadlineSoon,
   notifyPaymentRejected,
   notifyPaymentVerified,
+  notifyVickreyLoss,
   notifyVickreyWinner
 } from "@/lib/services/notification-events";
 
@@ -40,6 +41,26 @@ describe("notification event helpers", () => {
         actionHref: "/transaksi/trx-vickrey-1/pemenang",
         title: "Anda memenangkan lelang Motor Racing",
         message: expect.stringMatching(/bayar langsung di UPC Ranotana/i)
+      })
+    );
+  });
+
+  it("creates a non-winner Vickrey notification that links to the result page", async () => {
+    await notifyVickreyLoss({
+      userId: "buyer-2",
+      pemasaranId: "pmr-77",
+      lotName: "Laptop Gaming"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "buyer-2",
+        type: "vickrey_loss",
+        entityType: "pemasaran",
+        entityId: "pmr-77",
+        actionHref: "/riwayat-bid/pmr-77/bukan-pemenang",
+        title: "Hasil lelang Laptop Gaming sudah tersedia",
+        message: expect.stringMatching(/belum memenangkan sesi ini/i)
       })
     );
   });

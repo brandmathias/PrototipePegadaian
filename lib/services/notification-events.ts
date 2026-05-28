@@ -1,5 +1,6 @@
 import { createNotificationOnce } from "@/lib/services/notification.service";
 import {
+  getBuyerLoserAnnouncementHref,
   getBuyerTransactionsHref,
   getBuyerWinnerAnnouncementHref,
 } from "@/lib/buyer/transaction-links";
@@ -29,6 +30,58 @@ export async function notifyVickreyWinner(
       paymentMethod: "langsung"
     }
   });
+}
+
+export async function notifyVickreyLoss(
+  input: {
+    userId: string;
+    pemasaranId: string;
+    lotName: string;
+  }
+) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: `Hasil lelang ${input.lotName} sudah tersedia`,
+    message: "Anda belum memenangkan sesi ini. Buka hasil lelang untuk melihat ringkasan akhir dan rekomendasi unit lain.",
+    type: "vickrey_loss",
+    entityType: "pemasaran",
+    entityId: input.pemasaranId,
+    actionHref: getBuyerLoserAnnouncementHref(input.pemasaranId)
+  });
+}
+
+export async function ensureVickreyLossNotifications(userId: string) {
+  const [{ and, eq, isNotNull, ne, or }, { db }, { barang, bids, pemasaran }] = await Promise.all([
+    import("drizzle-orm"),
+    import("@/lib/db/client"),
+    import("@/lib/db/schema")
+  ]);
+  const rows = await db
+    .select({
+      pemasaranId: pemasaran.id,
+      lotName: barang.name
+    })
+    .from(bids)
+    .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .where(
+      and(
+        eq(bids.userId, userId),
+        isNotNull(pemasaran.winnerId),
+        ne(pemasaran.winnerId, userId),
+        or(eq(pemasaran.status, "selesai"), eq(pemasaran.status, "gagal"))
+      )
+    );
+
+  await Promise.all(
+    rows.map((row) =>
+      notifyVickreyLoss({
+        userId,
+        pemasaranId: row.pemasaranId,
+        lotName: row.lotName
+      })
+    )
+  );
 }
 
 export async function notifyPaymentVerified(input: TransactionEventInput) {

@@ -115,6 +115,18 @@ const bids: BuyerBid[] = [
     note: "Pembayaran diterima. Transaksi sedang diverifikasi oleh tim Pegadaian.",
     linkedTransactionId: "trx-linked-1",
   },
+  {
+    lotId: "bid-2",
+    lot: "Kamera Mirrorless Full Frame",
+    imageUrl: "/uploads/barang/kamera.jpg",
+    unit: "Makassar",
+    status: "TIDAK_MENANG",
+    closing: "19 Mei 2026, 12.20 WIB",
+    closingAt: "2026-05-19T05:20:00.000Z",
+    bidAmount: 14800000,
+    basePrice: 13500000,
+    note: "Bid tidak menjadi pemenang sesi ini.",
+  },
 ];
 
 describe("TransactionsPage", () => {
@@ -144,7 +156,13 @@ describe("TransactionsPage", () => {
     await user.click(screen.getByRole("button", { name: /riwayat lelang/i }));
 
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
-    expect(screen.getByText(/riwayat lelang tersimpan/i)).toBeInTheDocument();
+    expect(screen.getByText("Kamera Mirrorless Full Frame")).toBeInTheDocument();
+    expect(
+      screen
+        .getAllByRole("link", { name: /lihat hasil/i })
+        .some((link) => link.getAttribute("href") === "/riwayat-bid/bid-2/bukan-pemenang")
+    ).toBe(true);
+    expect(screen.getAllByText(/riwayat lelang tersimpan/i).length).toBeGreaterThan(0);
   });
 
   it("can open directly on the riwayat lelang tab from the transactions hub", () => {

@@ -124,4 +124,65 @@ describe("buyer alert center", () => {
     expect(within(dialog).queryByText(/katalog berhasil ditambahkan/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/barang baru tersimpan/i)).not.toBeInTheDocument();
   });
+
+  it("renders non-winner notifications with the dedicated buyer result action", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+
+        if (url.includes("/api/user/notifikasi/read-all")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { updated: 1 } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        if (init?.method === "PATCH") {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { id: "notif-loss", isRead: true } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: [
+                {
+                  id: "notif-loss",
+                  title: "Hasil lelang Kamera Full Frame sudah tersedia",
+                  message: "Anda belum memenangkan sesi ini. Buka hasil lelang untuk melihat ringkasan akhir.",
+                  type: "vickrey_loss",
+                  actionHref: "/riwayat-bid/pmr-77/bukan-pemenang",
+                  isRead: false,
+                  createdAt: "2026-05-22T02:30:00.000Z"
+                }
+              ]
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            }
+          )
+        );
+      })
+    );
+
+    const user = userEvent.setup();
+    renderAlertCenter();
+
+    await user.click(await screen.findByRole("button", { name: /buka pusat alert/i }));
+
+    const link = await screen.findByRole("link", {
+      name: /hasil lelang kamera full frame sudah tersedia/i
+    });
+
+    expect(link).toHaveAttribute("href", "/riwayat-bid/pmr-77/bukan-pemenang");
+    expect(screen.getByText(/anda belum memenangkan sesi ini/i)).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { AuctionLoserPage } from "@/components/pages/user-pages";
+import { getBuyerTransactionHref } from "@/lib/buyer/transaction-links";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { listBuyerBids } from "@/lib/services/buyer.service";
 import { listPublicLotsWithLimit } from "@/lib/services/public-catalog.service";
@@ -18,8 +19,22 @@ export default async function Page({
   ]);
   const bid = bids.find((item) => item.lotId === pemasaranId);
 
-  if (!bid || bid.status !== "TIDAK_MENANG") {
+  if (!bid) {
     notFound();
+  }
+
+  if (bid.status === "MENANG" && bid.linkedTransactionId) {
+    redirect(
+      getBuyerTransactionHref({
+        id: bid.linkedTransactionId,
+        kind: "VICKREY_WIN",
+        status: bid.transactionStatus ?? "MENUNGGU_PEMBAYARAN"
+      })
+    );
+  }
+
+  if (bid.status === "GAGAL" && bid.linkedTransactionId) {
+    redirect(`/transaksi/${bid.linkedTransactionId}`);
   }
 
   const recommendations = lots

@@ -7,6 +7,7 @@ import { notifications } from "@/lib/db/schema";
 
 export type NotificationType =
   | "vickrey_win"
+  | "vickrey_loss"
   | "payment_verified"
   | "payment_rejected"
   | "payment_deadline"
