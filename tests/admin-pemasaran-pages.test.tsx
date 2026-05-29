@@ -66,6 +66,29 @@ describe("admin pemasaran pages", () => {
             soldAt: "2026-05-03T00:00:00.000Z",
             media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
             primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }
+          },
+          {
+            id: "pm-failed",
+            lotId: "barang-4",
+            lot: "Iphone Gagal Bayar",
+            code: "BRG-004",
+            category: "elektronik",
+            condition: "baik",
+            status: "GAGAL",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-29",
+            endingAt: "2026-05-29T02:29:44.886Z",
+            participants: 2,
+            basePrice: 12000000,
+            finalPrice: 20000000,
+            winner: "Buyer Demo 13 B",
+            visibility: "HASIL_DIBUKA",
+            transactionId: "trx-failed",
+            transactionStatus: "GAGAL",
+            paymentDeadline: "2026-05-29T02:29:44.886Z",
+            media: [{ id: "m4", type: "foto", url: "/uploads/iphone.jpg", fileName: "iphone.jpg" }],
+            primaryMedia: { id: "m4", type: "foto", url: "/uploads/iphone.jpg", fileName: "iphone.jpg" },
+            note: "Pemenang melewati batas pembayaran 24 jam."
           }
         ]}
       />
@@ -77,16 +100,28 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/1 Beli Putus \/ 1 Lelang/i)).toBeInTheDocument();
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
-    expect(screen.getByText("Peserta")).toBeInTheDocument();
+    expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
     expect(screen.getByText("+2")).toBeInTheDocument();
     expect(screen.getAllByText("Kode Lot").length).toBeGreaterThan(0);
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
+    expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
+    expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Aktif" }));
+
+    expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
+    expect(screen.queryByText("Iphone Gagal Bayar")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
 
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.queryByText("Kalung Emas Aktif")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Perlu Strategi" }));
+
+    expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
+    expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
   });
 
   it("renders fixed price cards without auction-only language", () => {

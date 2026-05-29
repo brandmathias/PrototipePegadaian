@@ -517,6 +517,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
   };
 
   for (const row of overdueTransactions) {
+    let applied = false;
     let blacklistNotification:
       | {
           userId: string;
@@ -527,13 +528,27 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
       | null = null;
 
     await db.transaction(async (tx) => {
-      await tx
+      const [updatedTransaction] = await tx
         .update(transaksi)
         .set({
           status: "gagal",
           updatedAt: now
         })
-        .where(eq(transaksi.id, row.transaction.id));
+        .where(
+          and(
+            eq(transaksi.id, row.transaction.id),
+            inArray(transaksi.status, [...UNPAID_VICKREY_STATUSES]),
+            isNotNull(transaksi.paymentDeadline),
+            lte(transaksi.paymentDeadline, now)
+          )
+        )
+        .returning({ id: transaksi.id });
+
+      if (!updatedTransaction) {
+        return;
+      }
+
+      applied = true;
 
       await tx
         .update(pemasaran)
@@ -644,6 +659,10 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil lelang Vickrey.`
       });
     });
+
+    if (!applied) {
+      continue;
+    }
 
     summary.blacklisted += 1;
     if (blacklistNotification) {

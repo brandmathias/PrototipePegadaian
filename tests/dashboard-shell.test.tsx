@@ -82,7 +82,10 @@ describe("DashboardShell", () => {
   it("toggles dark and light mode from the header", () => {
     navigationMock.pathname = "/admin";
 
-    renderShell();
+    const { container } = renderShell();
+    const shell = container.querySelector("[data-admin-shell]");
+    expect(shell).toBeTruthy();
+    expect(shell).toHaveAttribute("data-admin-theme", "light");
 
     const notificationButton = screen.getByRole("button", { name: /notifikasi/i });
     const darkModeButton = screen.getByRole("button", { name: /aktifkan mode gelap/i });
@@ -90,8 +93,11 @@ describe("DashboardShell", () => {
 
     fireEvent.click(darkModeButton);
 
-    expect(document.documentElement).toHaveClass("dark");
-    expect(document.documentElement.style.colorScheme).toBe("dark");
+    expect(shell).toHaveClass("dark");
+    expect(shell).toHaveAttribute("data-admin-theme", "dark");
+    expect((shell as HTMLElement).style.colorScheme).toBe("dark");
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("");
     expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("dark");
 
     const lightModeButton = screen.getByRole("button", { name: /aktifkan mode terang/i });
@@ -99,8 +105,30 @@ describe("DashboardShell", () => {
     expect(lightModeButton).toHaveAttribute("data-theme-switching", "true");
     fireEvent.click(lightModeButton);
 
+    expect(shell).not.toHaveClass("dark");
+    expect(shell).toHaveAttribute("data-admin-theme", "light");
+    expect((shell as HTMLElement).style.colorScheme).toBe("light");
     expect(document.documentElement).not.toHaveClass("dark");
-    expect(document.documentElement.style.colorScheme).toBe("light");
+    expect(document.documentElement.style.colorScheme).toBe("");
     expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("light");
+  });
+
+  it("cleans legacy global dark mode so buyer routes are not affected after leaving admin", () => {
+    navigationMock.pathname = "/admin";
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
+
+    const { unmount } = renderShell();
+
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: /aktifkan mode gelap/i }));
+    expect(document.documentElement).not.toHaveClass("dark");
+
+    unmount();
+
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("");
   });
 });

@@ -89,9 +89,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <DashboardShell
       currentUser={currentUser}
       headerBrandLabel={isDashboardRoute ? null : "Pegadaian Lelang"}
-      headerLead={isDashboardRoute ? "Selamat pagi," : undefined}
-      headerSubtitle={isDashboardRoute ? undefined : "Pusat kendali operasional unit"}
-      headerTitle={isDashboardRoute ? "Admin Eksekutif" : unit?.name ?? "Admin Unit"}
+      headerSubtitle="Pusat kendali operasional unit"
+      headerTitle={unit?.name ?? "Admin Unit"}
+      hideHeaderIdentity={false}
       profileHref="/admin/profil"
       searchPlaceholder={isDashboardRoute ? "Cari data, pengguna, atau laporan..." : "Cari transaksi atau barang..."}
       searchShortcutHint={isDashboardRoute ? "Ctrl /" : undefined}

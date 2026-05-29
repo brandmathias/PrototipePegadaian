@@ -28,7 +28,7 @@ import {
   users
 } from "@/lib/db/schema";
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
-import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
@@ -50,8 +50,21 @@ const FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES = [
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
   "Akun Anda sedang dalam masa pembatasan. Transaksi yang sedang berjalan belum dapat diselesaikan sampai masa blacklist berakhir.";
 
+type BuyerReadOptions = {
+  refreshAuctionState?: boolean;
+};
+
 function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
+}
+
+async function refreshBuyerAuctionSettlementState(options?: BuyerReadOptions) {
+  if (options?.refreshAuctionState === false) {
+    return;
+  }
+
+  await processExpiredVickreyAuctions();
+  await processOverdueVickreyPayments();
 }
 
 function transactionSelection() {
@@ -160,12 +173,16 @@ async function getTransactionRowById(userId: string, transactionId: string) {
   return row ?? null;
 }
 
-export async function listBuyerTransactions(userId: string) {
+export async function listBuyerTransactions(userId: string, options?: BuyerReadOptions) {
+  await refreshBuyerAuctionSettlementState(options);
+
   const rows = await getTransactionRows(userId);
   return rows.map(serializeBuyerTransaction);
 }
 
-export async function getBuyerTransactionById(userId: string, transactionId: string) {
+export async function getBuyerTransactionById(userId: string, transactionId: string, options?: BuyerReadOptions) {
+  await refreshBuyerAuctionSettlementState(options);
+
   const row = await getTransactionRowById(userId, transactionId);
 
   if (!row) {
@@ -175,8 +192,8 @@ export async function getBuyerTransactionById(userId: string, transactionId: str
   return serializeBuyerTransaction(row);
 }
 
-export async function listBuyerBids(userId: string) {
-  await processExpiredVickreyAuctions();
+export async function listBuyerBids(userId: string, options?: BuyerReadOptions) {
+  await refreshBuyerAuctionSettlementState(options);
 
   const rows = await db
     .select({
@@ -271,7 +288,9 @@ export async function getBuyerBidVerification(userId: string, pemasaranId: strin
   };
 }
 
-export async function getBuyerSummary(userId: string) {
+export async function getBuyerSummary(userId: string, options?: BuyerReadOptions) {
+  await refreshBuyerAuctionSettlementState(options);
+
   const now = new Date();
   const [[profile], [buyerUser], [latestCredentialAccount], recentSessions, activeSessions] = await Promise.all([
     db.select().from(buyerProfiles).where(eq(buyerProfiles.userId, userId)).limit(1),
@@ -317,8 +336,8 @@ export async function getBuyerSummary(userId: string) {
   const blacklist = await getActiveBlacklist(userId);
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
   const wishlistCount = await getBuyerWishlistCount(userId);
-  const transactions = await listBuyerTransactions(userId);
-  const bidHistory = await listBuyerBids(userId);
+  const transactions = await listBuyerTransactions(userId, { refreshAuctionState: false });
+  const bidHistory = await listBuyerBids(userId, { refreshAuctionState: false });
   const needsAction = transactions.filter((transaction) =>
     ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
   ).length;
@@ -382,10 +401,12 @@ export async function getBuyerDashboardData(userId: string): Promise<{
   transactions: BuyerTransaction[];
   bids: BuyerBid[];
 }> {
+  await refreshBuyerAuctionSettlementState();
+
   const [summary, transactions, buyerBids] = await Promise.all([
-    getBuyerSummary(userId),
-    listBuyerTransactions(userId),
-    listBuyerBids(userId)
+    getBuyerSummary(userId, { refreshAuctionState: false }),
+    listBuyerTransactions(userId, { refreshAuctionState: false }),
+    listBuyerBids(userId, { refreshAuctionState: false })
   ]);
 
   return {
@@ -472,6 +493,8 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
 }
 
 export async function submitVickreyBid(userId: string, pemasaranId: string, input: unknown) {
+  await refreshBuyerAuctionSettlementState();
+
   const row = await getMarketingForBuyer(pemasaranId);
   ensureActiveMarketing(row);
 
@@ -581,7 +604,7 @@ export async function revealBuyerBid(userId: string, pemasaranId: string, input:
   }
 
   if (row.bid.encryptedBidPayload) {
-    await processExpiredVickreyAuctions();
+    await refreshBuyerAuctionSettlementState();
     return getBuyerBidVerification(userId, pemasaranId);
   }
 
@@ -619,12 +642,14 @@ export async function revealBuyerBid(userId: string, pemasaranId: string, input:
     })
     .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)));
 
-  await processExpiredVickreyAuctions();
+  await refreshBuyerAuctionSettlementState();
 
   return getBuyerBidVerification(userId, pemasaranId);
 }
 
 export async function uploadBuyerPaymentProof(userId: string, transactionId: string, input: unknown) {
+  await refreshBuyerAuctionSettlementState();
+
   const payload = validateBuyerPaymentProofPayload(input);
   await ensureCanSettleBuyerTransaction(userId);
   const row = await getTransactionRowById(userId, transactionId);
@@ -682,6 +707,8 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 }
 
 export async function completeBuyerTransaction(userId: string, transactionId: string) {
+  await refreshBuyerAuctionSettlementState();
+
   await ensureCanSettleBuyerTransaction(userId);
   const row = await getTransactionRowById(userId, transactionId);
 
@@ -734,6 +761,8 @@ export async function getBuyerBidState(userId: string, pemasaranId: string) {
 }
 
 export async function getBuyerProfileStatus(userId: string) {
+  await refreshBuyerAuctionSettlementState();
+
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   const blacklist = await getActiveBlacklist(userId);
 

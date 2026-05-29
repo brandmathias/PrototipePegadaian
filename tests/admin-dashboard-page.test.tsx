@@ -100,6 +100,12 @@ describe("AdminDashboardPage", () => {
   it("renders the executive KPI cards and trend section from the approved reference", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
+    expect(screen.getByText(/selamat datang kembali/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /halo, admin unit/i })).toBeInTheDocument();
+    expect(screen.getByText(/kami siap membantu anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional upc ranotana/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/unit aktif/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/rekening unit aktif/i)).toBeInTheDocument();
+    expect(screen.getByAltText(/ilustrasi operasional dashboard admin unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang terjual/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang ditebus/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toBeInTheDocument();

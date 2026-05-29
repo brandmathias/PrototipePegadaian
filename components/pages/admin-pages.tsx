@@ -149,7 +149,7 @@ function PanelTitle({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/8 px-5 py-5 sm:px-6">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dce9df] px-5 py-5 sm:px-6">
       <div>
         <h3 className="font-headline text-[1.55rem] font-black text-black/85 sm:text-[1.8rem]">
           {title}
@@ -341,8 +341,8 @@ function InventoryMetricCard({
   tone?: "default" | "success" | "warning";
 }) {
   return (
-    <div className="group rounded-[1.7rem] border border-black/8 bg-white p-1.5 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.45)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20">
-      <div className="flex h-full items-center gap-4 rounded-[calc(1.7rem-0.375rem)] border border-black/[0.035] bg-[linear-gradient(145deg,#ffffff,#fbfaf5)] p-4">
+    <div className="group rounded-[1.7rem] border border-[#cfe5d6] bg-white p-1.5 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.45)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20">
+      <div className="flex h-full items-center gap-4 rounded-[calc(1.7rem-0.375rem)] border border-[#edf4ef] bg-[linear-gradient(145deg,#ffffff,#fbfaf5)] p-4">
         <span
           className={cn(
             "grid size-12 shrink-0 place-items-center rounded-[1.15rem] border",
@@ -350,7 +350,7 @@ function InventoryMetricCard({
               ? "border-emerald-200 bg-emerald-50 text-[#0a6a49]"
               : tone === "warning"
                 ? "border-amber-200 bg-amber-50 text-amber-800"
-                : "border-black/8 bg-[#f2f6f2] text-[#0a6a49]",
+                : "border-[#dce9df] bg-[#f2f6f2] text-[#0a6a49]",
           )}
         >
           <Icon className="size-5" />
@@ -445,7 +445,7 @@ export function AdminInventoryHistoryPage({
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
         <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-start gap-4 md:items-center">
-            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/6">
+            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#8fd0a9]/65">
               <ScrollText className="size-7" />
             </span>
             <div className="min-w-0">
@@ -459,7 +459,7 @@ export function AdminInventoryHistoryPage({
               </p>
             </div>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-black/6 backdrop-blur">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-[#8fd0a9]/65 backdrop-blur">
             <Clock3 className="size-4" />
             {history.length} catatan operasional
           </div>
@@ -1208,7 +1208,7 @@ export function AdminAuctionDetailPage({
                   <tbody>
                     {bidRows.map((bid: any) => (
                       <tr
-                        className="border-t border-black/8 text-sm text-black/72 sm:text-base"
+                        className="border-t border-[#e0ebe3] text-sm text-black/72 sm:text-base"
                         key={bid.id}
                       >
                         <td className="px-5 py-4 font-semibold text-[#0a6a49]">
@@ -1729,7 +1729,7 @@ function BlacklistDetailRow({
 
 function BlacklistTraceCard({ trace }: { trace: Record<string, any> }) {
   return (
-    <article className="rounded-[1.35rem] border border-black/8 bg-white p-4 shadow-[0_18px_44px_-40px_rgba(8,69,50,0.5)]">
+    <article className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_18px_44px_-40px_rgba(8,69,50,0.5)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#0a6a49]/62">
@@ -1785,7 +1785,7 @@ export function AdminBlacklistDetailPage({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[1.5rem] border border-black/8 bg-white p-5 shadow-[0_18px_54px_-48px_rgba(8,69,50,0.34)] sm:p-6">
+      <section className="rounded-[1.5rem] border border-[#d8e8dd] bg-white p-5 shadow-[0_18px_54px_-48px_rgba(8,69,50,0.34)] sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="page-heading-eyebrow">
@@ -1800,7 +1800,7 @@ export function AdminBlacklistDetailPage({
             </p>
           </div>
 
-          <div className="flex min-w-0 flex-col gap-3 rounded-[1.25rem] bg-[#f8f7f3] p-3 ring-1 ring-black/6 sm:min-w-[24rem]">
+          <div className="flex min-w-0 flex-col gap-3 rounded-[1.25rem] bg-[#f8f7f3] p-3 ring-1 ring-[#d8e8dd] sm:min-w-[24rem]">
             <div className="flex min-w-0 items-center gap-3">
               <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#e9f6ef] text-sm font-black text-[#0a6a49]">
                 {getBlacklistInitials(entry.name || "User")}
@@ -1820,7 +1820,7 @@ export function AdminBlacklistDetailPage({
                 className="text-[0.75rem]"
                 status={entry.status}
               />
-              <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/54 ring-1 ring-black/6">
+              <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/54 ring-1 ring-[#d8e8dd]">
                 {isBlacklistRestrictionActive(entry)
                   ? "Pembatasan aktif"
                   : "Pembatasan selesai"}

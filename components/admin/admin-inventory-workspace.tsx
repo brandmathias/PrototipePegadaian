@@ -229,8 +229,8 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
   const pagination = useAdminPagination(filteredItems, `${categoryFilter}-${inventoryFilter}-${deferredQuery}`);
 
   return (
-    <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.48)] ring-1 ring-black/6">
-      <div className="border-b border-black/6 bg-[linear-gradient(180deg,rgba(251,250,245,0.96),rgba(255,255,255,0.98))] p-4 sm:p-5">
+    <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.48)] ring-1 ring-[#cfe5d6]">
+      <div className="border-b border-[#dce9df] bg-[linear-gradient(180deg,rgba(251,250,245,0.96),rgba(255,255,255,0.98))] p-4 sm:p-5">
         <div className="grid gap-3 xl:grid-cols-[minmax(22rem,1fr)_15rem]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
@@ -307,7 +307,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
 
                 return (
                 <tr
-                  className="border-t border-black/8 text-[0.76rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf5] xl:text-[0.82rem]"
+                  className="border-t border-[#e0ebe3] text-[0.76rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf5] xl:text-[0.82rem]"
                   key={item.id}
                 >
                   <td className="px-3 py-3.5 align-middle">
@@ -321,7 +321,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                   </td>
                   <td className="px-3 py-3.5 align-middle">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-black/8 bg-[#edf4ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+                      <div className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-[#d6e7db] bg-[#edf4ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
                         {item.previewImageUrl ? (
                           <Image
                             alt={item.name}
@@ -445,8 +445,8 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   const pagination = useAdminPagination(filteredHistory, `${actionFilter}-${deferredQuery}`);
 
   return (
-    <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-black/6">
-      <div className="flex flex-col gap-3 border-b border-black/6 bg-[linear-gradient(180deg,#fffefb,#f9f7f2)] px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
+    <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#cfe5d6]">
+      <div className="flex flex-col gap-3 border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#f9f7f2)] px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex-1">
           <div className="inline-flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-[1rem] bg-[#eef6f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.78)]">

@@ -62,6 +62,7 @@ type DashboardShellProps = {
   headerLead?: string;
   headerTitle?: string;
   headerSubtitle?: string;
+  hideHeaderIdentity?: boolean;
   headerBrandLabel?: string | null;
   searchPlaceholder?: string;
   searchShortcutHint?: string;
@@ -100,9 +101,9 @@ function getPreferredTheme(): ThemeMode {
     : "light";
 }
 
-function applyTheme(theme: ThemeMode) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
-  document.documentElement.style.colorScheme = theme;
+function clearGlobalThemeSideEffects() {
+  document.documentElement.classList.remove("dark");
+  document.documentElement.style.removeProperty("color-scheme");
 }
 
 export function DashboardShell({
@@ -111,6 +112,7 @@ export function DashboardShell({
   headerLead,
   headerTitle,
   headerSubtitle,
+  hideHeaderIdentity = false,
   headerBrandLabel = "Pegadaian Lelang",
   searchPlaceholder = "Cari transaksi atau barang...",
   searchShortcutHint,
@@ -133,7 +135,11 @@ export function DashboardShell({
   useEffect(() => {
     const preferredTheme = getPreferredTheme();
     setTheme(preferredTheme);
-    applyTheme(preferredTheme);
+    clearGlobalThemeSideEffects();
+
+    return () => {
+      clearGlobalThemeSideEffects();
+    };
   }, []);
 
   const toggleTheme = () => {
@@ -141,7 +147,6 @@ export function DashboardShell({
     setTheme((currentTheme) => {
       const nextTheme = currentTheme === "dark" ? "light" : "dark";
       setThemeTransitionDirection(nextTheme === "dark" ? "to-dark" : "to-light");
-      applyTheme(nextTheme);
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
       return nextTheme;
     });
@@ -346,7 +351,15 @@ export function DashboardShell({
   };
 
   return (
-    <div className="min-h-dvh bg-[#efefed] text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0">
+    <div
+      className={cn(
+        "min-h-dvh bg-[#efefed] text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
+        theme === "dark" && "dark"
+      )}
+      data-admin-shell="true"
+      data-admin-theme={theme}
+      style={{ colorScheme: theme }}
+    >
       {isMenuOpen ? (
         <button
           aria-label="Tutup menu"
@@ -454,33 +467,35 @@ export function DashboardShell({
                 >
                   {isMenuOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
                 </button>
-                <div className="min-w-0">
-                  {headerBrandLabel ? (
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/60 dark:text-emerald-200/62">
-                      {headerBrandLabel}
-                    </p>
-                  ) : null}
-                  {headerLead ? (
-                    <p className={cn("text-[1rem] font-medium text-[#334155] dark:text-slate-200/82", headerBrandLabel ? "mt-1" : "")}>
-                      {headerLead}
-                    </p>
-                  ) : null}
-                  <div
-                    className={cn(
-                      "min-w-0 flex flex-col gap-1",
-                      headerBrandLabel || headerLead ? "mt-1" : "",
-                      !headerLead && "lg:flex-row lg:items-center lg:gap-4"
-                    )}
-                  >
-                    <h1 className="min-w-0 truncate text-balance font-headline text-[1.7rem] font-black tracking-tight text-[#085a41] dark:text-emerald-100 sm:text-[2rem]">
-                      {headerTitle ?? title}
-                    </h1>
-                    {headerLead ? null : <div className="hidden h-7 w-px bg-black/10 dark:bg-white/10 lg:block" />}
-                    {(headerSubtitle ?? subtitle) ? (
-                      <p className="text-sm text-foreground/68 dark:text-slate-200/68 sm:text-base">{headerSubtitle ?? subtitle}</p>
+                {!hideHeaderIdentity ? (
+                  <div className="min-w-0">
+                    {headerBrandLabel ? (
+                      <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/60 dark:text-emerald-200/62">
+                        {headerBrandLabel}
+                      </p>
                     ) : null}
+                    {headerLead ? (
+                      <p className={cn("text-[1rem] font-medium text-[#334155] dark:text-slate-200/82", headerBrandLabel ? "mt-1" : "")}>
+                        {headerLead}
+                      </p>
+                    ) : null}
+                    <div
+                      className={cn(
+                        "min-w-0 flex flex-col gap-1",
+                        headerBrandLabel || headerLead ? "mt-1" : "",
+                        !headerLead && "lg:flex-row lg:items-center lg:gap-4"
+                      )}
+                    >
+                      <h1 className="min-w-0 truncate text-balance font-headline text-[1.7rem] font-black tracking-tight text-[#085a41] dark:text-emerald-100 sm:text-[2rem]">
+                        {headerTitle ?? title}
+                      </h1>
+                      {headerLead ? null : <div className="hidden h-7 w-px bg-black/10 dark:bg-white/10 lg:block" />}
+                      {(headerSubtitle ?? subtitle) ? (
+                        <p className="text-sm text-foreground/68 dark:text-slate-200/68 sm:text-base">{headerSubtitle ?? subtitle}</p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
+                ) : null}
               </div>
 
               <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center xl:w-auto">

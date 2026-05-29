@@ -203,6 +203,7 @@ export const pelanggaranUser = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },
   (table) => ({
+    transaksiIdx: uniqueIndex("pelanggaran_user_transaksi_unique").on(table.transaksiId),
     unitIdx: index("pelanggaran_user_unit_id_idx").on(table.unitId),
     userIdx: index("pelanggaran_user_user_id_idx").on(table.userId)
   })

@@ -275,7 +275,7 @@ const MARKETING_METHOD_FILTERS = [
   { label: "Vickrey Auction", value: "VICKREY_AUCTION" }
 ] as const;
 
-const MARKETING_STATUS_FILTERS = ["Aktif", "Menunggu Bayar", "Selesai"] as const;
+const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Selesai", "Perlu Strategi"] as const;
 
 type MarketingMethodFilter = (typeof MARKETING_METHOD_FILTERS)[number]["value"];
 type MarketingStatusFilter = (typeof MARKETING_STATUS_FILTERS)[number];
@@ -308,6 +308,9 @@ function needsMarketingStrategy(auction: MarketingSession) {
 }
 
 function getMarketingWorkflowStatus(auction: MarketingSession) {
+  if (needsMarketingStrategy(auction)) {
+    return "Perlu Strategi";
+  }
   if (isMarketingSold(auction)) {
     return "Selesai";
   }
@@ -471,7 +474,7 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
           return (
             <div
               aria-label={label}
-              className="relative size-8 overflow-hidden rounded-full border-2 border-white bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ring-black/8 dark:border-[#101a15] dark:ring-white/8"
+              className="relative size-8 overflow-hidden rounded-full border-2 border-[#d5eadc] bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ring-[#8fd0a9]/85 dark:border-emerald-300/18 dark:ring-emerald-300/26"
               key={preview?.bidderId ?? `${auction.id}-participant-${index}`}
               title={label}
             >
@@ -611,7 +614,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           showCategoryBadge={false}
           variant="pdp"
         />
-        <span className="absolute bottom-3 left-3 inline-flex h-6 items-center gap-1.5 rounded-full bg-white/95 px-2.5 text-[0.72rem] font-black text-[#1b251f] shadow-[0_12px_24px_-18px_rgba(0,0,0,0.36)] ring-1 ring-black/6 dark:bg-white/92 dark:text-[#1b251f]">
+        <span className="absolute bottom-3 left-3 inline-flex h-6 items-center gap-1.5 rounded-full bg-white/95 px-2.5 text-[0.72rem] font-black text-[#1b251f] shadow-[0_12px_24px_-18px_rgba(0,0,0,0.36)] ring-1 ring-[#d6e7db] dark:bg-white/92 dark:text-[#1b251f]">
           <span className={`size-2 rounded-full ${statusDotClass}`} />
           {workflowStatus}
         </span>
@@ -702,7 +705,7 @@ export function AdminMarketingUnifiedPage({
   unitName?: string;
 }) {
   const [methodFilter, setMethodFilter] = useState<MarketingMethodFilter>("ALL");
-  const [statusFilter, setStatusFilter] = useState<MarketingStatusFilter>("Aktif");
+  const [statusFilter, setStatusFilter] = useState<MarketingStatusFilter>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
 
   const metrics = useMemo(() => {
@@ -724,7 +727,7 @@ export function AdminMarketingUnifiedPage({
 
     return auctions.filter((auction) => {
       const matchesMethod = methodFilter === "ALL" || auction.mode === methodFilter;
-      const matchesStatus = getMarketingWorkflowStatus(auction) === statusFilter;
+      const matchesStatus = statusFilter === "Semua" || getMarketingWorkflowStatus(auction) === statusFilter;
       const matchesSearch =
         !normalizedQuery ||
         [auction.lot, auction.code, auction.id, auction.category, auction.condition]
@@ -799,12 +802,12 @@ export function AdminMarketingUnifiedPage({
         />
       </section>
 
-      <section className="rounded-[1.45rem] border border-black/8 bg-white p-3 shadow-[0_18px_54px_-50px_rgba(8,69,50,0.28)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.72)]">
+      <section className="rounded-[1.45rem] border border-[#d8e8dd] bg-white p-3 shadow-[0_18px_54px_-50px_rgba(8,69,50,0.28)] dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.72)]">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <label className="relative min-w-0 flex-1 xl:max-w-md">
             <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-black/38 dark:text-slate-500" />
             <input
-              className="h-11 w-full rounded-2xl border border-black/8 bg-[#fbfbfa] pl-11 pr-4 text-sm font-semibold text-[#15211b] outline-none transition duration-300 placeholder:text-black/36 focus:border-[#0a6a49]/30 focus:bg-white focus:ring-4 focus:ring-[#0a6a49]/8 dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-300/20 dark:focus:bg-white/[0.06] dark:focus:ring-emerald-300/10"
+              className="h-11 w-full rounded-2xl border border-[#dce9df] bg-[#fbfbfa] pl-11 pr-4 text-sm font-semibold text-[#15211b] outline-none transition duration-300 placeholder:text-black/36 focus:border-[#0a6a49]/30 focus:bg-white focus:ring-4 focus:ring-[#0a6a49]/8 dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-300/20 dark:focus:bg-white/[0.06] dark:focus:ring-emerald-300/10"
               placeholder="Cari nama barang atau Lot ID..."
               type="search"
               value={searchQuery}
@@ -841,7 +844,7 @@ export function AdminMarketingUnifiedPage({
                   className={`rounded-xl px-4 py-2 text-xs font-black transition duration-300 ${
                     statusFilter === filter
                       ? "bg-[#006747] text-white shadow-[0_12px_24px_-18px_rgba(0,103,71,0.5)]"
-                      : "border border-black/8 bg-white text-black/58 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
+                      : "border border-[#dce9df] bg-white text-black/58 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
                   }`}
                   key={filter}
                   type="button"
@@ -854,7 +857,7 @@ export function AdminMarketingUnifiedPage({
 
             <button
               aria-label="Filter lanjutan"
-              className="grid size-11 place-items-center rounded-2xl border border-black/8 bg-white text-black/56 transition duration-300 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
+              className="grid size-11 place-items-center rounded-2xl border border-[#dce9df] bg-white text-black/56 transition duration-300 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
               type="button"
             >
               <SlidersHorizontal className="size-4" />
@@ -865,7 +868,7 @@ export function AdminMarketingUnifiedPage({
 
       {filteredAuctions.length ? (
         <section
-          className="overflow-hidden rounded-[1.6rem] border border-black/8 bg-[#f8f9f6] shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)] dark:border-white/8 dark:bg-[#0d1712] dark:shadow-[0_24px_68px_-44px_rgba(0,0,0,0.72)]"
+          className="overflow-hidden rounded-[1.6rem] border border-[#d8e8dd] bg-[#f8f9f6] shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)] dark:border-emerald-300/10 dark:bg-[#0d1712] dark:shadow-[0_24px_68px_-44px_rgba(0,0,0,0.72)]"
           id="marketing-session-list"
         >
           <div className="space-y-3 p-3 sm:p-4">
@@ -1065,7 +1068,7 @@ export function AdminFixedPriceListPage({
       />
 
       {auctions.length ? (
-        <section className="overflow-hidden rounded-[1.7rem] border border-black/8 bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
+        <section className="overflow-hidden rounded-[1.7rem] border border-[#d8e8dd] bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
           <div className="grid justify-start gap-4 p-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
             {pagination.visibleItems.map((auction) => (
               <FixedPriceCard auction={auction} key={auction.id} />
@@ -1214,7 +1217,7 @@ export function AdminVickreyAuctionListPage({
       ) : null}
 
       {auctions.length ? (
-        <section className="overflow-hidden rounded-[1.7rem] border border-black/8 bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
+        <section className="overflow-hidden rounded-[1.7rem] border border-[#d8e8dd] bg-white/50 shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)]">
           <div className="grid justify-start gap-4 p-4 [grid-template-columns:repeat(auto-fit,minmax(18.5rem,23.5rem))]">
             {pagination.visibleItems.map((auction) => (
               <VickreyCard auction={auction} key={auction.id} />
@@ -1631,7 +1634,7 @@ export function AdminVickreyAuctionDetailPage({
             <CardContent>
               {showBidRows ? (
                 bidRows.length ? (
-                  <div className="overflow-x-auto rounded-[1.35rem] border border-black/10">
+                  <div className="overflow-x-auto rounded-[1.35rem] border border-[#dce9df]">
                     <table className="w-full min-w-[48rem] text-left">
                       <thead className="bg-[#fff6e5] text-xs uppercase tracking-[0.16em] text-black/45">
                         <tr>
@@ -1644,7 +1647,7 @@ export function AdminVickreyAuctionDetailPage({
                       </thead>
                       <tbody>
                         {bidRows.map((bid) => (
-                          <tr className="border-t border-black/8 text-sm text-black/70" key={bid.id}>
+                          <tr className="border-t border-[#e0ebe3] text-sm text-black/70" key={bid.id}>
                             <td className="px-4 py-3 font-semibold text-[#8a5b00]">#{bid.rank}</td>
                             <td className="px-4 py-3">
                               <div>

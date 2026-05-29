@@ -85,6 +85,13 @@
       "when": 1779854239289,
       "tag": "0011_stale_giant_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780069030945,
+      "tag": "0012_lush_shaman",
+      "breakpoints": true
     }
   ]
 }

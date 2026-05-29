@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import {
   AlertTriangle,
-  BarChart3,
   FileWarning,
+  Handshake,
+  ShieldCheck,
   ShoppingCart,
   Tag,
   TrendingUp,
@@ -84,6 +86,9 @@ type DashboardStripMetric = {
   icon: LucideIcon;
 };
 
+const ADMIN_DASHBOARD_HERO_ILLUSTRATION =
+  "/uploads/Assets%20Hero%20Section%20Dashboard%20Admin%20Unit/Asset%20Gambar%20Hero%20Section%20Admin%20Unit.png";
+
 const ACTIONABLE_TRANSACTION_STATUSES = new Set([
   "BUKTI_DIUNGGAH",
   "MENUNGGU_KONFIRMASI_LANGSUNG",
@@ -121,6 +126,16 @@ function cx(...classes: Array<string | false | null | undefined>) {
 
 function getStatus(value: unknown) {
   return String(value ?? "").toUpperCase();
+}
+
+function resolveDashboardOperatorLabel(summary: AdminDashboardData["summary"]) {
+  const subtitle = summary.subtitle?.trim();
+
+  if (subtitle && !/^(demo|ringkasan operasional unit)$/i.test(subtitle)) {
+    return subtitle;
+  }
+
+  return "Admin Unit";
 }
 
 function makeFallbackRange(label: string, labels: string[]): DashboardTrendRange {
@@ -311,6 +326,68 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
   );
 }
 
+function AdminDashboardHero({
+  summary
+}: {
+  summary: AdminDashboardData["summary"];
+}) {
+  const operatorLabel = resolveDashboardOperatorLabel(summary);
+
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] border border-[#bfe7c4] bg-[linear-gradient(135deg,#ffffff_0%,#f7fbf8_46%,#eef8f1_100%)] shadow-[0_30px_90px_-66px_rgba(8,69,50,0.36)] dark:border-emerald-300/18 dark:bg-[linear-gradient(135deg,#101a15_0%,#0f1814_52%,#12211a_100%)] dark:shadow-[0_30px_90px_-52px_rgba(0,0,0,0.72)]">
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-[32rem] bg-[radial-gradient(circle_at_top_left,rgba(154,241,198,0.34),transparent_62%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.12),transparent_62%)]" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[34rem] bg-[radial-gradient(circle_at_center,rgba(18,112,77,0.08),transparent_64%)] dark:block" />
+
+      <div className="relative px-5 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(20rem,0.96fr)] lg:items-center">
+          <div className="max-w-2xl space-y-5 lg:space-y-6">
+            <div className="space-y-3.5">
+              <div className="flex items-center gap-2.5">
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-[#bfe7c4] bg-[#eff9f1] text-[#0f6b49] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-emerald-300/14 dark:bg-emerald-300/10 dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <Handshake aria-hidden="true" className="size-4" strokeWidth={1.7} />
+                </span>
+                <p className="text-sm font-bold text-[#17221d] dark:text-emerald-50/90">
+                  Selamat datang kembali,
+                </p>
+              </div>
+              <h1 className="font-headline text-[2.45rem] font-black tracking-[-0.06em] text-[#0b6847] dark:text-white sm:text-[3rem] lg:text-[3.35rem]">
+                Halo, {operatorLabel}
+              </h1>
+              <p className="max-w-[43rem] text-[1rem] leading-8 text-[#40564c] dark:text-emerald-50/74 sm:text-[1.05rem]">
+                Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional {summary.unitName} dari satu ruang admin yang lebih ringkas.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-[#bfe7c4] bg-white/78 px-4 py-2 text-[0.76rem] font-black uppercase tracking-[0.16em] text-[#0b6847] shadow-sm dark:border-emerald-300/14 dark:bg-white/[0.055] dark:text-emerald-100">
+                <ShieldCheck aria-hidden="true" className="size-4" strokeWidth={1.7} />
+                Unit Aktif
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-[#ead8a2] bg-[#fffaf0]/82 px-4 py-2 text-[0.76rem] font-black uppercase tracking-[0.16em] text-[#8a650f] shadow-sm dark:border-amber-300/16 dark:bg-amber-300/8 dark:text-amber-100">
+                Rekening Unit Aktif
+              </span>
+            </div>
+          </div>
+
+          <div className="relative flex min-h-[12.5rem] items-end justify-center lg:min-h-[15rem] lg:justify-end">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(18,112,77,0.12),transparent_58%)] dark:bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.16),transparent_60%)]" />
+            <div className="relative h-[12.65rem] w-full max-w-[24rem] sm:h-[14.2rem] lg:h-[17.4rem] lg:max-w-[30.5rem]">
+              <Image
+                alt="Ilustrasi operasional dashboard admin unit"
+                className="object-contain object-bottom drop-shadow-[0_20px_42px_rgba(8,69,50,0.12)] dark:drop-shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
+                fill
+                priority
+                sizes="(min-width: 1024px) 30rem, 100vw"
+                src={ADMIN_DASHBOARD_HERO_ILLUSTRATION}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DashboardAlertCard({ actionableTransactions }: { actionableTransactions: number }) {
   const hasAction = actionableTransactions > 0;
 
@@ -435,6 +512,8 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
   return (
     <div className="space-y-4 lg:space-y-5">
       <p className="sr-only">{operationalSummary}</p>
+
+      <AdminDashboardHero summary={data.summary} />
 
       <section className="grid gap-4 lg:grid-cols-3">
         {cards.map((card, index) => (
