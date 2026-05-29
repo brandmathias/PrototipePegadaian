@@ -1,17 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
+  CalendarDays,
+  ChevronRight,
+  CheckCircle2,
   Clock3,
   FileText,
   Gavel,
+  Landmark,
   MapPin,
+  Megaphone,
   ReceiptText,
+  Search,
   ShieldCheck,
+  SlidersHorizontal,
+  Target,
   UsersRound,
   WalletCards,
 } from "lucide-react";
@@ -51,6 +60,11 @@ export type MarketingSession = {
   revealDeadline?: string | null;
   revealDeadlineAt?: string | null;
   participants?: number;
+  participantPreviews?: Array<{
+    bidderId: string;
+    bidderName: string;
+    bidderImage?: string | null;
+  }>;
   revealedBidCount?: number;
   pendingRevealCount?: number;
   price?: number | null;
@@ -253,6 +267,626 @@ function getVickreySummary(auctions: MarketingSession[]) {
     paymentQueue: auctions.filter((auction) => VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? "")).length,
     completed: auctions.filter((auction) => ["LUNAS", "SELESAI"].includes(auction.transactionStatus ?? "")).length
   };
+}
+
+const MARKETING_METHOD_FILTERS = [
+  { label: "Semua", value: "ALL" },
+  { label: "Fixed Price", value: "FIXED_PRICE" },
+  { label: "Vickrey Auction", value: "VICKREY_AUCTION" }
+] as const;
+
+const MARKETING_STATUS_FILTERS = ["Aktif", "Menunggu Bayar", "Selesai"] as const;
+
+type MarketingMethodFilter = (typeof MARKETING_METHOD_FILTERS)[number]["value"];
+type MarketingStatusFilter = (typeof MARKETING_STATUS_FILTERS)[number];
+
+function isPaymentQueue(auction: MarketingSession) {
+  return VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? "");
+}
+
+function isMarketingActive(auction: MarketingSession) {
+  return auction.status === "AKTIF";
+}
+
+function isMarketingSold(auction: MarketingSession) {
+  return (
+    auction.status === "SELESAI" ||
+    auction.transactionStatus === "LUNAS" ||
+    auction.transactionStatus === "SELESAI" ||
+    Boolean(auction.soldAt)
+  );
+}
+
+function needsMarketingStrategy(auction: MarketingSession) {
+  return (
+    auction.status === "GAGAL" ||
+    (auction.mode === "VICKREY_AUCTION" &&
+      auction.visibility === "HASIL_DIBUKA" &&
+      !auction.transactionId &&
+      !auction.winner)
+  );
+}
+
+function getMarketingWorkflowStatus(auction: MarketingSession) {
+  if (isMarketingSold(auction)) {
+    return "Selesai";
+  }
+  if (isPaymentQueue(auction)) {
+    return "Menunggu Bayar";
+  }
+  if (isMarketingActive(auction)) {
+    return "Aktif";
+  }
+  return "Tertunda";
+}
+
+function getMarketingDateYear(auction: MarketingSession) {
+  const value = auction.startsAt ?? auction.endingAt ?? auction.soldAt;
+  if (!value) {
+    return "-";
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : String(date.getFullYear());
+}
+
+function getMarketingTimeLabel(auction: MarketingSession) {
+  if (auction.mode === "VICKREY_AUCTION") {
+    return auction.visibility === "TERKUNCI" ? "Sesi Berakhir" : "Sesi Ditutup";
+  }
+  if (isMarketingSold(auction)) {
+    return "Terjual Pada";
+  }
+  return "Sesi Dimulai";
+}
+
+function getMarketingTimeValue(auction: MarketingSession) {
+  if (auction.mode === "VICKREY_AUCTION") {
+    return auction.endingAt ? dateLabel(auction.endingAt) : auction.ending || "-";
+  }
+  if (isMarketingSold(auction)) {
+    return dateLabel(auction.soldAt);
+  }
+  return dateLabel(auction.startsAt);
+}
+
+function getMarketingPriceLabel(auction: MarketingSession) {
+  if (auction.mode === "VICKREY_AUCTION") {
+    return auction.finalPrice ? "Harga Final" : "Harga Awal";
+  }
+  return "Harga Jual";
+}
+
+function getMarketingPriceValue(auction: MarketingSession) {
+  if (auction.mode === "VICKREY_AUCTION") {
+    return auction.finalPrice ?? auction.basePrice ?? 0;
+  }
+  return auction.price ?? 0;
+}
+
+function getMarketingAction(auction: MarketingSession) {
+  if (auction.transactionId && isPaymentQueue(auction)) {
+    return {
+      href: `/admin/transaksi/${auction.transactionId}?from=vickrey`,
+      label: "Kelola Transaksi",
+      variant: "secondary" as const
+    };
+  }
+
+  if (auction.mode === "VICKREY_AUCTION") {
+    return {
+      href: `/admin/pemasaran/vickrey-auction/${auction.id}`,
+      label: "Kelola Sesi",
+      variant: "default" as const
+    };
+  }
+
+  return {
+    href: `/admin/pemasaran/fixed-price/${auction.id}`,
+    label: "Lihat Detail",
+    variant: "secondary" as const
+  };
+}
+
+function getMarketingParticipantNames(auction: MarketingSession) {
+  const previewNames = (auction.participantPreviews ?? [])
+    .map((entry) => entry.bidderName)
+    .filter((name): name is string => Boolean(name));
+
+  if (previewNames.length) {
+    return previewNames;
+  }
+
+  const bidNames = (auction.bids ?? [])
+    .map((bid) => bid.bidderName)
+    .filter((name): name is string => Boolean(name));
+
+  if (bidNames.length) {
+    return bidNames;
+  }
+
+  return Array.from({ length: auction.participants ?? 0 }, (_, index) => `Peserta ${index + 1}`);
+}
+
+function getMarketingParticipantPreviews(auction: MarketingSession) {
+  const previewEntries = (auction.participantPreviews ?? []).map((entry) => ({
+    bidderId: entry.bidderId,
+    bidderName: entry.bidderName,
+    bidderImage: entry.bidderImage ?? null
+  }));
+
+  if (previewEntries.length) {
+    return previewEntries;
+  }
+
+  const bidEntries = (auction.bids ?? []).map((bid) => ({
+    bidderId: bid.bidderId,
+    bidderName: bid.bidderName,
+    bidderImage: null
+  }));
+
+  if (bidEntries.length) {
+    return bidEntries;
+  }
+
+  return Array.from({ length: auction.participants ?? 0 }, (_, index) => ({
+    bidderId: `${auction.id}-participant-${index + 1}`,
+    bidderName: `Peserta ${index + 1}`,
+    bidderImage: null
+  }));
+}
+
+function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
+  const participantCount = auction.participants ?? 0;
+
+  if (participantCount <= 0) {
+    return null;
+  }
+
+  const previews = getMarketingParticipantPreviews(auction);
+  const names = getMarketingParticipantNames(auction);
+  const visibleCount = Math.min(participantCount, 10);
+  const extraCount = Math.max(participantCount - visibleCount, 0);
+  const avatarTones = [
+    "from-[#fff3e5] via-[#b77b52] to-[#5d341f]",
+    "from-[#f2f7ff] via-[#6283af] to-[#28435d]",
+    "from-[#f7efe4] via-[#8b6750] to-[#4a3022]",
+    "from-[#eef9f2] via-[#4b8f72] to-[#204a3c]",
+    "from-[#fff1f4] via-[#b77287] to-[#633243]"
+  ];
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[0.76rem] font-bold text-[#31413b] dark:text-slate-300">
+      <span className="shrink-0">Peserta</span>
+      <div className="flex -space-x-2.5">
+        {Array.from({ length: visibleCount }, (_, index) => {
+          const preview = previews[index];
+          const label = preview?.bidderName ?? names[index] ?? `Peserta ${index + 1}`;
+          const initials = label
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0]?.toUpperCase())
+            .join("");
+
+          return (
+            <div
+              aria-label={label}
+              className="relative size-8 overflow-hidden rounded-full border-2 border-white bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ring-black/8 dark:border-[#101a15] dark:ring-white/8"
+              key={preview?.bidderId ?? `${auction.id}-participant-${index}`}
+              title={label}
+            >
+              {preview?.bidderImage ? (
+                <Image
+                  alt={label}
+                  className="object-cover"
+                  fill
+                  sizes="32px"
+                  src={preview.bidderImage}
+                />
+              ) : (
+                <span
+                  className={`grid h-full w-full place-items-center bg-gradient-to-br ${avatarTones[index % avatarTones.length]} text-[0.63rem] font-black uppercase tracking-[0.06em] text-white`}
+                >
+                  {initials || "P"}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {extraCount > 0 ? (
+        <span className="grid h-8 min-w-10 place-items-center rounded-full bg-[#e5f6ec] px-2.5 text-[0.72rem] font-black text-[#0a6a49] ring-1 ring-[#c9ebd6] dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-emerald-300/16">
+          +{extraCount}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function MarketingMetaItem({
+  icon: Icon,
+  label,
+  value,
+  rootClassName,
+  valueClassName
+}: {
+  icon: typeof Clock3;
+  label: string;
+  value: ReactNode;
+  rootClassName?: string;
+  valueClassName?: string;
+}) {
+  return (
+    <div className={`flex min-w-0 items-center gap-2 px-2 first:pl-0 last:pr-0 ${rootClassName ?? ""}`}>
+      <Icon className="size-4 shrink-0 text-black/36 dark:text-slate-500" strokeWidth={1.7} />
+      <div className="min-w-0">
+        <span className="block text-[0.66rem] font-bold leading-4 text-black/42 dark:text-slate-500">
+          {label}
+        </span>
+        <span
+          className={`block text-[0.74rem] font-black leading-[1.08rem] text-[#121c17] dark:text-slate-100 ${valueClassName ?? ""}`}
+        >
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MarketingMetricCard({
+  description,
+  icon: Icon,
+  label,
+  meta,
+  tone,
+  value
+}: {
+  description: string;
+  icon: typeof CalendarDays;
+  label: string;
+  meta?: string;
+  tone: "emerald" | "orange" | "violet";
+  value: string;
+}) {
+  const toneClasses = {
+    emerald:
+      "border-[#dbece1] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#f2faf5_100%)] text-[#006747] dark:border-emerald-300/14 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(24,88,61,0.24)_100%)] dark:text-emerald-200",
+    orange:
+      "border-[#f1e1ca] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#fff8ed_100%)] text-[#d16b00] dark:border-amber-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(128,74,18,0.22)_100%)] dark:text-amber-200",
+    violet:
+      "border-[#e5ddf4] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#f7f4ff_100%)] text-[#6152de] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(80,67,167,0.22)_100%)] dark:text-violet-200"
+  }[tone];
+
+  const iconClasses = {
+    emerald: "bg-[#ecf8f0] dark:bg-emerald-300/10",
+    orange: "bg-[#fff2e4] dark:bg-amber-300/10",
+    violet: "bg-[#f0ecff] dark:bg-violet-300/10"
+  }[tone];
+
+  return (
+    <article
+      className={`group relative overflow-hidden rounded-[1.35rem] border p-4 shadow-[0_20px_52px_-46px_rgba(8,69,50,0.34)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 dark:shadow-[0_22px_58px_-42px_rgba(0,0,0,0.72)] ${toneClasses}`}
+    >
+      <div className="relative z-[1] flex items-center gap-4">
+        <span className={`grid size-14 shrink-0 place-items-center rounded-[1.05rem] border border-current/10 ${iconClasses}`}>
+          <Icon className="size-6" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold leading-tight text-[#1b2721] dark:text-slate-100">{label}</p>
+          <p className="mt-1 font-headline text-[2rem] font-black leading-none tracking-[-0.045em] text-[#06472e] dark:text-slate-50">
+            {value}
+          </p>
+          <p className="mt-1 text-[0.82rem] leading-5 text-[#53615b] dark:text-slate-300/72">{description}</p>
+          {meta ? <p className="mt-1 text-[0.72rem] font-black uppercase tracking-[0.16em] text-current/70">{meta}</p> : null}
+        </div>
+      </div>
+      <ChevronRight className="absolute right-5 top-1/2 size-5 -translate-y-1/2 text-black/18 transition duration-500 group-hover:translate-x-1 group-hover:text-current/58 dark:text-white/18" />
+    </article>
+  );
+}
+
+function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
+  const media = toBuyerMedia(auction.media ?? []);
+  const action = getMarketingAction(auction);
+  const workflowStatus = getMarketingWorkflowStatus(auction);
+  const statusDotClass =
+    workflowStatus === "Aktif"
+      ? "bg-[#0fa35a]"
+      : workflowStatus === "Menunggu Bayar"
+        ? "bg-[#d89b12]"
+        : "bg-slate-400";
+  const modeLabel = auction.mode === "VICKREY_AUCTION" ? "Vickrey Auction" : "Fixed Price";
+  const modeTone =
+    auction.mode === "VICKREY_AUCTION"
+      ? "bg-[#fff3e8] text-[#a8570b] dark:bg-amber-300/10 dark:text-amber-200"
+      : "bg-[#e8f6ee] text-[#006747] dark:bg-emerald-300/10 dark:text-emerald-200";
+
+  return (
+    <article className="group grid gap-4 rounded-[1.45rem] bg-white p-3 shadow-[0_18px_54px_-48px_rgba(8,69,50,0.38)] ring-1 ring-[#cfe5d6] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:ring-[#0a6a49]/24 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.7)] dark:ring-emerald-300/12 dark:hover:ring-emerald-300/20 lg:grid-cols-[15.5rem_minmax(0,1fr)_19rem] lg:items-stretch">
+      <div className="relative min-h-40 overflow-hidden rounded-[1.15rem] bg-[#f4f5ef] dark:bg-[#17241d]">
+        <LotFigure
+          category={auction.category || "Lainnya"}
+          className="h-full min-h-40 rounded-[1.15rem]"
+          media={media}
+          showCategoryBadge={false}
+          variant="pdp"
+        />
+        <span className="absolute bottom-3 left-3 inline-flex h-6 items-center gap-1.5 rounded-full bg-white/95 px-2.5 text-[0.72rem] font-black text-[#1b251f] shadow-[0_12px_24px_-18px_rgba(0,0,0,0.36)] ring-1 ring-black/6 dark:bg-white/92 dark:text-[#1b251f]">
+          <span className={`size-2 rounded-full ${statusDotClass}`} />
+          {workflowStatus}
+        </span>
+      </div>
+
+      <div className="min-w-0 py-1 lg:py-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`rounded-full px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] ${modeTone}`}>
+            {modeLabel}
+          </span>
+        </div>
+
+        <div className="mt-3">
+          <h3 className="font-headline text-[1.4rem] font-black leading-tight tracking-[-0.035em] text-[#121c17] transition duration-500 group-hover:text-[#006747] dark:text-slate-100 dark:group-hover:text-emerald-200">
+            {auction.lot}
+          </h3>
+          <p className="mt-1 text-sm font-semibold text-black/52 dark:text-slate-300/68">
+            {auction.category || "Kategori belum diisi"} - {auction.condition || "Kondisi belum diisi"}
+          </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-black/[0.06] pt-3 dark:border-white/8 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.72fr)_minmax(0,0.92fr)_minmax(0,1.46fr)] lg:divide-x lg:divide-black/10 lg:dark:divide-white/10">
+          <MarketingMetaItem
+            icon={Landmark}
+            label="Kode Lot"
+            value={auction.code || auction.id}
+            valueClassName="whitespace-nowrap"
+          />
+          <MarketingMetaItem icon={CalendarDays} label="Tahun" value={getMarketingDateYear(auction)} />
+          <MarketingMetaItem icon={BadgeCheck} label="Kondisi" value={humanize(auction.condition)} />
+          <MarketingMetaItem
+            icon={CalendarDays}
+            label={getMarketingTimeLabel(auction)}
+            rootClassName="col-span-2 lg:col-span-1"
+            value={getMarketingTimeValue(auction)}
+            valueClassName="text-[0.7rem] sm:text-[0.73rem] xl:text-[0.71rem] 2xl:text-[0.74rem] whitespace-normal xl:whitespace-nowrap"
+          />
+        </div>
+
+        {auction.mode === "VICKREY_AUCTION" ? (
+          <MarketingParticipantStrip auction={auction} />
+        ) : null}
+      </div>
+
+      <aside className="flex flex-col justify-between gap-4 rounded-[1.15rem] border border-[#d8e8dd] bg-[#fcfcfa] p-4 dark:border-emerald-300/10 dark:bg-white/[0.035]">
+        <div className="space-y-3">
+          <div>
+            <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/40 dark:text-slate-500">
+              {getMarketingPriceLabel(auction)}
+            </p>
+            <p className="mt-1 font-headline text-[1.65rem] font-black leading-none tracking-[-0.04em] text-[#004a23] dark:text-emerald-200">
+              {currency.format(getMarketingPriceValue(auction))}
+            </p>
+          </div>
+          <div className="rounded-[0.95rem] bg-white px-3 py-2 text-sm leading-6 text-black/58 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ring-1 ring-black/[0.045] dark:bg-[#101a15] dark:text-slate-300/72 dark:ring-white/8">
+            <p className="font-bold text-[#15211b] dark:text-slate-100">
+              {auction.buyerName || auction.winner || (auction.mode === "VICKREY_AUCTION" ? "Bid masih tertutup" : "Belum ada pembeli")}
+            </p>
+            <p className="mt-0.5">
+              {auction.finalPrice
+                ? `${currency.format(auction.finalPrice)} harga final`
+                : auction.mode === "VICKREY_AUCTION"
+                  ? `${auction.participants ?? 0} penawaran tercatat`
+                  : humanize(auction.transactionStatus) || "Menunggu transaksi pembeli"}
+            </p>
+          </div>
+        </div>
+
+        <Link href={action.href}>
+          <Button
+            className="h-10 w-full rounded-xl font-black shadow-[0_16px_28px_-22px_rgba(0,74,35,0.42)]"
+            variant={action.variant}
+          >
+            {action.label}
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
+      </aside>
+    </article>
+  );
+}
+
+export function AdminMarketingUnifiedPage({
+  auctions,
+  unitName = "Unit aktif"
+}: {
+  auctions: MarketingSession[];
+  unitName?: string;
+}) {
+  const [methodFilter, setMethodFilter] = useState<MarketingMethodFilter>("ALL");
+  const [statusFilter, setStatusFilter] = useState<MarketingStatusFilter>("Aktif");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const metrics = useMemo(() => {
+    const activeSessions = auctions.filter(isMarketingActive);
+    const fixedActive = activeSessions.filter((auction) => auction.mode === "FIXED_PRICE").length;
+    const vickreyActive = activeSessions.filter((auction) => auction.mode === "VICKREY_AUCTION").length;
+
+    return {
+      active: activeSessions.length,
+      fixedActive,
+      vickreyActive,
+      sold: auctions.filter(isMarketingSold).length,
+      strategy: auctions.filter(needsMarketingStrategy).length
+    };
+  }, [auctions]);
+
+  const filteredAuctions = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return auctions.filter((auction) => {
+      const matchesMethod = methodFilter === "ALL" || auction.mode === methodFilter;
+      const matchesStatus = getMarketingWorkflowStatus(auction) === statusFilter;
+      const matchesSearch =
+        !normalizedQuery ||
+        [auction.lot, auction.code, auction.id, auction.category, auction.condition]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+
+      return matchesMethod && matchesStatus && matchesSearch;
+    });
+  }, [auctions, methodFilter, searchQuery, statusFilter]);
+
+  const pagination = useAdminPagination(filteredAuctions, `${methodFilter}-${statusFilter}-${searchQuery}`);
+
+  return (
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-start gap-4 md:items-center">
+            <span className="grid size-16 shrink-0 place-items-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#0a6a49] shadow-[0_20px_45px_-28px_rgba(10,106,73,0.38),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#8fd0a9]/65">
+              <Megaphone className="size-7" />
+            </span>
+            <div className="min-w-0">
+              <p className="page-heading-eyebrow">Admin Unit / Pemasaran</p>
+              <h1 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl lg:text-[2.85rem]">
+                Pemasaran Barang
+              </h1>
+              <p className="mt-2 text-sm font-semibold text-[#006747] dark:text-emerald-200/78">{unitName}</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
+                Kelola sesi pemasaran aktif, pantau peserta lelang, dan buka tindak lanjut transaksi dari satu workspace operasional yang compact.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-[#8fd0a9]/65 backdrop-blur">
+              <BadgeCheck className="size-4" />
+              Workspace pemasaran unit
+            </span>
+            <Link href="#marketing-session-list">
+              <Button className="h-12 w-full rounded-2xl px-5 text-sm shadow-[0_18px_32px_-24px_rgba(10,106,73,0.55)] sm:w-auto sm:text-base">
+                <Gavel className="size-4" />
+                Lihat Sesi Aktif
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-3" aria-label="Ringkasan pemasaran">
+        <MarketingMetricCard
+          description={`${metrics.fixedActive} Beli Putus / ${metrics.vickreyActive} Lelang`}
+          icon={CalendarDays}
+          label="Sesi Sedang Berjalan"
+          meta="Etalase aktif"
+          tone="emerald"
+          value={`${metrics.active} Sesi`}
+        />
+        <MarketingMetricCard
+          description="Periode minggu ini"
+          icon={CheckCircle2}
+          label="Produk Terjual"
+          meta="Pembayaran selesai"
+          tone="orange"
+          value={`${metrics.sold} Produk`}
+        />
+        <MarketingMetricCard
+          description="Sesi gagal / kedaluwarsa"
+          icon={Target}
+          label="Perlu Strategi Ulang"
+          meta="Butuh evaluasi"
+          tone="violet"
+          value={`${metrics.strategy} Produk`}
+        />
+      </section>
+
+      <section className="rounded-[1.45rem] border border-black/8 bg-white p-3 shadow-[0_18px_54px_-50px_rgba(8,69,50,0.28)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.72)]">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <label className="relative min-w-0 flex-1 xl:max-w-md">
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-black/38 dark:text-slate-500" />
+            <input
+              className="h-11 w-full rounded-2xl border border-black/8 bg-[#fbfbfa] pl-11 pr-4 text-sm font-semibold text-[#15211b] outline-none transition duration-300 placeholder:text-black/36 focus:border-[#0a6a49]/30 focus:bg-white focus:ring-4 focus:ring-[#0a6a49]/8 dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-300/20 dark:focus:bg-white/[0.06] dark:focus:ring-emerald-300/10"
+              placeholder="Cari nama barang atau Lot ID..."
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </label>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex rounded-2xl bg-[#f4f5f1] p-1 dark:bg-white/[0.045]">
+              {MARKETING_METHOD_FILTERS.map((filter) => (
+                <button
+                  className={`rounded-xl px-4 py-2 text-xs font-black transition duration-300 ${
+                    methodFilter === filter.value
+                      ? "bg-[#006747] text-white shadow-[0_12px_24px_-18px_rgba(0,103,71,0.5)]"
+                      : "text-black/56 hover:text-[#006747] dark:text-slate-300/72 dark:hover:text-emerald-200"
+                  }`}
+                  key={filter.value}
+                  type="button"
+                  onClick={() => setMethodFilter(filter.value)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+
+            <span className="hidden h-6 w-px bg-black/10 dark:bg-white/10 sm:block" />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/40 dark:text-slate-500">
+                Status
+              </span>
+              {MARKETING_STATUS_FILTERS.map((filter) => (
+                <button
+                  className={`rounded-xl px-4 py-2 text-xs font-black transition duration-300 ${
+                    statusFilter === filter
+                      ? "bg-[#006747] text-white shadow-[0_12px_24px_-18px_rgba(0,103,71,0.5)]"
+                      : "border border-black/8 bg-white text-black/58 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
+                  }`}
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            <button
+              aria-label="Filter lanjutan"
+              className="grid size-11 place-items-center rounded-2xl border border-black/8 bg-white text-black/56 transition duration-300 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
+              type="button"
+            >
+              <SlidersHorizontal className="size-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {filteredAuctions.length ? (
+        <section
+          className="overflow-hidden rounded-[1.6rem] border border-black/8 bg-[#f8f9f6] shadow-[0_22px_70px_-60px_rgba(8,69,50,0.42)] dark:border-white/8 dark:bg-[#0d1712] dark:shadow-[0_24px_68px_-44px_rgba(0,0,0,0.72)]"
+          id="marketing-session-list"
+        >
+          <div className="space-y-3 p-3 sm:p-4">
+            {pagination.visibleItems.map((auction) => (
+              <MarketingFeedRow auction={auction} key={auction.id} />
+            ))}
+          </div>
+          <AdminPaginationFooter
+            itemLabel="sesi"
+            pageIndex={pagination.pageIndex}
+            pageSize={pagination.pageSize}
+            totalItems={pagination.totalItems}
+            onPageIndexChange={pagination.setPageIndex}
+            onPageSizeChange={pagination.setPageSize}
+          />
+        </section>
+      ) : (
+        <EmptyPanel text="Tidak ada sesi pemasaran yang cocok dengan filter saat ini." />
+      )}
+    </div>
+  );
 }
 
 function FixedPriceCard({ auction }: { auction: MarketingSession }) {

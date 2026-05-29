@@ -1,0 +1,453 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FiGrid, 
+  FiBox, 
+  FiShoppingBag, 
+  FiDollarSign, 
+  FiCheckCircle, 
+  FiClock, 
+  FiSearch, 
+  FiBell, 
+  FiMoon, 
+  FiChevronDown,
+  FiChevronRight,
+  FiArrowRight,
+  FiFilter,
+  FiTag,
+  FiCalendar,
+  FiActivity
+} from 'react-icons/fi';
+
+// Kontrak Struktur Data Komoditas Pemasaran dari Backend[cite: 1]
+interface ProductListing {
+  id: string;
+  lotCode: string;
+  title: string;
+  subtitle: string;
+  year: number;
+  condition: string;
+  method: 'Fixed Price' | 'Vickrey Auction' | 'Lelang';
+  status: 'Aktif' | 'Menunggu Bayar' | 'Selesai' | 'Tertunda';
+  timeLabel: string;
+  timeValue: string;
+  priceLabel: string;
+  priceValue: number;
+  highestBidLabel?: string;
+  highestBidValue?: number;
+  bidCount?: number;
+  buttonText: string;
+  imageUrl: string;
+}
+
+export default function AdminMarketingPage() {
+  const [activeMethodFilter, setActiveMethodFilter] = useState<string>('Semua');
+  const [activeStatusFilter, setActiveStatusFilter] = useState<string>('Aktif');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Mock Data Riwayat Pemasaran Sesuai Gambar Referensi Sempurna image_fe8861.png[cite: 1]
+  const products: ProductListing[] = [
+    {
+      id: '1',
+      lotCode: 'LOT-2026-0515-0001',
+      title: 'Rolex Daytona Cosmograph',
+      subtitle: 'Ref. 116500LN',
+      year: 2020,
+      condition: 'Sangat Baik',
+      method: 'Vickrey Auction',
+      status: 'Aktif',
+      timeLabel: 'Sesi Berakhir',
+      timeValue: '18 Mei 2026, 15:30 WIB',
+      priceLabel: 'Harga Awal',
+      priceValue: 450000000,
+      highestBidLabel: 'Penawaran Tertinggi',
+      highestBidValue: 428500000,
+      bidCount: 42,
+      buttonText: 'Kelola Sesi',
+      imageUrl: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      id: '2',
+      lotCode: 'LOT-2026-0518-0002',
+      title: 'Chanel Classic Flap Bag',
+      subtitle: 'Medium Black Lambskin',
+      year: 2020,
+      condition: 'Sangat Baik',
+      method: 'Fixed Price',
+      status: 'Tertunda',
+      timeLabel: 'Sesi Dimulai',
+      timeValue: '19 Mei 2026, 10:00 WIB',
+      priceLabel: 'Harga Jual',
+      priceValue: 185000000,
+      buttonText: 'Lihat Detail',
+      imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      id: '3',
+      lotCode: 'LOT-2026-0518-0003',
+      title: 'Logam Mulia Antam 100g',
+      subtitle: 'Fine Gold 999.9',
+      year: 2024,
+      condition: 'Baru',
+      method: 'Fixed Price',
+      status: 'Tertunda',
+      timeLabel: 'Sesi Dimulai',
+      timeValue: '20 Mei 2026, 09:00 WIB',
+      priceLabel: 'Harga Jual',
+      priceValue: 178500000,
+      buttonText: 'Lihat Detail',
+      imageUrl: 'https://images.unsplash.com/photo-1618409399922-04fa282f9d44?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      id: '4',
+      lotCode: 'LOT-2026-0518-0004',
+      title: 'Cincin Berlian Solitaire 1.01ct',
+      subtitle: 'Round Brilliant GIA Certified',
+      year: 2021,
+      condition: 'Sangat Baik',
+      method: 'Lelang',
+      status: 'Aktif',
+      timeLabel: 'Sesi Berakhir',
+      timeValue: '21 Mei 2026, 16:45 WIB',
+      priceLabel: 'Harga Awal',
+      priceValue: 280000000,
+      highestBidLabel: 'Penawaran Tertinggi',
+      highestBidValue: 305750000,
+      bidCount: 27,
+      buttonText: 'Kelola Sesi',
+      imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80'
+    }
+  ];
+
+  // Filter Logic Sisi Klien[cite: 1]
+  const filteredProducts = products.filter(p => {
+    const matchesMethod = activeMethodFilter === 'Semua' || p.method === activeMethodFilter;
+    const matchesStatus = activeStatusFilter === 'Semua' || p.status === activeStatusFilter;
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.lotCode.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesMethod && matchesStatus && matchesSearch;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-800 flex flex-col lg:flex-row select-none">
+      
+      {/* 1. SIDEBAR LEFT COMPONENT[cite: 1] */}
+      <aside className="w-full lg:w-72 bg-[#004A23] text-white flex flex-col justify-between p-6 flex-shrink-0 lg:min-h-screen shadow-md">
+        <div className="space-y-8">
+          {/* Logo Platform */}
+          <div className="flex items-center space-x-3 px-2">
+            <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center border border-white/15">
+              <span className="text-[#FED65B] font-black text-lg">P</span>
+            </div>
+            <div>
+              <h2 className="text-sm font-black tracking-wider uppercase leading-none text-white">Pegadaian</h2>
+              <span className="text-[11px] font-bold text-emerald-300 tracking-widest uppercase">Lelang</span>
+            </div>
+          </div>
+
+          {/* Active Unit Badge[cite: 1] */}
+          <div className="bg-[#003B1C] rounded-2xl p-4 border border-white/5 relative overflow-hidden">
+            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest block mb-1">Unit Aktif</span>
+            <h3 className="text-base font-extrabold text-white tracking-tight mb-2">UPC Ranotana</h3>
+            <span className="inline-flex items-center space-x-1.5 bg-emerald-950 text-emerald-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>AKTIF</span>
+            </span>
+          </div>
+
+          {/* Menus Row[cite: 1] */}
+          <nav className="space-y-1" aria-label="Sidebar Navigation">
+            <span className="text-[10px] text-emerald-500 font-bold tracking-widest uppercase block px-3 mb-2">Navigasi</span>
+            {[
+              { label: 'Dashboard', icon: FiGrid },
+              { label: 'Kelola Barang', icon: FiBox, badge: 3 },
+              { label: 'Pemasaran', icon: FiShoppingBag, active: true },
+              { label: 'Transaksi', icon: FiDollarSign, badge: 2 },
+              { label: 'Verifikasi Pembayaran', icon: FiCheckCircle },
+              { label: 'Riwayat', icon: FiCalendar },
+            ].map((menu, index) => (
+              <button
+                key={index}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all ${
+                  menu.active ? 'bg-[#006747] text-white shadow-sm' : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <menu.icon className={`w-4 h-4 ${menu.active ? 'text-white' : 'text-emerald-300'}`} />
+                  <span>{menu.label}</span>
+                </div>
+                {menu.badge && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#FED65B] text-slate-900">{menu.badge}</span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Sidebar Footer[cite: 1] */}
+        <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
+          <div className="space-y-2 px-2 text-xs font-semibold text-emerald-100/60">
+            <span className="text-[9px] text-emerald-500 font-bold tracking-widest uppercase block mb-1">Ringkasan Unit</span>
+            <div className="flex justify-between"><span>Total Barang</span><span className="text-white font-bold">18</span></div>
+            <div className="flex justify-between"><span>Siap Dipasarkan</span><span className="text-white font-bold">8</span></div>
+            <div className="flex justify-between"><span>Jatuh Tempo Dekat</span><span className="text-white font-bold">3</span></div>
+          </div>
+          <div className="bg-[#003B1C] rounded-xl p-3 text-[10px] text-emerald-400 font-bold text-center tracking-wide">
+            Per 29 Mei 2026, 14:05 WIB
+          </div>
+        </div>
+      </aside>
+
+      {/* 2. MAIN WORKSPACE CONTAINER[cite: 1] */}
+      <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-x-hidden">
+        
+        {/* Top Operational Header[cite: 1] */}
+        <header className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 tracking-wide uppercase">
+              <span>Pegadaian Lelang</span>
+              <span>/</span>
+              <span className="text-slate-600 font-extrabold">UPC Ranotana</span>
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight mt-1">Pemasaran Barang</h1>
+            <p className="text-xs text-slate-400 font-semibold mt-1">Kelola sesi pemasaran dan tingkatkan penjualan aset terbaik.</p>
+          </div>
+
+          {/* Profile Actions Anchor[cite: 1] */}
+          <div className="flex items-center space-x-4">
+            <button className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm hover:bg-slate-50"><FiBell className="w-4 h-4" /></button>
+            <button className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-600 shadow-sm hover:bg-slate-50"><FiMoon className="w-4 h-4" /></button>
+            <div className="bg-white border border-slate-100 rounded-xl px-3 py-1.5 shadow-sm flex items-center space-x-2.5 cursor-pointer hover:bg-slate-50">
+              <div className="w-6 h-6 bg-[#004A23] text-white rounded-lg flex items-center justify-center font-black text-xs">AU</div>
+              <span className="text-xs font-bold text-slate-700">Admin Unit Demo</span>
+              <FiChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </div>
+          </div>
+        </header>
+
+        {/* ==================== 3. THREE OPERATIONAL METRIC CARDS[cite: 1] ==================== */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-5" aria-label="Operational Metrics">
+          {/* Card 1: Sesi Sedang Berjalan[cite: 1] */}
+          <div className="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.015)] flex items-center justify-between cursor-pointer hover:bg-slate-50/40 transition-colors">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-[#006747]"><FiActivity className="w-5 h-5" /></div>
+              <div>
+                <span className="text-xs font-bold text-slate-400 block mb-0.5">Sesi Sedang Berjalan</span>
+                <span className="text-2xl font-black text-slate-800 tracking-tight block"><span className="text-3xl">24</span> Sesi</span>
+                <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
+                  <strong className="text-slate-800">14</strong> Beli Putus <span className="text-slate-300 mx-1">•</span> <strong className="text-slate-800">10</strong> Lelang
+                </span>
+              </div>
+            </div>
+            <FiChevronRight className="text-slate-300 w-5 h-5" />
+          </div>
+
+          {/* Card 2: Produk Terjual[cite: 1] */}
+          <div className="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.015)] flex items-center justify-between cursor-pointer hover:bg-slate-50/40 transition-colors">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600"><FiCheckCircle className="w-5 h-5" /></div>
+              <div>
+                <span className="text-xs font-bold text-slate-400 block mb-0.5">Produk Terjual</span>
+                <span className="text-2xl font-black text-slate-800 tracking-tight block"><span className="text-3xl">18</span> Produk</span>
+                <span className="text-[11px] text-slate-400 font-bold block mt-1">Periode Minggu Ini</span>
+              </div>
+            </div>
+            <FiChevronRight className="text-slate-300 w-5 h-5" />
+          </div>
+
+          {/* Card 3: Perlu Strategi Ulang[cite: 1] */}
+          <div className="bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.015)] flex items-center justify-between cursor-pointer hover:bg-slate-50/40 transition-colors">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><FiBox className="w-5 h-5" /></div>
+              <div>
+                <span className="text-xs font-bold text-slate-400 block mb-0.5">Perlu Strategi Ulang</span>
+                <span className="text-2xl font-black text-slate-800 tracking-tight block"><span className="text-3xl">5</span> Produk</span>
+                <span className="text-[11px] text-slate-400 font-bold block mt-1">Sesi Gagal / Kedaluwarsa</span>
+              </div>
+            </div>
+            <FiChevronRight className="text-slate-300 w-5 h-5" />
+          </div>
+        </section>
+
+        {/* ==================== 4. INTEGRATED FILTER & SEARCH BAR PANEL[cite: 1] ==================== */}
+        <section className="bg-white rounded-2xl p-4 shadow-[0_2px_15px_rgba(0,0,0,0.008)] flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Input Pencarian */}
+          <div className="relative flex-1 max-w-md">
+            <FiSearch className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama barang atau Lot ID..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 rounded-xl text-xs font-semibold text-slate-700 placeholder-slate-400 border border-transparent focus:bg-white focus:border-[#006747] outline-none transition-all"
+            />
+          </div>
+
+          {/* Double Layer Filter Badges Row[cite: 1] */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Metode Penjualan Tabs */}
+            <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/20">
+              {['Semua', 'Fixed Price', 'Vickrey Auction'].map((method) => (
+                <button
+                  key={method}
+                  onClick={() => setActiveMethodFilter(method)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all outline-none ${
+                    activeMethodFilter === method ? 'bg-white text-[#006747] shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-4 w-px bg-slate-200 hidden md:block" />
+
+            {/* Workflow Status Badges */}
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Status</span>
+              {['Aktif', 'Menunggu Bayar', 'Selesai'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setActiveStatusFilter(status)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all outline-none ${
+                    activeStatusFilter === status 
+                      ? 'bg-[#006747] text-white border-transparent shadow-sm' 
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+
+            {/* Advanced Funnel Filter Button */}
+            <button className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-700 shadow-sm"><FiFilter className="w-3.5 h-3.5" /></button>
+          </div>
+        </section>
+
+        {/* ==================== 5. FEED CONTENT LIST (STRICT BORDERLESS FEED)[cite: 1] ==================== */}
+        <motion.section layout className="space-y-4" aria-label="Product Listing Feed">
+          <AnimatePresence mode="popLayout">
+            {filteredProducts.map((product) => (
+              <motion.article
+                layout
+                key={product.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.25 }}
+                whileHover={{ y: -2, shadow: '0 8px 30px rgba(0,0,0,0.025)' }}
+                className="bg-white rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.012)] flex flex-col md:flex-row md:items-stretch md:justify-between gap-6 border border-transparent group"
+              >
+                
+                {/* SEKTOR KIRI: MEDIA PREVIEW & MAIN SPECS[cite: 1] */}
+                <div className="flex flex-col sm:flex-row gap-6 flex-1">
+                  {/* Thumbnail Media Box Frame */}
+                  <div className="w-full sm:w-56 h-40 bg-slate-50 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center p-3 relative border border-slate-100/30">
+                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1 shadow-sm">
+                      <span className={`w-1.5 h-1.5 rounded-full ${product.status === 'Aktif' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                      <span>{product.status}</span>
+                    </span>
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.title} 
+                      className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-103" 
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Core Description Meta Text Area */}
+                  <div className="flex flex-col justify-between py-0.5 flex-1">
+                    <div>
+                      <div className="flex items-center space-x-2 mb-1.5">
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
+                          product.method === 'Fixed Price' ? 'bg-emerald-50 text-[#006747]' : 'bg-orange-50 text-orange-700'
+                        }`}>
+                          {product.method}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight leading-snug group-hover:text-[#006747] transition-colors cursor-pointer mb-1">
+                        {product.title}
+                      </h3>
+                      <p className="text-xs font-bold text-slate-400 tracking-wide leading-none">{product.subtitle}</p>
+                    </div>
+
+                    {/* Meta Specifications Unbordered Grid Rows */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-slate-50 pt-3 mt-3 text-[11px] font-bold text-slate-500">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">Kode Lot</span>
+                        <span className="text-slate-700 tracking-wide">{product.lotCode}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">Tahun</span>
+                        <span className="text-slate-700">{product.year}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">Kondisi</span>
+                        <span className="text-slate-700">{product.condition}</span>
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <span className="text-[10px] text-slate-400 font-semibold block mb-0.5">{product.timeLabel}</span>
+                        <span className="text-slate-700 font-extrabold flex items-center space-x-1">
+                          <FiClock className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                          <span className="truncate">{product.timeValue.split(',')[0]}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SEKTOR KANAN: FINANCIAL VALUES & ACTIONS PRIMARY CTA[cite: 1] */}
+                <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-slate-50 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between items-end flex-shrink-0 py-0.5">
+                  {/* Container Penentuan Harga Dinamis */}
+                  <div className="text-right w-full space-y-3">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">{product.priceLabel}</span>
+                      <span className="text-xl font-black text-[#006747] tracking-tight block leading-none">
+                        Rp {product.priceValue.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+
+                    {/* Jika ada penawaran lelang masuk, render sub-informasi ini secara kondisional */}
+                    {product.highestBidLabel && (
+                      <div className="bg-slate-50/70 p-2 rounded-xl text-right inline-block w-full border border-slate-100/20">
+                        <span className="text-[9px] text-slate-400 font-bold block mb-0.5">{product.highestBidLabel}</span>
+                        <span className="text-sm font-extrabold text-slate-800 block leading-none mb-1">
+                          Rp {product.highestBidValue?.toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400 block">({product.bidCount} penawaran)</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Operational Gateway Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.015, backgroundColor: product.buttonText === 'Kelola Sesi' ? '#005238' : '#FAFAFA' }}
+                    whileTap={{ scale: 0.985 }}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold tracking-wide transition-colors flex items-center justify-center space-x-1.5 border outline-none ${
+                      product.buttonText === 'Kelola Sesi' 
+                        ? 'bg-[#006747] text-white border-transparent shadow-sm' 
+                        : 'bg-white text-slate-700 border-slate-200 shadow-sm'
+                    }`}
+                  >
+                    <span>{product.buttonText}</span>
+                    <FiArrowRight className="w-3.5 h-3.5" />
+                  </motion.button>
+                </div>
+
+              </motion.article>
+            ))}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Empty State Handler */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-20 bg-white rounded-3xl shadow-[0_4px_25px_rgba(0,0,0,0.012)]">
+            <FiTag className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+            <p className="text-slate-500 font-bold text-sm">Tidak ada sesi pemasaran aktif yang cocok dengan kriteria filter.</p>
+          </div>
+        )}
+
+      </main>
+    </div>
+  );
+}

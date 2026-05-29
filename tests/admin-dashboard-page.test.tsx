@@ -1,14 +1,91 @@
 import React from "react";
-import { act, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { AdminDashboardPage } from "@/components/pages/admin-dashboard-page";
 
 const baseDashboardData = {
   summary: {
-    unitName: "Admin Unit Demo",
+    unitName: "UPC Ranotana",
     activeBank: "BRI 0123",
     subtitle: "Demo"
+  },
+  metrics: {
+    totalItems: 18,
+    readyForMarketing: 8,
+    dueSoon: 3,
+    soldItems: 2,
+    redeemedItems: 1,
+    activeAuctions: 4,
+    activeParticipants: 5,
+    totalTransactions: 9,
+    verifiedTransactions: 2,
+    actionableTransactions: 3,
+    uploadedProofTransactions: 1,
+    directConfirmationTransactions: 1,
+    waitingPaymentTransactions: 1,
+    rejectedProofTransactions: 0,
+    activeBlacklist: 1,
+    totalRevenue: 20_000_000,
+    averageTransaction: 10_000_000,
+    salesTrend: {
+      defaultRange: "week" as const,
+      ranges: {
+        day: {
+          label: "Hari Ini",
+          points: [
+            { label: "00.00", value: 0, amount: 0 },
+            { label: "04.00", value: 1, amount: 4_000_000 },
+            { label: "08.00", value: 0, amount: 0 },
+            { label: "12.00", value: 1, amount: 6_000_000 },
+            { label: "16.00", value: 0, amount: 0 },
+            { label: "20.00", value: 0, amount: 0 }
+          ],
+          summary: {
+            totalRevenue: 10_000_000,
+            verifiedTransactions: 2,
+            averageRevenue: 1_666_667,
+            peakRevenue: 6_000_000,
+            peakLabel: "12.00"
+          }
+        },
+        week: {
+          label: "Minggu Ini",
+          points: [
+            { label: "23 Mei", value: 0, amount: 0 },
+            { label: "24 Mei", value: 1, amount: 2_000_000 },
+            { label: "25 Mei", value: 0, amount: 0 },
+            { label: "26 Mei", value: 1, amount: 5_000_000 },
+            { label: "27 Mei", value: 0, amount: 0 },
+            { label: "28 Mei", value: 2, amount: 8_000_000 },
+            { label: "29 Mei", value: 1, amount: 5_000_000 }
+          ],
+          summary: {
+            totalRevenue: 20_000_000,
+            verifiedTransactions: 5,
+            averageRevenue: 2_857_143,
+            peakRevenue: 8_000_000,
+            peakLabel: "28 Mei"
+          }
+        },
+        month: {
+          label: "Bulan Ini",
+          points: [
+            { label: "1-7 Mei", value: 1, amount: 2_000_000 },
+            { label: "8-14 Mei", value: 0, amount: 0 },
+            { label: "15-21 Mei", value: 2, amount: 7_000_000 },
+            { label: "22-28 Mei", value: 3, amount: 9_000_000 },
+            { label: "29-31 Mei", value: 1, amount: 2_000_000 }
+          ],
+          summary: {
+            totalRevenue: 20_000_000,
+            verifiedTransactions: 7,
+            averageRevenue: 4_000_000,
+            peakRevenue: 9_000_000,
+            peakLabel: "22-28 Mei"
+          }
+        }
+      }
+    }
   },
   inventory: [],
   transactions: [],
@@ -16,53 +93,99 @@ const baseDashboardData = {
 };
 
 describe("AdminDashboardPage", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-29T10:00:00+08:00"));
-  });
-
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it("renders operational summary and latest transaction table", () => {
+  it("renders the executive KPI cards and trend section from the approved reference", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
-    expect(screen.getByText(/admin unit \/ dashboard/i)).toBeInTheDocument();
-    expect(screen.getByText(/barang jaminan siap dipasarkan/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pembayaran yang perlu ditangani/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barang terjual/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barang ditebus/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /laporan tren penjualan/i })).toBeInTheDocument();
+    expect(screen.getByText("Rp 20 jt")).toBeInTheDocument();
+    expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Puncak Penjualan$/i)).toBeInTheDocument();
+    expect(screen.getByText(/5 transaksi lunas/i)).toBeInTheDocument();
+    expect(screen.getByText(/total periode/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Transaksi Lunas$/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /hari ini/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
   });
 
-  it("updates admin transaction countdowns in real time", () => {
+  it("renders the daily checklist and amber alert action", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByRole("heading", { name: /checklist harian/i })).toBeInTheDocument();
+    expect(screen.getByText(/pastikan barang baru sudah tercatat lengkap/i)).toBeInTheDocument();
+    expect(screen.getByText(/dahulukan barang yang mendekati jatuh tempo/i)).toBeInTheDocument();
+    expect(screen.getByText(/pantau pemenang yang belum menyelesaikan pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /perhatian diperlukan/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat transaksi/i })).toHaveAttribute("href", "/admin/transaksi");
+  });
+
+  it("allows toggling checklist items interactively", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    const dueSoonTask = screen.getByRole("button", { name: /dahulukan barang yang mendekati jatuh tempo/i });
+    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
+
+    fireEvent.click(dueSoonTask);
+    expect(screen.getByText(/3 \/ 5 selesai/i)).toBeInTheDocument();
+  });
+
+  it("updates the checklist clock in real time", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T04:13:00.000Z"));
+
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByText("12:13 PM")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+
+    expect(screen.getByText("12:14 PM")).toBeInTheDocument();
+  });
+
+  it("switches the trend chart summary when timeframe buttons are pressed", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /hari ini/i }));
+    expect(screen.getByText(/rata-rata slot/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 transaksi lunas tercatat pada hari ini/i)).toBeInTheDocument();
+    expect(screen.getByText("Rp 10 jt")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /bulan ini/i }));
+    expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 transaksi lunas tercatat pada bulan ini/i)).toBeInTheDocument();
+    expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22-28 Mei/i)).toBeInTheDocument();
+  });
+
+  it("falls back to live transaction data when precomputed metrics are unavailable", () => {
     render(
       <AdminDashboardPage
         data={{
-          ...baseDashboardData,
+          summary: baseDashboardData.summary,
+          inventory: [
+            { id: "B-1", status: "DITEBUS" },
+            { id: "B-2", status: "JAMINAN" }
+          ],
           transactions: [
-            {
-              id: "TRX-1",
-              lot: "Laptop Demo",
-              buyer: "Raras",
-              status: "MENUNGGU_PEMBAYARAN",
-              method: "TRANSFER_BANK",
-              deadline: "1 menit 5 detik",
-              deadlineAt: new Date("2026-04-29T10:01:05+08:00").toISOString()
-            }
-          ]
+            { id: "T-1", status: "LUNAS", total: 7_500_000, buyer: "Raras" },
+            { id: "T-2", status: "BUKTI_DIUNGGAH", total: 2_000_000, buyer: "Dimas" }
+          ],
+          blacklist: [{ id: "BL-1", status: "AKTIF" }]
         }}
       />
     );
 
-    expect(
-      screen.getByText((content) => content.includes("Sisa waktu 1 menit 5 detik"))
-    ).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    expect(
-      screen.getByText((content) => content.includes("Sisa waktu 1 menit 4 detik"))
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Rp 7,5/i)).toBeInTheDocument();
+    expect(screen.getByText(/^1 lunas$/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 barang siap dipasarkan di unit/i)).toBeInTheDocument();
   });
 });

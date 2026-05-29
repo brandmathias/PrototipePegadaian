@@ -130,7 +130,7 @@ function AdminHeroPill({
         "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 backdrop-blur",
         tone === "danger"
           ? "bg-rose-50/92 text-rose-700 ring-rose-200"
-          : "bg-white/75 text-[#0a6a49] ring-[#6cb6ff]/55"
+          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65"
       )}
     >
       {Icon ? <Icon className="size-4" /> : null}

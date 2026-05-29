@@ -221,10 +221,10 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             className={cn(
               "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
               notification.variant === "success"
-                ? "bg-primary/12 text-primary"
+                ? "bg-primary/12 text-primary dark:bg-emerald-300/10 dark:text-emerald-200"
                 : notification.variant === "error"
-                  ? "bg-destructive/12 text-destructive"
-                  : "bg-accent/20 text-accent-foreground",
+                  ? "bg-destructive/12 text-destructive dark:bg-rose-300/10 dark:text-rose-200"
+                  : "bg-accent/20 text-accent-foreground dark:bg-amber-300/10 dark:text-amber-200",
               isLoserNotification
                 ? "border border-[#f1d3d6] bg-[linear-gradient(180deg,rgba(255,250,250,0.98),rgba(255,239,241,0.96))] text-[#c43d48] shadow-[0_14px_28px_-22px_rgba(196,61,72,0.55)]"
                 : ""
@@ -234,7 +234,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
           </div>
           <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <p className={cn("text-sm font-semibold text-black/82", isLoserNotification ? "text-[#3f2529]" : "")}>
+            <p className={cn("text-sm font-semibold text-black/82 dark:text-slate-100", isLoserNotification ? "text-[#3f2529] dark:text-rose-100" : "")}>
               {notification.title}
             </p>
             {!notification.read ? (
@@ -242,17 +242,17 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             ) : null}
           </div>
           {notification.description ? (
-            <p className={cn("mt-1 text-sm leading-6 text-black/58", isLoserNotification ? "text-[#6f5054]" : "")}>
+            <p className={cn("mt-1 text-sm leading-6 text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
               {notification.description}
             </p>
           ) : null}
-          <div className={cn("mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42", isLoserNotification ? "text-[#8d6c70]" : "")}>
+          <div className={cn("mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42 dark:text-slate-400", isLoserNotification ? "text-[#8d6c70] dark:text-rose-100/52" : "")}>
             <span className="inline-flex items-center gap-2">
               <Clock3 aria-hidden="true" className="size-3.5" />
               {formatTimeLabel(notification.createdAt)}
             </span>
             {notification.href ? (
-              <span className={cn("font-semibold text-[#0a6a49]", isLoserNotification ? "text-[#c43d48]" : "")}>Buka detail</span>
+              <span className={cn("font-semibold text-[#0a6a49] dark:text-emerald-200", isLoserNotification ? "text-[#c43d48] dark:text-rose-200" : "")}>Buka detail</span>
             ) : null}
           </div>
         </div>
@@ -268,7 +268,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label="Buka pusat alert"
-        className="interactive-tap relative inline-flex size-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]"
+        className="interactive-tap relative inline-flex size-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-emerald-200/14 dark:bg-[#102019] dark:text-emerald-100 dark:shadow-[0_18px_36px_-28px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:bg-[#14271f]"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
@@ -285,24 +285,24 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
 
       {isOpen ? (
         <div
-          className="feedback-pop absolute right-0 top-[calc(100%+0.85rem)] z-[90] w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-[1.6rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl"
+          className="feedback-pop absolute right-0 top-[calc(100%+0.85rem)] z-[90] w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-[1.6rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)]"
           role="dialog"
         >
-          <div className="border-b border-black/6 px-5 py-4">
+          <div className="border-b border-black/6 px-5 py-4 dark:border-white/8">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58">
+                <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                   {copy.label}
                 </p>
-                <h3 className="mt-2 font-headline text-[1.45rem] font-black text-[#085a41]">
+                <h3 className="mt-2 font-headline text-[1.45rem] font-black text-[#085a41] dark:text-emerald-100">
                   {copy.title}
                 </h3>
-                <p className="mt-1 text-sm leading-6 text-black/58">
+                <p className="mt-1 text-sm leading-6 text-black/58 dark:text-slate-300/72">
                   {copy.description}
                 </p>
               </div>
               <button
-                className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1]"
+                className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                 onClick={handleMarkAllAsRead}
                 type="button"
               >
@@ -320,8 +320,8 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   const className = cn(
                     "group interactive-card flex w-full items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
                     notification.read
-                      ? "border-black/6 bg-white/70"
-                      : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)]",
+                      ? "border-black/6 bg-white/70 dark:border-white/8 dark:bg-white/[0.045]"
+                      : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)] dark:border-emerald-300/18 dark:bg-emerald-300/8 dark:shadow-[0_12px_30px_-24px_rgba(52,211,153,0.28)]",
                     isLoserNotification &&
                       (notification.read
                         ? "border-[#f0d9dc] bg-[linear-gradient(180deg,rgba(255,249,249,0.9),rgba(255,244,244,0.82))] shadow-[0_10px_24px_-24px_rgba(196,61,72,0.25)]"
@@ -356,9 +356,9 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                 })}
               </div>
             ) : (
-              <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/70 px-5 py-8 text-center">
-                <p className="text-sm font-semibold text-black/72">{copy.emptyTitle}</p>
-                <p className="mt-1 text-sm leading-6 text-black/52">
+              <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/70 px-5 py-8 text-center dark:border-white/10 dark:bg-white/[0.04]">
+                <p className="text-sm font-semibold text-black/72 dark:text-slate-100">{copy.emptyTitle}</p>
+                <p className="mt-1 text-sm leading-6 text-black/52 dark:text-slate-300/68">
                   {copy.emptyDescription}
                 </p>
               </div>

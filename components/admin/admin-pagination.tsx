@@ -89,23 +89,23 @@ export function AdminPaginationFooter({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 border-t border-black/8 bg-[#fbfbf8] px-4 py-3 text-[0.72rem] text-black/50 lg:flex-row lg:items-center lg:justify-between",
+        "flex flex-col gap-3 border-t border-black/8 bg-[#fbfbf8] px-4 py-3 text-[0.72rem] text-black/50 dark:border-white/8 dark:bg-white/[0.03] dark:text-slate-400 lg:flex-row lg:items-center lg:justify-between",
         className
       )}
     >
       <p>
-        Menampilkan <span className="font-semibold text-black/72">{pageStart}</span> sampai{" "}
-        <span className="font-semibold text-black/72">{pageEnd}</span> dari{" "}
-        <span className="font-semibold text-black/72">{totalItems}</span> {itemLabel}
+        Menampilkan <span className="font-semibold text-black/72 dark:text-slate-200">{pageStart}</span> sampai{" "}
+        <span className="font-semibold text-black/72 dark:text-slate-200">{pageEnd}</span> dari{" "}
+        <span className="font-semibold text-black/72 dark:text-slate-200">{totalItems}</span> {itemLabel}
       </p>
 
       <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-        <label className="font-medium text-black/52" htmlFor={`pagination-size-${itemLabel}`}>
+        <label className="font-medium text-black/52 dark:text-slate-400" htmlFor={`pagination-size-${itemLabel}`}>
           Baris per halaman:
         </label>
         <AdminSelect
           ariaLabel={`Baris per halaman ${itemLabel}`}
-          className="min-w-[5.5rem]"
+          className="min-w-[6.9rem]"
           id={`pagination-size-${itemLabel}`}
           options={ADMIN_PAGE_SIZE_OPTIONS.map((size) => ({ value: size, label: String(size) }))}
           size="compact"
@@ -116,7 +116,7 @@ export function AdminPaginationFooter({
         <div className="ml-0 flex items-center gap-1 lg:ml-3">
           <button
             aria-label="Halaman sebelumnya"
-            className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+            className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-emerald-200"
             disabled={currentPage === 0}
             type="button"
             onClick={() => onPageIndexChange(Math.max(0, currentPage - 1))}
@@ -131,8 +131,8 @@ export function AdminPaginationFooter({
                 className={cn(
                   "grid size-8 place-items-center rounded-xl text-[0.72rem] font-semibold transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   page === currentPage
-                    ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46),inset_0_1px_0_rgba(255,255,255,0.9)]"
-                    : "text-black/52 hover:bg-white hover:text-[#0a6a49]"
+                    ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46),inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-emerald-300/18 dark:bg-emerald-300/[0.08] dark:text-emerald-200 dark:shadow-[0_16px_30px_-24px_rgba(0,0,0,0.46)]"
+                    : "text-black/52 hover:bg-white hover:text-[#0a6a49] dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-emerald-200"
                 )}
                 key={page}
                 type="button"
@@ -141,7 +141,7 @@ export function AdminPaginationFooter({
                 {page + 1}
               </button>
             ) : (
-              <span className="grid size-8 place-items-center text-black/32" key={page}>
+              <span className="grid size-8 place-items-center text-black/32 dark:text-slate-500" key={page}>
                 ...
               </span>
             )
@@ -149,7 +149,7 @@ export function AdminPaginationFooter({
 
           <button
             aria-label="Halaman berikutnya"
-            className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+            className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-400 dark:hover:bg-white/[0.06] dark:hover:text-emerald-200"
             disabled={currentPage >= totalPages - 1}
             type="button"
             onClick={() => onPageIndexChange(Math.min(totalPages - 1, currentPage + 1))}

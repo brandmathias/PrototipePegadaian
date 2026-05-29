@@ -60,7 +60,7 @@ function isPaymentVerified(transaction: AdminTransactionItem) {
 function transactionDeadlineLabel(transaction: AdminTransactionItem, serverNow?: string) {
   if (isPaymentVerified(transaction)) {
     return (
-      <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#bfe8cf] bg-[#effbf4] px-3 py-1.5 text-xs font-black leading-5 text-[#075b3f]">
+      <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#bfe8cf] bg-[#effbf4] px-3 py-1.5 text-xs font-black leading-5 text-[#075b3f] dark:border-emerald-300/18 dark:bg-emerald-300/10 dark:text-emerald-200">
         <CheckCircle2 className="size-3.5 shrink-0" />
         <span>Selesai</span>
       </span>
@@ -69,7 +69,7 @@ function transactionDeadlineLabel(transaction: AdminTransactionItem, serverNow?:
 
   return (
     <AdminLiveCountdown
-      className="text-sm font-medium text-black/72"
+      className="text-sm font-medium text-black/72 dark:text-slate-200/78"
       expiredLabel="Batas waktu terlewati"
       fallbackLabel={transaction.deadline}
       prefix="Sisa"
@@ -130,7 +130,7 @@ function getFilteredVerificationTransactions(transactions: AdminTransactionItem[
 
 function EmptyPanel({ text }: { text: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-white p-5 text-sm leading-7 text-black/55">
+    <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-white p-5 text-sm leading-7 text-black/55 dark:border-white/10 dark:bg-[#101a15] dark:text-slate-300/72">
       {text}
     </div>
   );
@@ -148,16 +148,16 @@ function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-gradient-to-br from-[#f4f8f6] via-white to-[#f9fbfa] p-5 sm:p-6">
+    <section className="overflow-hidden rounded-[2rem] border border-black/10 bg-gradient-to-br from-[#f4f8f6] via-white to-[#f9fbfa] p-5 shadow-[0_22px_52px_-44px_rgba(10,74,51,0.18)] dark:border-white/8 dark:bg-[linear-gradient(145deg,rgba(16,29,23,0.98),rgba(10,19,15,0.98))] dark:shadow-[0_24px_60px_-42px_rgba(0,0,0,0.6)] sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-4xl">
-          <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-black/45 sm:text-xs">
+          <p className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-black/45 dark:text-emerald-100/48 sm:text-xs">
             {eyebrow}
           </p>
-          <h2 className="mt-3 font-headline text-3xl font-black tracking-tight text-black/88 sm:text-4xl lg:text-[2.75rem]">
+          <h2 className="mt-3 font-headline text-3xl font-black tracking-tight text-black/88 dark:text-slate-100 sm:text-4xl lg:text-[2.75rem]">
             {title}
           </h2>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-black/64 sm:text-lg">{description}</p>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-black/64 dark:text-slate-300/74 sm:text-lg">{description}</p>
         </div>
         {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
       </div>
@@ -180,18 +180,18 @@ function MetricCard({
 }) {
   return (
     <Link
-      className="group rounded-[1.75rem] border border-black/10 bg-white p-5 transition duration-200 hover:-translate-y-1 hover:border-[#0a6a49]/18"
+      className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_18px_44px_-38px_rgba(10,74,51,0.18)] transition duration-200 hover:-translate-y-1 hover:border-[#0a6a49]/18 dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_56px_-40px_rgba(0,0,0,0.58)] dark:hover:border-emerald-300/16"
       href={href}
     >
       <div className="flex items-start justify-between gap-4">
-        <span className="grid size-11 place-items-center rounded-2xl bg-[#eef6f1] text-[#0a6a49]">
+        <span className="grid size-11 place-items-center rounded-2xl bg-[#eef6f1] text-[#0a6a49] dark:bg-emerald-300/10 dark:text-emerald-200">
           {icon}
         </span>
-        <ArrowRight className="size-4 text-black/28 transition duration-200 group-hover:text-[#0a6a49]" />
+        <ArrowRight className="size-4 text-black/28 transition duration-200 group-hover:text-[#0a6a49] dark:text-slate-400 dark:group-hover:text-emerald-200" />
       </div>
-      <p className="mt-5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-black/45">{label}</p>
-      <p className="mt-3 font-headline text-4xl font-black tracking-tight text-black/88">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-black/58">{detail}</p>
+      <p className="mt-5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-black/45 dark:text-emerald-100/46">{label}</p>
+      <p className="mt-3 font-headline text-4xl font-black tracking-tight text-black/88 dark:text-slate-100">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-black/58 dark:text-slate-300/72">{detail}</p>
     </Link>
   );
 }
@@ -204,9 +204,9 @@ function DetailStat({
   value: ReactNode;
 }) {
   return (
-    <div className="min-w-0 rounded-2xl border border-black/8 bg-[#fbfbfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
-      <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42">{label}</p>
-      <div className="mt-2 min-w-0 break-words text-sm font-semibold leading-6 text-black/82">{value}</div>
+    <div className="min-w-0 rounded-2xl border border-black/8 bg-[#fbfbfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:border-white/8 dark:bg-[#14201a] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+      <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42 dark:text-slate-400">{label}</p>
+      <div className="mt-2 min-w-0 break-words text-sm font-semibold leading-6 text-black/82 dark:text-slate-100">{value}</div>
     </div>
   );
 }
@@ -219,8 +219,8 @@ function MarketingModeChip({ mode }: { mode?: string | null }) {
     <Badge
       className={
         isVickrey
-          ? "bg-[#ecefed] text-[#263f34]"
-          : "bg-[#e7f4ee] text-[#075b3f]"
+          ? "bg-[#ecefed] text-[#263f34] dark:bg-white/8 dark:text-slate-200"
+          : "bg-[#e7f4ee] text-[#075b3f] dark:bg-emerald-300/10 dark:text-emerald-200"
       }
       variant="muted"
     >
@@ -263,9 +263,9 @@ function TransactionSummaryDossier({
   serverNow?: string;
 }) {
   return (
-    <Card className="self-start overflow-hidden rounded-[1.9rem] border border-black/10 bg-white shadow-[0_24px_60px_-48px_rgba(10,74,51,0.44)] xl:sticky xl:top-28">
+    <Card className="self-start overflow-hidden rounded-[1.9rem] border border-black/10 bg-white shadow-[0_24px_60px_-48px_rgba(10,74,51,0.44)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_26px_64px_-40px_rgba(0,0,0,0.62)] xl:sticky xl:top-28">
       <CardContent className="space-y-5 p-5 sm:p-6">
-        <div className="overflow-hidden rounded-[1.45rem] border border-black/8 bg-[#f6f7f3]">
+        <div className="overflow-hidden rounded-[1.45rem] border border-black/8 bg-[#f6f7f3] dark:border-white/8 dark:bg-[#14201a]">
           {transaction.imageUrl ? (
             <Image
               alt={`Foto barang ${transaction.lot}`}
@@ -287,21 +287,21 @@ function TransactionSummaryDossier({
         </div>
 
         <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-black/42">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-black/42 dark:text-slate-400">
             Dossier Transaksi
           </p>
-          <h3 className="mt-2 font-headline text-[2rem] font-black tracking-tight text-black/88">
+          <h3 className="mt-2 font-headline text-[2rem] font-black tracking-tight text-black/88 dark:text-slate-100">
             {transaction.lot}
           </h3>
-          <p className="mt-2 text-sm leading-6 text-black/58">Buyer: {transaction.buyer}</p>
-          <p className="mt-3 text-sm leading-6 text-black/58">{getAdminWorkspaceStatusText(transaction)}</p>
+          <p className="mt-2 text-sm leading-6 text-black/58 dark:text-slate-300/72">Buyer: {transaction.buyer}</p>
+          <p className="mt-3 text-sm leading-6 text-black/58 dark:text-slate-300/72">{getAdminWorkspaceStatusText(transaction)}</p>
         </div>
 
-        <div className="rounded-[1.35rem] border border-[#dfe7df] bg-[#f8fbf8] p-4">
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-black/42">
+        <div className="rounded-[1.35rem] border border-[#dfe7df] bg-[#f8fbf8] p-4 dark:border-emerald-300/10 dark:bg-emerald-300/[0.06]">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-black/42 dark:text-slate-400">
             Nominal transaksi
           </p>
-          <p className="mt-2 font-headline text-3xl font-black tracking-tight text-[#0a6a49]">
+          <p className="mt-2 font-headline text-3xl font-black tracking-tight text-[#0a6a49] dark:text-emerald-200">
             {currency.format(transaction.total)}
           </p>
         </div>
@@ -313,8 +313,8 @@ function TransactionSummaryDossier({
           <DetailStat label="Nomor HP" value={transaction.buyerPhone || "-"} />
         </div>
 
-        <div className="rounded-[1.5rem] border border-black/8 bg-[#fbfbfa] p-4">
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42">
+        <div className="rounded-[1.5rem] border border-black/8 bg-[#fbfbfa] p-4 dark:border-white/8 dark:bg-[#14201a]">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42 dark:text-slate-400">
             Jalur cepat
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -350,13 +350,13 @@ function WorkspacePanel({
 }) {
   return (
     <section
-      className={`rounded-[1.55rem] border border-black/8 bg-[#fbfbfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] sm:p-5 ${className}`}
+      className={`rounded-[1.55rem] border border-black/8 bg-[#fbfbfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] dark:border-white/8 dark:bg-[#14201a] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:p-5 ${className}`}
     >
       <div className="flex items-center gap-2.5">
-        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e8f4ee] text-[#0a6a49]">
+        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e8f4ee] text-[#0a6a49] dark:bg-emerald-300/10 dark:text-emerald-200">
           {icon}
         </span>
-        <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/46">{label}</p>
+        <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/46 dark:text-slate-400">{label}</p>
       </div>
       <div className="mt-4">{children}</div>
     </section>
@@ -454,8 +454,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
     return {
       title: "Selesai & diarsipkan",
       detail: "Workflow selesai",
-      shellClass: "border-[#bfe8cf] bg-[#f0fbf4] text-[#075b3f]",
-      iconClass: "bg-[#0a6a49] text-white",
+      shellClass: "border-[#bfe8cf] bg-[#f0fbf4] text-[#075b3f] dark:border-emerald-300/16 dark:bg-emerald-300/[0.08] dark:text-emerald-200",
+      iconClass: "bg-[#0a6a49] text-white dark:bg-emerald-300/18 dark:text-emerald-100",
       pulseClass: "bg-[#20b96b]/24",
       icon: CheckCircle2
     };
@@ -465,8 +465,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
     return {
       title: "Terverifikasi admin",
       detail: "Menunggu buyer selesai",
-      shellClass: "border-[#c9ead3] bg-[#f4fcf6] text-[#075b3f]",
-      iconClass: "bg-[#20b96b] text-white",
+      shellClass: "border-[#c9ead3] bg-[#f4fcf6] text-[#075b3f] dark:border-emerald-300/16 dark:bg-emerald-300/[0.08] dark:text-emerald-200",
+      iconClass: "bg-[#20b96b] text-white dark:bg-emerald-300/18 dark:text-emerald-100",
       pulseClass: "bg-[#20b96b]/22",
       icon: CheckCircle2
     };
@@ -476,8 +476,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
     return {
       title: "Bukti masuk",
       detail: "Perlu verifikasi",
-      shellClass: "border-[#eadcae] bg-[#fffaf0] text-[#735a0f]",
-      iconClass: "bg-[#d7ad2f] text-[#3f3002]",
+      shellClass: "border-[#eadcae] bg-[#fffaf0] text-[#735a0f] dark:border-amber-300/16 dark:bg-amber-300/[0.08] dark:text-amber-200",
+      iconClass: "bg-[#d7ad2f] text-[#3f3002] dark:bg-amber-300/18 dark:text-amber-100",
       pulseClass: "bg-[#d7ad2f]/24",
       icon: FileCheck2
     };
@@ -487,8 +487,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
     return {
       title: "Perlu konfirmasi loket",
       detail: "Cocokkan pembayaran",
-      shellClass: "border-[#eadcae] bg-[#fffaf0] text-[#735a0f]",
-      iconClass: "bg-[#d7ad2f] text-[#3f3002]",
+      shellClass: "border-[#eadcae] bg-[#fffaf0] text-[#735a0f] dark:border-amber-300/16 dark:bg-amber-300/[0.08] dark:text-amber-200",
+      iconClass: "bg-[#d7ad2f] text-[#3f3002] dark:bg-amber-300/18 dark:text-amber-100",
       pulseClass: "bg-[#d7ad2f]/24",
       icon: WalletCards
     };
@@ -498,8 +498,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
     return {
       title: "Bukti ditolak",
       detail: "Menunggu perbaikan",
-      shellClass: "border-rose-200 bg-rose-50 text-rose-700",
-      iconClass: "bg-rose-600 text-white",
+      shellClass: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-300/16 dark:bg-rose-300/[0.08] dark:text-rose-200",
+      iconClass: "bg-rose-600 text-white dark:bg-rose-300/18 dark:text-rose-100",
       pulseClass: "bg-rose-400/20",
       icon: XCircle
     };
@@ -508,8 +508,8 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
   return {
     title: humanize(transaction.status),
     detail: "Menunggu update",
-    shellClass: "border-black/10 bg-[#f7f8f5] text-black/68",
-    iconClass: "bg-black/12 text-black/48",
+    shellClass: "border-black/10 bg-[#f7f8f5] text-black/68 dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-300/72",
+    iconClass: "bg-black/12 text-black/48 dark:bg-white/10 dark:text-slate-300",
     pulseClass: "bg-black/10",
     icon: FileText
   };
@@ -559,9 +559,9 @@ function TransactionLedgerRow({
   serverNow?: string;
 }) {
   return (
-    <div className="grid gap-4 px-4 py-4 transition duration-200 hover:bg-[#fbfcfa] lg:grid-cols-[minmax(17rem,1.35fr)_minmax(9rem,0.55fr)_minmax(9rem,0.65fr)_minmax(15rem,0.95fr)_auto] lg:items-center lg:px-5">
+    <div className="grid gap-4 px-4 py-4 transition duration-200 hover:bg-[#fbfcfa] dark:hover:bg-white/[0.025] lg:grid-cols-[minmax(17rem,1.35fr)_minmax(9rem,0.55fr)_minmax(9rem,0.65fr)_minmax(15rem,0.95fr)_auto] lg:items-center lg:px-5">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/8 bg-[#f1f3ef]">
+        <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/8 bg-[#f1f3ef] dark:border-white/8 dark:bg-[#17241d]">
           {transaction.imageUrl ? (
             <Image
               alt={`Foto barang ${transaction.lot}`}
@@ -571,34 +571,34 @@ function TransactionLedgerRow({
               width={112}
             />
           ) : (
-            <ReceiptText className="size-5 text-[#0a6a49]" />
+            <ReceiptText className="size-5 text-[#0a6a49] dark:text-emerald-200" />
           )}
         </div>
         <div className="min-w-0">
-          <h3 className="truncate font-headline text-lg font-black tracking-tight text-black/88">
+          <h3 className="truncate font-headline text-lg font-black tracking-tight text-black/88 dark:text-slate-100">
             {transaction.lot}
           </h3>
-          <p className="mt-1 truncate text-sm text-black/56">{transaction.buyer}</p>
+          <p className="mt-1 truncate text-sm text-black/56 dark:text-slate-300/68">{transaction.buyer}</p>
         </div>
       </div>
 
       <div className="min-w-0">
-        <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 lg:hidden">
+        <p className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 dark:text-slate-500 lg:hidden">
           Pemasaran
         </p>
         <MarketingModeChip mode={transaction.pemasaranMode} />
       </div>
 
       <div className="min-w-0">
-        <p className="mb-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 lg:hidden">
+        <p className="mb-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 dark:text-slate-500 lg:hidden">
           Nominal
         </p>
-        <p className="font-semibold text-black/82">{currency.format(transaction.total)}</p>
-        <p className="mt-1 truncate text-xs text-black/42">{buildTransactionReference(transaction)}</p>
+        <p className="font-semibold text-black/82 dark:text-slate-100">{currency.format(transaction.total)}</p>
+        <p className="mt-1 truncate text-xs text-black/42 dark:text-slate-400">{buildTransactionReference(transaction)}</p>
       </div>
 
       <div className="min-w-0">
-        <p className="mb-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 lg:hidden">
+        <p className="mb-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-black/36 dark:text-slate-500 lg:hidden">
           Status
         </p>
         <LedgerStatusSignal serverNow={serverNow} transaction={transaction} />
@@ -606,7 +606,7 @@ function TransactionLedgerRow({
 
       <div className="flex lg:justify-end">
         <Link
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white px-4 text-sm font-semibold text-[#075b3f] transition duration-200 hover:-translate-y-0.5 hover:border-[#0a6a49]/24 hover:bg-[#f4faf6] active:translate-y-0"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white px-4 text-sm font-semibold text-[#075b3f] transition duration-200 hover:-translate-y-0.5 hover:border-[#0a6a49]/24 hover:bg-[#f4faf6] active:translate-y-0 dark:border-white/10 dark:bg-white/[0.04] dark:text-emerald-200 dark:hover:border-emerald-300/20 dark:hover:bg-white/[0.07]"
           href={href}
         >
           Lihat detail
@@ -638,15 +638,15 @@ function TransactionLedgerList({
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.6rem] border border-black/10 bg-white shadow-[0_18px_54px_-46px_rgba(10,74,51,0.38)]">
-      <div className="hidden grid-cols-[minmax(17rem,1.35fr)_minmax(9rem,0.55fr)_minmax(9rem,0.65fr)_minmax(15rem,0.95fr)_auto] border-b border-black/8 bg-[#f7f8f5] px-5 py-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42 lg:grid">
+    <div className="overflow-hidden rounded-[1.6rem] border border-black/10 bg-white shadow-[0_18px_54px_-46px_rgba(10,74,51,0.38)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_60px_-40px_rgba(0,0,0,0.6)]">
+      <div className="hidden grid-cols-[minmax(17rem,1.35fr)_minmax(9rem,0.55fr)_minmax(9rem,0.65fr)_minmax(15rem,0.95fr)_auto] border-b border-black/8 bg-[#f7f8f5] px-5 py-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42 dark:border-white/8 dark:bg-white/[0.04] dark:text-slate-400 lg:grid">
         <span>Transaksi</span>
         <span>Pemasaran</span>
         <span>Nominal</span>
         <span>Status kerja</span>
         <span className="text-right">Aksi</span>
       </div>
-      <div className="divide-y divide-black/8">
+      <div className="divide-y divide-black/8 dark:divide-white/8">
         {pagination.visibleItems.map((transaction) => (
           <TransactionLedgerRow
             href={getHref(transaction)}
@@ -682,12 +682,12 @@ export function VerificationWorkspace({
   const needsDecision = VERIFICATION_STATUSES.has(transaction.status);
 
   return (
-    <Card className="self-start overflow-hidden rounded-[1.9rem] border border-black/10 bg-white shadow-[0_24px_70px_-54px_rgba(10,74,51,0.45)]">
-      <CardHeader className="border-b border-black/8 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfa_100%)] pb-5">
+    <Card className="self-start overflow-hidden rounded-[1.9rem] border border-black/10 bg-white shadow-[0_24px_70px_-54px_rgba(10,74,51,0.45)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_26px_64px_-40px_rgba(0,0,0,0.62)]">
+      <CardHeader className="border-b border-black/8 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfa_100%)] pb-5 dark:border-white/8 dark:bg-[linear-gradient(180deg,#131f19_0%,#101a15_100%)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
-            <CardTitle className="text-[2rem] font-black tracking-tight text-black/88">{title}</CardTitle>
-            <CardDescription className="mt-2 max-w-2xl text-sm leading-6 text-black/58">
+            <CardTitle className="text-[2rem] font-black tracking-tight text-black/88 dark:text-slate-100">{title}</CardTitle>
+            <CardDescription className="mt-2 max-w-2xl text-sm leading-6 text-black/58 dark:text-slate-300/72">
               {description}
             </CardDescription>
           </div>
@@ -702,7 +702,7 @@ export function VerificationWorkspace({
         <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.82fr)]">
           <div className="space-y-4">
             <WorkspacePanel icon={<UserRound className="size-4" />} label="Informasi Pembeli">
-              <div className="divide-y divide-black/8 overflow-hidden rounded-[1.25rem] border border-black/8 bg-white">
+              <div className="divide-y divide-black/8 overflow-hidden rounded-[1.25rem] border border-black/8 bg-white dark:divide-white/8 dark:border-white/8 dark:bg-[#14201a]">
                 {[
                   ["Nama lengkap", transaction.buyer],
                   ["Email", transaction.buyerEmail || "-"],
@@ -710,10 +710,10 @@ export function VerificationWorkspace({
                   ["NIK", transaction.buyerNationalId || "-"]
                 ].map(([label, value]) => (
                   <div className="grid gap-2 px-4 py-3 sm:grid-cols-[0.38fr_0.62fr]" key={label}>
-                    <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42">
+                    <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-black/42 dark:text-slate-400">
                       {label}
                     </span>
-                    <span className="break-words text-sm font-semibold leading-6 text-black/82">{value}</span>
+                    <span className="break-words text-sm font-semibold leading-6 text-black/82 dark:text-slate-100">{value}</span>
                   </div>
                 ))}
               </div>
@@ -729,7 +729,7 @@ export function VerificationWorkspace({
                 <DetailStat label="Referensi" value={buildTransactionReference(transaction)} />
               </div>
               {transaction.rejectionReason ? (
-                <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm leading-7 text-rose-700">
+                <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm leading-7 text-rose-700 dark:border-rose-300/18 dark:bg-rose-300/[0.08] dark:text-rose-200">
                   Catatan penolakan sebelumnya: {transaction.rejectionReason}
                 </p>
               ) : null}
@@ -754,7 +754,7 @@ export function VerificationWorkspace({
 function ProofPreview({ transaction }: { transaction: AdminTransactionItem }) {
   if (transaction.method !== "TRANSFER_BANK") {
     return (
-      <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-[#fafaf8] p-6 text-sm leading-7 text-black/58">
+      <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-[#fafaf8] p-6 text-sm leading-7 text-black/58 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300/72">
         Pembayaran dilakukan langsung di unit. Admin cukup memastikan dana benar-benar diterima lalu mengonfirmasi transaksi.
       </div>
     );
@@ -762,7 +762,7 @@ function ProofPreview({ transaction }: { transaction: AdminTransactionItem }) {
 
   if (!transaction.proofFile) {
     return (
-      <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-[#fafaf8] p-6 text-sm leading-7 text-black/58">
+      <div className="rounded-[1.5rem] border border-dashed border-black/10 bg-[#fafaf8] p-6 text-sm leading-7 text-black/58 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300/72">
         Bukti pembayaran belum tersedia pada transaksi ini.
       </div>
     );
@@ -770,7 +770,7 @@ function ProofPreview({ transaction }: { transaction: AdminTransactionItem }) {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#f7f7f4]">
+      <div className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#f7f7f4] dark:border-white/8 dark:bg-[#14201a]">
         {isProofPreviewable(transaction.proofFile) ? (
           <Image
             alt={`Bukti pembayaran ${transaction.id}`}
@@ -780,19 +780,19 @@ function ProofPreview({ transaction }: { transaction: AdminTransactionItem }) {
             width={1200}
           />
         ) : (
-          <div className="flex aspect-[4/3] items-center justify-center bg-[#f4f4ef] text-black/46">
+          <div className="flex aspect-[4/3] items-center justify-center bg-[#f4f4ef] text-black/46 dark:bg-[#17241d] dark:text-slate-400">
             <FileText className="size-12" />
           </div>
         )}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-black/54">
+        <p className="text-sm text-black/54 dark:text-slate-300/68">
           {transaction.method === "TRANSFER_BANK"
             ? "Bukti transfer ini tersimpan dari transaksi buyer dan dibaca langsung dari database."
             : "Dokumen transaksi tersimpan di database unit."}
         </p>
         <a
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#0a6a49] underline-offset-4 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#0a6a49] underline-offset-4 hover:underline dark:text-emerald-200"
           href={transaction.proofFile}
           rel="noreferrer"
           target="_blank"
@@ -878,7 +878,7 @@ function TransactionActionPanel({
 
       {canPrint ? (
         <Link
-          className={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7]`}
+          className={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7] dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:bg-white/[0.1]`}
           href={`/admin/transaksi/${transaction.id}/nota?output=print`}
           rel="noreferrer"
           target="_blank"
@@ -889,7 +889,7 @@ function TransactionActionPanel({
       ) : null}
 
       {!canVerifyTransfer && !canConfirmDirect && !canPrint ? (
-        <div className="rounded-2xl border border-dashed border-black/10 bg-[#fafaf8] p-4 text-sm leading-7 text-black/56">
+        <div className="rounded-2xl border border-dashed border-black/10 bg-[#fafaf8] p-4 text-sm leading-7 text-black/56 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-300/72">
           Belum ada tindakan yang perlu dijalankan admin untuk transaksi ini. Pantau status buyer atau buka riwayat transaksi.
         </div>
       ) : null}

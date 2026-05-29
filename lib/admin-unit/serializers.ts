@@ -143,6 +143,11 @@ export function serializeAdminPemasaran(
     bidCount?: number;
     winnerName?: string | null;
     transaction?: AdminPemasaranTransaction | null;
+    participantPreviews?: Array<{
+      bidderId: string;
+      bidderName?: string | null;
+      bidderImage?: string | null;
+    }>;
     bids?: Array<{
       bid: AdminSafeBidRow;
       bidderName?: string | null;
@@ -261,6 +266,11 @@ export function serializeAdminPemasaran(
     finalPrice: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? toNumber(row.finalPrice) || null : null,
     winner: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? extra.winnerName ?? null : null,
     visibility: row.mode === "fixed_price" ? undefined : visibility,
+    participantPreviews: extra.participantPreviews?.map((entry) => ({
+      bidderId: entry.bidderId,
+      bidderName: entry.bidderName ?? "Peserta",
+      bidderImage: entry.bidderImage ?? null
+    })),
     bids: row.mode === "fixed_price" ? undefined : bidEntries,
     note: transactionNote
   };

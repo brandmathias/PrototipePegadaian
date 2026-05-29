@@ -42,6 +42,18 @@ function renderShell() {
 }
 
 describe("DashboardShell", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    document.documentElement.className = "";
+    document.documentElement.removeAttribute("style");
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+    document.documentElement.className = "";
+    document.documentElement.removeAttribute("style");
+  });
+
   it("keeps the active navigation group expanded", () => {
     navigationMock.pathname = "/admin/barang";
 
@@ -65,5 +77,30 @@ describe("DashboardShell", () => {
     fireEvent.mouseEnter(navGroup as HTMLElement);
 
     expect(screen.getByRole("link", { name: /daftar barang/i })).toBeInTheDocument();
+  });
+
+  it("toggles dark and light mode from the header", () => {
+    navigationMock.pathname = "/admin";
+
+    renderShell();
+
+    const notificationButton = screen.getByRole("button", { name: /notifikasi/i });
+    const darkModeButton = screen.getByRole("button", { name: /aktifkan mode gelap/i });
+    expect(notificationButton.compareDocumentPosition(darkModeButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    fireEvent.click(darkModeButton);
+
+    expect(document.documentElement).toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("dark");
+    expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("dark");
+
+    const lightModeButton = screen.getByRole("button", { name: /aktifkan mode terang/i });
+    expect(lightModeButton).toHaveAttribute("aria-pressed", "true");
+    expect(lightModeButton).toHaveAttribute("data-theme-switching", "true");
+    fireEvent.click(lightModeButton);
+
+    expect(document.documentElement).not.toHaveClass("dark");
+    expect(document.documentElement.style.colorScheme).toBe("light");
+    expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("light");
   });
 });

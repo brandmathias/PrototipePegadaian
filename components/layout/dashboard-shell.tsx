@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
   Ban,
@@ -9,11 +9,14 @@ import {
   FileCheck2,
   Gavel,
   LayoutDashboard,
+  Megaphone,
   Menu,
+  Moon,
   Package,
   Search,
   ShieldCheck,
   ShoppingBag,
+  SunMedium,
   UserCog,
   WalletCards,
   X
@@ -28,6 +31,7 @@ type NavIconName =
   | "dashboard"
   | "barang"
   | "lelang"
+  | "marketing"
   | "shopping"
   | "transaksi"
   | "blacklist"
@@ -55,10 +59,17 @@ type SidebarMetric = {
 type DashboardShellProps = {
   title: string;
   subtitle: string;
+  headerLead?: string;
+  headerTitle?: string;
+  headerSubtitle?: string;
+  headerBrandLabel?: string | null;
+  searchPlaceholder?: string;
+  searchShortcutHint?: string;
   nav: NavItem[];
   sidebarMetrics?: SidebarMetric[];
   sidebarUpdatedAt?: string;
   showHeaderSearch?: boolean;
+  showThemeToggle?: boolean;
   currentUser?: {
     name: string;
     role: AuthRole;
@@ -68,13 +79,46 @@ type DashboardShellProps = {
   children: ReactNode;
 };
 
+type ThemeMode = "light" | "dark";
+type ThemeTransitionDirection = "to-light" | "to-dark" | null;
+
+const THEME_STORAGE_KEY = "pegadaian:admin-theme";
+
+function getPreferredTheme(): ThemeMode {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (storedTheme === "light" || storedTheme === "dark") {
+    return storedTheme;
+  }
+
+  return typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function applyTheme(theme: ThemeMode) {
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme;
+}
+
 export function DashboardShell({
   title,
   subtitle,
+  headerLead,
+  headerTitle,
+  headerSubtitle,
+  headerBrandLabel = "Pegadaian Lelang",
+  searchPlaceholder = "Cari transaksi atau barang...",
+  searchShortcutHint,
   nav,
   sidebarMetrics,
   sidebarUpdatedAt,
   showHeaderSearch = true,
+  showThemeToggle = true,
   currentUser,
   profileHref,
   children
@@ -82,6 +126,30 @@ export function DashboardShell({
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [isThemeTransitioning, setIsThemeTransitioning] = useState(false);
+  const [themeTransitionDirection, setThemeTransitionDirection] = useState<ThemeTransitionDirection>(null);
+
+  useEffect(() => {
+    const preferredTheme = getPreferredTheme();
+    setTheme(preferredTheme);
+    applyTheme(preferredTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    setIsThemeTransitioning(true);
+    setTheme((currentTheme) => {
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      setThemeTransitionDirection(nextTheme === "dark" ? "to-dark" : "to-light");
+      applyTheme(nextTheme);
+      window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      return nextTheme;
+    });
+    window.setTimeout(() => {
+      setIsThemeTransitioning(false);
+      setThemeTransitionDirection(null);
+    }, 940);
+  };
 
   const renderNavIcon = (icon?: NavIconName) => {
     switch (icon) {
@@ -91,6 +159,8 @@ export function DashboardShell({
         return <Package className="size-5" />;
       case "lelang":
         return <Gavel className="size-5" />;
+      case "marketing":
+        return <Megaphone className="size-5" />;
       case "shopping":
         return <ShoppingBag className="size-5" />;
       case "transaksi":
@@ -276,7 +346,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="min-h-dvh bg-[#efefed] text-foreground print:bg-white lg:pl-[17rem] print:lg:pl-0">
+    <div className="min-h-dvh bg-[#efefed] text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0">
       {isMenuOpen ? (
         <button
           aria-label="Tutup menu"
@@ -287,7 +357,7 @@ export function DashboardShell({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-3 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 print:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-3 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(36,189,129,0.18),transparent_30%),linear-gradient(180deg,#052d23_0%,#031912_100%)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.46)] print:hidden",
           isMenuOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
         )}
@@ -373,25 +443,42 @@ export function DashboardShell({
       </aside>
 
       <div className="relative min-h-dvh">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-[#f6f5f2]/92 backdrop-blur-xl print:hidden">
+        <header className="sticky top-0 z-30 border-b border-black/5 bg-[#f6f5f2]/92 backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
           <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex min-w-0 items-start gap-3 sm:items-center lg:gap-5">
                 <button
                   aria-label={isMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-                  className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] lg:hidden"
+                  className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-white/10 dark:bg-white/8 dark:text-emerald-100 dark:hover:bg-white/12 lg:hidden"
                   onClick={() => setIsMenuOpen((current) => !current)}
                 >
                   {isMenuOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
                 </button>
                 <div className="min-w-0">
-                  <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/60">Pegadaian Lelang</p>
-                  <div className="mt-1 flex min-w-0 flex-col gap-1 lg:flex-row lg:items-center lg:gap-4">
-                    <h1 className="min-w-0 truncate text-balance font-headline text-[1.7rem] font-black tracking-tight text-[#085a41] sm:text-[2rem]">
-                      {title}
+                  {headerBrandLabel ? (
+                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.22em] text-[#0a6a49]/60 dark:text-emerald-200/62">
+                      {headerBrandLabel}
+                    </p>
+                  ) : null}
+                  {headerLead ? (
+                    <p className={cn("text-[1rem] font-medium text-[#334155] dark:text-slate-200/82", headerBrandLabel ? "mt-1" : "")}>
+                      {headerLead}
+                    </p>
+                  ) : null}
+                  <div
+                    className={cn(
+                      "min-w-0 flex flex-col gap-1",
+                      headerBrandLabel || headerLead ? "mt-1" : "",
+                      !headerLead && "lg:flex-row lg:items-center lg:gap-4"
+                    )}
+                  >
+                    <h1 className="min-w-0 truncate text-balance font-headline text-[1.7rem] font-black tracking-tight text-[#085a41] dark:text-emerald-100 sm:text-[2rem]">
+                      {headerTitle ?? title}
                     </h1>
-                    <div className="hidden h-7 w-px bg-black/10 lg:block" />
-                    <p className="text-sm text-foreground/68 sm:text-base">{subtitle}</p>
+                    {headerLead ? null : <div className="hidden h-7 w-px bg-black/10 dark:bg-white/10 lg:block" />}
+                    {(headerSubtitle ?? subtitle) ? (
+                      <p className="text-sm text-foreground/68 dark:text-slate-200/68 sm:text-base">{headerSubtitle ?? subtitle}</p>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -405,17 +492,54 @@ export function DashboardShell({
                     <Search aria-hidden="true" className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-foreground/45" />
                     <input
                       autoComplete="off"
-                      className="h-14 w-full rounded-[1.35rem] border border-black/5 bg-[#eceae7] pl-12 pr-4 text-base outline-none transition focus:border-[#0b704f]/30 focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0f7a57]/30"
+                      className={cn(
+                        "h-14 w-full rounded-[1.35rem] border border-black/5 bg-[#eceae7] pl-12 text-base outline-none transition focus:border-[#0b704f]/30 focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0f7a57]/30 dark:border-white/8 dark:bg-white/8 dark:text-slate-100 dark:placeholder:text-slate-300/45 dark:focus:border-emerald-300/28 dark:focus:bg-white/10",
+                        searchShortcutHint ? "pr-20" : "pr-4"
+                      )}
                       id="admin-search"
                       name="adminSearch"
-                      placeholder="Cari transaksi atau barang..."
+                      placeholder={searchPlaceholder}
                       type="search"
                     />
+                    {searchShortcutHint ? (
+                      <span className="pointer-events-none absolute right-4 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[0.8rem] border border-black/8 bg-white px-2.5 text-[0.7rem] font-bold tracking-[0.1em] text-[#475569] shadow-[0_8px_18px_-16px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-white/10 dark:text-slate-200">
+                        {searchShortcutHint}
+                      </span>
+                    ) : null}
                   </div>
                 ) : null}
 
                 <div className="flex items-center justify-end gap-2">
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
+                  {showThemeToggle ? (
+                    <button
+                      aria-label={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+                      aria-pressed={theme === "dark"}
+                      data-theme-target={themeTransitionDirection ?? undefined}
+                      data-theme-switching={isThemeTransitioning ? "true" : "false"}
+                      className={cn(
+                        "admin-theme-toggle group relative inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]",
+                        isThemeTransitioning && "admin-theme-toggle-switching",
+                        theme === "dark" ? "admin-theme-toggle-dark" : "admin-theme-toggle-light"
+                      )}
+                      onClick={toggleTheme}
+                      title={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
+                      type="button"
+                    >
+                      <span className="admin-theme-toggle-flash" />
+                      <span className="admin-theme-toggle-sweep" />
+                      <span className="admin-theme-toggle-aura" />
+                      <span className="admin-theme-toggle-orbit" />
+                      <span className="admin-theme-toggle-ripple" />
+                      <span className="admin-theme-toggle-core">
+                        {theme === "dark" ? (
+                          <SunMedium aria-hidden="true" className="size-[1.05rem]" />
+                        ) : (
+                          <Moon aria-hidden="true" className="size-[1.05rem]" />
+                        )}
+                      </span>
+                    </button>
+                  ) : null}
                   {profileHref && currentUser?.role === "admin_unit" ? (
                     <AdminProfileMenu
                       helpHref={`${profileHref}#panduan`}
@@ -426,7 +550,7 @@ export function DashboardShell({
                   ) : profileHref && currentUser ? (
                     <Link
                       aria-label="Buka profil"
-                      className="inline-flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 text-[#085a41] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]"
+                      className="inline-flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 text-[#085a41] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-white/10 dark:bg-white/8 dark:text-emerald-100 dark:hover:bg-white/12"
                       href={profileHref}
                     >
                       <UserCog aria-hidden="true" className="size-5" />

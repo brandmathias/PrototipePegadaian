@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import {
+  AdminMarketingUnifiedPage,
   AdminFixedPriceListPage,
   AdminFixedPriceDetailPage,
   AdminVickreyAuctionListPage,
@@ -10,6 +11,84 @@ import {
 } from "@/components/pages/admin-marketing-pages";
 
 describe("admin pemasaran pages", () => {
+  it("renders a compact unified marketing workspace from backend sessions", () => {
+    render(
+      <AdminMarketingUnifiedPage
+        unitName="UPC Ranotana"
+        auctions={[
+          {
+            id: "pm-fixed-active",
+            lotId: "barang-1",
+            lot: "Kalung Emas Aktif",
+            code: "BRG-001",
+            category: "emas",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "FIXED_PRICE",
+            startsAt: "2026-05-01T00:00:00.000Z",
+            price: 12500000,
+            media: [{ id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" }],
+            primaryMedia: { id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
+            note: "Belum ada transaksi pembeli pada sesi fixed price ini."
+          },
+          {
+            id: "pm-vickrey-active",
+            lotId: "barang-2",
+            lot: "Cincin Emas Aktif",
+            code: "BRG-002",
+            category: "emas",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-08",
+            endingAt: "2099-05-08T00:00:00.000Z",
+            participants: 12,
+            basePrice: 10000000,
+            finalPrice: null,
+            winner: null,
+            visibility: "TERKUNCI",
+            media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+            primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
+            bids: []
+          },
+          {
+            id: "pm-sold",
+            lotId: "barang-3",
+            lot: "Gelang Sudah Terjual",
+            code: "BRG-003",
+            category: "perhiasan",
+            condition: "sangat baik",
+            status: "SELESAI",
+            mode: "FIXED_PRICE",
+            price: 17000000,
+            transactionStatus: "LUNAS",
+            buyerName: "Raras Maheswari Demo",
+            soldAt: "2026-05-03T00:00:00.000Z",
+            media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
+            primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /pemasaran barang/i })).toBeInTheDocument();
+    expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
+    expect(screen.getByText("2 Sesi")).toBeInTheDocument();
+    expect(screen.getByText(/1 Beli Putus \/ 1 Lelang/i)).toBeInTheDocument();
+    expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
+    expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
+    expect(screen.getByText("Peserta")).toBeInTheDocument();
+    expect(screen.getByText("+2")).toBeInTheDocument();
+    expect(screen.getAllByText("Kode Lot").length).toBeGreaterThan(0);
+    expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
+    expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
+
+    expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
+    expect(screen.queryByText("Kalung Emas Aktif")).not.toBeInTheDocument();
+  });
+
   it("renders fixed price cards without auction-only language", () => {
     render(
       <AdminFixedPriceListPage

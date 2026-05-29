@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin Eksekutif — Pegadaian Lelang</title>
+  <style>
+    :root {
+      --sidebar-900: #003b2c;
+      --sidebar-800: #004d38;
+      --sidebar-700: #006348;
+      --green: #00975a;
+      --green-700: #007a49;
+      --green-900: #004f33;
+      --green-soft: #eaf8ef;
+      --canvas: #f7faf8;
+      --white: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e4ebe6;
+      --danger: #e11d28;
+      --danger-soft: #fff0f1;
+      --amber: #c97900;
+      --amber-soft: #fff4dc;
+      --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+      --shadow-soft: 0 12px 32px rgba(15, 23, 42, 0.055);
+      --radius: 22px;
+      --font: Inter, "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 25% 0%, rgba(0, 151, 90, .08), transparent 28%),
+        radial-gradient(circle at 95% 25%, rgba(0, 151, 90, .05), transparent 24%),
+        var(--canvas);
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 326px 1fr;
+    }
+
+    /* ========================
+       Sidebar
+    ======================== */
+    .sidebar {
+      min-height: 100vh;
+      padding: 16px 20px;
+      position: relative;
+      color: white;
+      background:
+        radial-gradient(circle at 75% 20%, rgba(28, 224, 129, .16), transparent 22%),
+        radial-gradient(circle at 15% 85%, rgba(4, 184, 109, .18), transparent 28%),
+        linear-gradient(180deg, var(--sidebar-800) 0%, #003c2b 52%, #00311f 100%);
+      border-radius: 0 30px 30px 0;
+      box-shadow:
+        20px 0 45px rgba(0, 50, 35, .08),
+        inset -1px 0 0 rgba(255,255,255,.08);
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      inset: -30% auto auto -30%;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(255,255,255,.10), transparent 62%);
+      pointer-events: none;
+    }
+
+    .sidebar-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand-card {
+      padding: 20px 20px 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      background: white;
+      color: var(--green-900);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 26px rgba(0,0,0,.18);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      margin-top: 2px;
+      font-size: 28px;
+      line-height: .95;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .unit-card {
+      min-height: 126px;
+      padding: 18px 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.18);
+      background:
+        radial-gradient(circle at 85% 25%, rgba(139,255,191,.18), transparent 30%),
+        linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+      display: grid;
+      grid-template-columns: 1fr 92px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .unit-label,
+    .section-label {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,.92);
+    }
+
+    .unit-name {
+      margin: 10px 0 12px;
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .active-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      height: 30px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(133,255,190,.24);
+      background: rgba(3, 132, 80, .35);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .active-dot {
+      width: 8px;
+      height: 8px;
+      background: #69ffb2;
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(105,255,178,.8);
+    }
+
+    .building {
+      width: 96px;
+      height: 80px;
+      opacity: .75;
+      align-self: end;
+      justify-self: end;
+      filter: drop-shadow(0 12px 12px rgba(0,0,0,.16));
+    }
+
+    .section-label {
+      margin: 6px 6px 12px;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nav-item {
+      width: 100%;
+      border: 0;
+      color: rgba(255,255,255,.72);
+      background: transparent;
+      padding: 12px 12px;
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 17px;
+      font-weight: 800;
+      transition: .22s ease;
+    }
+
+    .nav-item:hover {
+      transform: translateX(3px);
+      color: white;
+      background: rgba(255,255,255,.06);
+    }
+
+    .nav-item.active {
+      color: white;
+      background:
+        radial-gradient(circle at 15% 30%, rgba(114,255,177,.22), transparent 26%),
+        linear-gradient(135deg, #149662, #007d4d);
+      box-shadow:
+        0 16px 26px rgba(0, 70, 43, .28),
+        inset 0 1px 0 rgba(255,255,255,.16);
+    }
+
+    .nav-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      display: grid;
+      place-items: center;
+      color: white;
+    }
+
+    .nav-icon svg {
+      width: 21px;
+      height: 21px;
+      stroke-width: 2;
+    }
+
+    .menu-badge {
+      min-width: 46px;
+      height: 31px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(223, 205, 73, .74), rgba(92, 116, 38, .74));
+      border: 1px solid rgba(255,255,255,.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: white;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .menu-badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #fff6a2;
+    }
+
+    .summary-card {
+      margin-top: auto;
+      padding: 18px 18px 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.055);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+    }
+
+    .summary-title {
+      margin-bottom: 14px;
+      font-size: 13px;
+      letter-spacing: 4px;
+      font-weight: 950;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      color: rgba(255,255,255,.84);
+      font-size: 15px;
+    }
+
+    .summary-row strong {
+      color: white;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .sidebar-date {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 13px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,.11);
+      color: rgba(255,255,255,.92);
+      font-size: 13px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .date-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: #050709;
+      border: 1px solid rgba(255,255,255,.18);
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 10px 18px rgba(0,0,0,.24);
+    }
+
+    /* ========================
+       Main Layout
+    ======================== */
+    .main {
+      padding: 28px 28px 32px 34px;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 360px minmax(330px, 520px) auto;
+      gap: 28px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .greeting small {
+      display: block;
+      color: #475569;
+      font-size: 17px;
+      margin-bottom: 2px;
+    }
+
+    .greeting h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: -.8px;
+    }
+
+    .search {
+      height: 60px;
+      border-radius: 16px;
+      border: 1px solid #dfe6e2;
+      background: rgba(255,255,255,.86);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 16px;
+      transition: .2s ease;
+    }
+
+    .search:focus-within {
+      border-color: rgba(0,151,90,.38);
+      box-shadow: 0 0 0 5px rgba(0,151,90,.08), var(--shadow-soft);
+    }
+
+    .search svg {
+      color: #334155;
+      flex-shrink: 0;
+    }
+
+    .search input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .shortcut {
+      height: 26px;
+      min-width: 44px;
+      display: grid;
+      place-items: center;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid #dfe6e2;
+      background: white;
+      font-size: 12px;
+      color: #475569;
+      box-shadow: 0 4px 10px rgba(15,23,42,.06);
+    }
+
+    .actions {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid #e3e8e5;
+      background: rgba(255,255,255,.86);
+      color: #0f172a;
+      display: grid;
+      place-items: center;
+      position: relative;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: .22s ease;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .notify-dot {
+      position: absolute;
+      right: 9px;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 0 4px white;
+    }
+
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 48% 24%, #ffd8b9 0 13%, transparent 14%),
+        radial-gradient(circle at 50% 38%, #7d4b2a 0 18%, transparent 19%),
+        linear-gradient(145deg, #113f67 0 46%, #f3f7fb 47% 55%, #0f172a 56%);
+      border: 3px solid white;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .chevron {
+      color: #0f172a;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(580px, 1fr) 444px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .kpis {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .kpi {
+      min-height: 186px;
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 88% 100%, rgba(0,151,90,.06), transparent 38%),
+        linear-gradient(180deg, #ffffff, #ffffff);
+      border: 1px solid rgba(0, 151, 90, .28);
+      box-shadow: var(--shadow-soft);
+      padding: 30px 28px;
+      display: grid;
+      grid-template-columns: 98px 1fr auto;
+      align-items: center;
+      gap: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: .25s ease;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      bottom: -34px;
+      height: 90px;
+      opacity: .45;
+      background:
+        repeating-radial-gradient(ellipse at 20% 100%, transparent 0 6px, rgba(0,151,90,.12) 7px 8px, transparent 9px 16px);
+      pointer-events: none;
+    }
+
+    .kpi:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .kpi.danger {
+      border-color: rgba(225,29,40,.28);
+    }
+
+    .kpi.danger::after {
+      background:
+        repeating-radial-gradient(ellipse at 70% 100%, transparent 0 6px, rgba(225,29,40,.12) 7px 8px, transparent 9px 16px);
+    }
+
+    .kpi-icon {
+      width: 92px;
+      height: 92px;
+      border-radius: 22px;
+      background: var(--green-soft);
+      display: grid;
+      place-items: center;
+      color: var(--green-900);
+    }
+
+    .kpi.danger .kpi-icon {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .kpi-title {
+      font-size: 18px;
+      font-weight: 850;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 46px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -1.4px;
+      margin-bottom: 12px;
+    }
+
+    .kpi-sub {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .trend-pill,
+    .urgent-pill {
+      align-self: start;
+      justify-self: end;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 13px;
+      border-radius: 999px;
+      background: #e9f8e8;
+      color: var(--green-700);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .urgent-pill {
+      background: #ffe9ec;
+      color: var(--danger);
+    }
+
+    .panel {
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .chart-panel {
+      padding: 28px 22px 24px;
+    }
+
+    .panel-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 4px 16px;
+    }
+
+    .panel-title-wrap {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .small-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: var(--green-soft);
+      color: var(--green-700);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 23px;
+      letter-spacing: -.3px;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filter {
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 10px;
+      border: 1px solid #dfe6e2;
+      background: white;
+      color: #111827;
+      font-weight: 760;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(15,23,42,.055);
+    }
+
+    .filter.active {
+      color: white;
+      border-color: transparent;
+      background: linear-gradient(135deg, #00975a, #006d43);
+      box-shadow: 0 10px 18px rgba(0,151,90,.20);
+    }
+
+    .more {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      color: #334155;
+    }
+
+    .chart-box {
+      margin-top: 8px;
+      height: 336px;
+      position: relative;
+    }
+
+    .chart-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .pulse-point {
+      animation: pulsePoint 1.8s infinite ease-in-out;
+      transform-origin: center;
+    }
+
+    @keyframes pulsePoint {
+      0%, 100% { opacity: .45; transform: scale(1); }
+      50% { opacity: .22; transform: scale(1.4); }
+    }
+
+    .metric-strip {
+      margin-top: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: white;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      overflow: hidden;
+    }
+
+    .mini-metric {
+      padding: 22px 18px;
+      display: grid;
+      grid-template-columns: 50px 1fr;
+      gap: 14px;
+      align-items: center;
+      border-right: 1px solid #edf2ef;
+    }
+
+    .mini-metric:last-child {
+      border-right: 0;
+    }
+
+    .mini-metric .small-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 18px;
+    }
+
+    .mini-label {
+      color: #475569;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .mini-value {
+      color: var(--green-700);
+      font-weight: 950;
+      font-size: 22px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+
+    .mini-sub {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .mini-sub strong {
+      color: var(--green);
+    }
+
+    .side-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .check-panel {
+      min-height: 368px;
+      padding: 26px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .check-panel::after {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 190px;
+      right: -14px;
+      bottom: 10px;
+      opacity: .12;
+      background:
+        linear-gradient(135deg, transparent 0 30%, #0ca66a 31% 33%, transparent 34%),
+        radial-gradient(circle at 45% 25%, #0ca66a 0 8px, transparent 9px),
+        linear-gradient(180deg, #0ca66a, #0ca66a);
+      border-radius: 20px;
+      transform: rotate(12deg);
+    }
+
+    .check-head {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 16px;
+      margin-bottom: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .box {
+      width: 21px;
+      height: 21px;
+      margin-top: 2px;
+      border-radius: 5px;
+      border: 2px solid #b8c1c7;
+      background: white;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .box.checked {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .task-title {
+      font-size: 14px;
+      font-weight: 820;
+      margin-bottom: 2px;
+    }
+
+    .task-note {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .alert-card {
+      min-height: 186px;
+      padding: 28px 30px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(245, 158, 11, .38);
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,193,69,.28), transparent 20%),
+        radial-gradient(circle at 100% 100%, rgba(255,193,69,.14), transparent 28%),
+        linear-gradient(135deg, #fff7e8, #fffaf2);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 20px;
+      align-items: start;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .alert-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background:
+        radial-gradient(circle at 30% 20%, #fff2ba, transparent 28%),
+        linear-gradient(135deg, #f6a800, #c97900);
+      box-shadow: 0 12px 24px rgba(201,121,0,.22);
+    }
+
+    .alert-card h3 {
+      margin: 2px 0 9px;
+      font-size: 20px;
+      color: #9a5300;
+    }
+
+    .alert-card p {
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.45;
+      margin-bottom: 22px;
+    }
+
+    .alert-link {
+      color: #c26200;
+      font-size: 18px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      transition: .2s ease;
+    }
+
+    .alert-link:hover {
+      transform: translateX(4px);
+      text-decoration: underline;
+    }
+
+    /* ========================
+       Responsive
+    ======================== */
+    @media (max-width: 1280px) {
+      .app {
+        grid-template-columns: 290px 1fr;
+      }
+
+      .sidebar {
+        padding: 14px;
+      }
+
+      .brand-title {
+        font-size: 24px;
+      }
+
+      .main {
+        padding: 24px;
+      }
+
+      .header {
+        grid-template-columns: 300px 1fr auto;
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .side-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        min-height: auto;
+        border-radius: 0 0 28px 28px;
+      }
+
+      .sidebar-inner {
+        height: auto;
+      }
+
+      .summary-card {
+        margin-top: 0;
+      }
+
+      .header {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        justify-self: start;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi {
+        grid-template-columns: 80px 1fr auto;
+      }
+
+      .metric-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .side-column {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .main {
+        padding: 18px;
+      }
+
+      .nav-item {
+        grid-template-columns: 40px 1fr auto;
+      }
+
+      .kpi {
+        grid-template-columns: 1fr;
+      }
+
+      .trend-pill,
+      .urgent-pill {
+        justify-self: start;
+      }
+
+      .panel-top,
+      .filters {
+        flex-wrap: wrap;
+      }
+
+      .metric-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-metric {
+        border-right: 0;
+        border-bottom: 1px solid #edf2ef;
+      }
+
+      .mini-metric:last-child {
+        border-bottom: 0;
+      }
+
+      .alert-card {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <section class="brand-card">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3 5 6v5c0 4.4 2.9 8.4 7 10 4.1-1.6 7-5.6 7-10V6l-7-3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="brand-title">PEGADAIAN<br>LELANG</div>
+          </div>
+
+          <div class="unit-card">
+            <div>
+              <div class="unit-label">UNIT AKTIF</div>
+              <div class="unit-name">UPC Ranotana</div>
+              <div class="active-pill"><span class="active-dot"></span> AKTIF</div>
+            </div>
+            <svg class="building" viewBox="0 0 120 90" fill="none">
+              <rect x="62" y="15" width="34" height="59" rx="8" fill="#8fe2aa" opacity=".45"/>
+              <rect x="72" y="27" width="7" height="8" fill="#d8ffe3" opacity=".7"/>
+              <rect x="84" y="27" width="7" height="8" fill="#d8ffe3" opacity=".7"/>
+              <rect x="72" y="42" width="7" height="8" fill="#d8ffe3" opacity=".65"/>
+              <rect x="84" y="42" width="7" height="8" fill="#d8ffe3" opacity=".65"/>
+              <path d="M8 72h104" stroke="#9df0bd" opacity=".35"/>
+              <path d="M20 64c15-13 40-20 68-8" stroke="#9df0bd" opacity=".24" stroke-width="8" stroke-linecap="round"/>
+              <path d="M32 57h56l-28-12-28 12Z" fill="#16a66b"/>
+              <path d="M40 57v14M55 57v14M70 57v14M84 57v14" stroke="#74ffc0" stroke-width="3" opacity=".55"/>
+              <rect x="28" y="70" width="66" height="5" rx="2.5" fill="#85e7ac" opacity=".55"/>
+            </svg>
+          </div>
+        </section>
+
+        <section>
+          <div class="section-label">NAVIGASI</div>
+          <nav class="nav" aria-label="Navigasi utama">
+            <button class="nav-item active">
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z" stroke="currentColor" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Dashboard</span>
+            </button>
+            <button class="nav-item">
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" stroke="currentColor" stroke-linejoin="round"/><path d="m4.5 8 7.5 4.2L19.5 8M12 12.2V21" stroke="currentColor"/></svg>
+              </span>
+              <span>Kelola Barang</span>
+              <span class="menu-badge">3</span>
+            </button>
+            <button class="nav-item">
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m7.8 14.4-3.1 3.1a1.5 1.5 0 0 0 2.1 2.1l3.1-3.1M8.9 6.9l2-2a1.9 1.9 0 0 1 2.7 0l5.1 5.1a1.9 1.9 0 0 1 0 2.7l-2 2M10.6 5.2l7.9 7.9M6.4 11.4l5.7 5.7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Pemasaran</span>
+            </button>
+            <button class="nav-item">
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M8 7H5v12h12v-3M12 5h7v7M19 5l-9 9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span>Transaksi</span>
+              <span class="menu-badge">2</span>
+            </button>
+            <button class="nav-item">
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor"/><path d="M6.2 6.2 17.8 17.8" stroke="currentColor" stroke-linecap="round"/></svg>
+              </span>
+              <span>Pelanggaran</span>
+            </button>
+          </nav>
+        </section>
+
+        <section class="summary-card">
+          <div class="summary-title">RINGKASAN UNIT</div>
+          <div class="summary-row"><span>Total Barang</span><strong>18</strong></div>
+          <div class="summary-row"><span>Siap Dipasarkan</span><strong>8</strong></div>
+          <div class="summary-row"><span>Jatuh Tempo Dekat</span><strong>3</strong></div>
+          <div class="sidebar-date">
+            <span class="date-logo">N</span>
+            <span>Per 29 Mei 2026, 05.18 WIB</span>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="main">
+      <header class="header">
+        <div class="greeting">
+          <small>Selamat pagi,</small>
+          <h1>Admin Eksekutif</h1>
+        </div>
+
+        <label class="search">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="m21 21-4.4-4.4M10.8 18.2a7.4 7.4 0 1 1 0-14.8 7.4 7.4 0 0 1 0 14.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Cari data, pengguna, atau laporan..." />
+          <span class="shortcut">⌘ /</span>
+        </label>
+
+        <div class="actions">
+          <button class="icon-btn" aria-label="Notifikasi">
+            <span class="notify-dot"></span>
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M10 21h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" aria-label="Mode tampilan">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <span class="avatar" aria-hidden="true"></span>
+          <svg class="chevron" width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="m7 10 5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <div class="kpis">
+          <article class="kpi">
+            <div class="kpi-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none">
+                <path d="M6 6h15l-2 9H8L6 6ZM6 6 5 3H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-title">Barang Terjual</div>
+              <div class="kpi-value">8.762</div>
+              <div class="kpi-sub">vs periode sebelumnya 7.793</div>
+            </div>
+            <div class="trend-pill">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                <path d="M4 16 10 10l4 4 6-8M15 6h5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              +12.4%
+            </div>
+          </article>
+
+          <article class="kpi">
+            <div class="kpi-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none">
+                <path d="m20 12-8 8L4 12V4h8l8 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M8.5 8.5h.01" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-title">Barang Ditebus</div>
+              <div class="kpi-value">4.315</div>
+              <div class="kpi-sub">vs periode sebelumnya 3.928</div>
+            </div>
+          </article>
+
+          <article class="kpi danger">
+            <div class="kpi-icon">
+              <svg width="42" height="42" viewBox="0 0 24 24" fill="none">
+                <path d="M7 3h8l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M15 3v5h4M9 12h5M9 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="m17.5 13 3 5h-6l3-5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-title">Transaksi Perlu Tindakan</div>
+              <div class="kpi-value">128</div>
+              <div class="kpi-sub">Memerlukan perhatian segera</div>
+            </div>
+            <div class="urgent-pill">Urgent</div>
+          </article>
+        </div>
+
+        <article class="panel chart-panel">
+          <div class="panel-top">
+            <div class="panel-title-wrap">
+              <div class="small-icon">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 19V5M4 19h17M7 15l4-4 3 3 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Laporan Tren Penjualan</h2>
+                <p>Performa penjualan barang lelang dalam periode waktu pilihan.</p>
+              </div>
+            </div>
+            <div class="filters">
+              <button class="filter">Hari Ini</button>
+              <button class="filter active">Minggu Ini</button>
+              <button class="filter">Bulan Ini</button>
+              <button class="more" aria-label="Opsi">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5h.01M12 12h.01M12 19h.01" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <svg viewBox="0 0 920 330" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#00975a" stop-opacity=".34"/>
+                  <stop offset="68%" stop-color="#00975a" stop-opacity=".10"/>
+                  <stop offset="100%" stop-color="#00975a" stop-opacity="0"/>
+                </linearGradient>
+                <filter id="chartShadow" x="-5%" y="-20%" width="120%" height="160%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#00975a" flood-opacity=".12"/>
+                </filter>
+              </defs>
+
+              <g font-family="Inter, Arial" font-size="14" fill="#475569">
+                <text x="6" y="45">1.2M</text>
+                <text x="12" y="100">900K</text>
+                <text x="12" y="155">600K</text>
+                <text x="12" y="210">300K</text>
+                <text x="30" y="265">0</text>
+              </g>
+
+              <g stroke="#dbe4de" stroke-dasharray="3 4" stroke-width="1">
+                <line x1="70" x2="895" y1="40" y2="40"/>
+                <line x1="70" x2="895" y1="95" y2="95"/>
+                <line x1="70" x2="895" y1="150" y2="150"/>
+                <line x1="70" x2="895" y1="205" y2="205"/>
+              </g>
+              <line x1="70" x2="895" y1="260" y2="260" stroke="#dbe4de" stroke-width="1"/>
+
+              <path d="M90 160 C145 152, 173 98, 224 95 C275 92, 295 201, 353 205 C415 209, 423 145, 495 143 C563 141, 567 32, 635 42 C710 53, 701 157, 768 143 C815 134, 842 91, 882 71 L882 260 L90 260 Z" fill="url(#areaGradient)"/>
+              <path d="M90 160 C145 152, 173 98, 224 95 C275 92, 295 201, 353 205 C415 209, 423 145, 495 143 C563 141, 567 32, 635 42 C710 53, 701 157, 768 143 C815 134, 842 91, 882 71"
+                    fill="none" stroke="#06a25f" stroke-width="3.2" stroke-linecap="round" filter="url(#chartShadow)"/>
+
+              <circle cx="90" cy="160" r="7" fill="white" stroke="#06a25f" stroke-width="4"/>
+              <circle class="pulse-point" cx="882" cy="71" r="22" fill="#06a25f"/>
+              <circle cx="882" cy="71" r="8" fill="white" stroke="#06a25f" stroke-width="4"/>
+
+              <g font-family="Inter, Arial" font-size="13" fill="#475569">
+                <text x="74" y="288">12 Mei</text>
+                <text x="196" y="288">13 Mei</text>
+                <text x="318" y="288">14 Mei</text>
+                <text x="440" y="288">15 Mei</text>
+                <text x="562" y="288">16 Mei</text>
+                <text x="684" y="288">17 Mei</text>
+                <text x="806" y="288">18 Mei</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="metric-strip">
+            <div class="mini-metric">
+              <div class="small-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h17M7 15l4-4 3 3 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="mini-label">Total Penjualan</div>
+                <div class="mini-value">Rp 12,85 M</div>
+                <div class="mini-sub">vs periode lalu <strong>+12.4%</strong></div>
+              </div>
+            </div>
+            <div class="mini-metric">
+              <div class="small-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 8h12l1 12H5L6 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 8a3 3 0 0 1 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="mini-label">Rata-rata Transaksi</div>
+                <div class="mini-value">Rp 1,47 Jt</div>
+                <div class="mini-sub">vs periode lalu <strong>+8.7%</strong></div>
+              </div>
+            </div>
+            <div class="mini-metric">
+              <div class="small-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="m7.8 14.4-3.1 3.1a1.5 1.5 0 0 0 2.1 2.1l3.1-3.1M8.9 6.9l2-2a1.9 1.9 0 0 1 2.7 0l5.1 5.1a1.9 1.9 0 0 1 0 2.7l-2 2M10.6 5.2l7.9 7.9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="mini-label">Jumlah Lelang</div>
+                <div class="mini-value">682</div>
+                <div class="mini-sub">vs periode lalu <strong>+9.3%</strong></div>
+              </div>
+            </div>
+            <div class="mini-metric">
+              <div class="small-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17 20v-2a4 4 0 0 0-8 0v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 20v-2a3 3 0 0 0-3-3M4 20v-2a3 3 0 0 1 3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="mini-label">Peserta Aktif</div>
+                <div class="mini-value">1.248</div>
+                <div class="mini-sub">vs periode lalu <strong>+11.2%</strong></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="side-column">
+          <article class="panel check-panel">
+            <div class="check-head">
+              <div class="small-icon">
+                <svg width="27" height="27" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 5h6l1 2h3v14H5V7h3l1-2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="m9 13 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Checklist Tugas Harian</h2>
+                <p>Pastikan semua tugas operasional harian selesai tepat waktu.</p>
+              </div>
+            </div>
+
+            <div class="task-list">
+              <div class="task">
+                <button class="box checked" aria-label="checked">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div><div class="task-title">Review transaksi perlu tindakan</div><div class="task-note">128 transaksi</div></div>
+              </div>
+              <div class="task">
+                <button class="box checked" aria-label="checked">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div><div class="task-title">Verifikasi dokumen penebusan</div><div class="task-note">36 dokumen</div></div>
+              </div>
+              <div class="task">
+                <button class="box" aria-label="unchecked"></button>
+                <div><div class="task-title">Validasi pembayaran masuk</div><div class="task-note">Menunggu validasi</div></div>
+              </div>
+              <div class="task">
+                <button class="box" aria-label="unchecked"></button>
+                <div><div class="task-title">Update status lelang berjalan</div><div class="task-note">12 lelang aktif</div></div>
+              </div>
+              <div class="task">
+                <button class="box" aria-label="unchecked"></button>
+                <div><div class="task-title">Laporan harian ke pimpinan</div><div class="task-note">Sebelum 17:00 WIB</div></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="alert-card">
+            <div class="alert-icon">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                <path d="m12 3 10 18H2L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 9v5M12 17h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <h3>Perhatian Diperlukan</h3>
+              <p>128 transaksi menunggu tindakan Anda. Segera tindak lanjuti untuk menjaga kelancaran operasional.</p>
+              <a class="alert-link" href="#">Lihat Transaksi
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            </div>
+          </article>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const navButtons = document.querySelectorAll(".nav-item");
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        navButtons.forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+      });
+    });
+
+    document.querySelectorAll(".box").forEach((box) => {
+      box.addEventListener("click", () => {
+        box.classList.toggle("checked");
+        if (box.classList.contains("checked")) {
+          box.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        } else {
+          box.innerHTML = "";
+        }
+      });
+    });
+
+    const filters = document.querySelectorAll(".filter");
+    filters.forEach((filter) => {
+      filter.addEventListener("click", () => {
+        filters.forEach((item) => item.classList.remove("active"));
+        filter.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>

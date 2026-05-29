@@ -116,6 +116,58 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
   >());
 }
 
+async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
+  if (!pemasaranIds.length) {
+    return new Map<
+      string,
+      Array<{
+        bidderId: string;
+        bidderName: string;
+        bidderImage?: string | null;
+      }>
+    >();
+  }
+
+  const rows = await db
+    .select({
+      pemasaranId: bids.pemasaranId,
+      bidderId: users.id,
+      bidderName: users.name,
+      bidderImage: users.image,
+      createdAt: bids.createdAt
+    })
+    .from(bids)
+    .innerJoin(users, eq(users.id, bids.userId))
+    .where(inArray(bids.pemasaranId, pemasaranIds))
+    .orderBy(asc(bids.createdAt));
+
+  return rows.reduce(
+    (map, row) => {
+      const collection = map.get(row.pemasaranId) ?? [];
+      const alreadyIncluded = collection.some((entry) => entry.bidderId === row.bidderId);
+
+      if (!alreadyIncluded && collection.length < 10) {
+        collection.push({
+          bidderId: row.bidderId,
+          bidderName: row.bidderName ?? "Peserta",
+          bidderImage: row.bidderImage ?? null
+        });
+        map.set(row.pemasaranId, collection);
+      }
+
+      return map;
+    },
+    new Map<
+      string,
+      Array<{
+        bidderId: string;
+        bidderName: string;
+        bidderImage?: string | null;
+      }>
+    >()
+  );
+}
+
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
   if (item.status !== "jaminan" && item.status !== "gagal" && item.status !== "gadai") {
@@ -193,8 +245,11 @@ export async function listAdminPemasaran(unitId: string) {
     .groupBy(pemasaran.id, barang.id, users.name)
     .orderBy(desc(pemasaran.createdAt));
 
-  const mediaByBarangId = await getMarketingMediaByBarangIds(rows.map((row) => row.item.id));
-  const transactionByPemasaranId = await getLatestTransactionsByPemasaranIds(rows.map((row) => row.marketing.id));
+  const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId] = await Promise.all([
+    getMarketingMediaByBarangIds(rows.map((row) => row.item.id)),
+    getLatestTransactionsByPemasaranIds(rows.map((row) => row.marketing.id)),
+    getParticipantPreviewsByPemasaranIds(rows.map((row) => row.marketing.id))
+  ]);
 
   return rows.map((row) =>
     serializeAdminPemasaran(row.marketing, {
@@ -205,7 +260,8 @@ export async function listAdminPemasaran(unitId: string) {
       media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
       winnerName: row.winnerName ?? null,
-      transaction: transactionByPemasaranId.get(row.marketing.id) ?? null
+      transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
+      participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? []
     })
   );
 }

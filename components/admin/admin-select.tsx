@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -31,7 +32,9 @@ export function AdminSelect({
   const selectId = id ?? generatedId;
   const rootRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
   const normalizedValue = String(value);
   const selectedOption = options.find((option) => String(option.value) === normalizedValue) ?? options[0];
 
@@ -39,7 +42,8 @@ export function AdminSelect({
     if (!open) return;
 
     function handlePointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) {
         setOpen(false);
       }
     }
@@ -57,6 +61,62 @@ export function AdminSelect({
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setMenuStyle(null);
+      return;
+    }
+
+    function updateMenuPosition() {
+      const trigger = buttonRef.current;
+      const menu = menuRef.current;
+      if (!trigger || !menu) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const gap = 6;
+      const viewportPadding = 12;
+      const top = rect.bottom + gap + window.scrollY;
+      const maxWidth = window.innerWidth - viewportPadding * 2;
+      const contentWidth = menu.scrollWidth;
+      const width = Math.min(Math.max(rect.width, contentWidth), maxWidth);
+      const left = Math.min(
+        Math.max(viewportPadding, rect.left + window.scrollX),
+        window.scrollX + window.innerWidth - width - viewportPadding
+      );
+      const maxHeight = 288;
+
+      setMenuStyle({
+        left,
+        maxHeight,
+        minWidth: rect.width,
+        top,
+        width
+      });
+
+      window.requestAnimationFrame(() => {
+        const menuRect = menu.getBoundingClientRect();
+        const overflowBottom = menuRect.bottom - (window.innerHeight - viewportPadding);
+
+        if (overflowBottom > 0 && typeof window.scrollBy === "function") {
+          window.scrollBy({
+            top: overflowBottom + 16,
+            behavior: "smooth"
+          });
+        }
+      });
+    }
+
+    const rafId = window.requestAnimationFrame(updateMenuPosition);
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
     };
   }, [open]);
 
@@ -94,14 +154,21 @@ export function AdminSelect({
         ref={buttonRef}
         type="button"
       >
-        <span className="truncate">{selectedOption?.label ?? ""}</span>
+        <span className="whitespace-nowrap pr-2 text-left">{selectedOption?.label ?? ""}</span>
         <span className="admin-select-icon">
           <ChevronDown className={cn("size-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]", open && "rotate-180")} />
         </span>
       </button>
 
-      {open ? (
-        <div className="admin-select-menu" role="listbox" aria-labelledby={selectId}>
+      {open && typeof document !== "undefined"
+        ? createPortal(
+          <div
+            aria-labelledby={selectId}
+            className="admin-select-menu"
+            ref={menuRef}
+            role="listbox"
+            style={menuStyle ?? undefined}
+          >
           {options.map((option, index) => {
             const active = String(option.value) === normalizedValue;
 
@@ -116,13 +183,15 @@ export function AdminSelect({
                 type="button"
                 onClick={() => selectValue(String(option.value))}
               >
-                <span className="truncate">{option.label}</span>
+                <span className="whitespace-nowrap pr-6 text-left">{option.label}</span>
                 <Check className="admin-select-check size-4" />
               </button>
             );
           })}
-        </div>
-      ) : null}
+          </div>,
+          document.body
+        )
+        : null}
     </div>
   );
 }

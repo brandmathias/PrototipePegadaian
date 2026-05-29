@@ -65,8 +65,8 @@ export function AdminProfileMenu({
         aria-expanded={isOpen}
         aria-haspopup="menu"
         className={cn(
-          "group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-2.5 py-2 text-sm font-bold text-[#085a41] shadow-[0_16px_34px_-26px_rgba(8,69,50,0.45)] ring-1 ring-white transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20 hover:bg-[#f7fbf7]",
-          isOpen ? "border-[#0a6a49]/20 bg-[#f4faf5]" : ""
+          "group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-2.5 py-2 text-sm font-bold text-[#085a41] shadow-[0_16px_34px_-26px_rgba(8,69,50,0.45)] ring-1 ring-white transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20 hover:bg-[#f7fbf7] dark:border-emerald-200/14 dark:bg-[#102019] dark:text-emerald-100 dark:shadow-[0_18px_36px_-28px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)] dark:ring-white/5 dark:hover:bg-[#14271f]",
+          isOpen ? "border-[#0a6a49]/20 bg-[#f4faf5] dark:border-emerald-200/20 dark:bg-[#14271f]" : ""
         )}
         onClick={() => setIsOpen((current) => !current)}
         type="button"
@@ -82,7 +82,7 @@ export function AdminProfileMenu({
         <ChevronDown
           aria-hidden="true"
           className={cn(
-            "size-3.5 text-[#0a6a49]/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-[#0a6a49]",
+            "size-3.5 text-[#0a6a49]/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-[#0a6a49] dark:text-emerald-100/62 dark:group-hover:text-emerald-100",
             isOpen ? "rotate-180" : ""
           )}
         />
@@ -90,7 +90,7 @@ export function AdminProfileMenu({
 
       {isOpen ? (
         <div
-          className="absolute right-0 mt-3 w-60 overflow-hidden rounded-[1.35rem] border border-black/8 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80"
+          className="absolute right-0 mt-3 w-60 overflow-hidden rounded-[1.35rem] border border-black/8 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80 dark:border-white/10 dark:bg-[#101a15] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] dark:ring-white/5"
           role="menu"
         >
           <div className="px-3 pb-2 pt-2">
@@ -106,13 +106,13 @@ export function AdminProfileMenu({
                 <p className="text-[0.62rem] font-black uppercase tracking-[0.24em] text-[#0a6a49]/45">
                   Admin Unit
                 </p>
-                <p className="mt-1 truncate font-bold text-foreground">{name}</p>
+                <p className="mt-1 truncate font-bold text-foreground dark:text-slate-100">{name}</p>
               </div>
             </div>
           </div>
-          <div className="my-1 h-px bg-border/70" />
+          <div className="my-1 h-px bg-border/70 dark:bg-white/8" />
           <Link
-            className="flex items-center gap-3 rounded-[1rem] px-3 py-2.5 font-semibold text-foreground transition duration-300 hover:bg-[#f3faf5] hover:text-[#0a6a49]"
+            className="flex items-center gap-3 rounded-[1rem] px-3 py-2.5 font-semibold text-foreground transition duration-300 hover:bg-[#f3faf5] hover:text-[#0a6a49] dark:text-slate-100 dark:hover:bg-white/8 dark:hover:text-emerald-100"
             href={profileHref}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -123,7 +123,7 @@ export function AdminProfileMenu({
             Profil
           </Link>
           <Link
-            className="flex items-center gap-3 rounded-[1rem] px-3 py-2.5 font-semibold text-foreground transition duration-300 hover:bg-[#f7f7f3] hover:text-[#0a6a49]"
+            className="flex items-center gap-3 rounded-[1rem] px-3 py-2.5 font-semibold text-foreground transition duration-300 hover:bg-[#f7f7f3] hover:text-[#0a6a49] dark:text-slate-100 dark:hover:bg-white/8 dark:hover:text-emerald-100"
             href={helpHref}
             onClick={() => setIsOpen(false)}
             role="menuitem"
@@ -134,7 +134,7 @@ export function AdminProfileMenu({
             Bantuan
           </Link>
           <LogoutButton
-            className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-2.5 text-left font-semibold text-red-700 transition duration-300 hover:bg-red-50 disabled:opacity-60"
+            className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-2.5 text-left font-semibold text-red-700 transition duration-300 hover:bg-red-50 disabled:opacity-60 dark:text-rose-200 dark:hover:bg-rose-300/10"
             redirectTo="/login"
             role="menuitem"
           >
