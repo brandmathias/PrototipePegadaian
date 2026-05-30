@@ -41,23 +41,25 @@ describe("admin unit validation", () => {
       dueDate: "2026-05-01",
       ownerName: "Raras",
       specifications: {
-        jenisPerhiasan: "  Cincin ",
-        material: "Emas Kuning 24K",
+        jenisEmas: "  Cincin ",
         kadarEmas: "99,9%",
         berat: "3,20 gram",
-        batuUtama: "Berlian",
-        jumlahBatu: "12 pcs",
+        bentuk: "Perhiasan",
+        panjang: "18 cm",
+        diameter: "16 mm",
+        sertifikat: "Antam",
         nomorMesin: "Bukan field perhiasan"
       }
     });
 
     expect(payload.specifications).toEqual({
-      batuUtama: "Berlian",
       berat: "3,20 gram",
-      jenisPerhiasan: "Cincin",
-      jumlahBatu: "12 pcs",
+      bentuk: "Perhiasan",
+      diameter: "16 mm",
+      jenisEmas: "Cincin",
       kadarEmas: "99,9%",
-      material: "Emas Kuning 24K"
+      panjang: "18 cm",
+      sertifikat: "Antam"
     });
   });
 

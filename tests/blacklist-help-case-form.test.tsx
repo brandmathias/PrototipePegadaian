@@ -37,10 +37,10 @@ describe("BlacklistHelpCaseForm", () => {
     });
 
     expect(await screen.findByRole("img", { name: /preview bukti pendukung/i })).toBeInTheDocument();
-    expect(screen.getByText("bukti-bayar.png")).toBeInTheDocument();
+    expect(screen.getAllByText("bukti-bayar.png")).toHaveLength(2);
   });
 
-  it("shows a file card without image preview for pdf attachments", () => {
+  it("shows a mini pdf preview, file card, and full preview modal for pdf attachments", () => {
     render(<BlacklistHelpCaseForm incidentId="incident-2" />);
 
     const fileInput = screen.getByLabelText(/unggah bukti pendukung/i);
@@ -53,7 +53,13 @@ describe("BlacklistHelpCaseForm", () => {
     });
 
     expect(screen.queryByRole("img", { name: /preview bukti pendukung/i })).not.toBeInTheDocument();
-    expect(screen.getByText("bukti-pendukung.pdf")).toBeInTheDocument();
+    expect(screen.getByTitle("Preview PDF bukti pendukung")).toBeInTheDocument();
+    expect(screen.getAllByText("bukti-pendukung.pdf")).toHaveLength(2);
     expect(screen.getByText("PDF - 9 B")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /buka preview bukti pendukung/i }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByTitle("Preview penuh PDF bukti pendukung")).toBeInTheDocument();
   });
 });

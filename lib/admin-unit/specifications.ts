@@ -15,14 +15,13 @@ const specificationFields: Record<string, BarangSpecificationField[]> = {
     { key: "sertifikat", label: "Sertifikat", placeholder: "Contoh: Ada, Antam, UBS" }
   ],
   perhiasan: [
-    { key: "jenisPerhiasan", label: "Jenis Perhiasan", placeholder: "Contoh: Cincin" },
-    { key: "material", label: "Material", placeholder: "Contoh: Emas Kuning 24K" },
-    { key: "kadarEmas", label: "Kadar Emas", placeholder: "Contoh: 99,9%" },
+    { key: "jenisEmas", label: "Jenis Emas", placeholder: "Contoh: Cincin, gelang, kalung" },
+    { key: "kadarEmas", label: "Kadar Emas", placeholder: "Contoh: 24K atau 99,9%" },
     { key: "berat", label: "Berat", placeholder: "Contoh: 3,20 gram" },
-    { key: "batuUtama", label: "Batu Utama", placeholder: "Contoh: Berlian" },
-    { key: "karatBatuUtama", label: "Karat Batu Utama", placeholder: "Contoh: 0,30 ct" },
-    { key: "jumlahBatu", label: "Jumlah Batu", placeholder: "Contoh: 12 pcs" },
-    { key: "finishing", label: "Finishing", placeholder: "Contoh: Polish Premium" }
+    { key: "bentuk", label: "Bentuk", placeholder: "Contoh: Perhiasan atau batangan" },
+    { key: "panjang", label: "Panjang", placeholder: "Contoh: 18 cm" },
+    { key: "diameter", label: "Diameter", placeholder: "Contoh: 16 mm" },
+    { key: "sertifikat", label: "Sertifikat", placeholder: "Contoh: Ada, Antam, UBS" }
   ],
   logam_mulia: [
     { key: "jenisLogam", label: "Jenis Logam", placeholder: "Contoh: Emas batangan" },
