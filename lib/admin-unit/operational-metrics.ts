@@ -20,6 +20,8 @@ export const ADMIN_VERIFICATION_ACTION_STATUSES = new Set([
   "MENUNGGU_KONFIRMASI_LANGSUNG"
 ]);
 
+const ADMIN_INVENTORY_LIST_STATUSES = new Set(["GADAI", "JAMINAN"]);
+
 export function getDaysUntilDateLabel(dateLabel: unknown, now = new Date()) {
   if (!dateLabel || dateLabel === "-") {
     return null;
@@ -42,15 +44,21 @@ export function isAdminInventoryDueSoon(item: InventoryMetricItem, now = new Dat
   return days !== null && days >= 0 && days <= 7;
 }
 
+export function isAdminInventoryListItem(item: InventoryMetricItem) {
+  return ADMIN_INVENTORY_LIST_STATUSES.has(String(item.status ?? "").toUpperCase());
+}
+
 export function isAdminInventoryReadyForMarketing(item: InventoryMetricItem) {
-  return ["JAMINAN", "GADAI"].includes(String(item.status ?? "").toUpperCase());
+  return isAdminInventoryListItem(item);
 }
 
 export function getAdminInventoryMetrics(items: InventoryMetricItem[], now = new Date()) {
+  const inventoryItems = items.filter(isAdminInventoryListItem);
+
   return {
-    total: items.length,
-    readyForMarketing: items.filter(isAdminInventoryReadyForMarketing).length,
-    dueSoon: items.filter((item) => isAdminInventoryDueSoon(item, now)).length
+    total: inventoryItems.length,
+    readyForMarketing: inventoryItems.filter(isAdminInventoryReadyForMarketing).length,
+    dueSoon: inventoryItems.filter((item) => isAdminInventoryDueSoon(item, now)).length
   };
 }
 
@@ -59,7 +67,15 @@ export function isAdminMarketingActionable(item: MarketingMetricItem, now = new 
   const status = String(item.status ?? "").toUpperCase();
   const visibility = String(item.visibility ?? "").toUpperCase();
 
-  if (!mode.includes("VICKREY") || status !== "AKTIF") {
+  if (!mode.includes("VICKREY")) {
+    return false;
+  }
+
+  if (status === "GAGAL") {
+    return true;
+  }
+
+  if (status !== "AKTIF") {
     return false;
   }
 

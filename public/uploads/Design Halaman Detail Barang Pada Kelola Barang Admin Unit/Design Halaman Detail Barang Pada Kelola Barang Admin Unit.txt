@@ -1,0 +1,325 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FiGrid, FiBox, FiShoppingBag, FiDollarSign, FiAlertTriangle, FiBell, FiMoon, 
+  FiChevronDown, FiRefreshCw, FiUnlock, FiTrendingUp, FiLayers, FiCheckShield, 
+  FiTrendingUp as FiChartIcon, FiCalendar, FiUser, FiFileText, FiX, FiInfo, FiPlus
+} from 'react-icons/fi';
+
+type ModalType = 'none' | 'perpanjangan' | 'penebusan' | 'pasarkan';
+
+export default function AssetDetailDashboard() {
+  const [activeModal, setActiveModal] = useState<ModalType>('none');
+  const [auctionType, setAuctionType] = useState<'vickrey' | 'dutch'>('vickrey');
+
+  const asset = {
+    nama: 'QA Gadai Future',
+    kode: 'BRG-2505-000123',
+    kategori: 'Perhiasan',
+    kondisi: 'Baik',
+    taksiran: 7850000,
+    berat: '3,82 gr',
+    kadar: '16K',
+    jatuhTempo: '17 Mei 2025',
+    tanggalGadai: '17 Nov 2024',
+    nasabah: 'Siti Nurhaliza',
+    telepon: '0812-3456-7890',
+    deskripsi: 'Cincin emas kuning dengan permata sintetis di bagian tengah. Desain bunga dengan detail ukiran halus pada sisi cincin. Kondisi fisik baik dan terawat.'
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-800 flex flex-col lg:flex-row select-none relative">
+      
+      {/* ==================== 1. SIDEBAR NAVIGASI KIRI ==================== */}
+      <aside className="w-full lg:w-72 bg-[#004A23] text-white flex flex-col justify-between p-6 flex-shrink-0 lg:min-h-screen shadow-md">
+        <div className="space-y-8">
+          <div className="flex items-center space-x-3 px-2">
+            <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center border border-white/15">
+              <span className="text-[#FED65B] font-black text-lg">P</span>
+            </div>
+            <div>
+              <h2 className="text-sm font-black tracking-wider uppercase leading-none text-white">Pegadaian</h2>
+              <span className="text-[11px] font-bold text-emerald-300 tracking-widest uppercase">Lelang</span>
+            </div>
+          </div>
+
+          <div className="bg-[#003B1C] rounded-2xl p-4 border border-white/5">
+            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest block mb-1">Unit Aktif</span>
+            <h3 className="text-base font-extrabold text-white tracking-tight mb-2">UPC Ranotana</h3>
+            <span className="inline-flex items-center space-x-1.5 bg-emerald-950 text-emerald-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>AKTIF</span>
+            </span>
+          </div>
+
+          <nav className="space-y-1">
+            <span className="text-[10px] text-emerald-500 font-bold tracking-widest uppercase block px-3 mb-2">Navigasi</span>
+            {[
+              { label: 'Dashboard', icon: FiGrid },
+              { label: 'Kelola Barang', icon: FiBox, badge: 3, active: true },
+              { label: 'Pemasaran', icon: FiShoppingBag },
+              { label: 'Transaksi', icon: FiDollarSign, badge: 2 },
+              { label: 'Pelanggaran', icon: FiAlertTriangle },
+            ].map((menu, index) => (
+              <button
+                key={index}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold tracking-wide transition-all outline-none ${
+                  menu.active ? 'bg-[#006747] text-white shadow-sm' : 'text-emerald-100/70 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <menu.icon className={`w-4 h-4 ${menu.active ? 'text-white' : 'text-emerald-300'}`} />
+                  <span>{menu.label}</span>
+                </div>
+                {menu.badge && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#FED65B] text-slate-900">{menu.badge}</span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
+          <div className="space-y-2 px-2 text-xs font-semibold text-emerald-100/60">
+            <span className="text-[9px] text-emerald-500 font-bold tracking-widest uppercase block mb-1">Ringkasan Unit</span>
+            <div className="flex justify-between"><span>Total Barang</span><span className="text-white font-bold">18</span></div>
+            <div className="flex justify-between"><span>Siap Dipasarkan</span><span className="text-white font-bold">8</span></div>
+            <div className="flex justify-between"><span>Jatuh Tempo Dekat</span><span className="text-white font-bold">3</span></div>
+          </div>
+          <div className="bg-[#003B1C] rounded-xl p-3 text-[10px] text-emerald-400 font-bold text-center tracking-wide">
+            Per 29 Mei 2026, 19:21 WIB
+          </div>
+        </div>
+      </aside>
+
+      {/* ==================== 2. WORKSPACE UTAMA (TOP NAV + INDEPENDENT FORM GRID) ==================== */}
+      <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-x-hidden">
+        
+        {/* Top Header Row Panel */}
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 pb-4 gap-4">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 tracking-wide uppercase">
+              <span>Pegadaian Lelang</span>
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight mt-1">UPC Ranotana <span className="text-sm font-semibold text-slate-400 ml-2 border-l border-slate-200 pl-2 normal-case tracking-normal">Pusat kendali operasional unit</span></h1>
+          </div>
+
+          <div className="flex items-center space-x-3.5">
+            <button className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 shadow-xs"><FiBell className="w-4 h-4" /></button>
+            <button className="w-9 h-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-500 shadow-xs"><FiMoon className="w-4 h-4" /></button>
+            <div className="bg-white border border-slate-100 rounded-xl px-3 py-1.5 shadow-xs flex items-center space-x-2.5">
+              <div className="w-6 h-6 bg-[#004A23] text-white rounded-lg flex items-center justify-center font-black text-xs">AU</div>
+              <span className="text-xs font-bold text-slate-700">Admin Unit Demo</span>
+              <FiChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            </div>
+          </div>
+        </header>
+
+        {/* Action Launcher Button Bank Cluster */}
+        <div className="w-full flex justify-end space-x-2.5">
+          <button onClick={() => setActiveModal('perpanjangan')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 flex items-center space-x-1.5 transition-colors shadow-xs">
+            <FiRefreshCw className="text-slate-400" /> <span>Catat Perpanjangan</span>
+          </button>
+          <button onClick={() => setActiveModal('penebusan')} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 flex items-center space-x-1.5 transition-colors shadow-xs">
+            <FiUnlock className="text-slate-400" /> <span>Catat Penebusan</span>
+          </button>
+          <button onClick={() => setActiveModal('pasarkan')} className="px-4 py-2 bg-[#006747] text-white text-xs font-black rounded-xl hover:bg-[#005238] flex items-center space-x-1.5 transition-colors shadow-sm">
+            <FiTrendingUp /> <span>Pasarkan Barang</span>
+          </button>
+        </div>
+
+        {/* 70:30 Split Data Partition Display Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-start">
+          
+          {/* CONTENT SADDLE KIRI (70%): PURE WORKCARD METADATA */}
+          <div className="lg:col-span-7 bg-white rounded-2xl p-5 shadow-[0_4px_30px_rgba(0,0,0,0.005)] border border-slate-100 space-y-6">
+            
+            <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+              <div className="w-full sm:w-48 h-36 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden flex items-center justify-center p-2 flex-shrink-0">
+                <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=300&q=80" alt="Gold Flower Ring" className="w-full h-full object-contain" />
+              </div>
+
+              <div className="flex-1 space-y-4 w-full">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{asset.nama}</h2>
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-400 mt-2">
+                    <span>Kode Barang</span>
+                    <span className="text-emerald-700 font-extrabold font-mono tracking-wide">{asset.kode}</span>
+                  </div>
+                </div>
+
+                {/* 3 Pillar Summary Metrics Row */}
+                <div className="grid grid-cols-3 gap-3 w-full">
+                  {[
+                    { label: 'Kategori', value: asset.kategori, icon: FiLayers },
+                    { label: 'Kondisi', value: asset.kondisi, icon: FiCheckShield },
+                    { label: 'Nilai Taksiran', value: `Rp ${asset.taksiran.toLocaleString('id-ID')}`, icon: FiChartIcon, highlight: true }
+                  ].map((badge, idx) => (
+                    <div key={idx} className="p-2.5 bg-slate-50/60 border border-slate-100/30 rounded-xl flex items-center space-x-2.5">
+                      <div className={`w-7 h-7 rounded-lg hidden sm:flex items-center justify-center border border-slate-100/10 ${badge.highlight ? 'bg-emerald-50 text-[#006747]' : 'bg-white text-slate-400'}`}>
+                        <badge.icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none">{badge.label}</span>
+                        <span className={`text-xs font-black block mt-1 leading-none ${badge.highlight ? 'text-[#006747]' : 'text-slate-800'}`}>{badge.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px bg-slate-100 w-full" />
+
+            {/* Structured Metric Specification Grid Sheet */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-5 gap-x-6 text-xs font-semibold">
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Kode Barang</span><span className="text-slate-800 tracking-wide font-mono font-bold">{asset.kode}</span></div>
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Berat</span><span className="text-slate-800">{asset.berat}</span></div>
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Kadar</span><span className="text-slate-800">{asset.kadar}</span></div>
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Jatuh Tempo</span><span className="text-slate-800 font-bold">{asset.jatuhTempo}</span></div>
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Tanggal Gadai</span><span className="text-slate-700">{asset.tanggalGadai}</span></div>
+              <div><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Nama Nasabah</span><span className="text-slate-700">{asset.nasabah}</span></div>
+              <div className="col-span-2"><span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Nomor Telepon Nasabah</span><span className="text-slate-600 font-mono font-bold">{asset.telepon}</span></div>
+            </div>
+
+            {/* Asset Physical Description Component Box */}
+            <div className="space-y-2 pt-1 border-t border-slate-50">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center space-x-1.5"><FiFileText /> <span>Deskripsi Barang</span></span>
+              <p className="text-xs font-semibold text-slate-600 leading-relaxed bg-slate-50/40 p-3.5 rounded-xl border border-slate-100/40">{asset.deskripsi}</p>
+            </div>
+          </div>
+
+          {/* CONTENT SADDLE KANAN (30%): LOG DUAL-AXIS AUDIT TIMELINE */}
+          <div className="lg:col-span-3 bg-white rounded-2xl p-5 shadow-[0_4px_30px_rgba(0,0,0,0.005)] border border-slate-100 space-y-5">
+            <div>
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+                <FiClock className="text-[#006747]" /> <span>Riwayat Kronologi Aset</span>
+              </h3>
+            </div>
+
+            <div className="relative border-l-2 border-slate-100 pl-6 ml-12 space-y-6 py-2 text-xs font-semibold">
+              {[
+                { title: 'Barang diterima unit', date: '17 Mei 2025, 10:32 WIB', desc: 'Aset telah diterima oleh unit dari nasabah.', icon: '📦' },
+                { title: 'Perpanjangan Dicatat', date: '17 Apr 2025, 14:22 WIB', desc: 'Perpanjangan gadai dicatat oleh petugas.', icon: '📝' },
+                { title: 'Barang tidak ditebus', date: '17 Nov 2024, 09:15 WIB', desc: 'Barang tidak ditebus hingga jatuh tempo.', icon: '❌' },
+                { title: 'Barang Dipasarkan', date: '18 Nov 2024, 11:05 WIB', desc: 'Barang dipasarkan melalui kanal pemasaran unit.', icon: '🔨' }
+              ].map((log, idx) => (
+                <div key={idx} className="relative">
+                  {/* Left Column Dynamic Floating Icon Badge */}
+                  <span className="absolute -left-[54px] top-0 w-8 h-8 rounded-full bg-slate-50 border border-slate-100 shadow-xs flex items-center justify-center text-xs">
+                    {log.icon}
+                  </span>
+                  {/* Right Column Sumpu Green Dot Marker */}
+                  <span className="absolute -left-[28.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-600 border-2 border-white ring-4 ring-emerald-50" />
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 leading-none">{log.title}</h4>
+                    <span className="text-[9px] text-slate-400 font-bold block mt-1.5">{log.date}</span>
+                    <p className="text-[10px] text-slate-400 font-semibold leading-normal mt-1">{log.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+
+      {/* ========================================================================= */}
+      {/* GLOBAL MASTER ANIMATED PORTAL OVERLAY MODALS WINDOW                       */}
+      {/* ========================================================================= */}
+      <AnimatePresence>
+        {activeModal !== 'none' && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={closeModal}
+          >
+            <motion.div 
+              initial={{ scale: 0.96, opacity: 0, y: 8 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.96, opacity: 0, y: 8 }}
+              transition={{ type: 'spring', duration: 0.35 }}
+              className={`bg-white w-full rounded-2xl shadow-xl border border-slate-100 overflow-hidden ${activeModal === 'pasarkan' ? 'max-w-md' : 'max-w-sm'}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header Pop-up */}
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                    {activeModal === 'perpanjangan' && 'Catat Perpanjangan Gadai'}
+                    {activeModal === 'penebusan' && 'Catat Penebusan Gadai'}
+                    {activeModal === 'pasarkan' && 'Konfigurasi Pemasaran Lelang'}
+                  </h3>
+                </div>
+                <button onClick={closeModal} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg outline-none transition-colors"><FiX className="w-4 h-4" /></button>
+              </div>
+
+              {/* Form Input Contextual Layer */}
+              <div className="p-5 space-y-4 text-xs font-semibold">
+                {activeModal === 'perpanjangan' && (
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 p-3 rounded-xl space-y-1 text-slate-500 border border-slate-100">
+                      <div className="flex justify-between"><span>Jatuh Tempo Lama</span><span className="text-slate-800 font-bold">{asset.jatuhTempo}</span></div>
+                      <div className="flex justify-between"><span>Proyeksi Jatuh Tempo Baru</span><span className="text-emerald-700 font-black">17 September 2025</span></div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase block">Durasi Perpanjangan</span>
+                      <select className="w-full p-2.5 bg-white border border-slate-200 rounded-xl outline-none focus:border-[#006747]">
+                        <option>30 Hari Kalender</option>
+                        <option>60 Hari Kalender</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'penebusan' && (
+                  <div className="space-y-3">
+                    <div className="bg-orange-50/50 border border-orange-100 text-orange-800 p-3 rounded-xl flex items-start space-x-2">
+                      <FiInfo className="mt-0.5 flex-shrink-0" />
+                      <span className="text-[10px] leading-normal font-medium">Tindakan pelunasan ini akan membebaskan aset jaminan dari portofolio unit lelang.</span>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl space-y-1.5 text-slate-600 border border-slate-100">
+                      <div className="flex justify-between"><span>Uang Pinjaman</span><span className="text-slate-800 font-bold">Rp 7.000.000</span></div>
+                      <div className="flex justify-between"><span>Sewa Jasa Berjalan</span><span className="text-slate-800 font-bold">Rp 245.000</span></div>
+                      <div className="h-px bg-slate-200 my-1" />
+                      <div className="flex justify-between font-black text-slate-900"><span>Total Pembayaran</span><span className="text-[#006747]">Rp 7.245.000</span></div>
+                    </div>
+                  </div>
+                )}
+
+                {activeModal === 'pasarkan' && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase block">Mekanisme Sistem Lelang</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button type="button" onClick={() => setAuctionType('vickrey')} className={`p-2.5 border rounded-xl text-left outline-none ${auctionType === 'vickrey' ? 'border-[#006747] bg-emerald-50/5' : 'border-slate-200'}`}>
+                          <span className="text-xs font-black block">Vickrey</span>
+                        </button>
+                        <button type="button" onClick={() => setAuctionType('dutch')} className={`p-2.5 border rounded-xl text-left outline-none ${auctionType === 'dutch' ? 'border-[#006747] bg-emerald-50/5' : 'border-slate-200'}`}>
+                          <span className="text-xs font-black block">Dutch</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black text-slate-400 uppercase block">Harga Pembuka Lelang</span>
+                      <div className="flex bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-[#006747]">
+                        <span className="bg-slate-50 text-slate-400 px-3 flex items-center font-black border-r border-slate-100">Rp</span>
+                        <input type="text" defaultValue="7.850.000" className="w-full p-2 bg-transparent font-bold outline-none" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons Footer pop-up */}
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-2">
+                <button onClick={closeModal} className="px-3.5 py-1.5 text-slate-500 hover:text-slate-800 text-xs font-bold rounded-xl outline-none">Batal</button>
+                <button onClick={() => { alert('Transaksi berhasil diamankan ke dalam log unit.'); closeModal(); }} className="px-4 py-1.5 bg-[#006747] hover:bg-[#005238] text-white text-xs font-black rounded-xl transition-colors shadow-xs">Simpan Transaksi</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+}

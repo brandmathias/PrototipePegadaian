@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, ReactNode, useMemo, useState } from "react";
-import { CarFront, Cpu, Gem, LoaderCircle, Medal, Save, Shapes } from "lucide-react";
+import { CarFront, Cpu, Gem, LoaderCircle, Medal, Save, Shapes, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { AdminOptionGrid } from "@/components/admin-unit/admin-option-grid";
@@ -23,6 +23,8 @@ type AdminBarangEditValue = {
   customerNumber: string;
   pawnedAt: string;
   dueDate: string;
+  marketingMode?: string | null;
+  marketingPrice?: number | string | null;
   specifications?: BarangSpecificationRecord;
 };
 
@@ -60,10 +62,12 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
   const [condition, setCondition] = useState(String(item.condition ?? "baik").toLowerCase());
   const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
   const [loanValue, setLoanValue] = useState(String(item.loanValue ?? ""));
+  const [marketingPrice, setMarketingPrice] = useState(String(item.marketingPrice ?? ""));
   const [description, setDescription] = useState(String(item.description ?? ""));
   const [specifications, setSpecifications] = useState<BarangSpecificationRecord>(item.specifications ?? {});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
+  const canEditFixedPrice = String(item.marketingMode ?? "").toLowerCase() === "fixed_price";
 
   function updateSpecification(key: string, value: string) {
     setSpecifications((current) => ({
@@ -100,6 +104,7 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
           customerNumber: item.customerNumber,
           pawnedAt: item.pawnedAt,
           dueDate: item.dueDate,
+          ...(canEditFixedPrice ? { marketingPrice } : {}),
           specifications
         })
       });
@@ -209,6 +214,30 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
             value={loanValue}
           />
         </div>
+        {canEditFixedPrice ? (
+          <div className="space-y-3 rounded-2xl border border-[#0d6b4c]/15 bg-[#f3fbf7] p-4 md:col-span-2">
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#0d6b4c] text-white">
+                <Tag className="size-4.5" />
+              </span>
+              <div>
+                <FieldLabel htmlFor="admin-barang-marketing-price">Harga fixed price aktif</FieldLabel>
+                <p className="mt-1 text-sm leading-6 text-black/55">
+                  Harga ini tampil di katalog buyer dan bisa disesuaikan selama barang fixed price belum terjual.
+                </p>
+              </div>
+            </div>
+            <Input
+              className="h-12 bg-white text-sm font-semibold sm:text-base"
+              id="admin-barang-marketing-price"
+              min={1}
+              onChange={(event) => setMarketingPrice(event.target.value)}
+              placeholder="Contoh: 12500000"
+              type="number"
+              value={marketingPrice}
+            />
+          </div>
+        ) : null}
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-description">Deskripsi</FieldLabel>
           <Textarea

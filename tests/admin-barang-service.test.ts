@@ -90,8 +90,8 @@ describe("listAdminBarang", () => {
 
     const result = await listAdminBarang("unit-1");
 
-    expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-4", "barang-5"]);
-    expect(result.map((item) => item.status)).toEqual(["jaminan", "gagal", "gadai"]);
+    expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-5"]);
+    expect(result.map((item) => item.status)).toEqual(["jaminan", "gadai"]);
   });
 
   it("allows active fixed price barang to be updated through the Drizzle service gate", async () => {
@@ -167,6 +167,90 @@ describe("listAdminBarang", () => {
       })
     );
     expect(result.name).toBe("Cincin Fixed Price");
+  });
+
+  it("updates active fixed price marketing price through the pemasaran table", async () => {
+    const current = {
+      id: "barang-fixed",
+      unitId: "unit-1",
+      name: "Cincin Lama",
+      status: "dipasarkan"
+    };
+    const updated = {
+      ...current,
+      name: "Cincin Fixed Price",
+      status: "dipasarkan"
+    };
+    const updateBarangSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([updated])
+      })
+    });
+    const updateMarketingSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue([])
+    });
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ id: "pm-fixed", mode: "fixed_price", price: "12500000" }])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([
+                {
+                  id: "pm-fixed",
+                  mode: "fixed_price",
+                  status: "aktif",
+                  winnerId: null
+                }
+              ])
+            })
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ count: 0 }])
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }));
+    mocks.db.update
+      .mockImplementationOnce(() => ({
+        set: updateBarangSet
+      }))
+      .mockImplementationOnce(() => ({
+        set: updateMarketingSet
+      }));
+
+    await updateAdminBarang("unit-1", "barang-fixed", {
+      ...editPayload,
+      marketingPrice: "13500000"
+    });
+
+    expect(updateMarketingSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        price: "13500000"
+      })
+    );
   });
 
   it("blocks active auction barang from being updated before it becomes a failed strategy case", async () => {

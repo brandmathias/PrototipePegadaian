@@ -1,6 +1,9 @@
 import { AdminInventoryDetailPage } from "@/components/pages/admin-pages";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
-import { getAdminBarangById } from "@/lib/services/admin-barang.service";
+import {
+  getAdminBarangById,
+  listAdminBarangHistory,
+} from "@/lib/services/admin-barang.service";
 
 export default async function Page({
   params
@@ -9,7 +12,10 @@ export default async function Page({
 }) {
   const { id } = await params;
   const { unitId } = await getAdminUnitPageContext();
-  const item = await getAdminBarangById(unitId, id);
+  const [item, history] = await Promise.all([
+    getAdminBarangById(unitId, id),
+    listAdminBarangHistory(unitId, 12, id),
+  ]);
 
-  return <AdminInventoryDetailPage item={item} itemId={id} />;
+  return <AdminInventoryDetailPage history={history} item={item} itemId={id} />;
 }

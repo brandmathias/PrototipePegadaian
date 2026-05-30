@@ -25,6 +25,7 @@ import { AdminSelect } from "@/components/admin/admin-select";
 import { Input } from "@/components/ui/input";
 import {
   isAdminInventoryDueSoon,
+  isAdminInventoryListItem,
   isAdminInventoryReadyForMarketing
 } from "@/lib/admin-unit/operational-metrics";
 import { currency } from "@/lib/formatters/currency";
@@ -201,15 +202,16 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
   const [categoryFilter, setCategoryFilter] = useState("SEMUA");
   const [inventoryFilter, setInventoryFilter] = useState<(typeof inventoryFilterOptions)[number]["value"]>("SEMUA");
   const deferredQuery = useDeferredValue(query);
+  const inventoryItems = useMemo(() => items.filter(isAdminInventoryListItem), [items]);
 
   const categories = useMemo(() => {
-    return ["SEMUA", ...new Set(items.map((item) => String(item.category ?? "").trim()).filter(Boolean))];
-  }, [items]);
+    return ["SEMUA", ...new Set(inventoryItems.map((item) => String(item.category ?? "").trim()).filter(Boolean))];
+  }, [inventoryItems]);
 
   const filteredItems = useMemo(() => {
     const normalizedQuery = deferredQuery.trim().toLowerCase();
 
-    return items.filter((item) => {
+    return inventoryItems.filter((item) => {
       const matchesQuery =
         !normalizedQuery ||
         [item.code, item.name, item.ownerName, item.customerNumber, item.category, item.condition]
@@ -225,7 +227,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
 
       return matchesQuery && matchesCategory && matchesInventoryFilter;
     });
-  }, [categoryFilter, deferredQuery, inventoryFilter, items]);
+  }, [categoryFilter, deferredQuery, inventoryFilter, inventoryItems]);
   const pagination = useAdminPagination(filteredItems, `${categoryFilter}-${inventoryFilter}-${deferredQuery}`);
 
   return (
@@ -280,7 +282,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
           </div>
           <span>
             Menampilkan <strong className="font-black text-black/78">{filteredItems.length}</strong> dari{" "}
-            <strong className="font-black text-black/78">{items.length}</strong> barang.
+            <strong className="font-black text-black/78">{inventoryItems.length}</strong> barang.
           </span>
         </div>
       </div>

@@ -143,4 +143,49 @@ describe("admin gadai action forms", () => {
       }
     });
   });
+
+  it("submits fixed price marketing price when editing an active fixed price barang", async () => {
+    renderWithToast(
+      <AdminBarangEditForm
+        item={{
+          appraisalValue: 10000000,
+          category: "perhiasan",
+          condition: "baik",
+          customerNumber: "NAS-001",
+          description: "Lengkap",
+          dueDate: "2026-06-01",
+          id: "barang-fixed",
+          loanValue: 7000000,
+          marketingMode: "fixed_price",
+          marketingPrice: 12500000,
+          name: "Kalung Emas",
+          ownerName: "Nasabah Demo",
+          pawnedAt: "2026-05-01",
+          specifications: {
+            berat: "8 gram",
+            kadarEmas: "18K"
+          }
+        }}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Harga fixed price aktif"), {
+      target: { value: "13500000" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/barang/barang-fixed",
+        expect.objectContaining({
+          method: "PUT"
+        })
+      );
+    });
+
+    const [, request] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
+      marketingPrice: "13500000"
+    });
+  });
 });

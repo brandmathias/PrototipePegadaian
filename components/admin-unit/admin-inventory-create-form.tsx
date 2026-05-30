@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   CarFront,
-  CalendarDays,
   Check,
   Circle,
   Expand,
@@ -22,6 +21,7 @@ import {
   X
 } from "lucide-react";
 
+import { AdminDatePicker, getDateAfter } from "@/components/admin-unit/admin-date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -97,21 +97,6 @@ function FormInput({
         className
       )}
     />
-  );
-}
-
-function DateInput(props: React.ComponentProps<typeof Input>) {
-  return (
-    <div className="flex overflow-hidden rounded-xl border border-transparent bg-slate-50 transition focus-within:border-[#006747] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#006747]/10">
-      <Input
-        {...props}
-        className="h-11 flex-1 border-0 bg-transparent px-3 text-xs font-semibold text-slate-700 shadow-none focus-visible:ring-0"
-        type="date"
-      />
-      <span className="flex items-center border-l border-slate-200/60 bg-slate-100/50 px-3 text-slate-400">
-        <CalendarDays className="size-3.5" />
-      </span>
-    </div>
   );
 }
 
@@ -466,6 +451,8 @@ export function AdminInventoryCreateForm() {
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const defaultDueDate = useMemo(() => dateAfter(30), []);
+  const pawnedAt = defaultPawnedAt;
+  const [dueDate, setDueDate] = useState(defaultDueDate);
   const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
   const activeMedia = media[activeMediaIndex] ?? media[0] ?? null;
   const checklistItems = useMemo(
@@ -527,6 +514,16 @@ export function AdminInventoryCreateForm() {
   useEffect(() => {
     refreshChecklist();
   }, [category, specificationFields]);
+
+  useEffect(() => {
+    refreshChecklist();
+  }, [dueDate, pawnedAt]);
+
+  useEffect(() => {
+    if (new Date(`${dueDate}T00:00:00.000Z`) <= new Date(`${pawnedAt}T00:00:00.000Z`)) {
+      setDueDate(getDateAfter(pawnedAt, 30));
+    }
+  }, [dueDate, pawnedAt]);
 
   useEffect(() => {
     if (!isMediaPreviewOpen) {
@@ -641,6 +638,7 @@ export function AdminInventoryCreateForm() {
 
     const formData = new FormData(event.currentTarget);
     formData.delete("media");
+    formData.set("pawnedAt", pawnedAt);
     formData.set("loanValue", String(formData.get("appraisalValue") ?? ""));
     media.forEach((item) => formData.append("media", item.file));
 
@@ -694,6 +692,7 @@ export function AdminInventoryCreateForm() {
         onSubmit={handleSubmit}
         ref={formRef}
       >
+      <input id="pawnedAt" name="pawnedAt" readOnly type="hidden" value={pawnedAt} />
       <div className="rounded-3xl border border-slate-100/80 bg-white shadow-[0_4px_25px_rgba(0,0,0,0.012)] lg:col-span-7">
         <PanelTitle
           description="Data awal ini menjadi dasar sebelum barang jaminan dipasarkan ke katalog."
@@ -740,12 +739,15 @@ export function AdminInventoryCreateForm() {
             <MoneyInput id="appraisalValue" min={1} name="appraisalValue" placeholder="Masukkan nilai taksiran" required />
           </div>
           <div className="space-y-1.5">
-            <FieldLabel htmlFor="dueDate">Tanggal jatuh tempo</FieldLabel>
-            <DateInput defaultValue={defaultDueDate} id="dueDate" name="dueDate" required />
-          </div>
-          <div className="space-y-1.5">
-            <FieldLabel htmlFor="pawnedAt">Tanggal gadai</FieldLabel>
-            <DateInput defaultValue={defaultPawnedAt} id="pawnedAt" name="pawnedAt" required />
+            <AdminDatePicker
+              id="dueDate"
+              label="Tanggal jatuh tempo"
+              minDate={getDateAfter(pawnedAt, 1)}
+              name="dueDate"
+              onChange={setDueDate}
+              required
+              value={dueDate}
+            />
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="customerNumber">Nomor nasabah</FieldLabel>
@@ -756,12 +758,12 @@ export function AdminInventoryCreateForm() {
             <FormInput id="ownerName" name="ownerName" placeholder="Nama nasabah" required />
           </div>
           <div className="space-y-1.5 md:col-span-2">
-            <FieldLabel htmlFor="description">Deskripsi appraisal</FieldLabel>
+            <FieldLabel htmlFor="description">Deskripsi barang</FieldLabel>
             <Textarea
               className="min-h-28 resize-none rounded-xl border-transparent bg-slate-50 p-4 text-xs font-semibold leading-6 text-slate-700 placeholder:text-slate-400 focus-visible:border-[#006747] focus-visible:bg-white focus-visible:ring-[#006747]/10"
               id="description"
               name="description"
-              placeholder="Jelaskan kondisi fisik, spesifikasi, kelengkapan, dan catatan appraisal."
+              placeholder="Jelaskan kondisi fisik, spesifikasi, kelengkapan, dan catatan barang."
             />
           </div>
         </div>

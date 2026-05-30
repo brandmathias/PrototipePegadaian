@@ -4,7 +4,8 @@ const mocks = vi.hoisted(() => {
   const db = {
     select: vi.fn(),
     insert: vi.fn(),
-    update: vi.fn()
+    update: vi.fn(),
+    transaction: vi.fn()
   };
 
   return {
@@ -31,6 +32,12 @@ describe("publishAdminBarang", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-12T08:30:45.000+08:00"));
     vi.clearAllMocks();
+    mocks.db.transaction.mockImplementation(async (callback) =>
+      callback({
+        insert: mocks.db.insert,
+        update: mocks.db.update
+      })
+    );
   });
 
   afterEach(() => {
@@ -102,6 +109,7 @@ describe("publishAdminBarang", () => {
       durationSeconds: "15"
     });
 
+    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
     expect(insertValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: "vickrey",

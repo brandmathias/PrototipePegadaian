@@ -195,33 +195,37 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     .from(pemasaran)
     .where(eq(pemasaran.barangId, barangId));
 
-  const [created] = await db
-    .insert(pemasaran)
-    .values({
+  const created = await db.transaction(async (tx) => {
+    const [createdMarketing] = await tx
+      .insert(pemasaran)
+      .values({
+        id: crypto.randomUUID(),
+        barangId,
+        mode: payload.mode,
+        price: payload.mode === "fixed_price" ? payload.price : null,
+        basePrice: payload.mode === "vickrey" ? payload.price : null,
+        durationDays: derivedDurationDays,
+        durationSeconds: derivedDurationSeconds,
+        startsAt: now,
+        endsAt,
+        revealEndsAt,
+        iteration: Number(nextIteration ?? 1),
+        status: "aktif",
+        createdByUserId: userId
+      })
+      .returning();
+
+    await tx.update(barang).set({ status: "dipasarkan", updatedAt: new Date() }).where(eq(barang.id, barangId));
+    await tx.insert(riwayatStatusBarang).values({
       id: crypto.randomUUID(),
       barangId,
-      mode: payload.mode,
-      price: payload.mode === "fixed_price" ? payload.price : null,
-      basePrice: payload.mode === "vickrey" ? payload.price : null,
-      durationDays: derivedDurationDays,
-      durationSeconds: derivedDurationSeconds,
-      startsAt: now,
-      endsAt,
-      revealEndsAt,
-      iteration: Number(nextIteration ?? 1),
-      status: "aktif",
-      createdByUserId: userId
-    })
-    .returning();
+      oldStatus: item.status,
+      newStatus: "dipasarkan",
+      changedByUserId: userId,
+      note: "Barang dipublikasikan ke katalog."
+    });
 
-  await db.update(barang).set({ status: "dipasarkan", updatedAt: new Date() }).where(eq(barang.id, barangId));
-  await db.insert(riwayatStatusBarang).values({
-    id: crypto.randomUUID(),
-    barangId,
-    oldStatus: item.status,
-    newStatus: "dipasarkan",
-    changedByUserId: userId,
-    note: "Barang dipublikasikan ke katalog."
+    return createdMarketing;
   });
 
   return serializeAdminPemasaran(created, { lotName: item.name });

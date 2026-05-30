@@ -28,7 +28,7 @@ function makeItem(index: number) {
     pawnedAt: "2026-05-01",
     dueDate: "2026-06-01",
     appraisalValue: 10_000_000 + index,
-    status: index % 3 === 0 ? "GAGAL" : "JAMINAN"
+    status: "JAMINAN"
   };
 }
 
@@ -41,6 +41,27 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.queryByText("JAMINAN")).not.toBeInTheDocument();
     expect(screen.queryByText("GAGAL")).not.toBeInTheDocument();
     expect(screen.queryByText(/pencarian langsung/i)).not.toBeInTheDocument();
+  });
+
+  it("does not render marketed or finished goods in the inventory table", () => {
+    render(
+      <AdminInventoryWorkspace
+        items={[
+          makeItem(1),
+          { ...makeItem(2), id: "barang-failed", code: "BRG-FAILED", name: "Barang Gagal Lelang", status: "GAGAL" },
+          { ...makeItem(2), id: "barang-marketed", code: "BRG-MARKET", name: "Barang Sudah Dipasarkan", status: "DIPASARKAN" },
+          { ...makeItem(3), id: "barang-waiting", code: "BRG-WAIT", name: "Barang Menunggu Pembayaran", status: "MENUNGGU_PEMBAYARAN" },
+          { ...makeItem(4), id: "barang-sold", code: "BRG-SOLD", name: "Barang Terjual", status: "TERJUAL" }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("BRG-001")).toBeInTheDocument();
+    expect(screen.queryByText("BRG-FAILED")).not.toBeInTheDocument();
+    expect(screen.queryByText("BRG-MARKET")).not.toBeInTheDocument();
+    expect(screen.queryByText("BRG-WAIT")).not.toBeInTheDocument();
+    expect(screen.queryByText("BRG-SOLD")).not.toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent?.replace(/\s+/g, " ").trim() === "Menampilkan 1 dari 1 barang.")).toBeInTheDocument();
   });
 
   it("paginates inventory rows without rendering every item at once", () => {
@@ -57,7 +78,16 @@ describe("AdminInventoryWorkspace", () => {
   });
 
   it("filters inventory by ready-for-marketing items", () => {
-    render(<AdminInventoryWorkspace items={Array.from({ length: 4 }, (_, index) => makeItem(index + 1))} />);
+    render(
+      <AdminInventoryWorkspace
+        items={[
+          makeItem(1),
+          makeItem(2),
+          { ...makeItem(3), status: "GAGAL" },
+          makeItem(4)
+        ]}
+      />
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /siap dipasarkan/i }));
 

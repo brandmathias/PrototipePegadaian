@@ -17,12 +17,12 @@ describe("admin operational metrics", () => {
       now
     );
 
-    expect(metrics.total).toBe(3);
+    expect(metrics.total).toBe(2);
     expect(metrics.readyForMarketing).toBe(2);
-    expect(metrics.dueSoon).toBe(2);
+    expect(metrics.dueSoon).toBe(1);
   });
 
-  it("only raises marketing action for ended vickrey sessions", () => {
+  it("raises marketing action for ended and failed vickrey sessions", () => {
     expect(
       isAdminMarketingActionable(
         {
@@ -46,6 +46,18 @@ describe("admin operational metrics", () => {
         now
       )
     ).toBe(false);
+
+    expect(
+      isAdminMarketingActionable(
+        {
+          endingAt: "2026-05-24T00:00:00.000Z",
+          mode: "VICKREY_AUCTION",
+          status: "GAGAL",
+          visibility: "HASIL_DIBUKA"
+        },
+        now
+      )
+    ).toBe(true);
 
     expect(
       isAdminMarketingActionable(

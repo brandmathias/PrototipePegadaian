@@ -4,6 +4,7 @@ import {
   ADMIN_BARANG_MEDIA_LIMIT,
   validateAdminBarangPayload,
   validateAdminBarangMediaList,
+  validateFixedPriceMarketingPricePayload,
   validateBlacklistExtendPayload,
   validatePemasaranPayload,
   validatePerpanjanganPayload,
@@ -213,6 +214,16 @@ describe("admin unit validation", () => {
 
     expect(() => validatePemasaranPayload({ mode: "vickrey", price: "0", durationDays: "7" })).toThrow(
       "Harga pemasaran harus lebih dari 0."
+    );
+  });
+
+  it("validates active fixed price marketing price edits", () => {
+    expect(validateFixedPriceMarketingPricePayload({ marketingPrice: "13500000" })).toEqual({
+      marketingPrice: "13500000"
+    });
+
+    expect(() => validateFixedPriceMarketingPricePayload({ marketingPrice: "0" })).toThrow(
+      "Harga fixed price harus lebih dari 0."
     );
   });
 

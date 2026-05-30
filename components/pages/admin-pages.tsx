@@ -3,21 +3,35 @@ import type { ComponentType, ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarDays,
   CalendarClock,
+  CarFront,
   CheckCircle2,
   Clock3,
+  FileText,
   FileCheck2,
   FileWarning,
   FolderOpen,
   Gavel,
+  Gem,
+  Hash,
   Landmark,
+  Medal,
+  MonitorSmartphone,
+  Package2,
   PackagePlus,
   PencilLine,
+  Phone,
   Printer,
+  Ruler,
   RotateCcw,
+  Scale,
   ScrollText,
   ShieldEllipsis,
+  ShieldCheck,
   ShoppingBag,
+  Sparkles,
+  UserRound,
   ReceiptText,
   UploadCloud,
   Wallet,
@@ -28,6 +42,8 @@ import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminBlacklistDetailWorkspace } from "@/components/admin/admin-blacklist-detail-workspace";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
 import { AdminBlacklistReviewInbox } from "@/components/admin/admin-blacklist-review-inbox";
+import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
+import { AdminBlacklistExtendForm } from "@/components/admin-unit/admin-blacklist-extend-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import {
   AdminProfileWorkspace,
@@ -55,6 +71,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
+import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -198,6 +215,90 @@ function DetailTile({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+function formatDisplayLabel(value: unknown) {
+  const normalized = String(value ?? "-")
+    .replace(/_/g, " ")
+    .trim();
+
+  if (!normalized || normalized === "-") {
+    return "-";
+  }
+
+  return normalized
+    .toLowerCase()
+    .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
+}
+
+function getCategoryIcon(category: unknown) {
+  const normalized = String(category ?? "").toLowerCase();
+
+  if (normalized.includes("emas") || normalized.includes("perhias")) {
+    return Gem;
+  }
+  if (normalized.includes("logam")) {
+    return Medal;
+  }
+  if (normalized.includes("kendara") || normalized.includes("motor") || normalized.includes("mobil")) {
+    return CarFront;
+  }
+  if (normalized.includes("elektronik") || normalized.includes("televisi") || normalized.includes("gadget")) {
+    return MonitorSmartphone;
+  }
+  return Package2;
+}
+
+function getSpecificationIcon(category: unknown, label: string) {
+  const normalizedCategory = String(category ?? "").toLowerCase();
+  const normalizedLabel = label.toLowerCase();
+
+  if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+    if (normalizedLabel.includes("berat")) return Scale;
+    if (normalizedLabel.includes("kadar")) return Sparkles;
+    if (normalizedLabel.includes("panjang") || normalizedLabel.includes("diameter")) return Ruler;
+    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    return Gem;
+  }
+
+  if (normalizedCategory.includes("logam")) {
+    if (normalizedLabel.includes("berat")) return Scale;
+    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    return Medal;
+  }
+
+  if (normalizedCategory.includes("kendara")) {
+    if (normalizedLabel.includes("nomor")) return Hash;
+    if (normalizedLabel.includes("dokumen")) return FileText;
+    return CarFront;
+  }
+
+  if (normalizedCategory.includes("elektronik")) {
+    if (normalizedLabel.includes("garansi")) return ShieldCheck;
+    if (normalizedLabel.includes("kapasitas") || normalizedLabel.includes("spesifikasi")) return FileText;
+    return MonitorSmartphone;
+  }
+
+  if (normalizedLabel.includes("ukuran")) return Ruler;
+  if (normalizedLabel.includes("material")) return Sparkles;
+  return Package2;
+}
+
+function splitTimelineStamp(label: string | null | undefined) {
+  const normalized = String(label ?? "").trim();
+  if (!normalized) {
+    return { date: "-", time: "" };
+  }
+
+  const parts = normalized.split(",");
+  if (parts.length >= 2) {
+    return {
+      date: parts[0].trim(),
+      time: parts.slice(1).join(",").trim(),
+    };
+  }
+
+  return { date: normalized, time: "" };
+}
+
 function AdminAuctionDeadline({
   auction,
   prefix,
@@ -336,6 +437,37 @@ function WorkflowActionCard({
         </Link>
       </div>
     </div>
+  );
+}
+
+function DetailActionButton({
+  title,
+  href,
+  icon: Icon,
+  variant = "secondary",
+}: {
+  title: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  variant?: "default" | "secondary";
+}) {
+  const isPrimary = variant === "default";
+
+  return (
+    <Link href={href}>
+      <Button
+        className={cn(
+          "h-[3.35rem] min-w-[10.75rem] rounded-[1.05rem] px-4 text-[0.92rem] font-semibold shadow-none sm:min-w-[11.5rem]",
+          isPrimary
+            ? "bg-[#006747] text-white hover:bg-[#005238]"
+            : "border border-[#0a9f62] bg-white text-[#0a7d51] hover:bg-[#f7fbf8]"
+        )}
+        variant={isPrimary ? "default" : "ghost"}
+      >
+        <Icon className="size-4.5" />
+        {title}
+      </Button>
+    </Link>
   );
 }
 
@@ -500,9 +632,19 @@ export function AdminInventoryCreatePage() {
 export function AdminInventoryDetailPage({
   itemId: _itemId,
   item,
+  history = [],
 }: {
   itemId?: string;
   item: AdminInventoryItem;
+  history?: Array<{
+    id: string;
+    barangId: string;
+    actionLabel: string;
+    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+    note: string;
+    actorName: string;
+    createdAtLabel: string;
+  }>;
 }) {
   const jaminanActions = [
     {
@@ -522,19 +664,11 @@ export function AdminInventoryDetailPage({
       variant: "secondary" as const,
     },
     {
-      title: "Pasarkan Barang Tidak Ditebus",
+      title: "Pasarkan Barang",
       description:
         "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
       href: `/admin/barang/${item.id}/pasarkan`,
       icon: Gavel,
-    },
-    {
-      title: "Edit Data Barang",
-      description:
-        "Lengkapi deskripsi, foto, video, dan appraisal agar siap tayang tanpa revisi berulang.",
-      href: `/admin/barang/${item.id}/edit`,
-      icon: PencilLine,
-      variant: "secondary" as const,
     },
   ];
 
@@ -543,14 +677,6 @@ export function AdminInventoryDetailPage({
       ? jaminanActions
       : item.status === "GAGAL"
         ? [
-            {
-              title: "Edit Data Barang",
-              description:
-                "Perbarui detail barang lelang yang gagal karena tanpa peserta atau pemenang melewati batas bayar 24 jam.",
-              href: `/admin/barang/${item.id}/edit`,
-              icon: PencilLine,
-              variant: "secondary" as const,
-            },
             {
               title: "Lelang Lagi",
               description:
@@ -583,124 +709,346 @@ export function AdminInventoryDetailPage({
   const media = Array.isArray(item.media)
     ? (item.media as AdminBarangMedia[])
     : [];
+  const specificationRows = getBarangSpecificationRows(
+    String(item.category ?? ""),
+    item.specifications ?? {},
+  );
+  const firstMeaningfulSpec =
+    specificationRows.find((row) =>
+      ["berat", "merek", "jenis", "tipe"].some((query) =>
+        row.label.toLowerCase().includes(query),
+      ),
+    ) ?? specificationRows[0];
+  const secondMeaningfulSpec =
+    specificationRows.find((row) =>
+      ["kadar", "kapasitas", "model", "tahun", "material"].some((query) =>
+        row.label.toLowerCase().includes(query),
+      ),
+    ) ?? specificationRows[1];
+  const canEditItem = ["GADAI", "JAMINAN", "GAGAL"].includes(String(item.status));
+  const timelineEntries =
+    history.length > 0
+      ? history
+      : [
+          {
+            id: `${item.id}-received`,
+            barangId: String(item.id),
+            actionLabel: "Barang Diterima Unit",
+            actionKey: "input_baru" as const,
+            note: "Barang hasil input gadai dicatat sebagai aset jaminan unit.",
+            actorName: "Admin Unit",
+            createdAtLabel: item.pawnedAt || item.date || "-",
+          },
+        ];
+  const summaryMetrics = [
+    {
+      label: "Kategori",
+      value: formatDisplayLabel(item.category),
+      icon: Package2,
+    },
+    {
+      label: "Kondisi",
+      value: formatDisplayLabel(item.condition),
+      icon: ShieldCheck,
+    },
+    {
+      label: "Nilai Taksiran",
+      value: currency.format(item.appraisalValue),
+      icon: Landmark,
+    },
+  ];
+  const topInfoRows = [
+    firstMeaningfulSpec
+      ? {
+          label: firstMeaningfulSpec.label,
+          value: firstMeaningfulSpec.value || "-",
+          icon: getSpecificationIcon(item.category, firstMeaningfulSpec.label),
+        }
+      : null,
+    secondMeaningfulSpec &&
+    secondMeaningfulSpec.label !== firstMeaningfulSpec?.label
+      ? {
+          label: secondMeaningfulSpec.label,
+          value: secondMeaningfulSpec.value || "-",
+          icon: getSpecificationIcon(item.category, secondMeaningfulSpec.label),
+        }
+      : null,
+    specificationRows.find(
+      (row) =>
+        ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+    )
+      ? {
+          label:
+            specificationRows.find(
+              (row) =>
+                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+            )?.label || "Detail",
+          value:
+            specificationRows.find(
+              (row) =>
+                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+            )?.value || "-",
+          icon: getSpecificationIcon(
+            item.category,
+            specificationRows.find(
+              (row) =>
+                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+            )?.label || "Detail",
+          ),
+        }
+      : null,
+    { label: "Jatuh Tempo", value: item.dueDate || "-", icon: CalendarClock },
+  ].filter(Boolean) as Array<{
+    label: string;
+    value: string;
+    icon: ComponentType<{ className?: string }>;
+  }>;
+  const bottomInfoRows = [
+    { label: "Tanggal Gadai", value: item.pawnedAt || "-", icon: CalendarDays },
+    { label: "Nama Nasabah", value: item.ownerName || "-", icon: UserRound },
+    { label: "Nomor Telepon Nasabah", value: item.customerNumber || "-", icon: Phone },
+  ];
 
   return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Detail Barang"
-        title={item.name}
+    <div className="space-y-5">
+      <AdminPageHero
         description="Gunakan halaman ini untuk melihat posisi barang saat ini, memeriksa data pendukung, dan melanjutkan langkah yang memang tersedia."
-        actions={
-          <AdminStatusBadge className="text-[0.95rem]" status={item.status} />
+        eyebrow="Admin Unit / Detail Barang"
+        icon={Package2}
+        rightRail={
+          <AdminHeroPill icon={ShieldCheck}>
+            Status {formatDisplayLabel(item.status)}
+          </AdminHeroPill>
         }
+        title={item.name}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <DetailTile label="Kode Barang" value={item.code} />
-            <DetailTile label="Kategori" value={item.category} />
-            <DetailTile
-              label="Nilai Taksiran"
-              value={currency.format(item.appraisalValue)}
+      <div className="flex flex-wrap justify-end gap-3">
+        {actions.length ? (
+          actions.map((action) => (
+            <DetailActionButton
+              href={action.href}
+              icon={action.icon}
+              key={action.title}
+              title={action.title}
+              variant={action.variant === "secondary" ? "secondary" : "default"}
             />
-            <DetailTile
-              label="Nilai Gadai"
-              value={currency.format(item.loanValue)}
-            />
-            <DetailTile label="Tanggal Gadai" value={item.pawnedAt} />
-            <DetailTile label="Jatuh Tempo" value={item.dueDate} />
-            <DetailTile label="Media Tersimpan" value={item.mediaSummary} />
-            <DetailTile
-              label="Status Barang"
-              value={<AdminStatusBadge status={item.status} />}
-            />
+          ))
+        ) : (
+          <div className="rounded-2xl border border-dashed border-black/10 bg-white px-4 py-3 text-sm text-black/55">
+            Tidak ada aksi lanjutan yang perlu dijalankan dari halaman ini.
           </div>
+        )}
+      </div>
 
-          <AdminBarangMediaGallery media={media} />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_21.5rem]">
+        <div>
+          <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+            <div className="space-y-5 p-4 lg:p-5">
+              <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
+                <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
 
-          <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">
-                Data Internal & Appraisal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-5 md:grid-cols-2">
-              <div className="space-y-4 md:col-span-2">
-                <div>
-                  <FieldLabel>Deskripsi barang</FieldLabel>
-                  <p className="mt-2 text-sm leading-7 text-black/70 sm:text-base">
-                    {item.description}
-                  </p>
+                {canEditItem ? (
+                  <div className="relative mb-3 flex justify-end">
+                    <Link href={`/admin/barang/${item.id}/edit`}>
+                      <Button
+                        className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white"
+                        variant="ghost"
+                      >
+                        <PencilLine className="size-4" />
+                        Edit Data Barang
+                      </Button>
+                    </Link>
+                  </div>
+                ) : null}
+
+                <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
+                  <div className="w-full shrink-0 lg:w-[18rem]">
+                    <AdminBarangDetailMediaViewer
+                      category={formatDisplayLabel(item.category)}
+                      media={media}
+                      title={String(item.name ?? "Barang")}
+                    />
+                  </div>
+
+                  <div className="min-w-0 flex-1 space-y-4">
+                    <div>
+                      <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
+                        {item.name}
+                      </h2>
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
+                        <span className="font-medium">Kode Barang:</span>
+                        <span className="font-medium text-[#0a9f62]">{item.code}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
+                      {summaryMetrics.map((metric) => (
+                        <div
+                          className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                          key={metric.label}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                              <metric.icon className="size-4" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
+                                {metric.label}
+                              </p>
+                              <p
+                                className={cn(
+                                  "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
+                                  metric.label === "Nilai Taksiran"
+                                    ? "text-[0.82rem] xl:text-[0.88rem]"
+                                    : "text-[0.93rem]"
+                                )}
+                              >
+                                {metric.value}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <FieldLabel>Nama penggadai</FieldLabel>
-                <p className="mt-2 text-base font-semibold text-black/80">
-                  {item.ownerName}
-                </p>
+
+              <div className="h-px bg-[#eef1ee]" />
+
+              <div className="space-y-0 rounded-2xl border border-[#eef1ee] bg-white">
+                <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
+                  {topInfoRows.map((row, index) => (
+                    <div
+                      className={cn(
+                        "flex items-start gap-3 px-4 py-4",
+                        index < topInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
+                      )}
+                      key={row.label}
+                    >
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                        <row.icon className="size-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[0.72rem] font-medium text-[#667085]">
+                          {row.label}
+                        </p>
+                        <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                          {row.value}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
+                  {bottomInfoRows.map((row, index) => (
+                    <div
+                      className={cn(
+                        "flex items-start gap-3 px-4 py-4",
+                        index < bottomInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
+                      )}
+                      key={row.label}
+                    >
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                        <row.icon className="size-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[0.72rem] font-medium text-[#667085]">
+                          {row.label}
+                        </p>
+                        <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                          {row.value}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <FieldLabel>Nomor nasabah</FieldLabel>
-                <p className="mt-2 text-base font-semibold text-black/80">
-                  {item.customerNumber}
-                </p>
+
+              <div className="rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <div className="flex items-start gap-3.5">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
+                    <FileText className="size-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
+                      Deskripsi Barang
+                    </h3>
+                    <div className="mt-3 space-y-2.5 text-[0.96rem] leading-7 text-[#5f6f86]">
+                      <p>
+                        {item.description || "Belum ada deskripsi barang yang dicatat."}
+                      </p>
+                      {specificationRows.length > 0 ? (
+                        <p>
+                          {specificationRows
+                            .slice(0, 3)
+                            .map((row) => `${row.label}: ${row.value}`)
+                            .join(". ")}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
 
-        <div className="space-y-6">
-          <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">
-                Langkah yang Bisa Dilanjutkan
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
-                Tindakan yang muncul di sini sudah disesuaikan dengan status
-                barang saat ini.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {actions.length ? (
-                actions.map((action) => (
-                  <WorkflowActionCard
-                    description={action.description}
-                    href={action.href}
-                    icon={action.icon}
-                    key={action.title}
-                    title={action.title}
-                    variant={action.variant}
-                  />
-                ))
-              ) : (
-                <EmptyPanel text="Saat ini barang cukup dipantau. Belum ada perubahan status yang perlu dilakukan dari halaman ini." />
-              )}
-            </CardContent>
-          </Card>
+        <div>
+          <aside className="h-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+            <div className="px-4 py-4">
+              <div className="flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
+                  <ShoppingBag className="size-4.5" />
+                </span>
+                <h3 className="text-[1.28rem] font-medium tracking-[-0.02em] text-[#14213d]">
+                  Riwayat Kronologi Aset
+                </h3>
+              </div>
+            </div>
 
-          <Card className="rounded-2xl border border-black/10 bg-[#f8faf8]">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.4rem]">
-                Catatan proses
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-black/70 sm:text-base">
-              <p>
-                - Setiap perubahan tahap perlu dicatat lewat aksi yang tepat
-                agar riwayat proses tetap rapi.
-              </p>
-              <p>
-                - Barang fixed price tetap bisa diperbarui detailnya saat aktif
-                di pemasaran.
-              </p>
-              <p>
-                - Barang lelang dikunci saat berjalan dan baru bisa diedit lagi
-                jika sesi gagal karena tanpa peserta atau pemenang tidak membayar
-                dalam 24 jam.
-              </p>
-            </CardContent>
-          </Card>
+            <div className="relative px-4 pb-4">
+              <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
+              {timelineEntries.map((entry) => {
+                const iconMap = {
+                  input_baru: PackagePlus,
+                  perpanjangan: CalendarClock,
+                  ditebus: ReceiptText,
+                  dipasarkan: Gavel,
+                };
+                const EntryIcon = iconMap[entry.actionKey];
+                const stamp = splitTimelineStamp(entry.createdAtLabel);
+
+                return (
+                  <div
+                    className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_5.4rem] gap-3 py-3.5"
+                    key={entry.id}
+                  >
+                    <div className="relative flex justify-center">
+                      <span className="grid size-9 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62] shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
+                        <EntryIcon className="size-4" />
+                      </span>
+                      <span className="absolute -right-1 top-3 size-2.5 rounded-full bg-[#099561] ring-4 ring-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
+                        {entry.actionLabel}
+                      </h3>
+                      <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
+                        {entry.note}
+                      </p>
+                    </div>
+                    <div className="pt-0.5 text-right text-[0.82rem] leading-6 text-[#667085]">
+                      <p>{stamp.date}</p>
+                      <p>{stamp.time}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -745,6 +1093,9 @@ export function AdminInventoryEditPage({
               item.pawnedAt ?? new Date().toISOString().slice(0, 10),
             ),
             dueDate: String(item.dueDate ?? dateAfter(30)),
+            marketingMode: item.marketingMode ?? null,
+            marketingPrice: item.marketingPrice ?? null,
+            specifications: item.specifications ?? {},
           }}
         />
 
@@ -1908,40 +2259,7 @@ export function AdminBlacklistExtendPage({
               Form Perpanjangan
             </CardTitle>
           </CardHeader>
-          <div className="grid gap-5 p-6">
-            <div className="space-y-2">
-              <FieldLabel>Tanggal blokir selesai baru</FieldLabel>
-              <Input className="h-12" type="date" />
-            </div>
-            <div className="space-y-2">
-              <FieldLabel>Alasan perpanjangan</FieldLabel>
-              <Textarea
-                className="min-h-32"
-                placeholder="Tuliskan alasan yang jelas agar tim lain mudah menelusuri keputusan ini."
-              />
-            </div>
-            <AdminUnitActionButton
-              className="h-12 w-full rounded-2xl"
-              confirmDescription="Perpanjangan blokir akan langsung memperbarui masa pembatasan pengguna di unit ini."
-              confirmLabel="Simpan perpanjangan"
-              confirmTitle="Perpanjang masa pembatasan"
-              confirmVariant="destructive"
-              endpoint={`/api/admin/blacklist/${entry.userId}/perpanjang`}
-              pendingDescription="Tanggal berakhir blokir dan catatan alasan sedang diperbarui."
-              pendingTitle="Memperpanjang blacklist"
-              payload={{
-                blockedUntil: dateAfter(30),
-                reason:
-                  "Masa blokir diperpanjang berdasarkan evaluasi admin unit.",
-              }}
-              redirectTo={`/admin/blacklist/${entry.userId}`}
-              successDescription="Masa pembatasan akun sudah diperbarui."
-              successTitle="Blacklist diperpanjang"
-            >
-              <ShieldEllipsis className="size-4" />
-              Simpan pembaruan blokir
-            </AdminUnitActionButton>
-          </div>
+          <AdminBlacklistExtendForm defaultBlockedUntil={dateAfter(30)} userId={entry.userId} />
         </Card>
       </div>
     </div>

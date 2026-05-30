@@ -5,6 +5,7 @@ import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
   validateAdminBarangPayload,
+  validateFixedPriceMarketingPricePayload,
   validateAdminBarangMediaList,
   validatePerpanjanganPayload,
   validateTebusPayload
@@ -39,6 +40,8 @@ async function assertBarangForUnit(barangId: string, unitId: string) {
 async function getMarketingEditContext(barangId: string) {
   const [activeMarketing] = await db
     .select({
+      id: pemasaran.id,
+      price: pemasaran.price,
       mode: pemasaran.mode
     })
     .from(pemasaran)
@@ -93,6 +96,10 @@ async function getMarketingEditContext(barangId: string) {
     hasFailedWinnerPayment: Boolean(failedTransaction)
   };
 }
+
+type AdminBarangUpdateInput = Parameters<typeof validateAdminBarangPayload>[0] & {
+  marketingPrice?: unknown;
+};
 
 async function recordStatusChange(input: {
   barangId: string;
@@ -159,9 +166,9 @@ export async function listAdminBarang(unitId: string) {
   const rows = await db
     .select()
     .from(barang)
-    .where(eq(barang.unitId, unitId))
+    .where(and(eq(barang.unitId, unitId), inArray(barang.status, ["gadai", "jaminan"])))
     .orderBy(desc(barang.createdAt));
-  const inventoryRows = rows.filter((item) => ["gadai", "jaminan", "gagal"].includes(item.status));
+  const inventoryRows = rows.filter((item) => ["gadai", "jaminan"].includes(item.status));
 
   if (inventoryRows.length === 0) {
     return [];
@@ -216,7 +223,15 @@ export async function listAdminBarang(unitId: string) {
   );
 }
 
-export async function listAdminBarangHistory(unitId: string, limit = 24): Promise<AdminBarangHistoryEntry[]> {
+export async function listAdminBarangHistory(
+  unitId: string,
+  limit = 24,
+  barangId?: string
+): Promise<AdminBarangHistoryEntry[]> {
+  const historyWhere = barangId
+    ? and(eq(barang.unitId, unitId), eq(barang.id, barangId))
+    : eq(barang.unitId, unitId);
+
   const [statusRows, extensionRows] = await Promise.all([
     db
       .select({
@@ -235,7 +250,7 @@ export async function listAdminBarangHistory(unitId: string, limit = 24): Promis
       .from(riwayatStatusBarang)
       .innerJoin(barang, eq(barang.id, riwayatStatusBarang.barangId))
       .leftJoin(users, eq(users.id, riwayatStatusBarang.changedByUserId))
-      .where(eq(barang.unitId, unitId))
+      .where(historyWhere)
       .orderBy(desc(riwayatStatusBarang.createdAt)),
     db
       .select({
@@ -252,7 +267,7 @@ export async function listAdminBarangHistory(unitId: string, limit = 24): Promis
       .from(riwayatPerpanjangan)
       .innerJoin(barang, eq(barang.id, riwayatPerpanjangan.barangId))
       .leftJoin(users, eq(users.id, riwayatPerpanjangan.extendedByUserId))
-      .where(eq(barang.unitId, unitId))
+      .where(historyWhere)
       .orderBy(desc(riwayatPerpanjangan.createdAt))
   ]);
 
@@ -323,6 +338,8 @@ export async function getAdminBarangById(unitId: string, barangId: string) {
       marketingIteration: latestMarketing?.iteration ?? null,
       marketingMode: activeMarketing?.mode ?? latestMarketing?.mode ?? null
     }),
+    activeMarketingId: activeMarketing?.mode === "fixed_price" ? activeMarketing.id : null,
+    marketingPrice: activeMarketing?.mode === "fixed_price" ? Number(activeMarketing.price ?? 0) : null,
     media
   };
 }
@@ -387,7 +404,7 @@ export async function createAdminBarang(
   return serializeAdminBarang(created);
 }
 
-export async function updateAdminBarang(unitId: string, barangId: string, input: Parameters<typeof validateAdminBarangPayload>[0]) {
+export async function updateAdminBarang(unitId: string, barangId: string, input: AdminBarangUpdateInput) {
   const current = await assertBarangForUnit(barangId, unitId);
   const marketingContext = await getMarketingEditContext(barangId);
 
@@ -396,6 +413,13 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
   }
 
   const payload = validateAdminBarangPayload(input);
+  const shouldUpdateMarketingPrice = input.marketingPrice !== undefined;
+  const marketingPricePayload = shouldUpdateMarketingPrice ? validateFixedPriceMarketingPricePayload(input) : null;
+
+  if (marketingPricePayload && marketingContext.activeMarketingMode !== "fixed_price") {
+    throw new Error("Harga pemasaran hanya dapat diperbarui untuk barang fixed price yang masih aktif.");
+  }
+
   const [updated] = await db
     .update(barang)
     .set({
@@ -414,6 +438,16 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
     })
     .where(eq(barang.id, barangId))
     .returning();
+
+  if (marketingPricePayload) {
+    await db
+      .update(pemasaran)
+      .set({
+        price: marketingPricePayload.marketingPrice,
+        updatedAt: new Date()
+      })
+      .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")));
+  }
 
   return serializeAdminBarang(updated);
 }

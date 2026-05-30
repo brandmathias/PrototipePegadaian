@@ -97,6 +97,12 @@ export function validateAdminBarangPayload(input: {
   };
 }
 
+export function validateFixedPriceMarketingPricePayload(input: { marketingPrice?: unknown }) {
+  return {
+    marketingPrice: normalizeMoney(input.marketingPrice, "Harga fixed price harus lebih dari 0.")
+  };
+}
+
 export function validateAdminBarangMediaList(input: unknown): Array<{
   type: "foto" | "video";
   url: string;

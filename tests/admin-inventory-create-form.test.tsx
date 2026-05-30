@@ -61,6 +61,7 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByLabelText("Panjang")).toBeInTheDocument();
     expect(screen.getByLabelText("Diameter")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nilai gadai")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /tanggal gadai/i })).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("Nomor telepon nasabah")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio", { name: "Elektronik" }));
@@ -69,6 +70,17 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByLabelText("Model")).toBeInTheDocument();
     expect(screen.getByLabelText("Kelengkapan")).toBeInTheDocument();
     expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
+  });
+
+  it("opens direct month and year selection from the custom due-date calendar", () => {
+    renderWithToast(<AdminInventoryCreateForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: /tanggal jatuh tempo/i }));
+    fireEvent.click(screen.getByRole("button", { name: /pilih bulan dan tahun/i }));
+
+    expect(screen.getByRole("button", { name: "Januari" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Desember" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "2026" })).toBeInTheDocument();
   });
 
   it("updates checklist readiness from form fields, dates, specifications, and media", async () => {
