@@ -89,6 +89,26 @@ describe("admin pemasaran pages", () => {
             media: [{ id: "m4", type: "foto", url: "/uploads/iphone.jpg", fileName: "iphone.jpg" }],
             primaryMedia: { id: "m4", type: "foto", url: "/uploads/iphone.jpg", fileName: "iphone.jpg" },
             note: "Pemenang melewati batas pembayaran 24 jam."
+          },
+          {
+            id: "pm-no-bids",
+            lotId: "barang-5",
+            lot: "Jam Tangan Tanpa Peserta",
+            code: "BRG-005",
+            category: "perhiasan",
+            condition: "baik",
+            status: "GAGAL",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-29",
+            endingAt: "2026-05-29T02:29:44.886Z",
+            participants: 0,
+            basePrice: 8000000,
+            finalPrice: null,
+            winner: null,
+            visibility: "HASIL_DIBUKA",
+            media: [{ id: "m5", type: "foto", url: "/uploads/jam.jpg", fileName: "jam.jpg" }],
+            primaryMedia: { id: "m5", type: "foto", url: "/uploads/jam.jpg", fileName: "jam.jpg" },
+            note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal."
           }
         ]}
       />
@@ -106,6 +126,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
+    expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
+    expect(screen.getByText(/pemenang gagal bayar 24 jam \/ tanpa peserta/i)).toBeInTheDocument();
+    expect(screen.getByText("2 Produk")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Aktif" }));
 
@@ -121,7 +144,12 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Perlu Strategi" }));
 
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
+    expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /lelang lagi/i })[0]).toHaveAttribute(
+      "href",
+      "/admin/barang/barang-4/pasarkan-ulang"
+    );
   });
 
   it("renders fixed price cards without auction-only language", () => {

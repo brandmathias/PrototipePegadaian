@@ -27,6 +27,7 @@ import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminBlacklistDetailWorkspace } from "@/components/admin/admin-blacklist-detail-workspace";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
+import { AdminBlacklistReviewInbox } from "@/components/admin/admin-blacklist-review-inbox";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import {
   AdminProfileWorkspace,
@@ -79,6 +80,17 @@ type AdminAuctionItem = Record<string, any> & {
 };
 type AdminTransactionItem = Record<string, any>;
 type AdminBlacklistItem = Record<string, any>;
+type AdminBlacklistReviewCase = {
+  id: string;
+  buyerName: string;
+  buyerEmail: string;
+  itemName: string;
+  unitName: string;
+  status: string;
+  submittedAt: string;
+  hasRecommendation: boolean;
+  crossUnitSignal: string;
+};
 
 function dateAfter(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000)
@@ -532,9 +544,17 @@ export function AdminInventoryDetailPage({
       : item.status === "GAGAL"
         ? [
             {
-              title: "Tayangkan Ulang",
+              title: "Edit Data Barang",
               description:
-                "Atur ulang strategi penjualan untuk barang yang belum berhasil terjual.",
+                "Perbarui detail barang lelang yang gagal karena tanpa peserta atau pemenang melewati batas bayar 24 jam.",
+              href: `/admin/barang/${item.id}/edit`,
+              icon: PencilLine,
+              variant: "secondary" as const,
+            },
+            {
+              title: "Lelang Lagi",
+              description:
+                "Buat sesi lelang baru setelah harga dasar, durasi, dan detail barang dievaluasi ulang.",
               href: `/admin/barang/${item.id}/pasarkan-ulang`,
               icon: RotateCcw,
             },
@@ -671,12 +691,13 @@ export function AdminInventoryDetailPage({
                 agar riwayat proses tetap rapi.
               </p>
               <p>
-                - Setelah barang tayang di katalog, alurnya tidak kembali ke
-                tahap gadai atau aset unit.
+                - Barang fixed price tetap bisa diperbarui detailnya saat aktif
+                di pemasaran.
               </p>
               <p>
-                - Jika memakai mode Vickrey, nominal penawaran tetap tertutup
-                sampai sesi berakhir.
+                - Barang lelang dikunci saat berjalan dan baru bisa diedit lagi
+                jika sesi gagal karena tanpa peserta atau pemenang tidak membayar
+                dalam 24 jam.
               </p>
             </CardContent>
           </Card>
@@ -903,6 +924,8 @@ export function AdminInventoryMarketPage({
   itemId?: string;
   item: AdminInventoryItem;
 }) {
+  const serverNow = new Date().toISOString();
+
   return (
     <WorkflowFormShell
       description="Tentukan cara barang akan dijual, lengkapi pengaturan harganya, lalu publikasikan ke katalog agar siap dilihat calon pembeli."
@@ -916,6 +939,7 @@ export function AdminInventoryMarketPage({
         defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
         endpoint={`/api/admin/barang/${item.id}/pasarkan`}
         redirectTo="/admin/pemasaran"
+        serverNow={serverNow}
         submitLabel="Tayangkan ke katalog"
         successDescription="Barang sudah aktif di katalog sesuai mode pemasaran yang dipilih."
         successTitle="Barang tayang di katalog"
@@ -931,13 +955,15 @@ export function AdminInventoryRelistPage({
   itemId?: string;
   item: AdminInventoryItem;
 }) {
+  const serverNow = new Date().toISOString();
+
   return (
     <WorkflowFormShell
-      description="Gunakan halaman ini untuk menyiapkan ulang barang yang belum berhasil terjual, lengkap dengan evaluasi harga dan strategi penjualan yang baru."
+      description="Gunakan halaman ini untuk menyiapkan ulang lelang yang gagal karena pemenang tidak membayar dalam 24 jam atau sesi berakhir tanpa peserta."
       eyebrow="Admin Unit / Tayangkan Ulang"
       itemId={item.id}
       itemStatus={item.status}
-      title="Siapkan Penayangan Ulang"
+      title="Siapkan Lelang Ulang"
     >
       <div className="space-y-6">
         <Card className="rounded-2xl border border-black/10 bg-white">
@@ -957,13 +983,15 @@ export function AdminInventoryRelistPage({
         </Card>
         <AdminMarketingForm
           barangId={item.id}
+          defaultMode="vickrey"
           defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
           endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
           redirectTo="/admin/pemasaran"
+          serverNow={serverNow}
           submitIcon={<RotateCcw className="size-4" />}
-          submitLabel="Tayangkan ulang barang"
-          successDescription="Barang sudah aktif kembali dengan strategi pemasaran baru."
-          successTitle="Barang ditayangkan ulang"
+          submitLabel="Lelang lagi"
+          successDescription="Barang sudah aktif kembali sebagai sesi lelang baru."
+          successTitle="Barang dilelang ulang"
         />
       </div>
     </WorkflowFormShell>
@@ -1605,8 +1633,10 @@ export function AdminTransactionDetailPage({
 
 export function AdminBlacklistPage({
   entries,
+  reviewCases = [],
 }: {
   entries: AdminBlacklistItem[];
+  reviewCases?: AdminBlacklistReviewCase[];
 }) {
   const activeCount = entries.filter(
     (entry) => String(entry.status).toUpperCase() === "AKTIF",
@@ -1620,17 +1650,19 @@ export function AdminBlacklistPage({
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Fokus pada akun yang benar-benar perlu dipantau: status pembatasan, jumlah pelanggaran, batas berlaku, dan tindakan lanjutan."
-        eyebrow="Admin Unit / Blacklist"
+        description="Fokus pada kasus gagal bayar yang perlu dipantau, termasuk bantuan review dari buyer sebelum superadmin mengambil keputusan final."
+        eyebrow="Admin Unit / Pelanggaran"
         icon={ShieldEllipsis}
         rightRail={
           <>
             <AdminHeroPill icon={BadgeCheck}>{activeCount} aktif</AdminHeroPill>
-            <AdminHeroPill tone="danger">{reviewCount} review</AdminHeroPill>
+            <AdminHeroPill tone="danger">{reviewCases.length || reviewCount} review</AdminHeroPill>
           </>
         }
         title="Pelanggaran Pengguna"
       />
+
+      <AdminBlacklistReviewInbox cases={reviewCases} />
 
       <AdminBlacklistList entries={entries} />
     </div>

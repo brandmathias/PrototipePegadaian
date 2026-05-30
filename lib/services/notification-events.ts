@@ -150,3 +150,51 @@ export async function notifyBlacklistActivated(
     }
   });
 }
+
+export async function notifyBlacklistReviewSubmitted(input: {
+  userId: string;
+  caseId: string;
+  incidentId: string;
+}) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: "Pengajuan review insiden terkirim",
+    message: "Permohonan Anda sudah masuk antrean review. Keputusan final akan diberitahukan melalui notifikasi akun.",
+    type: "blacklist_review_submitted",
+    entityType: "blacklist_review",
+    entityId: input.caseId,
+    actionHref: `/bantuan/blacklist/${input.incidentId}`
+  });
+}
+
+export async function notifyBlacklistReviewApproved(input: {
+  userId: string;
+  caseId: string;
+  incidentId: string;
+}) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: "Review insiden disetujui",
+    message: "Superadmin menyetujui review insiden Anda. Pembatasan untuk insiden ini sudah dicabut sesuai keputusan review.",
+    type: "blacklist_review_approved",
+    entityType: "blacklist_review",
+    entityId: input.caseId,
+    actionHref: `/bantuan/blacklist/${input.incidentId}`
+  });
+}
+
+export async function notifyBlacklistReviewRejected(input: {
+  userId: string;
+  caseId: string;
+  incidentId: string;
+}) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: "Review insiden belum disetujui",
+    message: "Superadmin menolak pencabutan untuk insiden ini. Pembatasan tetap berlaku sesuai alasan keputusan yang tercatat.",
+    type: "blacklist_review_rejected",
+    entityType: "blacklist_review",
+    entityId: input.caseId,
+    actionHref: `/bantuan/blacklist/${input.incidentId}`
+  });
+}

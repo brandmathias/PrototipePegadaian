@@ -17,6 +17,7 @@ import {
   MapPin,
   Megaphone,
   ReceiptText,
+  PencilLine,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -204,6 +205,15 @@ const VICKREY_PAYMENT_STATUSES = new Set([
 function getVickreyStage(auction: MarketingSession) {
   const transactionStatus = auction.transactionStatus ?? "";
 
+  if (needsMarketingStrategy(auction)) {
+    return {
+      label: getAuctionStrategyReason(auction),
+      detail: "Detail barang bisa dievaluasi lalu dibuatkan sesi lelang baru.",
+      tone: "neutral" as const,
+      icon: AlertTriangle
+    };
+  }
+
   if (auction.visibility === "TERKUNCI") {
     return {
       label: "Sesi aktif",
@@ -299,12 +309,20 @@ function isMarketingSold(auction: MarketingSession) {
 
 function needsMarketingStrategy(auction: MarketingSession) {
   return (
-    auction.status === "GAGAL" ||
+    (auction.mode === "VICKREY_AUCTION" && auction.status === "GAGAL") ||
     (auction.mode === "VICKREY_AUCTION" &&
       auction.visibility === "HASIL_DIBUKA" &&
       !auction.transactionId &&
       !auction.winner)
   );
+}
+
+function getAuctionStrategyReason(auction: MarketingSession) {
+  if (auction.transactionStatus === "GAGAL" || auction.winner || auction.buyerName) {
+    return "Pemenang gagal bayar 24 jam";
+  }
+
+  return "Tidak ada peserta";
 }
 
 function getMarketingWorkflowStatus(auction: MarketingSession) {
@@ -367,6 +385,14 @@ function getMarketingPriceValue(auction: MarketingSession) {
 }
 
 function getMarketingAction(auction: MarketingSession) {
+  if (needsMarketingStrategy(auction)) {
+    return {
+      href: `/admin/barang/${auction.lotId}/pasarkan-ulang`,
+      label: "Lelang Lagi",
+      variant: "default" as const
+    };
+  }
+
   if (auction.transactionId && isPaymentQueue(auction)) {
     return {
       href: `/admin/transaksi/${auction.transactionId}?from=vickrey`,
@@ -592,12 +618,15 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
   const media = toBuyerMedia(auction.media ?? []);
   const action = getMarketingAction(auction);
   const workflowStatus = getMarketingWorkflowStatus(auction);
+  const strategyReason = needsMarketingStrategy(auction) ? getAuctionStrategyReason(auction) : null;
   const statusDotClass =
     workflowStatus === "Aktif"
       ? "bg-[#0fa35a]"
       : workflowStatus === "Menunggu Bayar"
         ? "bg-[#d89b12]"
-        : "bg-slate-400";
+        : workflowStatus === "Perlu Strategi"
+          ? "bg-[#6f58e8]"
+          : "bg-slate-400";
   const modeLabel = auction.mode === "VICKREY_AUCTION" ? "Vickrey Auction" : "Fixed Price";
   const modeTone =
     auction.mode === "VICKREY_AUCTION"
@@ -671,10 +700,15 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           </div>
           <div className="rounded-[0.95rem] bg-white px-3 py-2 text-sm leading-6 text-black/58 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ring-1 ring-black/[0.045] dark:bg-[#101a15] dark:text-slate-300/72 dark:ring-white/8">
             <p className="font-bold text-[#15211b] dark:text-slate-100">
-              {auction.buyerName || auction.winner || (auction.mode === "VICKREY_AUCTION" ? "Bid masih tertutup" : "Belum ada pembeli")}
+              {strategyReason ||
+                auction.buyerName ||
+                auction.winner ||
+                (auction.mode === "VICKREY_AUCTION" ? "Bid masih tertutup" : "Belum ada pembeli")}
             </p>
             <p className="mt-0.5">
-              {auction.finalPrice
+              {strategyReason
+                ? "Edit detail barang lalu buat sesi lelang ulang"
+                : auction.finalPrice
                 ? `${currency.format(auction.finalPrice)} harga final`
                 : auction.mode === "VICKREY_AUCTION"
                   ? `${auction.participants ?? 0} penawaran tercatat`
@@ -793,10 +827,10 @@ export function AdminMarketingUnifiedPage({
           value={`${metrics.sold} Produk`}
         />
         <MarketingMetricCard
-          description="Sesi gagal / kedaluwarsa"
+          description="Pemenang gagal bayar 24 jam / tanpa peserta"
           icon={Target}
           label="Perlu Strategi Ulang"
-          meta="Butuh evaluasi"
+          meta="Siap lelang ulang"
           tone="violet"
           value={`${metrics.strategy} Produk`}
         />
@@ -1365,12 +1399,22 @@ export function AdminFixedPriceDetailPage({
                 )}
               </div>
 
-              <Link href={`/admin/pemasaran/fixed-price/${auction.id}`}>
-                <Button className="w-full" variant="default">
-                  Lihat sesi
-                  <ArrowRight className="size-4" />
-                </Button>
-              </Link>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {auction.status === "AKTIF" ? (
+                  <Link href={`/admin/barang/${auction.lotId}/edit`}>
+                    <Button className="w-full" variant="secondary">
+                      <PencilLine className="size-4" />
+                      Edit detail
+                    </Button>
+                  </Link>
+                ) : null}
+                <Link href={`/admin/pemasaran/fixed-price/${auction.id}`}>
+                  <Button className="w-full" variant="default">
+                    Lihat sesi
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
 

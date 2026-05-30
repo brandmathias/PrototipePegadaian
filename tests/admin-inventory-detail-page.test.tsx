@@ -29,4 +29,21 @@ describe("AdminInventoryDetailPage", () => {
     expect(screen.getByRole("heading", { name: /pasarkan barang tidak ditebus/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /edit data barang/i })).toBeInTheDocument();
   });
+
+  it("keeps failed auction barang editable before it is auctioned again", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={{
+          ...baseItem,
+          status: "GAGAL",
+          marketingMode: "vickrey",
+          marketingIteration: 2,
+          nextAction: "Evaluasi harga dasar dan tayangkan ulang sebagai lelang."
+        }}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /edit data barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /lelang lagi/i })).toBeInTheDocument();
+  });
 });

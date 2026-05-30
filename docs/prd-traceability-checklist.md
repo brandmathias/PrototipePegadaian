@@ -1,6 +1,6 @@
 # PRD Traceability Checklist
 
-Terakhir diperbarui: 29 April 2026
+Terakhir diperbarui: 30 Mei 2026
 
 Dokumen ini dipakai sebagai sumber kebenaran untuk mengecek apakah implementasi website sudah benar-benar menutup workflow yang diwajibkan di `PRD.md`, bukan sekadar terlihat hidup karena fallback UI atau data demo.
 
@@ -31,6 +31,7 @@ Legenda status:
 | Countdown pembayaran / lelang | Countdown real-time di browser | `SUDAH` | Buyer sudah live per detik untuk pembayaran dan sesi lelang relevan. |
 | Riwayat bid dan transaksi | Daftar transaksi + riwayat lelang pribadi | `SUDAH` | Halaman transaksi dan riwayat bid buyer kini membaca data backend langsung tanpa fallback runtime. |
 | Nota transaksi | Nota setelah status `LUNAS` | `PARSIAL` | Jalur halaman nota sudah ada, tetapi audit akhir terhadap format PRD dan PDF final masih perlu ditutup. |
+| Bantuan review blacklist | Satu case per insiden, bukti awal, status aman | `SUDAH` | Buyer dapat mengajukan dari akun atau bantuan publik tanpa OTP; status buyer-safe tersedia. |
 
 ## Admin Unit
 
@@ -42,7 +43,7 @@ Legenda status:
 | Pemasaran barang | Fixed price / Vickrey publish | `SUDAH` | Publish pemasaran berjalan dari data unit. |
 | Detail sesi lelang | Detail pemasaran + daftar bid setelah deadline | `SUDAH` | Detail lelang kini menampilkan bid list dari database setelah deadline, tetap terkunci sebelum deadline. |
 | Verifikasi transaksi | Transfer / langsung / cetak nota | `SUDAH` | Jalur verifikasi pembayaran admin sudah aktif. |
-| Blacklist unit | Riwayat pelanggaran dan perpanjangan blokir | `SUDAH` | Audit log manual vs sistem sudah dipisah. |
+| Blacklist unit | Riwayat pelanggaran dan intake review | `SUDAH` | Admin unit melihat case lokal dan hanya memberi rekomendasi opsional, bukan keputusan final. |
 | Countdown operasional | Countdown transaksi/lelang aktif | `SUDAH` | Countdown live sudah aktif di area admin yang relevan. |
 
 ## Superadmin
@@ -53,7 +54,7 @@ Legenda status:
 | Unit & rekening | Kelola unit dan multi rekening unit | `SUDAH` | Struktur rekening per unit mendukung lebih dari satu rekening. |
 | Admin unit | CRUD akun admin unit | `SUDAH` | Sudah terhubung dengan role auth. |
 | Monitoring global | Read-only lintas unit/barang/transaksi | `SUDAH` | Monitoring service sudah membaca data nyata dari DB. |
-| Blacklist global | Cabut blokir dan audit | `SUDAH` | Countdown blacklist dan audit actor `system/manual` aktif. |
+| Blacklist global | Cabut blokir, queue review, dan audit | `SUDAH` | Superadmin memutus review dengan alasan wajib, cabut manual memakai efek governance yang sama. |
 
 ## Background Jobs / Cron
 
@@ -64,9 +65,11 @@ Legenda status:
 | Settlement Vickrey | 0 bid gagal, 1 bid bayar harga dasar, B1/B2 | `SUDAH` | Sudah aktif di `cron.service.ts`. |
 | Gagal bayar 24 jam | Transaksi gagal + pelanggaran + blacklist | `SUDAH` | Workflow otomatis aktif dan tercatat pada audit log sistem. |
 | Audit actor sistem | `performed_by_type = system/manual` | `SUDAH` | Sudah diterapkan untuk log blacklist otomatis vs manual. |
+| Akumulasi pelanggaran valid | Level memakai insiden escalation-eligible | `SUDAH` | Cron menghitung insiden yang masih eligible sehingga review approved/direct revoke mengecualikan insiden dari eskalasi berikutnya. |
 
 ## Fokus Lanjutan Setelah Batch Ini
 
 1. Bersihkan fallback `mock-data` yang masih tersisa di halaman buyer dan admin yang sudah punya jalur backend nyata.
 2. Audit akhir format nota / PDF terhadap spesifikasi PRD.
 3. Tambahkan verifikasi deployment untuk memastikan cron terjadwal benar-benar berjalan pada environment produksi.
+4. Tambahkan notifikasi internal admin/superadmin untuk high-priority review bila channel operasionalnya sudah ditetapkan.

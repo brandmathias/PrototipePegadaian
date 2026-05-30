@@ -180,6 +180,7 @@ describe("buyer auction state refresh", () => {
           }
         ])
       )
+      .mockImplementationOnce(() => mockOrderedLimitRows([{ id: "incident-1" }]))
       .mockImplementationOnce(() => mockBuyerTransactionRows([]))
       .mockImplementationOnce(() => mockBuyerBidRows([]));
 
@@ -191,6 +192,7 @@ describe("buyer auction state refresh", () => {
     expect(summary.blacklist).toEqual(
       expect.objectContaining({
         active: true,
+        incidentId: "incident-1",
         violations: 1
       })
     );

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
+import { BlacklistReviewQueue } from "@/components/superadmin/blacklist-review-queue";
 import { AdminUnitForm, DeactivateAdminButton } from "@/components/superadmin/admin-form";
 import { CabutBlacklistForm } from "@/components/superadmin/cabut-blacklist-form";
 import { ActivateRekeningButton, RekeningForm } from "@/components/superadmin/rekening-form";
@@ -42,6 +43,7 @@ export type SuperAdminSpotlight = {
 };
 
 export type SuperAdminPriority = {
+  id: string;
   title: string;
   detail: string;
   href: string;
@@ -142,6 +144,29 @@ export type SuperAdminBlacklistItem = {
   countdownLabel?: string;
   countdownAt?: string;
   expiredLabel?: string;
+};
+
+export type SuperAdminBlacklistReviewCase = {
+  id: string;
+  buyerName: string;
+  buyerEmail: string;
+  itemName: string;
+  unitName: string;
+  status: string;
+  submittedAt: string;
+  buyerStatement: string;
+  adminRecommendation: string | null;
+  adminRecommendationNote: string | null;
+  level: number;
+  lockedAccount: boolean;
+  hasAdminRecommendation: boolean;
+  priorityScore: number;
+  attachments: Array<{
+    id: string;
+    fileUrl: string;
+    fileName: string;
+    mimeType: string;
+  }>;
 };
 
 function StatusBadge({ value }: { value: string }) {
@@ -367,7 +392,7 @@ export function SuperAdminDashboardPage({
               />
             ) : (
               summary.priorities.map((item) => (
-                <div className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5" key={item.title}>
+                <div className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5" key={item.id}>
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="space-y-2">
                       <p className="font-semibold text-foreground">{item.title}</p>
@@ -891,9 +916,11 @@ export function SuperAdminMonitoringPage({
 
 export function SuperAdminBlacklistPage({
   entries,
+  reviewCases = [],
   serverNow
 }: {
   entries: SuperAdminBlacklistItem[];
+  reviewCases?: SuperAdminBlacklistReviewCase[];
   serverNow?: string;
 }) {
   const expiringEntry = entries.find((entry) => entry.status === "Aktif" && entry.countdownAt);
@@ -903,8 +930,10 @@ export function SuperAdminBlacklistPage({
       <SectionHeading
         eyebrow="Blacklist Global"
         title="Kelola akun dengan pelanggaran lintas unit"
-        description="Superadmin dapat meninjau status blacklist, mempertahankan blokir, atau mencabutnya lebih awal dengan alasan yang terdokumentasi."
+        description="Superadmin memegang keputusan final untuk mempertahankan blacklist atau mencabut pelanggaran dengan alasan resmi yang terdokumentasi."
       />
+
+      <BlacklistReviewQueue cases={reviewCases} />
 
       <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
         <Card className="border border-border/70 bg-white">

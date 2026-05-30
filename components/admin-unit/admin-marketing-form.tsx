@@ -60,18 +60,22 @@ function ModeCard({
 
 export function AdminMarketingForm({
   barangId: _barangId,
+  defaultMode = "fixed_price",
   defaultPrice,
   endpoint,
   redirectTo,
+  serverNow,
   submitIcon,
   submitLabel,
   successDescription,
   successTitle
 }: {
   barangId: string;
+  defaultMode?: MarketingMode;
   defaultPrice: number;
   endpoint: string;
   redirectTo: string;
+  serverNow: string;
   submitIcon?: ReactNode;
   submitLabel: string;
   successDescription: string;
@@ -79,7 +83,7 @@ export function AdminMarketingForm({
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [mode, setMode] = useState<MarketingMode>("fixed_price");
+  const [mode, setMode] = useState<MarketingMode>(defaultMode);
   const [price, setPrice] = useState(String(Math.max(1, Math.round(defaultPrice || 0))));
   const [durationDays, setDurationDays] = useState("0");
   const [durationHours, setDurationHours] = useState("0");
@@ -97,26 +101,29 @@ export function AdminMarketingForm({
     normalizedDurationHours * 60 * 60 +
     normalizedDurationMinutes * 60 +
     normalizedDurationSeconds;
+  const baseNowMs = useMemo(() => new Date(serverNow).getTime(), [serverNow]);
   const durationSummary = `${durationDays || "0"} hari ${durationHours || "0"} jam ${durationMinutes || "0"} menit ${durationSeconds || "0"} detik`;
   const estimatedEnd = useMemo(() => {
     if (
       mode !== "vickrey" ||
+      !Number.isFinite(baseNowMs) ||
       !Number.isFinite(normalizedDurationTotalSeconds) ||
       normalizedDurationTotalSeconds <= 0
     ) {
       return "Tidak memakai countdown";
     }
 
-    const date = new Date(Date.now() + normalizedDurationTotalSeconds * 1000);
+    const date = new Date(baseNowMs + normalizedDurationTotalSeconds * 1000);
     return date.toLocaleString("id-ID", {
       day: "2-digit",
       month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit"
+      second: "2-digit",
+      timeZone: "Asia/Makassar"
     });
-  }, [mode, normalizedDurationTotalSeconds]);
+  }, [baseNowMs, mode, normalizedDurationTotalSeconds]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

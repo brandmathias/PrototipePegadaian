@@ -1,5 +1,5 @@
 import React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -86,6 +86,45 @@ describe("superadmin pages", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders dashboard priorities with duplicate titles without duplicate key warning", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(
+      <SuperAdminDashboardPage
+        summary={{
+          headline: "Pantau seluruh unit dari satu control center.",
+          metrics: [{ label: "Total Unit", value: "2", detail: "2 aktif" }],
+          spotlight: [],
+          priorities: [
+            {
+              id: "priority-1",
+              title: "UPC Ranotana · Transaksi",
+              detail: "2 transaksi menunggu tindak lanjut.",
+              href: "/superadmin/unit/unit-1",
+              action: "Buka unit"
+            },
+            {
+              id: "priority-2",
+              title: "UPC Ranotana · Transaksi",
+              detail: "1 transaksi lain mendekati SLA.",
+              href: "/superadmin/unit/unit-2",
+              action: "Buka unit"
+            }
+          ]
+        }}
+        unitsNeedAttention={[]}
+        pendingMonitoring={[]}
+      />
+    );
+
+    expect(screen.getAllByText("UPC Ranotana · Transaksi")).toHaveLength(2);
+    expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining("Encountered two children with the same key")
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it("updates superadmin countdown on monitoring page", () => {
     render(
       <SuperAdminMonitoringPage
@@ -165,5 +204,49 @@ describe("superadmin pages", () => {
     expect(
       screen.getAllByText((content) => content.includes("Sisa waktu 1 menit 4 detik"))
     ).toHaveLength(2);
+  });
+
+  it("renders blacklist review queue with final decision reasons", () => {
+    render(
+      <SuperAdminBlacklistPage
+        entries={[]}
+        reviewCases={[
+          {
+            id: "case-1",
+            buyerName: "Raras Mahesa",
+            buyerEmail: "raras@example.com",
+            itemName: "Kalung Emas",
+            unitName: "Pegadaian CP Manado",
+            status: "TERKIRIM",
+            submittedAt: "2026-05-30T00:00:00.000Z",
+            buyerStatement: "Saya sudah membayar sebelum batas waktu.",
+            adminRecommendation: "PERTIMBANGKAN_CABUT",
+            adminRecommendationNote: "Unit menerima konfirmasi pembayaran manual.",
+            level: 3,
+            lockedAccount: true,
+            hasAdminRecommendation: true,
+            priorityScore: 105,
+            attachments: [
+              {
+                id: "att-1",
+                fileUrl: "/uploads/blacklist-review/bukti.pdf",
+                fileName: "bukti.pdf",
+                mimeType: "application/pdf"
+              }
+            ]
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Antrean keputusan superadmin")).toBeInTheDocument();
+    expect(screen.getByText("Raras Mahesa")).toBeInTheDocument();
+    expect(screen.getByText("bukti.pdf")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /putuskan case/i }));
+
+    expect(screen.getByRole("option", { name: "Setujui pencabutan" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Bukti pembayaran valid" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/catatan tambahan opsional/i)).toBeInTheDocument();
   });
 });

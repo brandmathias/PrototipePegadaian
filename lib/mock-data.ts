@@ -1033,18 +1033,21 @@ export const superAdminSummary = {
   ],
   priorities: [
     {
+      id: "priority-unit-rekening",
       title: "Unit dengan rekening belum sinkron",
       detail: "5 unit belum memakai rekening aktif yang tervalidasi.",
       href: "/superadmin/unit",
       action: "Tinjau unit"
     },
     {
+      id: "priority-blacklist-review",
       title: "Blacklist perlu peninjauan",
       detail: "11 akun sudah mendekati akhir masa blokir dan menunggu keputusan.",
       href: "/superadmin/blacklist",
       action: "Buka blacklist"
     },
     {
+      id: "priority-admin-activation",
       title: "Admin unit baru belum aktif penuh",
       detail: "7 admin baru masih menunggu penempatan atau aktivasi akun.",
       href: "/superadmin/admin",

@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
+import { canEditMarketedBarang } from "@/lib/admin-unit/marketing-edit-policy";
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
@@ -10,7 +11,7 @@ import {
 } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema/auth";
-import { barang, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang } from "@/lib/db/schema";
+import { barang, bids, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang, transaksi } from "@/lib/db/schema";
 import { formatAppDateTime } from "@/lib/timezone";
 
 function toUtcDate(value: string) {
@@ -33,6 +34,64 @@ async function assertBarangForUnit(barangId: string, unitId: string) {
   }
 
   return row;
+}
+
+async function getMarketingEditContext(barangId: string) {
+  const [activeMarketing] = await db
+    .select({
+      mode: pemasaran.mode
+    })
+    .from(pemasaran)
+    .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif")))
+    .limit(1);
+
+  const [latestMarketing] = await db
+    .select({
+      id: pemasaran.id,
+      mode: pemasaran.mode,
+      status: pemasaran.status,
+      winnerId: pemasaran.winnerId
+    })
+    .from(pemasaran)
+    .where(eq(pemasaran.barangId, barangId))
+    .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
+    .limit(1);
+
+  if (!latestMarketing) {
+    return {
+      activeMarketingMode: activeMarketing?.mode ?? null,
+      latestMarketingMode: null,
+      latestMarketingStatus: null,
+      participantCount: 0,
+      hasWinner: false,
+      hasFailedWinnerPayment: false
+    };
+  }
+
+  const [[bidSummary], [failedTransaction]] = await Promise.all([
+    db
+      .select({
+        count: sql<number>`count(${bids.id})`
+      })
+      .from(bids)
+      .where(eq(bids.pemasaranId, latestMarketing.id)),
+    db
+      .select({
+        id: transaksi.id
+      })
+      .from(transaksi)
+      .where(and(eq(transaksi.pemasaranId, latestMarketing.id), eq(transaksi.status, "gagal")))
+      .limit(1)
+  ]);
+
+  return {
+    activeMarketingMode: activeMarketing?.mode ?? null,
+    latestMarketingMode: latestMarketing.mode,
+    latestMarketingStatus: latestMarketing.status,
+    participantCount: Number(bidSummary?.count ?? 0),
+    hasWinner: Boolean(latestMarketing.winnerId),
+    hasFailedWinnerPayment: Boolean(failedTransaction)
+  };
 }
 
 async function recordStatusChange(input: {
@@ -251,11 +310,18 @@ export async function getAdminBarangById(unitId: string, barangId: string) {
     .from(pemasaran)
     .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif")))
     .limit(1);
+  const [latestMarketing] = await db
+    .select()
+    .from(pemasaran)
+    .where(eq(pemasaran.barangId, barangId))
+    .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
+    .limit(1);
 
   return {
     ...serializeAdminBarang(row, {
       mediaCount: media.length,
-      marketingMode: activeMarketing?.mode ?? null
+      marketingIteration: latestMarketing?.iteration ?? null,
+      marketingMode: activeMarketing?.mode ?? latestMarketing?.mode ?? null
     }),
     media
   };
@@ -323,9 +389,10 @@ export async function createAdminBarang(
 
 export async function updateAdminBarang(unitId: string, barangId: string, input: Parameters<typeof validateAdminBarangPayload>[0]) {
   const current = await assertBarangForUnit(barangId, unitId);
+  const marketingContext = await getMarketingEditContext(barangId);
 
-  if (!["gadai", "jaminan"].includes(current.status)) {
-    throw new Error("Barang hanya dapat diedit sebelum tayang di katalog.");
+  if (!canEditMarketedBarang({ status: current.status, ...marketingContext })) {
+    throw new Error("Barang fixed price dapat diedit saat aktif, sedangkan barang lelang hanya dapat diedit setelah gagal karena tanpa peserta atau pemenang tidak membayar dalam 24 jam.");
   }
 
   const payload = validateAdminBarangPayload(input);

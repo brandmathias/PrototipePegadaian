@@ -73,12 +73,14 @@ export function validateAdminUnitPayload(input: {
   return { name, email, unitId, temporaryPassword, phoneNumber };
 }
 
-export function validateBlacklistRevokePayload(input: { reason?: string }) {
-  const reason = String(input.reason ?? "").trim();
+export function validateBlacklistRevokePayload(input: { reason?: string; reasonCode?: string; note?: string }) {
+  const reasonCode = String(input.reasonCode ?? input.reason ?? "").trim();
+  const note = String(input.note ?? "").trim();
+  const reason = note || reasonCode;
 
-  if (!reason) {
+  if (!reasonCode) {
     throw new Error("Alasan pencabutan blacklist wajib diisi.");
   }
 
-  return { reason };
+  return { reason, reasonCode, note };
 }

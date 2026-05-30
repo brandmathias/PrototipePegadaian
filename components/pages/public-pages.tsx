@@ -540,6 +540,12 @@ export function LoginPage() {
           <Suspense fallback={<div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-emerald-50/70">Menyiapkan formulir masuk...</div>}>
             <LoginForm />
           </Suspense>
+          <div className="mt-5 rounded-[1.15rem] border border-amber-200/18 bg-amber-200/10 p-4 text-sm leading-6 text-emerald-50/72">
+            Akun sedang terkunci karena blacklist?{" "}
+            <Link className="font-bold text-amber-100 underline-offset-4 hover:underline" href="/bantuan/blacklist">
+              Buka review insiden
+            </Link>
+          </div>
         </div>
       </section>
     </main>

@@ -1,5 +1,12 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
+}));
 
 import {
   AdminBlacklistDetailPage,
@@ -107,6 +114,7 @@ describe("AdminBlacklistPage", () => {
     );
 
     expect(screen.getByText("Pengguna 1")).toBeInTheDocument();
+    expect(screen.getByText("Pengajuan review dari buyer")).toBeInTheDocument();
     expect(screen.queryByText("Pengguna 11")).not.toBeInTheDocument();
     expect(screen.getByText("Total Blacklist")).toBeInTheDocument();
     expect(screen.getByText("Pelanggaran 7 Hari Terakhir")).toBeInTheDocument();
@@ -123,6 +131,33 @@ describe("AdminBlacklistPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "2" }));
 
     expect(screen.getByText("Pengguna 11")).toBeInTheDocument();
+  });
+
+  it("shows local blacklist review intake cases for admin unit", () => {
+    render(
+      <AdminBlacklistPage
+        entries={[makeBlacklistEntry(1)]}
+        reviewCases={[
+          {
+            id: "case-1",
+            buyerName: "Raras Mahesa",
+            buyerEmail: "raras@example.com",
+            itemName: "Kalung Emas",
+            unitName: "UPC Ranotana",
+            status: "TERKIRIM",
+            submittedAt: "2026-05-30T00:00:00.000Z",
+            hasRecommendation: false,
+            crossUnitSignal: "Riwayat lintas unit tersedia untuk superadmin",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("Raras Mahesa")).toBeInTheDocument();
+    expect(screen.getByText("Kalung Emas")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /beri rekomendasi/i }),
+    ).toBeInTheDocument();
   });
 
   it("shows violation detail with level, countdown context, and unpaid auction traces", () => {

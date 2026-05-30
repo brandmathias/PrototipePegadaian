@@ -66,6 +66,7 @@ type BuyerSummary = {
   };
   blacklist: {
     active: boolean;
+    incidentId?: string | null;
     until: string;
     reason: string;
     violations: number;
@@ -828,8 +829,15 @@ export function UserDashboardPage({
                   ))}
                 </ul>
                 {summary.blacklist.active ? (
-                  <div className="mt-5 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-                    Hindari pelanggaran berikutnya agar level pembatasan tidak meningkat.
+                  <div className="mt-5 space-y-3 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                    <p>Hindari pelanggaran berikutnya agar level pembatasan tidak meningkat.</p>
+                    {summary.blacklist.incidentId ? (
+                      <Link href={`/bantuan/blacklist/${summary.blacklist.incidentId}`}>
+                        <Button className="rounded-full" size="sm" variant="secondary">
+                          Ajukan Review Insiden
+                        </Button>
+                      </Link>
+                    ) : null}
                   </div>
                 ) : null}
               </div>

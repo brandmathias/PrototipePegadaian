@@ -1,4 +1,4 @@
-import { index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { users } from "@/lib/db/schema/auth";
@@ -200,7 +200,14 @@ export const pelanggaranUser = pgTable(
       .notNull()
       .references(() => units.id, { onDelete: "cascade" }),
     note: text("note").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+    escalationEligible: boolean("escalation_eligible").notNull().default(true),
+    resolutionType: text("resolution_type"),
+    resolutionReasonCode: text("resolution_reason_code"),
+    resolutionNote: text("resolution_note"),
+    resolvedByUserId: text("resolved_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
   (table) => ({
     transaksiIdx: uniqueIndex("pelanggaran_user_transaksi_unique").on(table.transaksiId),

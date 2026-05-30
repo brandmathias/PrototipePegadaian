@@ -554,6 +554,7 @@ function CatalogLotCard({
             viewMode === "list" ? "h-full min-h-[13.5rem] lg:aspect-auto" : "aspect-[1.78]"
           )}
           media={lot.media}
+          showCategoryBadge={false}
         />
         <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/94 px-2.5 py-1 text-[0.68rem] font-black text-[#075f42] shadow-sm">
           <span className={cn("grid size-5 place-items-center rounded-[0.35rem]", mode.tone)}>

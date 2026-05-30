@@ -230,6 +230,7 @@ export async function getSuperAdminMonitoring() {
   const priorityItems =
     timeSensitiveMonitoring.length > 0
       ? timeSensitiveMonitoring.slice(0, 3).map((item) => ({
+          id: item.id,
           title: `${item.unit} · ${item.scope}`,
           detail: item.activity,
           href: `/superadmin/unit/${item.unitId}`,
@@ -239,6 +240,7 @@ export async function getSuperAdminMonitoring() {
           expiredLabel: item.expiredLabel
         }))
       : monitoringItems.slice(0, 3).map((item) => ({
+          id: item.id,
           title: item.unit,
           detail: item.activity,
           href: `/superadmin/unit/${item.unitId}`,

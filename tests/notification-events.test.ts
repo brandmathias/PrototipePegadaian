@@ -10,6 +10,9 @@ vi.mock("@/lib/services/notification.service", () => ({
 
 import {
   notifyBlacklistActivated,
+  notifyBlacklistReviewApproved,
+  notifyBlacklistReviewRejected,
+  notifyBlacklistReviewSubmitted,
   notifyPaymentDeadlineSoon,
   notifyPaymentRejected,
   notifyPaymentVerified,
@@ -132,6 +135,45 @@ describe("notification event helpers", () => {
       expect.objectContaining({
         type: "blacklist_active",
         actionHref: "/transaksi?tab=bids"
+      })
+    );
+  });
+
+  it("creates blacklist review lifecycle notifications", async () => {
+    await notifyBlacklistReviewSubmitted({
+      userId: "buyer-1",
+      caseId: "case-1",
+      incidentId: "incident-1"
+    });
+    await notifyBlacklistReviewApproved({
+      userId: "buyer-1",
+      caseId: "case-1",
+      incidentId: "incident-1"
+    });
+    await notifyBlacklistReviewRejected({
+      userId: "buyer-1",
+      caseId: "case-2",
+      incidentId: "incident-2"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "blacklist_review_submitted",
+        entityType: "blacklist_review",
+        entityId: "case-1",
+        actionHref: "/bantuan/blacklist/incident-1"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "blacklist_review_approved",
+        title: "Review insiden disetujui"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "blacklist_review_rejected",
+        title: "Review insiden belum disetujui"
       })
     );
   });

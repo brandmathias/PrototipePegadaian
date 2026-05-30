@@ -20,6 +20,7 @@ import {
   blacklists,
   buyerProfiles,
   mediaBarang,
+  pelanggaranUser,
   pemasaran,
   sessions,
   transaksi,
@@ -334,6 +335,14 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
       .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, now)))
   ]);
   const blacklist = await getActiveBlacklist(userId);
+  const [latestBlacklistIncident] = blacklist
+    ? await db
+        .select({ id: pelanggaranUser.id })
+        .from(pelanggaranUser)
+        .where(and(eq(pelanggaranUser.userId, userId), eq(pelanggaranUser.escalationEligible, true)))
+        .orderBy(desc(pelanggaranUser.createdAt))
+        .limit(1)
+    : [null];
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
   const wishlistCount = await getBuyerWishlistCount(userId);
   const transactions = await listBuyerTransactions(userId, { refreshAuctionState: false });
@@ -366,6 +375,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
     },
     blacklist: {
       active: Boolean(blacklist),
+      incidentId: latestBlacklistIncident?.id ?? null,
       violations: blacklist?.totalViolations ?? 0,
       until: formatAppDate(blacklist?.blockedUntil),
       reason: blacklist

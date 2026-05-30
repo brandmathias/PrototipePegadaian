@@ -90,7 +90,8 @@ Hak akses:
 - Melihat transaksi aktif dan riwayat transaksi dalam bentuk daftar per baris.
 - Mencetak nota transaksi.
 - Melihat daftar blacklist/pelanggaran di unit.
-- Memperpanjang blacklist dengan alasan.
+- Melihat bantuan review blacklist dari buyer untuk kasus unitnya.
+- Memberi rekomendasi lokal tanpa menjadi pengambil keputusan final.
 
 ### 2.4 Super Admin
 
@@ -103,7 +104,8 @@ Hak akses:
 - Mengelola rekening bank aktif per unit.
 - Melihat monitoring global.
 - Melihat daftar blacklist nasional.
-- Mencabut blacklist lebih awal dengan alasan.
+- Melihat antrean review blacklist nasional.
+- Mencabut blacklist lebih awal atau memutus review dengan alasan resmi dan catatan opsional.
 
 ---
 
@@ -488,10 +490,25 @@ Catatan:
 - Buyer tetap dapat login dan melihat katalog kecuali kebijakan bisnis diubah kemudian.
 - Transaksi yang sudah berjalan tetap dapat diselesaikan.
 - Pembatasan Fixed Price hanya berlaku untuk membuat transaksi baru mulai Level 2.
-- Admin Unit dapat memperpanjang blacklist.
-- Super Admin dapat mencabut blacklist lebih awal dengan alasan.
+- Admin Unit dapat memantau pelanggaran unitnya dan memberi rekomendasi lokal untuk review.
+- Super Admin menjadi pemegang keputusan final untuk mencabut atau mempertahankan blacklist.
+- Pencabutan lewat review atau cabut manual mengecualikan insiden terkait dari akumulasi pelanggaran berikutnya tanpa menghapus riwayat audit.
 
-### 7.2 Informed Consent Sebelum Bid
+### 7.2 Review Bantuan Blacklist
+
+Review blacklist bersifat berbasis insiden: satu insiden adalah satu pemenang lelang yang tidak menyelesaikan pembayaran sampai batas waktu. Buyer hanya dapat mengirim satu bantuan review untuk satu insiden aktif.
+
+Aturan review:
+
+- Buyer wajib menyiapkan seluruh bukti sebelum mengirim bantuan karena tidak ada upload tambahan setelah submit.
+- Buyer dapat mengirim dari halaman akun atau dari halaman bantuan publik jika akun terkunci.
+- Halaman bantuan publik memakai NIK plus email atau nomor HP, tanpa OTP pada fase ini.
+- Admin Unit melihat case yang terkait unitnya dan dapat memberi rekomendasi opsional.
+- Super Admin dapat melihat case sejak awal dan memutus `DISETUJUI` atau `DITOLAK`.
+- Keputusan Super Admin wajib memilih alasan; catatan tambahan bersifat opsional.
+- Buyer hanya melihat status dan ringkasan aman, bukan catatan deliberasi internal.
+
+### 7.3 Informed Consent Sebelum Bid
 
 Saat buyer menekan konfirmasi bid Vickrey, sistem wajib menampilkan warning aktif dalam modal syarat dan ketentuan:
 
@@ -680,13 +697,16 @@ Tabel:
 - `pelanggaran_user`
 - `blacklist`
 - `blacklist_action_log`
+- `blacklist_review_case`
+- `blacklist_review_attachment`
 
 Aturan:
 
 - Pelanggaran dicatat per kejadian gagal bayar Vickrey.
 - Blacklist aktif per user bersifat unik.
-- `total_violations` menentukan level pembatasan.
-- Action log menyimpan riwayat blokir otomatis, perpanjang manual, dan cabut manual.
+- Level pembatasan dihitung dari insiden yang masih `escalation_eligible`.
+- Action log menyimpan riwayat blokir otomatis, review diajukan, keputusan review, dan cabut manual.
+- Review case bersifat unik per insiden dan lampiran disimpan sebagai metadata file terpisah.
 
 ### 8.9 Notifikasi In-App
 
@@ -768,7 +788,7 @@ Aturan:
 | `/admin/transaksi/riwayat` | Riwayat transaksi. |
 | `/admin/transaksi/[id]` | Detail transaksi. |
 | `/admin/transaksi/[id]/nota` | Nota admin. |
-| `/admin/blacklist` | Daftar blacklist unit. |
+| `/admin/blacklist` | Daftar pelanggaran unit dan intake review bantuan buyer. |
 | `/admin/blacklist/[userId]` | Detail blacklist user. |
 | `/admin/blacklist/[userId]/perpanjang` | Perpanjang blacklist. |
 | `/admin/profil` | Profil admin unit. |
@@ -783,7 +803,7 @@ Aturan:
 | `/superadmin/unit/[id]/rekening` | Kelola rekening unit. |
 | `/superadmin/admin` | Kelola admin unit. |
 | `/superadmin/monitoring` | Monitoring global. |
-| `/superadmin/blacklist` | Blacklist global. |
+| `/superadmin/blacklist` | Blacklist global dan antrean keputusan review. |
 
 ### 9.5 API Buyer
 
@@ -802,6 +822,8 @@ Aturan:
 | `GET` | `/api/user/notifikasi/unread-count` | Jumlah notifikasi belum dibaca. |
 | `PATCH` | `/api/user/notifikasi/[id]` | Tandai satu notifikasi sebagai dibaca. |
 | `POST` | `/api/user/notifikasi/read-all` | Tandai semua notifikasi buyer sebagai dibaca. |
+| `GET/POST` | `/api/user/blacklist-review` | List dan kirim bantuan review blacklist buyer. |
+| `POST` | `/api/public/blacklist-help` | Lookup publik dan pengajuan bantuan review tanpa OTP. |
 
 ### 9.6 API Admin Unit
 
@@ -826,6 +848,7 @@ Aturan:
 | `GET` | `/api/admin/blacklist` | Daftar blacklist unit. |
 | `GET` | `/api/admin/blacklist/[userId]` | Detail blacklist user. |
 | `POST` | `/api/admin/blacklist/[userId]/perpanjang` | Perpanjang blacklist. |
+| `POST` | `/api/admin/blacklist-review/[caseId]` | Simpan rekomendasi admin unit untuk case review. |
 
 ### 9.7 API Super Admin
 
@@ -840,6 +863,7 @@ Aturan:
 | `GET` | `/api/superadmin/monitoring` | Monitoring global. |
 | `GET` | `/api/superadmin/blacklist` | Blacklist global. |
 | `POST` | `/api/superadmin/blacklist/[userId]/cabut` | Cabut blacklist. |
+| `POST` | `/api/superadmin/blacklist-review/[caseId]` | Putuskan review blacklist dengan alasan resmi. |
 
 ### 9.8 API Cron
 
@@ -895,7 +919,7 @@ Aturan:
 - Pelanggaran bertambah jika pemenang Vickrey tidak membayar dalam 24 jam.
 - Level 1 memblokir bid Vickrey.
 - Level 2 memblokir bid Vickrey dan transaksi Fixed Price baru.
-- Level 3 memakai durasi 365 hari dan membutuhkan review/cabut manual.
+- Level 3 memakai durasi 365 hari dan diprioritaskan untuk review/cabut manual oleh Super Admin.
 - Transaksi yang sudah berjalan tetap dapat diselesaikan walaupun akun sedang dibatasi.
 
 ### 10.6 Standar Waktu Operasional
@@ -1017,14 +1041,15 @@ Aturan:
 - Cron membuka escrow otomatis setelah deadline.
 - Sistem membuat transaksi bayar langsung untuk pemenang.
 - Buyer pemenang menerima notifikasi in-app dan diarahkan ke detail transaksi pembayaran.
-- Buyer menerima notifikasi saat pembayaran diverifikasi, ditolak, deadline hampir habis, atau blacklist aktif.
+- Buyer menerima notifikasi saat pembayaran diverifikasi, ditolak, deadline hampir habis, blacklist aktif, bantuan review terkirim, atau keputusan review sudah final.
 - Jika pemenang tidak membayar 24 jam, sistem mencatat pelanggaran dan blacklist.
 
 ### Blacklist
 
 - Pelanggaran pertama memblokir Vickrey 7 hari.
 - Pelanggaran kedua memblokir Vickrey dan Fixed Price baru 30 hari.
-- Pelanggaran ketiga dan seterusnya memblokir transaksi baru 365 hari dan perlu review/cabut manual.
+- Pelanggaran ketiga dan seterusnya memblokir transaksi baru 365 hari dan masuk prioritas review/cabut manual Super Admin.
+- Review bantuan blacklist hanya satu kali per insiden, memakai bukti yang sudah disiapkan di awal, dan tidak memerlukan OTP pada halaman publik fase ini.
 - Buyer tetap bisa menyelesaikan transaksi yang sudah ada.
 
 ---

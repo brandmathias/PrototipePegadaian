@@ -89,7 +89,7 @@ function toIsoOrNull(value: Date | string | null | undefined) {
 
 export function serializeAdminBarang(
   row: BarangRow,
-  extra?: { marketingMode?: string | null; mediaCount?: number; previewImageUrl?: string | null }
+  extra?: { marketingIteration?: number | null; marketingMode?: string | null; mediaCount?: number; previewImageUrl?: string | null }
 ) {
   const displayStatus = row.status === "gadai" ? "jaminan" : row.status;
 
@@ -110,6 +110,7 @@ export function serializeAdminBarang(
     customerNumber: row.customerNumber,
     description: row.description,
     specifications: row.specifications ?? {},
+    marketingIteration: extra?.marketingIteration ?? null,
     marketingMode: extra?.marketingMode ?? null,
     mediaSummary: `${extra?.mediaCount ?? 0} media`,
     previewImageUrl: extra?.previewImageUrl ?? null,
@@ -124,7 +125,7 @@ function getBarangNextAction(status: string) {
     return "Lengkapi media dan strategi penjualan, lalu tayangkan barang ke katalog.";
   }
   if (status === "gagal") {
-    return "Tinjau kembali harga atau mode pemasaran sebelum ditayangkan ulang.";
+    return "Edit detail bila perlu, evaluasi harga dasar, lalu lelang lagi atau pilih strategi pemasaran ulang.";
   }
   if (status === "menunggu_pembayaran") {
     return "Pantau batas waktu pembayaran pemenang.";

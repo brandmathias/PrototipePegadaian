@@ -46,6 +46,7 @@ describe("AdminMarketingForm", () => {
         defaultPrice={150000}
         endpoint="/api/admin/pemasaran"
         redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
         submitLabel="Simpan pemasaran"
         successDescription="Berhasil"
         successTitle="Sukses"
@@ -78,6 +79,7 @@ describe("AdminMarketingForm", () => {
         defaultPrice={200000}
         endpoint="/api/admin/pemasaran"
         redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
         submitLabel="Publikasikan"
         successDescription="Berhasil"
         successTitle="Sukses"
@@ -102,6 +104,7 @@ describe("AdminMarketingForm", () => {
     fireEvent.change(screen.getByLabelText("Detik"), { target: { value: "15" } });
 
     expect(screen.getByText("0 hari 0 jam 2 menit 15 detik")).toBeInTheDocument();
+    expect(screen.getByText("30 Mei 2026 pukul 11.02.15")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /publikasikan/i }));
 

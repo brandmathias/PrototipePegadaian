@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -573,13 +573,16 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         note: "Pemenang Vickrey tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
       });
 
+      const violationId = randomUUID();
       await tx.insert(pelanggaranUser).values({
-        id: randomUUID(),
+        id: violationId,
         userId: row.transaction.userId,
         pemasaranId: row.transaction.pemasaranId,
         transaksiId: row.transaction.id,
         unitId: row.item.unitId,
-        note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam."
+        note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.",
+        escalationEligible: true,
+        updatedAt: now
       });
 
       const [existingBlacklist] = await tx
@@ -592,7 +595,12 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         )
         .limit(1);
 
-      const totalViolations = (existingBlacklist?.totalViolations ?? 0) + 1;
+      const [eligibleViolations] = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(pelanggaranUser)
+        .where(and(eq(pelanggaranUser.userId, row.transaction.userId), eq(pelanggaranUser.escalationEligible, true)));
+
+      const totalViolations = Math.max(Number(eligibleViolations?.count ?? 0), 1);
       const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
       const restriction = getBlacklistRestrictionPolicy(totalViolations);
       const shouldSuspendLogin = shouldSuspendLoginForBlacklist(totalViolations);

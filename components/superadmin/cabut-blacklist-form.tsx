@@ -7,6 +7,7 @@ import { useState } from "react";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { BLACKLIST_REVIEW_APPROVAL_REASONS } from "@/lib/blacklist/review";
 import { useToast } from "@/components/ui/toast";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
 
@@ -18,7 +19,8 @@ type CabutBlacklistFormProps = {
 export function CabutBlacklistForm({ userId, disabled }: CabutBlacklistFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [reason, setReason] = useState("");
+  const [reasonCode, setReasonCode] = useState<string>(BLACKLIST_REVIEW_APPROVAL_REASONS[0].code);
+  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,9 +34,9 @@ export function CabutBlacklistForm({ userId, disabled }: CabutBlacklistFormProps
     try {
       await fetchSuperAdminJson(`/api/superadmin/blacklist/${userId}/cabut`, {
         method: "POST",
-        body: JSON.stringify({ reason })
+        body: JSON.stringify({ reasonCode, note })
       });
-      setReason("");
+      setNote("");
       setMessage("Blacklist berhasil dicabut.");
       toast({
         title: "Blacklist berhasil dicabut.",
@@ -57,11 +59,28 @@ export function CabutBlacklistForm({ userId, disabled }: CabutBlacklistFormProps
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          Alasan pencabutan
+        </p>
+        <select
+          className="h-11 w-full rounded-xl border border-border/70 bg-white px-4 text-sm font-semibold text-foreground outline-none disabled:opacity-60"
+          disabled={disabled || loading}
+          onChange={(event) => setReasonCode(event.target.value)}
+          value={reasonCode}
+        >
+          {BLACKLIST_REVIEW_APPROVAL_REASONS.map((reason) => (
+            <option key={reason.code} value={reason.code}>
+              {reason.label}
+            </option>
+          ))}
+        </select>
+      </div>
       <Textarea
         disabled={disabled || loading}
-        onChange={(event) => setReason(event.target.value)}
-        placeholder="Tuliskan alasan pencabutan blacklist..."
-        value={reason}
+        onChange={(event) => setNote(event.target.value)}
+        placeholder="Catatan tambahan opsional..."
+        value={note}
       />
       {error ? (
         <InlineFeedback className="feedback-pop" description={error} title="Lengkapi alasan pencabutan." variant="error" />

@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   const db = {
-    select: vi.fn()
+    select: vi.fn(),
+    update: vi.fn()
   };
 
   return {
@@ -11,7 +12,8 @@ const mocks = vi.hoisted(() => {
       id: row.id,
       status: row.status,
       previewImageUrl: extra?.previewImageUrl ?? null,
-      marketingMode: extra?.marketingMode ?? null
+      marketingMode: extra?.marketingMode ?? null,
+      name: row.name
     }))
   };
 });
@@ -24,7 +26,23 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminBarang: mocks.serializeAdminBarang
 }));
 
-import { listAdminBarang } from "@/lib/services/admin-barang.service";
+import { listAdminBarang, updateAdminBarang } from "@/lib/services/admin-barang.service";
+
+const editPayload = {
+  appraisalValue: "12000000",
+  category: "emas",
+  condition: "baik",
+  customerNumber: "NAS-001",
+  description: "Detail diperbarui",
+  dueDate: "2026-07-01",
+  loanValue: "8000000",
+  name: "Cincin Fixed Price",
+  ownerName: "Nasabah Demo",
+  pawnedAt: "2026-05-01",
+  specifications: {
+    berat: "8 gram"
+  }
+};
 
 describe("listAdminBarang", () => {
   beforeEach(() => {
@@ -74,5 +92,138 @@ describe("listAdminBarang", () => {
 
     expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-4", "barang-5"]);
     expect(result.map((item) => item.status)).toEqual(["jaminan", "gagal", "gadai"]);
+  });
+
+  it("allows active fixed price barang to be updated through the Drizzle service gate", async () => {
+    const current = {
+      id: "barang-fixed",
+      unitId: "unit-1",
+      name: "Cincin Lama",
+      status: "dipasarkan"
+    };
+    const updated = {
+      ...current,
+      name: "Cincin Fixed Price",
+      status: "dipasarkan"
+    };
+    const updateSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([updated])
+      })
+    });
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ mode: "fixed_price" }])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([
+                {
+                  id: "pm-fixed",
+                  mode: "fixed_price",
+                  status: "aktif",
+                  winnerId: null
+                }
+              ])
+            })
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ count: 0 }])
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }));
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: updateSet
+    }));
+
+    const result = await updateAdminBarang("unit-1", "barang-fixed", editPayload);
+
+    expect(updateSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Cincin Fixed Price"
+      })
+    );
+    expect(result.name).toBe("Cincin Fixed Price");
+  });
+
+  it("blocks active auction barang from being updated before it becomes a failed strategy case", async () => {
+    const current = {
+      id: "barang-auction",
+      unitId: "unit-1",
+      name: "Cincin Lelang",
+      status: "dipasarkan"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ mode: "vickrey" }])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([
+                {
+                  id: "pm-vickrey",
+                  mode: "vickrey",
+                  status: "aktif",
+                  winnerId: null
+                }
+              ])
+            })
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ count: 2 }])
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }));
+
+    await expect(updateAdminBarang("unit-1", "barang-auction", editPayload)).rejects.toThrow(
+      /barang lelang hanya dapat diedit/i
+    );
+    expect(mocks.db.update).not.toHaveBeenCalled();
   });
 });
