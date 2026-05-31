@@ -1288,24 +1288,21 @@ export function AdminInventoryMarketPage({
   const serverNow = new Date().toISOString();
 
   return (
-    <WorkflowFormShell
-      description="Tentukan cara barang akan dijual, lengkapi pengaturan harganya, lalu publikasikan ke katalog agar siap dilihat calon pembeli."
-      eyebrow="Admin Unit / Tayangkan Barang"
-      itemId={item.id}
-      itemStatus={item.status}
-      title="Tayangkan ke Katalog"
-    >
+    <div className="space-y-5">
+      <AdminInventoryDetailPage item={item} />
       <AdminMarketingForm
         barangId={item.id}
+        cancelHref={`/admin/barang/${item.id}`}
         defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
         endpoint={`/api/admin/barang/${item.id}/pasarkan`}
+        presentation="modal"
         redirectTo="/admin/pemasaran"
         serverNow={serverNow}
         submitLabel="Tayangkan ke katalog"
         successDescription="Barang sudah aktif di katalog sesuai mode pemasaran yang dipilih."
         successTitle="Barang tayang di katalog"
       />
-    </WorkflowFormShell>
+    </div>
   );
 }
 
@@ -1344,9 +1341,11 @@ export function AdminInventoryRelistPage({
         </Card>
         <AdminMarketingForm
           barangId={item.id}
+          cancelHref={`/admin/barang/${item.id}`}
           defaultMode="vickrey"
           defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
           endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
+          presentation="panel"
           redirectTo="/admin/pemasaran"
           serverNow={serverNow}
           submitIcon={<RotateCcw className="size-4" />}

@@ -205,12 +205,12 @@ describe("admin unit validation", () => {
       validatePemasaranPayload({
         mode: "vickrey",
         price: "10000000",
-        durationDays: "30",
+        durationDays: "365",
         durationHours: "0",
         durationMinutes: "0",
         durationSeconds: "1"
       })
-    ).toThrow("Durasi lelang maksimal 30 hari.");
+    ).toThrow("Durasi lelang maksimal 365 hari.");
 
     expect(() => validatePemasaranPayload({ mode: "vickrey", price: "0", durationDays: "7" })).toThrow(
       "Harga pemasaran harus lebih dari 0."

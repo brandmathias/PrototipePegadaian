@@ -230,7 +230,7 @@ export function validatePemasaranPayload(input: {
     return { mode: "fixed_price", price };
   }
 
-  const durationDays = normalizeWholeNumber(input.durationDays, 0, "Durasi lelang maksimal 30 hari.");
+  const durationDays = normalizeWholeNumber(input.durationDays, 0, "Durasi lelang maksimal 365 hari.");
   const durationHours = normalizeWholeNumber(input.durationHours, 0, "Jam lelang harus 0 sampai 23.");
   const durationMinutes = normalizeWholeNumber(input.durationMinutes, 0, "Menit lelang harus 0 sampai 59.");
   const durationSeconds = normalizeWholeNumber(input.durationSeconds, 0, "Detik lelang harus 0 sampai 59.");
@@ -253,8 +253,8 @@ export function validatePemasaranPayload(input: {
     throw new Error("Durasi lelang harus lebih dari 0 detik.");
   }
 
-  if (totalSeconds > 30 * 24 * 60 * 60) {
-    throw new Error("Durasi lelang maksimal 30 hari.");
+  if (totalSeconds > 365 * 24 * 60 * 60) {
+    throw new Error("Durasi lelang maksimal 365 hari.");
   }
 
   return {
