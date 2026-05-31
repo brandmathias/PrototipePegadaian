@@ -93,7 +93,8 @@ export function AdminSelect({
         maxHeight,
         minWidth: rect.width,
         top,
-        width
+        width,
+        zIndex: 160
       });
 
       window.requestAnimationFrame(() => {

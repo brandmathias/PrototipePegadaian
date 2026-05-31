@@ -64,7 +64,9 @@ export function AdminDatePicker({
   minDate,
   name,
   onChange,
+  placeholder,
   required,
+  variant = "default",
   value
 }: {
   className?: string;
@@ -73,12 +75,15 @@ export function AdminDatePicker({
   minDate?: string;
   name?: string;
   onChange: (value: string) => void;
+  placeholder?: string;
   required?: boolean;
+  variant?: "default" | "compact";
   value: string;
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<"day" | "monthYear">("day");
+  const isCompact = variant === "compact";
   const selectedDate = parseIsoDate(value);
   const [visibleMonth, setVisibleMonth] = useState(
     new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
@@ -88,6 +93,7 @@ export function AdminDatePicker({
   const todayIso = toIsoDate(new Date());
   const visibleYear = visibleMonth.getFullYear();
   const visibleMonthIndex = visibleMonth.getMonth();
+  const displayValue = value ? formatDisplayDate(value) : placeholder ?? "Pilih tanggal";
 
   const calendarDays = useMemo(() => {
     const year = visibleMonth.getFullYear();
@@ -164,6 +170,10 @@ export function AdminDatePicker({
 
   function selectDate(date: Date) {
     onChange(toIsoDate(date));
+    if (isCompact) {
+      setIsOpen(false);
+      setPickerMode("day");
+    }
   }
 
   return (
@@ -172,8 +182,13 @@ export function AdminDatePicker({
       <button
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        aria-label={`${label}: ${formatDisplayDate(value)}`}
-        className="group flex min-h-14 w-full items-center justify-between gap-3 rounded-[1.15rem] border border-[#dfe8df] bg-[#fbfcf9] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_12px_30px_-26px_rgba(0,103,71,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9dc8ad] hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#006747]/10 active:scale-[0.99]"
+        aria-label={`${label}: ${displayValue}`}
+        className={cn(
+          "group flex w-full items-center justify-between gap-3 text-left transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none active:scale-[0.99]",
+          isCompact
+            ? "min-h-[3.15rem] rounded-xl border border-[#006747]/70 bg-white px-3 py-2.5 shadow-[0_10px_24px_-20px_rgba(0,103,71,0.32)] hover:-translate-y-0.5 hover:border-[#006747] hover:bg-white focus-visible:ring-4 focus-visible:ring-[#006747]/10"
+            : "min-h-14 rounded-[1.15rem] border border-[#dfe8df] bg-[#fbfcf9] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_12px_30px_-26px_rgba(0,103,71,0.28)] hover:-translate-y-0.5 hover:border-[#9dc8ad] hover:bg-white focus-visible:ring-4 focus-visible:ring-[#006747]/10"
+        )}
         onClick={() => {
           setIsOpen((current) => !current);
           setPickerMode("day");
@@ -181,29 +196,60 @@ export function AdminDatePicker({
         type="button"
       >
         <span className="min-w-0">
-          <span className="block text-[0.64rem] font-black uppercase tracking-[0.16em] text-black/42">
+          <span
+            className={cn(
+              "block font-black uppercase tracking-[0.16em]",
+              isCompact ? "text-[0.56rem] text-[#006747]" : "text-[0.64rem] text-black/42"
+            )}
+          >
             {label}
           </span>
-          <span className="mt-1 block truncate text-sm font-black text-[#0a4f3c] sm:text-[0.95rem]">
-            {formatDisplayDate(value)}
+          <span
+            className={cn(
+              "mt-1 block truncate font-black",
+              isCompact
+                ? value
+                  ? "text-[0.8rem] text-slate-800"
+                  : "text-[0.8rem] text-slate-400"
+                : "text-sm text-[#0a4f3c] sm:text-[0.95rem]"
+            )}
+          >
+            {displayValue}
           </span>
         </span>
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#eef7f1] text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105 group-hover:bg-[#e0f0e8]">
-          <CalendarDays className="size-4" strokeWidth={1.8} />
+        <span
+          className={cn(
+            "grid shrink-0 place-items-center text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105",
+            isCompact
+              ? "size-8 rounded-lg bg-[#f4fbf7] group-hover:bg-[#e8f5ed]"
+              : "size-10 rounded-full bg-[#eef7f1] group-hover:bg-[#e0f0e8]"
+          )}
+        >
+          <CalendarDays className={cn(isCompact ? "size-3.5" : "size-4")} strokeWidth={1.8} />
         </span>
       </button>
 
       {isOpen ? (
         <div
           aria-label={`Kalender ${label}`}
-          className="absolute left-0 top-[calc(100%+0.7rem)] z-30 w-[min(22rem,calc(100vw-2rem))] rounded-[1.7rem] border border-[#dcebe3] bg-white p-4 shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5"
+          className={cn(
+            "absolute z-30 w-[min(22rem,calc(100vw-2rem))] rounded-[1.7rem] border border-[#dcebe3] bg-white p-4 shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5",
+            isCompact
+              ? "right-0 top-[calc(100%+0.55rem)] sm:bottom-auto sm:left-[calc(100%+4.5rem)] sm:right-auto sm:top-1/2 sm:w-[18.5rem] sm:-translate-y-[66%] sm:p-4"
+              : "left-0 top-[calc(100%+0.7rem)]"
+          )}
           role="dialog"
         >
           <div className="flex items-center justify-between gap-4">
-            <h3 className="text-base font-black tracking-[-0.01em] text-[#17251f]">Tanggal</h3>
+            <h3 className={cn("font-black tracking-[-0.01em] text-[#17251f]", isCompact ? "text-[1rem]" : "text-base")}>
+              Tanggal
+            </h3>
             <button
               aria-label="Tutup kalender tanggal"
-              className="grid size-9 place-items-center rounded-full text-black/72 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f3f6f2] hover:text-[#0a6a49] active:scale-95"
+              className={cn(
+                "grid place-items-center rounded-full text-black/72 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f3f6f2] hover:text-[#0a6a49] active:scale-95",
+                isCompact ? "size-8" : "size-9"
+              )}
               onClick={() => {
                 setIsOpen(false);
                 setPickerMode("day");
@@ -214,10 +260,13 @@ export function AdminDatePicker({
             </button>
           </div>
 
-          <div className="mt-5 flex items-center justify-between">
+          <div className={cn("flex items-center justify-between", isCompact ? "mt-4" : "mt-5")}>
             <button
               aria-label={pickerMode === "monthYear" ? "Tahun sebelumnya" : "Bulan sebelumnya"}
-              className="grid size-9 place-items-center rounded-full text-[#006747] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95"
+              className={cn(
+                "grid place-items-center rounded-full text-[#006747] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95",
+                isCompact ? "size-8" : "size-9"
+              )}
               onClick={() => moveVisiblePeriod(-1)}
               type="button"
             >
@@ -226,7 +275,10 @@ export function AdminDatePicker({
             <button
               aria-label="Pilih bulan dan tahun"
               aria-pressed={pickerMode === "monthYear"}
-              className="min-w-40 rounded-full px-4 py-2 text-center text-base font-black tracking-[-0.01em] text-black/78 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f3f8f4] hover:text-[#006747] active:scale-[0.98]"
+              className={cn(
+                "rounded-full px-4 text-center font-black tracking-[-0.01em] text-black/78 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f3f8f4] hover:text-[#006747] active:scale-[0.98]",
+                isCompact ? "min-w-0 flex-1 py-1.5 text-[0.95rem]" : "min-w-40 py-2 text-base"
+              )}
               onClick={() => setPickerMode((current) => (current === "day" ? "monthYear" : "day"))}
               type="button"
             >
@@ -234,7 +286,10 @@ export function AdminDatePicker({
             </button>
             <button
               aria-label={pickerMode === "monthYear" ? "Tahun berikutnya" : "Bulan berikutnya"}
-              className="grid size-9 place-items-center rounded-full text-[#006747] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95"
+              className={cn(
+                "grid place-items-center rounded-full text-[#006747] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95",
+                isCompact ? "size-8" : "size-9"
+              )}
               onClick={() => moveVisiblePeriod(1)}
               type="button"
             >
@@ -243,8 +298,8 @@ export function AdminDatePicker({
           </div>
 
           {pickerMode === "monthYear" ? (
-            <div className="mt-5 space-y-4">
-              <div className="grid grid-cols-3 gap-2">
+            <div className={cn(isCompact ? "mt-4 space-y-3" : "mt-5 space-y-4")}>
+              <div className={cn("grid grid-cols-3", isCompact ? "gap-1.5" : "gap-2")}>
                 {monthNames.map((month, monthIndex) => {
                   const active = monthIndex === visibleMonthIndex;
 
@@ -252,7 +307,8 @@ export function AdminDatePicker({
                     <button
                       aria-pressed={active}
                       className={cn(
-                        "h-10 rounded-full text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        "rounded-full text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        isCompact ? "h-9" : "h-10",
                         active
                           ? "bg-[#006747] text-white shadow-[0_14px_28px_-18px_rgba(0,103,71,0.72)]"
                           : "bg-[#f5f8f4] text-black/58 hover:bg-[#e7f2ea] hover:text-[#006747]"
@@ -267,7 +323,7 @@ export function AdminDatePicker({
                 })}
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className={cn("grid grid-cols-4", isCompact ? "gap-1.5" : "gap-2")}>
                 {yearOptions.map((year) => {
                   const active = year === visibleYear;
 
@@ -275,7 +331,8 @@ export function AdminDatePicker({
                     <button
                       aria-pressed={active}
                       className={cn(
-                        "h-10 rounded-full text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        "rounded-full text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        isCompact ? "h-9" : "h-10",
                         active
                           ? "bg-[#d9b85d] text-[#1f2119] shadow-[0_14px_28px_-20px_rgba(145,111,24,0.6)]"
                           : "bg-white text-black/58 ring-1 ring-inset ring-[#e6ede6] hover:bg-[#f3f8f4] hover:text-[#006747]"
@@ -292,13 +349,18 @@ export function AdminDatePicker({
             </div>
           ) : (
             <>
-              <div className="mt-5 grid grid-cols-7 gap-1 text-center text-[0.67rem] font-black uppercase tracking-[0.08em] text-black/38">
+              <div
+                className={cn(
+                  "grid grid-cols-7 text-center font-black uppercase tracking-[0.08em] text-black/38",
+                  isCompact ? "mt-4 gap-0.5 text-[0.62rem]" : "mt-5 gap-1 text-[0.67rem]"
+                )}
+              >
                 {dayNames.map((day) => (
                   <div className="py-1" key={day}>{day}</div>
                 ))}
               </div>
 
-              <div className="mt-2 grid grid-cols-7 gap-1">
+              <div className={cn("grid grid-cols-7", isCompact ? "mt-1.5 gap-0.5" : "mt-2 gap-1")}>
                 {calendarDays.map((date, index) => {
                   if (!date) {
                     return <span aria-hidden="true" className="aspect-square" key={`blank-${index}`} />;
@@ -313,7 +375,8 @@ export function AdminDatePicker({
                     <button
                       aria-pressed={isSelected}
                       className={cn(
-                        "aspect-square rounded-full text-sm font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        "rounded-full font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95",
+                        isCompact ? "h-10 w-10 justify-self-center text-[0.95rem]" : "aspect-square text-sm",
                         isSelected
                           ? "bg-[#006747] text-white shadow-[0_12px_22px_-14px_rgba(0,103,71,0.78)]"
                           : isToday
@@ -334,16 +397,18 @@ export function AdminDatePicker({
             </>
           )}
 
-          <button
-            className="mt-6 h-12 w-full rounded-[1rem] bg-[#006747] text-sm font-black text-white shadow-[0_18px_38px_-22px_rgba(0,103,71,0.74)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#075c42] active:scale-[0.98]"
-            onClick={() => {
-              setIsOpen(false);
-              setPickerMode("day");
-            }}
-            type="button"
-          >
-            Gunakan Tanggal
-          </button>
+          {isCompact ? null : (
+            <button
+              className="mt-6 h-12 w-full rounded-[1rem] bg-[#006747] text-sm font-black text-white shadow-[0_18px_38px_-22px_rgba(0,103,71,0.74)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#075c42] active:scale-[0.98]"
+              onClick={() => {
+                setIsOpen(false);
+                setPickerMode("day");
+              }}
+              type="button"
+            >
+              Gunakan Tanggal
+            </button>
+          )}
         </div>
       ) : null}
     </div>

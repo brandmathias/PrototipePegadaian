@@ -23,6 +23,10 @@ function makeBarangCode() {
   return `BRG-${Date.now().toString().slice(-8)}`;
 }
 
+function isLikelyImageMedia(media: { type: string; url: string }) {
+  return media.type !== "video" && !/\.(mp4|mov|webm|mkv)$/i.test(media.url);
+}
+
 async function assertBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
     .select()
@@ -203,11 +207,7 @@ export async function listAdminBarang(unitId: string) {
   const previewImageMap = new Map<string, string>();
 
   for (const media of mediaRows) {
-    const isLikelyImage =
-      media.type !== "video" &&
-      !/\.(mp4|mov|webm|mkv)$/i.test(media.url);
-
-    if (!isLikelyImage || previewImageMap.has(media.barangId)) {
+    if (!isLikelyImageMedia(media) || previewImageMap.has(media.barangId)) {
       continue;
     }
 
@@ -336,7 +336,8 @@ export async function getAdminBarangById(unitId: string, barangId: string) {
     ...serializeAdminBarang(row, {
       mediaCount: media.length,
       marketingIteration: latestMarketing?.iteration ?? null,
-      marketingMode: activeMarketing?.mode ?? latestMarketing?.mode ?? null
+      marketingMode: activeMarketing?.mode ?? latestMarketing?.mode ?? null,
+      previewImageUrl: media.find(isLikelyImageMedia)?.url ?? null
     }),
     activeMarketingId: activeMarketing?.mode === "fixed_price" ? activeMarketing.id : null,
     marketingPrice: activeMarketing?.mode === "fixed_price" ? Number(activeMarketing.price ?? 0) : null,

@@ -92,6 +92,34 @@ describe("AdminInventoryDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders video thumbnails with the real video source", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={{
+          ...baseItem,
+          media: [
+            {
+              id: "media-image",
+              type: "image",
+              url: "https://example.com/utama.jpg",
+              fileName: "utama.jpg",
+            },
+            {
+              id: "media-video",
+              type: "video",
+              url: "https://example.com/barang.mp4",
+              fileName: "barang.mp4",
+            },
+          ],
+        }}
+      />
+    );
+
+    const thumbnailVideo = screen.getByLabelText(/thumbnail video kalung emas: barang\.mp4/i);
+    expect(thumbnailVideo).toBeInTheDocument();
+    expect(thumbnailVideo).toHaveAttribute("src", "https://example.com/barang.mp4");
+  });
+
   it("opens video media in the fullscreen preview", () => {
     render(
       <AdminInventoryDetailPage

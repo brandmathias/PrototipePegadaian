@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Expand, Image as ImageIcon, Package2, PlayCircle, X } from "lucide-react";
 
@@ -25,6 +25,19 @@ function getInitialIndex(media: DetailMedia[]) {
 
 function getMediaName(media: DetailMedia, index: number) {
   return media.fileName || `media-${index + 1}`;
+}
+
+function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+    return;
+  }
+
+  try {
+    video.currentTime = Math.min(0.2, video.duration / 4);
+  } catch {
+    // Some browsers block seeking before enough metadata is available.
+  }
 }
 
 export function AdminBarangDetailMediaViewer({
@@ -97,6 +110,7 @@ export function AdminBarangDetailMediaViewer({
               className="size-full object-cover"
               key={activeMedia.id}
               muted
+              onLoadedMetadata={revealVideoPreviewFrame}
               playsInline
               preload="metadata"
               src={activeMedia.url}
@@ -152,13 +166,17 @@ export function AdminBarangDetailMediaViewer({
                   type="button"
                 >
                   {isVideo ? (
-                    <div className="flex size-full flex-col items-center justify-center gap-1 rounded-xl bg-[#0d1712] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                      <span className="grid size-6 place-items-center rounded-full border border-white/65">
-                        <PlayCircle className="size-3.5" />
-                      </span>
-                      <span className="text-[0.55rem] font-black uppercase tracking-[0.08em]">
-                        Video
-                      </span>
+                    <div className="relative size-full overflow-hidden rounded-xl bg-[#0d1712] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                      <video
+                        aria-label={`Thumbnail video ${title}: ${getMediaName(item, index)}`}
+                        className="size-full object-cover opacity-95 transition duration-500 group-hover:scale-[1.025]"
+                        muted
+                        onLoadedMetadata={revealVideoPreviewFrame}
+                        playsInline
+                        preload="metadata"
+                        src={item.url}
+                      />
+                      <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,17,12,0.04),rgba(4,17,12,0.48))]" />
                     </div>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element

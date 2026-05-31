@@ -83,6 +83,15 @@ type AdminBarangMedia = {
   fileName?: string;
   sizeBytes?: number;
 };
+
+function isImageBarangMedia(media: AdminBarangMedia | null | undefined) {
+  if (!media) {
+    return false;
+  }
+
+  return media.type !== "video" && !/\.(mp4|mov|webm|mkv)$/i.test(media.url);
+}
+
 type AdminAuctionItem = Record<string, any> & {
   bids?: Array<{
     id: string;
@@ -1165,15 +1174,10 @@ export function AdminInventoryExtendPage({
   item: AdminInventoryItem;
 }) {
   return (
-    <WorkflowFormShell
-      description="Gunakan halaman ini saat nasabah memperpanjang masa gadai. Tanggal baru sebaiknya melanjutkan periode aktif yang sedang berjalan."
-      eyebrow="Admin Unit / Perpanjangan"
-      itemId={item.id}
-      itemStatus={item.status}
-      title="Perpanjang Masa Gadai"
-    >
+    <div className="space-y-5">
+      <AdminInventoryDetailPage item={item} />
       <AdminExtensionForm currentDueDate={item.dueDate} itemId={item.id} />
-    </WorkflowFormShell>
+    </div>
   );
 }
 
@@ -1184,20 +1188,26 @@ export function AdminInventoryRedeemPage({
   itemId?: string;
   item: AdminInventoryItem;
 }) {
+  const redemptionPreviewImageUrl =
+    item.previewImageUrl ??
+    (Array.isArray(item.media)
+      ? (item.media as AdminBarangMedia[]).find(isImageBarangMedia)?.url
+      : null) ??
+    null;
+
   return (
-    <WorkflowFormShell
-      description="Catat penebusan saat nasabah melunasi kewajibannya. Setelah dikonfirmasi, barang keluar dari alur penjualan dan tersimpan sebagai riwayat."
-      eyebrow="Admin Unit / Penebusan"
-      itemId={item.id}
-      itemStatus={item.status}
-      title="Selesaikan Penebusan"
-    >
+    <div className="space-y-5">
+      <AdminInventoryDetailPage item={item} />
       <AdminRedeemForm
         customerNumber={item.customerNumber}
+        itemCode={item.code}
         itemId={item.id}
+        itemName={item.name}
         ownerName={item.ownerName}
+        previewImageUrl={redemptionPreviewImageUrl}
+        redemptionAmount={Number(item.loanValue ?? item.appraisalValue ?? 0)}
       />
-    </WorkflowFormShell>
+    </div>
   );
 }
 

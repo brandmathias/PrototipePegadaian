@@ -2485,7 +2485,7 @@
   position: absolute;
   scrollbar-width: none;
   transform-origin: top center;
-  z-index: 90;
+  z-index: 160;
 }
 
 .dark .admin-select-menu {

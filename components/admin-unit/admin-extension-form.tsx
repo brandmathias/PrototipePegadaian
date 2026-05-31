@@ -1,14 +1,14 @@
 "use client";
 
 import { FormEvent, ReactNode, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CalendarDays, LoaderCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { AdminDatePicker, getDateAfter } from "@/components/admin-unit/admin-date-picker";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
@@ -37,7 +37,6 @@ export function AdminExtensionForm({
   const { toast } = useToast();
   const minDate = getDateAfter(currentDueDate, 1);
   const [newDueDate, setNewDueDate] = useState(getDateAfter(currentDueDate, 30));
-  const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -70,7 +69,7 @@ export function AdminExtensionForm({
         },
         body: JSON.stringify({
           newDueDate,
-          note: note.trim() || "Perpanjangan dicatat melalui dashboard admin unit."
+          note: "Perpanjangan dicatat melalui dashboard admin unit."
         })
       });
       const result = await response.json().catch(() => ({}));
@@ -101,66 +100,99 @@ export function AdminExtensionForm({
   }
 
   return (
-    <form className="grid gap-6 xl:grid-cols-[1fr_0.9fr]" onSubmit={handleSubmit}>
-      <Card className="rounded-2xl border border-black/10 bg-white">
-        <CardHeader className="border-b border-black/8">
-          <CardTitle className="text-2xl">Form Perpanjangan</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-5 p-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.25rem] border border-black/10 bg-[#f7f8f6] p-4">
-              <FieldLabel>Jatuh tempo saat ini</FieldLabel>
-              <p className="mt-2 text-lg font-bold text-black/78">
-                {formatDisplayDate(currentDueDate)}
-              </p>
-            </div>
-            <div className="rounded-[1.25rem] border border-[#c7dbcf] bg-[#f1faf5] p-4">
-              <FieldLabel>Jatuh tempo baru</FieldLabel>
-              <p className="mt-2 text-lg font-bold text-[#0a6a49]">
-                {formatDisplayDate(newDueDate)}
-              </p>
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-6">
+      <div className="w-full max-w-[42rem]">
+        <div className="relative rounded-[2rem] border border-[#dfe8e2] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+          <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+            <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
+              <CalendarDays className="size-6 text-white" strokeWidth={2.2} />
             </div>
           </div>
 
-          <AdminDatePicker
-            label="Pilih tanggal jatuh tempo baru"
-            minDate={minDate}
-            onChange={setNewDueDate}
-            value={newDueDate}
-          />
+          <div className="p-5 pt-10 sm:p-7 sm:pt-11">
+            <div className="flex justify-end">
+              <Link
+                aria-label="Tutup popup perpanjangan"
+                className="grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700"
+                href={`/admin/barang/${itemId}`}
+              >
+                <X className="size-4.5" strokeWidth={2.2} />
+              </Link>
+            </div>
 
-          <div className="space-y-2">
-            <FieldLabel>Catatan perpanjangan</FieldLabel>
-            <Textarea
-              className="min-h-32"
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Tambahkan nomor kontrak, catatan petugas, atau konteks singkat bila diperlukan."
-              value={note}
-            />
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-2 text-center">
+                <h3 className="font-headline text-[1.55rem] font-black tracking-tight text-[#15231d] sm:text-[1.72rem]">
+                  Catat Perpanjangan Gadai
+                </h3>
+                <p className="mx-auto max-w-md text-[0.9rem] leading-7 text-slate-500">
+                  Pilih tanggal jatuh tempo baru secara langsung menggunakan kalender sistem.
+                </p>
+              </div>
+
+              <div className="rounded-[1.25rem] border border-dashed border-emerald-600/30 bg-[linear-gradient(180deg,rgba(240,249,244,0.45),rgba(255,255,255,0.96))] p-4 sm:p-5">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_3rem_minmax(0,1fr)] md:items-end">
+                  <div className="space-y-2">
+                    <FieldLabel>Jatuh Tempo Lama</FieldLabel>
+                    <div className="flex min-h-[3.15rem] items-center gap-3 rounded-xl border border-slate-200/60 bg-slate-100 px-3 text-slate-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+                      <CalendarDays className="size-4 shrink-0" strokeWidth={1.9} />
+                      <span className="truncate text-[0.82rem] font-bold">
+                        {formatDisplayDate(currentDueDate)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center md:pb-1">
+                    <span className="grid size-11 place-items-center rounded-full border border-emerald-100 bg-emerald-50 text-[#006747] shadow-[0_12px_24px_-20px_rgba(0,103,71,0.45)]">
+                      <ArrowRight className="size-4.5" strokeWidth={2.2} />
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <AdminDatePicker
+                      label="Jatuh Tempo Baru"
+                      minDate={minDate}
+                      onChange={setNewDueDate}
+                      placeholder="Pilih tanggal baru"
+                      value={newDueDate}
+                      variant="compact"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-2 sm:flex-row sm:items-center sm:justify-end">
+                <Link href={`/admin/barang/${itemId}`}>
+                  <Button
+                    className="h-11 min-w-[6.5rem] rounded-xl px-4 text-sm font-bold text-slate-500 shadow-none hover:bg-slate-50 hover:text-slate-800"
+                    type="button"
+                    variant="ghost"
+                  >
+                    Batal
+                  </Button>
+                </Link>
+                <Button
+                  className={cn(
+                    "h-11 min-w-[11.5rem] rounded-xl bg-[#006747] px-5 text-sm font-bold text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.7)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#005238] active:scale-[0.98]",
+                    isSubmitting && "hover:translate-y-0"
+                  )}
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle className="size-4 animate-spin" />
+                      Menyimpan perpanjangan...
+                    </>
+                  ) : (
+                    "Simpan perpanjangan"
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-2xl border border-black/10 bg-[#f8faf8]">
-        <CardHeader>
-          <CardTitle className="text-xl">Pengecekan Sebelum Simpan</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm leading-7 text-black/70">
-          <p>Tanggal baru harus lebih akhir dari jatuh tempo yang berjalan saat ini.</p>
-          <p>Riwayat perpanjangan tersimpan sebagai jejak audit barang.</p>
-          <p>Status barang tetap berada di tahap jaminan selama belum dipasarkan.</p>
-          <Button className="mt-4 h-12 w-full rounded-2xl" disabled={isSubmitting} type="submit">
-            {isSubmitting ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                Menyimpan perpanjangan...
-              </>
-            ) : (
-              "Simpan perpanjangan"
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-    </form>
+        </div>
+      </div>
+    </div>
   );
 }

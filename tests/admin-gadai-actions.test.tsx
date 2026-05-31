@@ -62,19 +62,29 @@ describe("admin gadai action forms", () => {
 
   it("requires a redemption reference and sends the entered reference to the API", async () => {
     renderWithToast(
-      <AdminRedeemForm customerNumber="NAS-001" itemId="barang-2" ownerName="Nasabah Demo" />
+      <AdminRedeemForm
+        customerNumber="NAS-001"
+        itemCode="BRG-002"
+        itemId="barang-2"
+        itemName="LM Antam 10gr Sertifikat"
+        ownerName="Nasabah Demo"
+        previewImageUrl="/uploads/lm-antam.jpg"
+        redemptionAmount={12450000}
+      />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Konfirmasi Penebusan" }));
-    expect(fetch).not.toHaveBeenCalled();
+    expect(screen.getByRole("img", { name: "LM Antam 10gr Sertifikat" })).toHaveAttribute(
+      "src",
+      "/uploads/lm-antam.jpg"
+    );
 
-    fireEvent.change(screen.getByPlaceholderText("Contoh: KWT-2026-00045"), {
-      target: { value: "KWT-2026-00099" }
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Konfirmasi Penebusan" }));
-
-    await screen.findByRole("button", { name: "Ya, konfirmasi tebus" });
-    fireEvent.click(screen.getByRole("button", { name: "Ya, konfirmasi tebus" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tunai" }));
+    const visualTransferOption = screen
+      .getAllByRole("option", { name: "Transfer Bank Unit" })
+      .find((element) => element.tagName.toLowerCase() === "button");
+    expect(visualTransferOption).toBeTruthy();
+    fireEvent.click(visualTransferOption as HTMLElement);
+    fireEvent.click(screen.getByRole("button", { name: /simpan transaksi/i }));
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
@@ -87,7 +97,7 @@ describe("admin gadai action forms", () => {
 
     const [, request] = vi.mocked(fetch).mock.calls[0];
     expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
-      reference: "KWT-2026-00099"
+      reference: "TEBUS-TRANSFER-BANK-UNIT-BRG-002"
     });
     expect(router.push).toHaveBeenCalledWith("/admin/barang/barang-2");
   });

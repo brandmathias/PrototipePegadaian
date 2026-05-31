@@ -26,7 +26,7 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminBarang: mocks.serializeAdminBarang
 }));
 
-import { listAdminBarang, updateAdminBarang } from "@/lib/services/admin-barang.service";
+import { getAdminBarangById, listAdminBarang, updateAdminBarang } from "@/lib/services/admin-barang.service";
 
 const editPayload = {
   appraisalValue: "12000000",
@@ -92,6 +92,66 @@ describe("listAdminBarang", () => {
 
     expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-5"]);
     expect(result.map((item) => item.status)).toEqual(["jaminan", "gadai"]);
+  });
+
+  it("returns the first image media as preview image for detail pages", async () => {
+    const current = {
+      id: "barang-detail",
+      name: "Ipad",
+      status: "jaminan",
+      unitId: "unit-1"
+    };
+    const mediaRows = [
+      {
+        id: "media-video",
+        barangId: "barang-detail",
+        type: "video",
+        url: "/uploads/ipad-demo.mp4"
+      },
+      {
+        id: "media-image",
+        barangId: "barang-detail",
+        type: "foto",
+        url: "/uploads/ipad-asli.jpg"
+      }
+    ];
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue(mediaRows)
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([])
+            })
+          })
+        })
+      }));
+
+    const result = await getAdminBarangById("unit-1", "barang-detail");
+
+    expect(result.previewImageUrl).toBe("/uploads/ipad-asli.jpg");
+    expect(result.media).toEqual(mediaRows);
   });
 
   it("allows active fixed price barang to be updated through the Drizzle service gate", async () => {
