@@ -432,17 +432,25 @@ function TransactionImage({
   title: string;
   tone?: "transaction" | "bid";
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const canShowImage = Boolean(imageUrl) && !imageFailed;
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [imageUrl]);
+
   return (
     <div className="relative h-[9.35rem] overflow-hidden rounded-xl bg-[#f4f4ef] shadow-[0_4px_18px_rgba(0,0,0,0.018)]">
-      {imageUrl ? (
+      {canShowImage ? (
         <Image
           alt={`Foto transaksi ${title}`}
           className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
           decoding="async"
           fill
           loading="lazy"
+          onError={() => setImageFailed(true)}
           sizes="(min-width: 1280px) 224px, (min-width: 1024px) 192px, (min-width: 640px) 45vw, 100vw"
-          src={imageUrl}
+          src={imageUrl ?? ""}
           unoptimized
         />
       ) : (
@@ -791,7 +799,29 @@ export function TransactionsWorkspace({
   }, [bidFilter, bids]);
 
   const currentTransactionFilters = tab === "transactions" ? transactionFilterOptions : bidFilterOptions;
-  const hasEmptyState = tab === "transactions" ? visibleTransactions.length === 0 : visibleBids.length === 0;
+  const combinedTransactionActivities = useMemo(() => {
+    if (transactionFilter !== "all") {
+      return visibleTransactions.map((transaction) => ({
+        id: transaction.id,
+        kind: "transaction" as const,
+        transaction,
+      }));
+    }
+
+    return [
+      ...visibleTransactions.map((transaction) => ({
+        id: transaction.id,
+        kind: "transaction" as const,
+        transaction,
+      })),
+      ...bids.map((bid) => ({
+        id: `${bid.lotId}-${bid.status}-${bid.bidHash ?? bid.closingAt ?? bid.closing}`,
+        bid,
+        kind: "bid" as const,
+      })),
+    ];
+  }, [bids, transactionFilter, visibleTransactions]);
+  const hasEmptyState = tab === "transactions" ? combinedTransactionActivities.length === 0 : visibleBids.length === 0;
 
   return (
     <div className="space-y-6 bg-[#FAFAFA]">
@@ -829,10 +859,14 @@ export function TransactionsWorkspace({
 
       <div className="space-y-5">
         {tab === "transactions" ? (
-          visibleTransactions.length > 0 ? (
-            visibleTransactions.map((transaction) => (
-              <TransactionRow key={transaction.id} transaction={transaction} />
-            ))
+          combinedTransactionActivities.length > 0 ? (
+            combinedTransactionActivities.map((item) =>
+              item.kind === "transaction" ? (
+                <TransactionRow key={item.id} transaction={item.transaction} />
+              ) : (
+                <BidRow key={item.id} item={item.bid} />
+              )
+            )
           ) : null
         ) : visibleBids.length > 0 ? (
           visibleBids.map((item) => (

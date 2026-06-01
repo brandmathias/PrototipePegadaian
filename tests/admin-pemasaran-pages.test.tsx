@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   AdminMarketingUnifiedPage,
@@ -186,6 +186,46 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText(/peserta/i)).not.toBeInTheDocument();
   });
 
+  it("opens the ended vickrey winner workspace from the unified marketing action", () => {
+    render(
+      <AdminMarketingUnifiedPage
+        unitName="UPC Ranotana"
+        auctions={[
+          {
+            id: "pm-vickrey-payment",
+            lotId: "barang-payment",
+            lot: "Gelang Berlian",
+            code: "BRG-003",
+            category: "perhiasan",
+            condition: "sangat baik",
+            status: "SELESAI",
+            mode: "VICKREY_AUCTION",
+            ending: "2026-05-04",
+            endingAt: "2026-05-04T00:00:00.000Z",
+            participants: 2,
+            basePrice: 50000000,
+            finalPrice: 62000000,
+            winner: "Raras",
+            visibility: "HASIL_DIBUKA",
+            transactionId: "trx-vickrey-1",
+            transactionStatus: "MENUNGGU_KONFIRMASI_LANGSUNG",
+            buyerName: "Raras",
+            paymentMethod: "BAYAR_LANGSUNG",
+            paymentDeadline: "2099-05-09T00:00:00.000Z",
+            media: [{ id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
+            primaryMedia: { id: "m3", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" },
+            bids: []
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("link", { name: /kelola transaksi/i })).toHaveAttribute(
+      "href",
+      "/admin/pemasaran/vickrey-auction/pm-vickrey-payment"
+    );
+  });
+
   it("renders fixed price detail media with the buyer-style gallery", () => {
     render(
       <AdminFixedPriceDetailPage
@@ -328,6 +368,47 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
   });
 
+  it("keeps the ended vickrey settlement prices and countdown compact", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-long-price",
+          lotId: "barang-long-price",
+          lot: "Anting Berlian",
+          code: "BRG-006",
+          category: "perhiasan",
+          condition: "sangat baik",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "15 Mei 2026",
+          endingAt: "2099-05-15T12:00:00.000Z",
+          participants: 9,
+          basePrice: 95000000,
+          appraisalValue: 110000000,
+          finalPrice: 123456789,
+          winner: "Buyer A",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-long-price",
+          transactionStatus: "MENUNGGU_PEMBAYARAN",
+          buyerName: "Buyer A",
+          paymentDeadline: "2099-05-15T12:00:00.000Z",
+          media: [{ id: "m6", type: "foto", url: "/uploads/anting.jpg", fileName: "anting.jpg" }],
+          bids: []
+        }}
+      />
+    );
+
+    const compactBidAmount = screen.getAllByText("Rp 123.456.789")[0];
+    const dayLabel = screen.getByText("HARI");
+    const dayValue = dayLabel.parentElement?.querySelector("p");
+
+    expect(compactBidAmount).toBeInTheDocument();
+    expect(screen.getByText(/lelang selesai .* menunggu pelunasan nasabah/i)).toBeInTheDocument();
+    expect(dayLabel.closest("[data-settlement-countdown-tile='true']")).toHaveClass("h-[3.35rem]", "place-items-center");
+    expect(dayValue).toHaveClass("w-full", "text-center");
+    expect(dayLabel).toHaveClass("w-full", "text-center");
+  });
+
   it("renders vickrey as an operational workspace for admin unit", () => {
     render(
       <AdminVickreyAuctionListPage
@@ -386,7 +467,11 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/antrian pembayaran/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /buka transaksi pemenang/i })).toHaveAttribute(
       "href",
-      "/admin/transaksi/trx-vickrey-1?from=vickrey"
+      "/admin/pemasaran/vickrey-auction/pm-payment"
+    );
+    expect(screen.getByRole("link", { name: /kelola transaksi pemenang/i })).toHaveAttribute(
+      "href",
+      "/admin/pemasaran/vickrey-auction/pm-payment"
     );
   });
 
@@ -423,6 +508,7 @@ describe("admin pemasaran pages", () => {
               bidderId: "buyer-1",
               bidderName: "Raras",
               submittedAtLabel: "4 Mei 2026, 08.00",
+              amount: 70000000,
               rank: 1,
               isWinner: true,
               determinesFinalPrice: false
@@ -432,8 +518,146 @@ describe("admin pemasaran pages", () => {
               bidderId: "buyer-2",
               bidderName: "Alya",
               submittedAtLabel: "4 Mei 2026, 08.05",
+              amount: 62000000,
               rank: 2,
               isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/progress pembayaran lelang/i)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-vickrey-1?from=vickrey"
+    );
+    expect(screen.queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
+  });
+
+  it("renders the ended vickrey winner workspace with printable summary actions", () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    const { container } = render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-winner",
+          lotId: "barang-winner",
+          lot: "22K Gold Bangle",
+          code: "LGL-8829-XJ",
+          category: "emas",
+          condition: "sangat baik",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "31 Mei 2026",
+          endingAt: "2026-05-31T11:17:48.000Z",
+          participants: 5,
+          basePrice: 65000000,
+          appraisalValue: 85000000,
+          finalPrice: 78000000,
+          winner: "Budi Santoso",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-winner",
+          transactionStatus: "MENUNGGU_KONFIRMASI_LANGSUNG",
+          buyerName: "Budi Santoso",
+          paymentMethod: "BAYAR_LANGSUNG",
+          reference: "VCK-8829",
+          proofUrl: null,
+          paymentDeadline: "2099-06-02T23:35:00.000Z",
+          specifications: {
+            kadarEmas: "22 Karat (91,6%)",
+            berat: "15,28 gram"
+          },
+          media: [{ id: "asset-1", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
+          primaryMedia: { id: "asset-1", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
+          bids: [
+            {
+              id: "bid-1",
+              bidderId: "PGD1029384",
+              bidderName: "Budi Santoso",
+              submittedAtLabel: "31 Mei 2026, 19:17:48 WIB",
+              amount: 85000000,
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-2",
+              bidderId: "PGD5528761",
+              bidderName: "Siti Nurfadila",
+              submittedAtLabel: "31 Mei 2026, 19:14:23 WIB",
+              amount: 78000000,
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/lelang selesai .* menunggu pelunasan nasabah/i)).toBeInTheDocument();
+    expect(screen.getByText(/detail pemenang lelang/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Budi Santoso").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rp 85.000.000").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rp 78.000.000").length).toBeGreaterThan(0);
+    expect(screen.getByText(/ranking peserta lelang \(admin view\)/i)).toBeInTheDocument();
+    const rankingTable = container.querySelector("table");
+    expect(rankingTable).toHaveClass("table-fixed");
+    expect(rankingTable).not.toHaveClass("min-w-[45rem]");
+    expect(screen.getAllByText(/total pembayaran/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
+      "href",
+      "/admin/transaksi/trx-vickrey-winner?from=vickrey"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /cetak ringkasan lelang/i }));
+    expect(printSpy).toHaveBeenCalledTimes(1);
+    printSpy.mockRestore();
+  });
+
+  it("uses category-specific asset fields on the ended vickrey winner page", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-ipad-winner",
+          lotId: "barang-ipad",
+          lot: "Ipad Terbaru",
+          code: "BRG-27863113",
+          category: "elektronik",
+          condition: "baik",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "1 Jun 2026",
+          endingAt: "2026-06-01T13:57:00.000Z",
+          participants: 2,
+          basePrice: 6500000,
+          finalPrice: 7500000,
+          winner: "Buyer Satu",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-ipad-winner",
+          transactionStatus: "MENUNGGU_KONFIRMASI_LANGSUNG",
+          buyerName: "Buyer Satu",
+          paymentMethod: "BAYAR_LANGSUNG",
+          paymentDeadline: "2099-06-02T23:35:00.000Z",
+          specifications: {
+            merek: "Apple",
+            model: "iPad Pro 11",
+            spesifikasi: "M2, 128GB, Wi-Fi"
+          },
+          media: [{ id: "asset-ipad", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+          primaryMedia: { id: "asset-ipad", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" },
+          bids: [
+            {
+              id: "bid-ipad-1",
+              bidderId: "seed-buyer-simple-1",
+              bidderName: "Buyer Satu",
+              submittedAtLabel: "1 Jun 2026, 21.56 WIB",
+              amount: 8500000,
+              rank: 1,
+              isWinner: true,
               determinesFinalPrice: false
             }
           ]
@@ -441,12 +665,13 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByText(/pembayaran pemenang/i)).toBeInTheDocument();
-    expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /buka transaksi pemenang/i })).toHaveAttribute(
-      "href",
-      "/admin/transaksi/trx-vickrey-1?from=vickrey"
-    );
-    expect(screen.queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Merek")).toBeInTheDocument();
+    expect(screen.getByText("Apple")).toBeInTheDocument();
+    expect(screen.getByText("Model")).toBeInTheDocument();
+    expect(screen.getByText("iPad Pro 11")).toBeInTheDocument();
+    expect(screen.getByText("Spesifikasi")).toBeInTheDocument();
+    expect(screen.getByText("M2, 128GB, Wi-Fi")).toBeInTheDocument();
+    expect(screen.queryByText("Kadar")).not.toBeInTheDocument();
+    expect(screen.queryByText("Berat")).not.toBeInTheDocument();
   });
 });

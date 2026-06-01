@@ -59,6 +59,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       {
         id?: string | null;
         buyerName?: string | null;
+        buyerEmail?: string | null;
+        buyerPhone?: string | null;
+        buyerNationalId?: string | null;
         paymentMethod?: string | null;
         status?: string | null;
         proofUrl?: string | null;
@@ -80,6 +83,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       paymentDeadline: transaksi.paymentDeadline,
       soldAt: transaksi.verifiedAt,
       buyerName: users.name,
+      buyerEmail: users.email,
+      buyerPhone: users.phoneNumber,
+      buyerNationalId: users.nationalId,
       createdAt: transaksi.createdAt
     })
     .from(transaksi)
@@ -92,6 +98,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       map.set(row.pemasaranId, {
         id: row.id,
         buyerName: row.buyerName,
+        buyerEmail: row.buyerEmail,
+        buyerPhone: row.buyerPhone,
+        buyerNationalId: row.buyerNationalId,
         paymentMethod: row.paymentMethod,
         status: row.status,
         proofUrl: row.proofUrl,
@@ -106,6 +115,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
     {
       id?: string | null;
       buyerName?: string | null;
+      buyerEmail?: string | null;
+      buyerPhone?: string | null;
+      buyerNationalId?: string | null;
       paymentMethod?: string | null;
       status?: string | null;
       proofUrl?: string | null;
@@ -315,6 +327,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
           bid: {
             id: bids.id,
             userId: bids.userId,
+            nominal: bids.nominal,
             createdAt: bids.createdAt,
             revealedAt: bids.revealedAt
           },

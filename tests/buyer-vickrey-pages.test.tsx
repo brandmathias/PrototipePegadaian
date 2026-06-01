@@ -191,6 +191,8 @@ describe("buyer vickrey pages", () => {
 
     const dialog = screen.getByRole("dialog", { name: /syarat & ketentuan penawaran/i });
     expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveClass("flex", "max-h-[calc(100dvh-2rem)]");
+    expect(dialog.parentElement).toHaveClass("z-[160]", "overflow-y-auto");
     expect(
       within(dialog).getByText(/baca dan cermati syarat dan ketentuan di bawah ini/i)
     ).toBeInTheDocument();
@@ -214,6 +216,7 @@ describe("buyer vickrey pages", () => {
     expect(within(dialog).queryByText(/admin unit tidak dapat melihat nominal bid/i)).not.toBeInTheDocument();
 
     const modalAction = screen.getByRole("button", { name: /setujui dan kirim bid/i });
+    expect(modalAction.closest("footer")).toHaveClass("shrink-0");
     expect(modalAction).toBeDisabled();
 
     await user.click(screen.getByRole("checkbox", { name: /saya telah membaca dan menyetujui/i }));

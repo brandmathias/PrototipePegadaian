@@ -213,7 +213,7 @@ describe("admin unit serializers", () => {
     expect(auction.bids?.[1]).not.toHaveProperty("nominal");
   });
 
-  it("redacts individual bid values from admin output after vickrey deadline has passed", () => {
+  it("exposes settled bid amounts for admin audit without exposing vickrey secrets", () => {
     const auction = serializeAdminPemasaran(
       {
         id: "pm-2",
@@ -275,7 +275,8 @@ describe("admin unit serializers", () => {
       rank: 1,
       bidderName: "Raras",
       isWinner: true,
-      determinesFinalPrice: false
+      determinesFinalPrice: false,
+      amount: 15000000
     });
     expect(auction.bids![0]).not.toHaveProperty("nominal");
     expect(auction.bids![0]).not.toHaveProperty("salt");
@@ -284,7 +285,8 @@ describe("admin unit serializers", () => {
       rank: 2,
       bidderName: "Alya",
       isWinner: false,
-      determinesFinalPrice: false
+      determinesFinalPrice: true,
+      amount: 13250000
     });
     expect(auction.bids![1]).not.toHaveProperty("nominal");
   });

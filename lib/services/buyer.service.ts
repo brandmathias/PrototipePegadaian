@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, gt, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
@@ -59,6 +59,17 @@ function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
 }
 
+function primaryBarangPhotoUrl() {
+  return sql<string | null>`(
+    select ${mediaBarang.url}
+    from ${mediaBarang}
+    where ${mediaBarang.barangId} = ${barang.id}
+      and ${mediaBarang.type} = 'foto'
+    order by ${mediaBarang.sortOrder} asc, ${mediaBarang.createdAt} asc
+    limit 1
+  )`;
+}
+
 async function refreshBuyerAuctionSettlementState(options?: BuyerReadOptions) {
   if (options?.refreshAuctionState === false) {
     return;
@@ -84,7 +95,7 @@ function transactionSelection() {
     createdAt: transaksi.createdAt,
     lotName: barang.name,
     lotId: barang.id,
-    imageUrl: mediaBarang.url,
+    imageUrl: primaryBarangPhotoUrl(),
     unitName: units.name,
     unitAddress: units.address,
     account: unitAccounts
@@ -98,7 +109,8 @@ async function getMarketingForBuyer(pemasaranId: string) {
       item: barang,
       unit: units,
       account: unitAccounts,
-      media: mediaBarang
+      media: mediaBarang,
+      imageUrl: primaryBarangPhotoUrl()
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
@@ -200,7 +212,7 @@ export async function listBuyerBids(userId: string, options?: BuyerReadOptions) 
     .select({
       pemasaranId: pemasaran.id,
       lotName: barang.name,
-      imageUrl: mediaBarang.url,
+      imageUrl: primaryBarangPhotoUrl(),
       unitName: units.name,
       bidAmount: bids.nominal,
       bidHash: bids.bidHash,
@@ -495,7 +507,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     ...created,
     lotName: row.item.name,
     lotId: row.item.id,
-    imageUrl: row.media?.url ?? null,
+    imageUrl: row.imageUrl ?? null,
     unitName: row.unit.name,
     unitAddress: row.unit.address,
     account: row.account
@@ -571,7 +583,7 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     pemasaranId,
     lotName: row.item.name,
     unitName: row.unit.name,
-    imageUrl: row.media?.url ?? null,
+    imageUrl: row.imageUrl ?? null,
     bidAmount: created.nominal,
     bidHash: created.bidHash,
     encryptedBidPayload: created.encryptedBidPayload,

@@ -215,6 +215,7 @@ export function AdminMarketingForm({
   presentation = "panel",
   redirectTo,
   serverNow,
+  heroIcon,
   submitIcon,
   submitLabel,
   successDescription,
@@ -228,6 +229,7 @@ export function AdminMarketingForm({
   presentation?: "modal" | "panel";
   redirectTo: string;
   serverNow: string;
+  heroIcon?: ReactNode;
   submitIcon?: ReactNode;
   submitLabel: string;
   successDescription: string;
@@ -243,6 +245,7 @@ export function AdminMarketingForm({
   const [durationSeconds, setDurationSeconds] = useState("0");
   const [activeDurationField, setActiveDurationField] = useState<null | "days" | "hours" | "minutes" | "seconds">(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isModalClosedAfterSuccess, setIsModalClosedAfterSuccess] = useState(false);
 
   const normalizedPrice = Number(price);
   const normalizedDurationDays = Number(durationDays || "0");
@@ -361,6 +364,9 @@ export function AdminMarketingForm({
         variant: "success",
         scope: "admin-unit",
       });
+      if (presentation === "modal") {
+        setIsModalClosedAfterSuccess(true);
+      }
       router.push(redirectTo);
       router.refresh();
     } catch (error) {
@@ -379,17 +385,19 @@ export function AdminMarketingForm({
   const marketingCard = (
     <div className="w-full max-w-[66rem]">
       <div className="relative overflow-visible rounded-[2rem] border border-[#dfe8e2] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
-        <div className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2">
-          <div className="grid size-12 place-items-center rounded-full border-[4px] border-white bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
-            {mode === "fixed_price" ? (
-              <Tag className="size-4.5 text-white" strokeWidth={2.2} />
+        <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+          <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
+            {heroIcon ? (
+              heroIcon
+            ) : mode === "fixed_price" ? (
+              <Tag className="size-6 text-white" strokeWidth={2.2} />
             ) : (
-              <Gavel className="size-4.5 text-white" strokeWidth={2.2} />
+              <Gavel className="size-6 text-white" strokeWidth={2.2} />
             )}
           </div>
         </div>
 
-        <div className="p-5 pt-14 sm:p-6 sm:pt-14 lg:p-6 lg:pt-14">
+        <div className="p-5 pt-10 sm:p-7 sm:pt-11 lg:p-7 lg:pt-11">
           <div className="flex justify-end">
             <button
               aria-label="Tutup popup pasarkan barang"
@@ -402,11 +410,11 @@ export function AdminMarketingForm({
           </div>
 
           <form className="space-y-3" onSubmit={handleSubmit}>
-            <div className="space-y-1 text-center">
-              <h3 className="font-headline text-[1.34rem] font-black tracking-tight text-[#0e4e34] sm:text-[1.48rem]">
+            <div className="space-y-2 text-center">
+              <h3 className="font-headline text-[1.55rem] font-black tracking-tight text-[#15231d] sm:text-[1.72rem]">
                 Pasarkan Barang
               </h3>
-              <p className="mx-auto max-w-[34rem] text-[0.8rem] leading-5 text-slate-500">
+              <p className="mx-auto max-w-md text-[0.9rem] leading-7 text-slate-500">
                 Konfigurasi akhir sebelum unit ditayangkan ke katalog publik.
               </p>
             </div>
@@ -581,6 +589,10 @@ export function AdminMarketingForm({
   );
 
   if (presentation === "modal") {
+    if (isModalClosedAfterSuccess) {
+      return null;
+    }
+
     return (
       <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-5">
         {marketingCard}

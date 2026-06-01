@@ -40,7 +40,11 @@ describe("admin gadai action forms", () => {
   });
 
   it("submits the selected extension due date instead of an auto-generated fallback", async () => {
-    renderWithToast(<AdminExtensionForm currentDueDate="2026-05-31" itemId="barang-1" />);
+    const { container } = renderWithToast(
+      <AdminExtensionForm currentDueDate="2026-05-31" itemId="barang-1" />
+    );
+
+    expect(container.querySelector(".lucide-calendar-clock")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Simpan perpanjangan" }));
 
@@ -61,7 +65,7 @@ describe("admin gadai action forms", () => {
   });
 
   it("requires a redemption reference and sends the entered reference to the API", async () => {
-    renderWithToast(
+    const { container } = renderWithToast(
       <AdminRedeemForm
         customerNumber="NAS-001"
         itemCode="BRG-002"
@@ -72,6 +76,8 @@ describe("admin gadai action forms", () => {
         redemptionAmount={12450000}
       />
     );
+
+    expect(container.querySelector(".lucide-receipt-text")).toBeTruthy();
 
     expect(screen.getByRole("img", { name: "LM Antam 10gr Sertifikat" })).toHaveAttribute(
       "src",

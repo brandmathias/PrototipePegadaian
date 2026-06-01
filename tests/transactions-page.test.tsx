@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -146,6 +146,11 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /bayar sekarang/i })).toHaveLength(1);
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
+    expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
+    expect(screen.getByAltText("Foto transaksi Gelang Emas 24K - 10 Gram")).toHaveAttribute(
+      "src",
+      expect.stringContaining("/uploads/barang/gelang.jpg")
+    );
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
     expect(
       screen
@@ -163,6 +168,21 @@ describe("TransactionsPage", () => {
         .some((link) => link.getAttribute("href") === "/riwayat-bid/bid-2/bukan-pemenang")
     ).toBe(true);
     expect(screen.getAllByText(/riwayat lelang tersimpan/i).length).toBeGreaterThan(0);
+  });
+
+  it("falls back to the bid visual treatment when a product image fails to load", () => {
+    render(
+      <TransactionsPage
+        buyer={buyer}
+        data={{ summary, transactions: [], bids: [bids[1]] }}
+      />
+    );
+
+    const image = screen.getByAltText("Foto transaksi Kamera Mirrorless Full Frame");
+    fireEvent.error(image);
+
+    expect(screen.queryByAltText("Foto transaksi Kamera Mirrorless Full Frame")).not.toBeInTheDocument();
+    expect(screen.getByText("Kamera Mirrorless Full Frame")).toBeInTheDocument();
   });
 
   it("can open directly on the riwayat lelang tab from the transactions hub", () => {

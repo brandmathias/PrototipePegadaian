@@ -20,6 +20,9 @@ type AdminPemasaranMedia = {
 type AdminPemasaranTransaction = {
   id?: string | null;
   buyerName?: string | null;
+  buyerEmail?: string | null;
+  buyerPhone?: string | null;
+  buyerNationalId?: string | null;
   paymentMethod?: string | null;
   status?: string | null;
   proofUrl?: string | null;
@@ -181,7 +184,16 @@ export function serializeAdminPemasaran(
     }
     return "HASIL_DIBUKA";
   })();
-  const sortedBids = [...(extra.bids ?? [])].sort((left, right) => left.bid.createdAt.getTime() - right.bid.createdAt.getTime());
+  const sortedBids = [...(extra.bids ?? [])].sort((left, right) => {
+    if (visibility === "HASIL_DIBUKA") {
+      const amountDiff = toNumber(right.bid.nominal) - toNumber(left.bid.nominal);
+      if (amountDiff !== 0) {
+        return amountDiff;
+      }
+    }
+
+    return left.bid.createdAt.getTime() - right.bid.createdAt.getTime();
+  });
   const revealedBidCount = sortedBids.filter((entry) => Boolean(entry.bid.revealedAt)).length;
   const pendingRevealCount = Math.max((extra.bidCount ?? sortedBids.length) - revealedBidCount, 0);
   const lotSpecifications =
@@ -202,7 +214,10 @@ export function serializeAdminPemasaran(
             isRevealed: Boolean(entry.bid.revealedAt),
             rank,
             isWinner: Boolean(isWinner),
-            determinesFinalPrice: false
+            determinesFinalPrice: visibility === "HASIL_DIBUKA" && Boolean(row.winnerId) && rank === 2,
+            ...(visibility === "HASIL_DIBUKA"
+              ? { amount: entry.bid.nominal != null ? toNumber(entry.bid.nominal) : null }
+              : {})
           };
         })
       : [];
@@ -268,6 +283,9 @@ export function serializeAdminPemasaran(
     transactionId: extra.transaction?.id ?? null,
     transactionStatus,
     buyerName: extra.transaction?.buyerName ?? null,
+    buyerEmail: extra.transaction?.buyerEmail ?? null,
+    buyerPhone: extra.transaction?.buyerPhone ?? null,
+    buyerNationalId: extra.transaction?.buyerNationalId ?? null,
     paymentMethod: formatPaymentMethod(extra.transaction?.paymentMethod),
     proofUrl: extra.transaction?.proofUrl ?? null,
     reference: extra.transaction?.reference ?? null,

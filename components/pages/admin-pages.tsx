@@ -17,6 +17,7 @@ import {
   Hash,
   Landmark,
   Medal,
+  Megaphone,
   MonitorSmartphone,
   Package2,
   PackagePlus,
@@ -678,7 +679,7 @@ export function AdminInventoryDetailPage({
       description:
         "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
       href: `/admin/barang/${item.id}/pasarkan`,
-      icon: Gavel,
+      icon: Megaphone,
     },
   ];
 
@@ -1346,6 +1347,7 @@ export function AdminInventoryMarketPage({
         cancelHref={`/admin/barang/${item.id}`}
         defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
         endpoint={`/api/admin/barang/${item.id}/pasarkan`}
+        heroIcon={<Megaphone className="size-6 text-white" strokeWidth={2.2} />}
         presentation="modal"
         redirectTo="/admin/pemasaran"
         serverNow={serverNow}

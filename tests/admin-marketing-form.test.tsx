@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Megaphone } from "lucide-react";
 
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { ToastProvider } from "@/components/ui/toast";
@@ -205,5 +206,35 @@ describe("AdminMarketingForm", () => {
 
     expect(minutesInput.value).toBe("59");
     expect(secondsInput.value).toBe("59");
+  });
+
+  it("keeps success toast above the marketing modal and closes the modal after publish succeeds", async () => {
+    const { container } = renderWithToast(
+      <AdminMarketingForm
+        barangId="barang-1"
+        cancelHref="/admin/barang/barang-1"
+        defaultPrice={200000}
+        endpoint="/api/admin/pemasaran"
+        heroIcon={<Megaphone className="size-6 text-white" strokeWidth={2.2} />}
+        presentation="modal"
+        redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
+        submitLabel="Tayangkan ke katalog"
+        successDescription="Barang sudah aktif di katalog."
+        successTitle="Barang tayang di katalog"
+      />
+    );
+
+    expect(container.querySelector("[aria-live='polite']")).toHaveClass("z-[200]");
+    expect(container.querySelector(".lucide-megaphone")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("heading", { name: /pasarkan barang/i })).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/barang tayang di katalog/i)).toBeInTheDocument();
+    expect(router.push).toHaveBeenCalledWith("/admin/pemasaran");
   });
 });

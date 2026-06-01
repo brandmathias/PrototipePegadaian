@@ -396,7 +396,7 @@ export function VickreyBidForm({
 
       {isTermsModalOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/55 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[160] flex items-center justify-center overflow-y-auto bg-foreground/55 p-3 backdrop-blur-sm sm:p-5"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setIsTermsModalOpen(false);
@@ -406,7 +406,7 @@ export function VickreyBidForm({
           <section
             aria-labelledby="vickrey-terms-title"
             aria-modal="true"
-            className="max-h-[min(92dvh,720px)] w-full max-w-xl overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_34px_90px_-42px_rgba(0,34,18,0.68)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_34px_90px_-42px_rgba(0,34,18,0.68)]"
             role="dialog"
           >
             <div className="relative overflow-hidden bg-gradient-to-br from-primary via-[#076236] to-[#b28a15] px-6 py-5 text-primary-foreground">
@@ -443,7 +443,7 @@ export function VickreyBidForm({
               </div>
             </div>
 
-            <div className="max-h-[calc(min(92dvh,720px)-10.5rem)] overflow-y-auto bg-[#fbfaf5] p-5">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[#fbfaf5] p-5">
               <div className="rounded-[1.35rem] border border-primary/15 bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                 <p className="text-sm font-bold text-foreground">
                   Baca dan cermati syarat dan ketentuan di bawah ini.
@@ -522,7 +522,10 @@ export function VickreyBidForm({
                 </span>
               </label>
 
-              <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            </div>
+
+            <footer className="shrink-0 border-t border-border/70 bg-white/95 px-5 py-4">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button
                   onClick={() => setIsTermsModalOpen(false)}
                   type="button"
@@ -546,7 +549,7 @@ export function VickreyBidForm({
                   )}
                 </Button>
               </div>
-            </div>
+            </footer>
           </section>
         </div>
       ) : null}
