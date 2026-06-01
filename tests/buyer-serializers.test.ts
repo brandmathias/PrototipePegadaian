@@ -53,23 +53,25 @@ describe("buyer serializers", () => {
       account: null,
       media: [],
       specifications: {
-        jenisPerhiasan: "Cincin",
-        material: "Emas Kuning 24K",
+        jenisEmas: "Cincin",
         kadarEmas: "99,9%",
         berat: "3,20 gram",
-        batuUtama: "Berlian",
-        jumlahBatu: "12 pcs"
+        bentuk: "Perhiasan",
+        panjang: "18 cm",
+        diameter: "16 mm",
+        sertifikat: "Ada"
       }
     });
 
     expect(lot.updatedAt).toBe("2026-05-22T03:30:00.000Z");
     expect(lot.specs).toEqual([
-      { label: "Jenis Perhiasan", value: "Cincin" },
-      { label: "Material", value: "Emas Kuning 24K" },
+      { label: "Jenis Emas", value: "Cincin" },
       { label: "Kadar Emas", value: "99,9%" },
       { label: "Berat", value: "3,20 gram" },
-      { label: "Batu Utama", value: "Berlian" },
-      { label: "Jumlah Batu", value: "12 pcs" }
+      { label: "Bentuk", value: "Perhiasan" },
+      { label: "Panjang", value: "18 cm" },
+      { label: "Diameter", value: "16 mm" },
+      { label: "Sertifikat", value: "Ada" }
     ]);
     expect(lot.specs.map((item) => item.label)).not.toEqual(
       expect.arrayContaining(["Kategori", "Kondisi", "Unit Pegadaian", "Lokasi", "Mode", "Status"])

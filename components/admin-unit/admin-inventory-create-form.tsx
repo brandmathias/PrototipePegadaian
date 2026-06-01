@@ -760,7 +760,7 @@ export function AdminInventoryCreateForm() {
           <div className="space-y-1.5 md:col-span-2">
             <FieldLabel htmlFor="description">Deskripsi barang</FieldLabel>
             <Textarea
-              className="min-h-28 resize-none rounded-xl border-transparent bg-slate-50 p-4 text-xs font-semibold leading-6 text-slate-700 placeholder:text-slate-400 focus-visible:border-[#006747] focus-visible:bg-white focus-visible:ring-[#006747]/10"
+              className="scrollbar-none min-h-28 resize-none rounded-xl border-transparent bg-slate-50 p-4 text-justify text-xs font-semibold leading-6 text-slate-700 placeholder:text-left placeholder:text-slate-400 focus-visible:border-[#006747] focus-visible:bg-white focus-visible:ring-[#006747]/10"
               id="description"
               name="description"
               placeholder="Jelaskan kondisi fisik, spesifikasi, kelengkapan, dan catatan barang."

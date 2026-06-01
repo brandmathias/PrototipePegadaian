@@ -1,15 +1,28 @@
 "use client";
 
 import { FormEvent, ReactNode, useMemo, useState } from "react";
-import { CarFront, Cpu, Gem, LoaderCircle, Medal, Save, Shapes, Tag } from "lucide-react";
+import {
+  CarFront,
+  CheckCircle2,
+  FileText,
+  Gem,
+  Layers,
+  LoaderCircle,
+  Medal,
+  MonitorSmartphone,
+  Package2,
+  Save,
+  Tag
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { AdminOptionGrid } from "@/components/admin-unit/admin-option-grid";
+import { AdminSelect } from "@/components/admin/admin-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { getBarangSpecificationFields, type BarangSpecificationRecord } from "@/lib/admin-unit/specifications";
+import { cn } from "@/lib/utils";
 
 type AdminBarangEditValue = {
   id: string;
@@ -29,24 +42,23 @@ type AdminBarangEditValue = {
 };
 
 const categories = [
-  { value: "emas", label: "Emas", description: "Perhiasan emas dasar dan emas batangan kecil.", icon: Gem },
-  { value: "perhiasan", label: "Perhiasan", description: "Cincin, kalung, gelang, anting, dan sejenisnya.", icon: Shapes },
-  { value: "elektronik", label: "Elektronik", description: "Gawai, laptop, kamera, atau perangkat rumah tangga.", icon: Cpu },
-  { value: "kendaraan", label: "Kendaraan", description: "Motor atau kendaraan lain yang siap dinilai unit.", icon: CarFront },
-  { value: "logam_mulia", label: "Logam Mulia", description: "Batangan bernilai tinggi dengan pasar harga ketat.", icon: Medal },
-  { value: "lainnya", label: "Lainnya", description: "Barang jaminan lain di luar kategori utama.", icon: Save }
-];
+  { value: "perhiasan", label: "Perhiasan", icon: Gem },
+  { value: "logam_mulia", label: "Logam Mulia", icon: Medal },
+  { value: "elektronik", label: "Elektronik", icon: MonitorSmartphone },
+  { value: "kendaraan", label: "Kendaraan", icon: CarFront },
+  { value: "lainnya", label: "Lainnya", icon: Package2 }
+] as const;
 
 const conditions = [
-  { value: "baik", label: "Baik", description: "Siap tampil ke katalog tanpa catatan mayor.", icon: Gem },
-  { value: "cukup", label: "Cukup", description: "Ada jejak pakai ringan, masih layak dipasarkan.", icon: Shapes },
-  { value: "rusak_ringan", label: "Rusak ringan", description: "Perlu catatan kondisi agar ekspektasi buyer jelas.", icon: Cpu }
-];
+  { value: "baik", label: "Baik" },
+  { value: "cukup", label: "Cukup" },
+  { value: "rusak_ringan", label: "Rusak Ringan" }
+] as const;
 
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
     <label
-      className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/50 sm:text-xs"
+      className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-slate-500"
       htmlFor={htmlFor}
     >
       {children}
@@ -54,14 +66,57 @@ function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: stri
   );
 }
 
-export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
+function normalizeEditableCategory(value: string) {
+  return value.toLowerCase() === "emas" ? "perhiasan" : value.toLowerCase();
+}
+
+function getSpecificationSuffix(label: string) {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("berat")) return "gram";
+  if (normalized.includes("panjang")) return "cm";
+  if (normalized.includes("diameter") || normalized.includes("ukuran")) return "mm";
+  if (normalized.includes("tahun")) return "tahun";
+  return null;
+}
+
+function CategoryDropdown({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (nextValue: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <FieldLabel htmlFor="admin-barang-category">Kategori barang</FieldLabel>
+      <AdminSelect
+        ariaLabel="Kategori barang"
+        className="[&_.admin-select-trigger]:h-12 [&_.admin-select-trigger]:rounded-xl [&_.admin-select-trigger]:text-sm [&_.admin-select-trigger]:font-bold"
+        id="admin-barang-category"
+        onValueChange={onChange}
+        options={[...categories]}
+        value={value}
+      />
+    </div>
+  );
+}
+
+export function AdminBarangEditForm({
+  formId,
+  item,
+  showSubmit = true
+}: {
+  formId?: string;
+  item: AdminBarangEditValue;
+  showSubmit?: boolean;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [name, setName] = useState(String(item.name ?? ""));
-  const [category, setCategory] = useState(String(item.category ?? "emas").toLowerCase());
+  const [category, setCategory] = useState(normalizeEditableCategory(String(item.category ?? "perhiasan")));
   const [condition, setCondition] = useState(String(item.condition ?? "baik").toLowerCase());
-  const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
-  const [loanValue, setLoanValue] = useState(String(item.loanValue ?? ""));
+  const appraisalValue = String(item.appraisalValue ?? "");
+  const loanValue = String(item.loanValue ?? "");
   const [marketingPrice, setMarketingPrice] = useState(String(item.marketingPrice ?? ""));
   const [description, setDescription] = useState(String(item.description ?? ""));
   const [specifications, setSpecifications] = useState<BarangSpecificationRecord>(item.specifications ?? {});
@@ -135,89 +190,105 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
   }
 
   return (
-    <form className="rounded-2xl border border-black/10 bg-white" onSubmit={handleSubmit}>
-      <div className="border-b border-black/8 px-5 py-5 sm:px-6">
-        <h3 className="font-headline text-[1.55rem] font-black text-black/85 sm:text-[1.8rem]">
-          Form Edit Barang
+    <form
+      className="rounded-[1.35rem] border border-slate-200/80 bg-white shadow-[0_18px_54px_-46px_rgba(15,23,42,0.46)]"
+      id={formId}
+      onSubmit={handleSubmit}
+    >
+      <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4 sm:px-6">
+        <span className="grid size-8 place-items-center rounded-xl bg-emerald-50 text-[#006747]">
+          <FileText className="size-4" strokeWidth={2.1} />
+        </span>
+        <h3 className="text-[0.95rem] font-black uppercase tracking-[0.08em] text-slate-900">
+          Informasi Barang
         </h3>
-        <p className="mt-1 text-sm leading-6 text-black/60 sm:text-base">
-          Perubahan inti disimpan langsung ke data barang unit.
-        </p>
       </div>
-      <div className="grid gap-5 p-6 md:grid-cols-2">
+      <div className="grid gap-4 p-5 sm:p-6 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-name">Nama barang</FieldLabel>
           <Input
-            className="h-12 text-sm sm:text-base"
+            className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#006747] focus-visible:ring-4 focus-visible:ring-[#006747]/8 sm:text-sm"
             id="admin-barang-name"
             onChange={(event) => setName(event.target.value)}
             value={name}
           />
         </div>
         <div className="md:col-span-2">
-          <AdminOptionGrid
-            label="Kategori"
-            name="adminBarangCategory"
-            onChange={setCategory}
-            options={categories}
-            value={category}
-          />
+          <CategoryDropdown onChange={setCategory} value={category} />
         </div>
-        <div className="md:col-span-2">
-          <AdminOptionGrid
-            label="Kondisi"
-            name="adminBarangCondition"
-            onChange={setCondition}
-            options={conditions}
-            value={condition}
-          />
+        <div className="space-y-2">
+          <FieldLabel>Kondisi barang</FieldLabel>
+          <input name="adminBarangCondition" type="hidden" value={condition} />
+          <div
+            aria-label="Kondisi"
+            className="grid h-11 grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-slate-50/80 p-1"
+            role="radiogroup"
+          >
+            {conditions.map((option) => {
+              const active = option.value === condition;
+              return (
+                <button
+                  aria-checked={active}
+                  aria-label={option.label}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-lg text-[0.72rem] font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    active
+                      ? "border border-emerald-200 bg-white text-[#006747] shadow-[0_12px_22px_-20px_rgba(0,103,71,0.42)]"
+                      : "text-slate-500 hover:bg-white hover:text-slate-800"
+                  )}
+                  key={option.value}
+                  onClick={() => setCondition(option.value)}
+                  role="radio"
+                  type="button"
+                >
+                  <span
+                    className={cn(
+                      "grid size-4 place-items-center rounded-full border",
+                      active ? "border-[#006747] bg-[#006747] text-white" : "border-slate-300 bg-white text-transparent"
+                    )}
+                  >
+                    <CheckCircle2 className="size-3" strokeWidth={2.4} />
+                  </span>
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="space-y-4 rounded-2xl border border-black/8 bg-[#fbfaf6] p-4 md:col-span-2">
-          <div>
+        <div className="space-y-4 rounded-[1.1rem] border border-slate-200 bg-slate-50/45 p-4 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <Layers className="size-4 text-[#006747]" strokeWidth={2.1} />
             <FieldLabel>Spesifikasi kategori</FieldLabel>
-            <p className="mt-1 text-sm leading-6 text-black/55">
-              Field ini mengikuti kategori aktif dan tampil sebagai spesifikasi produk di katalog buyer.
-            </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {specificationFields.map((field) => (
-              <div className="space-y-2" key={field.key}>
-                <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>{field.label}</FieldLabel>
-                <Input
-                  className="h-12 text-sm sm:text-base"
-                  id={`admin-barang-specification-${field.key}`}
-                  onChange={(event) => updateSpecification(field.key, event.target.value)}
-                  placeholder={field.placeholder}
-                  value={specifications[field.key] ?? ""}
-                />
-              </div>
-            ))}
+            {specificationFields.map((field) => {
+              const suffix = getSpecificationSuffix(field.label);
+              return (
+                <div className="space-y-2" key={field.key}>
+                  <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>{field.label}</FieldLabel>
+                  <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/8">
+                    <input
+                      className="h-10 w-full bg-transparent px-3 text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-300"
+                      id={`admin-barang-specification-${field.key}`}
+                      onChange={(event) => updateSpecification(field.key, event.target.value)}
+                      placeholder={field.placeholder}
+                      value={specifications[field.key] ?? ""}
+                    />
+                    {suffix ? (
+                      <span className="flex min-w-14 items-center justify-center border-l border-slate-100 bg-slate-50 px-3 text-[0.68rem] font-black text-slate-500">
+                        {suffix}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <div className="space-y-2">
-          <FieldLabel htmlFor="admin-barang-appraisal">Nilai taksiran</FieldLabel>
-          <Input
-            className="h-12 text-sm sm:text-base"
-            id="admin-barang-appraisal"
-            onChange={(event) => setAppraisalValue(event.target.value)}
-            type="number"
-            value={appraisalValue}
-          />
-        </div>
-        <div className="space-y-2">
-          <FieldLabel htmlFor="admin-barang-loan">Nilai gadai</FieldLabel>
-          <Input
-            className="h-12 text-sm sm:text-base"
-            id="admin-barang-loan"
-            onChange={(event) => setLoanValue(event.target.value)}
-            type="number"
-            value={loanValue}
-          />
-        </div>
         {canEditFixedPrice ? (
-          <div className="space-y-3 rounded-2xl border border-[#0d6b4c]/15 bg-[#f3fbf7] p-4 md:col-span-2">
+          <div className="space-y-3 rounded-[1.1rem] border border-[#0d6b4c]/15 bg-[#f3fbf7] p-4 md:col-span-2">
             <div className="flex items-start gap-3">
-              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#0d6b4c] text-white">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#0d6b4c] text-white">
                 <Tag className="size-4.5" />
               </span>
               <div>
@@ -228,7 +299,7 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
               </div>
             </div>
             <Input
-              className="h-12 bg-white text-sm font-semibold sm:text-base"
+              className="h-11 rounded-xl bg-white text-sm font-semibold sm:text-sm"
               id="admin-barang-marketing-price"
               min={1}
               onChange={(event) => setMarketingPrice(event.target.value)}
@@ -238,30 +309,46 @@ export function AdminBarangEditForm({ item }: { item: AdminBarangEditValue }) {
             />
           </div>
         ) : null}
+        <div className="grid gap-4 md:col-span-2 md:grid-cols-2">
+          <div className="space-y-2">
+            <FieldLabel>Nomor nasabah</FieldLabel>
+            <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-500">
+              {item.customerNumber || "-"}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Nama penggadai</FieldLabel>
+            <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
+              {item.ownerName || "-"}
+            </div>
+          </div>
+        </div>
         <div className="space-y-2 md:col-span-2">
-          <FieldLabel htmlFor="admin-barang-description">Deskripsi</FieldLabel>
+          <FieldLabel htmlFor="admin-barang-description">Deskripsi barang</FieldLabel>
           <Textarea
-            className="min-h-40 text-sm sm:text-base"
+            className="scrollbar-none min-h-28 resize-none rounded-xl border-slate-200 text-justify text-sm font-medium leading-6 text-slate-700 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#006747] focus-visible:ring-4 focus-visible:ring-[#006747]/8 sm:text-sm"
             id="admin-barang-description"
             onChange={(event) => setDescription(event.target.value)}
             value={description}
           />
         </div>
-        <div className="md:col-span-2">
-          <Button className="h-12 w-full rounded-2xl" disabled={isSubmitting} type="submit">
-            {isSubmitting ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                Menyimpan perubahan...
-              </>
-            ) : (
-              <>
-                <Save className="size-4" />
-                Simpan Perubahan
-              </>
-            )}
-          </Button>
-        </div>
+        {showSubmit ? (
+          <div className="md:col-span-2">
+            <Button className="h-12 w-full rounded-2xl" disabled={isSubmitting} type="submit">
+              {isSubmitting ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin" />
+                  Menyimpan perubahan...
+                </>
+              ) : (
+                <>
+                  <Save className="size-4" />
+                  Simpan Perubahan
+                </>
+              )}
+            </Button>
+          </div>
+        ) : null}
       </div>
     </form>
   );

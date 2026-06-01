@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
 
 describe("BuyerShell", () => {
   it("renders buyer summary details from provided database-backed summary", () => {
-    render(
+    const { container } = render(
       <BuyerShell
         buyer={{
           id: "buyer-001",
@@ -42,6 +42,8 @@ describe("BuyerShell", () => {
     );
 
     expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/dashboard");
+    expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
+    expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");

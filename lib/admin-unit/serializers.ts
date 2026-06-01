@@ -39,7 +39,7 @@ function toDateTimeLabel(value: Date | null | undefined) {
   return formatAppDateTime(value);
 }
 
-function toNumber(value: string | null | undefined) {
+function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
 }
 
@@ -140,6 +140,9 @@ export function serializeAdminPemasaran(
     lotCode?: string | null;
     lotCategory?: string | null;
     lotCondition?: string | null;
+    lotDescription?: string | null;
+    lotAppraisalValue?: string | number | null;
+    lotSpecifications?: unknown;
     media?: AdminPemasaranMedia[];
     bidCount?: number;
     winnerName?: string | null;
@@ -181,6 +184,10 @@ export function serializeAdminPemasaran(
   const sortedBids = [...(extra.bids ?? [])].sort((left, right) => left.bid.createdAt.getTime() - right.bid.createdAt.getTime());
   const revealedBidCount = sortedBids.filter((entry) => Boolean(entry.bid.revealedAt)).length;
   const pendingRevealCount = Math.max((extra.bidCount ?? sortedBids.length) - revealedBidCount, 0);
+  const lotSpecifications =
+    extra.lotSpecifications && typeof extra.lotSpecifications === "object" && !Array.isArray(extra.lotSpecifications)
+      ? (extra.lotSpecifications as Record<string, string>)
+      : {};
   const bidEntries =
     visibility !== "TERKUNCI"
       ? sortedBids.map((entry, index) => {
@@ -242,6 +249,9 @@ export function serializeAdminPemasaran(
     code: extra.lotCode ?? "-",
     category: extra.lotCategory ?? "-",
     condition: extra.lotCondition ?? "-",
+    description: extra.lotDescription ?? "",
+    appraisalValue: toNumber(extra.lotAppraisalValue),
+    specifications: lotSpecifications,
     status: upper(row.status),
     media,
     primaryMedia,

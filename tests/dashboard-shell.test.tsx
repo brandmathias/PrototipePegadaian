@@ -63,6 +63,17 @@ describe("DashboardShell", () => {
     expect(screen.getByRole("link", { name: /riwayat barang/i })).toBeInTheDocument();
   });
 
+  it("uses a white admin shell background on every admin route", () => {
+    navigationMock.pathname = "/admin/pemasaran";
+
+    const { container } = renderShell();
+    const shell = container.querySelector("[data-admin-shell]");
+
+    expect(shell).toHaveClass("bg-white");
+    expect(shell).not.toHaveClass("bg-[#efefed]");
+    expect(container.querySelector("header")).toHaveClass("bg-white/95");
+  });
+
   it("opens a navigation group when the pointer enters it", () => {
     navigationMock.pathname = "/admin";
 

@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 import {
   AlertTriangle,
   FileWarning,
-  Handshake,
   ShieldCheck,
   ShoppingCart,
   Tag,
@@ -341,19 +340,19 @@ function AdminDashboardHero({
       <div className="relative px-5 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(20rem,0.96fr)] lg:items-center">
           <div className="max-w-2xl space-y-5 lg:space-y-6">
-            <div className="space-y-3.5">
-              <div className="flex items-center gap-2.5">
-                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-[#bfe7c4] bg-[#eff9f1] text-[#0f6b49] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] dark:border-emerald-300/14 dark:bg-emerald-300/10 dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <Handshake aria-hidden="true" className="size-4" strokeWidth={1.7} />
-                </span>
-                <p className="text-sm font-bold text-[#17221d] dark:text-emerald-50/90">
+            <div className="space-y-4">
+              <div className="space-y-2.5">
+                <p className="text-[0.72rem] font-black uppercase tracking-[0.26em] text-[#6d887a] dark:text-emerald-100/52 sm:text-[0.76rem]">
+                  Dashboard Admin Unit
+                </p>
+                <p className="text-[1.02rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[#233c31] dark:text-emerald-50/88 sm:text-[1.12rem]">
                   Selamat datang kembali,
                 </p>
               </div>
-              <h1 className="font-headline text-[2.45rem] font-black tracking-[-0.06em] text-[#0b6847] dark:text-white sm:text-[3rem] lg:text-[3.35rem]">
+              <h1 className="max-w-[14ch] text-balance font-headline text-[2.58rem] font-black leading-[0.94] tracking-[-0.07em] text-[#0b6847] dark:text-white sm:text-[3.12rem] lg:text-[3.46rem]">
                 Halo, {operatorLabel}
               </h1>
-              <p className="max-w-[43rem] text-[1rem] leading-8 text-[#40564c] dark:text-emerald-50/74 sm:text-[1.05rem]">
+              <p className="max-w-[43rem] text-[1.02rem] leading-[1.88] tracking-[-0.012em] text-[#40564c] dark:text-emerald-50/74 sm:text-[1.08rem]">
                 Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional {summary.unitName} dari satu ruang admin yang lebih ringkas.
               </p>
             </div>

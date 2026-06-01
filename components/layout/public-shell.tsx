@@ -43,10 +43,16 @@ function getViewerLabel(role: AuthRole) {
 export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
   const isBuyer = viewer?.role === "buyer";
+  const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
   const navItems = guestNav;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]">
+    <div
+      className={cn(
+        "min-h-screen bg-white",
+        isBuyerCatalogSurface && "buyer-experience-root"
+      )}
+    >
       {isBuyer && viewer ? (
         <BuyerTopNav
           image={viewer.image}
@@ -130,10 +136,10 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
         </header>
       )}
 
-      <main>{children}</main>
+      <main className={cn(isBuyerCatalogSurface && "buyer-motion-main")}>{children}</main>
 
       <footer
-        className="mt-20 border-t border-black/5 bg-surface-low py-12"
+        className="mt-20 border-t border-black/5 bg-white py-12"
       >
         <div className="container grid gap-10 md:grid-cols-4">
           <div className="space-y-4">

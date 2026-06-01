@@ -89,7 +89,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <DashboardShell
       currentUser={currentUser}
       headerBrandLabel={isDashboardRoute ? null : "Pegadaian Lelang"}
-      headerSubtitle="Pusat kendali operasional unit"
+      headerSubtitle="Pusat Kendali Operasional Unit"
       headerTitle={unit?.name ?? "Admin Unit"}
       hideHeaderIdentity={false}
       profileHref="/admin/profil"

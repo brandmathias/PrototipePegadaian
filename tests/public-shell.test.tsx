@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
 
 describe("PublicShell", () => {
   it("keeps buyer navigation when an authenticated buyer opens the public catalog", () => {
-    render(
+    const { container } = render(
       <ToastProvider>
         <PublicShell
           viewer={{
@@ -29,6 +29,8 @@ describe("PublicShell", () => {
       </ToastProvider>
     );
 
+    expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
+    expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");

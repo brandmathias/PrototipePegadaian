@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
+import { cn } from "@/lib/utils";
 
 type BuyerShellProps = {
   buyer: BuyerSessionUser;
@@ -35,20 +36,17 @@ export function BuyerShell({
 
   return (
     <div
-      className={
-        isFocusedResultPage
-          ? "min-h-screen bg-white"
-          : "min-h-screen bg-[linear-gradient(180deg,#fbfaf6_0%,#f4f1e8_100%)]"
-      }
+      className={cn(
+        "buyer-experience-root min-h-screen bg-white"
+      )}
     >
       <BuyerTopNav image={summary.image} name={buyer.name} wishlistCount={summary.wishlistCount} />
 
       <main
-        className={
-          isFocusedResultPage
-            ? "container py-0 print:py-0"
-            : "container py-8 md:py-10 print:py-0"
-        }
+        className={cn(
+          "buyer-motion-main",
+          isFocusedResultPage ? "container py-0 print:py-0" : "container py-8 md:py-10 print:py-0"
+        )}
       >
         {children}
       </main>

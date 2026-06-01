@@ -24,6 +24,7 @@ import {
   Phone,
   Printer,
   Ruler,
+  Save,
   RotateCcw,
   Scale,
   ScrollText,
@@ -526,7 +527,7 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
   const inventoryMetrics = getAdminInventoryMetrics(items);
 
   return (
-    <div className="space-y-5">
+    <div className="-mx-4 -my-5 min-h-[calc(100dvh-8rem)] space-y-5 bg-white px-4 py-5 sm:-mx-6 sm:-my-6 sm:px-6 sm:py-6 lg:-mx-8 lg:-my-8 lg:px-8 lg:py-8">
       <AdminPageHero
         description="Kelola barang jaminan, baca tahap operasional terbaru, dan buka detail saat admin perlu mengambil keputusan berikutnya."
         eyebrow="Admin Unit / Barang"
@@ -593,7 +594,7 @@ export function AdminInventoryHistoryPage({
   }>;
 }) {
   return (
-    <div className="space-y-5">
+    <div className="-mx-4 -my-5 min-h-[calc(100dvh-8rem)] space-y-5 bg-[#ffffff] px-4 py-5 sm:-mx-6 sm:-my-6 sm:px-6 sm:py-6 lg:-mx-8 lg:-my-8 lg:px-8 lg:py-8">
       <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
         <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
@@ -985,7 +986,7 @@ export function AdminInventoryDetailPage({
                     <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
                       Deskripsi Barang
                     </h3>
-                    <div className="mt-3 space-y-2.5 text-[0.96rem] leading-7 text-[#5f6f86]">
+                    <div className="scrollbar-none mt-3 space-y-2.5 overflow-y-auto text-justify text-[0.96rem] leading-7 text-[#5f6f86]">
                       <p>
                         {item.description || "Belum ada deskripsi barang yang dicatat."}
                       </p>
@@ -1074,20 +1075,57 @@ export function AdminInventoryEditPage({
   const media = Array.isArray(item.media)
     ? (item.media as AdminBarangMedia[])
     : [];
+  const editFormId = `admin-barang-edit-${String(item.id)}`;
+  const auditCode = String(item.code ?? item.itemCode ?? `BRG-${String(item.id).slice(0, 8).toUpperCase()}`);
+  const auditValue = Number(item.appraisalValue ?? item.price ?? 0);
 
   return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Edit Barang"
-        title="Edit Data Barang"
-        description="Perbarui informasi barang selama masih berada di tahap yang memungkinkan. Setelah tayang, perubahan inti dibatasi agar informasi publik tetap konsisten."
-        actions={
-          <AdminStatusBadge className="text-[0.95rem]" status={item.status} />
-        }
-      />
+    <div className="space-y-5">
+      <nav className="flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-slate-400">
+        <Link className="transition hover:text-[#006747]" href="/admin">
+          Dashboard
+        </Link>
+        <span>/</span>
+        <Link className="transition hover:text-[#006747]" href="/admin/barang">
+          Kelola Barang
+        </Link>
+        <span>/</span>
+        <span className="text-[#006747]">Edit Data & Media Barang</span>
+      </nav>
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white shadow-[0_18px_54px_-48px_rgba(15,23,42,0.42)]">
+        <div className="grid gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="flex items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-[#006747] ring-1 ring-emerald-100">
+              <ShieldCheck className="size-5" strokeWidth={2.1} />
+            </span>
+            <div>
+              <h2 className="text-[0.86rem] font-black uppercase tracking-[0.08em] text-slate-900">
+                Informasi Audit Terkunci
+              </h2>
+              <p className="mt-1 max-w-[34rem] text-sm leading-6 text-slate-500">
+                Informasi ini tidak dapat diubah karena terkait dengan audit sistem dan riwayat operasional unit.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:min-w-[28rem]">
+            <div className="border-l border-emerald-100 pl-4">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">Kode Barang</p>
+              <p className="mt-1 font-headline text-[1rem] font-black text-[#006747]">{auditCode}</p>
+            </div>
+            <div className="border-l border-emerald-100 pl-4">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">Nilai Taksiran</p>
+              <p className="mt-1 font-headline text-[1rem] font-black text-[#006747]">
+                {auditValue > 0 ? currency.format(auditValue) : "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(23rem,0.95fr)] xl:items-start">
         <AdminBarangEditForm
+          formId={editFormId}
           item={{
             id: String(item.id),
             name: String(item.name ?? ""),
@@ -1106,25 +1144,38 @@ export function AdminInventoryEditPage({
             marketingPrice: item.marketingPrice ?? null,
             specifications: item.specifications ?? {},
           }}
+          showSubmit={false}
         />
 
-        <div className="space-y-6">
-          <Card className="rounded-2xl border border-black/10">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.4rem]">
-                Pengelolaan Media
-              </CardTitle>
-              <CardDescription className="text-sm sm:text-base">
-                Foto dan video bisa ditambahkan sampai total 5 media. Saat
-                upload berjalan, tombol akan menampilkan progres.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <AdminBarangMediaManager barangId={item.id} media={media} />
-            </CardContent>
-          </Card>
+        <div className="rounded-[1.35rem] border border-slate-200/80 bg-white p-5 shadow-[0_18px_54px_-46px_rgba(15,23,42,0.46)] sm:p-6 xl:sticky xl:top-5">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="grid size-8 place-items-center rounded-xl bg-emerald-50 text-[#006747]">
+              <UploadCloud className="size-4" strokeWidth={2.1} />
+            </span>
+            <h3 className="text-[0.95rem] font-black uppercase tracking-[0.08em] text-slate-900">
+              Edit Media Barang
+            </h3>
+          </div>
+          <AdminBarangMediaManager barangId={item.id} media={media} />
         </div>
       </div>
+
+      <footer className="flex flex-col-reverse gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_-38px_rgba(15,23,42,0.42)] sm:flex-row sm:items-center sm:justify-end">
+        <Link
+          className="inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-black text-slate-500 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-50 hover:text-slate-800"
+          href={`/admin/barang/${item.id}`}
+        >
+          Batal
+        </Link>
+        <Button
+          className="h-11 min-w-[14rem] rounded-xl bg-[#006747] px-6 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.7)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#005238] active:scale-[0.98]"
+          form={editFormId}
+          type="submit"
+        >
+          <Save className="size-4" strokeWidth={2.2} />
+          Simpan Perubahan
+        </Button>
+      </footer>
     </div>
   );
 }

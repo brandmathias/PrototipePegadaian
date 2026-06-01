@@ -71,6 +71,7 @@ type DashboardShellProps = {
   sidebarUpdatedAt?: string;
   showHeaderSearch?: boolean;
   showThemeToggle?: boolean;
+  forceWhiteShell?: boolean;
   currentUser?: {
     name: string;
     role: AuthRole;
@@ -121,6 +122,7 @@ export function DashboardShell({
   sidebarUpdatedAt,
   showHeaderSearch = true,
   showThemeToggle = true,
+  forceWhiteShell = false,
   currentUser,
   profileHref,
   children
@@ -353,7 +355,8 @@ export function DashboardShell({
   return (
     <div
       className={cn(
-        "min-h-dvh bg-[#efefed] text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
+        "min-h-dvh bg-white text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
+        forceWhiteShell && "bg-white dark:bg-white",
         theme === "dark" && "dark"
       )}
       data-admin-shell="true"
@@ -455,8 +458,8 @@ export function DashboardShell({
         ) : null}
       </aside>
 
-      <div className="relative min-h-dvh">
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-[#f6f5f2]/92 backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
+      <div className={cn("relative min-h-dvh", forceWhiteShell && "bg-white")}>
+        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/95 backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
           <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex min-w-0 items-start gap-3 sm:items-center lg:gap-5">
@@ -475,23 +478,36 @@ export function DashboardShell({
                       </p>
                     ) : null}
                     {headerLead ? (
-                      <p className={cn("text-[1rem] font-medium text-[#334155] dark:text-slate-200/82", headerBrandLabel ? "mt-1" : "")}>
+                      <p
+                        className={cn(
+                          "inline-flex w-fit items-center rounded-full bg-[#eef4ef] px-3 py-1 text-[0.58rem] font-black uppercase tracking-[0.28em] text-[#0a6a49]/68 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:bg-white/8 dark:text-emerald-100/68",
+                          headerBrandLabel ? "mt-1.5" : "mt-0.5"
+                        )}
+                      >
                         {headerLead}
                       </p>
                     ) : null}
                     <div
                       className={cn(
-                        "min-w-0 flex flex-col gap-1",
-                        headerBrandLabel || headerLead ? "mt-1" : "",
-                        !headerLead && "lg:flex-row lg:items-center lg:gap-4"
+                        "min-w-0 flex flex-col gap-2",
+                        headerBrandLabel || headerLead ? "mt-1.5" : "",
+                        !headerLead && "lg:flex-row lg:items-center lg:gap-6"
                       )}
                     >
-                      <h1 className="min-w-0 truncate text-balance font-headline text-[1.7rem] font-black tracking-tight text-[#085a41] dark:text-emerald-100 sm:text-[2rem]">
+                      <h1 className="min-w-0 truncate text-balance font-headline text-[1.75rem] font-black tracking-[-0.04em] text-[#085a41] dark:text-emerald-100 sm:text-[2.08rem]">
                         {headerTitle ?? title}
                       </h1>
-                      {headerLead ? null : <div className="hidden h-7 w-px bg-black/10 dark:bg-white/10 lg:block" />}
+                      {headerLead ? null : <div className="hidden h-9 w-px bg-[linear-gradient(180deg,rgba(8,90,65,0.06),rgba(8,90,65,0.2),rgba(8,90,65,0.06))] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.16),rgba(255,255,255,0.04))] lg:block" />}
                       {(headerSubtitle ?? subtitle) ? (
-                        <p className="text-sm text-foreground/68 dark:text-slate-200/68 sm:text-base">{headerSubtitle ?? subtitle}</p>
+                        headerLead ? (
+                          <p className="min-w-0 text-pretty font-headline text-[0.9rem] font-bold uppercase leading-[1.15] tracking-[0.16em] text-[#355346] dark:text-slate-100/76 sm:text-[0.98rem]">
+                            {headerSubtitle ?? subtitle}
+                          </p>
+                        ) : (
+                          <p className="min-w-0 max-w-[26rem] text-pretty font-headline text-[1rem] font-semibold leading-[1.25] tracking-[-0.018em] text-[#31453a] dark:text-slate-100/78 sm:text-[1.08rem]">
+                            {headerSubtitle ?? subtitle}
+                          </p>
+                        )
                       ) : null}
                     </div>
                   </div>

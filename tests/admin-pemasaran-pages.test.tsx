@@ -239,9 +239,16 @@ describe("admin pemasaran pages", () => {
           endingAt: new Date("2026-05-06T12:00:00+08:00").toISOString(),
           participants: 3,
           basePrice: 10000000,
+          appraisalValue: 11000000,
+          description: "Cincin emas dengan kondisi appraisal baik.",
           finalPrice: null,
           winner: null,
           visibility: "TERKUNCI",
+          specifications: {
+            jenisEmas: "Cincin",
+            kadarEmas: "24K",
+            berat: "3,20 gram"
+          },
           note: "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati.",
           media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
           primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
@@ -251,6 +258,16 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/tetap tersembunyi sampai deadline selesai/i)).toBeInTheDocument();
+    expect(screen.getByText(/informasi jaminan utama/i)).toBeInTheDocument();
+    expect(screen.getByText(/aktivitas lelang live/i)).toBeInTheDocument();
+    expect(screen.getByText(/deskripsi barang/i)).toBeInTheDocument();
+    expect(screen.getByText(/cincin emas dengan kondisi appraisal baik/i)).toBeInTheDocument();
+    expect(screen.queryByText(/24K/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /lihat detail/i }));
+    expect(screen.getByText(/detail barang/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/cincin emas dengan kondisi appraisal baik/i).length).toBeGreaterThan(1);
+    expect(screen.getByText(/24K/i)).toBeInTheDocument();
+    expect(screen.getByText(/3,20 gram/i)).toBeInTheDocument();
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
   });
 

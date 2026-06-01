@@ -576,7 +576,7 @@ function CatalogLotCard({
         <div className="mt-2.5 flex min-h-[4.2rem] flex-wrap content-start gap-1.5 overflow-hidden text-[0.7rem] font-bold text-black/58">
           {metadataItems.map((item) => (
             <span
-              className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-[#f4f3ef] px-2 py-[0.34rem]"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-black/8 bg-white px-2 py-[0.34rem]"
               key={`${lot.id}-${item.label}`}
             >
               <span className="shrink-0 text-[#075f42]">{item.icon}</span>
@@ -972,14 +972,14 @@ export function CatalogPage({
   } as CSSProperties;
 
   return (
-    <div className="bg-[#f7f6f1]">
+    <div className="bg-white">
       <section
         className="relative isolate overflow-hidden bg-[image:var(--catalog-hero-image)] bg-[length:100%_auto] bg-bottom bg-no-repeat"
         style={heroStyle}
       >
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.76)_42%,rgba(255,255,255,0.50)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(247,246,241,0.94)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-14 rounded-t-[2.4rem] border-t border-black/6 bg-[#fbfaf6]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-14 rounded-t-[2.4rem] border-t border-black/6 bg-white" />
         <div className="container grid gap-8 pb-20 pt-12 lg:grid-cols-[0.82fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
           <div className="max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">Katalog Premium</p>
@@ -1010,7 +1010,7 @@ export function CatalogPage({
       <section className="container relative z-10 -mt-14 pb-12 pt-0">
         <div className="overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_30px_80px_-62px_rgba(8,69,50,0.48)]">
           <div className="grid lg:grid-cols-[18rem_1fr]">
-            <aside className="border-b border-black/8 bg-[#fbfaf6] p-5 lg:border-b-0 lg:border-r">
+            <aside className="border-b border-black/8 bg-white p-5 lg:border-b-0 lg:border-r">
               <div className="mb-5 flex items-center justify-between gap-3">
                 <h2 className="font-headline text-xl font-black text-[#14211b]">Filter</h2>
                 <button
@@ -1134,7 +1134,7 @@ export function CatalogPage({
                     <span className="sr-only">Cari katalog</span>
                     <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-black/48" />
                     <input
-                      className="h-14 w-full rounded-md border border-black/8 bg-[#f4f3ef] pl-12 pr-20 text-sm font-semibold text-[#14211b] outline-none transition duration-500 placeholder:text-black/42 focus:border-[#0b6a49]/24 focus:bg-white focus:ring-4 focus:ring-[#0b6a49]/8"
+                      className="h-14 w-full rounded-md border border-black/8 bg-white pl-12 pr-20 text-sm font-semibold text-[#14211b] outline-none transition duration-500 placeholder:text-black/42 focus:border-[#0b6a49]/24 focus:bg-white focus:ring-4 focus:ring-[#0b6a49]/8"
                       placeholder="Cari lot, kode barang, kategori, atau unit..."
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
@@ -1152,7 +1152,7 @@ export function CatalogPage({
                       value={sortBy}
                       onValueChange={(value) => setSortBy(value as SortMode)}
                     />
-                    <div className="inline-flex rounded-md bg-[#f4f3ef] p-1">
+                    <div className="inline-flex rounded-md border border-black/8 bg-white p-1">
                       <button
                         aria-label="Tampilan grid"
                         aria-pressed={viewMode === "grid"}
@@ -1191,7 +1191,7 @@ export function CatalogPage({
                         </ActiveChip>
                       ))
                     ) : (
-                      <span className="rounded-md bg-[#f4f3ef] px-3 py-1.5 text-xs font-bold text-black/44">
+                      <span className="rounded-md border border-black/8 bg-white px-3 py-1.5 text-xs font-bold text-black/44">
                         Semua barang
                       </span>
                     )}
@@ -1212,7 +1212,7 @@ export function CatalogPage({
                 </div>
               </div>
 
-              <div className="bg-[#fbfaf6] p-5">
+              <div className="bg-white p-5">
                 <div
                   className={cn(
                     "grid gap-4",

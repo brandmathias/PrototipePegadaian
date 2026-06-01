@@ -2,13 +2,14 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 export type AdminSelectOption = {
   value: string | number;
   label: string;
+  icon?: LucideIcon;
 };
 
 export function AdminSelect({
@@ -37,6 +38,7 @@ export function AdminSelect({
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
   const normalizedValue = String(value);
   const selectedOption = options.find((option) => String(option.value) === normalizedValue) ?? options[0];
+  const SelectedIcon = selectedOption?.icon;
 
   useEffect(() => {
     if (!open) return;
@@ -155,7 +157,10 @@ export function AdminSelect({
         ref={buttonRef}
         type="button"
       >
-        <span className="whitespace-nowrap pr-2 text-left">{selectedOption?.label ?? ""}</span>
+        <span className="flex min-w-0 items-center gap-2 pr-2 text-left">
+          {SelectedIcon ? <SelectedIcon className="size-4 shrink-0 text-current" strokeWidth={2} /> : null}
+          <span className="truncate">{selectedOption?.label ?? ""}</span>
+        </span>
         <span className="admin-select-icon">
           <ChevronDown className={cn("size-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]", open && "rotate-180")} />
         </span>
@@ -172,6 +177,7 @@ export function AdminSelect({
           >
           {options.map((option, index) => {
             const active = String(option.value) === normalizedValue;
+            const OptionIcon = option.icon;
 
             return (
               <button
@@ -184,7 +190,10 @@ export function AdminSelect({
                 type="button"
                 onClick={() => selectValue(String(option.value))}
               >
-                <span className="whitespace-nowrap pr-6 text-left">{option.label}</span>
+                <span className="flex min-w-0 items-center gap-2 pr-6 text-left">
+                  {OptionIcon ? <OptionIcon className="size-4 shrink-0 text-current" strokeWidth={2} /> : null}
+                  <span className="truncate">{option.label}</span>
+                </span>
                 <Check className="admin-select-check size-4" />
               </button>
             );

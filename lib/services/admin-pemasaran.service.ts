@@ -228,7 +228,15 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     return createdMarketing;
   });
 
-  return serializeAdminPemasaran(created, { lotName: item.name });
+  return serializeAdminPemasaran(created, {
+    lotName: item.name,
+    lotCode: item.code,
+    lotCategory: item.category,
+    lotCondition: item.condition,
+    lotDescription: item.description,
+    lotAppraisalValue: item.appraisalValue,
+    lotSpecifications: item.specifications
+  });
 }
 
 export async function listAdminPemasaran(unitId: string) {
@@ -261,6 +269,9 @@ export async function listAdminPemasaran(unitId: string) {
       lotCode: row.item.code,
       lotCategory: row.item.category,
       lotCondition: row.item.condition,
+      lotDescription: row.item.description,
+      lotAppraisalValue: row.item.appraisalValue,
+      lotSpecifications: row.item.specifications,
       media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
       winnerName: row.winnerName ?? null,
@@ -320,6 +331,9 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     lotCode: row.item.code,
     lotCategory: row.item.category,
     lotCondition: row.item.condition,
+    lotDescription: row.item.description,
+    lotAppraisalValue: row.item.appraisalValue,
+    lotSpecifications: row.item.specifications,
     media: mediaByBarangId.get(row.item.id) ?? [],
     bidCount: Number(row.bidCount ?? 0),
     winnerName: row.winnerName ?? null,

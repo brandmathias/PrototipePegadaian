@@ -108,6 +108,14 @@ describe("admin unit serializers", () => {
       },
       {
         lotName: "Cincin",
+        lotCategory: "perhiasan",
+        lotCondition: "baik",
+        lotAppraisalValue: "11000000",
+        lotSpecifications: {
+          jenisEmas: "Cincin",
+          kadarEmas: "24K",
+          berat: "3,20 gram"
+        },
         bidCount: 2,
         bids: [
           {
@@ -129,6 +137,12 @@ describe("admin unit serializers", () => {
 
     expect(auction.visibility).toBe("TERKUNCI");
     expect(auction.finalPrice).toBeNull();
+    expect(auction.appraisalValue).toBe(11000000);
+    expect(auction.specifications).toEqual({
+      jenisEmas: "Cincin",
+      kadarEmas: "24K",
+      berat: "3,20 gram"
+    });
     expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
     expect(auction.bids).toEqual([]);
   });
