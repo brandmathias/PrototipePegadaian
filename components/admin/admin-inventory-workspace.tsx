@@ -19,6 +19,9 @@ import {
   FilePlus2,
   Gavel,
   Gem,
+  Landmark,
+  Layers3,
+  ListChecks,
   Medal,
   MonitorSmartphone,
   Package2,
@@ -27,6 +30,7 @@ import {
   ReceiptText,
   ScrollText,
   Search,
+  ShieldCheck,
   UserRound
 } from "lucide-react";
 
@@ -160,16 +164,6 @@ function getHistoryCategoryDetail(entry: AdminBarangHistoryEntry) {
   return preferred?.value ?? formatDisplayLabel(entry.condition ?? "");
 }
 
-function getHistoryRoleLabel(role: string | null | undefined) {
-  const normalized = String(role ?? "").toLowerCase();
-
-  if (normalized.includes("admin_unit")) return "ADMIN UNIT";
-  if (normalized.includes("admin")) return "ADMIN";
-  if (normalized.includes("super")) return "SUPER ADMIN";
-  if (normalized.includes("buyer")) return "BUYER";
-  return "OPERATOR";
-}
-
 function parseHistoryDate(value: string | null | undefined) {
   if (!value) return null;
   const parsed = new Date(value);
@@ -275,16 +269,15 @@ function InventoryHistoryList({
 
   return (
     <div>
-      <div className="hidden border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.64rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[7.4rem_minmax(0,1.25fr)_9.2rem_minmax(0,0.88fr)_minmax(0,0.88fr)_11rem_6.4rem]">
-        <div className="px-4 py-4">Status</div>
-        <div className="px-4 py-4">Komoditas Jaminan</div>
-        <div className="px-4 py-4">Kategori</div>
-        <div className="px-4 py-4">Nasabah Pemilik</div>
-        <div className="px-4 py-4">Aktor Internal</div>
-        <div className="px-4 py-4">
+      <div className="hidden border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[7.2rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]">
+        <div className="px-3.5 py-3.5">Status</div>
+        <div className="px-3.5 py-3.5">Informasi Barang</div>
+        <div className="px-3.5 py-3.5">Kategori</div>
+        <div className="px-3.5 py-3.5">Nasabah Pemilik</div>
+        <div className="px-3.5 py-3.5">
           <button
             aria-label={`Urutkan Waktu Proses ${sortDirection === "desc" ? "terlama dulu" : "terbaru dulu"}`}
-            className="inline-flex items-center gap-1.5 rounded-lg text-[#0f263c] outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
+            className="inline-flex items-center gap-1.5 rounded-lg text-inherit outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
             type="button"
             onClick={onSortTime}
           >
@@ -292,7 +285,7 @@ function InventoryHistoryList({
             <TimeSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
           </button>
         </div>
-        <div className="px-4 py-4 text-right">Aksi</div>
+        <div className="px-3.5 py-3.5 text-right">Aksi</div>
       </div>
       {entries.length > 0 ? (
         entries.map((entry) => {
@@ -300,11 +293,10 @@ function InventoryHistoryList({
           const CategoryIcon = getCategoryIcon(entry.category);
           const categoryLabel = formatDisplayLabel(entry.category ?? "lainnya");
           const categoryDetail = getHistoryCategoryDetail(entry);
-          const actorRole = getHistoryRoleLabel(entry.actorRole);
 
           return (
             <div
-              className="grid gap-4 border-b border-[#e4ece7] px-4 py-4 text-[0.8rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[7.4rem_minmax(0,1.25fr)_9.2rem_minmax(0,0.88fr)_minmax(0,0.88fr)_11rem_6.4rem] lg:items-center"
+              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[7.2rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem] lg:items-center"
               key={entry.id}
             >
               <div className="flex min-w-0 items-start gap-3 lg:block">
@@ -367,14 +359,7 @@ function InventoryHistoryList({
               </div>
 
               <div className="min-w-0">
-                <p className="truncate font-black text-[#13211c]">{entry.actorName}</p>
-                <span className="mt-1 inline-flex max-w-full truncate rounded-full border border-[#d7eadf] bg-[#eff8f2] px-2 py-0.5 text-[0.58rem] font-black uppercase tracking-[0.11em] text-[#0a6a49]">
-                  {actorRole}
-                </span>
-              </div>
-
-              <div className="min-w-0">
-                <p className="font-mono text-[0.78rem] font-semibold leading-5 text-[#334155]">{entry.createdAtLabel}</p>
+                <p className="text-[0.82rem] font-black leading-5 text-[#13211c]">{entry.createdAtLabel}</p>
                 <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
               </div>
 
@@ -397,6 +382,235 @@ function InventoryHistoryList({
         </div>
       )}
     </div>
+  );
+}
+
+function HistoryPrintDocument({
+  actionFilter,
+  categoryFilter,
+  entries,
+  generatedAtLabel,
+  selectedDate,
+  sortDirection,
+  timelineFilter,
+  totalEntries
+}: {
+  actionFilter: "SEMUA" | AdminBarangHistoryEntry["actionKey"];
+  categoryFilter: string;
+  entries: AdminBarangHistoryEntry[];
+  generatedAtLabel: string;
+  selectedDate: Date | null;
+  sortDirection: "asc" | "desc";
+  timelineFilter: TimelineFilter;
+  totalEntries: number;
+}) {
+  const actionStats = historyFilterOptions
+    .filter((option) => option.value !== "SEMUA")
+    .map((option) => ({
+      label: option.label,
+      value: entries.filter((entry) => entry.actionKey === option.value).length
+    }));
+  const activeActionLabel =
+    historyFilterOptions.find((option) => option.value === actionFilter)?.label ?? "Semua Proses";
+  const activeCategoryLabel = categoryFilter === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(categoryFilter);
+  const sortLabel = sortDirection === "desc" ? "Terbaru ke terlama" : "Terlama ke terbaru";
+  const reportNumber = `RWB-${new Date().getFullYear()}-${String(totalEntries).padStart(3, "0")}`;
+
+  return (
+    <article
+      className="admin-history-print-document hidden bg-white text-[#10251c] print:block"
+      data-testid="admin-history-print-document"
+    >
+      <header className="break-inside-avoid rounded-[1.45rem] border border-[#c2ddc8] bg-[linear-gradient(100deg,#00513d_0%,#056a49_58%,#b29216_100%)] px-6 py-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+        <div className="grid gap-5 print:grid-cols-[minmax(0,1fr)_15.75rem] print:items-start lg:grid-cols-[minmax(0,1fr)_15.75rem] lg:items-start">
+          <div className="flex min-w-0 items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-white text-[#0a6a49]">
+              <Landmark className="size-6" />
+            </span>
+            <div className="min-w-0">
+              <p className="whitespace-normal break-words text-[0.58rem] font-black uppercase leading-4 tracking-[0.32em] text-white/82">
+                Pegadaian Lelang
+              </p>
+              <h1 className="mt-2 whitespace-normal break-words font-headline text-[1.58rem] font-black leading-tight tracking-[-0.02em]">
+                Laporan Riwayat Barang
+              </h1>
+              <p className="mt-1.5 max-w-[46rem] whitespace-normal break-words text-[0.76rem] font-semibold leading-5 text-white/88">
+                Dokumen audit aktivitas barang admin unit berdasarkan filter, kategori, dan urutan waktu yang sedang
+                aktif.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative rounded-[1rem] bg-[linear-gradient(135deg,rgba(245,246,198,0.30),rgba(185,165,58,0.36))] p-3 text-[0.66rem] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] ring-1 ring-white/18">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-7 rounded-t-[1rem] bg-[rgba(255,255,255,0.14)]" />
+            <div className="relative">
+              <p className="whitespace-normal break-words text-[0.57rem] font-black uppercase leading-4 tracking-[0.22em] text-white">
+                Dokumen Audit Unit
+              </p>
+              <dl className="mt-2.5 space-y-2">
+                <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+                  <dt className="text-white/74">Nomor</dt>
+                  <dd className="break-words text-right font-black text-white">{reportNumber}</dd>
+                </div>
+                <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+                  <dt className="text-white/74">Dicetak</dt>
+                  <dd className="break-words text-right font-black text-white">{generatedAtLabel}</dd>
+                </div>
+                <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+                  <dt className="text-white/74">Data</dt>
+                  <dd className="break-words text-right font-black text-white">
+                    {entries.length} dari {totalEntries}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section className="mt-3 grid break-inside-avoid gap-3 print:grid-cols-4 lg:grid-cols-4">
+        {[
+          { icon: ListChecks, label: "Catatan Dicetak", value: entries.length },
+          { icon: Layers3, label: "Total Aktivitas", value: totalEntries },
+          { icon: ShieldCheck, label: "Proses Aktif", value: activeActionLabel },
+          { icon: Clock3, label: "Urutan Waktu", value: sortLabel }
+        ].map((metric) => {
+          const Icon = metric.icon;
+
+          return (
+            <div className="rounded-[1rem] border border-[#d7e8dd] bg-[#fbfdfb] px-4 py-3" key={metric.label}>
+              <div className="flex items-center gap-2 text-[#0a6a49]">
+                <Icon className="size-3.5 shrink-0" />
+                <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#52655d]">
+                  {metric.label}
+                </p>
+              </div>
+              <p className="mt-2 whitespace-normal break-words text-[0.98rem] font-black leading-snug text-[#13211c]">
+                {metric.value}
+              </p>
+            </div>
+          );
+        })}
+      </section>
+
+      <section className="mt-3 break-inside-avoid rounded-[1rem] border border-[#d7e8dd] bg-[#fbfdfb] px-4 py-3">
+        <div className="grid gap-4 print:grid-cols-[1fr_1fr_1fr_1.35fr] lg:grid-cols-[1fr_1fr_1fr_1.35fr]">
+          <div>
+            <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#6c7c73]">
+              Periode
+            </p>
+            <p className="mt-1 whitespace-normal break-words text-[0.72rem] font-bold leading-5 text-[#13211c]">
+              {timelineLabel(timelineFilter, selectedDate)}
+            </p>
+          </div>
+          <div>
+            <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#6c7c73]">
+              Proses
+            </p>
+            <p className="mt-1 whitespace-normal break-words text-[0.72rem] font-bold leading-5 text-[#13211c]">
+              {activeActionLabel}
+            </p>
+          </div>
+          <div>
+            <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#6c7c73]">
+              Kategori
+            </p>
+            <p className="mt-1 whitespace-normal break-words text-[0.72rem] font-bold leading-5 text-[#13211c]">
+              {activeCategoryLabel}
+            </p>
+          </div>
+          <div>
+            <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#6c7c73]">
+              Komposisi
+            </p>
+            <p className="mt-1 whitespace-normal break-words text-[0.72rem] font-bold leading-5 text-[#13211c]">
+              {actionStats.map((stat) => `${stat.label}: ${stat.value}`).join(" | ")}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-2xl border border-[#d7e8dd]">
+        <table className="w-full table-fixed border-collapse text-left">
+          <thead className="bg-[#eff7f1] text-[0.58rem] uppercase tracking-[0.16em] text-[#344c40]">
+            <tr>
+              <th className="w-[3rem] px-3 py-3">#</th>
+              <th className="w-[8.8rem] px-3 py-3">Status</th>
+              <th className="px-3 py-3">Informasi Barang</th>
+              <th className="w-[10.5rem] px-3 py-3">Kategori</th>
+              <th className="w-[11.5rem] px-3 py-3">Nasabah</th>
+              <th className="w-[14.5rem] px-3 py-3">Waktu Proses</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#dfe9e3] text-[0.72rem]">
+            {entries.length > 0 ? (
+              entries.map((entry, index) => (
+                <tr className="break-inside-avoid bg-white align-top" key={entry.id}>
+                  <td className="px-3 py-3 font-black text-[#0a6a49]">{index + 1}</td>
+                  <td className="px-3 py-3">
+                    <span
+                      className={cn(
+                        "inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
+                        historyToneClasses[entry.actionTone]
+                      )}
+                    >
+                      {entry.actionLabel}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3">
+                    <p className="whitespace-normal break-words font-black text-[#13211c]">{entry.barangName}</p>
+                    <p className="mt-1 whitespace-normal break-words font-mono text-[0.62rem] font-black text-[#52655d]">
+                      {entry.barangCode}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <p className="whitespace-normal break-words font-black text-[#13211c]">
+                      {formatDisplayLabel(entry.category ?? "lainnya")}
+                    </p>
+                    <p className="mt-1 whitespace-normal break-words text-[0.68rem] font-semibold text-[#52655d]">
+                      {getHistoryCategoryDetail(entry) || "-"}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <p className="whitespace-normal break-words font-black text-[#13211c]">{entry.ownerName}</p>
+                    <p className="mt-1 whitespace-normal break-words text-[0.66rem] font-semibold text-[#52655d]">
+                      {entry.customerNumber || "-"}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <p className="whitespace-normal break-words font-black leading-5 text-[#13211c]">
+                      {entry.createdAtLabel}
+                    </p>
+                    <p className="mt-1 whitespace-normal break-words text-[0.68rem] font-semibold leading-5 text-[#52655d]">
+                      {entry.note}
+                    </p>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td className="px-4 py-8 text-center text-sm font-bold text-[#52655d]" colSpan={6}>
+                  Tidak ada catatan yang cocok dengan filter laporan.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      <footer className="mt-4 grid gap-5 border-t border-[#d7e8dd] pt-4 text-[0.68rem] font-semibold text-[#52655d] lg:grid-cols-[minmax(0,1fr)_14rem]">
+        <p className="whitespace-normal break-words leading-5">
+          Dokumen ini dihasilkan otomatis dari sistem Pegadaian Lelang berdasarkan catatan riwayat barang yang
+          tersimpan pada unit aktif.
+        </p>
+        <div className="text-right">
+          <p className="text-[0.62rem] font-black uppercase tracking-[0.2em] text-[#0a6a49]">Admin Unit</p>
+          <div className="mt-10 border-t border-[#9fb8ab] pt-2 text-[0.58rem] font-semibold text-[#6c7c73]">
+            Tanda tangan / validasi
+          </div>
+        </div>
+      </footer>
+    </article>
   );
 }
 
@@ -630,7 +844,9 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   const [calendarMonth, setCalendarMonth] = useState(() => getInitialCalendarMonth(history));
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [printReportReady, setPrintReportReady] = useState(false);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const printDocumentTitleRef = useRef<string | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -705,12 +921,38 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   );
   const calendarCells = useMemo(() => buildCalendarCells(calendarMonth), [calendarMonth]);
   const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(calendarMonth);
+  const generatedAtLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(new Date()),
+    []
+  );
   const hasActiveFilter =
     query.trim() ||
     actionFilter !== "SEMUA" ||
     categoryFilter !== "SEMUA" ||
     timelineFilter !== "all" ||
     selectedDate;
+
+  useEffect(() => {
+    if (!printReportReady) return;
+
+    function clearPrintReport() {
+      if (printDocumentTitleRef.current !== null) {
+        document.title = printDocumentTitleRef.current;
+        printDocumentTitleRef.current = null;
+      }
+      setPrintReportReady(false);
+    }
+
+    window.addEventListener("afterprint", clearPrintReport);
+
+    return () => {
+      window.removeEventListener("afterprint", clearPrintReport);
+    };
+  }, [printReportReady]);
 
   function resetFilters() {
     setQuery("");
@@ -728,9 +970,27 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
     window.setTimeout(() => setCopiedId(null), 1200);
   }
 
+  function printHistoryReport() {
+    setPrintReportReady(true);
+    printDocumentTitleRef.current = document.title;
+    document.title = " ";
+
+    window.setTimeout(() => {
+      try {
+        window.print();
+      } finally {
+        if (printDocumentTitleRef.current !== null) {
+          document.title = printDocumentTitleRef.current;
+          printDocumentTitleRef.current = null;
+        }
+      }
+    }, 0);
+  }
+
   return (
-    <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd]">
-      <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
+    <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd] print:rounded-none print:bg-white print:shadow-none print:ring-0">
+      <div className="print:hidden">
+        <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
         <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_16rem_12rem_12rem_6.4rem_6.4rem]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
@@ -889,7 +1149,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
           <button
             className="inline-flex h-12 items-center justify-center gap-2 rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:text-[#006747]"
             type="button"
-            onClick={() => window.print()}
+            onClick={printHistoryReport}
           >
             <Printer className="size-4" />
             Print
@@ -907,21 +1167,34 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
         </div>
       </div>
 
-      <InventoryHistoryList
-        copiedId={copiedId}
-        entries={pagination.visibleItems}
-        sortDirection={timeSortDirection}
-        onCopy={copyCode}
-        onSortTime={() => setTimeSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
-      />
-      <AdminPaginationFooter
-        itemLabel="catatan"
-        pageIndex={pagination.pageIndex}
-        pageSize={pagination.pageSize}
-        totalItems={pagination.totalItems}
-        onPageIndexChange={pagination.setPageIndex}
-        onPageSizeChange={pagination.setPageSize}
-      />
+        <InventoryHistoryList
+          copiedId={copiedId}
+          entries={pagination.visibleItems}
+          sortDirection={timeSortDirection}
+          onCopy={copyCode}
+          onSortTime={() => setTimeSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
+        />
+        <AdminPaginationFooter
+          itemLabel="catatan"
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          totalItems={pagination.totalItems}
+          onPageIndexChange={pagination.setPageIndex}
+          onPageSizeChange={pagination.setPageSize}
+        />
+      </div>
+      {printReportReady ? (
+        <HistoryPrintDocument
+          actionFilter={actionFilter}
+          categoryFilter={categoryFilter}
+          entries={sortedHistory}
+          generatedAtLabel={generatedAtLabel}
+          selectedDate={selectedDate}
+          sortDirection={timeSortDirection}
+          timelineFilter={timelineFilter}
+          totalEntries={history.length}
+        />
+      ) : null}
     </section>
   );
 }

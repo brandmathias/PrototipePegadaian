@@ -1,5 +1,6 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
 
 import {
   AdminInventoryHistoryWorkspace,
@@ -231,6 +232,103 @@ describe("AdminInventoryHistoryWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /urutkan waktu proses/i }));
 
     expect(oldRow.compareDocumentPosition(newRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("renders the history ledger with compact public-facing columns", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-layout",
+            barangId: "barang-layout",
+            barangCode: "BRG-LAYOUT",
+            barangName: "Ipad Terbaru",
+            category: "elektronik",
+            condition: "baik",
+            description: "Tablet Apple iPad Pro 11-inch.",
+            specifications: { jenis: "tablet", merek: "Apple" },
+            ownerName: "Budi Santoso",
+            customerNumber: "0812-3456-7890",
+            actionKey: "input_baru",
+            actionLabel: "Input Baru",
+            actionTone: "default",
+            note: "Barang masuk dari unit.",
+            actorName: "Operator Arsip",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-31T01:12:33.000Z",
+            createdAtLabel: "31 Mei 2026, 09:12:33 WIB"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText("Informasi Barang")).toBeInTheDocument();
+    expect(screen.queryByText("Komoditas Jaminan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Aktor Internal")).not.toBeInTheDocument();
+    expect(screen.queryByText("Operator Arsip")).not.toBeInTheDocument();
+    expect(screen.getByText("31 Mei 2026, 09:12:33 WIB")).not.toHaveClass("font-mono");
+  });
+
+  it("prepares a same-page printable audit report before opening native print preview", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-print",
+            barangId: "barang-print",
+            barangCode: "BRG-PRINT",
+            barangName: "Ipad Terbaru Dengan Nama Panjang",
+            category: "elektronik",
+            condition: "baik",
+            description: "Tablet Apple iPad Pro 11-inch dengan catatan audit panjang yang harus tetap terlihat.",
+            specifications: { jenis: "tablet", merek: "Apple" },
+            ownerName: "Budi Santoso",
+            customerNumber: "0812-3456-7890",
+            actionKey: "dipasarkan",
+            actionLabel: "Dipasarkan",
+            actionTone: "success",
+            note: "Barang dipublikasikan ke katalog dengan catatan proses yang cukup panjang.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-01T13:47:00.000Z",
+            createdAtLabel: "1 Jun 2026, 21.47 WIB"
+          }
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /^print$/i }));
+
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    expect(openSpy).not.toHaveBeenCalled();
+
+    const report = screen.getByTestId("admin-history-print-document");
+    expect(report).toHaveTextContent("Laporan Riwayat Barang");
+    expect(report).toHaveTextContent("Informasi Barang");
+    expect(report).toHaveTextContent("Ipad Terbaru Dengan Nama Panjang");
+    expect(report).not.toHaveTextContent("Tablet Apple iPad Pro 11-inch dengan catatan audit panjang yang harus tetap terlihat.");
+    expect(report).toHaveTextContent("Barang dipublikasikan ke katalog dengan catatan proses yang cukup panjang.");
+    expect(report).toHaveTextContent("Dokumen ini dihasilkan otomatis dari sistem Pegadaian Lelang");
+    expect(report).toHaveTextContent("Admin Unit");
+    expect(report).not.toHaveTextContent("Aktor Internal");
+
+    const reportClasses = Array.from(report.querySelectorAll("[class]"))
+      .map((element) => element.getAttribute("class") ?? "")
+      .join(" ");
+    expect(reportClasses).not.toMatch(/\b(truncate|line-clamp|overflow-hidden)\b/);
+    expect(reportClasses).toContain("print:grid-cols-[minmax(0,1fr)_15.75rem]");
+    expect(reportClasses).toContain("print:grid-cols-4");
+    expect(reportClasses).toContain("print:grid-cols-[1fr_1fr_1fr_1.35fr]");
+    expect(reportClasses).toContain("bg-[linear-gradient(100deg,#00513d_0%,#056a49_58%,#b29216_100%)]");
+    expect(reportClasses).toContain(
+      "bg-[linear-gradient(135deg,rgba(245,246,198,0.30),rgba(185,165,58,0.36))]"
+    );
+
+    printSpy.mockRestore();
+    openSpy.mockRestore();
   });
 
   it("filters history by synced item categories", () => {

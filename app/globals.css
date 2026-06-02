@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@page admin-history-report {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
 :root {
   --font-inter:
     "Segoe UI", "Helvetica Neue", Arial, system-ui, -apple-system, BlinkMacSystemFont,
@@ -718,6 +723,14 @@
   }
 
   @media print {
+    .admin-history-print-document {
+      page: admin-history-report;
+      color-scheme: light;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      min-height: 100vh;
+    }
+
     .buyer-route-transition {
       animation: none !important;
       transform: none !important;

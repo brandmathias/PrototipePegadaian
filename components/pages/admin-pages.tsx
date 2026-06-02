@@ -600,8 +600,8 @@ export function AdminInventoryHistoryPage({
   }>;
 }) {
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100dvh-8rem)] space-y-5 bg-[#ffffff] px-4 py-5 sm:-mx-6 sm:-my-6 sm:px-6 sm:py-6 lg:-mx-8 lg:-my-8 lg:px-8 lg:py-8">
-      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] sm:px-7 lg:px-8">
+    <div className="-mx-4 -my-5 min-h-[calc(100dvh-8rem)] space-y-5 bg-[#ffffff] px-4 py-5 print:m-0 print:min-h-0 print:space-y-0 print:p-0 sm:-mx-6 sm:-my-6 sm:px-6 sm:py-6 lg:-mx-8 lg:-my-8 lg:px-8 lg:py-8">
+      <section className="relative overflow-hidden rounded-[2.35rem] bg-[radial-gradient(circle_at_top_left,rgba(193,255,226,0.95),transparent_28%),linear-gradient(135deg,#fffdfa_0%,#f6f4ee_42%,#ffffff_100%)] px-6 py-6 shadow-[0_28px_90px_-72px_rgba(8,69,50,0.42)] print:hidden sm:px-7 lg:px-8">
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[28rem] bg-[radial-gradient(circle_at_center,rgba(9,111,78,0.12),transparent_62%)] lg:block" />
         <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-start gap-4 md:items-center">
