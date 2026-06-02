@@ -189,7 +189,22 @@ export function DashboardShell({
     }
   };
 
+  const isHrefActive = (href: string): boolean =>
+    href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+
+  const hasMoreSpecificTopLevelMatch = (item: NavItem): boolean =>
+    nav.some(
+      (otherItem) =>
+        otherItem.href !== item.href &&
+        otherItem.href.startsWith(`${item.href}/`) &&
+        isHrefActive(otherItem.href)
+    );
+
   const isNavItemActive = (item: NavItem): boolean => {
+    if (hasMoreSpecificTopLevelMatch(item)) {
+      return false;
+    }
+
     if (item.children?.length) {
       return (
         pathname === item.href ||
@@ -198,9 +213,7 @@ export function DashboardShell({
       );
     }
 
-    return item.href === "/admin"
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    return isHrefActive(item.href);
   };
 
   const renderBadge = (item: Pick<NavItem, "badge" | "badgeTone">) => {

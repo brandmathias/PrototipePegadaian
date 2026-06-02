@@ -130,7 +130,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/pantau pemenang yang belum menyelesaikan pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /perhatian diperlukan/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat transaksi/i })).toHaveAttribute("href", "/admin/transaksi");
+    expect(screen.getByRole("link", { name: /lihat pemasaran/i })).toHaveAttribute("href", "/admin/pemasaran");
   });
 
   it("allows toggling checklist items interactively", () => {

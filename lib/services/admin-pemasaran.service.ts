@@ -3,7 +3,7 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
-import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, users } from "@/lib/db/schema";
+import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, units, users } from "@/lib/db/schema";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
@@ -258,15 +258,18 @@ export async function listAdminPemasaran(unitId: string) {
     .select({
       marketing: pemasaran,
       item: barang,
+      unitName: units.name,
+      unitAddress: units.address,
       bidCount: sql<number>`count(${bids.id})`,
       winnerName: users.name
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
     .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
     .leftJoin(users, eq(users.id, pemasaran.winnerId))
     .where(eq(barang.unitId, unitId))
-    .groupBy(pemasaran.id, barang.id, users.name)
+    .groupBy(pemasaran.id, barang.id, units.id, users.name)
     .orderBy(desc(pemasaran.createdAt));
 
   const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId] = await Promise.all([
@@ -284,6 +287,8 @@ export async function listAdminPemasaran(unitId: string) {
       lotDescription: row.item.description,
       lotAppraisalValue: row.item.appraisalValue,
       lotSpecifications: row.item.specifications,
+      unitName: row.unitName,
+      unitAddress: row.unitAddress,
       media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
       winnerName: row.winnerName ?? null,
@@ -300,15 +305,18 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     .select({
       marketing: pemasaran,
       item: barang,
+      unitName: units.name,
+      unitAddress: units.address,
       bidCount: sql<number>`count(${bids.id})`,
       winnerName: users.name
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
     .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
     .leftJoin(users, eq(users.id, pemasaran.winnerId))
     .where(and(eq(pemasaran.id, pemasaranId), eq(barang.unitId, unitId)))
-    .groupBy(pemasaran.id, barang.id, users.name)
+    .groupBy(pemasaran.id, barang.id, units.id, users.name)
     .limit(1);
 
   if (!row) {
@@ -347,6 +355,8 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     lotDescription: row.item.description,
     lotAppraisalValue: row.item.appraisalValue,
     lotSpecifications: row.item.specifications,
+    unitName: row.unitName,
+    unitAddress: row.unitAddress,
     media: mediaByBarangId.get(row.item.id) ?? [],
     bidCount: Number(row.bidCount ?? 0),
     winnerName: row.winnerName ?? null,

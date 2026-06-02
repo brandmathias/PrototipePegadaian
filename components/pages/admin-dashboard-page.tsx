@@ -422,9 +422,9 @@ function DashboardAlertCard({ actionableTransactions }: { actionableTransactions
           </p>
           <Link
             className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#f2d28d] bg-white/75 px-4 py-2.5 text-sm font-black text-[#ba6514] shadow-[0_14px_28px_-24px_rgba(186,101,20,0.38)] transition duration-300 hover:-translate-y-0.5 hover:translate-x-1 hover:text-[#9f5407] dark:border-amber-300/16 dark:bg-white/[0.05] dark:text-amber-200 dark:hover:text-amber-100"
-            href="/admin/transaksi"
+            href="/admin/pemasaran"
           >
-            Lihat Transaksi
+            Lihat Pemasaran
             <svg fill="none" height="18" viewBox="0 0 24 24" width="18">
               <path
                 d="m9 6 6 6-6 6"

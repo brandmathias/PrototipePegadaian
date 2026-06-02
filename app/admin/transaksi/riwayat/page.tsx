@@ -1,10 +1,5 @@
-import { AdminTransactionHistoryPage } from "@/components/pages/admin-transaction-pages";
-import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
-import { listAdminTransactions } from "@/lib/services/admin-transaction.service";
+import { redirect } from "next/navigation";
 
-export default async function Page() {
-  const { unitId } = await getAdminUnitPageContext();
-  const transactions = await listAdminTransactions(unitId);
-
-  return <AdminTransactionHistoryPage serverNow={new Date().toISOString()} transactions={transactions} />;
+export default function Page() {
+  redirect("/admin/barang/riwayat");
 }

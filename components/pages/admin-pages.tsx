@@ -583,6 +583,10 @@ export function AdminInventoryHistoryPage({
     barangId: string;
     barangCode: string;
     barangName: string;
+    category: string;
+    condition: string;
+    description: string | null;
+    specifications: unknown;
     ownerName: string;
     customerNumber: string;
     actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
@@ -590,6 +594,7 @@ export function AdminInventoryHistoryPage({
     actionTone: "default" | "success" | "warning" | "danger";
     note: string;
     actorName: string;
+    actorRole: string | null;
     createdAt: string;
     createdAtLabel: string;
   }>;
@@ -606,17 +611,17 @@ export function AdminInventoryHistoryPage({
             <div className="min-w-0">
               <p className="page-heading-eyebrow">Admin Unit / Kelola Barang</p>
               <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
-                Riwayat Barang
+                Audit Trail
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
-                Audit trail khusus untuk jejak input barang baru, perpanjangan,
-                penebusan, dan pemasaran dari unit aktif.
+                Jejak aktivitas sistem dan pengguna terkait pengelolaan barang,
+                jaminan, dan proses lelang dari unit aktif.
               </p>
             </div>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#0a6a49] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-[#8fd0a9]/65 backdrop-blur">
             <Clock3 className="size-4" />
-            {history.length} catatan operasional
+            {history.length} catatan aktivitas
           </div>
         </div>
       </section>
@@ -691,8 +696,8 @@ export function AdminInventoryDetailPage({
             {
               title: "Lelang Lagi",
               description:
-                "Buat sesi lelang baru setelah harga dasar, durasi, dan detail barang dievaluasi ulang.",
-              href: `/admin/barang/${item.id}/pasarkan-ulang`,
+                "Buka popup pemasaran untuk membuat sesi baru setelah detail barang dievaluasi ulang.",
+              href: `/admin/barang/${item.id}/pasarkan`,
               icon: RotateCcw,
             },
           ]
@@ -1356,58 +1361,6 @@ export function AdminInventoryMarketPage({
         successTitle="Barang tayang di katalog"
       />
     </div>
-  );
-}
-
-export function AdminInventoryRelistPage({
-  itemId: _itemId,
-  item,
-}: {
-  itemId?: string;
-  item: AdminInventoryItem;
-}) {
-  const serverNow = new Date().toISOString();
-
-  return (
-    <WorkflowFormShell
-      description="Gunakan halaman ini untuk menyiapkan ulang lelang yang gagal karena pemenang tidak membayar dalam 24 jam atau sesi berakhir tanpa peserta."
-      eyebrow="Admin Unit / Tayangkan Ulang"
-      itemId={item.id}
-      itemStatus={item.status}
-      title="Siapkan Lelang Ulang"
-    >
-      <div className="space-y-6">
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <PanelTitle title="Ringkasan Barang Gagal" />
-          <CardContent className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-4">
-            <DetailTile label="Barang" value={item.name} />
-            <DetailTile
-              label="Iterasi Pemasaran"
-              value={`Siklus ke-${item.marketingIteration}`}
-            />
-            <DetailTile
-              label="Mode Sebelumnya"
-              value={item.marketingMode ?? "-"}
-            />
-            <DetailTile label="Aksi Berikutnya" value={item.nextAction} />
-          </CardContent>
-        </Card>
-        <AdminMarketingForm
-          barangId={item.id}
-          cancelHref={`/admin/barang/${item.id}`}
-          defaultMode="vickrey"
-          defaultPrice={Number(item.price ?? item.appraisalValue ?? 1000000)}
-          endpoint={`/api/admin/barang/${item.id}/pasarkan-ulang`}
-          presentation="panel"
-          redirectTo="/admin/pemasaran"
-          serverNow={serverNow}
-          submitIcon={<RotateCcw className="size-4" />}
-          submitLabel="Lelang lagi"
-          successDescription="Barang sudah aktif kembali sebagai sesi lelang baru."
-          successTitle="Barang dilelang ulang"
-        />
-      </div>
-    </WorkflowFormShell>
   );
 }
 

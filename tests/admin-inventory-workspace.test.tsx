@@ -140,4 +140,154 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(screen.getByText("Kalung Emas")).toBeInTheDocument();
     expect(screen.queryByText("Motor Racing")).not.toBeInTheDocument();
   });
+
+  it("opens the timeline calendar popover with shortcut and calendar panels", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-calendar",
+            barangId: "barang-calendar",
+            barangCode: "BRG-CAL",
+            barangName: "Ipad Terbaru",
+            category: "elektronik",
+            condition: "baik",
+            description: "Tablet Apple iPad Pro 11-inch.",
+            specifications: { jenis: "tablet", merek: "Apple" },
+            ownerName: "Budi Santoso",
+            customerNumber: "0812-3456-7890",
+            actionKey: "input_baru",
+            actionLabel: "Input Baru",
+            actionTone: "default",
+            note: "Barang masuk dari unit.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-31T01:12:33.000Z",
+            createdAtLabel: "31 Mei 2026, 09:12:33 WIB"
+          }
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /linimasa/i }));
+
+    expect(screen.getByText("Shortcut Periode")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bulan sebelumnya" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bulan berikutnya" })).toBeInTheDocument();
+  });
+
+  it("sorts history rows by process time from the header control", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-old",
+            barangId: "barang-old",
+            barangCode: "BRG-OLD",
+            barangName: "Barang Lama",
+            category: "elektronik",
+            condition: "baik",
+            description: "Riwayat lama.",
+            specifications: { jenis: "tablet" },
+            ownerName: "Budi Santoso",
+            customerNumber: "0812-1111-1111",
+            actionKey: "input_baru",
+            actionLabel: "Input Baru",
+            actionTone: "default",
+            note: "Barang masuk lebih awal.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-25T01:00:00.000Z",
+            createdAtLabel: "25 Mei 2026"
+          },
+          {
+            id: "hist-new",
+            barangId: "barang-new",
+            barangCode: "BRG-NEW",
+            barangName: "Barang Baru",
+            category: "elektronik",
+            condition: "baik",
+            description: "Riwayat baru.",
+            specifications: { jenis: "tablet" },
+            ownerName: "Siti Rahmawati",
+            customerNumber: "0812-2222-2222",
+            actionKey: "dipasarkan",
+            actionLabel: "Dipasarkan",
+            actionTone: "success",
+            note: "Barang dipasarkan belakangan.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-31T01:00:00.000Z",
+            createdAtLabel: "31 Mei 2026"
+          }
+        ]}
+      />
+    );
+
+    const oldRow = screen.getByText("Barang Lama");
+    const newRow = screen.getByText("Barang Baru");
+    expect(newRow.compareDocumentPosition(oldRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /urutkan waktu proses/i }));
+
+    expect(oldRow.compareDocumentPosition(newRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("filters history by synced item categories", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-logam",
+            barangId: "barang-logam",
+            barangCode: "BRG-LGM",
+            barangName: "Koin Antam",
+            category: "logam_mulia",
+            condition: "baik",
+            description: "Barang logam mulia masuk ke unit.",
+            specifications: { jenis: "emas batangan", berat: "10 gram" },
+            ownerName: "Rizki",
+            customerNumber: "9018",
+            actionKey: "input_baru",
+            actionLabel: "Input Baru",
+            actionTone: "default",
+            note: "Barang masuk dari unit.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-25T00:00:00.000Z",
+            createdAtLabel: "25 Mei 2026"
+          },
+          {
+            id: "hist-elektronik",
+            barangId: "barang-elektronik",
+            barangCode: "BRG-ELK",
+            barangName: "Laptop Kerja",
+            category: "elektronik",
+            condition: "baik",
+            description: "Barang elektronik dipasarkan.",
+            specifications: { merek: "Lenovo", model: "ThinkPad" },
+            ownerName: "Brando",
+            customerNumber: "56789",
+            actionKey: "dipasarkan",
+            actionLabel: "Dipasarkan",
+            actionTone: "success",
+            note: "Barang masuk katalog.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-05-26T00:00:00.000Z",
+            createdAtLabel: "26 Mei 2026"
+          }
+        ]}
+      />
+    );
+
+    const categorySelect = screen.getByLabelText("Filter kategori riwayat barang");
+    expect(screen.getByRole("option", { name: "Logam Mulia" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Elektronik" })).toBeInTheDocument();
+
+    fireEvent.change(categorySelect, { target: { value: "elektronik" } });
+
+    expect(screen.getByText("Laptop Kerja")).toBeInTheDocument();
+    expect(screen.queryByText("Koin Antam")).not.toBeInTheDocument();
+  });
 });

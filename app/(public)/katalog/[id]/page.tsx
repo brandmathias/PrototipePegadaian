@@ -24,6 +24,7 @@ export default async function Page({
 
   return (
     <LotDetailPage
+      buyerId={isBuyer ? session?.user?.id : null}
       buyerStatus={buyerStatus}
       bidState={bidState}
       initialFavorited={favoriteIds.includes(id)}

@@ -1,6 +1,15 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const router = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn()
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => router
+}));
 
 import {
   AdminMarketingUnifiedPage,
@@ -11,6 +20,11 @@ import {
 } from "@/components/pages/admin-marketing-pages";
 
 describe("admin pemasaran pages", () => {
+  beforeEach(() => {
+    router.push.mockClear();
+    router.refresh.mockClear();
+  });
+
   it("renders a compact unified marketing workspace from backend sessions", () => {
     render(
       <AdminMarketingUnifiedPage
@@ -146,9 +160,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /lelang lagi/i })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
       "href",
-      "/admin/barang/barang-4/pasarkan-ulang"
+      "/admin/pemasaran/vickrey-auction/pm-failed"
     );
   });
 
@@ -220,7 +234,7 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByRole("link", { name: /kelola transaksi/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
       "href",
       "/admin/pemasaran/vickrey-auction/pm-vickrey-payment"
     );
@@ -264,7 +278,7 @@ describe("admin pemasaran pages", () => {
   });
 
   it("keeps vickrey bids locked before deadline", () => {
-    render(
+    const { container } = render(
       <AdminVickreyAuctionDetailPage
         auction={{
           id: "pm-vickrey",
@@ -476,7 +490,7 @@ describe("admin pemasaran pages", () => {
   });
 
   it("shows vickrey payment operations on the detail page after a winner exists", () => {
-    render(
+    const { container } = render(
       <AdminVickreyAuctionDetailPage
         auction={{
           id: "pm-vickrey-payment",
@@ -529,6 +543,10 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/progress pembayaran lelang/i)).toBeInTheDocument();
+    const paymentStepIcon = container.querySelector(".lucide-wallet-cards")?.parentElement;
+    const verificationStepIcon = container.querySelector(".lucide-file-text")?.parentElement;
+    expect(paymentStepIcon?.className).toContain("text-[#006747]");
+    expect(verificationStepIcon?.className).toContain("text-[#006747]");
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
       "href",
@@ -616,6 +634,230 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(screen.getByRole("button", { name: /cetak ringkasan lelang/i }));
     expect(printSpy).toHaveBeenCalledTimes(1);
     printSpy.mockRestore();
+  });
+
+  it("renders the paid vickrey winner page as a final fulfillment archive", () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-paid",
+          lotId: "barang-paid",
+          lot: "22K Gold Bangle",
+          code: "LGL-8829-XJ",
+          category: "emas",
+          condition: "sangat baik",
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "31 Mei 2026",
+          endingAt: "2026-05-31T11:17:48.000Z",
+          participants: 5,
+          basePrice: 65000000,
+          appraisalValue: 85000000,
+          finalPrice: 78000000,
+          winner: "Budi Santoso",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-paid",
+          transactionStatus: "LUNAS",
+          buyerName: "Budi Santoso",
+          buyerEmail: "budi.santoso@email.com",
+          buyerPhone: "0812-3456-7890",
+          paymentMethod: "BAYAR_LANGSUNG",
+          reference: "PGD1029384",
+          proofUrl: null,
+          soldAt: "2026-06-01T12:25:00.000Z",
+          paymentDeadline: "2026-06-02T23:35:00.000Z",
+          specifications: {
+            kadarEmas: "22 Karat (91,6%)",
+            berat: "15,28 gram"
+          },
+          media: [{ id: "asset-paid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
+          primaryMedia: { id: "asset-paid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
+          bids: [
+            {
+              id: "bid-paid-1",
+              bidderId: "PGD1029384",
+              bidderName: "Budi Santoso",
+              submittedAtLabel: "31 Mei 2026, 10:14:26 WIB",
+              amount: 85000000,
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-paid-2",
+              bidderId: "PGD5528761",
+              bidderName: "Siti Nurfadila",
+              submittedAtLabel: "31 Mei 2026, 10:14:23 WIB",
+              amount: 78000000,
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/lelang selesai sempurna .* aset telah diserahkan/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran & penyerahan selesai/i)).toBeInTheDocument();
+    expect(screen.getByText(/manifes penyerahan & pemenang/i)).toBeInTheDocument();
+    expect(screen.getByText(/lunas 100%/i)).toBeInTheDocument();
+    expect(screen.getByText(/barang sudah diambil/i)).toBeInTheDocument();
+    expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/lunas & diserahkan/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak menang/i)).toBeInTheDocument();
+    expect(screen.getByText(/detail aset lelang \(arsip\)/i)).toBeInTheDocument();
+    expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
+    expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
+    expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(screen.getByText(/manifes dokumen final/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toHaveAttribute(
+      "href",
+      "/admin/pemasaran"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /cetak berita acara serah terima/i }));
+    expect(printSpy).toHaveBeenCalledTimes(1);
+    printSpy.mockRestore();
+  });
+
+  it("renders the failed vickrey archive when winner misses the 24 hour payment deadline", () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-unpaid",
+          lotId: "barang-unpaid",
+          lot: "22K Gold Bangle",
+          code: "BRG-42969709",
+          category: "emas",
+          condition: "sangat baik",
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          status: "GAGAL",
+          mode: "VICKREY_AUCTION",
+          ending: "1 Jun 2026",
+          endingAt: "2026-06-01T13:57:00.000Z",
+          participants: 3,
+          basePrice: 78000000,
+          finalPrice: 83500000,
+          winner: "Budi Santos",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-unpaid",
+          transactionStatus: "GAGAL",
+          buyerName: "Budi Santos",
+          buyerEmail: "budi.santos@email.com",
+          buyerPhone: "0812-3456-7890",
+          paymentMethod: "BAYAR_LANGSUNG",
+          reference: "PGD1029384",
+          proofUrl: null,
+          paymentDeadline: "2026-06-02T13:57:00.000Z",
+          specifications: {
+            kadarEmas: "22 Karat (91,6%)",
+            berat: "25 gram"
+          },
+          media: [{ id: "asset-unpaid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
+          primaryMedia: { id: "asset-unpaid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
+          note: "Pemenang Vickrey tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal.",
+          bids: [
+            {
+              id: "bid-unpaid-1",
+              bidderId: "PGD1029384",
+              bidderName: "Budi Santos",
+              submittedAtLabel: "1 Jun 2026, 21.56 WIB",
+              amount: 85000000,
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-unpaid-2",
+              bidderId: "PGD5528761",
+              bidderName: "Andi Pratama",
+              submittedAtLabel: "1 Jun 2026, 21.54 WIB",
+              amount: 83500000,
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/lelang gagal .* pemenang dikenakan sanksi/i)).toBeInTheDocument();
+    expect(screen.getByText(/pemenang tidak melakukan pelunasan dalam batas waktu 24 jam/i)).toBeInTheDocument();
+    expect(screen.getByText(/manifes penyerahan & pemenang/i)).toBeInTheDocument();
+    expect(screen.getByText(/gagal pelunasan/i)).toBeInTheDocument();
+    expect(screen.getByText(/pelanggaran dicatat/i)).toBeInTheDocument();
+    expect(screen.getByText(/mekanisme lelang \(arsip\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/batal \/ gagal/i)).toBeInTheDocument();
+    expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/gagal \/ pelanggaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/gagal bayar/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/belum tercapai/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
+    expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /vickrey auction/i })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: /^batal$/i }));
+    expect(screen.queryByRole("heading", { name: /pasarkan barang/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /cetak berita acara gagal lelang/i }));
+    expect(printSpy).toHaveBeenCalledTimes(1);
+    printSpy.mockRestore();
+  });
+
+  it("renders a clear failed vickrey archive when the session ends without bidders", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-no-bids",
+          lotId: "barang-no-bids",
+          lot: "Jam Tangan Tanpa Peserta",
+          code: "BRG-005",
+          category: "aksesoris",
+          condition: "baik",
+          status: "GAGAL",
+          mode: "VICKREY_AUCTION",
+          ending: "1 Jun 2026",
+          endingAt: "2026-06-01T13:57:00.000Z",
+          participants: 0,
+          basePrice: 8000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "HASIL_DIBUKA",
+          transactionId: null,
+          transactionStatus: null,
+          paymentDeadline: null,
+          specifications: {
+            merek: "Seiko",
+            model: "Presage"
+          },
+          media: [{ id: "asset-no-bids", type: "foto", url: "/uploads/watch.jpg", fileName: "watch.jpg" }],
+          primaryMedia: { id: "asset-no-bids", type: "foto", url: "/uploads/watch.jpg", fileName: "watch.jpg" },
+          note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal.",
+          bids: []
+        }}
+      />
+    );
+
+    expect(screen.getByText(/lelang gagal .* tidak ada peserta/i)).toBeInTheDocument();
+    expect(screen.getByText(/sesi berakhir tanpa peserta yang mengirim bid/i)).toBeInTheDocument();
+    expect(screen.getByText(/manifes kegagalan sesi/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak ada pemenang/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/tanpa peserta/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/tidak ada bid masuk/i)).toBeInTheDocument();
+    expect(screen.getByText(/belum ada peserta yang mengirim penawaran/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
+    expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
   });
 
   it("uses category-specific asset fields on the ended vickrey winner page", () => {

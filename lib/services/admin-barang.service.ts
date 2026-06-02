@@ -127,6 +127,10 @@ export type AdminBarangHistoryEntry = {
   barangId: string;
   barangCode: string;
   barangName: string;
+  category: string;
+  condition: string;
+  description: string | null;
+  specifications: unknown;
   ownerName: string;
   customerNumber: string;
   actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
@@ -134,6 +138,7 @@ export type AdminBarangHistoryEntry = {
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
   actorName: string;
+  actorRole: string | null;
   createdAt: string;
   createdAtLabel: string;
 };
@@ -239,13 +244,18 @@ export async function listAdminBarangHistory(
         barangId: barang.id,
         barangCode: barang.code,
         barangName: barang.name,
+        category: barang.category,
+        condition: barang.condition,
+        description: barang.description,
+        specifications: barang.specifications,
         ownerName: barang.ownerName,
         customerNumber: barang.customerNumber,
         oldStatus: riwayatStatusBarang.oldStatus,
         newStatus: riwayatStatusBarang.newStatus,
         note: riwayatStatusBarang.note,
         createdAt: riwayatStatusBarang.createdAt,
-        actorName: users.name
+        actorName: users.name,
+        actorRole: users.role
       })
       .from(riwayatStatusBarang)
       .innerJoin(barang, eq(barang.id, riwayatStatusBarang.barangId))
@@ -258,11 +268,16 @@ export async function listAdminBarangHistory(
         barangId: barang.id,
         barangCode: barang.code,
         barangName: barang.name,
+        category: barang.category,
+        condition: barang.condition,
+        description: barang.description,
+        specifications: barang.specifications,
         ownerName: barang.ownerName,
         customerNumber: barang.customerNumber,
         note: riwayatPerpanjangan.note,
         createdAt: riwayatPerpanjangan.createdAt,
-        actorName: users.name
+        actorName: users.name,
+        actorRole: users.role
       })
       .from(riwayatPerpanjangan)
       .innerJoin(barang, eq(barang.id, riwayatPerpanjangan.barangId))
@@ -284,6 +299,10 @@ export async function listAdminBarangHistory(
       barangId: row.barangId,
       barangCode: row.barangCode,
       barangName: row.barangName,
+      category: row.category,
+      condition: row.condition,
+      description: row.description,
+      specifications: row.specifications,
       ownerName: row.ownerName,
       customerNumber: row.customerNumber,
       actionKey: action.actionKey,
@@ -291,6 +310,7 @@ export async function listAdminBarangHistory(
       actionTone: action.actionTone,
       note: row.note,
       actorName: row.actorName ?? "Admin Unit",
+      actorRole: row.actorRole,
       createdAt: row.createdAt.toISOString(),
       createdAtLabel: formatAppDateTime(row.createdAt)
     });
@@ -301,6 +321,10 @@ export async function listAdminBarangHistory(
     barangId: row.barangId,
     barangCode: row.barangCode,
     barangName: row.barangName,
+    category: row.category,
+    condition: row.condition,
+    description: row.description,
+    specifications: row.specifications,
     ownerName: row.ownerName,
     customerNumber: row.customerNumber,
     actionKey: "perpanjangan" as const,
@@ -308,6 +332,7 @@ export async function listAdminBarangHistory(
     actionTone: "warning" as const,
     note: row.note || "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran.",
     actorName: row.actorName ?? "Admin Unit",
+    actorRole: row.actorRole,
     createdAt: row.createdAt.toISOString(),
     createdAtLabel: formatAppDateTime(row.createdAt)
   }));

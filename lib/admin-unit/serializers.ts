@@ -146,6 +146,8 @@ export function serializeAdminPemasaran(
     lotDescription?: string | null;
     lotAppraisalValue?: string | number | null;
     lotSpecifications?: unknown;
+    unitName?: string | null;
+    unitAddress?: string | null;
     media?: AdminPemasaranMedia[];
     bidCount?: number;
     winnerName?: string | null;
@@ -265,6 +267,8 @@ export function serializeAdminPemasaran(
     category: extra.lotCategory ?? "-",
     condition: extra.lotCondition ?? "-",
     description: extra.lotDescription ?? "",
+    unitName: extra.unitName ?? null,
+    unitAddress: extra.unitAddress ?? null,
     appraisalValue: toNumber(extra.lotAppraisalValue),
     specifications: lotSpecifications,
     status: upper(row.status),

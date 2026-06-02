@@ -1,10 +1,5 @@
-import { AdminTransactionHubPage } from "@/components/pages/admin-transaction-pages";
-import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
-import { listAdminTransactions } from "@/lib/services/admin-transaction.service";
+import { redirect } from "next/navigation";
 
-export default async function Page() {
-  const { unitId } = await getAdminUnitPageContext();
-  const transactions = await listAdminTransactions(unitId);
-
-  return <AdminTransactionHubPage transactions={transactions} />;
+export default function Page() {
+  redirect("/admin/pemasaran");
 }

@@ -220,6 +220,7 @@ export function AdminMarketingForm({
   submitLabel,
   successDescription,
   successTitle,
+  onCancel,
 }: {
   barangId: string;
   cancelHref?: string;
@@ -234,6 +235,7 @@ export function AdminMarketingForm({
   submitLabel: string;
   successDescription: string;
   successTitle: string;
+  onCancel?: () => void;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -283,6 +285,11 @@ export function AdminMarketingForm({
   }, [baseNowMs, mode, normalizedDurationTotalSeconds]);
 
   function handleCancel() {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
+
     router.push(cancelHref ?? redirectTo);
   }
 

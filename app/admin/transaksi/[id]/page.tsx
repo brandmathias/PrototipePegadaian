@@ -16,16 +16,20 @@ export default async function Page({
   const from = query?.from;
   const backHref =
     from === "verification"
-      ? "/admin/transaksi/verifikasi-pembayaran"
+      ? "/admin/pemasaran"
       : from === "history"
-        ? "/admin/transaksi/riwayat"
-        : "/admin/transaksi";
+        ? "/admin/barang/riwayat"
+        : from === "vickrey"
+          ? "/admin/pemasaran"
+          : "/admin/pemasaran";
   const backLabel =
     from === "verification"
-      ? "Kembali ke verifikasi pembayaran"
+      ? "Kembali ke pemasaran"
       : from === "history"
-        ? "Kembali ke riwayat"
-        : "Kembali ke transaksi";
+        ? "Kembali ke riwayat barang"
+        : from === "vickrey"
+          ? "Kembali ke pemasaran"
+          : "Kembali ke pemasaran";
 
   return (
     <AdminTransactionDetailWorkspacePage

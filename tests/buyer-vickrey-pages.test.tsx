@@ -18,6 +18,7 @@ import { AuctionLoserPage, AuctionWinnerPage, BidHistoryPage, BidVerificationPag
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
+import { currency } from "@/lib/formatters/currency";
 
 const buyer: BuyerSessionUser = {
   id: "buyer-1",
@@ -135,6 +136,33 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
   });
 
+  it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {
+    const user = userEvent.setup();
+
+    render(<LotDetailPage bidState={null} buyerId="buyer-1" buyerStatus={null} lot={vickreyLot} />);
+
+    expect(screen.queryByRole("link", { name: /ikut lelang/i })).not.toBeInTheDocument();
+
+    const auctionButton = screen.getByRole("button", { name: /ikut lelang/i });
+    await user.click(auctionButton);
+
+    const dialog = screen.getByRole("dialog", { name: /syarat & ketentuan penawaran/i });
+    expect(dialog).toBeInTheDocument();
+
+    const bidInput = within(dialog).getByLabelText(/nominal penawaran/i);
+    const restrictionHeading = within(dialog).getByText(/level pembatasan jika pembayaran gagal/i);
+    const bidInputLabel = within(dialog).getByText("Nominal penawaran", { selector: "label" });
+    const formattedBasePrice = currency.format(vickreyLot.price).replace(/\u00a0/g, " ");
+    expect(restrictionHeading.compareDocumentPosition(bidInputLabel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(bidInput).toHaveValue(vickreyLot.price);
+    expect(
+      within(dialog).getByText((text) => text.replace(/\u00a0/g, " ") === `Harga dasar ${formattedBasePrice}`)
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText((text) => text.replace(/\u00a0/g, " ") === formattedBasePrice)
+    ).toBeInTheDocument();
+  });
+
   it.each([
     ["level 1", 1],
     ["level 2", 2]
@@ -190,9 +218,15 @@ describe("buyer vickrey pages", () => {
     await user.click(submitButton);
 
     const dialog = screen.getByRole("dialog", { name: /syarat & ketentuan penawaran/i });
+    const overlay = dialog.closest("[data-vickrey-terms-overlay='true']");
     expect(dialog).toBeInTheDocument();
-    expect(dialog).toHaveClass("flex", "max-h-[calc(100dvh-2rem)]");
-    expect(dialog.parentElement).toHaveClass("z-[160]", "overflow-y-auto");
+    expect(overlay?.parentElement).toBe(document.body);
+    expect(dialog).toHaveClass("max-w-lg", "rounded-[1.45rem]");
+    expect(dialog).not.toHaveClass("max-h-[calc(100dvh-2rem)]");
+    expect(dialog.querySelector(".overflow-y-auto")).toBeNull();
+    expect(dialog.parentElement).toHaveClass("z-[160]", "items-start", "overflow-y-auto");
+    expect(dialog.parentElement).not.toHaveClass("items-center");
+    expect(screen.getByText(/pegadaian lelang/i).parentElement?.parentElement).toHaveClass("gap-3");
     expect(
       within(dialog).getByText(/baca dan cermati syarat dan ketentuan di bawah ini/i)
     ).toBeInTheDocument();
@@ -216,7 +250,7 @@ describe("buyer vickrey pages", () => {
     expect(within(dialog).queryByText(/admin unit tidak dapat melihat nominal bid/i)).not.toBeInTheDocument();
 
     const modalAction = screen.getByRole("button", { name: /setujui dan kirim bid/i });
-    expect(modalAction.closest("footer")).toHaveClass("shrink-0");
+    expect(modalAction.closest("footer")).not.toHaveClass("shrink-0");
     expect(modalAction).toBeDisabled();
 
     await user.click(screen.getByRole("checkbox", { name: /saya telah membaca dan menyetujui/i }));

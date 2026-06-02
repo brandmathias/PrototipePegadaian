@@ -2,18 +2,28 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   CalendarClock,
   CarFront,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
+  Clipboard,
+  Eraser,
   FilePlus2,
   Gavel,
   Gem,
+  Medal,
   MonitorSmartphone,
   Package2,
   PackageCheck,
+  Printer,
   ReceiptText,
   ScrollText,
   Search,
@@ -28,6 +38,7 @@ import {
   isAdminInventoryListItem,
   isAdminInventoryReadyForMarketing
 } from "@/lib/admin-unit/operational-metrics";
+import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +49,10 @@ type AdminBarangHistoryEntry = {
   barangId: string;
   barangCode: string;
   barangName: string;
+  category?: string;
+  condition?: string;
+  description?: string | null;
+  specifications?: unknown;
   ownerName: string;
   customerNumber: string;
   actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
@@ -45,6 +60,7 @@ type AdminBarangHistoryEntry = {
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
   actorName: string;
+  actorRole?: string | null;
   createdAt: string;
   createdAtLabel: string;
 };
@@ -72,10 +88,10 @@ function getInventoryDueCopy(dateLabel: string | null | undefined) {
 }
 
 const historyToneClasses: Record<AdminBarangHistoryEntry["actionTone"], string> = {
-  default: "border-slate-200 bg-slate-50 text-slate-700",
-  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  warning: "border-amber-200 bg-amber-50 text-amber-700",
-  danger: "border-rose-200 bg-rose-50 text-rose-700"
+  default: "border-[#cfe0ff] bg-[#eef5ff] text-[#2563eb]",
+  success: "border-[#fee2a8] bg-[#fff6df] text-[#b45309]",
+  warning: "border-[#fde68a] bg-[#fff8e5] text-[#a16207]",
+  danger: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]"
 };
 
 const historyIconMap: Record<AdminBarangHistoryEntry["actionKey"], typeof FilePlus2> = {
@@ -119,6 +135,9 @@ function getCategoryIcon(category: unknown) {
   if (normalized.includes("emas") || normalized.includes("perhias")) {
     return Gem;
   }
+  if (normalized.includes("logam")) {
+    return Medal;
+  }
   if (normalized.includes("kendara") || normalized.includes("motor") || normalized.includes("mobil")) {
     return CarFront;
   }
@@ -128,59 +147,243 @@ function getCategoryIcon(category: unknown) {
   return Package2;
 }
 
-function InventoryHistoryList({ entries }: { entries: AdminBarangHistoryEntry[] }) {
+function normalizeSearchValue(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function getHistoryCategoryDetail(entry: AdminBarangHistoryEntry) {
+  const specs = getBarangSpecificationRows(entry.category ?? "", entry.specifications ?? {});
+  const preferred = specs.find((row) =>
+    ["jenis", "model", "tipe", "merek", "bentuk"].some((keyword) => row.label.toLowerCase().includes(keyword))
+  );
+
+  return preferred?.value ?? formatDisplayLabel(entry.condition ?? "");
+}
+
+function getHistoryRoleLabel(role: string | null | undefined) {
+  const normalized = String(role ?? "").toLowerCase();
+
+  if (normalized.includes("admin_unit")) return "ADMIN UNIT";
+  if (normalized.includes("admin")) return "ADMIN";
+  if (normalized.includes("super")) return "SUPER ADMIN";
+  if (normalized.includes("buyer")) return "BUYER";
+  return "OPERATOR";
+}
+
+function parseHistoryDate(value: string | null | undefined) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function sameCalendarDay(left: Date, right: Date) {
   return (
-    <div className="divide-y divide-black/6">
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
+}
+
+const timelineFilterOptions = [
+  { value: "all", label: "Semua Waktu", icon: CalendarClock },
+  { value: "today", label: "Hari Ini", icon: Clock3 },
+  { value: "7days", label: "7 Hari Terakhir", icon: CalendarClock },
+  { value: "30days", label: "30 Hari Terakhir", icon: CalendarClock },
+  { value: "3months", label: "Beberapa Bulan Terakhir (3 Bln)", icon: CalendarClock },
+  { value: "year", label: "Tahun Terakhir", icon: CalendarClock }
+] as const;
+
+type TimelineFilter = (typeof timelineFilterOptions)[number]["value"] | "date";
+
+const dayLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+
+function buildCalendarCells(month: Date) {
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const firstDay = new Date(year, monthIndex, 1);
+  const firstDayOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const cells: Array<number | null> = Array.from({ length: firstDayOffset }, () => null);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(day);
+  }
+
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+
+  return cells;
+}
+
+function getInitialCalendarMonth(history: AdminBarangHistoryEntry[]) {
+  const firstDate = history.map((entry) => parseHistoryDate(entry.createdAt)).find((date): date is Date => Boolean(date));
+  const source = firstDate ?? new Date();
+  return new Date(source.getFullYear(), source.getMonth(), 1);
+}
+
+function timelineLabel(filter: TimelineFilter, selectedDate: Date | null) {
+  if (filter === "date" && selectedDate) {
+    return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(selectedDate);
+  }
+
+  return timelineFilterOptions.find((option) => option.value === filter)?.label ?? "Semua Waktu";
+}
+
+function matchesTimelineFilter(entry: AdminBarangHistoryEntry, filter: TimelineFilter, selectedDate: Date | null) {
+  if (filter === "all") return true;
+
+  const entryDate = parseHistoryDate(entry.createdAt);
+  if (!entryDate) return false;
+
+  if (filter === "date") {
+    return selectedDate ? sameCalendarDay(entryDate, selectedDate) : true;
+  }
+
+  const now = new Date();
+  const today = startOfDay(now);
+
+  if (filter === "today") {
+    return sameCalendarDay(entryDate, now);
+  }
+
+  const daysBack = filter === "7days" ? 7 : filter === "30days" ? 30 : filter === "3months" ? 92 : 365;
+  const threshold = new Date(today);
+  threshold.setDate(today.getDate() - daysBack);
+
+  return entryDate >= threshold;
+}
+
+function InventoryHistoryList({
+  copiedId,
+  entries,
+  onCopy,
+  onSortTime,
+  sortDirection
+}: {
+  copiedId: string | null;
+  entries: AdminBarangHistoryEntry[];
+  onCopy: (value: string) => void;
+  onSortTime: () => void;
+  sortDirection: "asc" | "desc";
+}) {
+  const TimeSortIcon = sortDirection === "desc" ? ArrowDown : ArrowUp;
+
+  return (
+    <div>
+      <div className="hidden border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.64rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[7.4rem_minmax(0,1.25fr)_9.2rem_minmax(0,0.88fr)_minmax(0,0.88fr)_11rem_6.4rem]">
+        <div className="px-4 py-4">Status</div>
+        <div className="px-4 py-4">Komoditas Jaminan</div>
+        <div className="px-4 py-4">Kategori</div>
+        <div className="px-4 py-4">Nasabah Pemilik</div>
+        <div className="px-4 py-4">Aktor Internal</div>
+        <div className="px-4 py-4">
+          <button
+            aria-label={`Urutkan Waktu Proses ${sortDirection === "desc" ? "terlama dulu" : "terbaru dulu"}`}
+            className="inline-flex items-center gap-1.5 rounded-lg text-[#0f263c] outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
+            type="button"
+            onClick={onSortTime}
+          >
+            Waktu Proses
+            <TimeSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
+          </button>
+        </div>
+        <div className="px-4 py-4 text-right">Aksi</div>
+      </div>
       {entries.length > 0 ? (
         entries.map((entry) => {
           const ActionIcon = historyIconMap[entry.actionKey];
+          const CategoryIcon = getCategoryIcon(entry.category);
+          const categoryLabel = formatDisplayLabel(entry.category ?? "lainnya");
+          const categoryDetail = getHistoryCategoryDetail(entry);
+          const actorRole = getHistoryRoleLabel(entry.actorRole);
 
           return (
             <div
-              className="grid gap-4 px-5 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] xl:grid-cols-[14rem_minmax(0,1.1fr)_minmax(0,1fr)_12rem]"
+              className="grid gap-4 border-b border-[#e4ece7] px-4 py-4 text-[0.8rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[7.4rem_minmax(0,1.25fr)_9.2rem_minmax(0,0.88fr)_minmax(0,0.88fr)_11rem_6.4rem] lg:items-center"
               key={entry.id}
             >
-              <div className="flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+              <div className="flex min-w-0 items-start gap-3 lg:block">
+                <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
                   <ActionIcon className="size-4.5" />
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 lg:min-w-0">
                   <div
                     className={cn(
-                      "inline-flex items-center rounded-full border px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em]",
+                      "inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.08em]",
                       historyToneClasses[entry.actionTone]
                     )}
                   >
+                    <span className="size-1.5 shrink-0 rounded-full bg-current" />
                     {entry.actionLabel}
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-black/78">{entry.actorName}</p>
                 </div>
               </div>
 
               <div className="min-w-0">
-                <p className="text-sm font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-black/42">
-                  {entry.barangCode}
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <p className="min-w-0 font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
+                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#eef2f0] px-2 py-0.5 font-mono text-[0.62rem] font-black text-[#344c40]">
+                    <span className="truncate">{entry.barangCode}</span>
+                    <button
+                      aria-label={`Salin kode ${entry.barangCode}`}
+                      className="grid size-5 shrink-0 place-items-center rounded-full text-[#0a6a49] transition duration-300 hover:bg-white"
+                      type="button"
+                      onClick={() => onCopy(entry.barangCode)}
+                    >
+                      {copiedId === entry.barangCode ? <Check className="size-3.5" /> : <Clipboard className="size-3.5" />}
+                    </button>
+                  </span>
+                </div>
+                <p className="mt-1 line-clamp-1 text-[0.76rem] font-semibold text-[#52655d]">
+                  {entry.description || entry.note || "Aktivitas barang tercatat pada riwayat unit."}
                 </p>
-                <p className="mt-2 text-sm text-black/58">{entry.note}</p>
               </div>
 
               <div className="min-w-0">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#f5f3ee] px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-black/56">
-                  <UserRound className="size-3.5 text-[#0a6a49]" />
-                  Nasabah
+                <div className="flex items-center gap-2">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-[#d8e7de] bg-[#f5f8f6] text-[#0a6a49]">
+                    <CategoryIcon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[0.78rem] font-black text-[#13211c]">{categoryLabel}</p>
+                    <p className="truncate text-[0.72rem] font-semibold text-[#52655d]">{categoryDetail || "-"}</p>
+                  </div>
                 </div>
-                <p className="mt-2 text-sm font-semibold text-black/78">{entry.ownerName}</p>
-                <p className="mt-1 text-xs font-semibold text-black/45">{entry.customerNumber || "-"}</p>
               </div>
 
-              <div className="xl:text-right">
-                <p className="text-sm font-semibold text-black/74">{entry.createdAtLabel}</p>
+              <div className="min-w-0">
+                <div className="flex min-w-0 items-start gap-2">
+                  <UserRound className="mt-0.5 size-4 shrink-0 text-[#0a6a49]" />
+                  <div className="min-w-0">
+                    <p className="truncate font-black text-[#13211c]">{entry.ownerName}</p>
+                    <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-[#52655d]">{entry.customerNumber || "-"}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate font-black text-[#13211c]">{entry.actorName}</p>
+                <span className="mt-1 inline-flex max-w-full truncate rounded-full border border-[#d7eadf] bg-[#eff8f2] px-2 py-0.5 text-[0.58rem] font-black uppercase tracking-[0.11em] text-[#0a6a49]">
+                  {actorRole}
+                </span>
+              </div>
+
+              <div className="min-w-0">
+                <p className="font-mono text-[0.78rem] font-semibold leading-5 text-[#334155]">{entry.createdAtLabel}</p>
+                <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
+              </div>
+
+              <div className="flex justify-start lg:justify-end">
                 <Link
-                  className="group mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#0a6a49]"
+                  className="group inline-flex h-9 items-center gap-2 rounded-xl border border-[#d8e7de] bg-white px-3 text-[0.74rem] font-black text-[#0a6a49] shadow-[0_14px_26px_-24px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:bg-[#f4faf6]"
                   href={`/admin/barang/${entry.barangId}`}
                 >
-                  Lihat barang
+                  Detail
                   <ArrowRight className="size-4 transition duration-500 group-hover:translate-x-0.5" />
                 </Link>
               </div>
@@ -190,7 +393,7 @@ function InventoryHistoryList({ entries }: { entries: AdminBarangHistoryEntry[] 
       ) : (
         <div className="px-5 py-12 text-center text-sm text-black/55">
           <p className="font-headline text-xl font-black text-black/80">Belum ada riwayat yang cocok.</p>
-          <p className="mt-2">Riwayat akan tampil otomatis saat barang diinput, diperpanjang, ditebus, atau dipasarkan.</p>
+          <p className="mt-2">Ubah kata kunci, proses, kategori, atau linimasa agar catatan kembali muncul.</p>
         </div>
       )}
     </div>
@@ -420,81 +623,297 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
 export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBarangHistoryEntry[] }) {
   const [query, setQuery] = useState("");
   const [actionFilter, setActionFilter] = useState<"SEMUA" | AdminBarangHistoryEntry["actionKey"]>("SEMUA");
+  const [categoryFilter, setCategoryFilter] = useState("SEMUA");
+  const [timeSortDirection, setTimeSortDirection] = useState<"asc" | "desc">("desc");
+  const [timelineFilter, setTimelineFilter] = useState<TimelineFilter>("all");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => getInitialCalendarMonth(history));
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
   const deferredQuery = useDeferredValue(query);
 
+  useEffect(() => {
+    if (!datePickerOpen) return;
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!popoverRef.current?.contains(target)) {
+        setDatePickerOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setDatePickerOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [datePickerOpen]);
+
+  const categories = useMemo(() => {
+    return ["SEMUA", ...new Set(history.map((entry) => String(entry.category ?? "").trim()).filter(Boolean))];
+  }, [history]);
+
   const filteredHistory = useMemo(() => {
-    const normalizedQuery = deferredQuery.trim().toLowerCase();
+    const normalizedQuery = normalizeSearchValue(deferredQuery);
 
     return history.filter((entry) => {
       const matchesAction = actionFilter === "SEMUA" || entry.actionKey === actionFilter;
+      const matchesCategory =
+        categoryFilter === "SEMUA" || normalizeSearchValue(entry.category) === normalizeSearchValue(categoryFilter);
+      const matchesTimeline = matchesTimelineFilter(entry, timelineFilter, selectedDate);
       const matchesQuery =
         !normalizedQuery ||
         [
           entry.barangCode,
           entry.barangName,
+          entry.category,
+          entry.condition,
           entry.ownerName,
           entry.customerNumber,
           entry.actionLabel,
           entry.note,
-          entry.actorName
+          entry.actorName,
+          entry.description
         ]
           .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+          .some((value) => normalizeSearchValue(value).includes(normalizedQuery));
 
-      return matchesAction && matchesQuery;
+      return matchesAction && matchesCategory && matchesTimeline && matchesQuery;
     });
-  }, [actionFilter, deferredQuery, history]);
-  const pagination = useAdminPagination(filteredHistory, `${actionFilter}-${deferredQuery}`);
+  }, [actionFilter, categoryFilter, deferredQuery, history, selectedDate, timelineFilter]);
+  const sortedHistory = useMemo(() => {
+    return [...filteredHistory].sort((left, right) => {
+      const leftTime = parseHistoryDate(left.createdAt)?.getTime() ?? 0;
+      const rightTime = parseHistoryDate(right.createdAt)?.getTime() ?? 0;
+      const direction = timeSortDirection === "desc" ? -1 : 1;
+
+      return (leftTime - rightTime) * direction;
+    });
+  }, [filteredHistory, timeSortDirection]);
+  const pagination = useAdminPagination(
+    sortedHistory,
+    `${actionFilter}-${categoryFilter}-${timelineFilter}-${selectedDate?.toISOString() ?? "all"}-${timeSortDirection}-${deferredQuery}`
+  );
+  const calendarCells = useMemo(() => buildCalendarCells(calendarMonth), [calendarMonth]);
+  const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(calendarMonth);
+  const hasActiveFilter =
+    query.trim() ||
+    actionFilter !== "SEMUA" ||
+    categoryFilter !== "SEMUA" ||
+    timelineFilter !== "all" ||
+    selectedDate;
+
+  function resetFilters() {
+    setQuery("");
+    setActionFilter("SEMUA");
+    setCategoryFilter("SEMUA");
+    setTimelineFilter("all");
+    setSelectedDate(null);
+  }
+
+  function copyCode(value: string) {
+    setCopiedId(value);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText(value);
+    }
+    window.setTimeout(() => setCopiedId(null), 1200);
+  }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#cfe5d6]">
-      <div className="flex flex-col gap-3 border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#f9f7f2)] px-5 py-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="flex-1">
-          <div className="inline-flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-[1rem] bg-[#eef6f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.78)]">
-              <ScrollText className="size-5" />
-            </span>
-            <div>
-              <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/42">Riwayat Barang</p>
-              <h3 className="mt-1 font-headline text-2xl font-black tracking-[-0.04em] text-[#13211c]">
-                Aktivitas operasional terbaru
-              </h3>
-            </div>
-          </div>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-black/58">
-            Jejak input barang baru, perpanjangan, penebusan, dan pemasaran tercatat di sini agar admin unit bisa membaca progres operasional tanpa membuka detail satu per satu.
-          </p>
-        </div>
-        <div className="w-full max-w-2xl space-y-3">
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12.5rem]">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
-              <Input
-                className="h-12 rounded-[1.35rem] border-0 bg-[#f4f3ef] pl-12 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0a6a49]/15 sm:text-base"
-                placeholder="Cari barang, nasabah, aktor, atau catatan riwayat..."
-                value={query}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  startTransition(() => setQuery(value));
-                }}
-              />
-            </div>
-            <AdminSelect
-              ariaLabel="Filter proses riwayat barang"
-              className="w-full"
-              options={historyFilterOptions}
-              value={actionFilter}
-              onValueChange={(nextValue) => setActionFilter(nextValue as typeof actionFilter)}
+    <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd]">
+      <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
+        <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_16rem_12rem_12rem_6.4rem_6.4rem]">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
+            <Input
+              className="h-12 rounded-[1.15rem] border border-[#dce9df] bg-white pl-12 text-sm font-semibold shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:bg-white focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8"
+              placeholder="Cari berdasarkan barang, nama nasabah, atau staf penginput..."
+              value={query}
+              onChange={(event) => {
+                const value = event.target.value;
+                startTransition(() => setQuery(value));
+              }}
             />
           </div>
-          <div className="inline-flex items-center gap-2 self-start rounded-full bg-[#f3f4ef] px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-black/56">
-            <Clock3 className="size-3.5 text-[#0a6a49]" />
-            {filteredHistory.length} catatan
+
+          <div className="relative" ref={popoverRef}>
+            <button
+              className={cn(
+                "flex h-12 w-full items-center justify-between gap-3 rounded-[1.15rem] border px-4 text-left text-[0.78rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
+                datePickerOpen || timelineFilter !== "all"
+                  ? "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10"
+                  : "border-[#dce9df] bg-white text-[#13211c]"
+              )}
+              type="button"
+              onClick={() => setDatePickerOpen((current) => !current)}
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                <CalendarClock className="size-4 shrink-0 text-[#0a6a49]" />
+                <span className="truncate">Linimasa: {timelineLabel(timelineFilter, selectedDate)}</span>
+              </span>
+              <ChevronDown className={cn("size-4 shrink-0 transition duration-500", datePickerOpen && "rotate-180")} />
+            </button>
+
+            {datePickerOpen ? (
+              <div className="absolute left-1/2 top-full z-[90] mt-2 grid w-[min(36.25rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.15rem] border border-[#dfe8e3] bg-white shadow-[0_26px_72px_-40px_rgba(8,69,50,0.42)] sm:left-1/2 sm:right-auto sm:grid-cols-[15rem_minmax(0,1fr)] xl:left-0 xl:translate-x-0">
+                <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-2 sm:border-b-0 sm:border-r">
+                  <p className="px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
+                    Shortcut Periode
+                  </p>
+                  {timelineFilterOptions.map((option) => {
+                    const Icon = option.icon;
+                    const active = timelineFilter === option.value && !selectedDate;
+
+                    return (
+                      <button
+                        className={cn(
+                          "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                          active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white"
+                        )}
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setTimelineFilter(option.value);
+                          setSelectedDate(null);
+                          setDatePickerOpen(false);
+                        }}
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <Icon className="size-4 shrink-0" />
+                          <span className="truncate">{option.label}</span>
+                        </span>
+                        {active ? <Check className="size-4 shrink-0" /> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="p-4">
+                  <div className="flex items-center justify-between border-b border-[#edf2ef] pb-3">
+                    <button
+                      aria-label="Bulan sebelumnya"
+                      className="grid size-8 place-items-center rounded-xl text-[#52655d] outline-none transition duration-500 hover:bg-[#f4f8f6] hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                      type="button"
+                      onClick={() =>
+                        setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
+                      }
+                    >
+                      <ChevronLeft className="size-4" />
+                    </button>
+                    <p className="font-headline text-sm font-black tracking-[-0.02em] text-[#13211c]">{monthLabel}</p>
+                    <button
+                      aria-label="Bulan berikutnya"
+                      className="grid size-8 place-items-center rounded-xl text-[#52655d] outline-none transition duration-500 hover:bg-[#f4f8f6] hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                      type="button"
+                      onClick={() =>
+                        setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))
+                      }
+                    >
+                      <ChevronRight className="size-4" />
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[0.64rem] font-black text-[#64756e]">
+                    {dayLabels.map((day) => (
+                      <span key={day}>{day}</span>
+                    ))}
+                  </div>
+                  <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[0.75rem] font-bold">
+                    {calendarCells.map((day, index) => {
+                      if (!day) {
+                        return <span aria-hidden="true" key={`empty-${index}`} />;
+                      }
+
+                      const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+                      const active = selectedDate ? sameCalendarDay(date, selectedDate) : false;
+
+                      return (
+                        <button
+                          className={cn(
+                            "mx-auto grid size-8 place-items-center rounded-full font-mono outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                            active && "bg-[#006747] text-white shadow-[0_14px_24px_-14px_rgba(0,103,71,0.72)] hover:bg-[#006747] hover:text-white"
+                          )}
+                          key={`${calendarMonth.toISOString()}-${day}`}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDate(date);
+                            setTimelineFilter("date");
+                            setDatePickerOpen(false);
+                          }}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
+
+          <AdminSelect
+            ariaLabel="Filter proses riwayat barang"
+            className="w-full"
+            options={historyFilterOptions}
+            value={actionFilter}
+            onValueChange={(nextValue) => setActionFilter(nextValue as typeof actionFilter)}
+          />
+          <AdminSelect
+            ariaLabel="Filter kategori riwayat barang"
+            className="w-full"
+            options={categories.map((category) => ({
+              value: category,
+              label: category === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(category),
+              icon: category === "SEMUA" ? Package2 : getCategoryIcon(category)
+            }))}
+            value={categoryFilter}
+            onValueChange={setCategoryFilter}
+          />
+          <button
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[1.15rem] border border-[#fecaca] bg-[#fff7f7] px-4 text-[0.78rem] font-black text-[#dc2626] shadow-[0_14px_30px_-28px_rgba(185,28,28,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={!hasActiveFilter}
+            type="button"
+            onClick={resetFilters}
+          >
+            <Eraser className="size-4" />
+            Clean
+          </button>
+          <button
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:text-[#006747]"
+            type="button"
+            onClick={() => window.print()}
+          >
+            <Printer className="size-4" />
+            Print
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[0.72rem] font-semibold text-[#52655d]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#f3f8f5] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#0a6a49]">
+            <Clock3 className="size-3.5" />
+            {filteredHistory.length} catatan aktivitas
+          </div>
+          <span>
+            Menampilkan audit dari <strong className="font-black text-[#13211c]">{history.length}</strong> aktivitas barang unit.
+          </span>
         </div>
       </div>
 
-      <InventoryHistoryList entries={pagination.visibleItems} />
+      <InventoryHistoryList
+        copiedId={copiedId}
+        entries={pagination.visibleItems}
+        sortDirection={timeSortDirection}
+        onCopy={copyCode}
+        onSortTime={() => setTimeSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
+      />
       <AdminPaginationFooter
         itemLabel="catatan"
         pageIndex={pagination.pageIndex}

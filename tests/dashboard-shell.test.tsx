@@ -20,18 +20,28 @@ const nav: NavItem[] = [
   {
     href: "/admin/barang",
     label: "Kelola Barang",
+    icon: "barang"
+  },
+  { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" },
+  { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" }
+];
+
+const groupedNav: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: "dashboard" },
+  {
+    href: "/admin/operasional",
+    label: "Operasional",
     icon: "barang",
     children: [
-      { href: "/admin/barang", label: "Daftar Barang", icon: "barang" },
-      { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" }
+      { href: "/admin/operasional/daftar", label: "Daftar Operasional", icon: "barang" }
     ]
   }
 ];
 
-function renderShell() {
+function renderShell(items: NavItem[] = nav) {
   return render(
     <DashboardShell
-      nav={nav}
+      nav={items}
       showHeaderSearch={false}
       subtitle="Pusat kendali operasional unit"
       title="UPC Ranotana"
@@ -54,13 +64,23 @@ describe("DashboardShell", () => {
     document.documentElement.removeAttribute("style");
   });
 
-  it("keeps the active navigation group expanded", () => {
+  it("keeps kelola barang as a direct inventory link", () => {
     navigationMock.pathname = "/admin/barang";
 
     renderShell();
 
-    expect(screen.getByRole("link", { name: /daftar barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /kelola barang/i })).toHaveAttribute("href", "/admin/barang");
+    expect(screen.queryByRole("link", { name: /daftar barang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /riwayat barang/i })).toBeInTheDocument();
+  });
+
+  it("keeps standalone riwayat barang outside the kelola barang group", () => {
+    navigationMock.pathname = "/admin/barang/riwayat";
+
+    renderShell();
+
+    expect(screen.getByRole("link", { name: /riwayat barang/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /daftar barang/i })).not.toBeInTheDocument();
   });
 
   it("uses a white admin shell background on every admin route", () => {
@@ -77,17 +97,17 @@ describe("DashboardShell", () => {
   it("opens a navigation group when the pointer enters it", () => {
     navigationMock.pathname = "/admin";
 
-    renderShell();
+    renderShell(groupedNav);
 
     expect(screen.queryByRole("button", { name: /submenu/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /daftar barang/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /daftar operasional/i })).not.toBeInTheDocument();
 
-    const navGroup = screen.getByRole("link", { name: /kelola barang/i }).parentElement?.parentElement;
+    const navGroup = screen.getByRole("link", { name: /operasional/i }).parentElement?.parentElement;
     expect(navGroup).toBeTruthy();
 
     fireEvent.mouseEnter(navGroup as HTMLElement);
 
-    expect(screen.getByRole("link", { name: /daftar barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /daftar operasional/i })).toBeInTheDocument();
   });
 
   it("toggles dark and light mode from the header", () => {

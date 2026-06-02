@@ -79,12 +79,14 @@ function getPriceChangeCopy(isVickrey: boolean) {
 export function LotDetailPage({
   initialFavorited = false,
   lot,
+  buyerId = null,
   bidState,
   buyerStatus = null,
   wishlistSyncEnabled = false
 }: {
   initialFavorited?: boolean;
   lot: Lot | null;
+  buyerId?: string | null;
   bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
   wishlistSyncEnabled?: boolean;
@@ -298,12 +300,18 @@ export function LotDetailPage({
                       Lelang Sedang Dibatasi
                     </Button>
                   ) : (
-                    <Link className="flex-1" href={`/katalog/${lot.id}/bid`}>
-                      <Button className="h-10 w-full rounded-md text-sm font-black" variant="default">
-                        Ikut Lelang
-                        <Gavel className="size-4" />
-                      </Button>
-                    </Link>
+                    <div className="flex-1">
+                      <VickreyBidForm
+                        buyerId={buyerId}
+                        blacklistUntil={buyerStatus?.blacklist.until ?? null}
+                        blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
+                        isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
+                        lot={lot}
+                        triggerClassName="h-10 w-full rounded-md text-sm font-black"
+                        triggerLabel="Ikut Lelang"
+                        variant="trigger"
+                      />
+                    </div>
                   )
                 ) : isActionBlocked ? (
                   <Button

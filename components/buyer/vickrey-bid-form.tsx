@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -13,7 +14,6 @@ import {
   ShieldCheck,
   X
 } from "lucide-react";
-import { useTransition } from "react";
 
 import { DirectPaymentDisclaimer } from "@/components/buyer/direct-payment-disclaimer";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -36,6 +36,9 @@ type VickreyBidFormProps = {
   blacklistUntil?: Date | null;
   blacklistViolations?: number;
   serverNow?: string;
+  triggerClassName?: string;
+  triggerLabel?: string;
+  variant?: "page" | "trigger";
 };
 
 const VICKREY_TERMS = [
@@ -91,10 +94,14 @@ export function VickreyBidForm({
   isBlacklisted = false,
   blacklistUntil,
   blacklistViolations = 0,
-  serverNow
+  serverNow,
+  triggerClassName,
+  triggerLabel = "Ikut Lelang",
+  variant = "page"
 }: VickreyBidFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const termsModalOverlayRef = useRef<HTMLDivElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isHydrated, setIsHydrated] = useState(false);
   const [acceptedBidTerms, setAcceptedBidTerms] = useState(false);
@@ -110,6 +117,20 @@ export function VickreyBidForm({
   const blocked = isBlacklisted;
   const bidLocked = hasExistingBid;
 
+  function resetTermsModalScroll() {
+    const overlay = termsModalOverlayRef.current;
+    if (!overlay) {
+      return;
+    }
+
+    if (typeof overlay.scrollTo === "function") {
+      overlay.scrollTo({ top: 0 });
+      return;
+    }
+
+    overlay.scrollTop = 0;
+  }
+
   useEffect(() => {
     setIsHydrated(true);
   }, []);
@@ -121,6 +142,8 @@ export function VickreyBidForm({
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    resetTermsModalScroll();
+    const frame = window.requestAnimationFrame(resetTermsModalScroll);
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -132,6 +155,7 @@ export function VickreyBidForm({
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isTermsModalOpen]);
@@ -181,7 +205,7 @@ export function VickreyBidForm({
   function handleSubmitBid() {
     startTransition(async () => {
       if (!buyerId) {
-        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/bid`)}`);
+        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}`)}`);
         return;
       }
 
@@ -199,7 +223,7 @@ export function VickreyBidForm({
       const payload = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
-        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}/bid`)}`);
+        router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}`)}`);
         return;
       }
 
@@ -234,6 +258,240 @@ export function VickreyBidForm({
       router.push(getBuyerTransactionsHref({ tab: "bids", lotId: lot.id }));
       router.refresh();
     });
+  }
+
+  const termsModal =
+    isTermsModalOpen && typeof document !== "undefined" ? createPortal(
+      <div
+        className="fixed inset-0 z-[160] flex items-start justify-center overflow-y-auto overscroll-contain bg-foreground/55 px-3 py-3 backdrop-blur-sm sm:px-5 sm:py-4"
+        data-vickrey-terms-overlay="true"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) {
+            setIsTermsModalOpen(false);
+          }
+        }}
+        ref={termsModalOverlayRef}
+      >
+        <section
+          aria-labelledby="vickrey-terms-title"
+          aria-modal="true"
+          className="w-full max-w-lg overflow-hidden rounded-[1.45rem] border border-white/70 bg-white shadow-[0_34px_90px_-42px_rgba(0,34,18,0.68)]"
+          role="dialog"
+        >
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary via-[#076236] to-[#b28a15] px-4 py-3 text-primary-foreground sm:px-5">
+            <div className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-white/14 blur-2xl" />
+            <div className="pointer-events-none absolute right-20 top-10 h-20 w-40 rounded-full bg-tertiary-container/35 blur-3xl" />
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="flex gap-3">
+                <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+                  <ShieldAlert aria-hidden="true" className="size-4.5" />
+                </span>
+                <div>
+                  <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-primary-foreground/72">
+                    Pegadaian Lelang
+                  </p>
+                  <h3
+                    className="mt-0.5 font-headline text-[1.12rem] font-extrabold leading-tight tracking-tight sm:text-[1.28rem]"
+                    id="vickrey-terms-title"
+                  >
+                    Syarat & Ketentuan Penawaran
+                  </h3>
+                  <p className="mt-1 max-w-[30rem] text-[0.78rem] leading-5 text-primary-foreground/84">
+                    Konfirmasi terakhir sebelum bid tertutup Anda dikirim ke sistem.
+                  </p>
+                </div>
+              </div>
+              <button
+                aria-label="Tutup syarat dan ketentuan"
+                className="interactive-tap inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-white/12 text-primary-foreground transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                onClick={() => setIsTermsModalOpen(false)}
+                type="button"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[#fbfaf5] p-4 sm:p-5">
+            <div className="rounded-[1.35rem] border border-primary/15 bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <p className="text-sm font-bold text-foreground">
+                Baca dan cermati syarat dan ketentuan di bawah ini.
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Dengan melanjutkan, Anda menyatakan memahami kewajiban pembayaran dan konsekuensi jika memenangkan lelang.
+              </p>
+            </div>
+
+            <DirectPaymentDisclaimer
+              className="mt-4"
+              context="bid"
+              unitAddress={lot.unitAddress ?? lot.location}
+              unitName={lot.unitName}
+            />
+
+            <ol className="mt-4 space-y-2.5 text-sm leading-relaxed text-foreground">
+              {VICKREY_TERMS.map((term, index) => (
+                <li
+                  className="grid grid-cols-[2rem_1fr] gap-3 rounded-[1.2rem] border border-border/70 bg-white px-4 py-3"
+                  key={term}
+                >
+                  <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="pt-1">{term}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-4 flex items-start gap-3 rounded-[1.25rem] border border-tertiary-container/35 bg-tertiary-container/[0.1] p-4 text-sm text-foreground">
+              <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-tertiary-container" />
+              <div className="space-y-1">
+                <p className="font-bold">Status Pelanggaran Anda saat ini: {blacklistViolations}x</p>
+                <p className="leading-relaxed text-muted-foreground">
+                  Pemenang yang tidak menyelesaikan pembayaran dalam 24 jam akan masuk pembatasan bertingkat.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.25rem] border border-border/75 bg-white p-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
+                <p className="text-sm font-bold text-foreground">Level pembatasan jika pembayaran gagal</p>
+              </div>
+              <div className="mt-3 divide-y divide-border/70 overflow-hidden rounded-[1rem] border border-border/70">
+                {VIOLATION_LEVELS.map((level) => (
+                  <div
+                    className="grid gap-2 bg-surface-lowest px-3 py-3 text-sm sm:grid-cols-[5rem_4.5rem_1fr] sm:items-center"
+                    key={level.label}
+                  >
+                    <span className="font-bold text-primary">{level.label}</span>
+                    <span className="w-fit rounded-full bg-tertiary-container/12 px-3 py-1 text-xs font-bold text-tertiary-container">
+                      {level.duration}
+                    </span>
+                    <span className="leading-relaxed text-muted-foreground">{level.impact}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.25rem] border border-primary/15 bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+              <label
+                className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-muted-foreground"
+                htmlFor="vickrey-terms-bid-amount"
+              >
+                Nominal penawaran
+              </label>
+              <Input
+                autoComplete="off"
+                className="mt-3 h-11 rounded-[0.95rem] bg-surface-low text-base font-semibold"
+                disabled={bidLocked || isPending}
+                id="vickrey-terms-bid-amount"
+                min={lot.price}
+                name="modalBidAmount"
+                onChange={(event) => setBidAmount(event.target.value)}
+                placeholder="Masukkan nominal bid"
+                type="number"
+                value={bidAmount}
+              />
+              <div className="mt-3 grid gap-2 rounded-[1rem] bg-primary/[0.04] px-3 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    Harga dasar {currency.format(lot.price)}
+                  </span>
+                  <span className="text-xs font-bold text-primary">Bid tertutup</span>
+                </div>
+                <p className="font-headline text-[1.85rem] font-extrabold leading-none tracking-tight text-primary">
+                  {currency.format(Number.isNaN(numericBid) ? 0 : numericBid)}
+                </p>
+                <p
+                  className={`text-xs font-semibold leading-relaxed ${invalidBid ? "text-[#9f1239]" : "text-muted-foreground"}`}
+                  role={invalidBid ? "alert" : undefined}
+                >
+                  {invalidBid
+                    ? helperText
+                    : "Nominal ini akan dikunci sebagai bid tertutup setelah Anda menyetujui syarat lelang."}
+                </p>
+              </div>
+            </div>
+
+            <label
+              className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1.25rem] border border-border/75 bg-white p-4 text-sm leading-relaxed text-muted-foreground transition hover:border-primary/35"
+              htmlFor="vickrey-terms-modal-check"
+            >
+              <input
+                checked={termsModalChecked}
+                className="mt-1 size-5 shrink-0 accent-primary"
+                id="vickrey-terms-modal-check"
+                onChange={(event) => setTermsModalChecked(event.target.checked)}
+                type="checkbox"
+              />
+              <span>
+                Saya telah membaca dan menyetujui syarat lelang ini, termasuk kewajiban
+                pembayaran langsung di unit yang tertera jika saya menang.
+              </span>
+            </label>
+          </div>
+
+          <footer className="border-t border-border/70 bg-white/95 px-5 py-4">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button
+                onClick={() => setIsTermsModalOpen(false)}
+                type="button"
+                variant="secondary"
+              >
+                Kembali
+              </Button>
+              <Button
+                className="min-w-[13rem]"
+                disabled={!termsModalChecked || isPending || blocked || invalidBid || bidLocked}
+                onClick={handleAcceptTermsAndSubmit}
+                type="button"
+              >
+                {isPending ? (
+                  <>
+                    <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                    {"Mengirim\u2026"}
+                  </>
+                ) : (
+                  "Setujui dan Kirim Bid"
+                )}
+              </Button>
+            </div>
+          </footer>
+        </section>
+      </div>,
+      document.body
+    ) : null;
+
+  if (variant === "trigger") {
+    return (
+      <>
+        <Button
+          className={triggerClassName}
+          disabled={!isHydrated || blocked || invalidBid || isPending || bidLocked}
+          onClick={handleConfirmBid}
+          type="button"
+          variant="default"
+        >
+          {!isHydrated ? (
+            "Menyiapkan\u2026"
+          ) : bidLocked ? (
+            "Bid sudah terkunci"
+          ) : isPending ? (
+            <>
+              <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+              {"Mengirim\u2026"}
+            </>
+          ) : (
+            <>
+              {triggerLabel}
+              <Gavel className="size-4" />
+            </>
+          )}
+        </Button>
+        {termsModal}
+      </>
+    );
   }
 
   return (
@@ -394,165 +652,7 @@ export function VickreyBidForm({
         </CardContent>
       </Card>
 
-      {isTermsModalOpen ? (
-        <div
-          className="fixed inset-0 z-[160] flex items-center justify-center overflow-y-auto bg-foreground/55 p-3 backdrop-blur-sm sm:p-5"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setIsTermsModalOpen(false);
-            }
-          }}
-        >
-          <section
-            aria-labelledby="vickrey-terms-title"
-            aria-modal="true"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-[0_34px_90px_-42px_rgba(0,34,18,0.68)]"
-            role="dialog"
-          >
-            <div className="relative overflow-hidden bg-gradient-to-br from-primary via-[#076236] to-[#b28a15] px-6 py-5 text-primary-foreground">
-              <div className="pointer-events-none absolute -right-10 -top-12 size-36 rounded-full bg-white/14 blur-2xl" />
-              <div className="pointer-events-none absolute right-20 top-10 h-20 w-40 rounded-full bg-tertiary-container/35 blur-3xl" />
-              <div className="relative flex items-start justify-between gap-4">
-                <div className="flex gap-4">
-                  <span className="mt-1 inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
-                    <ShieldAlert aria-hidden="true" className="size-5" />
-                  </span>
-                  <div>
-                    <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-primary-foreground/72">
-                      Pegadaian Lelang
-                    </p>
-                    <h3
-                      className="mt-1 font-headline text-2xl font-extrabold tracking-tight"
-                      id="vickrey-terms-title"
-                    >
-                      Syarat & Ketentuan Penawaran
-                    </h3>
-                    <p className="mt-2 max-w-[35rem] text-sm leading-relaxed text-primary-foreground/84">
-                      Konfirmasi terakhir sebelum bid tertutup Anda dikirim ke sistem.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  aria-label="Tutup syarat dan ketentuan"
-                  className="interactive-tap inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/12 text-primary-foreground transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-                  onClick={() => setIsTermsModalOpen(false)}
-                  type="button"
-                >
-                  <X aria-hidden="true" className="size-5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto bg-[#fbfaf5] p-5">
-              <div className="rounded-[1.35rem] border border-primary/15 bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
-                <p className="text-sm font-bold text-foreground">
-                  Baca dan cermati syarat dan ketentuan di bawah ini.
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Dengan melanjutkan, Anda menyatakan memahami kewajiban pembayaran dan konsekuensi jika memenangkan lelang.
-                </p>
-              </div>
-
-              <DirectPaymentDisclaimer
-                className="mt-4"
-                context="bid"
-                unitAddress={lot.unitAddress ?? lot.location}
-                unitName={lot.unitName}
-              />
-
-              <ol className="mt-4 space-y-2.5 text-sm leading-relaxed text-foreground">
-                {VICKREY_TERMS.map((term, index) => (
-                  <li
-                    className="grid grid-cols-[2rem_1fr] gap-3 rounded-[1.2rem] border border-border/70 bg-white px-4 py-3"
-                    key={term}
-                  >
-                    <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                      {index + 1}
-                    </span>
-                    <span className="pt-1">{term}</span>
-                  </li>
-                ))}
-              </ol>
-
-              <div className="mt-4 flex items-start gap-3 rounded-[1.25rem] border border-tertiary-container/35 bg-tertiary-container/[0.1] p-4 text-sm text-foreground">
-                <LockKeyhole aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-tertiary-container" />
-                <div className="space-y-1">
-                  <p className="font-bold">Status Pelanggaran Anda saat ini: {blacklistViolations}x</p>
-                  <p className="leading-relaxed text-muted-foreground">
-                    Pemenang yang tidak menyelesaikan pembayaran dalam 24 jam akan masuk pembatasan bertingkat.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-[1.25rem] border border-border/75 bg-white p-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck aria-hidden="true" className="size-5 text-primary" />
-                  <p className="text-sm font-bold text-foreground">Level pembatasan jika pembayaran gagal</p>
-                </div>
-                <div className="mt-3 divide-y divide-border/70 overflow-hidden rounded-[1rem] border border-border/70">
-                  {VIOLATION_LEVELS.map((level) => (
-                    <div
-                      className="grid gap-2 bg-surface-lowest px-3 py-3 text-sm sm:grid-cols-[5rem_4.5rem_1fr] sm:items-center"
-                      key={level.label}
-                    >
-                      <span className="font-bold text-primary">{level.label}</span>
-                      <span className="w-fit rounded-full bg-tertiary-container/12 px-3 py-1 text-xs font-bold text-tertiary-container">
-                        {level.duration}
-                      </span>
-                      <span className="leading-relaxed text-muted-foreground">{level.impact}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <label
-                className="mt-4 flex cursor-pointer items-start gap-3 rounded-[1.25rem] border border-border/75 bg-white p-4 text-sm leading-relaxed text-muted-foreground transition hover:border-primary/35"
-                htmlFor="vickrey-terms-modal-check"
-              >
-                <input
-                  checked={termsModalChecked}
-                  className="mt-1 size-5 shrink-0 accent-primary"
-                  id="vickrey-terms-modal-check"
-                  onChange={(event) => setTermsModalChecked(event.target.checked)}
-                  type="checkbox"
-                />
-                <span>
-                  Saya telah membaca dan menyetujui syarat lelang ini, termasuk kewajiban
-                  pembayaran langsung di unit yang tertera jika saya menang.
-                </span>
-              </label>
-
-            </div>
-
-            <footer className="shrink-0 border-t border-border/70 bg-white/95 px-5 py-4">
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button
-                  onClick={() => setIsTermsModalOpen(false)}
-                  type="button"
-                  variant="secondary"
-                >
-                  Kembali
-                </Button>
-                <Button
-                  className="min-w-[13rem]"
-                  disabled={!termsModalChecked || isPending}
-                  onClick={handleAcceptTermsAndSubmit}
-                  type="button"
-                >
-                  {isPending ? (
-                    <>
-                      <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-                      {"Mengirim\u2026"}
-                    </>
-                  ) : (
-                    "Setujui dan Kirim Bid"
-                  )}
-                </Button>
-              </div>
-            </footer>
-          </section>
-        </div>
-      ) : null}
+      {termsModal}
     </>
   );
 }
