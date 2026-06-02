@@ -1,5 +1,5 @@
 import React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 
 import { AdminDashboardPage } from "@/components/pages/admin-dashboard-page";
 
@@ -170,6 +170,25 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
     expect(screen.getByText(/7 transaksi lunas tercatat pada bulan ini/i)).toBeInTheDocument();
     expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22-28 Mei/i)).toBeInTheDocument();
+  });
+
+  it("shows the completed transaction count when a trend point is hovered", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByText("30")).toBeInTheDocument();
+    expect(screen.getByText("25")).toBeInTheDocument();
+    expect(screen.getAllByText("5").length).toBeGreaterThan(0);
+
+    const trendPoint = screen.getByRole("button", { name: /28 Mei: 2 transaksi lunas, Rp 8 jt/i });
+    expect(trendPoint).toHaveStyle({ top: "77.06666666666666%" });
+
+    fireEvent.mouseEnter(trendPoint);
+
+    const tooltip = screen.getByRole("tooltip");
+    expect(tooltip).toHaveClass("-translate-x-1/2");
+    expect(within(tooltip).getByText(/^28 Mei$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^2 transaksi lunas$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Nilai penjualan Rp 8 jt$/i)).toBeInTheDocument();
   });
 
   it("falls back to live transaction data when precomputed metrics are unavailable", () => {

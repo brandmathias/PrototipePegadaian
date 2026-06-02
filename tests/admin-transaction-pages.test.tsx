@@ -118,7 +118,7 @@ describe("admin transaction pages", () => {
 
     expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
       "href",
-      "/admin/transaksi/verifikasi-pembayaran"
+      "/admin/pemasaran"
     );
     expect(screen.getByRole("link", { name: /riwayat/i })).toHaveAttribute(
       "href",
@@ -135,7 +135,7 @@ describe("admin transaction pages", () => {
     expect(screen.getByText(/status kerja/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
       "href",
-      "/admin/transaksi/trx-verify?from=verification"
+      "/admin/pemasaran"
     );
     expect(screen.queryByText(/nota & selesai/i)).not.toBeInTheDocument();
 
@@ -153,7 +153,7 @@ describe("admin transaction pages", () => {
     expect(screen.queryByText(/anting berlian/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
       "href",
-      "/admin/transaksi/trx-waiting?from=verification"
+      "/admin/pemasaran"
     );
   });
 
@@ -185,8 +185,8 @@ describe("admin transaction pages", () => {
   it("renders transaction detail workspace with proof preview access", () => {
     render(
       <AdminTransactionDetailWorkspacePage
-        backHref="/admin/transaksi/verifikasi-pembayaran"
-        backLabel="Kembali ke verifikasi pembayaran"
+        backHref="/admin/pemasaran"
+        backLabel="Kembali ke pemasaran"
         transaction={transactions[0]}
       />
     );

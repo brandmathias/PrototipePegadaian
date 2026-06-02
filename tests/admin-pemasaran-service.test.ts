@@ -127,4 +127,97 @@ describe("publishAdminBarang", () => {
     expect(updateWhereSpy).toHaveBeenCalledTimes(1);
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("allows a failed vickrey lot without bidders to be republished as fixed price", async () => {
+    const item = {
+      id: "barang-failed",
+      unitId: "unit-1",
+      name: "Ipad Tanpa Bid",
+      code: "BRG-FAILED",
+      category: "elektronik",
+      condition: "Baik",
+      description: "Sesi lelang sebelumnya gagal karena tidak ada peserta.",
+      appraisalValue: 10000000,
+      specifications: {},
+      status: "dipasarkan"
+    };
+    const createdRow = {
+      id: "marketing-fixed",
+      barangId: "barang-failed",
+      mode: "fixed_price",
+      price: 10000000,
+      basePrice: null,
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: new Date("2026-05-12T00:30:45.000Z"),
+      endsAt: null,
+      revealEndsAt: null,
+      iteration: 2,
+      status: "aktif",
+      createdByUserId: "user-1"
+    };
+    const insertValuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([createdRow])
+    });
+    const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
+    const updateWhereSpy = vi.fn().mockResolvedValue(undefined);
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([item])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([{ status: "gagal" }])
+            })
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ nextIteration: 2 }])
+        })
+      }));
+
+    mocks.db.insert
+      .mockImplementationOnce(() => ({
+        values: insertValuesSpy
+      }))
+      .mockImplementationOnce(() => ({
+        values: statusHistoryValuesSpy
+      }));
+
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: vi.fn().mockReturnValue({
+        where: updateWhereSpy
+      })
+    }));
+
+    await publishAdminBarang("unit-1", "user-1", "barang-failed", {
+      mode: "fixed_price",
+      price: "10000000"
+    });
+
+    expect(insertValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "fixed_price",
+        price: "10000000",
+        basePrice: null,
+        durationDays: null,
+        durationSeconds: null,
+        endsAt: null,
+        revealEndsAt: null,
+        iteration: 2,
+        status: "aktif"
+      })
+    );
+    expect(updateWhereSpy).toHaveBeenCalledTimes(1);
+    expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
+  });
 });

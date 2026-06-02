@@ -422,7 +422,7 @@ function HistoryPrintDocument({
       data-testid="admin-history-print-document"
     >
       <header className="break-inside-avoid rounded-[1.45rem] border border-[#c2ddc8] bg-[linear-gradient(100deg,#00513d_0%,#056a49_58%,#b29216_100%)] px-6 py-5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-        <div className="grid gap-5 print:grid-cols-[minmax(0,1fr)_15.75rem] print:items-start lg:grid-cols-[minmax(0,1fr)_15.75rem] lg:items-start">
+        <div className="admin-history-print-header-grid grid gap-5 print:grid-cols-[minmax(0,1fr)_15.75rem] print:items-start lg:grid-cols-[minmax(0,1fr)_15.75rem] lg:items-start">
           <div className="flex min-w-0 items-start gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-white text-[#0a6a49]">
               <Landmark className="size-6" />
@@ -468,7 +468,7 @@ function HistoryPrintDocument({
         </div>
       </header>
 
-      <section className="mt-3 grid break-inside-avoid gap-3 print:grid-cols-4 lg:grid-cols-4">
+      <section className="admin-history-print-metrics-grid mt-3 grid break-inside-avoid gap-3 print:grid-cols-4 lg:grid-cols-4">
         {[
           { icon: ListChecks, label: "Catatan Dicetak", value: entries.length },
           { icon: Layers3, label: "Total Aktivitas", value: totalEntries },
@@ -494,7 +494,7 @@ function HistoryPrintDocument({
       </section>
 
       <section className="mt-3 break-inside-avoid rounded-[1rem] border border-[#d7e8dd] bg-[#fbfdfb] px-4 py-3">
-        <div className="grid gap-4 print:grid-cols-[1fr_1fr_1fr_1.35fr] lg:grid-cols-[1fr_1fr_1fr_1.35fr]">
+        <div className="admin-history-print-filter-grid grid gap-4 print:grid-cols-[1fr_1fr_1fr_1.35fr] lg:grid-cols-[1fr_1fr_1fr_1.35fr]">
           <div>
             <p className="whitespace-normal break-words text-[0.54rem] font-black uppercase leading-4 tracking-[0.2em] text-[#6c7c73]">
               Periode
@@ -531,7 +531,7 @@ function HistoryPrintDocument({
       </section>
 
       <section className="mt-4 rounded-2xl border border-[#d7e8dd]">
-        <table className="w-full table-fixed border-collapse text-left">
+        <table className="admin-history-print-table w-full table-fixed border-collapse text-left">
           <thead className="bg-[#eff7f1] text-[0.58rem] uppercase tracking-[0.16em] text-[#344c40]">
             <tr>
               <th className="w-[3rem] px-3 py-3">#</th>
@@ -550,7 +550,7 @@ function HistoryPrintDocument({
                   <td className="px-3 py-3">
                     <span
                       className={cn(
-                        "inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
+                        "admin-history-print-status inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
                         historyToneClasses[entry.actionTone]
                       )}
                     >

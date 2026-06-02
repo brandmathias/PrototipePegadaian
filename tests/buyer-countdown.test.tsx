@@ -123,4 +123,31 @@ describe("LiveCountdown", () => {
 
     expect(screen.getByText("Sesi berakhir 2 menit 0 detik")).toBeInTheDocument();
   });
+
+  it("notifies once when the countdown reaches the deadline", () => {
+    const onExpired = vi.fn();
+
+    render(
+      <LiveCountdown
+        expiredLabel="Menunggu hasil"
+        onExpired={onExpired}
+        prefix="Sesi berakhir"
+        targetAt={new Date("2026-04-29T10:00:01+08:00").toISOString()}
+      />
+    );
+
+    expect(onExpired).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(onExpired).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(onExpired).toHaveBeenCalledTimes(1);
+  });
 });

@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const router = vi.hoisted(() => ({
   push: vi.fn(),
@@ -23,6 +23,11 @@ describe("admin pemasaran pages", () => {
   beforeEach(() => {
     router.push.mockClear();
     router.refresh.mockClear();
+  });
+
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   it("renders a compact unified marketing workspace from backend sessions", () => {
@@ -196,8 +201,51 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/kalung emas/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/aktif/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/bukti diunggah/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat sesi/i })).toHaveAttribute(
+      "href",
+      "/admin/pemasaran/fixed-price/pm-fixed"
+    );
     expect(screen.queryByText(/visibilitas bid/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/peserta/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps fixed price buyer staging hidden until payment proof is submitted", () => {
+    render(
+      <AdminMarketingUnifiedPage
+        auctions={[
+          {
+            id: "pm-fixed-pending",
+            lotId: "barang-fixed-pending",
+            lot: "Cincin Emas 3",
+            code: "BRG-02393124",
+            category: "perhiasan",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "FIXED_PRICE",
+            price: 15000000,
+            transactionStatus: "MENUNGGU_PEMBAYARAN",
+            buyerName: "Buyer Demo 13 B",
+            paymentMethod: "TRANSFER_BANK",
+            proofUrl: null,
+            soldAt: null,
+            startsAt: "2026-05-26T12:49:00.000Z",
+            media: [{ id: "m1", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+            primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getByText(/cincin emas 3/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/aktif/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/belum ada pembeli/i)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu pembeli dari katalog/i)).toBeInTheDocument();
+    expect(screen.queryByText(/buyer demo 13 b/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pembelian fixed price tercatat/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
   });
 
   it("opens the ended vickrey winner workspace from the unified marketing action", () => {
@@ -323,6 +371,60 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/24K/i)).toBeInTheDocument();
     expect(screen.getByText(/3,20 gram/i)).toBeInTheDocument();
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
+    const bidLogTable = container.querySelector("table");
+    expect(bidLogTable).toHaveClass("table-fixed");
+    expect(bidLogTable).not.toHaveClass("min-w-[46rem]");
+    expect(bidLogTable?.parentElement).toHaveClass("overflow-hidden");
+    expect(bidLogTable?.parentElement).not.toHaveClass("overflow-x-auto");
+  });
+
+  it("refreshes the admin vickrey detail automatically when the live countdown expires", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-02T20:18:59+08:00"));
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-expiring",
+          lotId: "barang-expiring",
+          lot: "Ipad",
+          code: "BRG-42969709",
+          category: "elektronik",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "VICKREY_AUCTION",
+          ending: "2 Jun 2026",
+          endingAt: new Date("2026-06-02T20:19:00+08:00").toISOString(),
+          participants: 1,
+          basePrice: 10000000,
+          appraisalValue: 10000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "TERKUNCI",
+          specifications: {
+            merek: "Apple",
+            model: "iPad"
+          },
+          media: [{ id: "asset-expiring", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+          primaryMedia: { id: "asset-expiring", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" },
+          bids: []
+        }}
+      />
+    );
+
+    expect(router.refresh).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
   it("shows waiting reveal state after deadline without winner data", () => {
@@ -548,10 +650,19 @@ describe("admin pemasaran pages", () => {
     expect(paymentStepIcon?.className).toContain("text-[#006747]");
     expect(verificationStepIcon?.className).toContain("text-[#006747]");
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
-      "href",
-      "/admin/transaksi/trx-vickrey-1?from=vickrey"
-    );
+    fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
+    expect(screen.getByRole("heading", { name: /verifikasi transaksi pemenang lelang/i })).toBeInTheDocument();
+    const paymentDialog = screen.getByRole("dialog", { name: /verifikasi transaksi pemenang lelang/i });
+    const paymentOverlay = paymentDialog.parentElement;
+    expect(paymentOverlay?.parentElement).toBe(document.body);
+    expect(paymentOverlay).toHaveClass("overflow-y-auto");
+    expect(paymentDialog).not.toHaveClass("max-h-[calc(100dvh-2rem)]");
+    expect(screen.getByText(/jumlah pelunasan yang dibayarkan/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
+    expect(screen.getByText(/keamanan transaksi & kepatuhan/i)).toBeInTheDocument();
+    const directPaymentButton = screen.getByRole("button", { name: /konfirmasi pembayaran langsung/i });
+    expect(directPaymentButton).toBeInTheDocument();
+    expect(directPaymentButton.querySelector("svg")).toBeNull();
     expect(screen.queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
@@ -626,10 +737,12 @@ describe("admin pemasaran pages", () => {
     expect(rankingTable).toHaveClass("table-fixed");
     expect(rankingTable).not.toHaveClass("min-w-[45rem]");
     expect(screen.getAllByText(/total pembayaran/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /verifikasi pembayaran/i })).toHaveAttribute(
-      "href",
-      "/admin/transaksi/trx-vickrey-winner?from=vickrey"
-    );
+    fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
+    expect(screen.getByRole("heading", { name: /verifikasi transaksi pemenang lelang/i })).toBeInTheDocument();
+    expect(screen.getByText(/jumlah pelunasan yang dibayarkan/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /ikon kategori emas/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /konfirmasi pembayaran langsung/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /cetak ringkasan lelang/i }));
     expect(printSpy).toHaveBeenCalledTimes(1);
@@ -714,6 +827,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
     expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/tahap pembayaran selesai/i)).toHaveClass("bg-[#006747]");
+    expect(screen.getByLabelText(/tahap verifikasi selesai/i)).toHaveClass("bg-[#006747]");
+    expect(screen.getByLabelText(/tahap selesai selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByText(/manifes dokumen final/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toHaveAttribute(
       "href",

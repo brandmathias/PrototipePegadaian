@@ -20,6 +20,19 @@ async function getBarangForUnit(barangId: string, unitId: string) {
   return row;
 }
 
+async function getLatestMarketingStatusForBarang(barangId: string) {
+  const [row] = await db
+    .select({
+      status: pemasaran.status
+    })
+    .from(pemasaran)
+    .where(eq(pemasaran.barangId, barangId))
+    .orderBy(desc(pemasaran.createdAt))
+    .limit(1);
+
+  return row?.status ?? null;
+}
+
 async function getMarketingMediaByBarangIds(barangIds: string[]) {
   if (!barangIds.length) {
     return new Map<string, Array<{ id: string; type: string; url: string; fileName?: string }>>();
@@ -182,7 +195,11 @@ async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
-  if (item.status !== "jaminan" && item.status !== "gagal" && item.status !== "gadai") {
+  const latestMarketingStatus =
+    item.status === "dipasarkan" ? await getLatestMarketingStatusForBarang(barangId) : null;
+  const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketingStatus === "gagal";
+
+  if (item.status !== "jaminan" && item.status !== "gagal" && item.status !== "gadai" && !canRepublishFailedMarketing) {
     throw new Error("Barang hanya bisa dipasarkan dari status jaminan atau gagal.");
   }
 

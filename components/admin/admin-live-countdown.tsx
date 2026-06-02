@@ -8,6 +8,7 @@ type AdminLiveCountdownProps = {
   expiredLabel: string;
   prefix?: string;
   className?: string;
+  onExpired?: () => void;
   serverNow?: string;
 };
 
@@ -17,6 +18,7 @@ export function AdminLiveCountdown({
   expiredLabel,
   prefix,
   className,
+  onExpired,
   serverNow
 }: AdminLiveCountdownProps) {
   return (
@@ -24,6 +26,7 @@ export function AdminLiveCountdown({
       className={className}
       expiredLabel={expiredLabel}
       fallbackLabel={fallbackLabel}
+      onExpired={onExpired}
       prefix={prefix}
       serverNow={serverNow}
       targetAt={targetAt}

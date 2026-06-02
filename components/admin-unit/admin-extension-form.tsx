@@ -161,12 +161,12 @@ export function AdminExtensionForm({
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-2 sm:flex-row sm:items-center sm:justify-end">
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-2 sm:flex-row sm:items-center sm:justify-between">
                 <Link href={`/admin/barang/${itemId}`}>
                   <Button
-                    className="h-11 min-w-[6.5rem] rounded-xl px-4 text-sm font-bold text-slate-500 shadow-none hover:bg-slate-50 hover:text-slate-800"
+                    className="h-12 min-w-[7rem] rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-none hover:bg-[#f6faf8]"
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                   >
                     Batal
                   </Button>

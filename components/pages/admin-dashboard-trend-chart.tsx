@@ -26,6 +26,8 @@ type DashboardStripMetric = {
   icon: LucideIcon;
 };
 
+const chartAxisFontFamily = 'var(--font-manrope), "Trebuchet MS", "Segoe UI", system-ui, sans-serif';
+const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
 const numberFormatter = new Intl.NumberFormat("id-ID");
 
 function formatCount(value: number) {
@@ -50,6 +52,18 @@ function formatCurrencyCompact(value: number) {
   return `Rp ${formatShortNumber(value)}`;
 }
 
+function formatAxisNumber(value: number) {
+  if (Number.isInteger(value)) {
+    return numberFormatter.format(value);
+  }
+
+  return numberFormatter.format(Number(value.toFixed(1)));
+}
+
+function resolveAxisMax(value: number) {
+  return Math.max(30, Math.ceil(value / 5) * 5);
+}
+
 function buildChartModel(series: DashboardTrendPoint[]) {
   const fallback = series.length
     ? series
@@ -67,22 +81,33 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     top: 38,
     bottom: 245
   };
-  const maxAxisValue = 50;
+  const maxPlotValue = Math.max(...fallback.map((point) => Number(point.value ?? 0)));
+  const maxAxisValue = resolveAxisMax(maxPlotValue);
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
-  const axisTicks = [
-    { label: "50+", y: 38 },
-    { label: "40", y: 79.4 },
-    { label: "30", y: 120.8 },
-    { label: "20", y: 162.2 },
-    { label: "10", y: 203.6 },
-    { label: "0", y: chart.bottom }
-  ];
+  const axisTicks = Array.from({ length: 7 }, (_, index) => {
+    const ratio = index / 6;
+    const value = maxAxisValue - maxAxisValue * ratio;
+
+    return {
+      label: formatAxisNumber(value),
+      y: chart.top + (chart.bottom - chart.top) * ratio
+    };
+  });
   const points = fallback.map((point, index) => {
-    const ratio = Math.min(point.value / maxAxisValue, 1);
+    const plotValue = Number(point.value ?? 0);
+    const ratio = Math.min(plotValue / maxAxisValue, 1);
+    const x = chart.left + step * index;
+    const y = chart.bottom - ratio * (chart.bottom - chart.top);
+
     return {
       ...point,
-      x: chart.left + step * index,
-      y: chart.bottom - ratio * (chart.bottom - chart.top)
+      isActiveData: Number(point.amount ?? 0) > 0 || Number(point.value ?? 0) > 0,
+      labelWidth: Math.max(48, point.label.length * 7.6 + 20),
+      leftPercent: (x / 980) * 100,
+      plotValue,
+      topPercent: (y / 300) * 100,
+      x,
+      y
     };
   });
   const linePath = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
@@ -146,10 +171,11 @@ const timeframeOptions: Array<{ key: DashboardSalesTimeframeKey; label: string }
 
 export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardMetrics }) {
   const [activeRange, setActiveRange] = useState<DashboardSalesTimeframeKey>(metrics.salesTrend.defaultRange);
+  const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   const range = metrics.salesTrend.ranges[activeRange] ?? metrics.salesTrend.ranges.week;
   const chart = useMemo(() => buildChartModel(range.points), [range.points]);
   const stripMetrics = useMemo(() => buildStripMetrics(range, activeRange), [activeRange, range]);
-  const lastPoint = chart.points[chart.points.length - 1];
+  const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 
   return (
     <div className="relative overflow-hidden rounded-[1.65rem] border border-[#ebeeea] bg-white p-4 shadow-[0_20px_48px_-40px_rgba(15,23,42,0.2)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5">
@@ -182,7 +208,10 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       : "border-[#ebeeea] bg-white text-[#2a352f] shadow-[0_10px_24px_-22px_rgba(15,23,42,0.34)] hover:border-[#d7e4da] hover:bg-[#fbfcfb] dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-100 dark:hover:border-emerald-300/18 dark:hover:bg-white/[0.05]"
                   )}
                   key={option.key}
-                  onClick={() => setActiveRange(option.key)}
+                  onClick={() => {
+                    setActiveRange(option.key);
+                    setActivePointIndex(null);
+                  }}
                   type="button"
                 >
                   {option.label}
@@ -213,11 +242,41 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               </filter>
             </defs>
 
-            <g className="fill-[#536472] dark:fill-slate-300/70" fontSize="13">
+            <g>
               {chart.axisTicks.map((tick, index) => (
-                <text key={tick.label} x={index === chart.axisTicks.length - 1 ? 35 : 14} y={tick.y + 6}>
-                  {tick.label}
-                </text>
+                <g key={tick.label}>
+                  <line
+                    className={cn(
+                      index === chart.axisTicks.length - 1
+                        ? "stroke-[#95c5a8] dark:stroke-emerald-200/34"
+                        : "stroke-[#cbd8d1] dark:stroke-slate-300/20"
+                    )}
+                    strokeLinecap="round"
+                    strokeWidth="1.35"
+                    x1={chart.chart.left - 9}
+                    x2={chart.chart.left - 3}
+                    y1={tick.y}
+                    y2={tick.y}
+                  />
+                  <text
+                    className={cn(
+                      index === chart.axisTicks.length - 1
+                        ? "fill-[#0d824b] dark:fill-emerald-200"
+                        : "fill-[#50665b] dark:fill-slate-300/76"
+                    )}
+                    dominantBaseline="middle"
+                    fontFamily={chartAxisFontFamily}
+                    fontSize="12.6"
+                    fontWeight={index === chart.axisTicks.length - 1 ? 900 : 760}
+                    letterSpacing="0"
+                    style={chartAxisTextStyle}
+                    textAnchor="end"
+                    x={chart.chart.left - 18}
+                    y={tick.y}
+                  >
+                    {tick.label}
+                  </text>
+                </g>
               ))}
             </g>
 
@@ -239,18 +298,122 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               strokeWidth="3"
             />
 
-            <circle cx={chart.points[0].x} cy={chart.points[0].y} fill="#ffffff" r="6.5" stroke="#10a24f" strokeWidth="3.2" />
-            <circle cx={lastPoint.x} cy={lastPoint.y} fill="rgba(30,185,95,0.12)" r="17" />
-            <circle cx={lastPoint.x} cy={lastPoint.y} fill="#ffffff" r="6.5" stroke="#10a24f" strokeWidth="3.2" />
+            {activePoint ? (
+              <g>
+                <line
+                  className="stroke-[#0d824b]/30 dark:stroke-emerald-200/34"
+                  strokeDasharray="4 6"
+                  strokeLinecap="round"
+                  strokeWidth="1.6"
+                  x1={activePoint.x}
+                  x2={activePoint.x}
+                  y1={chart.chart.top}
+                  y2={chart.chart.bottom}
+                />
+                <circle cx={activePoint.x} cy={activePoint.y} fill="rgba(30,185,95,0.14)" r="22" />
+              </g>
+            ) : null}
 
-            <g className="fill-[#425466] dark:fill-slate-300/70" fontSize="12">
+            {chart.points.map((point, index) => {
+              const active = index === activePointIndex;
+              const visibleDataPoint = point.isActiveData || index === 0 || index === chart.points.length - 1;
+
+              return (
+                <g key={`${point.label}-marker-${index}`}>
+                  {visibleDataPoint ? (
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      fill={point.isActiveData ? "rgba(30,185,95,0.13)" : "rgba(30,185,95,0.08)"}
+                      r={active ? 17 : point.isActiveData ? 12 : 9}
+                    />
+                  ) : null}
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    fill="#ffffff"
+                    r={active ? 7.4 : point.isActiveData ? 6.2 : 4.2}
+                    stroke={point.isActiveData ? "#10a24f" : "#b9d8c4"}
+                    strokeWidth={point.isActiveData ? 3.2 : 2.2}
+                  />
+                </g>
+              );
+            })}
+
+            <g>
               {chart.points.map((point, index) => (
-                <text key={`${point.label}-${index}`} textAnchor="middle" x={point.x} y="282">
-                  {point.label}
-                </text>
+                <g key={`${point.label}-${index}`}>
+                  {point.isActiveData ? (
+                    <rect
+                      className="fill-[#ecf8f0] stroke-[#bfe7cc] dark:fill-emerald-300/10 dark:stroke-emerald-200/16"
+                      height="22"
+                      rx="11"
+                      width={point.labelWidth}
+                      x={point.x - point.labelWidth / 2}
+                      y="266"
+                    />
+                  ) : null}
+                  <text
+                    className={cn(
+                      point.isActiveData
+                        ? "fill-[#0a7b47] dark:fill-emerald-200"
+                        : "fill-[#435768] dark:fill-slate-300/72"
+                    )}
+                    dominantBaseline="middle"
+                    fontFamily={chartAxisFontFamily}
+                    fontSize={point.isActiveData ? "12.8" : "12.2"}
+                    fontWeight={point.isActiveData ? 900 : 760}
+                    letterSpacing="0"
+                    style={chartAxisTextStyle}
+                    textAnchor="middle"
+                    x={point.x}
+                    y="277"
+                  >
+                    {point.label}
+                  </text>
+                </g>
               ))}
             </g>
           </svg>
+
+          {chart.points.map((point, index) => (
+            <button
+              aria-label={`${point.label}: ${formatCount(point.value)} transaksi lunas, ${formatCurrencyCompact(point.amount)}`}
+              className="absolute size-11 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              key={`${point.label}-hotspot-${index}`}
+              onBlur={() => setActivePointIndex(null)}
+              onFocus={() => setActivePointIndex(index)}
+              onMouseEnter={() => setActivePointIndex(index)}
+              onMouseLeave={() => setActivePointIndex(null)}
+              style={{
+                left: `${point.leftPercent}%`,
+                top: `${point.topPercent}%`
+              }}
+              type="button"
+            />
+          ))}
+
+          {activePoint ? (
+            <div
+              className="pointer-events-none absolute w-[13.4rem] -translate-x-1/2 -translate-y-full rounded-[1rem] border border-[#cfe7d8] bg-white/98 px-4 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] dark:border-emerald-300/18 dark:bg-[#102019]/98 dark:shadow-[0_22px_54px_-28px_rgba(0,0,0,0.72)] dark:ring-white/8"
+              role="tooltip"
+              style={{
+                left: `clamp(7rem, ${activePoint.leftPercent}%, calc(100% - 7rem))`,
+                top: `calc(${activePoint.topPercent}% - 0.9rem)`
+              }}
+            >
+              <div className="absolute left-1/2 top-full size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#cfe7d8] bg-white dark:border-emerald-300/18 dark:bg-[#102019]" />
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#6a7d73] dark:text-slate-300/68">
+                {activePoint.label}
+              </p>
+              <p className="mt-1 font-headline text-[1.35rem] font-black leading-none tracking-[-0.035em] text-[#08633b] dark:text-emerald-200">
+                {formatCount(activePoint.value)} transaksi lunas
+              </p>
+              <p className="mt-1 text-[0.78rem] font-semibold text-[#60736a] dark:text-slate-300/72">
+                Nilai penjualan {formatCurrencyCompact(activePoint.amount)}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <div className="grid gap-3 rounded-[1.3rem] border border-[#edf0ec] bg-white/96 p-3 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 xl:grid-cols-4">

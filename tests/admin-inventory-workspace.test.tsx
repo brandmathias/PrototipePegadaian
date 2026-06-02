@@ -1,4 +1,5 @@
 import React from "react";
+import { readFileSync } from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 
@@ -322,10 +323,20 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(reportClasses).toContain("print:grid-cols-[minmax(0,1fr)_15.75rem]");
     expect(reportClasses).toContain("print:grid-cols-4");
     expect(reportClasses).toContain("print:grid-cols-[1fr_1fr_1fr_1.35fr]");
+    expect(reportClasses).toContain("admin-history-print-header-grid");
+    expect(reportClasses).toContain("admin-history-print-metrics-grid");
+    expect(reportClasses).toContain("admin-history-print-filter-grid");
+    expect(reportClasses).toContain("admin-history-print-table");
     expect(reportClasses).toContain("bg-[linear-gradient(100deg,#00513d_0%,#056a49_58%,#b29216_100%)]");
     expect(reportClasses).toContain(
       "bg-[linear-gradient(135deg,rgba(245,246,198,0.30),rgba(185,165,58,0.36))]"
     );
+
+    const printCss = readFileSync("app/globals.css", "utf8");
+    expect(printCss).toContain("size: auto;");
+    expect(printCss).toContain("@media print and (orientation: portrait)");
+    expect(printCss).toContain(".admin-history-print-table th:nth-child(6)");
+    expect(printCss).not.toContain("size: A4 landscape");
 
     printSpy.mockRestore();
     openSpy.mockRestore();

@@ -1166,9 +1166,9 @@ export function AdminInventoryEditPage({
         </div>
       </div>
 
-      <footer className="flex flex-col-reverse gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_-38px_rgba(15,23,42,0.42)] sm:flex-row sm:items-center sm:justify-end">
+      <footer className="flex flex-col-reverse gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_-38px_rgba(15,23,42,0.42)] sm:flex-row sm:items-center sm:justify-between">
         <Link
-          className="inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-black text-slate-500 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-50 hover:text-slate-800"
+          className="inline-flex h-12 min-w-[7rem] items-center justify-center rounded-[0.82rem] border border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f6faf8]"
           href={`/admin/barang/${item.id}`}
         >
           Batal
@@ -1743,9 +1743,9 @@ export function AdminTransactionsPage({
                   <td className="px-6 py-4">
                     <Link
                       className="inline-flex items-center gap-2 rounded-xl border border-black/15 px-3 py-2 text-xs font-semibold text-[#0a6a49] sm:text-sm"
-                      href={`/admin/transaksi/${transaction.id}`}
+                      href="/admin/pemasaran"
                     >
-                      Buka detail
+                      Buka pemasaran
                       <ArrowRight className="size-4" />
                     </Link>
                   </td>

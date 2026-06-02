@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { CountdownState } from "@/lib/countdown";
 import { getCountdownState } from "@/lib/countdown";
@@ -13,6 +13,7 @@ type LiveCountdownProps = {
   className?: string;
   serverNow?: string;
   formatLabel?: (label: string, state: CountdownState) => string;
+  onExpired?: () => void;
   updateIntervalMs?: number;
 };
 
@@ -24,8 +25,10 @@ export function LiveCountdown({
   className,
   serverNow,
   formatLabel,
+  onExpired,
   updateIntervalMs = 1000
 }: LiveCountdownProps) {
+  const expiredNotifiedRef = useRef(false);
   const syncedClock = useMemo(() => {
     const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
     const performanceStart = typeof performance !== "undefined" ? performance.now() : 0;
@@ -57,6 +60,17 @@ export function LiveCountdown({
   );
 
   const [state, setState] = useState(initialState);
+
+  useEffect(() => {
+    expiredNotifiedRef.current = false;
+  }, [targetAt]);
+
+  useEffect(() => {
+    if (state.isExpired && !expiredNotifiedRef.current) {
+      expiredNotifiedRef.current = true;
+      onExpired?.();
+    }
+  }, [onExpired, state.isExpired]);
 
   useEffect(() => {
     const update = () => {

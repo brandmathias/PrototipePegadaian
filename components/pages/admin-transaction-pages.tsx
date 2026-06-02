@@ -318,10 +318,10 @@ function TransactionSummaryDossier({
             Jalur cepat
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <Link href="/admin/transaksi/verifikasi-pembayaran">
+            <Link href="/admin/pemasaran">
               <Button className="w-full" variant="secondary">
                 <ReceiptText className="size-4" />
-                Buka verifikasi pembayaran
+                Kembali ke pemasaran
               </Button>
             </Link>
             <Link href={backHref}>
@@ -913,7 +913,7 @@ export function AdminTransactionHubPage({ transactions }: { transactions: AdminT
       <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <MetricCard
           detail="Fokus pada transaksi transfer dan pembayaran langsung yang benar-benar menunggu keputusan admin."
-          href="/admin/transaksi/verifikasi-pembayaran"
+          href="/admin/pemasaran"
           icon={<FileCheck2 className="size-5" />}
           label="Verifikasi Pembayaran"
           value={String(verificationQueue.length)}
@@ -985,7 +985,7 @@ export function AdminTransactionVerificationPage({
 
       <TransactionLedgerList
         emptyText="Belum ada transaksi yang menunggu verifikasi pembayaran. Jika semua sudah selesai, Anda bisa membuka halaman riwayat untuk melihat arsip transaksi unit."
-        getHref={(transaction) => `/admin/transaksi/${transaction.id}?from=verification`}
+        getHref={() => "/admin/pemasaran"}
         serverNow={serverNow}
         transactions={verificationQueue}
       />
@@ -1013,7 +1013,7 @@ export function AdminTransactionHistoryPage({
 
       <TransactionLedgerList
         emptyText="Belum ada transaksi arsip untuk unit ini."
-        getHref={(transaction) => `/admin/transaksi/${transaction.id}?from=history`}
+        getHref={() => "/admin/barang/riwayat"}
         serverNow={serverNow}
         transactions={history}
       />
