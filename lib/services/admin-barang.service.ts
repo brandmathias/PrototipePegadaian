@@ -133,7 +133,7 @@ export type AdminBarangHistoryEntry = {
   specifications: unknown;
   ownerName: string;
   customerNumber: string;
-  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
   actionLabel: string;
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
@@ -157,6 +157,22 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
       actionKey: "dipasarkan" as const,
       actionLabel: "Dipasarkan",
       actionTone: "success" as const
+    };
+  }
+
+  if (newStatus === "terjual") {
+    return {
+      actionKey: "terjual" as const,
+      actionLabel: "Terjual",
+      actionTone: "success" as const
+    };
+  }
+
+  if (newStatus === "gagal") {
+    return {
+      actionKey: "gagal" as const,
+      actionLabel: "Gagal",
+      actionTone: "danger" as const
     };
   }
 

@@ -109,9 +109,11 @@ describe("buyer serializers", () => {
     expect(transaction.reference).toBe("BRI-2026-001");
     expect(transaction.imageUrl).toBe("/uploads/barang/kalung.jpg");
     expect(transaction.status).toBe("BUKTI_DIUNGGAH");
+    expect(transaction.deadline).toBe("Menunggu verifikasi admin");
+    expect(transaction.deadlineAt).toBeUndefined();
   });
 
-  it("exposes rejected proof reason for buyer correction content", () => {
+  it("exposes rejected proof reason as canceled fixed price content", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-rejected",
       pemasaranId: "pm-fixed",
@@ -136,6 +138,10 @@ describe("buyer serializers", () => {
     expect(transaction.status).toBe("DITOLAK_BUKTI");
     expect(transaction.rejectionReason).toBe("Nominal uang yang dikirim tidak sesuai harga barang.");
     expect(transaction.paymentNotes.join(" ")).toMatch(/nominal uang yang dikirim/i);
+    expect(transaction.paymentNotes.join(" ")).toMatch(/transaksi dibatalkan/i);
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/unggah ulang/i);
+    expect(transaction.deadline).toBe("Dibatalkan");
+    expect(transaction.deadlineAt).toBeUndefined();
   });
 
   it("maps buyer completion into the final SELESAI status with a printable receipt", () => {

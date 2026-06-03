@@ -84,7 +84,10 @@ export function AdminSelect({
       const viewportPadding = 12;
       const top = rect.bottom + gap + window.scrollY;
       const maxWidth = window.innerWidth - viewportPadding * 2;
-      const contentWidth = menu.scrollWidth;
+      const optionWidths = Array.from(menu.querySelectorAll<HTMLElement>(".admin-select-option")).map(
+        (option) => option.scrollWidth
+      );
+      const contentWidth = Math.max(menu.scrollWidth, ...optionWidths);
       const width = Math.min(Math.max(rect.width, contentWidth), maxWidth);
       const left = Math.min(
         Math.max(viewportPadding, rect.left + window.scrollX),

@@ -85,10 +85,13 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/menunggu konfirmasi selesai dari buyer/i)).toBeInTheDocument();
-    expect(screen.getByText(/transfer-lunas.jpg/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByText(/transfer-lunas.jpg/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /buka nota/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /nota transaksi/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 3000 });
@@ -101,6 +104,57 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/kalung-emas.jpg"]')).not.toBeNull();
+
+    printSpy.mockRestore();
+  });
+
+  it("prints the paid auction winner receipt with the same official lelang layout as admin unit", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-vickrey-paid",
+          lotId: "pm-vickrey-1",
+          kind: "VICKREY_WIN",
+          title: "Cincin Emas Berlian",
+          amount: 10000000,
+          status: "LUNAS",
+          method: "BAYAR_LANGSUNG",
+          unit: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi, Manado",
+          reference: "CASH-OCE8A1",
+          applicationNumber: "PGJ-VIC-TRXVICK",
+          paymentLabel: "Bayar langsung di unit",
+          paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
+          imageUrl: "/uploads/barang/cincin-lelang.jpg",
+          verifiedAt: "3 Jun 2026, 07.39 WIB",
+          receiptNumber: "CASH-OCE8A1"
+        }}
+        transactionId="trx-vickrey-paid"
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 3000 });
+
+    const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status");
+
+    expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("vickrey-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.querySelector("style")?.textContent).toContain("width: 210mm");
+    expect(receiptPrintRoot!.querySelector("style")?.textContent).toContain("min-height: 297mm");
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Lelang");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).toHaveTextContent("Langsung di unit");
+    expect(receiptPrintRoot!).toHaveTextContent("Pembayaran hasil lelang sudah diverifikasi admin unit");
+    expect(receiptPrintRoot!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/cincin-lelang.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
   });
@@ -122,8 +176,9 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /review bukti/i })).toBeInTheDocument();
     expect(screen.queryByText(/bukti pembayaran sedang direview/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/terkirim dan terkunci sampai admin/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/transfer-budi.jpg/i)).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByText(/transfer-budi.jpg/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /bukti sedang direview admin/i })).not.toBeInTheDocument();
@@ -146,13 +201,13 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/pembelian selesai setelah pembayaran diverifikasi/i)).toBeInTheDocument();
-    expect(screen.getByText(/transfer-selesai.jpg/i)).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByText(/transfer-selesai.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
-  it("surfaces rejection reason and keeps proof upload available for correction", () => {
+  it("surfaces rejection reason as a canceled transaction while keeping the submitted proof visible", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -169,11 +224,16 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/workflow verifikasi gagal/i)).toBeInTheDocument();
     expect(screen.getAllByText(/bukti pembayaran ditolak/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/nominal uang yang dikirim tidak sesuai harga barang/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/upload ulang bukti pembayaran/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/barang dapat dibeli kembali dari katalog jika masih tersedia/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /review bukti/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
     expect(screen.queryByText(/transfer-budi-buram\.jpg/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("img", { name: /preview bukti transfer/i })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/file bukti transfer/i)).not.toBeDisabled();
-    expect(screen.getByRole("button", { name: /kirim ulang bukti pembayaran/i })).toBeDisabled();
+    expect(screen.queryByText(/upload kembali bukti pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim ulang bukti pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
   it("blocks settlement actions while the buyer has an active blacklist", () => {

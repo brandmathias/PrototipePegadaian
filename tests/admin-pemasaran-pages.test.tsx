@@ -1151,8 +1151,6 @@ describe("admin pemasaran pages", () => {
   });
 
   it("renders the failed vickrey archive when winner misses the 24 hour payment deadline", () => {
-    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
-
     render(
       <AdminVickreyAuctionDetailPage
         auction={{
@@ -1234,9 +1232,7 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(screen.getByRole("button", { name: /^batal$/i }));
     expect(screen.queryByRole("heading", { name: /pasarkan barang/i })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /cetak berita acara gagal lelang/i }));
-    expect(printSpy).toHaveBeenCalledTimes(1);
-    printSpy.mockRestore();
+    expect(screen.queryByRole("button", { name: /cetak berita acara gagal lelang/i })).not.toBeInTheDocument();
   });
 
   it("renders a clear failed vickrey archive when the session ends without bidders", () => {
@@ -1273,6 +1269,7 @@ describe("admin pemasaran pages", () => {
       />
     );
 
+    expect(screen.getByText(/^gagal$/i)).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
     expect(screen.getByText(/lelang gagal .* tidak ada peserta/i)).toBeInTheDocument();
     expect(screen.getByText(/sesi berakhir tanpa peserta yang mengirim bid/i)).toBeInTheDocument();
     expect(screen.getByText(/manifes kegagalan sesi/i)).toBeInTheDocument();
@@ -1283,6 +1280,51 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
     expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
+  });
+
+  it("renders a red failed header badge when the winner misses the 24 hour payment window", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-late-winner",
+          lotId: "barang-late-winner",
+          lot: "Cincin Emas Terlambat Bayar",
+          code: "BRG-55291335",
+          category: "perhiasan",
+          condition: "baik",
+          status: "GAGAL",
+          mode: "VICKREY_AUCTION",
+          ending: "28 Mei 2026",
+          endingAt: "2026-05-28T11:20:00.000Z",
+          participants: 4,
+          basePrice: 10000000,
+          finalPrice: 15250000,
+          winner: "Buyer Dua",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-late",
+          transactionStatus: "GAGAL",
+          paymentMethod: "TRANSFER_BANK",
+          paymentDeadline: "2026-05-29T11:20:00.000Z",
+          note: "Pemenang tidak melunasi dalam 24 jam.",
+          bids: [
+            {
+              id: "bid-late-1",
+              bidderId: "seed-buyer-simple-2",
+              bidderName: "Buyer Dua",
+              submittedAtLabel: "28 Mei 2026, 19.10 WIB",
+              amount: 16000000,
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByText(/^gagal$/i)).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
+    expect(screen.getByText(/lelang gagal .* pemenang dikenakan sanksi/i)).toBeInTheDocument();
+    expect(screen.getByText(/batas 24 jam terlewati/i)).toBeInTheDocument();
   });
 
   it("uses category-specific asset fields on the ended vickrey winner page", () => {

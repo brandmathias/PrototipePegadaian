@@ -67,6 +67,7 @@ import type { LotInsights } from "@/lib/contracts/catalog";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDateTime } from "@/lib/timezone";
+import { cn } from "@/lib/utils";
 
 type MarketingMedia = {
   id: string;
@@ -357,11 +358,25 @@ function VickreyCountdownGrid({
 }
 
 function VickreyLiveBadge({ status }: { status: string }) {
+  const isFailed = status === "GAGAL";
+
   return (
-    <span className="inline-flex items-center gap-2 rounded-xl border border-[#0b7a56]/12 bg-[#e9f8ef] px-4 py-2 text-[0.7rem] font-black uppercase tracking-[0.08em] text-[#006747] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[0.7rem] font-black uppercase tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
+        isFailed
+          ? "border border-[#d61f1f]/14 bg-[#fdeeee] text-[#b42318]"
+          : "border border-[#0b7a56]/12 bg-[#e9f8ef] text-[#006747]"
+      )}
+    >
       <span className="relative flex size-2.5">
-        <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#00a86b]/55 opacity-70" />
-        <span className="relative inline-flex size-2.5 rounded-full bg-[#007a53]" />
+        <span
+          className={cn(
+            "absolute inline-flex size-full animate-ping rounded-full opacity-70",
+            isFailed ? "bg-[#ef4444]/55" : "bg-[#00a86b]/55"
+          )}
+        />
+        <span className={cn("relative inline-flex size-2.5 rounded-full", isFailed ? "bg-[#d61f1f]" : "bg-[#007a53]")} />
       </span>
       {status === "AKTIF" ? "Live / Berlangsung" : humanize(status)}
     </span>
@@ -3981,7 +3996,7 @@ function FixedPricePaymentVerificationModal({
               payload={{ reason: rejectionReason }}
               pendingDescription="Sistem sedang mengembalikan transaksi ke buyer dengan alasan penolakan yang dipilih."
               pendingTitle="Menolak pembayaran fixed price"
-              successDescription="Buyer akan menerima alasan penolakan dan dapat mengunggah ulang bukti pembayaran."
+              successDescription="Buyer akan menerima alasan penolakan dan transaksi masuk arsip dibatalkan."
               successTitle="Pembayaran fixed price ditolak"
               variant="secondary"
             >
@@ -4745,14 +4760,6 @@ function VickreyFailureActionFooter({
 }) {
   return (
     <div className="grid gap-3 print:hidden">
-      <button
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#fecaca] bg-white px-5 text-[0.86rem] font-black text-[#991b1b] shadow-[0_18px_34px_-28px_rgba(127,29,29,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99]"
-        onClick={() => window.print()}
-        type="button"
-      >
-        <Printer className="size-4" />
-        Cetak Berita Acara Gagal Lelang
-      </button>
       <button
         className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
         onClick={onRelist}

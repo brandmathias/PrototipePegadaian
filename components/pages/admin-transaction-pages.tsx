@@ -256,7 +256,7 @@ function getAdminWorkspaceStatusText(transaction: AdminTransactionItem) {
   }
 
   if (transaction.status === "DITOLAK_BUKTI") {
-    return "Bukti ditolak dan menunggu perbaikan dari buyer.";
+    return "Bukti ditolak dan transaksi dibatalkan.";
   }
 
   return "Transaksi masih menunggu pembayaran buyer.";
@@ -552,7 +552,7 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
   if (transaction.status === "DITOLAK_BUKTI") {
     return {
       title: "Bukti ditolak",
-      detail: "Menunggu perbaikan",
+      detail: "Transaksi dibatalkan",
       shellClass: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-300/16 dark:bg-rose-300/[0.08] dark:text-rose-200",
       iconClass: "bg-rose-600 text-white dark:bg-rose-300/18 dark:text-rose-100",
       pulseClass: "bg-rose-400/20",

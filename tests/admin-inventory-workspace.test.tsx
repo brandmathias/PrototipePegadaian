@@ -255,6 +255,63 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(oldRow.compareDocumentPosition(newRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("renders and filters sold and failed item history entries", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-sold",
+            barangId: "barang-sold",
+            barangCode: "BRG-SOLD",
+            barangName: "Cincin Terjual",
+            category: "perhiasan",
+            condition: "baik",
+            description: "Barang berhasil terjual.",
+            specifications: { jenis: "cincin" },
+            ownerName: "Budi Santoso",
+            customerNumber: "NSB-001",
+            actionKey: "terjual",
+            actionLabel: "Terjual",
+            actionTone: "success",
+            note: "Pembayaran fixed price disetujui admin unit.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T02:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 10.00 WIB"
+          },
+          {
+            id: "hist-failed",
+            barangId: "barang-failed",
+            barangCode: "BRG-FAILED",
+            barangName: "Ipad Gagal",
+            category: "elektronik",
+            condition: "baik",
+            description: "Barang gagal diproses.",
+            specifications: { jenis: "tablet" },
+            ownerName: "Siti Rahmawati",
+            customerNumber: "NSB-002",
+            actionKey: "gagal",
+            actionLabel: "Gagal",
+            actionTone: "danger",
+            note: "Verifikasi bukti fixed price ditolak admin unit.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T03:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 11.00 WIB"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getAllByText("Terjual").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Gagal").length).toBeGreaterThan(0);
+
+    fireEvent.change(screen.getByLabelText("Filter proses riwayat barang"), { target: { value: "gagal" } });
+
+    expect(screen.getByText("Ipad Gagal")).toBeInTheDocument();
+    expect(screen.queryByText("Cincin Terjual")).not.toBeInTheDocument();
+  });
+
   it("renders the history ledger with compact public-facing columns", () => {
     render(
       <AdminInventoryHistoryWorkspace

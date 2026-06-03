@@ -3,6 +3,14 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 
 import { AdminDashboardPage } from "@/components/pages/admin-dashboard-page";
 
+const dashboardChecklistTitles = [
+  "Pastikan barang baru sudah tercatat lengkap, termasuk foto utama dan hasil appraisal.",
+  "Dahulukan barang yang mendekati jatuh tempo agar keputusan perpanjangan, tebus, atau pindah ke aset unit tidak tertunda.",
+  "Tinjau barang yang siap tayang, lalu pilih skema penjualan yang paling tepat.",
+  "Selesaikan antrian transaksi yang masih menunggu pengecekan agar nota bisa segera diterbitkan.",
+  "Pantau pemenang yang belum menyelesaikan pembayaran dan catat pelanggaran tepat waktu bila diperlukan."
+];
+
 const baseDashboardData = {
   summary: {
     unitName: "UPC Ranotana",
@@ -93,7 +101,12 @@ const baseDashboardData = {
 };
 
 describe("AdminDashboardPage", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   afterEach(() => {
+    window.localStorage.clear();
     vi.useRealTimers();
   });
 
@@ -141,6 +154,29 @@ describe("AdminDashboardPage", () => {
 
     fireEvent.click(dueSoonTask);
     expect(screen.getByText(/3 \/ 5 selesai/i)).toBeInTheDocument();
+  });
+
+  it("automatically resets the daily checklist when the 24 hour cycle expires", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-03T09:58:00.000Z"));
+    window.localStorage.setItem(
+      "pegadaian:admin-dashboard-checklist:v1",
+      JSON.stringify({
+        resetAt: Date.now() + 1000,
+        taskTitles: dashboardChecklistTitles,
+        checked: [true, true, true, false, false]
+      })
+    );
+
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByText(/3 \/ 5 selesai/i)).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
   });
 
   it("updates the checklist clock in real time", () => {

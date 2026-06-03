@@ -75,6 +75,14 @@ const activeTransaction: BuyerTransaction = {
   paymentNotes: ["Transfer sesuai nominal transaksi."]
 };
 
+const rejectedTransaction: BuyerTransaction = {
+  ...activeTransaction,
+  id: "trx-fixed-rejected",
+  status: "DITOLAK_BUKTI",
+  rejectionReason: "Nominal transfer tidak sesuai harga barang.",
+  verifiedAt: "5 Mei 2026, 08.10 WIB"
+};
+
 const latestBid: BuyerBid = {
   lotId: "pm-vickrey-1",
   lot: "Motor Racing",
@@ -85,6 +93,26 @@ const latestBid: BuyerBid = {
   closingAt: "2099-05-19T02:40:00.000Z",
   basePrice: 200000000,
   note: "Bid tertutup tersimpan."
+};
+
+const winningAuctionTransaction: BuyerTransaction = {
+  id: "trx-vickrey-1",
+  lotId: "pm-vickrey-1",
+  kind: "VICKREY_WIN",
+  title: "Motor Racing",
+  amount: 200000000,
+  status: "MENUNGGU_PEMBAYARAN",
+  method: "BAYAR_LANGSUNG",
+  unit: "UPC Ranotana",
+  unitAddress: "Jl. Sam Ratulangi, Manado",
+  createdAt: "4 Mei 2026, 22.07",
+  deadline: "5 Mei 2026, 22.07",
+  deadlineAt: "2099-05-05T14:07:00.000Z",
+  reference: "-",
+  applicationNumber: "PGJ-VIC-MOTOR",
+  paymentLabel: "Bayar langsung di unit",
+  paymentNotes: ["Datang ke unit untuk menyelesaikan pembayaran pemenang lelang."],
+  winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
 };
 
 describe("buyer dashboard page", () => {
@@ -143,5 +171,42 @@ describe("buyer dashboard page", () => {
     expect(screen.getByText(/belum ada aktivitas yang perlu ditindaklanjuti/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak ada pelanggaran aktif/i)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
+  });
+
+  it("does not treat rejected fixed price proof as an urgent payment action", () => {
+    render(
+      <UserDashboardPage
+        buyer={buyer}
+        data={{
+          summary,
+          transactions: [rejectedTransaction],
+          bids: []
+        }}
+      />
+    );
+
+    expect(screen.queryByText(/bukti transfer ditolak/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /upload ulang/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /bayar sekarang/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/belum ada aktivitas yang perlu ditindaklanjuti/i)).toBeInTheDocument();
+  });
+
+  it("opens active Vickrey winners from the dashboard into the winner announcement page first", () => {
+    render(
+      <UserDashboardPage
+        buyer={buyer}
+        data={{
+          summary,
+          transactions: [winningAuctionTransaction],
+          bids: []
+        }}
+      />
+    );
+
+    expect(screen.getByText(/pemenang vickrey/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
+      "href",
+      "/transaksi/trx-vickrey-1/pemenang"
+    );
   });
 });

@@ -30,6 +30,9 @@ const directPaymentLot: Lot = {
   condition: "Baik",
   status: "Aktif",
   description: "Barang fixed price dengan pembayaran langsung di unit.",
+  bankName: "Bank Rakyat Indonesia (BRI)",
+  bankAccountNumber: "0123-4567-8901-234",
+  bankAccountHolder: "PT Pegadaian (Persero) UPC Ranotana",
   media: [],
   specs: []
 };
@@ -50,14 +53,15 @@ describe("PurchaseWorkflow", () => {
     refreshMock.mockReset();
   });
 
-  it("creates a fixed price transfer transaction only after buyer continues payment", async () => {
+  it("creates a fixed price transfer transaction only after buyer uploads payment proof", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { id: "trx-transfer-1" } })
+      json: async () => ({ data: { id: "trx-transfer-1", status: "BUKTI_DIUNGGAH" } })
     });
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
+    const proofFile = new File(["bukti"], "bukti-transfer.png", { type: "image/png" });
 
     renderPurchaseWorkflow();
 
@@ -66,17 +70,26 @@ describe("PurchaseWorkflow", () => {
     expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/belum membuat transaksi/i).length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/0123-4567-8901-234/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
 
-    await user.click(screen.getByRole("button", { name: /lanjutkan pembayaran/i }));
+    await user.upload(screen.getByLabelText(/file bukti pembayaran/i), proofFile);
+    await user.type(screen.getByLabelText(/nomor referensi/i), "BRI-2026-001");
+    await user.click(screen.getByRole("button", { name: /kirim bukti pembayaran/i }));
 
     await waitFor(() => {
+      const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+
       expect(fetchMock).toHaveBeenCalledWith(
         "/api/user/beli/fixed-direct-1",
         expect.objectContaining({
-          method: "POST",
-          body: JSON.stringify({ paymentMethod: "transfer" })
+          method: "POST"
         })
       );
+      expect(request?.body).toBeInstanceOf(FormData);
+      const formData = request?.body as FormData;
+      expect(formData.get("file")).toBe(proofFile);
+      expect(formData.get("reference")).toBe("BRI-2026-001");
     });
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-transfer-1");

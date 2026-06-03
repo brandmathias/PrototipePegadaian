@@ -5,7 +5,11 @@ export function isBuyerWinnerAnnouncementTransaction(
 ) {
   return (
     transaction.kind === "VICKREY_WIN" &&
-    transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG"
+    [
+      "MENUNGGU_PEMBAYARAN",
+      "MENUNGGU_KONFIRMASI_LANGSUNG",
+      "LUNAS",
+    ].includes(transaction.status)
   );
 }
 
@@ -52,11 +56,15 @@ export function getBuyerBidTransactionHref(
     return null;
   }
 
-  if (
-    bid.status === "MENANG" &&
-    bid.transactionStatus === "MENUNGGU_KONFIRMASI_LANGSUNG"
-  ) {
-    return getBuyerWinnerAnnouncementHref(bid.linkedTransactionId);
+  if (bid.status === "MENANG" && bid.transactionStatus) {
+    const shouldOpenWinnerAnnouncement = isBuyerWinnerAnnouncementTransaction({
+      kind: "VICKREY_WIN",
+      status: bid.transactionStatus,
+    });
+
+    if (shouldOpenWinnerAnnouncement) {
+      return getBuyerWinnerAnnouncementHref(bid.linkedTransactionId);
+    }
   }
 
   return `/transaksi/${bid.linkedTransactionId}`;

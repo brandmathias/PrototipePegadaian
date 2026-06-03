@@ -99,6 +99,67 @@ const transactions: BuyerTransaction[] = [
     paymentLabel: "Bayar langsung di unit",
     paymentNotes: [],
   },
+  {
+    id: "TRX-250519-0013",
+    lotId: "lot-5",
+    kind: "VICKREY_WIN",
+    title: "Iphone 14 Pro Max",
+    imageUrl: "/uploads/barang/iphone.jpg",
+    amount: 20000000,
+    status: "MENUNGGU_PEMBAYARAN",
+    method: "BAYAR_LANGSUNG",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Sam Ratulangi No. 7",
+    createdAt: "19 Mei 2026, 11.00 WIB",
+    deadline: "20 Mei 2026, 11.00 WIB",
+    deadlineAt: "2026-05-20T04:00:00.000Z",
+    reference: "REF-005",
+    applicationNumber: "PGJ-VIC-004",
+    paymentLabel: "Bayar langsung di unit",
+    paymentNotes: [],
+  },
+  {
+    id: "TRX-250519-0014",
+    lotId: "lot-6",
+    kind: "VICKREY_WIN",
+    title: "Ipad",
+    imageUrl: "/uploads/barang/ipad.jpg",
+    amount: 10000000,
+    status: "LUNAS",
+    method: "BAYAR_LANGSUNG",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Sam Ratulangi No. 7",
+    createdAt: "3 Jun 2026, 07.39 WIB",
+    deadline: "4 Jun 2026, 07.39 WIB",
+    deadlineAt: "2026-06-04T07:39:00.000Z",
+    reference: "CASH-OCE8A1",
+    applicationNumber: "PGJ-VIC-OCE8A125",
+    paymentLabel: "Bayar langsung di unit",
+    paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
+    verifiedAt: "3 Jun 2026, 07.39 WIB",
+    receiptNumber: "CASH-OCE8A1",
+  },
+  {
+    id: "TRX-250520-0012",
+    lotId: "lot-4",
+    kind: "FIXED_PRICE",
+    title: "Cincin Emas Berlian",
+    imageUrl: "/uploads/barang/cincin-emas.jpg",
+    amount: 15000000,
+    status: "DITOLAK_BUKTI",
+    method: "TRANSFER_BANK",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Ranotana No. 1",
+    createdAt: "20 Mei 2026, 09.00 WIB",
+    deadline: "21 Mei 2026, 09.00 WIB",
+    deadlineAt: "2026-05-21T01:00:00.000Z",
+    reference: "REF-004",
+    applicationNumber: "PGJ-FP-004",
+    paymentLabel: "Transfer bank ke rekening unit",
+    paymentNotes: [],
+    rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
+    verifiedAt: "20 Mei 2026, 10.15 WIB",
+  },
 ];
 
 const bids: BuyerBid[] = [
@@ -145,7 +206,11 @@ describe("TransactionsPage", () => {
     expect(screen.getByRole("button", { name: /perlu tindakan/i })).toBeInTheDocument();
     expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /bayar sekarang/i })).toHaveLength(1);
+    expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
+    expect(screen.getByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i)).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
+    expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
+    expect(screen.getByText("Ipad")).toBeInTheDocument();
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
     expect(screen.getByAltText("Foto transaksi Gelang Emas 24K - 10 Gram")).toHaveAttribute(
       "src",
@@ -156,6 +221,16 @@ describe("TransactionsPage", () => {
       screen
         .getAllByRole("link", { name: /lihat detail/i })
         .some((link) => link.getAttribute("href") === "/transaksi/TRX-250519-0010/pemenang")
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: /lihat detail/i })
+        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250519-0013/pemenang")
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: /lihat detail/i })
+        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250519-0014/pemenang")
     ).toBe(true);
 
     await user.click(screen.getByRole("button", { name: /riwayat lelang/i }));
@@ -168,6 +243,34 @@ describe("TransactionsPage", () => {
         .some((link) => link.getAttribute("href") === "/riwayat-bid/bid-2/bukan-pemenang")
     ).toBe(true);
     expect(screen.getAllByText(/riwayat lelang tersimpan/i).length).toBeGreaterThan(0);
+  });
+
+  it("places rejected fixed price proof transactions in Dibatalkan instead of Perlu Tindakan", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TransactionsPage
+        buyer={buyer}
+        data={{ summary, transactions, bids: [] }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /perlu tindakan/i }));
+
+    expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
+    expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
+    expect(screen.queryByText("Cincin Emas Berlian")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /dibatalkan/i }));
+
+    expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
+    expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
+    expect(screen.getAllByText("Dibatalkan").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
+      "href",
+      "/transaksi/TRX-250520-0012"
+    );
   });
 
   it("falls back to the bid visual treatment when a product image fails to load", () => {

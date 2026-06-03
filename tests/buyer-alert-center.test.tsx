@@ -6,6 +6,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AlertCenter } from "@/components/ui/alert-center";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 
+vi.mock("next/link", () => ({
+  default: ({ children, href, onClick, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a
+      href={href}
+      onClick={(event) => {
+        event.preventDefault();
+        onClick?.(event);
+      }}
+      {...props}
+    >
+      {children}
+    </a>
+  )
+}));
+
 function ToastTrigger() {
   const { toast } = useToast();
 
@@ -89,7 +104,7 @@ describe("buyer alert center", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders persisted buyer notifications with unread badge and read-all action", async () => {
+  it("keeps the unread badge when opened and clears it after the notification detail is clicked", async () => {
     const user = userEvent.setup();
     renderAlertCenter();
 
@@ -99,14 +114,18 @@ describe("buyer alert center", () => {
 
     expect(screen.getByText(/anda memenangkan lelang motor racing/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan bayar langsung/i)).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalledWith("/api/user/notifikasi/read-all", {
+      method: "POST"
+    });
 
-    await user.click(screen.getByRole("button", { name: /tandai dibaca/i }));
+    await user.click(screen.getByRole("link", { name: /anda memenangkan lelang motor racing/i }));
 
     await waitFor(() => {
       expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
-    expect(fetch).toHaveBeenCalledWith("/api/user/notifikasi/read-all", {
-      method: "POST"
+    expect(fetch).toHaveBeenCalledWith("/api/user/notifikasi/notif-1", {
+      method: "PATCH"
     });
   });
 

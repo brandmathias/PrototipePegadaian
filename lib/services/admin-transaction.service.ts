@@ -1,9 +1,21 @@
+import { randomUUID } from "node:crypto";
+
 import { and, desc, eq, sql } from "drizzle-orm";
 
 import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
 import { validateTransactionRejectPayload, validateTransactionVerificationPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
-import { barang, buyerProfiles, mediaBarang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
+import {
+  barang,
+  buyerProfiles,
+  mediaBarang,
+  pemasaran,
+  riwayatStatusBarang,
+  transaksi,
+  unitAccounts,
+  units,
+  users
+} from "@/lib/db/schema";
 import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
 
 function primaryBarangPhotoUrl() {
@@ -115,6 +127,23 @@ async function ensureTransactionMutable(status: string) {
   }
 }
 
+async function recordItemStatusHistory(input: {
+  barangId: string;
+  oldStatus?: string | null;
+  newStatus: string;
+  changedByUserId?: string | null;
+  note: string;
+}) {
+  await db.insert(riwayatStatusBarang).values({
+    id: randomUUID(),
+    barangId: input.barangId,
+    oldStatus: input.oldStatus ?? null,
+    newStatus: input.newStatus,
+    changedByUserId: input.changedByUserId ?? null,
+    note: input.note
+  });
+}
+
 export async function verifyAdminTransaction(unitId: string, adminId: string, transactionId: string, input: { reference?: unknown }) {
   const row = await getTransactionForUnit(unitId, transactionId);
   await ensureTransactionMutable(row.transaction.status);
@@ -138,6 +167,16 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
 
   await db.update(barang).set({ status: "terjual", updatedAt: new Date() }).where(eq(barang.id, row.item.id));
   await db.update(pemasaran).set({ status: "selesai", updatedAt: new Date() }).where(eq(pemasaran.id, row.transaction.pemasaranId));
+  await recordItemStatusHistory({
+    barangId: row.item.id,
+    oldStatus: row.item.status,
+    newStatus: "terjual",
+    changedByUserId: adminId,
+    note:
+      row.transaction.type === "vickrey"
+        ? "Pemenang lelang Vickrey menyelesaikan pembayaran dalam batas waktu 24 jam dan diverifikasi admin unit."
+        : "Pembayaran fixed price disetujui admin unit sehingga barang tercatat terjual."
+  });
   await notifyPaymentVerified({
     userId: updated.userId,
     transactionId: updated.id,
@@ -184,6 +223,17 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
     })
     .where(eq(transaksi.id, transactionId))
     .returning();
+
+  if (row.transaction.type === "fixed_price") {
+    await recordItemStatusHistory({
+      barangId: row.item.id,
+      oldStatus: row.item.status,
+      newStatus: "gagal",
+      changedByUserId: null,
+      note: `Verifikasi bukti pembayaran fixed price ditolak admin unit. Alasan: ${payload.reason}.`
+    });
+  }
+
   await notifyPaymentRejected({
     userId: updated.userId,
     transactionId: updated.id,

@@ -250,16 +250,6 @@ export function BuyerPaymentProofForm({
               <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm transition duration-500 group-hover:scale-[1.04]">
                 <Expand className="size-4" />
               </span>
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                <span className="block rounded-[1.15rem] border border-white/18 bg-[linear-gradient(180deg,rgba(9,35,24,0.72),rgba(7,28,20,0.9))] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
-                  <span className="block truncate font-body text-[1rem] font-semibold">
-                    {proofDisplayName}
-                  </span>
-                  <span className="mt-1 block text-[0.72rem] uppercase tracking-[0.14em] text-white/72">
-                    Tekan untuk membuka tampilan penuh
-                  </span>
-                </span>
-              </span>
             </button>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fbfbf8,#f3f4ef)] px-5 py-10 text-center">

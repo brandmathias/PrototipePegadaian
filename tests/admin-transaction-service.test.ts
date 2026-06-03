@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   const query: any = {};
@@ -11,11 +11,13 @@ const mocks = vi.hoisted(() => {
   return {
     db: {
       select: vi.fn(() => query),
+      insert: vi.fn(),
       update: vi.fn()
     },
     query,
     serializeAdminTransaction: vi.fn((row) => row),
-    notifyPaymentRejected: vi.fn()
+    notifyPaymentRejected: vi.fn(),
+    notifyPaymentVerified: vi.fn()
   };
 });
 
@@ -29,12 +31,12 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 
 vi.mock("@/lib/services/notification-events", () => ({
   notifyPaymentRejected: mocks.notifyPaymentRejected,
-  notifyPaymentVerified: vi.fn()
+  notifyPaymentVerified: mocks.notifyPaymentVerified
 }));
 
-import { rejectAdminTransactionProof } from "@/lib/services/admin-transaction.service";
+import { rejectAdminTransactionProof, verifyAdminTransaction } from "@/lib/services/admin-transaction.service";
 
-function makeTransactionJoin(status = "ditolak_bukti") {
+function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
   const date = new Date("2026-06-03T09:01:10.537Z");
 
   return {
@@ -42,7 +44,7 @@ function makeTransactionJoin(status = "ditolak_bukti") {
       id: "trx-fixed-rejected",
       pemasaranId: "pm-fixed",
       userId: "buyer-1",
-      type: "fixed_price",
+      type,
       amount: "10000000",
       paymentMethod: "transfer",
       status,
@@ -57,7 +59,8 @@ function makeTransactionJoin(status = "ditolak_bukti") {
     },
     item: {
       id: "barang-1",
-      name: "Cincin Emas Berlian"
+      name: "Cincin Emas Berlian",
+      status: "dipasarkan"
     },
     imageUrl: "/uploads/barang/cincin.jpg",
     unit: {
@@ -81,6 +84,32 @@ describe("admin transaction service", () => {
     mocks.query.limit.mockResolvedValue([makeTransactionJoin()]);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function mockUpdateReturning(row?: Record<string, unknown>) {
+    return {
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue(row ? [row] : [])
+        })
+      })
+    };
+  }
+
+  function mockUpdateOnly() {
+    return {
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined)
+      })
+    };
+  }
+
+  function mockInsertValues() {
+    return vi.fn().mockResolvedValue(undefined);
+  }
+
   it("treats an already rejected fixed price proof as an idempotent result", async () => {
     const result = await rejectAdminTransactionProof("unit-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
@@ -97,5 +126,74 @@ describe("admin transaction service", () => {
     expect(mocks.db.update).not.toHaveBeenCalled();
     expect(mocks.notifyPaymentRejected).not.toHaveBeenCalled();
     expect(mocks.serializeAdminTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("records sold item history when admin verifies a fixed price payment", async () => {
+    const verifiedAt = new Date("2026-06-03T10:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(verifiedAt);
+    mocks.query.limit.mockResolvedValue([makeTransactionJoin("bukti_diunggah", "fixed_price")]);
+
+    const updatedTransaction = {
+      ...makeTransactionJoin("bukti_diunggah", "fixed_price").transaction,
+      status: "lunas",
+      referenceNumber: "BRI-2026-001",
+      verifiedByUserId: "admin-1",
+      verifiedAt
+    };
+    const statusHistoryValuesSpy = mockInsertValues();
+
+    mocks.db.update
+      .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
+      .mockImplementationOnce(() => mockUpdateOnly())
+      .mockImplementationOnce(() => mockUpdateOnly());
+    mocks.db.insert.mockImplementationOnce(() => ({
+      values: statusHistoryValuesSpy
+    }));
+
+    await verifyAdminTransaction("unit-1", "admin-1", "trx-fixed-rejected", {
+      reference: "BRI-2026-001"
+    });
+
+    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        oldStatus: "dipasarkan",
+        newStatus: "terjual",
+        changedByUserId: "admin-1",
+        note: expect.stringMatching(/fixed price disetujui/i)
+      })
+    );
+
+  });
+
+  it("records failed item history when admin rejects a fixed price proof", async () => {
+    mocks.query.limit.mockResolvedValue([makeTransactionJoin("bukti_diunggah", "fixed_price")]);
+
+    const updatedTransaction = {
+      ...makeTransactionJoin("bukti_diunggah", "fixed_price").transaction,
+      status: "ditolak_bukti",
+      rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang"
+    };
+    const statusHistoryValuesSpy = mockInsertValues();
+
+    mocks.db.update.mockImplementationOnce(() => mockUpdateReturning(updatedTransaction));
+    mocks.db.insert.mockImplementationOnce(() => ({
+      values: statusHistoryValuesSpy
+    }));
+
+    await rejectAdminTransactionProof("unit-1", "trx-fixed-rejected", {
+      reason: "Nominal uang yang dikirim tidak sesuai harga barang"
+    });
+
+    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        oldStatus: "dipasarkan",
+        newStatus: "gagal",
+        changedByUserId: null,
+        note: expect.stringMatching(/fixed price ditolak/i)
+      })
+    );
   });
 });

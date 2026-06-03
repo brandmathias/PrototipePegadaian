@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import {
   CarFront,
   Check,
@@ -83,6 +83,20 @@ function PanelTitle({
 
 function isSupportedMedia(file: File) {
   return file.type.startsWith("image/") || file.type.startsWith("video/");
+}
+
+function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+    return;
+  }
+
+  try {
+    video.currentTime = Math.min(0.2, video.duration / 4);
+  } catch {
+    // Some browsers block seeking before enough metadata is available.
+  }
 }
 
 function FormInput({
@@ -350,9 +364,17 @@ function AdminMediaUploadGallery({
                   tabIndex={0}
                 >
                   {isVideo ? (
-                    <div className="flex size-full flex-col items-center justify-center gap-1 bg-[#0d1712] text-white">
-                      <PlayCircle className="size-4" />
-                      <span className="text-[0.55rem] font-black uppercase tracking-[0.08em]">Video</span>
+                    <div className="relative size-full overflow-hidden rounded-xl bg-[#0d1712] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                      <video
+                        aria-label={`Thumbnail video media barang ${index + 1}`}
+                        className="size-full object-cover opacity-95 transition duration-500 group-hover:scale-[1.025]"
+                        muted
+                        onLoadedMetadata={revealVideoPreviewFrame}
+                        playsInline
+                        preload="metadata"
+                        src={item.previewUrl}
+                      />
+                      <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,17,12,0.04),rgba(4,17,12,0.48))]" />
                     </div>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element

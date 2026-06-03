@@ -85,6 +85,13 @@ type AdminBarangMedia = {
   fileName?: string;
   sizeBytes?: number;
 };
+type AdminBarangHistoryActionKey =
+  | "input_baru"
+  | "perpanjangan"
+  | "ditebus"
+  | "dipasarkan"
+  | "terjual"
+  | "gagal";
 
 function isImageBarangMedia(media: AdminBarangMedia | null | undefined) {
   if (!media) {
@@ -589,7 +596,7 @@ export function AdminInventoryHistoryPage({
     specifications: unknown;
     ownerName: string;
     customerNumber: string;
-    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+    actionKey: AdminBarangHistoryActionKey;
     actionLabel: string;
     actionTone: "default" | "success" | "warning" | "danger";
     note: string;
@@ -656,7 +663,7 @@ export function AdminInventoryDetailPage({
     id: string;
     barangId: string;
     actionLabel: string;
-    actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+    actionKey: AdminBarangHistoryActionKey;
     note: string;
     actorName: string;
     createdAtLabel: string;
@@ -1033,6 +1040,8 @@ export function AdminInventoryDetailPage({
                   perpanjangan: CalendarClock,
                   ditebus: ReceiptText,
                   dipasarkan: Gavel,
+                  terjual: BadgeCheck,
+                  gagal: FileWarning,
                 };
                 const EntryIcon = iconMap[entry.actionKey];
                 const stamp = splitTimelineStamp(entry.createdAtLabel);

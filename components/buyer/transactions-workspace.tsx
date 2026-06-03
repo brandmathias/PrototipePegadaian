@@ -63,7 +63,6 @@ function getTransactionModeMeta(kind: BuyerTransaction["kind"]) {
 function getTransactionStatusMeta(status: BuyerTransactionStatus) {
   switch (status) {
     case "MENUNGGU_PEMBAYARAN":
-    case "DITOLAK_BUKTI":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
         label: "Perlu Pembayaran",
@@ -84,6 +83,7 @@ function getTransactionStatusMeta(status: BuyerTransactionStatus) {
         className: "bg-emerald-50 text-[#137333]",
         matchesFilter: "done" as TransactionFilter,
       };
+    case "DITOLAK_BUKTI":
     case "GAGAL":
     default:
       return {
@@ -101,7 +101,7 @@ function getTransactionDescription(transaction: BuyerTransaction) {
         ? "Anda memenangkan lelang. Segera selesaikan pembayaran sebelum batas waktu berakhir."
         : "Transaksi fixed price. Segera selesaikan pembayaran sebelum batas waktu berakhir.";
     case "DITOLAK_BUKTI":
-      return "Bukti pembayaran perlu diperbarui. Unggah ulang dokumen yang lebih jelas agar transaksi bisa dilanjutkan.";
+      return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_VERIFIKASI":
       return "Pembayaran telah kami terima. Transaksi sedang diverifikasi oleh tim Pegadaian.";
@@ -121,7 +121,6 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
 
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
-    case "DITOLAK_BUKTI":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
         amountLabel:
@@ -145,6 +144,12 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
         momentLabel: "Selesai pada",
         momentValue: transaction.verifiedAt || transaction.createdAt,
       };
+    case "DITOLAK_BUKTI":
+      return {
+        amountLabel: "Total transaksi dibatalkan",
+        momentLabel: "Ditolak pada",
+        momentValue: transaction.verifiedAt || transaction.createdAt,
+      };
     case "GAGAL":
     default:
       return {
@@ -158,7 +163,12 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
 function getTransactionActionMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
-    case "DITOLAK_BUKTI":
+      if (transaction.kind === "VICKREY_WIN") {
+        return {
+          isPrimary: false,
+          label: "Lihat Detail",
+        };
+      }
       return {
         isPrimary: true,
         label: "Bayar Sekarang",
@@ -188,7 +198,6 @@ function getTransactionActionMeta(transaction: BuyerTransaction) {
 function getTransactionNoticeMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
-    case "DITOLAK_BUKTI":
       return {
         title: "Transaksi aman",
         description: "Data dan pembayaran Anda terlindungi.",
@@ -217,6 +226,13 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
         description: "Terima kasih telah bertransaksi di Pegadaian Lelang.",
         className: "bg-[#f2fbf4] text-[#2e8a57]",
         icon: <CheckCircle2 className="size-5" />,
+      };
+    case "DITOLAK_BUKTI":
+      return {
+        title: "Verifikasi ditolak",
+        description: "Bukti pembayaran tidak disetujui admin unit.",
+        className: "bg-[#fff5f5] text-[#d84b4b]",
+        icon: <CircleX className="size-5" />,
       };
     case "GAGAL":
     default:
@@ -261,7 +277,7 @@ function getFilterToneMeta(tone: FilterTone) {
 }
 
 function needsTransactionCountdown(status: BuyerTransactionStatus) {
-  return ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(status);
+  return ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(status);
 }
 
 function formatCompactCountdownLabel(label: string) {
@@ -570,7 +586,9 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
           <p
             className={cn(
               "font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] sm:text-[2rem]",
-              transaction.status === "GAGAL" ? "text-slate-400 line-through" : "text-[#006747]"
+              transaction.status === "GAGAL" || transaction.status === "DITOLAK_BUKTI"
+                ? "text-slate-400 line-through"
+                : "text-[#006747]"
             )}
           >
             {currency.format(transaction.amount)}

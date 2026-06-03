@@ -751,13 +751,15 @@
       min-height: auto;
       margin: 0 !important;
       padding: 0 !important;
+      width: 210mm !important;
+      max-width: 210mm !important;
     }
 
     :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-sheet {
       width: 210mm !important;
       height: 297mm !important;
       min-height: 297mm !important;
-      margin: 0 auto !important;
+      margin: 0 !important;
       padding: 0 !important;
       break-inside: avoid;
       page-break-inside: avoid;

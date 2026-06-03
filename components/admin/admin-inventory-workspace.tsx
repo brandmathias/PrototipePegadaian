@@ -31,7 +31,8 @@ import {
   ScrollText,
   Search,
   ShieldCheck,
-  UserRound
+  UserRound,
+  XCircle
 } from "lucide-react";
 
 import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
@@ -59,7 +60,7 @@ type AdminBarangHistoryEntry = {
   specifications?: unknown;
   ownerName: string;
   customerNumber: string;
-  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan";
+  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
   actionLabel: string;
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
@@ -103,7 +104,7 @@ function getInventoryDueCopy(dateLabel: string | null | undefined) {
 
 const historyToneClasses: Record<AdminBarangHistoryEntry["actionTone"], string> = {
   default: "border-[#cfe0ff] bg-[#eef5ff] text-[#2563eb]",
-  success: "border-[#fee2a8] bg-[#fff6df] text-[#b45309]",
+  success: "border-[#bbf7d0] bg-[#ecfdf3] text-[#047857]",
   warning: "border-[#fde68a] bg-[#fff8e5] text-[#a16207]",
   danger: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]"
 };
@@ -112,7 +113,9 @@ const historyIconMap: Record<AdminBarangHistoryEntry["actionKey"], typeof FilePl
   input_baru: FilePlus2,
   perpanjangan: CalendarClock,
   ditebus: ReceiptText,
-  dipasarkan: Gavel
+  dipasarkan: Gavel,
+  terjual: PackageCheck,
+  gagal: XCircle
 };
 
 const historyFilterOptions: Array<{ value: "SEMUA" | AdminBarangHistoryEntry["actionKey"]; label: string }> = [
@@ -120,7 +123,9 @@ const historyFilterOptions: Array<{ value: "SEMUA" | AdminBarangHistoryEntry["ac
   { value: "input_baru", label: "Barang Masuk" },
   { value: "perpanjangan", label: "Perpanjang" },
   { value: "ditebus", label: "Tebus" },
-  { value: "dipasarkan", label: "Dipasarkan" }
+  { value: "dipasarkan", label: "Dipasarkan" },
+  { value: "terjual", label: "Terjual" },
+  { value: "gagal", label: "Gagal" }
 ];
 
 const inventoryFilterOptions = [

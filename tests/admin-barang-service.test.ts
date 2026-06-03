@@ -26,7 +26,12 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminBarang: mocks.serializeAdminBarang
 }));
 
-import { getAdminBarangById, listAdminBarang, updateAdminBarang } from "@/lib/services/admin-barang.service";
+import {
+  getAdminBarangById,
+  listAdminBarang,
+  listAdminBarangHistory,
+  updateAdminBarang
+} from "@/lib/services/admin-barang.service";
 
 const editPayload = {
   appraisalValue: "12000000",
@@ -369,5 +374,81 @@ describe("listAdminBarang", () => {
       /barang lelang hanya dapat diedit/i
     );
     expect(mocks.db.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("listAdminBarangHistory", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function mockHistoryQuery(rows: Array<Record<string, unknown>>) {
+    return {
+      from: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          leftJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockResolvedValue(rows)
+            })
+          })
+        })
+      })
+    };
+  }
+
+  it("maps sold and failed status rows into riwayat barang actions", async () => {
+    const baseRow = {
+      barangId: "barang-1",
+      barangCode: "BRG-001",
+      barangName: "Cincin Emas",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Barang perhiasan.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-001",
+      actorName: "Admin Unit",
+      actorRole: "admin_unit"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-sold",
+            oldStatus: "dipasarkan",
+            newStatus: "terjual",
+            note: "Pembayaran fixed price disetujui admin unit.",
+            createdAt: new Date("2026-06-03T02:00:00.000Z")
+          },
+          {
+            ...baseRow,
+            id: "hist-failed",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Sesi Vickrey berakhir tanpa penawar.",
+            createdAt: new Date("2026-06-03T01:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "hist-sold",
+        actionKey: "terjual",
+        actionLabel: "Terjual",
+        actionTone: "success"
+      }),
+      expect.objectContaining({
+        id: "hist-failed",
+        actionKey: "gagal",
+        actionLabel: "Gagal",
+        actionTone: "danger"
+      })
+    ]);
   });
 });

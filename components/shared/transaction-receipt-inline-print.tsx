@@ -7,6 +7,8 @@ import { Printer } from "lucide-react";
 type TransactionReceiptInlinePrintProps = {
   buttonClassName: string;
   children: ReactNode;
+  documentClassName?: string;
+  documentTestId?: string;
   label?: string;
   rootId: string;
 };
@@ -56,6 +58,8 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
 export function TransactionReceiptInlinePrint({
   buttonClassName,
   children,
+  documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
+  documentTestId = "transaction-receipt-print-document",
   label = "Cetak Nota",
   rootId
 }: TransactionReceiptInlinePrintProps) {
@@ -100,8 +104,8 @@ export function TransactionReceiptInlinePrint({
       {isMounted && isPrintReady
         ? createPortal(
             <div
-              className="transaction-receipt-print-document hidden bg-white text-[#10251c] print:block"
-              data-testid="transaction-receipt-print-document"
+              className={documentClassName}
+              data-testid={documentTestId}
               id={rootId}
             >
               <style>{`
@@ -114,7 +118,9 @@ export function TransactionReceiptInlinePrint({
                     display: block !important;
                     margin: 0 !important;
                     padding: 0 !important;
-                    width: 100% !important;
+                    width: 210mm !important;
+                    max-width: 210mm !important;
+                    min-height: 297mm !important;
                   }
                 }
               `}</style>

@@ -153,6 +153,34 @@ describe("buyer auction state refresh", () => {
     ]);
   });
 
+  it("omits legacy fixed price waiting-payment rows that do not have payment proof", async () => {
+    mocks.db.select.mockImplementationOnce(() =>
+      mockBuyerTransactionRows([
+        {
+          id: "trx-draft-fixed",
+          status: "menunggu_pembayaran",
+          type: "fixed_price",
+          proofUrl: null
+        },
+        {
+          id: "trx-review-fixed",
+          status: "bukti_diunggah",
+          type: "fixed_price",
+          proofUrl: "/uploads/bukti/transfer.jpg"
+        }
+      ])
+    );
+
+    const rows = await listBuyerTransactions("buyer-1");
+
+    expect(rows).toEqual([
+      expect.objectContaining({
+        id: "trx-review-fixed",
+        status: "bukti_diunggah"
+      })
+    ]);
+  });
+
   it("refreshes overdue Vickrey payments before reading the buyer blacklist summary", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockLimitRows([]))

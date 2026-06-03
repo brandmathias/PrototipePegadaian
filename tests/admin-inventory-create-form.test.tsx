@@ -51,6 +51,24 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getAllByRole("button", { name: /hapus foto-/i })).toHaveLength(5);
   });
 
+  it("renders uploaded video thumbnails with video preview frames", async () => {
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(input, {
+      target: {
+        files: [
+          new File(["foto"], "laptop.jpg", { type: "image/jpeg" }),
+          new File(["video"], "review-laptop.mp4", { type: "video/mp4" })
+        ]
+      }
+    });
+
+    expect(await screen.findByAltText("Preview media barang 1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Thumbnail video media barang 2")).toBeInTheDocument();
+    expect(screen.queryByText(/^video$/i)).not.toBeInTheDocument();
+  });
+
   it("shows category-specific specification fields while creating barang gadai", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 

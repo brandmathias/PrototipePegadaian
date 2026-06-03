@@ -6,6 +6,8 @@ import { currency } from "@/lib/formatters/currency";
 
 export type BuyerPurchasePayload = {
   paymentMethod: "transfer";
+  fileName: string;
+  reference?: string;
 };
 
 export type BuyerBidPayload = {
@@ -45,12 +47,26 @@ function readRecord(input: unknown) {
 export function validateBuyerPurchasePayload(input: unknown): BuyerPurchasePayload {
   const payload = readRecord(input);
   const paymentMethod = payload.paymentMethod ?? "transfer";
+  const fileName = typeof payload.fileName === "string" ? payload.fileName.trim() : "";
+  const reference = typeof payload.reference === "string" ? payload.reference.trim() : "";
 
   if (paymentMethod !== "transfer") {
     throw new Error("Fixed price hanya mendukung pembayaran transfer bank.");
   }
 
-  return { paymentMethod };
+  if (!fileName) {
+    throw new Error("Bukti pembayaran wajib diunggah saat membeli fixed price.");
+  }
+
+  if (!/\.(jpg|jpeg|png|pdf)$/i.test(fileName)) {
+    throw new Error("Format bukti pembayaran harus JPG, PNG, atau PDF.");
+  }
+
+  return {
+    paymentMethod,
+    fileName,
+    ...(reference ? { reference } : {})
+  };
 }
 
 export function validateBuyerBidPayload(input: unknown, basePrice: number): BuyerBidPayload {

@@ -142,9 +142,9 @@ function getPaymentNotes(row: BuyerTransactionShape) {
 
   if (row.status === "ditolak_bukti") {
     return [
-      "Bukti sebelumnya belum bisa diverifikasi admin.",
-      row.rejectionReason ?? "Silakan unggah ulang bukti pembayaran yang lebih jelas.",
-      "Pastikan nominal dan nomor referensi transfer sesuai transaksi."
+      "Bukti pembayaran ditolak admin unit.",
+      row.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.",
+      "Transaksi dibatalkan dan barang kembali tersedia di katalog jika belum terjual."
     ];
   }
 
@@ -234,7 +234,22 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
   const isVickrey = row.type === "vickrey";
   const method = row.paymentMethod === "langsung" ? "BAYAR_LANGSUNG" : "TRANSFER_BANK";
   const proof = splitLegacyProofValue(row.proofUrl);
+  const status = toTransactionStatus(row.status);
   const hasFinalReceipt = row.status === "lunas" || row.status === "selesai";
+  const deadlineLabel =
+    status === "BUKTI_DIUNGGAH"
+      ? "Menunggu verifikasi admin"
+      : status === "DITOLAK_BUKTI"
+        ? "Dibatalkan"
+        : hasFinalReceipt
+          ? "Selesai"
+          : getCountdownState(row.paymentDeadline, {
+              expiredLabel: "Waktu pembayaran berakhir"
+            }).label;
+  const deadlineAt =
+    status === "BUKTI_DIUNGGAH" || status === "DITOLAK_BUKTI" || hasFinalReceipt
+      ? undefined
+      : row.paymentDeadline?.toISOString();
 
   return {
     id: row.id,
@@ -243,18 +258,13 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     title: row.lotName,
     imageUrl: row.imageUrl ?? undefined,
     amount: toNumber(row.amount),
-    status: toTransactionStatus(row.status),
+    status,
     method,
     unit: row.unitName,
     unitAddress: row.unitAddress,
     createdAt: toDateTimeLabel(row.createdAt),
-    deadline:
-      hasFinalReceipt
-        ? "Selesai"
-        : getCountdownState(row.paymentDeadline, {
-            expiredLabel: "Waktu pembayaran berakhir"
-          }).label,
-    deadlineAt: hasFinalReceipt ? undefined : row.paymentDeadline?.toISOString(),
+    deadline: deadlineLabel,
+    deadlineAt,
     reference: row.referenceNumber ?? proof.reference ?? "-",
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
     paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",

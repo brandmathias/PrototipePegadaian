@@ -42,7 +42,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
-import { getBuyerBidMonitoringHref, getBuyerBidTransactionHref, getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
+import {
+  getBuyerBidMonitoringHref,
+  getBuyerBidTransactionHref,
+  getBuyerTransactionHref,
+  getBuyerTransactionsHref,
+  isBuyerWinnerAnnouncementTransaction
+} from "@/lib/buyer/transaction-links";
 import type { BuyerBid, BuyerBidStatus, BuyerBidVerification, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
@@ -115,9 +121,9 @@ const transactionStatusMeta: Record<
     description: "Bukti transfer sudah diterima dan sedang diverifikasi admin unit."
   },
   DITOLAK_BUKTI: {
-    label: "Bukti Perlu Diperbaiki",
+    label: "Dibatalkan",
     variant: "danger",
-    description: "Admin menolak bukti pembayaran sebelumnya. Unggah ulang bukti yang sesuai."
+    description: "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
   },
   MENUNGGU_KONFIRMASI_LANGSUNG: {
     label: "Menunggu Konfirmasi Langsung",
@@ -187,7 +193,7 @@ function StatusPill({
     <Badge
       className={cn(
         (status === "LUNAS" || status === "SELESAI") && "bg-primary/10 text-primary",
-        status === "GAGAL" && "bg-tertiary-container/10 text-tertiary-container"
+        (status === "GAGAL" || status === "DITOLAK_BUKTI") && "bg-tertiary-container/10 text-tertiary-container"
       )}
       variant={tone}
     >
@@ -332,7 +338,7 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
   }
 
   if (transaction.status === "DITOLAK_BUKTI") {
-    return "Bukti pembayaran perlu diperbaiki. Unggah ulang bukti transfer yang jelas dan sesuai nominal transaksi.";
+    return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
   }
 
   return transactionStatusMeta[transaction.status].description;
@@ -366,8 +372,9 @@ function BuyerPaymentCountdown({
 }
 
 function getDashboardActionLabel(transaction: BuyerTransaction) {
+  if (isBuyerWinnerAnnouncementTransaction(transaction)) return "Lihat detail";
   if (transaction.status === "LUNAS") return "Selesaikan pembelian";
-  if (transaction.status === "DITOLAK_BUKTI") return "Upload ulang";
+  if (transaction.status === "DITOLAK_BUKTI") return "Lihat detail";
   if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") return "Lihat detail";
   return "Bayar sekarang";
 }
@@ -378,7 +385,7 @@ function getDashboardActionDescription(transaction: BuyerTransaction) {
   }
 
   if (transaction.status === "DITOLAK_BUKTI") {
-    return "Admin meminta bukti pembayaran diperbaiki. Buka detail transaksi untuk unggah ulang.";
+    return "Admin unit menolak bukti pembayaran. Transaksi lama sudah dibatalkan.";
   }
 
   if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") {
@@ -389,11 +396,11 @@ function getDashboardActionDescription(transaction: BuyerTransaction) {
 }
 
 function isDashboardActiveTransaction(transaction: BuyerTransaction) {
-  return !["SELESAI", "GAGAL"].includes(transaction.status);
+  return !["SELESAI", "GAGAL", "DITOLAK_BUKTI"].includes(transaction.status);
 }
 
 function isDashboardPaymentWaiting(transaction: BuyerTransaction) {
-  return ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
+  return ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
     transaction.status
   );
 }
@@ -404,7 +411,6 @@ function isDashboardActiveBid(bid: BuyerBid) {
 
 function getUrgentTransactionRank(transaction: BuyerTransaction) {
   if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) return 0;
-  if (transaction.status === "DITOLAK_BUKTI") return 1;
   if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") return 2;
   if (transaction.status === "MENUNGGU_PEMBAYARAN") return 3;
   return 9;
@@ -422,10 +428,10 @@ function getUrgentDashboardCopy(transaction: BuyerTransaction) {
 
   if (transaction.status === "DITOLAK_BUKTI") {
     return {
-      eyebrow: "Bukti transfer ditolak",
+      eyebrow: "Transaksi dibatalkan",
       title: `Bukti pembayaran untuk ${transaction.title} ditolak.`,
-      detail: "Silakan unggah ulang bukti yang lebih jelas dari halaman detail transaksi.",
-      tone: "warning" as const
+      detail: "Transaksi lama sudah dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
+      tone: "danger" as const
     };
   }
 
@@ -527,15 +533,15 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
         ? 1
         : 0;
   const rejectionReason =
-    transaction.rejectionReason ?? "Admin unit meminta bukti pembayaran diperbaiki agar dapat diverifikasi ulang.";
+    transaction.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.";
   const paymentDetail = isTransfer
     ? transaction.status === "DITOLAK_BUKTI"
-      ? "Pembayaran sudah dicoba, tetapi bukti transfer perlu diperbaiki sebelum diperiksa ulang."
+      ? "Pembayaran sudah dicoba, tetapi bukti transfer ditolak admin unit sehingga transaksi ini dibatalkan."
       : "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
     : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
   const verificationDetail = isTransfer
     ? transaction.status === "DITOLAK_BUKTI"
-      ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}`
+      ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}. Transaksi dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
       : "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
     : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
   const finishDetail =
@@ -581,7 +587,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
           ? "Vickrey hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
           : isTransfer
             ? transaction.status === "DITOLAK_BUKTI"
-              ? "Upload ulang bukti pembayaran yang jelas, sesuai nominal, dan menunjukkan rekening tujuan."
+              ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
               : "Fixed price transfer membutuhkan bukti pembayaran sebelum admin memverifikasi."
             : "Fixed price bayar langsung diverifikasi admin setelah pembayaran diterima di unit."
       }
@@ -608,6 +614,15 @@ function PaymentInfoRow({
 }
 
 function getReceiptTerms(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN") {
+    return [
+      "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
+      `Pengambilan barang dilakukan di unit ${transaction.unit}.`,
+      "Pembayaran hasil lelang sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+      "Simpan nota ini untuk keperluan administrasi atau pengambilan barang."
+    ];
+  }
+
   return [
     "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
     `Pengambilan barang dilakukan di unit ${transaction.unit}.`,
@@ -616,6 +631,42 @@ function getReceiptTerms(transaction: BuyerTransaction) {
       : "Pembayaran langsung telah dikonfirmasi admin unit.",
     "Nota ini sah dan berlaku sebagai bukti pembelian."
   ];
+}
+
+function getReceiptPaymentMethodLabel(transaction: BuyerTransaction) {
+  if (transaction.method === "TRANSFER_BANK") {
+    return "Transfer Bank";
+  }
+
+  return transaction.kind === "VICKREY_WIN" ? "Langsung di unit" : "Bayar Langsung";
+}
+
+function getReceiptMarketingTypeLabel(transaction: BuyerTransaction) {
+  return transaction.kind === "VICKREY_WIN" ? "Lelang" : "Fixed Price";
+}
+
+function getReceiptFooterText(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN") {
+    return "Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.";
+  }
+
+  return undefined;
+}
+
+function getReceiptPrintDocumentClassName(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN") {
+    return "vickrey-receipt-print-document hidden bg-white text-[#10251c] print:block";
+  }
+
+  return undefined;
+}
+
+function getReceiptPrintDocumentTestId(transaction: BuyerTransaction) {
+  if (transaction.kind === "VICKREY_WIN") {
+    return "vickrey-receipt-print-document";
+  }
+
+  return undefined;
 }
 
 function getBuyerTransactionReceiptPrintRootId(transaction: BuyerTransaction, suffix: string) {
@@ -635,12 +686,14 @@ function BuyerTransactionInlineReceiptPrint({
   rootSuffix: string;
   transaction: BuyerTransaction;
 }) {
-  const isTransfer = transaction.method === "TRANSFER_BANK";
   const isCompleted = transaction.status === "SELESAI";
+  const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
 
   return (
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
+      documentClassName={getReceiptPrintDocumentClassName(transaction)}
+      documentTestId={getReceiptPrintDocumentTestId(transaction)}
       label={label}
       rootId={getBuyerTransactionReceiptPrintRootId(transaction, rootSuffix)}
     >
@@ -651,14 +704,15 @@ function BuyerTransactionInlineReceiptPrint({
         extraMeta={[
           {
             label: "Jenis transaksi",
-            value: transaction.kind === "VICKREY_WIN" ? "Lelang" : "Fixed Price"
+            value: getReceiptMarketingTypeLabel(transaction)
           }
         ]}
+        footerText={getReceiptFooterText(transaction)}
         imageUrl={transaction.imageUrl}
-        itemSubtitle={isTransfer ? "Transfer Bank" : "Bayar Langsung"}
+        itemSubtitle={paymentMethodLabel}
         itemTitle={transaction.title}
         noteNumber={transaction.receiptNumber ?? transaction.id}
-        paymentMethodLabel={isTransfer ? "Transfer Bank" : "Bayar Langsung"}
+        paymentMethodLabel={paymentMethodLabel}
         statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
         subtotal={transaction.amount}
         terms={getReceiptTerms(transaction)}
@@ -813,7 +867,10 @@ export function UserDashboardPage({
               <p className="font-headline text-2xl font-black text-foreground">
                 {currency.format(urgentTransaction.amount)}
               </p>
-              <Link className="w-full md:w-auto" href={`/transaksi/${urgentTransaction.id}`}>
+              <Link
+                className="w-full md:w-auto"
+                href={getBuyerTransactionHref(urgentTransaction)}
+              >
                 <Button className="w-full md:min-w-44">
                   {getDashboardActionLabel(urgentTransaction)}
                   <ExternalLink className="size-4" />
@@ -1128,7 +1185,7 @@ export function TransactionDetailPage({
     ? isProofInReview
       ? "Review Bukti"
       : isProofRejected
-        ? "Perbaiki Bukti"
+        ? "Review Bukti"
         : isVerified && hasSubmittedTransferProof
           ? "Bukti Pembayaran"
           : "Unggah Bukti"
@@ -1157,7 +1214,9 @@ export function TransactionDetailPage({
               Detail Pembayaran
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-              {isFixedPrice
+              {isProofRejected
+                ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
+                : isFixedPrice
                 ? "Selesaikan pembayaran fixed price, unggah bukti transfer, lalu tunggu admin unit memverifikasi transaksi."
                 : "Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai."}
             </p>
@@ -1315,8 +1374,14 @@ export function TransactionDetailPage({
                 <div className="mt-5 flex items-start gap-3 rounded-lg bg-[#f8eced] p-4">
                   <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#8f3a47]" />
                   <p className="font-body text-[0.82rem] leading-6 text-[#4f4b48]">
-                    Pastikan Anda mentransfer tepat sesuai dengan <strong>Total Harga</strong>{" "}
-                    untuk mempercepat proses verifikasi otomatis.
+                    {isProofRejected ? (
+                      "Transaksi ini sudah dibatalkan setelah bukti pembayaran ditolak admin unit."
+                    ) : (
+                      <>
+                        Pastikan Anda mentransfer tepat sesuai dengan <strong>Total Harga</strong>{" "}
+                        untuk mempercepat proses verifikasi otomatis.
+                      </>
+                    )}
                   </p>
                 </div>
               </>
@@ -1390,7 +1455,7 @@ export function TransactionDetailPage({
                 {isProofInReview
                   ? "Bukti transfer sudah terkirim. Tunggu admin unit menyelesaikan verifikasi."
                   : isProofRejected
-                    ? "Bukti sebelumnya ditolak. Pilih file bukti baru lalu kirim ulang agar admin dapat memeriksa lagi."
+                    ? "Bukti sebelumnya ditolak. Bukti yang sudah dikirim tetap ditampilkan sebagai arsip verifikasi. Transaksi ini sudah dibatalkan; lakukan pembelian ulang dari katalog jika barang masih tersedia."
                     : "Unggah bukti transfer maksimal 24 jam setelah pengajuan."}
               </p>
               {settlementLockMessage ? (
@@ -1398,13 +1463,12 @@ export function TransactionDetailPage({
               ) : (
                 <div className="space-y-4">
                   <BuyerPaymentProofForm
-                    currentProof={isProofRejected ? undefined : transaction.paymentProof}
-                    locked={isProofInReview}
+                    currentProof={transaction.paymentProof}
+                    locked={isProofInReview || isProofRejected}
                     lockedDescription="File bukti di bawah ini sudah masuk antrean review admin unit dan tidak bisa diganti sementara."
                     lockedTitle="Bukti sudah terkirim"
-                    readOnlyPreview={isProofInReview}
-                    requireNewProof={isProofRejected}
-                    submitLabel={isProofRejected ? "Kirim Ulang Bukti Pembayaran" : "Kirim Bukti Pembayaran"}
+                    readOnlyPreview={isProofInReview || isProofRejected}
+                    submitLabel="Kirim Bukti Pembayaran"
                     transactionId={transaction.id}
                   />
                 </div>
@@ -1426,7 +1490,7 @@ export function TransactionDetailPage({
         </div>
       </div>
 
-      {showReceipt ? (
+      {showReceipt && transaction.kind !== "VICKREY_WIN" ? (
         <Card className="overflow-hidden border border-border/70 bg-white">
           <CardHeader className="border-b border-border/70 bg-surface-low/60">
             <CardTitle>Nota transaksi</CardTitle>
@@ -1554,6 +1618,8 @@ export function TransactionReceiptPage({
   const isCompleted = transaction.status === "SELESAI";
   const noteHref = `/transaksi/${transaction.id}/nota`;
   const isAutoOutput = outputMode === "print" || outputMode === "download";
+  const isAuctionReceipt = transaction.kind === "VICKREY_WIN";
+  const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
 
   return (
     <div
@@ -1591,14 +1657,15 @@ export function TransactionReceiptPage({
         extraMeta={[
           {
             label: "Jenis transaksi",
-            value: transaction.kind === "VICKREY_WIN" ? "Lelang" : "Fixed Price"
+            value: getReceiptMarketingTypeLabel(transaction)
           }
         ]}
+        footerText={getReceiptFooterText(transaction)}
         imageUrl={transaction.imageUrl}
-        itemSubtitle={isTransfer ? "Transfer Bank" : "Bayar Langsung"}
+        itemSubtitle={paymentMethodLabel}
         itemTitle={transaction.title}
         noteNumber={transaction.receiptNumber ?? transaction.id}
-        paymentMethodLabel={isTransfer ? "Transfer Bank" : "Bayar Langsung"}
+        paymentMethodLabel={paymentMethodLabel}
         statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
         subtotal={transaction.amount}
         terms={getReceiptTerms(transaction)}
@@ -1607,7 +1674,7 @@ export function TransactionReceiptPage({
         unitAddress={transaction.unitAddress}
         unitName={transaction.unit}
         verifiedAt={transaction.verifiedAt}
-        outputLayout={isAutoOutput}
+        outputLayout={isAutoOutput || isAuctionReceipt}
       />
     </div>
   );

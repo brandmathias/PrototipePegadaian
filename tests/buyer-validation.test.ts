@@ -9,14 +9,24 @@ import {
 } from "@/lib/buyer/validation";
 
 describe("buyer validation", () => {
-  it("accepts fixed price transfer payment", () => {
-    expect(validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toEqual({
-      paymentMethod: "transfer"
+  it("accepts fixed price transfer payment only when proof metadata is present", () => {
+    expect(
+      validateBuyerPurchasePayload({
+        paymentMethod: "transfer",
+        fileName: "bukti-transfer.png",
+        reference: "BRI-2026-001"
+      })
+    ).toEqual({
+      paymentMethod: "transfer",
+      fileName: "bukti-transfer.png",
+      reference: "BRI-2026-001"
     });
+  });
 
-    expect(validateBuyerPurchasePayload({})).toEqual({
-      paymentMethod: "transfer"
-    });
+  it("rejects fixed price purchase without payment proof", () => {
+    expect(() => validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toThrow(
+      "Bukti pembayaran wajib diunggah saat membeli fixed price."
+    );
   });
 
   it("rejects unsupported buyer payment methods", () => {

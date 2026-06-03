@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AdminSelect } from "@/components/admin/admin-select";
@@ -32,5 +32,100 @@ describe("AdminSelect", () => {
 
     fireEvent.click(within(listbox).getByRole("option", { name: "50" }));
     expect(onValueChange).toHaveBeenCalledWith("50");
+  });
+
+  it("sizes the menu from the widest option so compact pagination labels stay fully visible", async () => {
+    const onValueChange = vi.fn();
+    const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+    const originalScrollWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollWidth");
+    const scrollBySpy = vi.spyOn(window, "scrollBy").mockImplementation(() => undefined);
+
+    try {
+      Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+        configurable: true,
+        value: function getBoundingClientRect() {
+          if (this.classList.contains("admin-select-trigger")) {
+            return {
+              bottom: 40,
+              height: 36,
+              left: 24,
+              right: 120,
+              top: 4,
+              width: 96,
+              x: 24,
+              y: 4,
+              toJSON() {
+                return {};
+              }
+            } as DOMRect;
+          }
+
+          return {
+            bottom: 0,
+            height: 0,
+            left: 0,
+            right: 0,
+            top: 0,
+            width: 0,
+            x: 0,
+            y: 0,
+            toJSON() {
+              return {};
+            }
+          } as DOMRect;
+        }
+      });
+
+      Object.defineProperty(HTMLElement.prototype, "scrollWidth", {
+        configurable: true,
+        get() {
+          if (this.classList.contains("admin-select-option")) {
+            return 128;
+          }
+
+          if (this.classList.contains("admin-select-menu")) {
+            return 72;
+          }
+
+          return 0;
+        }
+      });
+
+      render(
+        <AdminSelect
+          ariaLabel="Baris per halaman"
+          className="min-w-[6.9rem]"
+          options={[
+            { value: 10, label: "10" },
+            { value: 50, label: "50" },
+            { value: 100, label: "100" }
+          ]}
+          size="compact"
+          value={10}
+          onValueChange={onValueChange}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /10/i }));
+
+      const listbox = screen.getByRole("listbox");
+
+      await waitFor(() => {
+        expect(listbox).toHaveStyle({ width: "128px" });
+      });
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+        configurable: true,
+        value: originalGetBoundingClientRect
+      });
+
+      if (originalScrollWidth) {
+        Object.defineProperty(HTMLElement.prototype, "scrollWidth", originalScrollWidth);
+      } else {
+        delete (HTMLElement.prototype as { scrollWidth?: number }).scrollWidth;
+      }
+
+      scrollBySpy.mockRestore();
+    }
   });
 });

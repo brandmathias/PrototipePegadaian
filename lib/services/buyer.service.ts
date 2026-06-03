@@ -35,9 +35,7 @@ import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timez
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
-  "menunggu_pembayaran",
   "bukti_diunggah",
-  "ditolak_bukti",
   "menunggu_konfirmasi_langsung"
 ];
 
@@ -171,6 +169,10 @@ async function getTransactionRows(userId: string) {
     .orderBy(desc(transaksi.createdAt));
 }
 
+function isLegacyFixedPriceWaitingPaymentDraft(row: Awaited<ReturnType<typeof getTransactionRows>>[number]) {
+  return row.type === "fixed_price" && row.status === "menunggu_pembayaran" && !row.proofUrl;
+}
+
 async function getTransactionRowById(userId: string, transactionId: string) {
   const [row] = await db
     .select(transactionSelection())
@@ -190,7 +192,7 @@ export async function listBuyerTransactions(userId: string, options?: BuyerReadO
   await refreshBuyerAuctionSettlementState(options);
 
   const rows = await getTransactionRows(userId);
-  return rows.map(serializeBuyerTransaction);
+  return rows.filter((row) => !isLegacyFixedPriceWaitingPaymentDraft(row)).map(serializeBuyerTransaction);
 }
 
 export async function getBuyerTransactionById(userId: string, transactionId: string, options?: BuyerReadOptions) {
@@ -360,7 +362,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
   const transactions = await listBuyerTransactions(userId, { refreshAuctionState: false });
   const bidHistory = await listBuyerBids(userId, { refreshAuctionState: false });
   const needsAction = transactions.filter((transaction) =>
-    ["MENUNGGU_PEMBAYARAN", "DITOLAK_BUKTI", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
+    ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
   ).length;
   const nationalId = profile?.nationalId ?? buyerUser?.nationalId ?? "";
   const sessionHistory = recentSessions.map((sessionRow) =>
@@ -399,7 +401,9 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
     metrics: [
       {
         label: "Transaksi aktif",
-        value: String(transactions.filter((item) => !["LUNAS", "SELESAI", "GAGAL"].includes(item.status)).length),
+        value: String(
+          transactions.filter((item) => !["LUNAS", "SELESAI", "GAGAL", "DITOLAK_BUKTI"].includes(item.status)).length
+        ),
         accent: "primary"
       },
       { label: "Perlu ditindaklanjuti", value: String(needsAction), accent: "secondary" },
@@ -498,8 +502,10 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       type: "fixed_price",
       amount: String(amount),
       paymentMethod: payload.paymentMethod,
-      status: "menunggu_pembayaran",
-      paymentDeadline: plusHours(24)
+      status: "bukti_diunggah",
+      proofUrl: payload.fileName,
+      referenceNumber: payload.reference ?? null,
+      paymentDeadline: null
     })
     .returning();
 
@@ -682,6 +688,10 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 
   if (row.status === "bukti_diunggah") {
     throw new Error("Bukti pembayaran sudah terkirim dan sedang diverifikasi admin unit.");
+  }
+
+  if (row.status === "ditolak_bukti") {
+    throw new Error("Transaksi ini sudah dibatalkan dan tidak dapat diperbarui.");
   }
 
   if (row.status === "lunas" || row.status === "selesai" || row.status === "gagal") {

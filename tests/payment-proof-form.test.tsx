@@ -49,11 +49,13 @@ describe("BuyerPaymentProofForm", () => {
     });
 
     expect(await screen.findByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
-    expect(screen.getByText("bukti-transfer.png")).toBeInTheDocument();
+    expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("bukti-transfer.png")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: /buka preview bukti transfer/i }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /bukti-transfer.png/i })).toBeInTheDocument();
     expect(screen.getAllByRole("img", { name: /preview bukti transfer/i }).length).toBeGreaterThan(0);
 
     await userEvent.click(screen.getByRole("button", { name: /tutup preview bukti transfer/i }));
