@@ -82,6 +82,16 @@ function getInventoryDaysUntil(dateLabel: string | null | undefined) {
   return Math.ceil((targetUtc - todayUtc) / 86_400_000);
 }
 
+function parseInventoryDueDate(value: unknown) {
+  if (typeof value !== "string" || !value.trim() || value === "-") {
+    return null;
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function getInventoryDueCopy(dateLabel: string | null | undefined) {
   const days = getInventoryDaysUntil(dateLabel);
 
@@ -618,6 +628,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("SEMUA");
   const [inventoryFilter, setInventoryFilter] = useState<(typeof inventoryFilterOptions)[number]["value"]>("SEMUA");
+  const [dueDateSortDirection, setDueDateSortDirection] = useState<"asc" | "desc">("asc");
   const deferredQuery = useDeferredValue(query);
   const inventoryItems = useMemo(() => items.filter(isAdminInventoryListItem), [items]);
 
@@ -645,7 +656,24 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
       return matchesQuery && matchesCategory && matchesInventoryFilter;
     });
   }, [categoryFilter, deferredQuery, inventoryFilter, inventoryItems]);
-  const pagination = useAdminPagination(filteredItems, `${categoryFilter}-${inventoryFilter}-${deferredQuery}`);
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((left, right) => {
+      const leftTime = parseInventoryDueDate(left.dueDate)?.getTime();
+      const rightTime = parseInventoryDueDate(right.dueDate)?.getTime();
+
+      if (leftTime == null && rightTime == null) {
+        return String(left.code ?? "").localeCompare(String(right.code ?? ""), "id");
+      }
+      if (leftTime == null) return 1;
+      if (rightTime == null) return -1;
+
+      const direction = dueDateSortDirection === "desc" ? -1 : 1;
+
+      return (leftTime - rightTime) * direction || String(left.code ?? "").localeCompare(String(right.code ?? ""), "id");
+    });
+  }, [dueDateSortDirection, filteredItems]);
+  const pagination = useAdminPagination(sortedItems, `${categoryFilter}-${inventoryFilter}-${dueDateSortDirection}-${deferredQuery}`);
+  const DueDateSortIcon = dueDateSortDirection === "desc" ? ArrowDown : ArrowUp;
 
   return (
     <section className="overflow-hidden rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.48)] ring-1 ring-[#cfe5d6]">
@@ -714,7 +742,17 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
               <th className="w-[11%] px-3 py-4">Nama Nasabah</th>
               <th className="w-[9%] px-3 py-4">No. Nasabah</th>
               <th className="w-[10%] px-3 py-4">Tanggal Kredit</th>
-              <th className="w-[11%] px-3 py-4">Jatuh Tempo</th>
+              <th className="w-[11%] px-3 py-4">
+                <button
+                  aria-label={`Urutkan Jatuh Tempo ${dueDateSortDirection === "desc" ? "terdekat dulu" : "terjauh dulu"}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg text-inherit outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
+                  type="button"
+                  onClick={() => setDueDateSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
+                >
+                  Jatuh Tempo
+                  <DueDateSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
+                </button>
+              </th>
               <th className="w-[11%] px-3 py-4">Nilai Taksiran</th>
               <th className="w-[10%] px-3 py-4 text-right">Aksi</th>
             </tr>
@@ -781,7 +819,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                     <span className="block truncate text-black/62">{item.pawnedAt}</span>
                   </td>
                   <td className="px-3 py-3.5 align-middle">
-                    <p className="font-medium leading-5 text-black/76">{item.dueDate}</p>
+                    <p className="font-semibold leading-5 text-black/78">{item.dueDate}</p>
                     <p
                       className={cn(
                         "mt-0.5 text-[0.72rem] font-bold leading-4",

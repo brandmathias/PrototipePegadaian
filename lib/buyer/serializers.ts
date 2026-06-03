@@ -264,6 +264,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     bankAccountHolder: row.account?.accountHolderName ?? undefined,
     bankBranch: row.account?.branchName ?? undefined,
     paymentProof: proof.proofUrl,
+    rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey
       ? "Pemenang Vickrey membayar harga final yang dihitung sistem."
       : undefined,

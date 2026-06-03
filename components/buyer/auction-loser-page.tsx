@@ -72,7 +72,7 @@ function RecommendationCard({
       <div className="flex min-w-0 flex-col justify-between py-1">
         <div className="min-w-0">
           <span className="inline-flex rounded-md bg-[#eaf7ef] px-2 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#006747]">
-            Lelang Victory
+            Sedang Berlangsung
           </span>
           <h3 className="mt-2 line-clamp-2 text-[0.95rem] font-black leading-[1.18] tracking-[-0.025em] text-[#17211d] transition-colors duration-500 group-hover:text-[#006747]">
             {lot.name}
@@ -104,6 +104,17 @@ function RecommendationCard({
   );
 }
 
+function isOngoingVickreyRecommendation(lot: Lot, serverNow: string) {
+  if (lot.mode !== "vickrey" || !lot.endsAt) {
+    return false;
+  }
+
+  const endsAt = Date.parse(lot.endsAt);
+  const now = Date.parse(serverNow);
+
+  return Number.isFinite(endsAt) && Number.isFinite(now) && endsAt > now;
+}
+
 export function AuctionLoserPageContent({
   bid,
   recommendations,
@@ -113,7 +124,9 @@ export function AuctionLoserPageContent({
 }) {
   const serverNow = new Date().toISOString();
   const imageUrl = bid.imageUrl;
-  const displayedRecommendations = recommendations.slice(0, 3);
+  const displayedRecommendations = recommendations
+    .filter((lot) => isOngoingVickreyRecommendation(lot, serverNow))
+    .slice(0, 3);
 
   return (
     <div className="relative left-1/2 min-h-screen w-screen -translate-x-1/2 bg-[#fafafa] pb-8">
@@ -281,10 +294,10 @@ export function AuctionLoserPageContent({
             <div className="rounded-[1.15rem] border border-[#edf0eb] bg-white px-5 py-8 text-center shadow-[0_14px_34px_-30px_rgba(16,24,40,0.18)]">
               <InfoIcon className="mx-auto size-8 text-[#006747]" strokeWidth={1.8} />
               <p className="mt-3 font-black tracking-[-0.02em] text-[#101828]">
-                Belum ada lelang aktif untuk direkomendasikan.
+                Belum ada lelang yang sedang berlangsung saat ini.
               </p>
               <p className="mt-2 text-sm leading-6 text-[#667085]">
-                Kembali ke katalog untuk memantau sesi baru yang akan dibuka.
+                Silakan cek kembali katalog saat admin unit membuka sesi lelang baru.
               </p>
             </div>
           )}

@@ -4,7 +4,7 @@ import { AuctionLoserPage } from "@/components/pages/user-pages";
 import { getBuyerTransactionHref } from "@/lib/buyer/transaction-links";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { listBuyerBids } from "@/lib/services/buyer.service";
-import { listPublicLotsWithLimit } from "@/lib/services/public-catalog.service";
+import { listOngoingVickreyLotsWithLimit } from "@/lib/services/public-catalog.service";
 
 export default async function Page({
   params,
@@ -15,7 +15,7 @@ export default async function Page({
   const buyer = await getBuyerSessionUser(`/riwayat-bid/${pemasaranId}/bukan-pemenang`);
   const [bids, lots] = await Promise.all([
     listBuyerBids(buyer.id),
-    listPublicLotsWithLimit(8),
+    listOngoingVickreyLotsWithLimit(8),
   ]);
   const bid = bids.find((item) => item.lotId === pemasaranId);
 

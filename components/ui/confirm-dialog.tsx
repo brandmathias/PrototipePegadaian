@@ -16,6 +16,7 @@ type ConfirmDialogProps = {
   cancelLabel?: string;
   variant?: "default" | "destructive";
   loading?: boolean;
+  onCancel?: () => void;
   onConfirm: () => void;
 };
 
@@ -28,9 +29,12 @@ export function ConfirmDialog({
   cancelLabel = "Batal",
   variant = "default",
   loading = false,
+  onCancel,
   onConfirm
 }: ConfirmDialogProps) {
   const [mounted, setMounted] = React.useState(false);
+  const titleId = React.useId();
+  const descriptionId = React.useId();
 
   React.useEffect(() => {
     setMounted(true);
@@ -63,7 +67,13 @@ export function ConfirmDialog({
         onClick={() => onOpenChange(false)}
         type="button"
       />
-      <div className="toast-enter relative z-[121] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-border/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]">
+      <div
+        aria-describedby={descriptionId}
+        aria-labelledby={titleId}
+        aria-modal="true"
+        className="toast-enter relative z-[121] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-border/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
+        role="dialog"
+      >
         <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/75 to-accent" />
         <div className="flex items-start justify-between gap-4 p-6 pb-0">
           <div className="flex items-start gap-3">
@@ -78,8 +88,12 @@ export function ConfirmDialog({
               <TriangleAlert className="size-5" />
             </div>
             <div className="space-y-2">
-              <p className="text-base font-semibold text-foreground">{title}</p>
-              <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+              <p className="text-base font-semibold text-foreground" id={titleId}>
+                {title}
+              </p>
+              <p className="text-sm leading-relaxed text-muted-foreground" id={descriptionId}>
+                {description}
+              </p>
             </div>
           </div>
           <button
@@ -92,7 +106,12 @@ export function ConfirmDialog({
           </button>
         </div>
         <div className="flex flex-wrap justify-end gap-3 p-6">
-          <Button disabled={loading} onClick={() => onOpenChange(false)} type="button" variant="secondary">
+          <Button
+            disabled={loading}
+            onClick={onCancel ?? (() => onOpenChange(false))}
+            type="button"
+            variant="secondary"
+          >
             {cancelLabel}
           </Button>
           <Button

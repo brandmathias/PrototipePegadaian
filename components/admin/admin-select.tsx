@@ -14,6 +14,7 @@ export type AdminSelectOption = {
 
 export function AdminSelect({
   ariaLabel,
+  allowWrap = false,
   className,
   id,
   options,
@@ -22,6 +23,7 @@ export function AdminSelect({
   size = "default"
 }: {
   ariaLabel?: string;
+  allowWrap?: boolean;
   className?: string;
   id?: string;
   options: AdminSelectOption[];
@@ -157,9 +159,11 @@ export function AdminSelect({
         ref={buttonRef}
         type="button"
       >
-        <span className="flex min-w-0 items-center gap-2 pr-2 text-left">
+        <span className={cn("flex min-w-0 items-center gap-2 pr-2 text-left", allowWrap && "items-start py-1")}>
           {SelectedIcon ? <SelectedIcon className="size-4 shrink-0 text-current" strokeWidth={2} /> : null}
-          <span className="truncate">{selectedOption?.label ?? ""}</span>
+          <span className={cn(allowWrap ? "whitespace-normal break-words leading-5" : "truncate")}>
+            {selectedOption?.label ?? ""}
+          </span>
         </span>
         <span className="admin-select-icon">
           <ChevronDown className={cn("size-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]", open && "rotate-180")} />
@@ -190,9 +194,11 @@ export function AdminSelect({
                 type="button"
                 onClick={() => selectValue(String(option.value))}
               >
-                <span className="flex min-w-0 items-center gap-2 pr-6 text-left">
+                <span className={cn("flex min-w-0 items-center gap-2 pr-6 text-left", allowWrap && "items-start")}>
                   {OptionIcon ? <OptionIcon className="size-4 shrink-0 text-current" strokeWidth={2} /> : null}
-                  <span className="truncate">{option.label}</span>
+                  <span className={cn(allowWrap ? "whitespace-normal break-words leading-5" : "truncate")}>
+                    {option.label}
+                  </span>
                 </span>
                 <Check className="admin-select-check size-4" />
               </button>

@@ -7,6 +7,11 @@
   margin: 8mm;
 }
 
+@page vickrey-receipt {
+  size: A4 portrait;
+  margin: 0;
+}
+
 :root {
   --font-inter:
     "Segoe UI", "Helvetica Neue", Arial, system-ui, -apple-system, BlinkMacSystemFont,
@@ -723,12 +728,99 @@
   }
 
   @media print {
+    html,
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+    }
+
     .admin-history-print-document {
       page: admin-history-report;
       color-scheme: light;
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
       min-height: 100vh;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) {
+      page: vickrey-receipt;
+      color-scheme: light;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      min-height: auto;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-sheet {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-header {
+      padding: 5mm 6mm !important;
+      border-radius: 7mm 7mm 0 0 !important;
+      overflow: hidden !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-header-grid {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 5mm !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-meta-card {
+      width: 74mm !important;
+      max-width: 74mm !important;
+      flex: 0 0 74mm !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-body {
+      padding: 5mm 6mm 4mm !important;
+      gap: 4mm !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-main-grid {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1.38fr) minmax(0, 0.86fr) !important;
+      gap: 4mm !important;
+      align-items: start !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-item-grid {
+      display: grid !important;
+      grid-template-columns: 16mm minmax(0, 1fr) 36mm !important;
+      gap: 3mm !important;
+      align-items: center !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-buyer-grid {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 3mm 5mm !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-summary-grid {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
+      gap: 4mm !important;
+      align-items: start !important;
+    }
+
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-main-grid > *,
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-summary-grid > *,
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-main-grid > * > *,
+    :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-summary-grid > * > * {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
 
     .buyer-route-transition {

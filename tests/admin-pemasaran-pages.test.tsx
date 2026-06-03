@@ -1,5 +1,5 @@
 import React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const router = vi.hoisted(() => ({
@@ -155,7 +155,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
     expect(screen.queryByText("Iphone Gagal Bayar")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
+    fireEvent.click(screen.getByRole("button", { name: "Menunggu Buyer" }));
 
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.queryByText("Kalung Emas Aktif")).not.toBeInTheDocument();
@@ -323,6 +323,206 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByTestId("lot-media-active")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
+  });
+
+  it("opens fixed price payment verification when buyer proof has been uploaded", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-verification",
+          lotId: "barang-fixed-verify",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          transactionId: "trx-fixed-verify",
+          transactionStatus: "BUKTI_DIUNGGAH",
+          buyerName: "Buyer Demo 13 B",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: "/uploads/bukti-fixed-price.jpg",
+          reference: "FP-02393124",
+          paymentDeadline: "2099-06-05T12:00:00.000Z",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Buyer sudah mengirim bukti pembayaran transfer."
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
+    const dialog = screen.getByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i });
+
+    expect(within(dialog).getByText(/kewajiban nominal fixed price/i)).toBeInTheDocument();
+    expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
+    expect(within(dialog).getByRole("link", { name: /buka bukti pembayaran/i })).toHaveAttribute(
+      "href",
+      "/uploads/bukti-fixed-price.jpg"
+    );
+
+    const reasonSelect = within(dialog).getByLabelText(/alasan penolakan pembayaran fixed price/i);
+    const options = within(reasonSelect).getAllByRole("option");
+
+    expect(options).toHaveLength(3);
+    expect(within(dialog).getByRole("button", { name: /tolak pembayaran/i })).toBeDisabled();
+    expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeEnabled();
+
+    fireEvent.change(reasonSelect, {
+      target: { value: "Nominal uang yang dikirim tidak sesuai harga barang" }
+    });
+
+    expect(within(dialog).getByRole("button", { name: /tolak pembayaran/i })).toBeEnabled();
+    expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeDisabled();
+  });
+
+  it("does not reopen fixed price verification actions after payment proof has been rejected", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-rejected",
+          lotId: "barang-fixed-rejected",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          transactionId: "trx-fixed-rejected",
+          transactionStatus: "DITOLAK_BUKTI",
+          buyerName: "Buyer Demo 13 B",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: "/uploads/bukti-fixed-price.jpg",
+          reference: "FP-02393124",
+          paymentDeadline: "2099-06-05T12:00:00.000Z",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Bukti pembayaran fixed price ditolak."
+        }}
+      />
+    );
+
+    const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
+
+    expect(verifyButton).toBeDisabled();
+    fireEvent.click(verifyButton);
+    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i })).not.toBeInTheDocument();
+  });
+
+  it("prints a fixed price receipt inline after admin verifies payment", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-paid",
+          lotId: "barang-fixed-paid",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          transactionId: "trx-fixed-paid",
+          transactionStatus: "LUNAS",
+          buyerName: "Buyer Satu",
+          buyerEmail: "buyer1@mail.com",
+          buyerPhone: "6281200001001",
+          paymentMethod: "TRANSFER_BANK",
+          reference: "FP-02393124",
+          soldAt: "2026-06-03T00:39:00.000Z",
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Pembayaran sudah diverifikasi admin unit."
+        }}
+      />
+    );
+
+    expect(screen.getByText(/menunggu buyer menekan pembelian selesai/i)).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+
+    const receiptPrintRoot = document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid");
+
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.closest(".print\\:hidden")).toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!).toHaveTextContent("Terverifikasi admin");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-utama.jpg"]')).not.toBeNull();
+    expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i })).not.toBeInTheDocument();
+
+    printSpy.mockRestore();
+  });
+
+  it("renders fixed price detail as the compact marketing inventory workspace", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-detail-design",
+          lotId: "barang-fixed-3",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          description: "Cincin emas wanita dengan taburan berlian crown set.",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          unitName: "UPC Ranotana",
+          unitAddress: "Ranotana",
+          insights: {
+            views: 17,
+            likes: 1,
+            participants: 0
+          },
+          specifications: {
+            jenisEmas: "Cincin Wanita / Eternity Ring",
+            kadarEmas: "18 Karat atau 75%",
+            berat: "4.25 gram",
+            bentuk: "Cincin Berlian Crown Set",
+            panjang: "0 cm",
+            diameter: "16.5 mm"
+          },
+          media: [
+            { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+            { id: "m2", type: "foto", url: "/uploads/cincin-samping.jpg", fileName: "cincin-samping.jpg" }
+          ],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Belum ada transaksi pembeli pada sesi fixed price ini."
+        }}
+      />
+    );
+
+    expect(screen.getByText("Galeri Media Barang")).toBeInTheDocument();
+    expect(screen.getByText("Spesifikasi Lengkap")).toBeInTheDocument();
+    expect(screen.getByText("Harga Barang")).toBeInTheDocument();
+    expect(screen.getByText("Total Tayangan")).toBeInTheDocument();
+    expect(screen.getByText("17x")).toBeInTheDocument();
+    expect(screen.getByText("Watchlist Nasabah")).toBeInTheDocument();
+    expect(screen.getByText("1 Akun")).toBeInTheDocument();
+    expect(screen.getByText("Cincin Wanita / Eternity Ring")).toBeInTheDocument();
+    expect(screen.getByText("18 Karat atau 75%")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /edit data/i })).toHaveAttribute(
+      "href",
+      "/admin/barang/barang-fixed-3/edit"
+    );
+    expect(screen.queryByRole("link", { name: /lihat log/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /verifikasi pembayaran/i })).toBeDisabled();
   });
 
   it("keeps vickrey bids locked before deadline", () => {
@@ -749,7 +949,7 @@ describe("admin pemasaran pages", () => {
     printSpy.mockRestore();
   });
 
-  it("renders the paid vickrey winner page as a final fulfillment archive", () => {
+  it("renders the verified vickrey winner page as waiting for buyer completion", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     render(
@@ -815,14 +1015,112 @@ describe("admin pemasaran pages", () => {
       />
     );
 
+    expect(screen.getByText(/pembayaran terverifikasi .* menunggu buyer selesai/i)).toBeInTheDocument();
+    expect(screen.getByText(/nota tersedia, arsip final belum ditutup/i)).toBeInTheDocument();
+    expect(screen.getByText(/pemenang terverifikasi/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/pembayaran terverifikasi/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/menunggu buyer selesai/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/ranking peserta lelang \(admin view\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Pemenang$/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/harga bayar/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/detail aset lelang$/i)).toBeInTheDocument();
+    expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/tahap 1: pembayaran/i)).toHaveClass("border-[#006747]");
+    expect(screen.getByLabelText(/tahap 2: verifikasi/i)).toHaveClass("border-[#006747]");
+    expect(screen.getByLabelText(/tahap 3: selesai buyer/i)).toHaveClass("border-[#dfe6e2]");
+    expect(screen.getByText(/nota & konfirmasi buyer/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid");
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("vickrey-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.closest(".print\\:hidden")).toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Lelang");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).not.toHaveClass("h-0", "w-0", "opacity-0");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
+    expect(screen.queryByRole("dialog", { name: /pratinjau nota pengambilan barang/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /menunggu buyer selesai/i })).toBeDisabled();
+
+    printSpy.mockRestore();
+  });
+
+  it("renders the completed vickrey winner page as a final fulfillment archive with nota action", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-completed",
+          lotId: "barang-completed",
+          lot: "22K Gold Bangle",
+          code: "LGL-8829-XJ",
+          category: "emas",
+          condition: "sangat baik",
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "31 Mei 2026",
+          endingAt: "2026-05-31T11:17:48.000Z",
+          participants: 5,
+          basePrice: 65000000,
+          appraisalValue: 85000000,
+          finalPrice: 78000000,
+          winner: "Budi Santoso",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-completed",
+          transactionStatus: "SELESAI",
+          buyerName: "Budi Santoso",
+          buyerEmail: "budi.santoso@email.com",
+          buyerPhone: "0812-3456-7890",
+          paymentMethod: "BAYAR_LANGSUNG",
+          reference: "PGD1029384",
+          proofUrl: null,
+          soldAt: "2026-06-01T12:25:00.000Z",
+          paymentDeadline: "2026-06-02T23:35:00.000Z",
+          specifications: {
+            kadarEmas: "22 Karat (91,6%)",
+            berat: "15,28 gram"
+          },
+          media: [{ id: "asset-completed", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
+          primaryMedia: { id: "asset-completed", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
+          bids: [
+            {
+              id: "bid-completed-1",
+              bidderId: "PGD1029384",
+              bidderName: "Budi Santoso",
+              submittedAtLabel: "31 Mei 2026, 10:14:26 WIB",
+              amount: 85000000,
+              rank: 1,
+              isWinner: true,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-completed-2",
+              bidderId: "PGD5528761",
+              bidderName: "Siti Nurfadila",
+              submittedAtLabel: "31 Mei 2026, 10:14:23 WIB",
+              amount: 78000000,
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: true
+            }
+          ]
+        }}
+      />
+    );
+
     expect(screen.getByText(/lelang selesai sempurna .* aset telah diserahkan/i)).toBeInTheDocument();
     expect(screen.getByText(/pembayaran & penyerahan selesai/i)).toBeInTheDocument();
     expect(screen.getByText(/manifes penyerahan & pemenang/i)).toBeInTheDocument();
-    expect(screen.getByText(/lunas 100%/i)).toBeInTheDocument();
     expect(screen.getByText(/barang sudah diambil/i)).toBeInTheDocument();
     expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText(/lunas & diserahkan/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak menang/i)).toBeInTheDocument();
     expect(screen.getByText(/detail aset lelang \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
     expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
@@ -830,14 +1128,25 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/tahap pembayaran selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByLabelText(/tahap verifikasi selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByLabelText(/tahap selesai selesai/i)).toHaveClass("bg-[#006747]");
-    expect(screen.getByText(/manifes dokumen final/i)).toBeInTheDocument();
+    expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-completed");
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("vickrey-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.closest(".print\\:hidden")).toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Lelang");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).not.toHaveClass("h-0", "w-0", "opacity-0");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
     expect(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toHaveAttribute(
       "href",
       "/admin/pemasaran"
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /cetak berita acara serah terima/i }));
-    expect(printSpy).toHaveBeenCalledTimes(1);
     printSpy.mockRestore();
   });
 

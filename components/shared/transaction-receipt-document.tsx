@@ -83,7 +83,9 @@ export function TransactionReceiptDocument({
 }) {
   return (
     <article
-      className={`receipt-sheet mx-auto w-full max-w-[920px] overflow-hidden rounded-[2rem] border border-[#cbd9cc] bg-[#f4f7f2] shadow-[0_20px_50px_-36px_rgba(8,63,39,0.28)] print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:bg-white print:shadow-none ${outputLayout ? "flex flex-col" : ""}`}
+      className={`receipt-sheet receipt-output-sheet mx-auto w-full max-w-[920px] rounded-[2rem] border border-[#cbd9cc] bg-[#f4f7f2] shadow-[0_20px_50px_-36px_rgba(8,63,39,0.28)] print:max-w-none print:break-inside-avoid print:overflow-visible print:rounded-none print:border-0 print:bg-white print:shadow-none ${
+        outputLayout ? "flex flex-col overflow-visible" : "overflow-hidden"
+      }`}
       id="transaction-receipt-document"
       style={
         outputLayout
@@ -96,7 +98,7 @@ export function TransactionReceiptDocument({
           : undefined
       }
     >
-      <header className="relative overflow-hidden bg-[linear-gradient(135deg,#0a4a33_0%,#0b6a46_58%,#b88c1a_100%)] px-4 py-4 text-white md:px-6 md:py-5">
+      <header className="receipt-output-header relative overflow-hidden rounded-t-[1.65rem] bg-[linear-gradient(135deg,#0a4a33_0%,#0b6a46_58%,#b88c1a_100%)] px-4 py-4 text-white md:px-6 md:py-5 print:break-inside-avoid print:rounded-t-[1.35rem] print:px-5 print:py-4">
         {!outputLayout ? (
           <>
             <div className="absolute -left-10 -top-10 size-40 rounded-full bg-white/8 blur-2xl" />
@@ -104,7 +106,7 @@ export function TransactionReceiptDocument({
           </>
         ) : null}
 
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="receipt-output-header-grid relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between print:flex-row print:items-center print:justify-between print:gap-4">
           <div className="flex items-start gap-3">
             <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white text-[#0b6a46] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
               <Landmark className="size-6" />
@@ -113,17 +115,17 @@ export function TransactionReceiptDocument({
               <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-white/72">
                 Pegadaian Lelang
               </p>
-              <h1 className="mt-1 max-w-3xl text-[1.45rem] font-black tracking-tight text-white md:text-[1.75rem] print:text-[#133325]">
+              <h1 className="mt-1 max-w-3xl text-[1.45rem] font-black leading-tight tracking-tight text-white md:text-[1.75rem] print:text-[1.48rem] print:leading-tight print:text-white">
                 {title}
               </h1>
-              <p className="mt-1 text-sm text-white/78 print:text-[#53705d]">
+              <p className="mt-1 text-sm text-white/78 print:text-white/80">
                 Lembaga lelang negara terpercaya
               </p>
             </div>
           </div>
 
           <div
-            className={`rounded-[1.15rem] border px-4 py-3 ${
+            className={`receipt-output-meta-card rounded-[1.15rem] border px-4 py-3 print:shrink-0 print:px-3 print:py-2.5 ${
               outputLayout
                 ? "border-[#d7b458]/35 bg-[linear-gradient(135deg,rgba(8,74,51,0.76)_0%,rgba(11,106,70,0.62)_55%,rgba(184,140,26,0.48)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                 : "border-white/12 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md"
@@ -135,7 +137,7 @@ export function TransactionReceiptDocument({
             <div className={`mt-2 ${outputLayout ? "grid gap-1.5 text-[0.72rem]" : "space-y-1 text-sm"} text-white`}>
               <div className="grid grid-cols-[auto_1fr] items-start gap-4">
                 <span className="text-white/66">ID Transaksi</span>
-                <span className="justify-self-end text-right font-semibold leading-tight">{transactionId}</span>
+                <span className="max-w-[18rem] justify-self-end break-all text-right font-semibold leading-tight">{transactionId}</span>
               </div>
               <div className="grid grid-cols-[auto_1fr] items-start gap-4">
                 <span className="text-white/66">Tanggal</span>
@@ -149,11 +151,11 @@ export function TransactionReceiptDocument({
       <div
         className={
           outputLayout
-            ? "flex flex-1 flex-col gap-4 px-4 py-4 md:px-6 md:py-5 print:gap-3 print:px-3 print:py-3"
+            ? "receipt-output-body flex flex-1 flex-col gap-4 px-4 py-4 md:px-6 md:py-5 print:gap-3 print:px-4 print:py-4"
             : "space-y-4 px-4 py-4 md:px-6 md:py-5 print:space-y-3 print:px-3 print:py-3"
         }
       >
-        <div className="grid gap-4 md:grid-cols-[1.42fr_0.88fr] print:gap-3">
+        <div className="receipt-output-main-grid grid gap-4 md:grid-cols-[1.42fr_0.88fr] print:grid-cols-[1.38fr_0.86fr] print:gap-3">
           <section className="space-y-4 print:space-y-3">
             <div className="rounded-[1.4rem] border border-[#dbe4da] bg-white px-4 py-4 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
               <ReceiptSectionHeading icon={<FileText className="size-4" />} outputLayout={outputLayout} title="Rincian Barang" />
@@ -161,20 +163,22 @@ export function TransactionReceiptDocument({
                 <div
                   className={
                     outputLayout
-                      ? "grid gap-3 md:grid-cols-[5rem_minmax(0,1fr)_9.5rem] md:items-start"
+                      ? "receipt-output-item-grid grid gap-3 md:grid-cols-[4.5rem_minmax(0,1fr)_8.25rem] md:items-start print:grid-cols-[3.75rem_minmax(0,1fr)_7.2rem] print:items-center"
                       : "flex gap-3"
                   }
                 >
                   <div
                     className={`shrink-0 overflow-hidden rounded-2xl border border-[#dbe4da] bg-[#eef5ec] ${
-                      outputLayout ? "h-16 w-16" : "h-20 w-20"
+                      outputLayout ? "h-16 w-16 print:h-14 print:w-14" : "h-20 w-20"
                     }`}
                   >
                     {imageUrl ? (
                       <Image
                         alt={`Foto barang ${itemTitle}`}
                         className="size-full object-cover"
+                        decoding="sync"
                         height={160}
+                        loading="eager"
                         src={imageUrl}
                         unoptimized
                         width={160}
@@ -183,8 +187,8 @@ export function TransactionReceiptDocument({
                     <div className="flex size-full items-center justify-center px-2 text-center text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7c8d80]">
                       Tanpa Foto
                     </div>
-                  )}
-                </div>
+                    )}
+                  </div>
                   <div className={outputLayout ? "min-w-0 space-y-2" : "min-w-0 flex-1"}>
                     <p
                       className={`font-black tracking-tight text-[#143325] ${
@@ -227,7 +231,7 @@ export function TransactionReceiptDocument({
                     </p>
                     <p
                       className={`mt-1 font-black tracking-tight text-[#0b6a46] ${
-                        outputLayout ? "whitespace-nowrap text-[1.05rem] leading-none" : "text-[1.2rem] md:text-[1.35rem]"
+                        outputLayout ? "whitespace-nowrap text-[0.95rem] leading-none" : "text-[1.2rem] md:text-[1.35rem]"
                       }`}
                     >
                       {currency.format(total)}
@@ -240,7 +244,7 @@ export function TransactionReceiptDocument({
             <div className="rounded-[1.4rem] border border-[#dbe4da] bg-white px-4 py-4 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
               <ReceiptSectionHeading icon={<UserRound className="size-4" />} outputLayout={outputLayout} title="Informasi Pembeli" />
               <div className="mt-4 border-t border-[#edf2ec] pt-4">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="receipt-output-buyer-grid grid gap-3 sm:grid-cols-2 print:grid-cols-2">
                   <div>
                     <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-[#6e836f]">
                       Nama Lengkap
@@ -268,28 +272,28 @@ export function TransactionReceiptDocument({
 
           <section className="space-y-4 print:space-y-3">
             <div className="rounded-[1.4rem] border border-[#dbe4da] bg-[linear-gradient(180deg,#ffffff_0%,#f7fbf7_100%)] px-4 py-4 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
-                <ReceiptSectionHeading icon={<BadgeCheck className="size-4" />} outputLayout={outputLayout} title="Total Pembayaran" />
-                <div className="mt-4 border-t border-[#edf2ec] pt-4">
-                  <p className="text-sm leading-6 text-[#5a715d]">Total Harga Lelang Terbayar</p>
-                  <p
-                    className={`mt-2 font-black tracking-tight text-[#0b6a46] ${
-                      outputLayout ? "text-[1.55rem] leading-none md:text-[1.75rem]" : "text-[1.95rem] md:text-[2.15rem]"
-                    }`}
-                  >
-                    {currency.format(total)}
-                  </p>
-                  <div
-                    className={`mt-3 flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-sm ${
-                      outputLayout
-                        ? "border-[#c9d9ca] bg-[#edf5ef] text-[#0b6a46]"
-                        : "border-[#dbe4da] bg-white text-[#49624d]"
-                    }`}
-                  >
-                    <CircleDot className={`shrink-0 ${outputLayout ? "size-3.5 text-[#0b6a46]" : "size-4 text-[#b88c1a]"}`} />
-                    <span className="whitespace-nowrap font-semibold">{statusLabel}</span>
-                  </div>
+              <ReceiptSectionHeading icon={<BadgeCheck className="size-4" />} outputLayout={outputLayout} title="Total Pembayaran" />
+              <div className="mt-4 border-t border-[#edf2ec] pt-4">
+                <p className="text-sm leading-6 text-[#5a715d]">Total Harga Lelang Terbayar</p>
+                <p
+                  className={`mt-2 font-black tracking-tight text-[#0b6a46] ${
+                    outputLayout ? "text-[1.55rem] leading-none md:text-[1.75rem]" : "text-[1.95rem] md:text-[2.15rem]"
+                  }`}
+                >
+                  {currency.format(total)}
+                </p>
+                <div
+                  className={`mt-3 flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-sm ${
+                    outputLayout
+                      ? "border-[#c9d9ca] bg-[#edf5ef] text-[#0b6a46]"
+                      : "border-[#dbe4da] bg-white text-[#49624d]"
+                  }`}
+                >
+                  <CircleDot className={`shrink-0 ${outputLayout ? "size-3.5 text-[#0b6a46]" : "size-4 text-[#b88c1a]"}`} />
+                  <span className="whitespace-nowrap font-semibold">{statusLabel}</span>
                 </div>
               </div>
+            </div>
 
             <div className="rounded-[1.4rem] border border-[#dbe4da] bg-white px-4 py-4 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
               <ReceiptSectionHeading icon={<Landmark className="size-4" />} outputLayout={outputLayout} title="Metode Pembayaran" />
@@ -315,7 +319,7 @@ export function TransactionReceiptDocument({
           </section>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr] print:gap-3">
+        <div className="receipt-output-summary-grid grid gap-4 md:grid-cols-[1.2fr_0.8fr] print:grid-cols-[1.2fr_0.8fr] print:gap-3">
           <div className="rounded-[1.25rem] border border-[#dbe4da] bg-white px-4 py-3 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#0f5136]">
               Syarat & Ketentuan

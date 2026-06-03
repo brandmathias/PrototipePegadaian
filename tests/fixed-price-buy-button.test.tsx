@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -13,7 +13,6 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
-import { ToastProvider } from "@/components/ui/toast";
 
 describe("FixedPriceBuyButton", () => {
   afterEach(() => {
@@ -23,37 +22,17 @@ describe("FixedPriceBuyButton", () => {
     refreshMock.mockReset();
   });
 
-  it("creates a transfer transaction directly from the detail CTA and redirects to payment detail", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 201,
-        json: async () => ({ data: { id: "trx-direct-1" } })
-      })
-    );
+  it("opens the fixed price payment panel without creating a transaction", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
 
-    render(
-      <ToastProvider>
-        <FixedPriceBuyButton lotId="lot-fixed-1" />
-      </ToastProvider>
-    );
+    render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
 
     await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
 
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/user/beli/lot-fixed-1",
-        expect.objectContaining({
-          method: "POST",
-          body: JSON.stringify({ paymentMethod: "transfer" })
-        })
-      );
-    });
-
-    await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-direct-1");
-    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replaceMock).toHaveBeenCalledWith("/katalog/lot-fixed-1/beli");
+    expect(refreshMock).not.toHaveBeenCalled();
   });
 });

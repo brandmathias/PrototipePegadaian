@@ -9,15 +9,51 @@ import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 type BuyerPaymentProofFormProps = {
   transactionId: string;
   currentProof?: string;
+  locked?: boolean;
+  lockedTitle?: string;
+  lockedDescription?: string;
+  requireNewProof?: boolean;
+  readOnlyPreview?: boolean;
+  submitLabel?: string;
+  lockedSubmitLabel?: string;
 };
+
+function getProofDisplayName(value?: string) {
+  if (!value) return "Bukti pembayaran";
+  const cleanValue = value.split("?")[0] ?? value;
+  const name = cleanValue.split(/[\\/]/).filter(Boolean).pop() ?? cleanValue;
+
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+}
+
+function isPreviewableProofUrl(value?: string) {
+  return Boolean(value && (value.startsWith("/") || /^https?:\/\//i.test(value)));
+}
+
+function proofUrlMatchesExtension(value: string | null | undefined, pattern: RegExp) {
+  if (!value) return false;
+  return pattern.test(value.split("?")[0] ?? value);
+}
 
 export function BuyerPaymentProofForm({
   transactionId,
-  currentProof
+  currentProof,
+  locked = false,
+  lockedTitle = "Bukti pembayaran sedang direview",
+  lockedDescription = "Admin unit sedang mencocokkan nominal, rekening tujuan, referensi, dan kejelasan bukti transfer. Bukti tidak dapat diganti sampai admin memberi keputusan.",
+  requireNewProof = false,
+  readOnlyPreview = false,
+  submitLabel = "Kirim Bukti Pembayaran",
+  lockedSubmitLabel = "Bukti sedang direview admin"
 }: BuyerPaymentProofFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -35,10 +71,23 @@ export function BuyerPaymentProofForm({
   } | null>(null);
   const proofInputId = `payment-proof-${transactionId}`;
   const previewTitleId = useId();
-  const hasProofInput = Boolean(file || fileName.trim());
-  const hasPreview = Boolean(previewUrl);
-  const isImagePreview = Boolean(file?.type.startsWith("image/"));
-  const isPdfPreview = file?.type === "application/pdf";
+  const storedProofUrl = isPreviewableProofUrl(currentProof) ? currentProof : null;
+  const displayPreviewUrl = previewUrl ?? storedProofUrl;
+  const proofDisplayName = file?.name ?? getProofDisplayName(currentProof);
+  const hasProofInput = requireNewProof ? Boolean(file) : Boolean(file || fileName.trim());
+  const hasPreview = Boolean(displayPreviewUrl);
+  const showUploadControls = !readOnlyPreview;
+  const isImagePreview = file
+    ? file.type.startsWith("image/")
+    : proofUrlMatchesExtension(displayPreviewUrl, /\.(png|jpe?g|webp)$/i);
+  const isPdfPreview = file
+    ? file.type === "application/pdf"
+    : proofUrlMatchesExtension(displayPreviewUrl, /\.pdf$/i);
+  const previewBadgeLabel = locked
+    ? "Bukti Terkirim"
+    : requireNewProof && currentProof && !file
+      ? "Bukti Sebelumnya"
+      : "Preview Aktif";
 
   useEffect(() => {
     setIsHydrated(true);
@@ -80,6 +129,10 @@ export function BuyerPaymentProofForm({
   }, [isPreviewOpen]);
 
   function handleSubmit() {
+    if (locked || readOnlyPreview || !hasProofInput) {
+      return;
+    }
+
     setFeedback(null);
     startTransition(async () => {
       const body = new FormData();
@@ -136,6 +189,21 @@ export function BuyerPaymentProofForm({
 
   return (
     <div className="space-y-4">
+      {locked && !readOnlyPreview ? (
+        <div className="rounded-[1.35rem] border border-[#c9e2d6] bg-[#eef8f2] p-2">
+          <div className="rounded-[calc(1.35rem-0.5rem)] border border-white/80 bg-white px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+            <div className="flex items-start gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-[1rem] bg-[#e3f3eb] text-primary">
+                <FileCheck2 className="size-5" />
+              </span>
+              <div>
+                <p className="font-body text-sm font-black text-[#13211c]">{lockedTitle}</p>
+                <p className="mt-1 font-body text-xs leading-5 text-[#52665c]">{lockedDescription}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6] p-4 sm:p-5">
         <div className="flex min-h-[26rem] flex-col">
           {hasPreview ? (
@@ -149,12 +217,12 @@ export function BuyerPaymentProofForm({
                 <img
                   alt="Preview bukti transfer"
                   className="h-full min-h-[18rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
-                  src={previewUrl ?? undefined}
+                  src={displayPreviewUrl ?? undefined}
                 />
               ) : isPdfPreview ? (
                 <iframe
                   className="h-full min-h-[18rem] w-full bg-white"
-                  src={previewUrl ? `${previewUrl}#toolbar=0&navpanes=0&scrollbar=0` : undefined}
+                  src={displayPreviewUrl ? `${displayPreviewUrl}#toolbar=0&navpanes=0&scrollbar=0` : undefined}
                   title="Preview PDF bukti transfer"
                 />
               ) : (
@@ -165,7 +233,7 @@ export function BuyerPaymentProofForm({
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-body text-sm font-semibold text-[#1a1c1c]">
-                        {file?.name}
+                        {proofDisplayName}
                       </span>
                       <span className="block text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
                         File Tersimpan
@@ -177,7 +245,7 @@ export function BuyerPaymentProofForm({
               <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,18,0.02),transparent_36%,rgba(12,25,18,0.34))]" />
               <span className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/88 px-3 py-1.5 font-body text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#0d573e] shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm">
                 <FileCheck2 className="size-3.5" />
-                Preview Aktif
+                {previewBadgeLabel}
               </span>
               <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm transition duration-500 group-hover:scale-[1.04]">
                 <Expand className="size-4" />
@@ -185,7 +253,7 @@ export function BuyerPaymentProofForm({
               <span className="pointer-events-none absolute inset-x-0 bottom-0 p-4 sm:p-5">
                 <span className="block rounded-[1.15rem] border border-white/18 bg-[linear-gradient(180deg,rgba(9,35,24,0.72),rgba(7,28,20,0.9))] px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
                   <span className="block truncate font-body text-[1rem] font-semibold">
-                    {file?.name}
+                    {proofDisplayName}
                   </span>
                   <span className="mt-1 block text-[0.72rem] uppercase tracking-[0.14em] text-white/72">
                     Tekan untuk membuka tampilan penuh
@@ -202,40 +270,53 @@ export function BuyerPaymentProofForm({
                 {file ? file.name : currentProof ? "Bukti pembayaran tersimpan" : "Klik atau seret file ke sini"}
               </span>
               <span className="mt-2 block max-w-[18rem] font-body text-sm leading-6 text-[#6e716c]">
-                Preview bukti transfer akan tampil besar di area ini setelah file dipilih.
+                {locked
+                  ? "Bukti ini sudah masuk antrean review admin unit."
+                  : requireNewProof
+                    ? "Pilih file bukti baru agar admin dapat memeriksa ulang pembayaran."
+                    : "Preview bukti transfer akan tampil besar di area ini setelah file dipilih."}
               </span>
             </div>
           )}
 
-          <div className="mt-4 flex flex-col items-center gap-3 text-center">
-            <label
-              className="inline-flex h-11 cursor-pointer items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 font-body text-sm font-semibold text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.03] active:scale-[0.98]"
-              htmlFor={proofInputId}
-            >
-              Pilih File
-            </label>
-            <span className="block font-body text-[0.78rem] uppercase tracking-[0.08em] text-[#6e716c]">
-              Format: JPG, PNG, PDF (Maks. 5MB)
-            </span>
-          </div>
+          {showUploadControls ? (
+            <div className="mt-4 flex flex-col items-center gap-3 text-center">
+              <label
+                aria-disabled={locked}
+                className={cn(
+                  "inline-flex h-11 cursor-pointer items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 font-body text-sm font-semibold text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.03] active:scale-[0.98]",
+                  locked && "pointer-events-none cursor-not-allowed border-[#d7ded5] bg-[#eef3ed] text-[#718077] hover:translate-y-0"
+                )}
+                htmlFor={proofInputId}
+              >
+                {requireNewProof ? "Pilih File Baru" : "Pilih File"}
+              </label>
+              <span className="block font-body text-[0.78rem] uppercase tracking-[0.08em] text-[#6e716c]">
+                Format: JPG, PNG, PDF (Maks. 5MB)
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
-      <Input
-        accept=".jpg,.jpeg,.png,.pdf"
-        aria-label="File bukti transfer"
-        className="sr-only"
-        id={proofInputId}
-        name="proofFile"
-        onChange={(event) => {
-          const nextFile = event.target.files?.[0] ?? null;
-          setFile(nextFile);
-          setFileName(nextFile?.name ?? currentProof ?? "");
-          if (!nextFile) {
-            setIsPreviewOpen(false);
-          }
-        }}
-        type="file"
-      />
+      {showUploadControls ? (
+        <Input
+          accept=".jpg,.jpeg,.png,.pdf"
+          aria-label="File bukti transfer"
+          className="sr-only"
+          disabled={locked}
+          id={proofInputId}
+          name="proofFile"
+          onChange={(event) => {
+            const nextFile = event.target.files?.[0] ?? null;
+            setFile(nextFile);
+            setFileName(nextFile?.name ?? (requireNewProof ? "" : currentProof ?? ""));
+            if (!nextFile) {
+              setIsPreviewOpen(false);
+            }
+          }}
+          type="file"
+        />
+      ) : null}
       <input
         aria-hidden="true"
         autoComplete="off"
@@ -245,22 +326,26 @@ export function BuyerPaymentProofForm({
         tabIndex={-1}
         value={reference}
       />
-      <Button
-        className="h-14 w-full rounded-md font-body text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-        disabled={!isHydrated || isPending || !hasProofInput}
-        onClick={handleSubmit}
-      >
-        {!isHydrated
-          ? "Menyiapkan\u2026"
-          : isPending
-          ? (
-              <>
-                <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-                {"Mengirim\u2026"}
-              </>
-            )
-          : "Kirim Bukti Pembayaran"}
-      </Button>
+      {showUploadControls ? (
+        <Button
+          className="h-14 w-full rounded-md font-body text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+          disabled={locked || !isHydrated || isPending || !hasProofInput}
+          onClick={handleSubmit}
+        >
+          {locked
+            ? lockedSubmitLabel
+            : !isHydrated
+            ? "Menyiapkan\u2026"
+            : isPending
+            ? (
+                <>
+                  <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                  {"Mengirim\u2026"}
+                </>
+              )
+            : submitLabel}
+        </Button>
+      ) : null}
       {feedback ? (
         <InlineFeedback
           className="feedback-lift"
@@ -269,7 +354,7 @@ export function BuyerPaymentProofForm({
           variant={feedback.variant}
         />
       ) : null}
-      {isPreviewOpen && previewUrl
+      {isPreviewOpen && displayPreviewUrl
         ? createPortal(
             <div
               aria-labelledby={previewTitleId}
@@ -293,7 +378,7 @@ export function BuyerPaymentProofForm({
                         className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]"
                         id={previewTitleId}
                       >
-                        {file?.name ?? "Preview bukti transfer"}
+                        {proofDisplayName}
                       </h3>
                     </div>
                     <button
@@ -312,12 +397,12 @@ export function BuyerPaymentProofForm({
                         <img
                           alt="Preview bukti transfer"
                           className="max-h-[78dvh] w-full object-contain bg-[#f8f8f5]"
-                          src={previewUrl ?? undefined}
+                          src={displayPreviewUrl ?? undefined}
                         />
                       ) : isPdfPreview ? (
                         <iframe
                           className="h-[78dvh] w-full bg-white"
-                          src={previewUrl ? `${previewUrl}#toolbar=1&navpanes=0` : undefined}
+                          src={displayPreviewUrl ? `${displayPreviewUrl}#toolbar=1&navpanes=0` : undefined}
                           title="Preview penuh PDF bukti transfer"
                         />
                       ) : (
@@ -328,7 +413,7 @@ export function BuyerPaymentProofForm({
                             </span>
                             <div className="min-w-0">
                               <p className="truncate font-body text-sm font-semibold text-[#1a1c1c]">
-                                {file?.name}
+                                {proofDisplayName}
                               </p>
                               <p className="text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
                                 File siap ditinjau

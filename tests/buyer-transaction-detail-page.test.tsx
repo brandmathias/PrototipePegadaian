@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -67,13 +67,16 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });
 
-  it("asks buyer to finish the purchase after admin verification", () => {
+  it("asks buyer to finish the purchase and prints the receipt inline after admin verification", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
     render(
       <TransactionDetailPage
         buyer={buyer}
         transaction={{
           ...transaction,
           status: "LUNAS",
+          paymentProof: "/uploads/bukti/transfer-lunas.jpg",
           verifiedAt: "4 Mei 2026 22.11 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
@@ -82,11 +85,95 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/menunggu konfirmasi selesai dari buyer/i)).toBeInTheDocument();
+    expect(screen.getByText(/transfer-lunas.jpg/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /buka nota/i })).toHaveAttribute(
-      "href",
-      `/transaksi/${transaction.id}/nota`
+    expect(screen.queryByRole("link", { name: /buka nota/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 3000 });
+
+    const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-fixed-1-status");
+
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/kalung-emas.jpg"]')).not.toBeNull();
+
+    printSpy.mockRestore();
+  });
+
+  it("shows uploaded proof as read-only review state after the buyer sends payment proof", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "BUKTI_DIUNGGAH",
+          paymentProof: "/uploads/bukti/transfer-budi.jpg",
+          reference: "BRI-2026-001"
+        }}
+        transactionId={transaction.id}
+      />
     );
+
+    expect(screen.getByRole("heading", { name: /review bukti/i })).toBeInTheDocument();
+    expect(screen.queryByText(/bukti pembayaran sedang direview/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/terkirim dan terkunci sampai admin/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/transfer-budi.jpg/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /bukti sedang direview admin/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^kirim bukti pembayaran$/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps the uploaded proof preview visible after the transaction is completed", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "SELESAI",
+          paymentProof: "/uploads/bukti/transfer-selesai.jpg",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/pembelian selesai setelah pembayaran diverifikasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/transfer-selesai.jpg/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
+  });
+
+  it("surfaces rejection reason and keeps proof upload available for correction", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "DITOLAK_BUKTI",
+          paymentProof: "/uploads/bukti/transfer-budi-buram.jpg",
+          rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang."
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/workflow verifikasi gagal/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/bukti pembayaran ditolak/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/nominal uang yang dikirim tidak sesuai harga barang/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/upload ulang bukti pembayaran/i)).toBeInTheDocument();
+    expect(screen.queryByText(/transfer-budi-buram\.jpg/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /preview bukti transfer/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/file bukti transfer/i)).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /kirim ulang bukti pembayaran/i })).toBeDisabled();
   });
 
   it("blocks settlement actions while the buyer has an active blacklist", () => {

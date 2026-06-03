@@ -1,5 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
 
+import type { LotInsights } from "@/lib/contracts/catalog";
 import type { barang, bids, pemasaran, transaksi } from "@/lib/db/schema/admin";
 import { formatAppDateTime } from "@/lib/timezone";
 
@@ -152,6 +153,7 @@ export function serializeAdminPemasaran(
     bidCount?: number;
     winnerName?: string | null;
     transaction?: AdminPemasaranTransaction | null;
+    insights?: LotInsights | null;
     participantPreviews?: Array<{
       bidderId: string;
       bidderName?: string | null;
@@ -295,6 +297,7 @@ export function serializeAdminPemasaran(
     reference: extra.transaction?.reference ?? null,
     soldAt: toIsoOrNull(extra.transaction?.soldAt),
     paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
+    insights: extra.insights ?? null,
     basePrice: row.mode === "fixed_price" ? null : toNumber(row.basePrice ?? row.price),
     finalPrice: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? toNumber(row.finalPrice) || null : null,
     winner: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? extra.winnerName ?? null : null,

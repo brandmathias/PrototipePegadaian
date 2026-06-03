@@ -407,14 +407,9 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
       <SectionHeading
-        action={
-          <Link href={`/katalog/${lot.id}`}>
-            <Button variant="secondary">Kembali ke Detail Barang</Button>
-          </Link>
-        }
-        description="Fixed price sekarang menggunakan transfer bank. Sistem akan membuat transaksi dan langsung membuka detail pembayaran."
+        description="Fixed price menggunakan transfer bank. Transaksi baru dibuat setelah Anda melanjutkan pembayaran."
         eyebrow="Pembayaran Fixed Price"
-        title="Membuka detail pembayaran"
+        title="Detail pembayaran"
       />
       <PurchaseWorkflow lot={lot} />
     </div>

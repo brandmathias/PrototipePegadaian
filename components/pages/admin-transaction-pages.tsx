@@ -23,6 +23,7 @@ import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action
 import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
+import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +90,14 @@ function paymentChannelLabel(method?: string | null) {
   }
 
   return humanize(method);
+}
+
+function receiptMarketingLabel(mode?: string | null) {
+  if (mode?.toLowerCase().includes("vickrey")) {
+    return "Lelang";
+  }
+
+  return mode || "Fixed Price";
 }
 
 function isProofPreviewable(url?: string | null) {
@@ -370,6 +379,52 @@ function getReceiptTerms(transaction: AdminTransactionItem) {
     "Pembayaran sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
     "Simpan nota ini untuk keperluan administrasi atau pengambilan barang."
   ];
+}
+
+function getTransactionReceiptPrintRootId(transaction: AdminTransactionItem) {
+  return `transaction-receipt-print-root-${String(transaction.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function AdminTransactionInlineReceiptPrint({
+  buttonClassName,
+  label,
+  transaction
+}: {
+  buttonClassName: string;
+  label?: string;
+  transaction: AdminTransactionItem;
+}) {
+  const isCompleted = transaction.status === "SELESAI";
+
+  return (
+    <TransactionReceiptInlinePrint
+      buttonClassName={buttonClassName}
+      label={label}
+      rootId={getTransactionReceiptPrintRootId(transaction)}
+    >
+      <TransactionReceiptDocument
+        buyerEmail={transaction.buyerEmail}
+        buyerName={transaction.buyer}
+        buyerPhone={transaction.buyerPhone}
+        extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
+        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        imageUrl={transaction.imageUrl}
+        itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}
+        itemTitle={transaction.lot}
+        noteNumber={transaction.receiptNumber ?? `PEG-${String(transaction.id).slice(0, 8).toUpperCase()}`}
+        paymentMethodLabel={paymentChannelLabel(transaction.method)}
+        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        subtotal={transaction.total}
+        terms={getReceiptTerms(transaction)}
+        total={transaction.total}
+        transactionId={transaction.id}
+        unitAddress={transaction.unitAddress}
+        unitName={transaction.unit ?? "-"}
+        verifiedAt={transaction.verifiedAt}
+        outputLayout
+      />
+    </TransactionReceiptInlinePrint>
+  );
 }
 
 function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionItem }) {
@@ -877,15 +932,11 @@ function TransactionActionPanel({
       ) : null}
 
       {canPrint ? (
-        <Link
-          className={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7] dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:bg-white/[0.1]`}
-          href={`/admin/transaksi/${transaction.id}/nota?output=print`}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <Printer className="size-4" />
-          Cetak nota
-        </Link>
+        <AdminTransactionInlineReceiptPrint
+          buttonClassName={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7] dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:bg-white/[0.1]`}
+          label="Cetak Nota"
+          transaction={transaction}
+        />
       ) : null}
 
       {!canVerifyTransfer && !canConfirmDirect && !canPrint ? (
@@ -1115,12 +1166,7 @@ export function AdminTransactionReceiptPage({
         buyerEmail={transaction.buyerEmail}
         buyerName={transaction.buyer}
         buyerPhone={transaction.buyerPhone}
-        extraMeta={[
-          { label: "Jenis transaksi", value: transaction.pemasaranMode },
-          { label: "Nomor referensi", value: transaction.reference },
-          { label: "Status", value: isCompleted ? "Selesai" : "Terverifikasi" },
-          { label: "Tanggal verifikasi", value: transaction.verifiedAt || "-" }
-        ]}
+        extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
         imageUrl={transaction.imageUrl}
         itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}

@@ -5,6 +5,7 @@ import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, units, users } from "@/lib/db/schema";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
+import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 
@@ -289,10 +290,11 @@ export async function listAdminPemasaran(unitId: string) {
     .groupBy(pemasaran.id, barang.id, units.id, users.name)
     .orderBy(desc(pemasaran.createdAt));
 
-  const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId] = await Promise.all([
+  const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId, statsByPemasaranId] = await Promise.all([
     getMarketingMediaByBarangIds(rows.map((row) => row.item.id)),
     getLatestTransactionsByPemasaranIds(rows.map((row) => row.marketing.id)),
-    getParticipantPreviewsByPemasaranIds(rows.map((row) => row.marketing.id))
+    getParticipantPreviewsByPemasaranIds(rows.map((row) => row.marketing.id)),
+    getLotStatsByIds(rows.map((row) => row.marketing.id))
   ]);
 
   return rows.map((row) =>
@@ -308,6 +310,7 @@ export async function listAdminPemasaran(unitId: string) {
       unitAddress: row.unitAddress,
       media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
+      insights: statsByPemasaranId.get(row.marketing.id) ?? null,
       winnerName: row.winnerName ?? null,
       transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
       participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? []
@@ -340,9 +343,10 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
-  const [mediaByBarangId, transactionByPemasaranId] = await Promise.all([
+  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId] = await Promise.all([
     getMarketingMediaByBarangIds([row.item.id]),
-    getLatestTransactionsByPemasaranIds([row.marketing.id])
+    getLatestTransactionsByPemasaranIds([row.marketing.id]),
+    getLotStatsByIds([row.marketing.id])
   ]);
 
   const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
@@ -376,6 +380,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     unitAddress: row.unitAddress,
     media: mediaByBarangId.get(row.item.id) ?? [],
     bidCount: Number(row.bidCount ?? 0),
+    insights: statsByPemasaranId.get(row.marketing.id) ?? null,
     winnerName: row.winnerName ?? null,
     transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
     bids: bidRows

@@ -96,6 +96,26 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.getByText("BRG-001")).toBeInTheDocument();
     expect(screen.queryByText("BRG-003")).not.toBeInTheDocument();
   });
+
+  it("sorts inventory rows by due date from the header control", () => {
+    render(
+      <AdminInventoryWorkspace
+        items={[
+          { ...makeItem(1), id: "barang-far", code: "BRG-FAR", name: "Barang Tempo Jauh", dueDate: "2026-07-01" },
+          { ...makeItem(2), id: "barang-near", code: "BRG-NEAR", name: "Barang Tempo Dekat", dueDate: "2026-06-01" }
+        ]}
+      />
+    );
+
+    const nearRow = screen.getByText("Barang Tempo Dekat");
+    const farRow = screen.getByText("Barang Tempo Jauh");
+
+    expect(nearRow.compareDocumentPosition(farRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /urutkan jatuh tempo/i }));
+
+    expect(farRow.compareDocumentPosition(nearRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
 
 describe("AdminInventoryHistoryWorkspace", () => {

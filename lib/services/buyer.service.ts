@@ -680,6 +680,10 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     throw new Error("Transaksi tidak ditemukan.");
   }
 
+  if (row.status === "bukti_diunggah") {
+    throw new Error("Bukti pembayaran sudah terkirim dan sedang diverifikasi admin unit.");
+  }
+
   if (row.status === "lunas" || row.status === "selesai" || row.status === "gagal") {
     throw new Error("Transaksi ini sudah tidak dapat diperbarui.");
   }

@@ -3,21 +3,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
+  BarChart3,
   CalendarDays,
+  Camera,
   CarFront,
   ChevronRight,
   CheckCircle2,
+  ClipboardList,
   Clock3,
+  Eye,
   FileText,
   Gavel,
   Gem,
   Hash,
+  Heart,
   Info,
   Landmark,
   LockKeyhole,
@@ -36,24 +41,29 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
+  Tag,
   Target,
   Trophy,
   UserRound,
   UsersRound,
   WalletCards,
   X,
+  type LucideIcon,
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
+import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
-import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotFigure } from "@/components/shared/lot-figure";
+import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
+import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { LotInsights } from "@/lib/contracts/catalog";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDateTime } from "@/lib/timezone";
@@ -104,6 +114,7 @@ export type MarketingSession = {
   reference?: string | null;
   soldAt?: string | null;
   paymentDeadline?: string | null;
+  insights?: LotInsights | null;
   basePrice?: number | null;
   appraisalValue?: number | null;
   finalPrice?: number | null;
@@ -383,7 +394,7 @@ function VickreyAssetNotice({ auction }: { auction: MarketingSession }) {
         </div>
         <div className="rounded-2xl border border-[#dce8e2] bg-white/72 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] lg:border-l lg:border-y-0 lg:border-r-0 lg:bg-transparent lg:pl-5 lg:shadow-none">
           <p className="text-[0.72rem] font-semibold text-[#64756e]">Nilai Taksiran</p>
-          <p className="mt-2 text-[1.05rem] font-black text-[#006747]">
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-black text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.appraisalValue ?? auction.basePrice ?? 0)}`}>
             {currency.format(auction.appraisalValue ?? auction.basePrice ?? 0)}
           </p>
         </div>
@@ -890,10 +901,19 @@ function getVickreyStage(auction: MarketingSession) {
     };
   }
 
-  if (transactionStatus === "LUNAS" || transactionStatus === "SELESAI") {
+  if (transactionStatus === "SELESAI") {
     return {
-      label: transactionStatus === "SELESAI" ? "Selesai" : "Terverifikasi",
-      detail: "Pembayaran pemenang sudah diputuskan dan arsip transaksi tersedia.",
+      label: "Selesai",
+      detail: "Buyer sudah menekan Pembelian Selesai dan arsip transaksi tersedia.",
+      tone: "green" as const,
+      icon: BadgeCheck
+    };
+  }
+
+  if (transactionStatus === "LUNAS") {
+    return {
+      label: "Terverifikasi",
+      detail: "Pembayaran pemenang sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
       tone: "green" as const,
       icon: BadgeCheck
     };
@@ -922,7 +942,7 @@ function getVickreySummary(auctions: MarketingSession[]) {
     pendingReveal: auctions.filter((auction) => auction.visibility === "MENUNGGU_REVEAL").length,
     revealed: auctions.filter((auction) => auction.visibility === "HASIL_DIBUKA").length,
     paymentQueue: auctions.filter((auction) => isPaymentQueue(auction)).length,
-    completed: auctions.filter((auction) => ["LUNAS", "SELESAI"].includes(auction.transactionStatus ?? "")).length
+    completed: auctions.filter((auction) => auction.transactionStatus === "SELESAI").length
   };
 }
 
@@ -932,7 +952,7 @@ const MARKETING_METHOD_FILTERS = [
   { label: "Vickrey Auction", value: "VICKREY_AUCTION" }
 ] as const;
 
-const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Selesai", "Perlu Strategi"] as const;
+const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Menunggu Buyer", "Selesai", "Perlu Strategi"] as const;
 
 type MarketingMethodFilter = (typeof MARKETING_METHOD_FILTERS)[number]["value"];
 type MarketingStatusFilter = (typeof MARKETING_STATUS_FILTERS)[number];
@@ -946,10 +966,12 @@ function isMarketingActive(auction: MarketingSession) {
 }
 
 function isMarketingSold(auction: MarketingSession) {
+  if (auction.transactionStatus) {
+    return auction.transactionStatus === "SELESAI";
+  }
+
   return (
     auction.status === "SELESAI" ||
-    auction.transactionStatus === "LUNAS" ||
-    auction.transactionStatus === "SELESAI" ||
     Boolean(auction.soldAt)
   );
 }
@@ -966,13 +988,25 @@ function hasFixedPricePaymentSubmission(auction: MarketingSession) {
   );
 }
 
+function hasFixedPriceVerificationReady(auction: MarketingSession) {
+  return Boolean(auction.transactionId) && auction.transactionStatus === "BUKTI_DIUNGGAH";
+}
+
 function getFixedPriceWorkflowStatus(auction: MarketingSession) {
+  if (auction.transactionStatus === "LUNAS") {
+    return "Menunggu Buyer";
+  }
+
   return isMarketingSold(auction) ? "Selesai" : "Aktif";
 }
 
 function getFixedPriceOperationalNote(auction: MarketingSession) {
   if (isMarketingSold(auction)) {
     return "Pembelian fixed price selesai";
+  }
+
+  if (auction.transactionStatus === "LUNAS") {
+    return "Menunggu buyer menyelesaikan pembelian";
   }
 
   if (hasFixedPricePaymentSubmission(auction)) {
@@ -1014,6 +1048,9 @@ function getMarketingWorkflowStatus(auction: MarketingSession) {
   }
   if (needsMarketingStrategy(auction)) {
     return "Perlu Strategi";
+  }
+  if (auction.transactionStatus === "LUNAS") {
+    return "Menunggu Buyer";
   }
   if (isMarketingSold(auction)) {
     return "Selesai";
@@ -1978,163 +2015,411 @@ export function AdminFixedPriceDetailPage({
   auction: MarketingSession;
 }) {
   const media = auction.media ?? [];
-  const sold = isMarketingSold(auction);
-  const sessionStatusLabel = getFixedPriceWorkflowStatus(auction);
   const buyerName = getFixedPriceVisibleBuyerName(auction);
-  const buyerMedia = toBuyerMedia(media);
-  const serverNow = new Date().toISOString();
+  const insights = normalizeFixedPriceInsights(auction.insights);
+  const statusMeta = getFixedPriceCatalogStatusMeta(auction);
+  const StatusIcon = statusMeta.icon;
+  const unitLabel = auction.unitName || auction.unitAddress || "Unit belum tercatat";
+  const specTiles = getFixedPriceSpecificationTiles(auction);
+  const lastUpdated = dateLabel(auction.soldAt ?? auction.startsAt);
+  const canPrintReceipt = isFixedPriceReceiptPrintable(auction);
 
   return (
-    <div className="space-y-6">
-      <SessionHeader
-        accent="green"
-        description="Halaman ini menampilkan media barang, status pembayaran, dan langkah admin berikutnya untuk sesi harga tetap."
-        eyebrow="Admin Unit / Detail Pemasaran"
-        title={auction.lot}
-        action={<AdminStatusBadge className="text-[0.95rem]" status={auction.status as any} />}
-      />
+    <div className="space-y-4">
+      <section className="rounded-[1.45rem] border border-[#d8e8dd] bg-white/90 p-4 shadow-[0_24px_70px_-56px_rgba(8,69,50,0.45)]">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.17em] text-[#14352b]/58">
+              <span>Admin Unit</span>
+              <ChevronRight className="size-3.5 text-[#8fa59a]" />
+              <span className="text-[#13211c]">Detail Pemasaran Fixed Price</span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <h1 className="font-headline text-[2rem] font-black leading-none text-[#101921] sm:text-[2.45rem]">
+                {auction.lot}
+              </h1>
+              <span className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#cbd7e7] bg-white px-3.5 py-2 text-[0.84rem] font-black text-[#111b46] shadow-[0_12px_28px_-24px_rgba(16,25,33,0.32)]">
+                <FileText className="size-4 text-[#50607a]" />
+                {auction.code || "BRG"}
+              </span>
+              <span className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#b7e7cf] bg-[#effaf4] px-3.5 py-2 text-[0.84rem] font-black text-[#006747]">
+                <Tag className="size-4" />
+                Harga Tetap
+              </span>
+              <span className={`inline-flex min-h-9 items-center gap-2 rounded-lg border px-3.5 py-2 text-[0.84rem] font-black ${statusMeta.badgeClassName}`}>
+                <StatusIcon className="size-4" />
+                {statusMeta.label}
+              </span>
+            </div>
+          </div>
 
-      <div className="grid gap-8 xl:grid-cols-[1.12fr_0.88fr]">
-        <div className="space-y-5">
-          <LotMediaGallery
-            category={auction.category || "Lainnya"}
-            className="min-h-[22rem] rounded-[2rem] md:min-h-[34rem]"
-            media={buyerMedia}
-            showVideoControls
-            title={auction.lot}
-          />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Card className="border border-border/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">Kode barang</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{auction.code || "-"}</p>
-            </Card>
-            <Card className="border border-border/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">Kategori</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{auction.category || "-"}</p>
-            </Card>
-            <Card className="border border-border/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">Kondisi</p>
-              <p className="mt-2 text-sm font-semibold text-foreground">{auction.condition || "-"}</p>
-            </Card>
-            <Card className="border border-border/70 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">Harga tetap</p>
-              <p className="mt-2 text-sm font-semibold text-primary">{currency.format(auction.price ?? 0)}</p>
-            </Card>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-5 text-sm font-black text-[#111827] shadow-[0_18px_32px_-26px_rgba(16,25,33,0.32)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
+              href="/admin/pemasaran"
+            >
+              <ChevronRight className="size-4 rotate-180" />
+              Kembali ke Daftar
+            </Link>
           </div>
         </div>
+      </section>
 
-        <div className="space-y-6">
-          <Card className="overflow-hidden border border-border/70 bg-white">
-            <CardContent className="space-y-6 p-6">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="default">Fixed Price</Badge>
-                <Badge variant="muted">{auction.code || "BRG"}</Badge>
-              </div>
-              <div className="space-y-2">
-                <h1 className="font-headline text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
-                  {auction.lot}
-                </h1>
-                <p className="text-base leading-relaxed text-muted-foreground">
-                  {auction.note || "Pantau verifikasi pembayaran dan penyelesaian sesi harga tetap."}
-                </p>
-                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="size-4 text-primary" />
-                  {buyerName ? `Pembeli: ${buyerName}` : "Belum ada pembeli"}
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
+        <div className="space-y-4">
+          <FixedPriceAuditGallery auction={auction} media={media} />
+
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={ClipboardList} title="Spesifikasi Lengkap" />
+            <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+              {specTiles.map((item) => (
+                <div
+                  className="grid min-h-[5.4rem] place-items-center rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3.5 text-center"
+                  key={`${item.label}-${item.value}`}
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#53655e]">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block text-[0.93rem] font-black leading-5 text-[#111827]">
+                      {item.value}
+                    </span>
+                  </span>
                 </div>
-              </div>
+              ))}
+            </div>
+          </section>
+        </div>
 
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  {sold ? "Transaksi selesai" : "Status transaksi"}
-                </p>
-                <p className="mt-3 font-headline text-5xl font-extrabold tracking-tight text-primary">
+        <div className="space-y-4">
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={Tag} title="Harga Barang" />
+            <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5">
+              <div className="min-w-0">
+                <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#53655e]">Harga Tetap</p>
+                <p className="mt-3 max-w-full break-words font-headline text-[2.55rem] font-black leading-none text-[#070b16] sm:text-[3.35rem] xl:text-[3.55rem] 2xl:text-[4.25rem]">
                   {currency.format(auction.price ?? 0)}
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {sessionStatusLabel}
+                <p className="mt-5 inline-flex items-center gap-2 text-[1.02rem] font-black text-[#13211c]">
+                  <MapPin className="size-5 text-[#006747]" />
+                  {unitLabel}
                 </p>
               </div>
+            </div>
+          </section>
 
-              <div className="rounded-2xl border border-border/70 bg-surface-low p-4 text-sm leading-relaxed text-muted-foreground">
-                {auction.paymentMethod ? (
-                  <p>
-                    Metode bayar: <span className="font-semibold text-foreground">{humanize(auction.paymentMethod)}</span>
-                  </p>
-                ) : (
-                  <p>Menunggu pembeli memilih metode bayar.</p>
-                )}
-                <p className="mt-2">
-                  {auction.paymentDeadline ? (
-                    <AdminLiveCountdown
-                      className="font-semibold text-foreground"
-                      expiredLabel="Batas waktu terlewati"
-                      fallbackLabel={auction.paymentDeadline || "-"}
-                      prefix="Sisa"
-                      serverNow={serverNow}
-                      targetAt={auction.paymentDeadline}
-                    />
-                  ) : (
-                    "Tidak ada batas verifikasi aktif."
-                  )}
-                </p>
-              </div>
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <FixedPriceInsightCard
+                detail="Sejak dipublikasikan"
+                icon={Eye}
+                label="Total Tayangan"
+                tone="green"
+                value={`${insights.views.toLocaleString("id-ID")}x`}
+              />
+              <FixedPriceInsightCard
+                detail="Disimpan oleh pengguna unik"
+                icon={Heart}
+                label="Watchlist Nasabah"
+                tone="rose"
+                value={`${insights.likes.toLocaleString("id-ID")} Akun`}
+              />
+            </div>
+          </section>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <SessionMetric label="Dipasarkan sejak" tone="neutral" value={dateLabel(auction.startsAt)} />
-                <SessionMetric label="Referensi" tone="neutral" value={auction.reference || "-"} />
-              </div>
-
-              <div className="rounded-2xl bg-surface-low p-4 text-sm leading-relaxed text-muted-foreground">
-                {auction.proofUrl ? (
-                  <a
-                    className="inline-flex items-center gap-2 font-semibold text-primary underline-offset-4 hover:underline"
-                    href={auction.proofUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    <FileText className="size-4" />
-                    Lihat bukti pembayaran
-                  </a>
-                ) : (
-                  <p>Belum ada bukti pembayaran yang diunggah.</p>
-                )}
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                {auction.status === "AKTIF" ? (
-                  <Link href={`/admin/barang/${auction.lotId}/edit`}>
-                    <Button className="w-full" variant="secondary">
-                      <PencilLine className="size-4" />
-                      Edit detail
-                    </Button>
-                  </Link>
-                ) : null}
-                <Link href={`/admin/pemasaran/fixed-price/${auction.id}`}>
-                  <Button className="w-full" variant="default">
-                    Lihat sesi
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border/70 bg-[#fbfefb]">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-[1.45rem]">Langkah Berikutnya</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-7 text-black/70">
-              {sold ? (
-                <p>Transaksi selesai. Admin dapat mencetak nota dan menutup alur penjualan.</p>
-              ) : hasFixedPricePaymentSubmission(auction) ? (
-                <p>Pembelian fixed price sudah tercatat. Gunakan detail sesi untuk meninjau bukti dan menyelesaikan penjualan.</p>
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle
+              description="Kelola data produk, visibilitas katalog, dan pantau aktivitas sesi."
+              icon={SlidersHorizontal}
+              title="Konsol Manajemen"
+            />
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <Link
+                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
+                href={`/admin/barang/${auction.lotId}/edit`}
+              >
+                <PencilLine className="size-4 text-[#526072]" />
+                Edit Data
+              </Link>
+              {canPrintReceipt ? (
+                <FixedPriceReceiptInlinePrint
+                  auction={auction}
+                  buttonClassName="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99]"
+                  label="Cetak Nota"
+                />
               ) : (
-                <p>Belum ada pembeli dengan bukti pembayaran masuk. Pantau sesi ini sampai buyer mengirim bukti pembayaran.</p>
+                <FixedPricePaymentVerificationButton
+                  auction={auction}
+                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99]"
+                  label="Verifikasi Pembayaran"
+                />
               )}
-              {auction.note ? <p>{auction.note}</p> : null}
-            </CardContent>
-          </Card>
+            </div>
+            <div className="mt-4 rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3 text-[0.82rem] font-semibold leading-6 text-[#53655e]">
+              {buyerName ? (
+                <p>
+                  Pembeli tercatat: <span className="font-black text-[#13211c]">{buyerName}</span>.
+                </p>
+              ) : (
+                <p>Belum ada pembeli dengan bukti pembayaran masuk pada sesi fixed price ini.</p>
+              )}
+              <p className="mt-1">{statusMeta.detail}</p>
+            </div>
+          </section>
         </div>
+      </div>
+
+      <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+        <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
+        <p className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4 text-[0.92rem] font-semibold leading-7 text-[#31433b]">
+          {auction.description ||
+            auction.note ||
+            "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual fixed price."}
+        </p>
+      </section>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-[#dce9df] bg-[#f8fcf9] px-4 py-3 text-[0.78rem] font-semibold text-[#52675e] shadow-[0_16px_40px_-34px_rgba(8,69,50,0.32)] sm:flex-row sm:items-center sm:justify-between">
+        <span className="inline-flex items-center gap-2">
+          <ShieldCheck className="size-4 text-[#006747]" />
+          Pastikan informasi produk akurat dan sesuai kebijakan Pegadaian sebelum perubahan ditayangkan.
+        </span>
+        <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
+      </div>
+    </div>
+  );
+}
+
+function normalizeFixedPriceInsights(insights?: LotInsights | null): LotInsights {
+  return {
+    likes: Number(insights?.likes ?? 0),
+    participants: Number(insights?.participants ?? 0),
+    views: Number(insights?.views ?? 0)
+  };
+}
+
+function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
+  if (isMarketingSold(auction)) {
+    return {
+      badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
+      detail: "Penjualan fixed price sudah selesai dan siap masuk arsip transaksi.",
+      icon: BadgeCheck,
+      label: "Selesai"
+    };
+  }
+
+  if (auction.transactionStatus === "LUNAS") {
+    return {
+      badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
+      detail: "Pembayaran fixed price sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
+      icon: BadgeCheck,
+      label: "Terverifikasi"
+    };
+  }
+
+  if (hasFixedPricePaymentSubmission(auction)) {
+    return {
+      badgeClassName: "border-[#fed7aa] bg-[#fff7ed] text-[#b45309]",
+      detail: "Buyer sudah mengirim bukti pembayaran. Admin unit dapat meninjau status pembayaran dari alur verifikasi.",
+      icon: ReceiptText,
+      label: "Pembayaran Masuk"
+    };
+  }
+
+  return {
+    badgeClassName: "border-[#fed7aa] bg-[#fff8e8] text-[#b45309]",
+    detail: "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian fixed price.",
+    icon: CheckCircle2,
+    label: "Tersedia di Katalog"
+  };
+}
+
+function getFixedPriceSpecificationTiles(auction: MarketingSession) {
+  const categoryRows = getBarangSpecificationRows(auction.category ?? "", auction.specifications ?? {})
+    .filter((row) => row.value && row.value !== "-");
+  const fallbackRows = [
+    { label: "Kode Barang", value: auction.code || "-" },
+    { label: "Kategori", value: auction.category ? humanize(auction.category) : "-" },
+    { label: "Kondisi", value: auction.condition ? humanize(auction.condition) : "-" },
+    { label: "Unit", value: auction.unitName || auction.unitAddress || "-" },
+    { label: "Harga Tetap", value: currency.format(auction.price ?? 0) },
+    { label: "Status Katalog", value: getFixedPriceWorkflowStatus(auction) }
+  ];
+  const seenLabels = new Set<string>();
+
+  return [...categoryRows, ...fallbackRows]
+    .filter((row) => {
+      const labelKey = row.label.toLowerCase();
+      if (seenLabels.has(labelKey)) {
+        return false;
+      }
+      seenLabels.add(labelKey);
+      return Boolean(row.value && row.value !== "-");
+    })
+    .slice(0, 6);
+}
+
+function FixedPricePanelTitle({
+  description,
+  icon: Icon,
+  title
+}: {
+  description?: string;
+  icon: LucideIcon;
+  title: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-[#edf9f2] text-[#006747]">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[1rem] font-black leading-tight text-[#111827]">{title}</span>
+        {description ? (
+          <span className="mt-0.5 block text-[0.76rem] font-semibold leading-5 text-[#6b7a73]">{description}</span>
+        ) : null}
+      </span>
+    </div>
+  );
+}
+
+function fixedPriceMediaLabel(item: { type: "foto" | "video" }, index: number) {
+  return `${item.type === "video" ? "Video" : "Foto"} ${index + 1}`;
+}
+
+function FixedPriceAuditGallery({
+  auction,
+  media
+}: {
+  auction: MarketingSession;
+  media: MarketingMedia[];
+}) {
+  const galleryMedia = toBuyerMedia(media).slice(0, 5);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [media]);
+
+  const activeMedia = galleryMedia[activeIndex] ?? null;
+
+  return (
+    <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+      <FixedPricePanelTitle icon={Camera} title="Galeri Media Barang" />
+      <div className="mt-3">
+        <div className="relative overflow-hidden rounded-2xl border border-[#dfe9e3] bg-[#f5f7f4]" data-testid="lot-media-active">
+          {activeMedia ? (
+            activeMedia.type === "video" ? (
+              <video
+                aria-label={`${auction.lot} video ${activeIndex + 1}`}
+                className="h-full min-h-[19rem] w-full object-cover"
+                controls
+                key={activeMedia.id}
+                muted
+                playsInline
+                preload="metadata"
+                src={activeMedia.url}
+              />
+            ) : (
+              <div className="relative min-h-[19rem]">
+                <Image
+                  alt={`${auction.lot} foto ${activeIndex + 1}`}
+                  fill
+                  className="object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  sizes="(min-width: 1536px) 44vw, (min-width: 1280px) 54vw, (min-width: 768px) 82vw, 100vw"
+                  src={activeMedia.url}
+                />
+              </div>
+            )
+          ) : (
+            <LotFigure
+              category={auction.category || "Lainnya"}
+              className="min-h-[19rem]"
+              showCategoryBadge={false}
+              variant="pdp"
+            />
+          )}
+
+          <span className="absolute right-3 top-3 rounded-lg bg-[#006747] px-3 py-1 text-[0.72rem] font-black text-white shadow-[0_14px_28px_-18px_rgba(0,103,71,0.74)]">
+            Utama
+          </span>
+        </div>
+
+        {galleryMedia.length > 1 ? (
+          <div className="mt-3 grid grid-cols-5 gap-2.5">
+            {galleryMedia.map((item, index) => {
+              const isActive = index === activeIndex;
+
+              return (
+                <button
+                  aria-label={`Lihat ${fixedPriceMediaLabel(item, index)}`}
+                  className={`relative overflow-hidden rounded-xl border-2 bg-[#f5f7f4] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 ${
+                    isActive ? "border-[#006747] ring-2 ring-[#006747]/15" : "border-transparent hover:border-[#b7d7c7]"
+                  }`}
+                  key={item.id}
+                  onClick={() => setActiveIndex(index)}
+                  type="button"
+                >
+                  <span className="relative block aspect-[16/10]">
+                    {item.type === "video" ? (
+                      <video
+                        aria-label={`${auction.lot} video thumbnail ${index + 1}`}
+                        className="size-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                        src={item.url}
+                      />
+                    ) : (
+                      <Image
+                        alt={`${auction.lot} foto thumbnail ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1280px) 8vw, 20vw"
+                        src={item.url}
+                      />
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function FixedPriceInsightCard({
+  detail,
+  icon: Icon,
+  label,
+  tone,
+  value
+}: {
+  detail: string;
+  icon: LucideIcon;
+  label: string;
+  tone: "green" | "rose";
+  value: string;
+}) {
+  const toneClass =
+    tone === "green"
+      ? "border-[#bde9d2] bg-[#eaf7f0] text-[#006747] [--dot-color:rgba(0,103,71,0.17)]"
+      : "border-[#ffd1d9] bg-[#fff0f2] text-[#e11d48] [--dot-color:rgba(225,29,72,0.16)]";
+
+  return (
+    <div className={`relative min-h-[8.4rem] overflow-hidden rounded-xl border p-4 ${toneClass}`}>
+      <div className="absolute inset-y-0 right-0 w-32 opacity-70 [background-image:radial-gradient(circle,var(--dot-color)_1.2px,transparent_1.2px)] [background-size:10px_10px]" />
+      <div className="relative flex h-full items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[0.72rem] font-black uppercase tracking-[0.13em]">{label}</p>
+          <p className="mt-2 font-headline text-[2.45rem] font-black leading-none text-[#070b16]">{value}</p>
+          <p className="mt-2 text-[0.75rem] font-semibold text-[#53655e]">{detail}</p>
+        </div>
+        <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-white/80 bg-white/82 text-current shadow-[0_18px_36px_-28px_rgba(8,69,50,0.42)]">
+          <Icon className="size-7" strokeWidth={2.35} />
+        </span>
       </div>
     </div>
   );
@@ -2196,7 +2481,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Harga final Vickrey
               </p>
-              <p className="mt-1 font-headline text-2xl font-extrabold text-primary">
+              <p className={`mt-1 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-extrabold text-primary [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.finalPrice ?? auction.basePrice ?? 0)}`}>
                 {currency.format(auction.finalPrice ?? auction.basePrice ?? 0)}
               </p>
             </div>
@@ -2287,8 +2572,38 @@ function formatOptionalCurrency(value?: number | null) {
   return typeof value === "number" && Number.isFinite(value) ? currency.format(value) : "Rp ********";
 }
 
-function isVickreyPaymentFulfilled(auction: MarketingSession) {
+function getCurrencyDigitCount(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+
+  return String(Math.trunc(Math.abs(value))).length;
+}
+
+function getCompactCurrencyTextClass(value?: number | null) {
+  const digits = getCurrencyDigitCount(value);
+
+  if (digits >= 12) {
+    return "text-[0.78rem] sm:text-[0.86rem] 2xl:text-[0.96rem]";
+  }
+
+  if (digits >= 10) {
+    return "text-[0.88rem] sm:text-[0.98rem] 2xl:text-[1.08rem]";
+  }
+
+  if (digits >= 8) {
+    return "text-[0.98rem] sm:text-[1.08rem] 2xl:text-[1.16rem]";
+  }
+
+  return "text-[1.12rem] sm:text-[1.25rem]";
+}
+
+function isVickreyPaymentVerified(auction: MarketingSession) {
   return auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI";
+}
+
+function isVickreyPaymentFulfilled(auction: MarketingSession) {
+  return auction.transactionStatus === "SELESAI";
 }
 
 const FAILED_VICKREY_TRANSACTION_STATUSES = new Set(["GAGAL", "DIBATALKAN", "DIBATALKAN_OTOMATIS"]);
@@ -2398,6 +2713,40 @@ function VickreySettlementDeadlineBanner({ auction }: { auction: MarketingSessio
     );
   }
 
+  if (isVickreyPaymentVerified(auction)) {
+    return (
+      <section className="rounded-[1.1rem] border border-[#b9e4cc] bg-[#f4fcf6] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(0,103,71,0.28)] print:shadow-none">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#20b96b] text-white shadow-[0_18px_30px_-20px_rgba(32,185,107,0.64)]">
+              <ShieldCheck className="size-7" strokeWidth={2.5} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#075b3f] sm:text-[1.12rem]">
+                Pembayaran Terverifikasi - Menunggu Buyer Selesai
+              </h2>
+              <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
+                Admin sudah memverifikasi pembayaran. Tahap final baru tercapai setelah buyer menekan Pembelian Selesai.
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-[#c9ead3] pt-3 lg:min-w-[22rem] lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <span className="inline-flex rounded-full border border-[#b9e4cc] bg-white/72 px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#075b3f]">
+              Status Transaksi
+            </span>
+            <p className="mt-2 font-headline text-[0.92rem] font-black uppercase tracking-[0.01em] text-[#075b3f]">
+              Nota tersedia, arsip final belum ditutup
+            </p>
+            <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#2f6a52]">
+              Buyer perlu mengonfirmasi dari halaman transaksi.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="rounded-[1.1rem] border border-[#fde68a] bg-[#fffbeb] px-4 py-3 shadow-[0_18px_42px_-36px_rgba(146,64,14,0.34)] print:shadow-none">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -2431,14 +2780,15 @@ function VickreyWinnerProfilePanel({ auction }: { auction: MarketingSession }) {
   const winnerBid = getWinnerBid(auction);
   const winnerId = winnerBid?.bidderId || auction.buyerNationalId || auction.reference || "-";
   const fulfilled = isVickreyPaymentFulfilled(auction);
+  const verified = isVickreyPaymentVerified(auction);
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      {fulfilled ? (
+      {verified ? (
         <CheckCircle2 className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#f0f6f2]" strokeWidth={2.6} />
       ) : null}
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-        {fulfilled ? "Manifes Penyerahan & Pemenang" : "Detail Pemenang Lelang"}
+        {fulfilled ? "Manifes Penyerahan & Pemenang" : verified ? "Pemenang Terverifikasi" : "Detail Pemenang Lelang"}
       </p>
       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
         <div className="flex min-w-0 items-center gap-4">
@@ -2474,15 +2824,15 @@ function VickreyWinnerProfilePanel({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
       </div>
-      {fulfilled ? (
+      {verified ? (
         <div className="mt-4 flex flex-wrap gap-2 border-t border-[#edf2ee] pt-3">
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#006747] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
             <CheckCircle2 className="size-3.5" />
-            Lunas 100%
+            Pembayaran Terverifikasi
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2463eb] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
             <ShieldCheck className="size-3.5" />
-            Barang Sudah Diambil
+            {fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai"}
           </span>
         </div>
       ) : null}
@@ -2494,6 +2844,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
   const highestBid = getHighestBidAmount(auction);
   const paymentPrice = auction.finalPrice ?? auction.basePrice ?? null;
   const fulfilled = isVickreyPaymentFulfilled(auction);
+  const verified = isVickreyPaymentVerified(auction);
 
   return (
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
@@ -2505,9 +2856,9 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
       </div>
 
       <div className={`mt-4 grid gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
-        <div className="rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className="mt-2 font-headline text-[1.25rem] font-black leading-tight text-[#006747]">
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {formatOptionalCurrency(highestBid)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -2515,9 +2866,9 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
 
-        <div className="rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className="mt-2 font-headline text-[1.25rem] font-black leading-tight text-[#f59e0b]">
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -2528,10 +2879,10 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
         <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
           <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#e9f8ef] px-3 py-1 text-[0.68rem] font-black uppercase text-[#006747]">
-            {fulfilled ? "Selesai & Diarsipkan" : "Menang"} <Trophy className="size-3.5" />
+            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3.5" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
-            {fulfilled ? "Berkas final pemenang" : "Pemenang utama lelang"}
+            {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
           </p>
         </div>
 
@@ -2739,8 +3090,12 @@ function VickreyWinnerAssetPanel({ auction }: { auction: MarketingSession }) {
 }
 
 function getPaymentStepIndex(status?: string | null) {
-  if (status === "LUNAS" || status === "SELESAI") {
+  if (status === "SELESAI") {
     return 3;
+  }
+
+  if (status === "LUNAS") {
+    return 2;
   }
 
   if (status === "BUKTI_DIUNGGAH" || status === "MENUNGGU_KONFIRMASI_LANGSUNG") {
@@ -2753,12 +3108,19 @@ function getPaymentStepIndex(status?: string | null) {
 function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession }) {
   const activeStep = getPaymentStepIndex(auction.transactionStatus);
   const fulfilled = isVickreyPaymentFulfilled(auction);
+  const verified = isVickreyPaymentVerified(auction);
   const steps = fulfilled
     ? [
         { label: "Pembayaran", icon: CheckCircle2 },
         { label: "Verifikasi", icon: CheckCircle2 },
         { label: "Selesai", icon: CheckCircle2 }
       ]
+    : verified
+      ? [
+          { label: "Pembayaran", icon: CheckCircle2 },
+          { label: "Verifikasi", icon: ShieldCheck },
+          { label: "Selesai Buyer", icon: CheckCircle2 }
+        ]
     : [
         { label: "Menunggu Pembayaran", icon: WalletCards },
         { label: "Verifikasi", icon: FileText },
@@ -2768,7 +3130,7 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
   return (
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-        {fulfilled ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
+        {verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
       </p>
       <div className="relative mt-5 flex items-start justify-between px-2 text-center">
         <span className={`absolute left-[14%] right-[14%] top-6 h-px border-t border-dashed ${fulfilled ? "border-[#1a8f63]" : "border-[#8bd5f7]"}`} />
@@ -2817,15 +3179,16 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
   const paymentPrice = auction.finalPrice ?? auction.basePrice ?? 0;
   const statusLabel = auction.transactionStatus ? humanize(auction.transactionStatus) : "Menunggu pembayaran";
   const fulfilled = isVickreyPaymentFulfilled(auction);
+  const verified = isVickreyPaymentVerified(auction);
 
   if (fulfilled) {
     return (
       <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
-          Manifes Dokumen Final
+          Nota Dokumen Final
         </p>
         <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-          Unduh dokumen resmi penyerahan dan arsipkan berkas lelang.
+          Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
         </p>
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
@@ -2840,6 +3203,36 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
               </span>
               <span className="font-mono text-[1.05rem] font-black leading-none text-[#006747]">
                 {currency.format(paymentPrice)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (verified) {
+    return (
+      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+        <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
+          Nota & Konfirmasi Buyer
+        </p>
+        <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+          Nota sudah dapat dicetak, tetapi arsip final menunggu buyer menekan Pembelian Selesai.
+        </p>
+
+        <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+          <div className="flex items-center justify-between gap-4">
+            <span>Harga Bayar Vickrey</span>
+            <span className="font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
+          </div>
+          <div className="border-t border-[#dfe7e2] pt-2">
+            <div className="flex items-end justify-between gap-4">
+              <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
+                Status Admin
+              </span>
+              <span className="text-right font-mono text-[0.9rem] font-black leading-tight text-[#006747]">
+                Terverifikasi
               </span>
             </div>
           </div>
@@ -2934,6 +3327,43 @@ function getVickreyVerificationAction(auction: MarketingSession) {
 
   return null;
 }
+
+function getFixedPriceVerificationAction(auction: MarketingSession) {
+  if (!auction.transactionId || !hasFixedPriceVerificationReady(auction)) {
+    return null;
+  }
+
+  return {
+    endpoint: `/api/admin/transaksi/${auction.transactionId}/verifikasi`,
+    label: "Setujui Pembayaran",
+    pendingTitle: "Memverifikasi pembayaran fixed price",
+    pendingDescription: "Sistem sedang memverifikasi pembayaran fixed price dan membuka nota transaksi.",
+    successTitle: "Pembayaran fixed price disetujui",
+    successDescription: "Pembayaran buyer sudah tervalidasi. Tahap selesai tetap menunggu buyer menekan Pembelian Selesai.",
+    note: "Periksa bukti transfer, nominal harga jual, dan identitas buyer sebelum pembayaran disetujui.",
+    icon: ReceiptText
+  };
+}
+
+const fixedPriceRejectionReasons = [
+  "Nominal uang yang dikirim tidak sesuai harga barang",
+  "Uang dikirim bukan ke rekening tujuan"
+] as const;
+
+const fixedPriceRejectionReasonOptions: AdminSelectOption[] = [
+  {
+    value: "",
+    label: "Pilih alasan penolakan"
+  },
+  {
+    value: fixedPriceRejectionReasons[0],
+    label: fixedPriceRejectionReasons[0]
+  },
+  {
+    value: fixedPriceRejectionReasons[1],
+    label: fixedPriceRejectionReasons[1]
+  }
+];
 
 function VickreyPaymentVerificationModal({
   auction,
@@ -3189,19 +3619,27 @@ function VickreyPaymentVerificationModal({
 
 function PaymentVerificationInfoCard({
   icon: Icon,
+  hoverable = true,
   iconLabel,
   label,
   tone = "default",
   value
 }: {
   icon: typeof Package2;
+  hoverable?: boolean;
   iconLabel?: string;
   label: string;
   tone?: "default" | "code";
   value: ReactNode;
 }) {
   return (
-    <div className="group flex min-w-0 items-center gap-3 rounded-[1rem] border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_16px_38px_-34px_rgba(8,69,50,0.32)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#c7ded2] hover:bg-[#fbfdfb]">
+    <div
+      className={`group flex min-w-0 items-center gap-3 rounded-[1rem] border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_16px_38px_-34px_rgba(8,69,50,0.32)] ${
+        hoverable
+          ? "transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#c7ded2] hover:bg-[#fbfdfb]"
+          : ""
+      }`}
+    >
       <span
         aria-hidden={iconLabel ? undefined : true}
         aria-label={iconLabel}
@@ -3234,8 +3672,9 @@ function VickreyPaymentVerificationButton({
   label?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const action = getVickreyVerificationAction(auction);
 
-  if (!auction.transactionId) {
+  if (!auction.transactionId || !action) {
     return (
       <Button className={className} disabled>
         <CheckCircle2 className="size-5" />
@@ -3255,18 +3694,606 @@ function VickreyPaymentVerificationButton({
   );
 }
 
-function VickreyWinnerActionFooter({ auction }: { auction: MarketingSession }) {
+function FixedPricePaymentVerificationModal({
+  auction,
+  onOpenChange,
+  open
+}: {
+  auction: MarketingSession;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+}) {
+  const action = getFixedPriceVerificationAction(auction);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const paymentPrice = auction.price ?? 0;
+  const reference = buildMarketingPaymentReference(auction);
+  const referenceDisplay = reference.startsWith("#") ? reference : `#${reference}`;
+  const CategoryIcon = getMarketingCategoryIcon(auction.category);
+  const categoryLabel = humanize(auction.category);
+  const paymentMethodLabel = auction.paymentMethod ? humanize(auction.paymentMethod) : "Transfer Bank";
+  const statusLabel = humanize(auction.transactionStatus).toUpperCase();
+  const verificationStatusLabel = auction.transactionStatus === "BUKTI_DIUNGGAH" ? "MENUNGGU VERIFIKASI STAF" : statusLabel;
+  const serverNow = new Date().toISOString();
+  const rejectEndpoint = auction.transactionId ? `/api/admin/transaksi/${auction.transactionId}/tolak-bukti` : undefined;
+  const hasRejectionReason = rejectionReason.length > 0;
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setRejectionReason("");
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onOpenChange(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onOpenChange, open]);
+
+  if (!open || typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
+    <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto px-4 py-6 print:hidden sm:px-6 lg:py-8">
+      <button
+        aria-label="Tutup pop up verifikasi pembayaran fixed price"
+        className="fixed inset-0 bg-[#07131e]/66 backdrop-blur-[5px]"
+        onClick={() => onOpenChange(false)}
+        type="button"
+      />
+      <section
+        aria-labelledby="fixed-price-payment-verification-title"
+        aria-modal="true"
+        className="relative z-[151] mx-auto flex max-h-[calc(100dvh-2.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-8 sm:pt-9"
+        role="dialog"
+      >
+        <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
+          <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
+            <ShieldCheck className="size-6" strokeWidth={2.2} />
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+          <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
+            <button
+              aria-label="Tutup"
+              className="absolute right-5 top-5 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7"
+              onClick={() => onOpenChange(false)}
+              type="button"
+            >
+              <X className="size-4.5" strokeWidth={2.2} />
+            </button>
+
+            <div className="space-y-2 text-center">
+              <h2
+                className="mx-auto max-w-[42rem] font-headline text-[1.55rem] font-black leading-tight tracking-tight text-[#15231d] sm:text-[1.78rem]"
+                id="fixed-price-payment-verification-title"
+              >
+                Verifikasi Pelunasan Dana Fixed Price
+              </h2>
+              <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
+                Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap.
+              </p>
+            </div>
+          </div>
+
+          <div className="scrollbar-none min-h-0 overflow-y-auto px-5 py-5 sm:px-7">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
+            <div className="space-y-4">
+              <div className="relative overflow-hidden rounded-[1.05rem] border border-[#cce6da] bg-[radial-gradient(circle_at_88%_32%,rgba(46,196,125,0.18),transparent_29%),linear-gradient(135deg,#fbfffd_0%,#eef9f3_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[0.82rem] font-black leading-none text-[#18231e]">
+                      Kewajiban Nominal Fixed Price
+                    </p>
+                    <p className="mt-3 break-words font-headline text-[2.55rem] font-black leading-none tracking-[-0.04em] text-[#00593b] [font-variant-numeric:tabular-nums] sm:text-[3.15rem]">
+                      {currency.format(paymentPrice)}
+                    </p>
+                  </div>
+                  <div className="inline-flex h-12 max-w-full items-center gap-2 rounded-[0.8rem] border border-[#c9d7e9] bg-white px-4 font-headline text-[0.9rem] font-black text-[#111827] shadow-[0_18px_36px_-32px_rgba(15,23,42,0.35)]">
+                    <span className="truncate">{auction.code ?? auction.lotId}</span>
+                    <ClipboardList className="size-4.5 shrink-0 text-[#64748b]" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <PaymentVerificationInfoCard
+                  icon={CategoryIcon}
+                  iconLabel={`Ikon kategori ${categoryLabel}`}
+                  label="Nama Barang"
+                  hoverable={false}
+                  value={auction.lot}
+                />
+                <PaymentVerificationInfoCard
+                  icon={UserRound}
+                  hoverable={false}
+                  label="Nasabah / Buyer"
+                  value={auction.buyerName || "-"}
+                />
+                <PaymentVerificationInfoCard
+                  icon={Landmark}
+                  hoverable={false}
+                  label="Rekening Asal"
+                  value={auction.buyerName ? `a.n. ${auction.buyerName}` : "-"}
+                />
+                <PaymentVerificationInfoCard
+                  icon={WalletCards}
+                  hoverable={false}
+                  label="Virtual Account Tujuan"
+                  value={paymentMethodLabel}
+                />
+              </div>
+
+              <div className="rounded-[1rem] border border-[#dfe8e3] bg-white p-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.28)]">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[0.84rem] font-black leading-none text-[#15231d]">
+                    Bukti Transfer dari Pembeli
+                  </p>
+                  <span className="rounded-full border border-[#d7e3dd] bg-[#f8faf9] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#52625b]">
+                    {referenceDisplay}
+                  </span>
+                </div>
+                {auction.proofUrl ? (
+                  <div className="mt-3 overflow-hidden rounded-[0.9rem] border border-[#d4dce8] bg-[#1e293b]">
+                    <div className="relative h-52 w-full overflow-hidden bg-[#111827] sm:h-60">
+                      <Image
+                        alt={`Bukti pembayaran ${auction.lot}`}
+                        className="object-cover opacity-72 transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        fill
+                        sizes="(min-width: 1280px) 44vw, (min-width: 768px) 60vw, 100vw"
+                        src={auction.proofUrl}
+                        unoptimized
+                      />
+                      <div className="absolute inset-0 grid place-items-center bg-[#111827]/32">
+                        <Link
+                          className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-[0.85rem] bg-white px-5 text-[0.9rem] font-black text-[#111827] shadow-[0_18px_38px_-24px_rgba(3,7,18,0.55)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.99]"
+                          href={auction.proofUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          <Maximize2 className="size-4.5 text-[#006747]" />
+                          Buka Bukti Pembayaran
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 rounded-[0.9rem] border border-dashed border-[#ccd8d2] bg-[#f8faf9] px-4 py-6 text-[0.85rem] font-semibold text-[#64756e]">
+                    Bukti pembayaran belum tersedia.
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-col gap-3 rounded-[0.9rem] border border-[#dfe8e3] bg-[#fbfdfb] px-4 py-3 text-[0.82rem] font-bold text-[#26342e] sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[0.75rem] bg-[#fff0f0] text-[#e11d48]">
+                      <Clock3 className="size-5" />
+                    </span>
+                    <span>Batas Waktu Pelunasan:</span>
+                  </div>
+                  <span className="font-headline text-[0.92rem] font-black leading-5 text-[#dc2626] [font-variant-numeric:tabular-nums]">
+                    {auction.paymentDeadline ? (
+                      <AdminLiveCountdown
+                        expiredLabel="Batas bayar terlewati"
+                        fallbackLabel={dateLabel(auction.paymentDeadline)}
+                        prefix="Sisa"
+                        serverNow={serverNow}
+                        targetAt={auction.paymentDeadline}
+                      />
+                    ) : (
+                      "-"
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex min-h-full flex-col gap-4 rounded-[1.05rem] border border-[#f4c979] bg-[linear-gradient(180deg,#fffdf9_0%,#fff7f7_58%,#fffefe_100%)] p-4 shadow-[0_20px_54px_-44px_rgba(120,53,15,0.35)]">
+              <div className="rounded-[0.95rem] border border-[#fde3b2] bg-[#fff8eb] px-4 py-4 shadow-[0_16px_34px_-30px_rgba(214,126,22,0.7)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.78rem] font-black uppercase leading-4 tracking-[0.045em] text-[#b45309]">
+                    <span className="size-3 shrink-0 rounded-full bg-[#f59e0b] ring-4 ring-[#fff0cf]" />
+                    <span className="min-w-0 whitespace-normal break-words">{verificationStatusLabel}</span>
+                  </div>
+                  <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
+                </div>
+                <p className="mt-4 text-[0.88rem] font-semibold leading-6 text-[#47564f]">
+                  Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi fixed price
+                  dicairkan.
+                </p>
+              </div>
+
+              <div className="rounded-[0.95rem] border border-[#fecaca] bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f2_100%)] px-4 py-4 shadow-[0_18px_34px_-28px_rgba(190,24,93,0.2)]">
+                <label
+                  className="block font-headline text-[0.88rem] font-black leading-tight text-[#991b1b]"
+                  htmlFor="fixed-price-rejection-reason"
+                >
+                  Jika Ditolak, Pilih Alasan Penolakan
+                </label>
+                <div className="mt-4">
+                  <AdminSelect
+                    ariaLabel="Alasan penolakan pembayaran fixed price"
+                    allowWrap
+                    className="[&_.admin-select-trigger]:h-auto [&_.admin-select-trigger]:min-h-14 [&_.admin-select-trigger]:items-start [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:border-[#006747]/35 [&_.admin-select-trigger]:bg-white [&_.admin-select-trigger]:px-4 [&_.admin-select-trigger]:py-3 [&_.admin-select-trigger]:text-[0.9rem] [&_.admin-select-trigger]:font-black [&_.admin-select-trigger]:text-[#111827] [&_.admin-select-trigger]:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.26)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747] [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.55),0_20px_40px_-30px_rgba(0,103,71,0.4)] [&_.admin-select-trigger[data-active='true']]:border-[#006747]/55 [&_.admin-select-trigger[data-active='true']]:bg-white [&_.admin-select-trigger[data-active='true']]:text-[#111827] [&_.admin-select-menu]:border-[#cfe1d8] [&_.admin-select-menu]:shadow-[0_28px_58px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-[3.25rem] [&_.admin-select-option]:items-start [&_.admin-select-option]:py-3 [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed]"
+                    id="fixed-price-rejection-reason"
+                    onValueChange={setRejectionReason}
+                    options={fixedPriceRejectionReasonOptions}
+                    value={rejectionReason}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-[0.95rem] border border-[#f5d48e] bg-[#fffbf2] p-4 text-[0.84rem] leading-6 text-[#6f4c16]">
+                <div className="flex items-start gap-3">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] bg-[#fff5db] text-[#a16207] ring-1 ring-[#f4d08b]">
+                    <AlertTriangle className="size-7" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-headline text-[0.92rem] font-black leading-tight text-[#7c3f00]">Perhatian</p>
+                    <p className="mt-2 font-semibold">
+                      Pastikan nominal yang diterima sesuai harga fixed price dan dana masuk ke rekening tujuan unit.
+                      Penolakan hanya dipakai jika bukti pembayaran tidak valid.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[0.95rem] border border-[#e5ebee] bg-white p-4 text-[0.82rem] font-semibold leading-6 text-[#52625b]">
+                <div className="flex items-start gap-3">
+                  <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" />
+                  <p>
+                    Fixed price dinyatakan terverifikasi setelah bukti bayar disetujui Admin Unit. Tahap selesai tetap
+                    menunggu buyer menekan Pembelian Selesai.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-col gap-3 border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+          {hasRejectionReason && rejectEndpoint ? (
+            <AdminUnitActionButton
+              className="h-12 rounded-[0.82rem] border border-[#dc2626] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] shadow-[0_18px_34px_-28px_rgba(185,28,28,0.46)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99]"
+              endpoint={rejectEndpoint}
+              payload={{ reason: rejectionReason }}
+              pendingDescription="Sistem sedang mengembalikan transaksi ke buyer dengan alasan penolakan yang dipilih."
+              pendingTitle="Menolak pembayaran fixed price"
+              successDescription="Buyer akan menerima alasan penolakan dan dapat mengunggah ulang bukti pembayaran."
+              successTitle="Pembayaran fixed price ditolak"
+              variant="secondary"
+            >
+              <X className="size-4.5" />
+              Tolak Pembayaran
+            </AdminUnitActionButton>
+          ) : (
+            <Button
+              className="h-12 rounded-[0.82rem] border border-[#f0b8b8] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c]"
+              disabled
+              type="button"
+              variant="secondary"
+            >
+              <X className="size-4.5" />
+              Tolak Pembayaran
+            </Button>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <Button
+              className="h-12 rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8]"
+              onClick={() => onOpenChange(false)}
+              type="button"
+              variant="secondary"
+            >
+              Kembali
+            </Button>
+
+            {action && !hasRejectionReason ? (
+              <AdminUnitActionButton
+                className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+                endpoint={action.endpoint}
+                payload={{ reference }}
+                pendingDescription={action.pendingDescription}
+                pendingTitle={action.pendingTitle}
+                successDescription={action.successDescription}
+                successTitle={action.successTitle}
+              >
+                <CheckCircle2 className="size-4.5" />
+                {action.label}
+              </AdminUnitActionButton>
+            ) : (
+              <Button className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white" disabled>
+                <CheckCircle2 className="size-4.5" />
+                {action?.label ?? "Setujui Pembayaran"}
+              </Button>
+            )}
+          </div>
+        </div>
+        </div>
+      </section>
+    </div>,
+    document.body
+  );
+}
+
+function FixedPricePaymentVerificationButton({
+  auction,
+  className,
+  label = "Verifikasi Pembayaran"
+}: {
+  auction: MarketingSession;
+  className?: string;
+  label?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const isReady = hasFixedPriceVerificationReady(auction);
+
+  if (!isReady) {
+    return (
+      <Button className={className} disabled>
+        <ReceiptText className="size-5" />
+        {label}
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <button className={className} onClick={() => setIsOpen(true)} type="button">
+        <ReceiptText className="size-5" />
+        {label}
+      </button>
+      <FixedPricePaymentVerificationModal auction={auction} onOpenChange={setIsOpen} open={isOpen} />
+    </>
+  );
+}
+
+function getMarketingReceiptImageUrl(auction: MarketingSession) {
+  if (auction.primaryMedia?.type !== "video" && auction.primaryMedia?.url) {
+    return auction.primaryMedia.url;
+  }
+
+  return auction.media?.find((item) => item.type !== "video")?.url ?? undefined;
+}
+
+function getVickreyReceiptTerms(auction: MarketingSession) {
+  const unitName = auction.unitName || auction.unitAddress || "-";
+
+  return [
+    "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
+    `Pengambilan barang dilakukan di unit ${unitName}.`,
+    "Pembayaran hasil lelang sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+    "Simpan nota ini untuk keperluan administrasi atau pengambilan barang."
+  ];
+}
+
+function isFixedPriceReceiptPrintable(auction: MarketingSession) {
+  return (
+    auction.mode === "FIXED_PRICE" &&
+    Boolean(auction.transactionId) &&
+    (auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI")
+  );
+}
+
+function getFixedPriceReceiptPrintRootId(auction: MarketingSession) {
+  return `fixed-price-receipt-print-root-${String(auction.transactionId || auction.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function getFixedPriceReceiptTerms(auction: MarketingSession) {
+  const unitName = auction.unitName || auction.unitAddress || "-";
+
+  return [
+    "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
+    `Pengambilan barang dilakukan di unit ${unitName}.`,
+    "Pembayaran fixed price sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+    "Simpan nota ini untuk keperluan administrasi atau pengambilan barang."
+  ];
+}
+
+function getMarketingPaymentMethodLabel(auction: MarketingSession) {
+  if (auction.paymentMethod === "BAYAR_LANGSUNG") {
+    return "Langsung di unit";
+  }
+
+  if (auction.paymentMethod === "TRANSFER_BANK") {
+    return "Transfer Bank";
+  }
+
+  return auction.paymentMethod ? humanize(auction.paymentMethod) : "Bayar Langsung";
+}
+
+function FixedPriceReceiptInlinePrint({
+  auction,
+  buttonClassName,
+  label = "Cetak Nota"
+}: {
+  auction: MarketingSession;
+  buttonClassName: string;
+  label?: string;
+}) {
+  const total = auction.price ?? auction.finalPrice ?? auction.basePrice ?? 0;
+  const imageUrl = getMarketingReceiptImageUrl(auction);
+  const isCompleted = auction.transactionStatus === "SELESAI";
+  const paymentMethodLabel = getMarketingPaymentMethodLabel(auction);
+  const verifiedAt = dateLabel(auction.soldAt ?? auction.paymentDeadline ?? auction.startsAt);
+  const reference = buildMarketingPaymentReference(auction).replace(/^#/, "");
+
+  return (
+    <TransactionReceiptInlinePrint
+      buttonClassName={buttonClassName}
+      label={label}
+      rootId={getFixedPriceReceiptPrintRootId(auction)}
+    >
+      <TransactionReceiptDocument
+        buyerEmail={auction.buyerEmail ?? undefined}
+        buyerName={auction.buyerName || auction.winner || "-"}
+        buyerPhone={auction.buyerPhone ?? undefined}
+        extraMeta={[{ label: "Jenis transaksi", value: "Fixed Price" }]}
+        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        imageUrl={imageUrl}
+        itemSubtitle={paymentMethodLabel}
+        itemTitle={auction.lot}
+        noteNumber={reference}
+        paymentMethodLabel={paymentMethodLabel}
+        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        subtotal={total}
+        terms={getFixedPriceReceiptTerms(auction)}
+        total={total}
+        transactionId={auction.transactionId || auction.id}
+        unitAddress={auction.unitAddress || "-"}
+        unitName={auction.unitName || auction.unitAddress || "-"}
+        verifiedAt={verifiedAt}
+        outputLayout
+      />
+    </TransactionReceiptInlinePrint>
+  );
+}
+
+function VickreyReceiptPrintSheet({
+  auction,
+  rootId
+}: {
+  auction: MarketingSession;
+  rootId: string;
+}) {
+  const total = auction.finalPrice ?? auction.basePrice ?? auction.price ?? 0;
+  const reference = buildMarketingPaymentReference(auction).replace(/^#/, "");
+  const imageUrl = getMarketingReceiptImageUrl(auction);
+  const isCompleted = auction.transactionStatus === "SELESAI";
+  const verifiedAt = dateLabel(auction.soldAt ?? auction.paymentDeadline ?? auction.endingAt);
+  const paymentMethodLabel = auction.paymentMethod === "BAYAR_LANGSUNG" ? "Langsung di unit" : humanize(auction.paymentMethod);
+
+  return (
+    <div
+      className="vickrey-receipt-print-document hidden bg-white text-[#10251c] print:block"
+      data-testid="vickrey-receipt-print-document"
+      id={rootId}
+    >
+      <TransactionReceiptDocument
+        buyerEmail={auction.buyerEmail ?? undefined}
+        buyerName={auction.buyerName || auction.winner || "-"}
+        buyerPhone={auction.buyerPhone ?? undefined}
+        extraMeta={[{ label: "Jenis transaksi", value: "Lelang" }]}
+        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        imageUrl={imageUrl}
+        itemSubtitle={paymentMethodLabel}
+        itemTitle={auction.lot}
+        noteNumber={reference}
+        paymentMethodLabel={paymentMethodLabel}
+        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        subtotal={total}
+        terms={getVickreyReceiptTerms(auction)}
+        total={total}
+        transactionId={auction.transactionId || auction.id}
+        unitAddress={auction.unitAddress || "-"}
+        unitName={auction.unitName || auction.unitAddress || "-"}
+        verifiedAt={verifiedAt}
+        outputLayout
+      />
+    </div>
+  );
+}
+
+async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
+  if (typeof document !== "undefined" && "fonts" in document) {
+    await document.fonts.ready;
+  }
+
+  const images = Array.from(root.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(
+      (image) =>
+        new Promise<void>((resolve) => {
+          let fallback: number | undefined;
+          const finish = async () => {
+            if (fallback) {
+              window.clearTimeout(fallback);
+            }
+            if (image.naturalWidth > 0 && "decode" in image) {
+              try {
+                await image.decode();
+              } catch {
+                // Continue printing with the loaded bitmap even if decode rejects.
+              }
+            }
+            resolve();
+          };
+
+          if (image.complete && image.naturalWidth > 0) {
+            void finish();
+            return;
+          }
+
+          fallback = window.setTimeout(() => resolve(), 800);
+
+          image.addEventListener("load", () => void finish(), { once: true });
+          image.addEventListener("error", finish, { once: true });
+        })
+    )
+  );
+
+  await new Promise((resolve) => window.setTimeout(resolve, 80));
+}
+
+function VickreyReceiptPrintButton({
+  className,
+  onPrint
+}: {
+  className: string;
+  onPrint: () => Promise<void>;
+}) {
+  return (
+    <button className={className} onClick={() => void onPrint()} type="button">
+      <Printer className="size-4" />
+      Cetak Nota
+    </button>
+  );
+}
+
+function VickreyWinnerActionFooter({
+  auction,
+  onPrintReceipt
+}: {
+  auction: MarketingSession;
+  onPrintReceipt: () => Promise<void>;
+}) {
   if (isVickreyPaymentFulfilled(auction)) {
     return (
       <div className="grid gap-3 print:hidden">
-        <button
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
-          onClick={() => window.print()}
-          type="button"
-        >
-          <Printer className="size-4" />
-          Cetak Berita Acara Serah Terima (BAST)
-        </button>
+        {auction.transactionId ? (
+          <VickreyReceiptPrintButton
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+            onPrint={onPrintReceipt}
+          />
+        ) : (
+          <Button className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]" disabled variant="secondary">
+            <Printer className="size-4" />
+            Cetak Nota
+          </Button>
+        )}
         <Link
           className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
           href="/admin/pemasaran"
@@ -3274,6 +4301,32 @@ function VickreyWinnerActionFooter({ auction }: { auction: MarketingSession }) {
           <LockKeyhole className="size-4.5" />
           Tutup & Arsipkan Berkas Lelang
         </Link>
+      </div>
+    );
+  }
+
+  if (isVickreyPaymentVerified(auction)) {
+    return (
+      <div className="grid gap-3 print:hidden">
+        {auction.transactionId ? (
+          <VickreyReceiptPrintButton
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+            onPrint={onPrintReceipt}
+          />
+        ) : (
+          <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled>
+            <Printer className="size-4" />
+            Cetak Nota
+          </Button>
+        )}
+        <Button
+          className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+          disabled
+          variant="secondary"
+        >
+          <CheckCircle2 className="size-4" />
+          Menunggu Buyer Selesai
+        </Button>
       </div>
     );
   }
@@ -3432,9 +4485,9 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className="mt-2 font-headline text-[1.15rem] font-black leading-tight text-[#006747]">
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {unpaid ? formatOptionalCurrency(highestBid) : "Belum ada bid"}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -3442,9 +4495,9 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
           </p>
         </div>
 
-        <div className="rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
-          <p className="mt-2 font-headline text-[1.15rem] font-black leading-tight text-[#f59e0b]">
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -3778,28 +4831,62 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
 }
 
 function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSession }) {
-  return (
-    <div className="space-y-4 print:space-y-3">
-      <VickreySettlementDeadlineBanner auction={auction} />
+  const [isPrintSheetReady, setIsPrintSheetReady] = useState(false);
+  const receiptPrintRootId = useMemo(
+    () => `vickrey-receipt-print-root-${(auction.transactionId || auction.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+    [auction.id, auction.transactionId]
+  );
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-        <div className="space-y-4">
-          <VickreyWinnerProfilePanel auction={auction} />
-          <VickreyMechanismPanel auction={auction} />
-          <VickreyWinnerRankingTable auction={auction} />
-          <div className="flex items-center gap-2 px-1 text-[0.72rem] font-semibold text-[#6f83b6]">
-            <ShieldCheck className="size-4 text-[#7eb7a5]" />
-            Seluruh data dilindungi sistem keamanan berlapis dan tidak dapat diubah secara manual.
+  useEffect(() => {
+    if (!isPrintSheetReady) {
+      return;
+    }
+
+    const clearPrintSheet = () => setIsPrintSheetReady(false);
+
+    window.addEventListener("afterprint", clearPrintSheet);
+
+    return () => window.removeEventListener("afterprint", clearPrintSheet);
+  }, [isPrintSheetReady]);
+
+  const handlePrintReceipt = useCallback(async () => {
+    flushSync(() => setIsPrintSheetReady(true));
+    await new Promise((resolve) => window.requestAnimationFrame(() => resolve(undefined)));
+
+    const root = document.getElementById(receiptPrintRootId);
+
+    if (root) {
+      await waitForVickreyReceiptPrintAssets(root);
+    }
+
+    window.print();
+  }, [receiptPrintRootId]);
+
+  return (
+    <div className="space-y-4 print:space-y-0">
+      <div className={isPrintSheetReady ? "space-y-4 print:hidden" : "space-y-4 print:space-y-3"}>
+        <VickreySettlementDeadlineBanner auction={auction} />
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+          <div className="space-y-4">
+            <VickreyWinnerProfilePanel auction={auction} />
+            <VickreyMechanismPanel auction={auction} />
+            <VickreyWinnerRankingTable auction={auction} />
+            <div className="flex items-center gap-2 px-1 text-[0.72rem] font-semibold text-[#6f83b6]">
+              <ShieldCheck className="size-4 text-[#7eb7a5]" />
+              Seluruh data dilindungi sistem keamanan berlapis dan tidak dapat diubah secara manual.
+            </div>
+          </div>
+
+          <div className="space-y-4 lg:sticky lg:top-4">
+            <VickreyWinnerAssetPanel auction={auction} />
+            <VickreyPaymentProgressPanel auction={auction} />
+            <VickreyPaymentTotalPanel auction={auction} />
+            <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
           </div>
         </div>
-
-        <div className="space-y-4 lg:sticky lg:top-4">
-          <VickreyWinnerAssetPanel auction={auction} />
-          <VickreyPaymentProgressPanel auction={auction} />
-          <VickreyPaymentTotalPanel auction={auction} />
-          <VickreyWinnerActionFooter auction={auction} />
-        </div>
       </div>
+      {isPrintSheetReady ? <VickreyReceiptPrintSheet auction={auction} rootId={receiptPrintRootId} /> : null}
     </div>
   );
 }
@@ -3820,8 +4907,8 @@ export function AdminVickreyAuctionDetailPage({
   }, [router]);
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-[1.35rem] border border-[#edf2ee] bg-white px-4 py-3 shadow-[0_14px_36px_-34px_rgba(8,69,50,0.22)]">
+    <div className="space-y-4 print:space-y-0">
+      <section className="rounded-[1.35rem] border border-[#edf2ee] bg-white px-4 py-3 shadow-[0_14px_36px_-34px_rgba(8,69,50,0.22)] print:hidden">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-3 text-[0.82rem] font-semibold text-[#566861]">
             <span>Dashboard</span>

@@ -56,7 +56,10 @@ describe("transaction receipt page", () => {
     expect(screen.getByText(/total pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/metode pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/syarat & ketentuan/i)).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /foto barang jam tangan rolex submariner/i })).toBeInTheDocument();
+    const receiptImage = screen.getByRole("img", { name: /foto barang jam tangan rolex submariner/i });
+    expect(receiptImage).toBeInTheDocument();
+    expect(receiptImage).toHaveAttribute("loading", "eager");
+    expect(receiptImage).toHaveAttribute("decoding", "sync");
     expect(screen.getByText(/peg-20260518-001/i)).toBeInTheDocument();
   });
 

@@ -35,6 +35,7 @@ export type BuyerTransaction = {
   bankAccountHolder?: string;
   bankBranch?: string;
   paymentProof?: string;
+  rejectionReason?: string;
   winnerContext?: string;
   verifiedAt?: string;
   receiptNumber?: string;

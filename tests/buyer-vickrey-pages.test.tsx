@@ -420,6 +420,22 @@ describe("buyer vickrey pages", () => {
     const recommendations: Lot[] = [
       {
         ...fixedPriceLot,
+        id: "pm-vickrey-expired",
+        code: "BRG-VIC-OLD",
+        mode: "vickrey",
+        name: "Cincin Sudah Selesai",
+        price: 72000000,
+        countdown: "Menunggu hasil",
+        endsAt: "2026-05-05T14:07:00.000Z"
+      },
+      {
+        ...fixedPriceLot,
+        id: "pm-fixed-recommendation",
+        name: "Gelang Fixed Price",
+        endsAt: undefined
+      },
+      {
+        ...fixedPriceLot,
         id: "pm-vickrey-2",
         code: "BRG-VIC-002",
         mode: "vickrey",
@@ -449,10 +465,35 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText(/lelang lainnya untuk anda/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat semua lelang/i })).toHaveAttribute("href", "/katalog");
     expect(screen.getByText("Jam Tangan Rolex Oyster 41")).toBeInTheDocument();
+    expect(screen.getAllByText(/sedang berlangsung/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Cincin Sudah Selesai")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gelang Fixed Price")).not.toBeInTheDocument();
+    expect(screen.queryByText(/menunggu hasil/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/penawaran tertinggi anda/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/selisih/i)).not.toBeInTheDocument();
     expect(container.querySelector(".loser-stage-piece")).not.toBeNull();
     expect(container.querySelector(".loser-hero-spark")).not.toBeNull();
+  });
+
+  it("shows clear empty content when no ongoing auctions are available for non-winners", () => {
+    const losingBid: BuyerBid = {
+      lotId: "pm-vickrey-1",
+      lot: "Cincin Emas",
+      unit: "UPC Ranotana",
+      status: "TIDAK_MENANG",
+      closing: "4 Mei 2026, 22.07",
+      closingAt: "2026-05-04T14:07:00.000Z",
+      bidAmount: 95000000,
+      basePrice: 90000000,
+      note: "Bid tidak menjadi pemenang sesi ini.",
+      bidHash: "abc123"
+    };
+
+    render(<AuctionLoserPage bid={losingBid} recommendations={[]} />);
+
+    expect(screen.getByText(/lelang lainnya untuk anda/i)).toBeInTheDocument();
+    expect(screen.getByText(/belum ada lelang yang sedang berlangsung saat ini/i)).toBeInTheDocument();
+    expect(screen.getByText(/admin unit membuka sesi lelang baru/i)).toBeInTheDocument();
   });
 
   it("formats loser recommendation countdown labels inside the client wrapper", () => {

@@ -22,7 +22,12 @@ vi.mock("@/lib/buyer/serializers", () => ({
   serializeBuyerTransaction: mocks.serializeBuyerTransaction
 }));
 
-import { createFixedPricePurchase } from "@/lib/services/buyer.service";
+vi.mock("@/lib/services/cron.service", () => ({
+  processExpiredVickreyAuctions: vi.fn(),
+  processOverdueVickreyPayments: vi.fn()
+}));
+
+import { createFixedPricePurchase, uploadBuyerPaymentProof } from "@/lib/services/buyer.service";
 
 function mockMarketingQuery(row: {
   marketing: { mode: string; status: string; price: string | number };
@@ -61,6 +66,26 @@ function mockBlacklistQuery() {
     from: vi.fn().mockReturnValue({
       where: vi.fn().mockReturnValue({
         limit: vi.fn().mockResolvedValue([])
+      })
+    })
+  };
+}
+
+function mockTransactionDetailQuery(row: Record<string, unknown>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            leftJoin: vi.fn().mockReturnValue({
+              leftJoin: vi.fn().mockReturnValue({
+                where: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue([row])
+                })
+              })
+            })
+          })
+        })
       })
     })
   };
@@ -158,5 +183,29 @@ describe("createFixedPricePurchase locking rules", () => {
     ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
 
     expect(mocks.db.insert).not.toHaveBeenCalled();
+  });
+
+  it("blocks proof upload while the current proof is already waiting for admin review", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionDetailQuery({
+          id: "trx-review-1",
+          pemasaranId: "pemasaran-1",
+          status: "bukti_diunggah",
+          paymentMethod: "transfer",
+          referenceNumber: "BRI-2026-001",
+          proofUrl: "/uploads/bukti/transfer.jpg"
+        })
+      );
+
+    await expect(
+      uploadBuyerPaymentProof("buyer-1", "trx-review-1", {
+        fileName: "/uploads/bukti/transfer-lagi.jpg",
+        reference: "BRI-2026-002"
+      })
+    ).rejects.toThrow("Bukti pembayaran sudah terkirim dan sedang diverifikasi admin unit.");
+
+    expect(mocks.db.update).not.toHaveBeenCalled();
   });
 });

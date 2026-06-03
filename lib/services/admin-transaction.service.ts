@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
 import { validateTransactionRejectPayload, validateTransactionVerificationPayload } from "@/lib/admin-unit/validation";
@@ -6,12 +6,23 @@ import { db } from "@/lib/db/client";
 import { barang, buyerProfiles, mediaBarang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
 
+function primaryBarangPhotoUrl() {
+  return sql<string | null>`(
+    select ${mediaBarang.url}
+    from ${mediaBarang}
+    where ${mediaBarang.barangId} = ${barang.id}
+      and ${mediaBarang.type} = 'foto'
+    order by ${mediaBarang.sortOrder} asc, ${mediaBarang.createdAt} asc
+    limit 1
+  )`;
+}
+
 async function getTransactionForUnit(unitId: string, transactionId: string) {
   const [row] = await db
     .select({
       transaction: transaksi,
       item: barang,
-      media: mediaBarang,
+      imageUrl: primaryBarangPhotoUrl(),
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
@@ -22,7 +33,6 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
-    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)))
@@ -45,7 +55,7 @@ function serializeTransactionJoin(row: Awaited<ReturnType<typeof getTransactionF
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
-    imageUrl: row.media?.url ?? null,
+    imageUrl: row.imageUrl ?? null,
     unitName: row.unit.name,
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
@@ -59,7 +69,7 @@ export async function listAdminTransactions(unitId: string) {
     .select({
       transaction: transaksi,
       item: barang,
-      media: mediaBarang,
+      imageUrl: primaryBarangPhotoUrl(),
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
@@ -70,7 +80,6 @@ export async function listAdminTransactions(unitId: string) {
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
-    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(eq(barang.unitId, unitId))
@@ -86,7 +95,7 @@ export async function listAdminTransactions(unitId: string) {
       buyerAddress: null,
       lotName: row.item.name,
       lotId: row.item.id,
-      imageUrl: row.media?.url ?? null,
+      imageUrl: row.imageUrl ?? null,
       unitName: row.unit.name,
       unitAddress: row.unit.address,
       bankName: row.account?.bankName ?? null,
@@ -144,7 +153,7 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
-    imageUrl: row.media?.url ?? null,
+    imageUrl: row.imageUrl ?? null,
     unitName: row.unit.name,
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
@@ -157,6 +166,10 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
   const row = await getTransactionForUnit(unitId, transactionId);
   await ensureTransactionMutable(row.transaction.status);
   const payload = validateTransactionRejectPayload(input);
+
+  if (row.transaction.status === "ditolak_bukti") {
+    return serializeTransactionJoin(row);
+  }
 
   if (row.transaction.status !== "bukti_diunggah") {
     throw new Error("Hanya bukti transfer yang sudah diunggah yang dapat ditolak.");
@@ -187,7 +200,7 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
-    imageUrl: row.media?.url ?? null,
+    imageUrl: row.imageUrl ?? null,
     unitName: row.unit.name,
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,

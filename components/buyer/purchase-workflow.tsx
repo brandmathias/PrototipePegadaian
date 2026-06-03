@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, CreditCard, LoaderCircle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, LoaderCircle, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/components/ui/toast";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
@@ -15,23 +15,26 @@ type PurchaseWorkflowProps = {
   lot: Lot;
 };
 
-type PurchaseStatus = "loading" | "error";
+type PurchaseStatus = "idle" | "loading" | "error";
 
 export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const hasSubmittedRef = useRef(false);
-  const [status, setStatus] = useState<PurchaseStatus>("loading");
-  const [message, setMessage] = useState("Membuat detail pembayaran transfer untuk transaksi ini.");
+  const [status, setStatus] = useState<PurchaseStatus>("idle");
+  const [message, setMessage] = useState(
+    "Transaksi belum dibuat. Lanjutkan hanya jika Anda siap menyelesaikan pembayaran fixed price."
+  );
+  const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    if (hasSubmittedRef.current) {
+  async function createTransferTransaction() {
+    if (status === "loading") {
       return;
     }
 
-    hasSubmittedRef.current = true;
+    setStatus("loading");
+    setMessage("Membuat detail pembayaran transfer untuk transaksi ini.");
 
-    async function createTransferTransaction() {
+    try {
       const response = await fetch(`/api/user/beli/${lot.id}`, {
         method: "POST",
         headers: {
@@ -59,19 +62,47 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         return;
       }
 
+      const transactionId = payload?.data?.id;
+      if (!transactionId) {
+        const nextMessage = "Detail pembayaran berhasil diproses, tetapi ID transaksi belum diterima.";
+        setStatus("error");
+        setMessage(nextMessage);
+        toast({
+          title: "Detail pembayaran belum lengkap",
+          description: nextMessage,
+          variant: "error",
+          scope: "buyer"
+        });
+        return;
+      }
+
       toast({
         title: "Detail pembayaran dibuat",
         description: "Anda diarahkan ke halaman pembayaran transfer.",
         variant: "success",
         scope: "buyer"
       });
-      router.replace(`/transaksi/${payload.data.id}`);
+      router.replace(`/transaksi/${transactionId}`);
       router.refresh();
+    } catch {
+      const nextMessage = "Koneksi terputus. Coba lanjutkan pembayaran lagi dalam beberapa saat.";
+      setStatus("error");
+      setMessage(nextMessage);
+      toast({
+        title: "Pembelian belum bisa diproses",
+        description: nextMessage,
+        variant: "error",
+        scope: "buyer"
+      });
     }
+  }
 
-    void createTransferTransaction();
-  }, [lot.id, router, toast]);
+  function returnToLotDetail() {
+    setIsBackConfirmOpen(false);
+    router.replace(`/katalog/${lot.id}`);
+  }
 
+  const isLoading = status === "loading";
   const isError = status === "error";
 
   return (
@@ -84,11 +115,11 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             Detail Pembayaran
           </p>
           <h2 className="font-headline text-3xl font-black tracking-tight text-[#13211c] md:text-4xl">
-            Menyiapkan pembayaran transfer
+            Konfirmasi pembayaran fixed price
           </h2>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-            Fixed price sekarang memakai transfer bank. Sistem membuat transaksi dan rekening tujuan
-            otomatis, lalu membawa Anda langsung ke halaman detail pembayaran.
+            Barang fixed price belum masuk daftar transaksi pada tahap ini. Transaksi baru dibuat
+            ketika Anda menekan tombol lanjut pembayaran.
           </p>
 
           <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
@@ -107,7 +138,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
           <div className="grid gap-4">
             {[
               { icon: CreditCard, label: "Metode pembayaran", value: "Transfer Bank" },
-              { icon: ShieldCheck, label: "Status awal", value: "Menunggu Pembayaran" },
+              { icon: ShieldCheck, label: "Status saat ini", value: "Belum membuat transaksi" },
               { icon: CheckCircle2, label: "Tahap berikutnya", value: "Unggah bukti transfer" }
             ].map((item) => {
               const Icon = item.icon;
@@ -129,28 +160,65 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
           </div>
 
           <div className="mt-6 space-y-4">
-            <div className="rounded-[1.25rem] border border-[#e6ddbc] bg-[#fffaf0] px-4 py-3 text-sm font-medium leading-6 text-[#735a0f]">
+            <div
+              className={
+                isError
+                  ? "rounded-[1.25rem] border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium leading-6 text-red-700"
+                  : "rounded-[1.25rem] border border-[#d7eadc] bg-[#f3fbf6] px-4 py-3 text-sm font-medium leading-6 text-[#0d6845]"
+              }
+            >
               {message}
             </div>
             {isError ? (
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => window.location.reload()}>Coba Lagi</Button>
-                <Link href={`/katalog/${lot.id}`}>
-                  <Button variant="secondary">
-                    Kembali ke Detail
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </Link>
+                <Button onClick={createTransferTransaction}>
+                  Lanjutkan Pembayaran
+                  <ArrowRight className="size-4" />
+                </Button>
+                <Button onClick={() => setIsBackConfirmOpen(true)} variant="secondary">
+                  Kembali ke Detail Barang
+                  <ArrowLeft className="size-4" />
+                </Button>
               </div>
             ) : (
-              <Button className="w-full" disabled>
-                <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-                Membuka detail pembayaran
-              </Button>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button className="w-full" disabled={isLoading} onClick={createTransferTransaction}>
+                  {isLoading ? (
+                    <>
+                      <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+                      Membuka detail pembayaran
+                    </>
+                  ) : (
+                    <>
+                      Lanjutkan Pembayaran
+                      <ArrowRight className="size-4" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  className="w-full"
+                  disabled={isLoading}
+                  onClick={() => setIsBackConfirmOpen(true)}
+                  variant="secondary"
+                >
+                  <ArrowLeft className="size-4" />
+                  Kembali ke Detail Barang
+                </Button>
+              </div>
             )}
           </div>
         </div>
       </CardContent>
+      <ConfirmDialog
+        cancelLabel="Tidak, kembali ke detail barang"
+        confirmLabel="Ya, tetap di pembayaran"
+        description='Pilih "Ya" untuk tetap di halaman ini. Pilih "Tidak" untuk kembali ke detail barang tanpa membuat transaksi.'
+        onCancel={returnToLotDetail}
+        onConfirm={() => setIsBackConfirmOpen(false)}
+        onOpenChange={setIsBackConfirmOpen}
+        open={isBackConfirmOpen}
+        title="Tetap lanjutkan pembayaran?"
+      />
     </Card>
   );
 }

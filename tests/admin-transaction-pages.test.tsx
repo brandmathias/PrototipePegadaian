@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -50,6 +50,9 @@ const transactions = [
     buyerPhone: "+62 812 3333 4444",
     buyerNationalId: "7171010101010002",
     createdAt: "2 Mei 2026 12.00",
+    imageUrl: "/uploads/cincin-emas.jpg",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Sam Ratulangi",
     verifiedAt: "2 Mei 2026 15.30",
     printableReceipt: true
   },
@@ -198,7 +201,9 @@ describe("admin transaction pages", () => {
     );
   });
 
-  it("opens a dedicated admin receipt page instead of printing the workspace directly", () => {
+  it("prints the fixed price receipt inline without opening a dedicated receipt tab", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
     render(
       <AdminTransactionDetailWorkspacePage
         backHref="/admin/transaksi/riwayat"
@@ -207,9 +212,19 @@ describe("admin transaction pages", () => {
       />
     );
 
-    expect(screen.getByRole("link", { name: /cetak nota/i })).toHaveAttribute(
-      "href",
-      `/admin/transaksi/${transactions[1].id}/nota?output=print`
-    );
+    await userEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+
+    const receiptPrintRoot = document.getElementById("transaction-receipt-print-root-trx-history");
+
+    expect(receiptPrintRoot).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
+    expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-emas.jpg"]')).not.toBeNull();
+    expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
+
+    printSpy.mockRestore();
   });
 });
