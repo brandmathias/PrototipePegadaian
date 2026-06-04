@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { CheckCircle2, FileText, LoaderCircle, ShieldCheck, ShieldX } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
+import { CheckCircle2, FileText, LoaderCircle, ShieldCheck, ShieldX, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -73,10 +74,33 @@ export function BlacklistReviewQueue({ cases }: { cases: SuperadminReviewCase[] 
   const pendingCases = cases.filter((item) => !isTerminalStatus(item.status));
   const terminalCases = cases.length - pendingCases.length;
   const reasonOptions = useMemo(() => getReasonOptions(decision), [decision]);
+  const selectedCase = cases.find((item) => item.id === selectedCaseId) ?? null;
+
+  useEffect(() => {
+    if (!selectedCase || typeof document === "undefined") {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedCase]);
 
   function updateDecision(nextDecision: BlacklistReviewDecision) {
     setDecision(nextDecision);
     setReasonCode(getReasonOptions(nextDecision)[0].code);
+  }
+
+  function closeDecisionDialog() {
+    if (isPending) {
+      return;
+    }
+
+    setSelectedCaseId(null);
+    setNote("");
   }
 
   function submitDecision(caseId: string) {
@@ -112,12 +136,168 @@ export function BlacklistReviewQueue({ cases }: { cases: SuperadminReviewCase[] 
     });
   }
 
+  const decisionDialog =
+    selectedCase && typeof document !== "undefined"
+      ? createPortal(
+          <div className="fixed inset-0 z-[150] overflow-y-auto px-4 py-6 sm:px-6 lg:py-8">
+            <button
+              aria-label="Tutup panel keputusan"
+              className="fixed inset-0 bg-[#07131e]/62 backdrop-blur-[5px]"
+              onClick={closeDecisionDialog}
+              type="button"
+            />
+            <section
+              aria-labelledby="superadmin-review-decision-title"
+              aria-modal="true"
+              className="relative z-[151] mx-auto w-full max-w-3xl"
+              role="dialog"
+            >
+              <div className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+                <div className="flex items-start justify-between gap-4 border-b border-[#edf2ee] px-5 py-5 sm:px-6">
+                  <div>
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary/60">
+                      Panel Superadmin
+                    </p>
+                    <h2
+                      className="mt-2 font-headline text-2xl font-extrabold tracking-tight text-foreground"
+                      id="superadmin-review-decision-title"
+                    >
+                      Putuskan Review Buyer
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                      Tinjau keterangan buyer, rekomendasi admin unit, dan lampiran sebelum menyimpan keputusan final.
+                    </p>
+                  </div>
+                  <button
+                    aria-label="Tutup"
+                    className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-surface-low hover:text-foreground active:scale-[0.98]"
+                    onClick={closeDecisionDialog}
+                    type="button"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="max-h-[calc(100dvh-11rem)] overflow-y-auto p-5 sm:p-6">
+                  <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{selectedCase.buyerName}</p>
+                      <p className="mt-1 text-sm font-semibold text-muted-foreground">{selectedCase.buyerEmail}</p>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {selectedCase.itemName} | {selectedCase.unitName}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 md:justify-end">
+                      <span className="rounded-full bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-primary ring-1 ring-border/70">
+                        {formatStatus(selectedCase.status)}
+                      </span>
+                      {selectedCase.lockedAccount ? (
+                        <span className="rounded-full bg-tertiary-container/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-tertiary-container">
+                          Akun terkunci
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+                    <p>Diajukan {formatDate(selectedCase.submittedAt)}</p>
+                    <p>Level akumulasi {selectedCase.level}</p>
+                    <p>Prioritas {selectedCase.priorityScore}</p>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <div className="rounded-[1rem] bg-surface-low/60 p-4 text-sm leading-6 text-muted-foreground ring-1 ring-border/70">
+                      <p className="font-semibold text-foreground">Keterangan buyer</p>
+                      <p className="mt-1">{selectedCase.buyerStatement}</p>
+                    </div>
+                    <div className="rounded-[1rem] bg-surface-low/60 p-4 text-sm leading-6 text-muted-foreground ring-1 ring-border/70">
+                      <p className="font-semibold text-foreground">Rekomendasi admin unit</p>
+                      <p className="mt-1">
+                        {selectedCase.adminRecommendation
+                          ? formatStatus(selectedCase.adminRecommendation)
+                          : "Belum ada rekomendasi admin unit."}
+                      </p>
+                      {selectedCase.adminRecommendationNote ? (
+                        <p className="mt-2">{selectedCase.adminRecommendationNote}</p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {selectedCase.attachments.length === 0 ? (
+                      <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-muted-foreground ring-1 ring-border/70">
+                        Tidak ada lampiran
+                      </span>
+                    ) : (
+                      selectedCase.attachments.map((attachment) => (
+                        <a
+                          className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-primary ring-1 ring-border/70 transition hover:bg-primary/5"
+                          href={attachment.fileUrl}
+                          key={attachment.id}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          <FileText className="size-3.5" />
+                          {attachment.fileName}
+                        </a>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="mt-6 space-y-3 rounded-[1rem] bg-white p-4 ring-1 ring-border/70">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <select
+                        className="h-11 w-full rounded-xl border border-border/70 bg-white px-4 text-sm font-semibold text-foreground outline-none"
+                        value={decision}
+                        onChange={(event) => updateDecision(event.target.value as BlacklistReviewDecision)}
+                      >
+                        <option value="DISETUJUI">Setujui pencabutan</option>
+                        <option value="DITOLAK">Tolak pencabutan</option>
+                      </select>
+                      <select
+                        className="h-11 w-full rounded-xl border border-border/70 bg-white px-4 text-sm font-semibold text-foreground outline-none"
+                        value={reasonCode}
+                        onChange={(event) => setReasonCode(event.target.value)}
+                      >
+                        {reasonOptions.map((reason) => (
+                          <option key={reason.code} value={reason.code}>
+                            {reason.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <Textarea
+                      disabled={isPending}
+                      placeholder="Catatan tambahan opsional untuk audit internal..."
+                      value={note}
+                      onChange={(event) => setNote(event.target.value)}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button disabled={isPending} type="button" onClick={() => submitDecision(selectedCase.id)}>
+                        {isPending ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                        Simpan Keputusan
+                      </Button>
+                      <Button disabled={isPending} type="button" variant="secondary" onClick={closeDecisionDialog}>
+                        Batal
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
+    <>
+    {decisionDialog}
     <section className="rounded-[1.8rem] border border-border/70 bg-white p-5 shadow-[0_24px_72px_-56px_rgba(8,69,50,0.45)]">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.16em] text-primary/62">
-            Review blacklist nasional
+            Review & pelanggaran
           </p>
           <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
             Antrean keputusan superadmin
@@ -177,21 +357,6 @@ export function BlacklistReviewQueue({ cases }: { cases: SuperadminReviewCase[] 
                   <p>Prioritas {item.priorityScore}</p>
                 </div>
 
-                <div className="mt-4 rounded-[1rem] bg-white p-4 text-sm leading-6 text-muted-foreground ring-1 ring-border/70">
-                  <p className="font-semibold text-foreground">Keterangan buyer</p>
-                  <p className="mt-1">{item.buyerStatement}</p>
-                </div>
-
-                <div className="mt-3 rounded-[1rem] bg-white p-4 ring-1 ring-border/70">
-                  <p className="text-sm font-semibold text-foreground">Rekomendasi admin unit</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.adminRecommendation ? formatStatus(item.adminRecommendation) : "Belum ada rekomendasi admin unit."}
-                  </p>
-                  {item.adminRecommendationNote ? (
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.adminRecommendationNote}</p>
-                  ) : null}
-                </div>
-
                 <div className="mt-3 flex flex-wrap gap-2">
                   {item.attachments.length === 0 ? (
                     <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-muted-foreground ring-1 ring-border/70">
@@ -213,63 +378,24 @@ export function BlacklistReviewQueue({ cases }: { cases: SuperadminReviewCase[] 
                   )}
                 </div>
 
-                {selectedCaseId === item.id ? (
-                  <div className="mt-4 space-y-3 rounded-[1rem] bg-white p-4 ring-1 ring-border/70">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <select
-                        className="h-11 w-full rounded-xl border border-border/70 bg-white px-4 text-sm font-semibold text-foreground outline-none"
-                        value={decision}
-                        onChange={(event) => updateDecision(event.target.value as BlacklistReviewDecision)}
-                      >
-                        <option value="DISETUJUI">Setujui pencabutan</option>
-                        <option value="DITOLAK">Tolak pencabutan</option>
-                      </select>
-                      <select
-                        className="h-11 w-full rounded-xl border border-border/70 bg-white px-4 text-sm font-semibold text-foreground outline-none"
-                        value={reasonCode}
-                        onChange={(event) => setReasonCode(event.target.value)}
-                      >
-                        {reasonOptions.map((reason) => (
-                          <option key={reason.code} value={reason.code}>
-                            {reason.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <Textarea
-                      disabled={isPending}
-                      placeholder="Catatan tambahan opsional untuk audit internal..."
-                      value={note}
-                      onChange={(event) => setNote(event.target.value)}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <Button disabled={isPending} type="button" onClick={() => submitDecision(item.id)}>
-                        {isPending ? <LoaderCircle className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
-                        Simpan Keputusan
-                      </Button>
-                      <Button disabled={isPending} type="button" variant="secondary" onClick={() => setSelectedCaseId(null)}>
-                        Batal
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    className="mt-4"
-                    disabled={terminal}
-                    size="sm"
-                    type="button"
-                    variant={terminal ? "secondary" : "default"}
-                    onClick={() => setSelectedCaseId(item.id)}
-                  >
-                    <ShieldX className="size-4" />
-                    {terminal ? "Sudah final" : "Putuskan Case"}
-                  </Button>
-                )}
+                <Button
+                  aria-label={terminal ? "Case sudah final" : "Putuskan Case"}
+                  className="mt-4"
+                  disabled={terminal}
+                  size="sm"
+                  type="button"
+                  variant={terminal ? "secondary" : "default"}
+                  onClick={() => setSelectedCaseId(item.id)}
+                >
+                  <ShieldX className="size-4" />
+                  {terminal ? "Sudah final" : "Tinjau Sekarang"}
+                </Button>
               </article>
             );
           })
         )}
       </div>
     </section>
+    </>
   );
 }

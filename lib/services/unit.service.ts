@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { unitAccounts, units, users } from "@/lib/db/schema";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
-import { validateUnitPayload } from "@/lib/superadmin/validation";
+import { validateManagedUnitCreatePayload, validateUnitPayload } from "@/lib/superadmin/validation";
 
 function getUnitStatus(unit: { isActive: boolean }, activeAccountCount: number, adminCount: number) {
   if (!unit.isActive) {
@@ -133,23 +133,44 @@ export async function createUnit(input: {
   code?: string;
   name?: string;
   address?: string;
+  primaryAccount?: {
+    bankName?: string;
+    accountNumber?: string;
+    accountHolderName?: string;
+    branchName?: string;
+  };
 }) {
-  const payload = validateUnitPayload(input);
+  const payload = validateManagedUnitCreatePayload(input);
 
   const [existing] = await db.select().from(units).where(eq(units.code, payload.code)).limit(1);
   if (existing) {
     throw new Error("Kode unit sudah dipakai.");
   }
 
-  const [created] = await db
-    .insert(units)
-    .values({
+  const created = await db.transaction(async (tx) => {
+    const unitId = crypto.randomUUID();
+    const [createdUnit] = await tx
+      .insert(units)
+      .values({
+        id: unitId,
+        code: payload.code,
+        name: payload.name,
+        address: payload.address
+      })
+      .returning();
+
+    await tx.insert(unitAccounts).values({
       id: crypto.randomUUID(),
-      code: payload.code,
-      name: payload.name,
-      address: payload.address
-    })
-    .returning();
+      unitId,
+      bankName: payload.primaryAccount.bankName,
+      accountNumber: payload.primaryAccount.accountNumber,
+      accountHolderName: payload.primaryAccount.accountHolderName,
+      branchName: payload.primaryAccount.branchName,
+      isActive: true
+    });
+
+    return createdUnit;
+  });
 
   return created;
 }

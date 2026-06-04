@@ -1,7 +1,5 @@
-import { SuperAdminUnitsPage } from "@/components/pages/superadmin-pages";
-import { listUnits } from "@/lib/services/unit.service";
+import { redirect } from "next/navigation";
 
-export default async function Page() {
-  const units = await listUnits();
-  return <SuperAdminUnitsPage units={units} />;
+export default function Page() {
+  redirect("/superadmin/manajemen-unit");
 }

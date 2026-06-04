@@ -45,6 +45,37 @@ export function validateUnitAccountPayload(input: {
   };
 }
 
+export function validateManagedUnitCreatePayload(input: {
+  code?: string;
+  name?: string;
+  address?: string;
+  primaryAccount?: {
+    bankName?: string;
+    accountNumber?: string;
+    accountHolderName?: string;
+    branchName?: string;
+  };
+}) {
+  const unit = validateUnitPayload(input);
+
+  try {
+    const primaryAccount = validateUnitAccountPayload({
+      ...(input.primaryAccount ?? {}),
+      isActive: true
+    });
+
+    return {
+      ...unit,
+      primaryAccount: {
+        ...primaryAccount,
+        isActive: true
+      }
+    };
+  } catch {
+    throw new Error("Rekening aktif utama wajib dilengkapi saat membuat unit.");
+  }
+}
+
 export function validateAdminUnitPayload(input: {
   name?: string;
   email?: string;

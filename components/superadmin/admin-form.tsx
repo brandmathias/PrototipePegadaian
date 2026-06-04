@@ -16,6 +16,7 @@ type AdminFormProps = {
   units: Array<{ id: string; name: string; code: string }>;
   mode?: "create" | "update";
   adminId?: string;
+  showTitle?: boolean;
   initialValue?: {
     name: string;
     email: string;
@@ -29,6 +30,7 @@ export function AdminUnitForm({
   units,
   mode = "create",
   adminId,
+  showTitle = true,
   initialValue
 }: AdminFormProps) {
   const router = useRouter();
@@ -107,10 +109,12 @@ export function AdminUnitForm({
 
   return (
     <Card className="border border-border/70 bg-white">
-      <CardHeader>
-        <CardTitle>{mode === "create" ? "Tambah admin unit" : "Perbarui admin unit"}</CardTitle>
-      </CardHeader>
-      <CardContent>
+      {showTitle ? (
+        <CardHeader>
+          <CardTitle>{mode === "create" ? "Tambah admin unit" : "Perbarui admin unit"}</CardTitle>
+        </CardHeader>
+      ) : null}
+      <CardContent className={showTitle ? undefined : "p-0"}>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input onChange={(event) => setName(event.target.value)} placeholder="Nama admin unit" value={name} />
           <Input onChange={(event) => setEmail(event.target.value)} placeholder="Email admin unit" type="email" value={email} />

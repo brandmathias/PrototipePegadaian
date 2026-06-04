@@ -4,11 +4,11 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAppPathFromRequestHeaders, getSuperAdminSessionUser } from "@/lib/auth/session";
 
 const nav = [
-  { href: "/superadmin", label: "Dashboard Global", icon: "dashboard" as const },
-  { href: "/superadmin/unit", label: "Unit & Rekening", icon: "unit" as const },
-  { href: "/superadmin/admin", label: "Admin Unit", icon: "admin" as const },
-  { href: "/superadmin/monitoring", label: "Monitoring Nasional", icon: "monitoring" as const },
-  { href: "/superadmin/blacklist", label: "Blacklist Global", icon: "blacklist" as const }
+  { href: "/superadmin", label: "Dashboard Nasional", icon: "dashboard" as const },
+  { href: "/superadmin/review-pelanggaran", label: "Review & Pelanggaran", icon: "blacklist" as const },
+  { href: "/superadmin/monitoring-unit", label: "Monitoring Unit", icon: "monitoring" as const },
+  { href: "/superadmin/manajemen-unit", label: "Manajemen Unit", icon: "unit" as const },
+  { href: "/superadmin/kebijakan-pelanggaran", label: "Kebijakan Pelanggaran", icon: "admin" as const }
 ];
 
 export default async function SuperAdminLayout({ children }: { children: ReactNode }) {

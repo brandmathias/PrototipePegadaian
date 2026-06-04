@@ -4,6 +4,7 @@ import {
   normalizeUnitCode,
   validateAdminUnitPayload,
   validateBlacklistRevokePayload,
+  validateManagedUnitCreatePayload,
   validateUnitAccountPayload,
   validateUnitPayload
 } from "@/lib/superadmin/validation";
@@ -52,5 +53,34 @@ describe("superadmin validation", () => {
     expect(() => validateBlacklistRevokePayload({ reason: "   " })).toThrow(
       "Alasan pencabutan blacklist wajib diisi."
     );
+  });
+
+  it("requires an active primary account when creating a managed unit", () => {
+    expect(() =>
+      validateManagedUnitCreatePayload({
+        code: "CP-MND-02",
+        name: "Pegadaian CP Boulevard",
+        address: "Jl. Boulevard Manado",
+        primaryAccount: {
+          bankName: "BRI",
+          accountNumber: "9876543210",
+          accountHolderName: "PT Pegadaian Area Manado",
+          branchName: "Manado"
+        }
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      validateManagedUnitCreatePayload({
+        code: "CP-MND-03",
+        name: "Pegadaian CP Tikala",
+        address: "Jl. Tikala Baru",
+        primaryAccount: {
+          bankName: "",
+          accountNumber: "1234567890",
+          accountHolderName: "PT Pegadaian Area Manado"
+        }
+      })
+    ).toThrow("Rekening aktif utama wajib dilengkapi saat membuat unit.");
   });
 });
