@@ -123,8 +123,31 @@ type AdminBlacklistReviewCase = {
   unitName: string;
   status: string;
   submittedAt: string;
+  buyerStatement: string;
+  adminRecommendation: string | null;
+  adminRecommendationNote: string | null;
   hasRecommendation: boolean;
   crossUnitSignal: string;
+  incident: {
+    id: string;
+    note: string;
+    occurredAt: string;
+    auctionMode: string;
+    transactionStatus: string;
+    amount: number | null;
+    paymentDeadline: string | null;
+    itemCode: string;
+    itemCategory: string;
+    itemCondition: string;
+    itemImageUrl: string | null;
+    itemImageAlt: string | null;
+  };
+  attachments: Array<{
+    id: string;
+    fileUrl: string;
+    fileName: string;
+    mimeType: string;
+  }>;
 };
 
 function dateAfter(days: number) {

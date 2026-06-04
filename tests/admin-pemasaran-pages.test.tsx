@@ -1277,9 +1277,52 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/tanpa peserta/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/tidak ada bid masuk/i)).toBeInTheDocument();
     expect(screen.getByText(/belum ada peserta yang mengirim penawaran/i)).toBeInTheDocument();
+    const basePriceText = screen.getByText("Rp 8.000.000");
+    expect(basePriceText).toBeInTheDocument();
+    expect(basePriceText.className).not.toContain("text-ellipsis");
     expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
     expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
+  });
+
+  it("keeps failed vickrey archive prices on one line without ellipsis for large nominal values", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-large-archive",
+          lotId: "barang-large-archive",
+          lot: "Kalung Berlian Arsip",
+          code: "BRG-88001",
+          category: "perhiasan",
+          condition: "baik",
+          status: "GAGAL",
+          mode: "VICKREY_AUCTION",
+          ending: "4 Jun 2026",
+          endingAt: "2026-06-04T11:25:00.000Z",
+          participants: 0,
+          basePrice: 200000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "HASIL_DIBUKA",
+          transactionId: null,
+          transactionStatus: null,
+          paymentDeadline: null,
+          specifications: {
+            bahan: "Emas putih",
+            sertifikat: "Ada"
+          },
+          media: [{ id: "asset-large", type: "foto", url: "/uploads/kalung-large.jpg", fileName: "kalung-large.jpg" }],
+          primaryMedia: { id: "asset-large", type: "foto", url: "/uploads/kalung-large.jpg", fileName: "kalung-large.jpg" },
+          note: "Sesi berakhir tanpa bid dengan harga dasar besar.",
+          bids: []
+        }}
+      />
+    );
+
+    const archivePrice = screen.getByText("Rp 200.000.000");
+    expect(archivePrice).toBeInTheDocument();
+    expect(archivePrice.className).toContain("whitespace-nowrap");
+    expect(archivePrice.className).not.toContain("text-ellipsis");
   });
 
   it("renders a red failed header badge when the winner misses the 24 hour payment window", () => {

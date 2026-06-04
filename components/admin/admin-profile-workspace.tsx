@@ -30,10 +30,22 @@ export type AdminProfileData = {
   image?: string | null;
   joinedAt: string;
   name: string;
+  pageDescription?: string;
+  pageTitle?: string;
   passwordUpdatedAt: string;
   phone: string;
+  profileEditHeading?: string;
+  profileSaveFeedback?: string;
   roleLabel: string;
   sessionHistory: string[];
+  workspaceAddressLabel?: string;
+  workspaceCodeLabel?: string;
+  workspaceFieldLabel?: string;
+  workspaceLabel?: string;
+  workspacePhoneLabel?: string;
+  workspaceSectionTitle?: string;
+  accessHistoryDescription?: string;
+  accessHistoryLabel?: string;
   unitAddress: string;
   unitCode: string;
   unitName: string;
@@ -55,15 +67,17 @@ function ProfileCard({
   children,
   className,
   icon,
+  id,
   title
 }: {
   children: React.ReactNode;
   className?: string;
   icon: ReactNode;
+  id?: string;
   title: string;
 }) {
   return (
-    <section className={cn("rounded-[2rem] border border-white/70 bg-white/82 p-2 shadow-[0_24px_76px_-58px_rgba(8,69,50,0.52)]", className)}>
+    <section className={cn("rounded-[2rem] border border-white/70 bg-white/82 p-2 shadow-[0_24px_76px_-58px_rgba(8,69,50,0.52)]", className)} id={id}>
       <div className="h-full rounded-[calc(2rem-0.5rem)] border border-[#0a6a49]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,252,249,0.9))] p-5">
         <div className="mb-5 flex items-center gap-3">
           <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
@@ -117,6 +131,14 @@ function InfoTile({
 }
 
 export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }) {
+  const workspaceLabel = profile.workspaceLabel ?? "Unit Kerja";
+  const workspaceFieldLabel = profile.workspaceFieldLabel ?? "Unit kerja";
+  const workspaceCodeLabel = profile.workspaceCodeLabel ?? "Kode Unit";
+  const workspaceAddressLabel = profile.workspaceAddressLabel ?? "Alamat Unit";
+  const workspacePhoneLabel = profile.workspacePhoneLabel ?? "Telepon Unit";
+  const workspaceSectionTitle = profile.workspaceSectionTitle ?? "Informasi Unit";
+  const accessHistoryLabel = profile.accessHistoryLabel ?? "Akses admin unit";
+  const accessHistoryDescription = profile.accessHistoryDescription ?? "Lihat riwayat akses admin";
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [profileForm, setProfileForm] = useState({
     address: profile.unitAddress,
@@ -149,10 +171,10 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
       <div className="relative mx-auto w-full max-w-[1500px] space-y-5 px-4 sm:px-5 md:space-y-6 lg:px-6">
         <section>
           <h1 className="font-headline text-3xl font-black tracking-[-0.04em] text-[#122018] md:text-4xl">
-            Profil Admin Unit
+            {profile.pageTitle ?? "Profil Admin Unit"}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56 md:text-base">
-            Kelola informasi akun, akses keamanan, dan data unit kerja Anda.
+            {profile.pageDescription ?? "Kelola informasi akun, akses keamanan, dan data unit kerja Anda."}
           </p>
         </section>
 
@@ -240,7 +262,7 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
             <div className="rounded-[calc(2rem-0.5rem)] border border-[#0a6a49]/10 bg-white/92 p-5 md:p-6">
               <div className="mb-5">
                 <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#0a6a49]/55">Edit Profil</p>
-                <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-[#122018]">Perbarui informasi admin unit</h3>
+                <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-[#122018]">{profile.profileEditHeading ?? "Perbarui informasi admin unit"}</h3>
               </div>
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="space-y-2">
@@ -252,7 +274,7 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                   <Input id="admin-profile-phone" className="h-12 rounded-2xl bg-white" value={profileForm.phone} onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-unit">Unit kerja</label>
+                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-unit">{workspaceFieldLabel}</label>
                   <Input id="admin-profile-unit" className="h-12 rounded-2xl bg-white" value={profileForm.unitName} onChange={(event) => setProfileForm((current) => ({ ...current, unitName: event.target.value }))} />
                 </div>
                 <div className="space-y-2">
@@ -260,11 +282,11 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                   <Input id="admin-profile-email" className="h-12 rounded-2xl bg-[#f5f7f4]" disabled value={profile.email} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-address">Alamat unit</label>
+                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-address">{workspaceAddressLabel}</label>
                   <Textarea id="admin-profile-address" className="min-h-28 rounded-2xl bg-white" value={profileForm.address} onChange={(event) => setProfileForm((current) => ({ ...current, address: event.target.value }))} />
                 </div>
               </div>
-              <Button className="mt-5 h-12 rounded-2xl px-5" type="button" onClick={() => setFeedback("Perubahan profil sudah disiapkan di tampilan admin unit.")}>
+              <Button className="mt-5 h-12 rounded-2xl px-5" type="button" onClick={() => setFeedback(profile.profileSaveFeedback ?? "Perubahan profil sudah disiapkan di tampilan admin unit.")}>
                 <PenLine className="size-4" />
                 Simpan Perubahan
               </Button>
@@ -309,23 +331,23 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
         ) : null}
 
         <section className="grid overflow-hidden rounded-[1.5rem] border border-white/75 bg-white/86 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)] md:grid-cols-4">
-          <InfoTile icon={<Building2 className="size-5" />} label="Unit Kerja" value={profileForm.unitName} />
+          <InfoTile icon={<Building2 className="size-5" />} label={workspaceLabel} value={profileForm.unitName} />
           <InfoTile icon={<BadgeCheck className="size-5" />} label="Peran" value={profile.roleLabel} />
           <InfoTile icon={<Clock3 className="size-5" />} label="Terakhir Ubah" value={profile.updatedAt} />
           <InfoTile icon={<CalendarDays className="size-5" />} label="Bergabung Sejak" value={profile.joinedAt} />
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
-          <ProfileCard icon={<Building2 className="size-5" />} title="Informasi Unit">
+          <ProfileCard icon={<Building2 className="size-5" />} title={workspaceSectionTitle}>
             <div className="space-y-5">
-              <DetailRow label="Unit Kerja" value={profileForm.unitName} />
-              <DetailRow label="Kode Unit" value={profile.unitCode} />
-              <DetailRow label="Alamat Unit" value={profileForm.address} />
-              <DetailRow accent label="Telepon Unit" value={profileForm.phone || "-"} />
+              <DetailRow label={workspaceLabel} value={profileForm.unitName} />
+              <DetailRow label={workspaceCodeLabel} value={profile.unitCode} />
+              <DetailRow label={workspaceAddressLabel} value={profileForm.address} />
+              <DetailRow accent label={workspacePhoneLabel} value={profileForm.phone || "-"} />
             </div>
           </ProfileCard>
 
-          <ProfileCard icon={<ShieldCheck className="size-5" />} title="Keamanan & Akses">
+          <ProfileCard icon={<ShieldCheck className="size-5" />} id="panduan" title="Keamanan & Akses">
             <div className="space-y-3">
               <div className="rounded-[1.35rem] border border-[#0a6a49]/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
                 <div className="flex items-center justify-between gap-4">
@@ -343,9 +365,9 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                 </div>
               </div>
               <LoginHistoryDialog
-                accessLabel="Akses admin unit"
+                accessLabel={accessHistoryLabel}
                 activeSessionCount={profile.activeSessionCount}
-                description="Lihat riwayat akses admin"
+                description={accessHistoryDescription}
                 entries={profile.sessionHistory}
               />
             </div>

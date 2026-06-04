@@ -12,6 +12,7 @@ type AdminProfileMenuProps = {
   image?: string | null;
   profileHref?: string;
   helpHref?: string;
+  roleLabel?: string;
   className?: string;
 };
 
@@ -32,6 +33,7 @@ export function AdminProfileMenu({
   image,
   profileHref = "/admin/profil",
   helpHref = "/admin/profil#panduan",
+  roleLabel = "Admin Unit",
   className
 }: AdminProfileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -104,7 +106,7 @@ export function AdminProfileMenu({
               </span>
               <div className="min-w-0">
                 <p className="text-[0.62rem] font-black uppercase tracking-[0.24em] text-[#0a6a49]/45">
-                  Admin Unit
+                  {roleLabel}
                 </p>
                 <p className="mt-1 truncate font-bold text-foreground dark:text-slate-100">{name}</p>
               </div>

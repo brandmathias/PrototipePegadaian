@@ -19,8 +19,9 @@ export default async function SuperAdminLayout({ children }: { children: ReactNo
     <DashboardShell
       currentUser={currentUser}
       forceWhiteShell
-      profileHref="/superadmin/admin"
-      subtitle="Control center lintas unit"
+      profileHref="/superadmin/profil"
+      showHeaderSearch={false}
+      subtitle="Control Center Lintas Unit"
       title="Superadmin Nasional"
       nav={nav}
     >

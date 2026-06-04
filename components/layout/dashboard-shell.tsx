@@ -133,6 +133,7 @@ export function DashboardShell({
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [isThemeTransitioning, setIsThemeTransitioning] = useState(false);
   const [themeTransitionDirection, setThemeTransitionDirection] = useState<ThemeTransitionDirection>(null);
+  const profileRoleLabel = currentUser?.role === "super_admin" ? "Super Admin" : "Admin Unit";
 
   useEffect(() => {
     const preferredTheme = getPreferredTheme();
@@ -584,22 +585,14 @@ export function DashboardShell({
                       </span>
                     </button>
                   ) : null}
-                  {profileHref && currentUser?.role === "admin_unit" ? (
+                  {profileHref && currentUser ? (
                     <AdminProfileMenu
                       helpHref={`${profileHref}#panduan`}
                       image={currentUser.image}
                       name={currentUser.name}
                       profileHref={profileHref}
+                      roleLabel={profileRoleLabel}
                     />
-                  ) : profileHref && currentUser ? (
-                    <Link
-                      aria-label="Buka profil"
-                      className="inline-flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 text-[#085a41] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-white/10 dark:bg-white/8 dark:text-emerald-100 dark:hover:bg-white/12"
-                      href={profileHref}
-                    >
-                      <UserCog aria-hidden="true" className="size-5" />
-                      <span className="hidden text-sm font-semibold md:inline">{currentUser.name}</span>
-                    </Link>
                   ) : null}
                 </div>
               </div>

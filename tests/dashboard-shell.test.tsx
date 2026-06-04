@@ -8,7 +8,11 @@ const navigationMock = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => navigationMock.pathname
+  usePathname: () => navigationMock.pathname,
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn()
+  })
 }));
 
 vi.mock("@/components/ui/alert-center", () => ({
@@ -142,6 +146,34 @@ describe("DashboardShell", () => {
     expect(document.documentElement).not.toHaveClass("dark");
     expect(document.documentElement.style.colorScheme).toBe("");
     expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("light");
+  });
+
+  it("uses the same profile dropdown for superadmin accounts", () => {
+    navigationMock.pathname = "/superadmin";
+
+    render(
+      <DashboardShell
+        currentUser={{
+          image: null,
+          name: "Super Admin Demo",
+          role: "super_admin"
+        }}
+        nav={[{ href: "/superadmin", label: "Dashboard Global", icon: "dashboard" }]}
+        profileHref="/superadmin/profil"
+        showHeaderSearch={false}
+        subtitle="Control center lintas unit"
+        title="Superadmin Nasional"
+      >
+        <div>Konten superadmin</div>
+      </DashboardShell>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /super admin demo/i }));
+
+    expect(screen.getByText("Super Admin")).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/superadmin/profil");
+    expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/superadmin/profil#panduan");
+    expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
   });
 
   it("cleans legacy global dark mode so buyer routes are not affected after leaving admin", () => {

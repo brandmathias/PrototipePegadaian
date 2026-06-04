@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -146,17 +146,73 @@ describe("AdminBlacklistPage", () => {
             unitName: "UPC Ranotana",
             status: "TERKIRIM",
             submittedAt: "2026-05-30T00:00:00.000Z",
+            buyerStatement:
+              "Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi keterlambatan konfirmasi transfer.",
+            adminRecommendation: null,
+            adminRecommendationNote: null,
             hasRecommendation: false,
             crossUnitSignal: "Riwayat lintas unit tersedia untuk superadmin",
+            incident: {
+              id: "incident-1",
+              note: "Pemenang lelang tidak menyelesaikan pembayaran dalam 24 jam.",
+              occurredAt: "2026-05-29T08:30:00.000Z",
+              auctionMode: "VICKREY_AUCTION",
+              transactionStatus: "gagal_bayar",
+              amount: 90000000,
+              paymentDeadline: "2026-05-30T08:30:00.000Z",
+              itemCode: "BRG-32807701",
+              itemCategory: "emas",
+              itemCondition: "baik",
+              itemImageUrl: "/uploads/barang/kalung-emas.jpg",
+              itemImageAlt: "Foto barang Kalung Emas",
+            },
+            attachments: [
+              {
+                id: "att-1",
+                fileUrl: "/uploads/blacklist-review/bukti-transfer.pdf",
+                fileName: "bukti-transfer.pdf",
+                mimeType: "application/pdf",
+              },
+            ],
           },
         ]}
       />,
     );
 
     expect(screen.getByText("Raras Mahesa")).toBeInTheDocument();
-    expect(screen.getByText("Kalung Emas")).toBeInTheDocument();
+    expect(screen.getByText(/Kalung Emas/)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /beri rekomendasi/i }),
+      screen.queryByText(
+        /Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi/i,
+      ),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("bukti-transfer.pdf")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /tinjau sekarang/i }));
+
+    const dialog = screen.getByRole("dialog", {
+      name: /tinjau pengajuan review buyer/i,
+    });
+
+    expect(
+      within(dialog).getByText(
+        /Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi/i,
+      ),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText("Pelanggaran Terkait")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        /Pemenang lelang tidak menyelesaikan pembayaran dalam 24 jam/i,
+      ),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByText(/Vickrey Auction/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Rp 90.000.000/i)).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("img", { name: /foto barang kalung emas/i }),
+    ).toHaveAttribute("src", "/uploads/barang/kalung-emas.jpg");
+    expect(within(dialog).getByText("bukti-transfer.pdf")).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: /simpan rekomendasi/i }),
     ).toBeInTheDocument();
   });
 

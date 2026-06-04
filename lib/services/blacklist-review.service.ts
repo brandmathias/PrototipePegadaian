@@ -21,6 +21,7 @@ import {
   blacklistReviewAttachments,
   blacklistReviewCases,
   blacklists,
+  mediaBarang,
   pelanggaranUser,
   pemasaran,
   transaksi,
@@ -112,6 +113,13 @@ async function getAttachments(caseId: string) {
     .from(blacklistReviewAttachments)
     .where(eq(blacklistReviewAttachments.caseId, caseId))
     .orderBy(desc(blacklistReviewAttachments.uploadedAt));
+}
+
+function toNullableNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
 }
 
 async function serializeCaseWithAttachments(row: ReviewCaseRow) {
@@ -502,30 +510,64 @@ export async function listAdminBlacklistReviewCases(unitId: string) {
       caseRow: blacklistReviewCases,
       incident: pelanggaranUser,
       buyer: users,
+      transaction: transaksi,
+      auction: pemasaran,
       item: barang,
+      media: mediaBarang,
       unit: units
     })
     .from(blacklistReviewCases)
     .innerJoin(pelanggaranUser, eq(pelanggaranUser.id, blacklistReviewCases.incidentId))
     .innerJoin(users, eq(users.id, blacklistReviewCases.buyerUserId))
+    .innerJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .innerJoin(pemasaran, eq(pemasaran.id, pelanggaranUser.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .innerJoin(units, eq(units.id, pelanggaranUser.unitId))
     .where(eq(pelanggaranUser.unitId, unitId))
     .orderBy(desc(blacklistReviewCases.submittedAt));
 
-  return rows.map((row) => ({
-    id: row.caseRow.id,
-    incidentId: row.caseRow.incidentId,
-    buyerName: row.buyer.name,
-    buyerEmail: row.buyer.email,
-    itemName: row.item.name,
-    unitName: row.unit.name,
-    status: row.caseRow.status,
-    submittedAt: row.caseRow.submittedAt.toISOString(),
-    hasRecommendation: Boolean(row.caseRow.adminRecommendation),
-    crossUnitSignal: "Riwayat lintas unit tersedia untuk superadmin"
-  }));
+  return Promise.all(
+    rows.map(async (row) => {
+      const attachments = await getAttachments(row.caseRow.id);
+
+      return {
+        id: row.caseRow.id,
+        incidentId: row.caseRow.incidentId,
+        buyerName: row.buyer.name,
+        buyerEmail: row.buyer.email,
+        itemName: row.item.name,
+        unitName: row.unit.name,
+        status: row.caseRow.status,
+        submittedAt: row.caseRow.submittedAt.toISOString(),
+        buyerStatement: row.caseRow.buyerStatement,
+        adminRecommendation: row.caseRow.adminRecommendation,
+        adminRecommendationNote: row.caseRow.adminRecommendationNote,
+        hasRecommendation: Boolean(row.caseRow.adminRecommendation),
+        crossUnitSignal: "Riwayat lintas unit tersedia untuk superadmin",
+        incident: {
+          id: row.incident.id,
+          note: row.incident.note,
+          occurredAt: row.incident.createdAt.toISOString(),
+          auctionMode: row.auction.mode,
+          transactionStatus: row.transaction.status,
+          amount: toNullableNumber(row.transaction.amount),
+          paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
+          itemCode: row.item.code,
+          itemCategory: row.item.category,
+          itemCondition: row.item.condition,
+          itemImageUrl: row.media?.url ?? null,
+          itemImageAlt: row.media?.fileName ? `Foto barang ${row.item.name}` : null
+        },
+        attachments: attachments.map((item) => ({
+          id: item.id,
+          fileUrl: item.fileUrl,
+          fileName: item.fileName,
+          mimeType: item.mimeType
+        }))
+      };
+    })
+  );
 }
 
 export async function listSuperadminBlacklistReviewCases() {

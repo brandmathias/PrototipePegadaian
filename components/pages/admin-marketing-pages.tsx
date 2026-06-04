@@ -2599,18 +2599,18 @@ function getCompactCurrencyTextClass(value?: number | null) {
   const digits = getCurrencyDigitCount(value);
 
   if (digits >= 12) {
-    return "text-[0.78rem] sm:text-[0.86rem] 2xl:text-[0.96rem]";
+    return "text-[0.64rem] sm:text-[0.74rem] xl:text-[0.82rem] 2xl:text-[0.9rem]";
   }
 
   if (digits >= 10) {
-    return "text-[0.88rem] sm:text-[0.98rem] 2xl:text-[1.08rem]";
+    return "text-[0.74rem] sm:text-[0.84rem] xl:text-[0.92rem] 2xl:text-[1rem]";
   }
 
   if (digits >= 8) {
-    return "text-[0.98rem] sm:text-[1.08rem] 2xl:text-[1.16rem]";
+    return "text-[0.84rem] sm:text-[0.94rem] xl:text-[1.02rem] 2xl:text-[1.1rem]";
   }
 
-  return "text-[1.12rem] sm:text-[1.25rem]";
+  return "text-[0.98rem] sm:text-[1.08rem] xl:text-[1.16rem]";
 }
 
 function isVickreyPaymentVerified(auction: MarketingSession) {
@@ -4502,7 +4502,7 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {unpaid ? formatOptionalCurrency(highestBid) : "Belum ada bid"}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -4512,7 +4512,7 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">

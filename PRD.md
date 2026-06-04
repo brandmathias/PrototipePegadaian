@@ -2,9 +2,9 @@
 
 ## Prototipe Pegadaian Lelang
 
-**Versi:** 5.1
+**Versi:** 5.2
 **Status:** Living PRD, disesuaikan dengan implementasi saat ini
-**Tanggal pembaruan:** 21 Mei 2026
+**Tanggal pembaruan:** 4 Juni 2026
 **Stack:** Next.js App Router, React, Tailwind CSS, PostgreSQL, Drizzle ORM, Better Auth
 
 ---
@@ -15,13 +15,14 @@ Pegadaian Lelang adalah aplikasi web full-stack untuk mengelola siklus barang ja
 
 Produk ini sudah berkembang dari rancangan katalog sederhana menjadi workspace operasional multi-role:
 
-- Pembeli dapat melihat katalog, membeli fixed price, ikut Vickrey Auction, memantau transaksi, melihat riwayat bid, dan membuka nota.
-- Admin Unit dapat mengelola barang, media foto/video, pemasaran, transaksi, verifikasi pembayaran, riwayat transaksi, dan blacklist/pelanggaran.
-- Super Admin dapat mengelola unit, rekening unit, admin unit, monitoring nasional, dan blacklist global.
+- Pembeli dapat melihat katalog, menyimpan wishlist, membeli fixed price, ikut Vickrey Auction, memantau transaksi, melihat riwayat bid, menerima notifikasi, melihat halaman hasil menang/kalah Vickrey, dan membuka nota.
+- Admin Unit dapat mengelola barang, media foto/video, riwayat aset, pemasaran, transaksi, verifikasi pembayaran, riwayat transaksi, profil akses, dan blacklist/pelanggaran.
+- Super Admin dapat mengelola unit, rekening unit, admin unit, monitoring nasional, blacklist global, antrean review blacklist, dan profil akses nasional.
 
 ### Tujuan Utama
 
 - Menyediakan katalog barang Pegadaian berbasis web dengan media foto/video.
+- Memberikan engagement katalog melalui wishlist buyer, statistik view, jumlah suka, dan jumlah peserta Vickrey.
 - Mendukung dua mode pemasaran: Fixed Price dan Vickrey Auction.
 - Memberikan alur pembayaran yang jelas untuk pembeli dan Admin Unit.
 - Menjaga privasi bid Vickrey sebelum deadline dengan encrypted escrow dan hash integrity.
@@ -60,16 +61,21 @@ Hak akses:
 
 - Melihat katalog dan detail barang.
 - Mencari dan memfilter katalog berdasarkan keyword, kategori, mode, unit, dan rentang harga.
+- Menyukai atau menghapus barang dari wishlist.
+- Membuka halaman Wishlist untuk membandingkan barang tersimpan, melihat barang yang masih tersedia, dan menghapus barang yang tidak lagi diminati.
 - Membeli barang Fixed Price.
 - Memilih metode pembayaran Fixed Price: transfer bank atau bayar langsung.
 - Mengunggah bukti transfer untuk transaksi transfer.
 - Mengikuti Vickrey Auction dengan bid tertutup.
 - Menyetujui syarat konsekuensi pembayaran sebelum submit bid Vickrey.
 - Memantau transaksi dan workflow pembayaran.
+- Melihat halaman pengumuman pemenang Vickrey untuk transaksi yang baru dibuat setelah settlement.
+- Melihat halaman bukan pemenang Vickrey beserta rekomendasi lot aktif lain.
 - Menekan "Pembelian Selesai" setelah pembayaran diverifikasi dan barang/nota diterima.
 - Melihat riwayat bid Vickrey.
 - Melihat verifikasi integritas bid.
 - Mengunduh atau mencetak nota transaksi.
+- Mengajukan bantuan review blacklist dari halaman akun atau bantuan publik sesuai insiden aktif.
 
 ### 2.3 Admin Unit
 
@@ -106,6 +112,7 @@ Hak akses:
 - Melihat daftar blacklist nasional.
 - Melihat antrean review blacklist nasional.
 - Mencabut blacklist lebih awal atau memutus review dengan alasan resmi dan catatan opsional.
+- Membuka profil Super Admin untuk melihat informasi akun, cakupan nasional, dan riwayat akses.
 
 ---
 
@@ -125,10 +132,22 @@ Fitur katalog:
 - Mode badge: Fixed Price atau Vickrey.
 - Harga jual untuk Fixed Price.
 - Harga dasar dan countdown untuk Vickrey.
+- Tombol suka/wishlist untuk buyer yang sudah login.
+- Statistik ringkas lot: jumlah dilihat, jumlah disukai, dan jumlah peserta untuk Vickrey.
 - Search keyword.
 - Filter kategori, mode, unit, dan rentang harga.
-- Sortir daftar barang.
+- Sortir daftar barang berdasarkan terbaru, populer, harga terendah, harga tertinggi, dan lelang yang segera berakhir.
 - Detail barang dengan media gallery, spesifikasi, unit, kondisi, harga, dan CTA sesuai mode.
+
+Engagement katalog dan wishlist:
+
+- Detail lot mencatat view melalui endpoint statistik publik dengan `viewer_key` yang unik per user atau pengunjung anonim.
+- Statistik lot diambil lewat polling ringan agar jumlah view, suka, dan peserta tetap segar tanpa WebSocket.
+- Buyer dapat menyukai lot dari katalog atau detail barang.
+- Wishlist buyer menyimpan relasi unik antara `user_id` dan `pemasaran_id`.
+- Halaman Wishlist menampilkan barang aktif dan barang yang tidak lagi tersedia secara terpisah.
+- Wishlist mendukung filter mode, kategori, kondisi, unit, rentang harga, sortir, tampilan grid/list, dan paginasi.
+- Badge wishlist di navbar buyer menampilkan jumlah barang disukai.
 
 ### 3.2 Buyer Fixed Price
 
@@ -180,9 +199,11 @@ Alur buyer:
 8. Buyer melihat status bid dari Riwayat Bid.
 9. Setelah deadline, backend membuka escrow otomatis dan menentukan pemenang.
 10. Jika buyer menang, sistem membuat transaksi Vickrey bayar langsung di unit.
-11. Buyer datang ke unit untuk pembayaran langsung.
-12. Admin Unit memverifikasi pembayaran.
-13. Buyer menekan "Pembelian Selesai".
+11. Buyer pemenang diarahkan ke halaman pengumuman pemenang sebelum masuk detail transaksi reguler.
+12. Buyer yang tidak menang dapat membuka halaman bukan pemenang dan melihat rekomendasi lot Vickrey aktif lain.
+13. Buyer pemenang datang ke unit untuk pembayaran langsung.
+14. Admin Unit memverifikasi pembayaran.
+15. Buyer menekan "Pembelian Selesai".
 
 Workflow visual buyer Vickrey:
 
@@ -198,6 +219,8 @@ Ketentuan Vickrey:
 - Bid baru memakai encrypted escrow dan hash integrity.
 - Jika terdapat nominal bid tertinggi yang sama, sistem memakai aturan tie-breaker timestamp: bid yang masuk lebih awal menang.
 - Pada kasus tie nominal tertinggi, bid sama yang masuk lebih lambat menjadi runner-up, sehingga harga final Vickrey sama dengan nominal bid tertinggi tersebut.
+- Halaman hasil pemenang hanya tampil untuk transaksi `VICKREY_WIN` yang masih relevan: menunggu pembayaran, menunggu konfirmasi langsung, atau lunas.
+- Halaman hasil bukan pemenang tidak menggantikan riwayat bid, tetapi menjadi halaman fokus untuk menjelaskan hasil dan mendorong buyer melihat lot lain.
 - Form reveal manual tetap ada untuk kompatibilitas bid legacy hash-only, tetapi alur utama baru tidak membutuhkan buyer reveal.
 - Pembayaran Vickrey hanya bayar langsung di unit, tanpa upload bukti transfer.
 
@@ -216,12 +239,20 @@ Fitur:
 - Jadikan barang sebagai jaminan siap dipasarkan.
 - Pasarkan barang ke Fixed Price atau Vickrey.
 - Pasarkan ulang barang gagal.
+- Melihat riwayat kronologi aset dari perubahan status dan perpanjangan jatuh tempo.
 
 Media:
 
 - Media barang disimpan di `media_barang`.
 - Detail katalog dan pemasaran menampilkan media asli barang.
 - Foto utama menggunakan `sort_order = 0`.
+
+Riwayat aset:
+
+- Riwayat status barang disimpan di `riwayat_status_barang`.
+- Riwayat perpanjangan disimpan di `riwayat_perpanjangan`.
+- Halaman riwayat aset Admin Unit hanya menampilkan barang milik unit aktif.
+- Entry riwayat menampilkan barang, kategori, kondisi, pemilik, nomor nasabah, aksi, aktor, waktu, dan catatan operasional.
 
 ### 3.5 Admin Unit: Pemasaran
 
@@ -302,12 +333,28 @@ Isi nota:
 - Unit pengambilan.
 - Syarat dan ketentuan pengambilan barang.
 
+### 3.8 Super Admin Workspace
+
+Super Admin mengelola data lintas unit dan keputusan nasional.
+
+Fitur:
+
+- Dashboard nasional untuk membaca ringkasan unit, admin, transaksi, dan blacklist.
+- Kelola unit Pegadaian dan status aktif unit.
+- Kelola rekening unit, termasuk aturan satu rekening aktif per unit.
+- Kelola akun Admin Unit.
+- Monitoring global untuk melihat aktivitas operasional lintas unit.
+- Blacklist global dan antrean review bantuan buyer.
+- Keputusan review blacklist dengan alasan resmi.
+- Profil Super Admin di `/superadmin/profil` yang memakai workspace profil bersama dengan Admin Unit, tetapi label, cakupan, dan riwayat akses disesuaikan untuk level nasional.
+
 ---
 
 ## 4. State Machine Barang
 
 Status utama barang di database:
 
+- `gadai`
 - `jaminan`
 - `dipasarkan`
 - `menunggu_pembayaran`
@@ -317,7 +364,8 @@ Status utama barang di database:
 
 Catatan implementasi:
 
-- Istilah "gadai" dipakai sebagai konteks bisnis input barang, tetapi status kerja utama setelah barang masuk sistem adalah `jaminan`.
+- `gadai` dipakai untuk barang yang masih berada pada fase gadai awal sebelum dipindahkan menjadi aset jaminan.
+- `jaminan` dipakai untuk barang yang sudah siap masuk proses pemasaran setelah memenuhi aturan operasional.
 - Barang `dipasarkan` tampil di katalog jika ada pemasaran aktif.
 - Barang masuk `menunggu_pembayaran` setelah Vickrey selesai dan pemenang ditentukan.
 - Barang menjadi `terjual` setelah pembayaran diverifikasi dan/atau transaksi selesai.
@@ -327,6 +375,11 @@ Catatan implementasi:
 Alur ringkas:
 
 ```text
+gadai
+  -> gadai setelah diperpanjang
+  -> ditebus
+  -> jaminan
+
 jaminan
   -> ditebus
   -> dipasarkan
@@ -548,15 +601,33 @@ Role utama:
 
 - `buyer`
 - `admin_unit`
-- `superadmin`
+- `super_admin`
 
-### 8.2 Buyer Profile
+Catatan:
+
+- Label UI tetap menggunakan "Super Admin", tetapi nilai role database dan guard aplikasi memakai `super_admin`.
+
+### 8.2 Buyer Profile dan Wishlist
 
 Tabel:
 
 - `buyer_profile`
+- `buyer_wishlist`
 
 Menyimpan data profil buyer seperti nama lengkap, email, nomor HP, NIK, dan status profil.
+
+Field penting `buyer_wishlist`:
+
+- `id`
+- `user_id`
+- `pemasaran_id`
+- `created_at`
+
+Aturan:
+
+- Satu buyer hanya boleh menyimpan satu wishlist untuk satu sesi pemasaran yang sama.
+- Wishlist ikut terhapus jika user atau pemasaran terkait dihapus.
+- Wishlist dipakai sebagai jumlah suka lot dan badge di navbar buyer.
 
 ### 8.3 Unit dan Rekening
 
@@ -589,6 +660,7 @@ Field penting `barang`:
 - `category`
 - `condition`
 - `description`
+- `specifications`
 - `appraisal_value`
 - `loan_value`
 - `owner_name`
@@ -596,18 +668,22 @@ Field penting `barang`:
 - `pawned_at`
 - `due_date`
 - `status`
+- `redeemed_at`
+- `redemption_reference`
 - `created_by_user_id`
 
 Catatan:
 
 - Data nasabah/barang internal tidak boleh bocor ke endpoint publik.
 - Media dapat berupa `foto` atau `video`.
+- Spesifikasi barang disimpan sebagai JSON agar kategori yang berbeda dapat memiliki atribut berbeda.
 
 ### 8.5 Pemasaran
 
 Tabel:
 
 - `pemasaran`
+- `pemasaran_views`
 
 Field penting:
 
@@ -632,6 +708,20 @@ Aturan:
 - Fixed Price memakai `price`.
 - Vickrey memakai `base_price`, `starts_at`, `ends_at`, dan `duration_seconds`.
 - Satu barang hanya boleh punya satu pemasaran aktif.
+
+Field penting `pemasaran_views`:
+
+- `id`
+- `pemasaran_id`
+- `viewer_key`
+- `created_at`
+- `updated_at`
+
+Aturan:
+
+- Kombinasi `pemasaran_id` dan `viewer_key` unik agar satu user/pengunjung tidak dihitung berulang sebagai view baru.
+- Jika viewer yang sama membuka lot lagi, sistem memperbarui `updated_at`.
+- Jumlah view dipakai sebagai bagian dari `LotInsights`, bukan sebagai sumber kebenaran transaksi atau settlement.
 
 ### 8.6 Bids
 
@@ -745,6 +835,7 @@ Aturan:
 | Route | Deskripsi |
 | --- | --- |
 | `/` | Beranda publik. |
+| `/bantuan/blacklist` | Bantuan publik untuk lookup dan pengajuan review blacklist tanpa OTP. |
 | `/katalog` | Katalog barang. |
 | `/katalog/[id]` | Detail barang. |
 | `/katalog/[id]/beli` | Konfirmasi pembelian Fixed Price. |
@@ -757,10 +848,13 @@ Aturan:
 | Route | Deskripsi |
 | --- | --- |
 | `/dashboard` | Dashboard buyer. |
+| `/wishlist` | Daftar barang yang disukai buyer. |
 | `/transaksi` | Daftar transaksi buyer. |
 | `/transaksi/[id]` | Detail pembayaran buyer. |
+| `/transaksi/[id]/pemenang` | Halaman fokus pengumuman pemenang Vickrey. |
 | `/transaksi/[id]/nota` | Nota buyer. |
 | `/riwayat-bid` | Riwayat bid Vickrey. |
+| `/riwayat-bid/[pemasaranId]/bukan-pemenang` | Halaman fokus untuk buyer yang tidak menang Vickrey. |
 | `/riwayat-bid/[pemasaranId]/verifikasi` | Verifikasi integritas bid. |
 | `/profil` | Profil buyer. |
 
@@ -770,6 +864,7 @@ Aturan:
 | --- | --- |
 | `/admin` | Dashboard admin unit. |
 | `/admin/barang` | Daftar barang unit. |
+| `/admin/barang/riwayat` | Riwayat kronologi aset unit. |
 | `/admin/barang/tambah` | Tambah barang. |
 | `/admin/barang/[id]` | Detail barang. |
 | `/admin/barang/[id]/edit` | Edit barang. |
@@ -804,8 +899,17 @@ Aturan:
 | `/superadmin/admin` | Kelola admin unit. |
 | `/superadmin/monitoring` | Monitoring global. |
 | `/superadmin/blacklist` | Blacklist global dan antrean keputusan review. |
+| `/superadmin/profil` | Profil dan riwayat akses Super Admin. |
 
-### 9.5 API Buyer
+### 9.5 API Public dan Auth
+
+| Method | Route | Deskripsi |
+| --- | --- | --- |
+| `GET` | `/api/auth/me` | Ambil session user aktif untuk kebutuhan client. |
+| `POST` | `/api/auth/logout` | Logout aplikasi. |
+| `GET/POST` | `/api/public/lots/[pemasaranId]/stats` | Ambil statistik lot dan catat view unik. |
+
+### 9.6 API Buyer
 
 | Method | Route | Deskripsi |
 | --- | --- | --- |
@@ -818,6 +922,7 @@ Aturan:
 | `POST` | `/api/user/transaksi/[id]/selesai` | Buyer menutup transaksi sebagai selesai. |
 | `GET` | `/api/user/riwayat-bid` | Riwayat bid buyer. |
 | `PUT` | `/api/user/profil` | Perbarui profil buyer. |
+| `POST/DELETE` | `/api/user/wishlist/[pemasaranId]` | Tambah/hapus lot dari wishlist buyer. |
 | `GET` | `/api/user/notifikasi` | List notifikasi buyer, mendukung filter unread. |
 | `GET` | `/api/user/notifikasi/unread-count` | Jumlah notifikasi belum dibaca. |
 | `PATCH` | `/api/user/notifikasi/[id]` | Tandai satu notifikasi sebagai dibaca. |
@@ -825,7 +930,7 @@ Aturan:
 | `GET/POST` | `/api/user/blacklist-review` | List dan kirim bantuan review blacklist buyer. |
 | `POST` | `/api/public/blacklist-help` | Lookup publik dan pengajuan bantuan review tanpa OTP. |
 
-### 9.6 API Admin Unit
+### 9.7 API Admin Unit
 
 | Method | Route | Deskripsi |
 | --- | --- | --- |
@@ -850,7 +955,7 @@ Aturan:
 | `POST` | `/api/admin/blacklist/[userId]/perpanjang` | Perpanjang blacklist. |
 | `POST` | `/api/admin/blacklist-review/[caseId]` | Simpan rekomendasi admin unit untuk case review. |
 
-### 9.7 API Super Admin
+### 9.8 API Super Admin
 
 | Method | Route | Deskripsi |
 | --- | --- | --- |
@@ -865,7 +970,7 @@ Aturan:
 | `POST` | `/api/superadmin/blacklist/[userId]/cabut` | Cabut blacklist. |
 | `POST` | `/api/superadmin/blacklist-review/[caseId]` | Putuskan review blacklist dengan alasan resmi. |
 
-### 9.8 API Cron
+### 9.9 API Cron
 
 | Method | Route | Deskripsi |
 | --- | --- | --- |
@@ -932,6 +1037,17 @@ Aturan:
 - Jika user mengubah tanggal/jam device, countdown tidak boleh langsung meloncat ke expired; keputusan final tetap mengikuti timestamp backend.
 - Backend/cron tetap menjadi sumber kebenaran untuk deadline Vickrey, settlement pemenang, batas pembayaran 24 jam, dan blacklist.
 
+### 10.7 Wishlist dan Statistik Lot
+
+- Wishlist hanya dapat dimutasi oleh buyer yang login.
+- Guest dapat melihat statistik lot, tetapi tidak dapat menyimpan wishlist.
+- Kombinasi buyer dan pemasaran pada wishlist harus unik.
+- Lot yang sudah tidak aktif tetap boleh muncul di halaman Wishlist sebagai barang tidak tersedia agar buyer memahami alasan barang hilang dari katalog.
+- Statistik view memakai `viewer_key` agar kunjungan berulang dari viewer yang sama tidak menambah hitungan secara berlebihan.
+- Statistik suka dihitung dari `buyer_wishlist`.
+- Statistik peserta Vickrey dihitung dari jumlah bid pada sesi pemasaran.
+- Statistik engagement bersifat informatif dan tidak boleh mempengaruhi winner settlement, harga final, blacklist, atau status transaksi.
+
 ---
 
 ## 11. Security dan Privacy
@@ -939,11 +1055,13 @@ Aturan:
 | Area | Ketentuan |
 | --- | --- |
 | Auth | Menggunakan Better Auth dan session cookie. |
-| Role guard | Halaman dan API memeriksa role buyer, admin_unit, atau superadmin. |
+| Role guard | Halaman dan API memeriksa role `buyer`, `admin_unit`, atau `super_admin`. |
 | Isolasi unit | Query Admin Unit harus selalu difilter berdasarkan unit dari session. |
 | Public data | Endpoint publik tidak boleh mengembalikan data internal nasabah/penggadai. |
 | Vickrey privacy | Nominal bid tidak disimpan sebagai plaintext sebelum deadline. |
 | Vickrey integrity | Hash integrity mengikat pemasaran, user, nominal, dan salt. |
+| Wishlist | Mutasi wishlist hanya dilakukan dengan `user_id` dari session buyer, bukan input client. |
+| Lot insights | Endpoint statistik lot hanya mengembalikan agregat view/suka/peserta dan tidak membuka identitas viewer atau bidder. |
 | Upload | File media dan bukti harus divalidasi ukuran/tipe dan disimpan dengan nama aman. |
 | Cron | Endpoint cron dilindungi secret bearer token. |
 | Notifikasi | Endpoint notifikasi buyer hanya boleh membaca/mutasi data milik session buyer. |
@@ -966,22 +1084,37 @@ Aturan:
 
 ### 12.2 Buyer
 
-- Navbar publik menyediakan Beranda, Katalog, Transaksi, notifikasi, profil, dan logout.
+- Navbar publik menyediakan Beranda, Katalog, Transaksi, Wishlist, notifikasi, profil, dan logout.
+- Wishlist di navbar menampilkan badge jumlah barang disukai.
 - Bell notifikasi buyer menampilkan badge unread dari database dan refresh berkala dengan polling ringan.
 - Membuka panel notifikasi tidak otomatis menandai semua dibaca; buyer harus klik notifikasi atau tombol tandai dibaca.
 - Detail barang memakai media gallery seperti katalog.
+- Katalog dan wishlist mendukung filter visual, rentang harga, sortir, tampilan grid/list, serta statistik view/suka/peserta.
+- Detail barang menampilkan tombol wishlist dan statistik lot dengan polling ringan.
 - Detail pembayaran menampilkan workflow 3 tahap.
+- Halaman pemenang Vickrey memakai tampilan fokus agar buyer memahami harga final, batas pembayaran 24 jam, dan instruksi datang ke unit.
+- Halaman bukan pemenang Vickrey memakai tampilan fokus dan rekomendasi lot aktif lain.
 - Riwayat bid menampilkan status: bid tercatat, menunggu hasil, menang, tidak menang, gagal.
 - Nota harus menarik, informatif, dan print-friendly.
 
 ### 12.3 Admin Unit
 
-- Sidebar menampilkan Dashboard, Kelola Barang, Pemasaran, Transaksi, Pelanggaran/Blacklist, Profil, Bantuan, Keluar.
+- Sidebar Admin Unit saat ini menampilkan Dashboard, Kelola Barang, Pemasaran, Pelanggaran/Blacklist, dan Riwayat Barang.
+- Profil, Bantuan, dan Keluar diakses dari dropdown profil header.
 - Pemasaran memiliki subnav Fixed Price dan Vickrey Auction.
 - Transaksi memiliki subnav Verifikasi Pembayaran dan Riwayat.
 - Detail transaksi harus menghindari layout berantakan, overflow email, dan card terlalu besar.
 - Riwayat transaksi harus list per baris dengan CTA "Lihat detail".
 - Jika transaksi selesai, tampilkan "Selesai" untuk deadline/batas pembayaran, bukan countdown yang terus berjalan.
+- Kelola Barang menyediakan halaman Riwayat untuk membaca kronologi aset, status, perpanjangan, aktor, dan catatan.
+- Profil Admin Unit menggunakan workspace profil dengan panel edit, informasi unit, keamanan, dan riwayat akses.
+
+### 12.4 Super Admin
+
+- Sidebar Super Admin menampilkan Dashboard Global, Unit & Rekening, Admin Unit, Monitoring Nasional, dan Blacklist Global.
+- Profil, Bantuan, dan Keluar diakses dari dropdown profil header.
+- Header Super Admin memakai dropdown profil yang sama dengan Admin Unit, tetapi label role tampil sebagai "Super Admin".
+- Profil Super Admin memakai komponen workspace profil yang sama, dengan copy area kerja nasional, cakupan lintas unit, dan riwayat akses superadmin.
 
 ---
 
@@ -1021,6 +1154,9 @@ Aturan:
 
 - Guest dapat membuka katalog dan detail barang.
 - Buyer dapat mencari/filter barang.
+- Buyer dapat menyukai dan menghapus suka pada lot dari katalog atau detail barang.
+- Buyer dapat membuka Wishlist dan melihat barang aktif maupun tidak tersedia.
+- Statistik lot menampilkan jumlah dilihat, disukai, dan peserta Vickrey tanpa membuka identitas user.
 - Barang yang sudah selesai/terjual tidak muncul di katalog.
 - Media asli barang tampil di katalog, detail, transaksi, dan nota.
 
@@ -1041,8 +1177,18 @@ Aturan:
 - Cron membuka escrow otomatis setelah deadline.
 - Sistem membuat transaksi bayar langsung untuk pemenang.
 - Buyer pemenang menerima notifikasi in-app dan diarahkan ke detail transaksi pembayaran.
+- Buyer pemenang yang memenuhi status pengumuman diarahkan ke halaman `/transaksi/[id]/pemenang`.
+- Buyer yang tidak menang dapat membuka halaman `/riwayat-bid/[pemasaranId]/bukan-pemenang`.
 - Buyer menerima notifikasi saat pembayaran diverifikasi, ditolak, deadline hampir habis, blacklist aktif, bantuan review terkirim, atau keputusan review sudah final.
 - Jika pemenang tidak membayar 24 jam, sistem mencatat pelanggaran dan blacklist.
+
+### Admin Unit dan Super Admin
+
+- Admin Unit dapat membuka riwayat barang unit dan melihat kronologi status/perpanjangan yang terurut terbaru.
+- Admin Unit dapat membuka profil admin unit dari dropdown profil header.
+- Super Admin dapat membuka `/superadmin/profil` dari dropdown profil header.
+- Dropdown profil Super Admin menampilkan label role "Super Admin", link profil, link bantuan, dan logout.
+- Super Admin tetap dapat mengelola unit, rekening unit, admin unit, monitoring, blacklist global, dan review blacklist.
 
 ### Blacklist
 
@@ -1062,6 +1208,9 @@ Aturan:
 | Pemasaran | Proses publikasi barang ke katalog sebagai Fixed Price atau Vickrey. |
 | Fixed Price | Penjualan dengan harga tetap. |
 | Vickrey Auction | Lelang tertutup, pemenang bid tertinggi membayar harga bid tertinggi kedua. |
+| Wishlist | Daftar barang yang disukai buyer untuk dibandingkan atau dibuka ulang. |
+| Lot Insights | Statistik agregat lot seperti jumlah view, suka, dan peserta Vickrey. |
+| Viewer Key | Identitas teknis terbatas untuk menghitung view unik tanpa membuka data pribadi di endpoint publik. |
 | Encrypted Escrow | Nominal bid disimpan terenkripsi sampai deadline. |
 | Hash Integrity | Bukti kriptografis untuk memastikan nominal dan salt tidak berubah. |
 | Reveal Legacy | Alur lama untuk bid hash-only yang membutuhkan buyer membuka nominal setelah deadline. |
