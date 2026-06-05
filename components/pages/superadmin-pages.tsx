@@ -15,12 +15,14 @@ import {
   Landmark,
   ListChecks,
   Package,
+  PieChart,
   Plus,
   SearchX,
   Shield,
   ShieldAlert,
   ShieldCheck,
   ShieldBan,
+  TrendingDown,
   TrendingUp,
   type LucideIcon,
   UserCog,
@@ -164,6 +166,22 @@ export type SuperAdminValidatedTrendPoint = {
   volume?: number;
 };
 
+export type SuperAdminValidatedTrendRangeKey = "week" | "month" | "year";
+
+export type SuperAdminValidatedTrendRange = {
+  label: string;
+  points: SuperAdminValidatedTrendPoint[];
+  summary: {
+    averageAmount: number;
+    dominantMode: string;
+    dominantPercent: number;
+    fixedPriceAmount: number;
+    totalAmount: number;
+    transactionCount: number;
+    vickreyAmount: number;
+  };
+};
+
 export type SuperAdminComplianceLevel = {
   label: string;
   description: string;
@@ -178,6 +196,7 @@ export type SuperAdminMonitoringUnitRow = {
   collateralItems: number;
   marketedItems: number;
   soldItems: number;
+  validatedTransactionValue?: number;
   followUpItems: number;
   heldTransactions: number;
   activeViolations: number;
@@ -190,6 +209,10 @@ export type SuperAdminMonitoringData = {
     snapshot: SuperAdminGovernanceSnapshotItem[];
     lifecycle: SuperAdminLifecycleItem[];
     validatedTrend: SuperAdminValidatedTrendPoint[];
+    validatedTrendRanges?: Record<
+      SuperAdminValidatedTrendRangeKey,
+      SuperAdminValidatedTrendRange
+    >;
     complianceLevels?: SuperAdminComplianceLevel[];
     validatedTransactionValueLabel?: string;
   };
@@ -502,28 +525,23 @@ function formatCompactCurrency(value: number) {
 const SUPERADMIN_DASHBOARD_HERO_IMAGE =
   "/uploads/superadmin-dashboard/hero.png";
 const dashboardNumberFormatter = new Intl.NumberFormat("id-ID");
-const dashboardMonthLabels = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "Mei",
-  "Jun",
-  "Jul",
-  "Agu",
-  "Sep",
-  "Okt",
-  "Nov",
-  "Des",
-] as const;
 const dashboardChartWidth = 760;
-const dashboardChartHeight = 264;
+const dashboardChartHeight = 230;
 const dashboardChartFrame = {
-  top: 34,
-  right: 668,
-  bottom: 204,
+  top: 36,
+  right: 666,
+  bottom: 184,
   left: 76,
 };
+const dashboardChartTickCount = 4;
+const dashboardTrendRangeOptions: Array<{
+  key: SuperAdminValidatedTrendRangeKey;
+  label: string;
+}> = [
+  { key: "week", label: "Minggu Ini" },
+  { key: "month", label: "Bulan Ini" },
+  { key: "year", label: "Tahun Ini" },
+];
 
 type SuperAdminDashboardCard = {
   label: string;
@@ -534,6 +552,26 @@ type SuperAdminDashboardCard = {
 
 function formatDashboardCount(value: number) {
   return dashboardNumberFormatter.format(value);
+}
+
+function formatFullCurrency(value: number) {
+  return `Rp ${Math.round(value).toLocaleString("id-ID")}`;
+}
+
+function formatLeaderboardCurrency(value: number) {
+  if (value >= 1_000_000_000) {
+    return `Rp ${(value / 1_000_000_000).toLocaleString("id-ID", {
+      maximumFractionDigits: 1,
+    })} M`;
+  }
+
+  if (value >= 1_000_000) {
+    return `Rp ${(value / 1_000_000).toLocaleString("id-ID", {
+      maximumFractionDigits: 1,
+    })} Jt`;
+  }
+
+  return `Rp ${Math.round(value).toLocaleString("id-ID")}`;
 }
 
 function findMetric(metrics: SuperAdminMetric[], label: string) {
@@ -576,37 +614,119 @@ function getTrendVolume(point: SuperAdminValidatedTrendPoint) {
   return Number(point.volume ?? point.count ?? 0);
 }
 
-function buildChartTicks(maxValue: number, steps = 4) {
-  const safeMax = Math.max(maxValue, 1);
-  return Array.from({ length: steps + 1 }, (_, index) => {
-    const value = Math.round((safeMax / steps) * index);
-    const ratio = value / safeMax;
+function summarizeDashboardTrend(points: SuperAdminValidatedTrendPoint[]) {
+  const totalAmount = points.reduce(
+    (sum, point) => sum + Number(point.amount ?? 0),
+    0,
+  );
+  const transactionCount = points.reduce(
+    (sum, point) => sum + getTrendVolume(point),
+    0,
+  );
+  const vickreyAmount = points.reduce(
+    (sum, point) => sum + getTrendVickreyAmount(point),
+    0,
+  );
+  const fixedPriceAmount = points.reduce(
+    (sum, point) => sum + getTrendFixedPriceAmount(point),
+    0,
+  );
+  const dominantMode =
+    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+  const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
+  const modeTotal = vickreyAmount + fixedPriceAmount;
+
+  return {
+    averageAmount: transactionCount > 0 ? totalAmount / transactionCount : 0,
+    dominantMode,
+    dominantPercent:
+      modeTotal > 0 ? Math.round((dominantAmount / modeTotal) * 100) : 0,
+    fixedPriceAmount,
+    totalAmount,
+    transactionCount,
+    vickreyAmount,
+  };
+}
+
+function clampChartValue(value: number, maxValue: number) {
+  return Math.min(Math.max(value, 0), maxValue);
+}
+
+function getNiceAmountAxisMax(value: number) {
+  const valueInMillions = Math.max(value / 1_000_000, 1);
+  const rawStep = valueInMillions / dashboardChartTickCount;
+  const exponent = Math.floor(Math.log10(rawStep));
+  const base = 10 ** exponent;
+  const ratio = rawStep / base;
+  const factor =
+    ratio <= 1
+      ? 1
+      : ratio <= 2
+        ? 2
+        : ratio <= 2.5
+          ? 2.5
+          : ratio <= 5
+            ? 5
+            : ratio <= 7.5
+              ? 7.5
+              : 10;
+  const stepInMillions = factor * base;
+
+  return stepInMillions * dashboardChartTickCount * 1_000_000;
+}
+
+function buildChartTicks({
+  formatter,
+  maxValue,
+}: {
+  formatter: (value: number) => string;
+  maxValue: number;
+}) {
+  return Array.from({ length: dashboardChartTickCount + 1 }, (_, index) => {
+    const value = (maxValue / dashboardChartTickCount) * index;
+    const ratio = value / maxValue;
     const y =
       dashboardChartFrame.bottom -
       ratio * (dashboardChartFrame.bottom - dashboardChartFrame.top);
 
-    return { value, y };
+    return {
+      displayValue: formatter(value),
+      value,
+      y,
+    };
   });
 }
 
-function formatChartAmountTick(value: number) {
-  if (value >= 1_000_000) {
-    return `${Math.round(value / 1_000_000)}`;
-  }
-
-  if (value >= 1_000) {
-    return `${Math.round(value / 1_000)}`;
-  }
-
-  return `${value}`;
+function formatAmountTick(value: number) {
+  return Math.round(value / 1_000_000).toLocaleString("id-ID");
 }
 
-function getMonthRangeLabel(value: Date) {
-  const firstDate = `01 ${dashboardMonthLabels[value.getMonth()]}`;
-  const lastDate = new Date(value.getFullYear(), value.getMonth() + 1, 0);
-  const lastDay = String(lastDate.getDate()).padStart(2, "0");
+function makeBottomRoundedRectPath({
+  height,
+  radius,
+  width,
+  x,
+  y,
+}: {
+  height: number;
+  radius: number;
+  width: number;
+  x: number;
+  y: number;
+}) {
+  const r = Math.min(radius, width / 2, height);
+  const right = x + width;
+  const bottom = y + height;
 
-  return `${firstDate} - ${lastDay} ${dashboardMonthLabels[value.getMonth()]}`;
+  return [
+    `M ${x} ${y}`,
+    `L ${right} ${y}`,
+    `L ${right} ${bottom - r}`,
+    `Q ${right} ${bottom} ${right - r} ${bottom}`,
+    `L ${x + r} ${bottom}`,
+    `Q ${x} ${bottom} ${x} ${bottom - r}`,
+    "Z",
+  ].join(" ");
 }
 
 function getDashboardCardToneClasses(tone: SuperAdminDashboardCard["tone"]) {
@@ -625,14 +745,14 @@ function getDashboardCardToneClasses(tone: SuperAdminDashboardCard["tone"]) {
 
 function getComplianceToneClasses(tone: SuperAdminComplianceLevel["tone"]) {
   if (tone === "red") {
-    return { dot: "bg-[#dc2626]", bar: "bg-[#dc2626]" };
+    return { dot: "bg-[#ef4444]", rail: "bg-[#ef4444]" };
   }
 
   if (tone === "orange") {
-    return { dot: "bg-[#f97316]", bar: "bg-[#f97316]" };
+    return { dot: "bg-[#f97316]", rail: "bg-[#f97316]" };
   }
 
-  return { dot: "bg-[#f59e0b]", bar: "bg-[#f59e0b]" };
+  return { dot: "bg-[#f59e0b]", rail: "bg-[#f59e0b]" };
 }
 
 export function SuperAdminDashboardPage({
@@ -644,14 +764,48 @@ export function SuperAdminDashboardPage({
   const [chartVisibility, setChartVisibility] = useState({
     vickrey: true,
     fixedPrice: true,
-    volume: true,
   });
-  const dashboardNow = serverNow ? new Date(serverNow) : new Date();
+  const [activeTrendRange, setActiveTrendRange] =
+    useState<SuperAdminValidatedTrendRangeKey>("year");
+  const [activeTrendIndex, setActiveTrendIndex] = useState<number | null>(null);
   const snapshotItems = governance?.snapshot ?? [];
-  const trendPoints =
+  const yearTrendPoints =
     governance?.validatedTrend?.length === 12
       ? governance.validatedTrend
       : governance?.validatedTrend ?? [];
+  const fallbackTrendRange = {
+    label: "Tahun Ini",
+    points: yearTrendPoints,
+    summary: summarizeDashboardTrend(yearTrendPoints),
+  };
+  const trendRanges =
+    governance?.validatedTrendRanges ??
+    ({
+      week: { ...fallbackTrendRange, label: "Minggu Ini" },
+      month: { ...fallbackTrendRange, label: "Bulan Ini" },
+      year: fallbackTrendRange,
+    } satisfies Record<
+      SuperAdminValidatedTrendRangeKey,
+      SuperAdminValidatedTrendRange
+    >);
+  const activeTrendRangeData =
+    trendRanges[activeTrendRange] ?? trendRanges.year ?? fallbackTrendRange;
+  const trendPoints = activeTrendRangeData.points;
+  const trendSummary =
+    activeTrendRangeData.summary ?? summarizeDashboardTrend(trendPoints);
+  const currentPeriodAmount = Number(trendSummary.totalAmount ?? 0);
+  const currentPeriodVolume = Number(trendSummary.transactionCount ?? 0);
+  const currentPeriodVickrey = Number(trendSummary.vickreyAmount ?? 0);
+  const currentPeriodFixedPrice = Number(trendSummary.fixedPriceAmount ?? 0);
+  const currentPeriodAverage = Number(trendSummary.averageAmount ?? 0);
+  const currentPeriodDominantMode =
+    trendSummary.dominantMode ??
+    (currentPeriodVickrey >= currentPeriodFixedPrice
+      ? "Vickrey Auction"
+      : "Fixed Price");
+  const currentPeriodDominantPercent = Number(
+    trendSummary.dominantPercent ?? 0,
+  );
   const activeUnitMetric = findMetric(summary.metrics, "Unit Aktif");
   const activeViolationSpotlight = findSpotlight(
     summary.spotlight,
@@ -662,27 +816,6 @@ export function SuperAdminDashboardPage({
     snapshotItems,
     "Nilai Transaksi Tervalidasi",
   );
-  const currentMonthPoint =
-    trendPoints[dashboardNow.getMonth()] ?? trendPoints[trendPoints.length - 1];
-  const currentMonthAmount = Number(currentMonthPoint?.amount ?? 0);
-  const currentMonthVolume = getTrendVolume(currentMonthPoint ?? { label: "", amount: 0, count: 0 });
-  const currentMonthVickrey = getTrendVickreyAmount(
-    currentMonthPoint ?? { label: "", amount: 0, count: 0 },
-  );
-  const currentMonthFixedPrice = getTrendFixedPriceAmount(
-    currentMonthPoint ?? { label: "", amount: 0, count: 0 },
-  );
-  const modeTotal = currentMonthVickrey + currentMonthFixedPrice;
-  const dominantMode =
-    currentMonthVickrey >= currentMonthFixedPrice
-      ? "Vickrey Auction"
-      : "Fixed Price";
-  const dominantAmount =
-    currentMonthVickrey >= currentMonthFixedPrice
-      ? currentMonthVickrey
-      : currentMonthFixedPrice;
-  const dominantPercent =
-    modeTotal > 0 ? Math.round((dominantAmount / modeTotal) * 100) : 0;
   const maxVisibleAmount = Math.max(
     ...trendPoints.map((point) => {
       const vickreyAmount = chartVisibility.vickrey
@@ -696,32 +829,43 @@ export function SuperAdminDashboardPage({
     }),
     1,
   );
-  const maxVisibleVolume = Math.max(
-    ...trendPoints.map((point) =>
-      chartVisibility.volume ? getTrendVolume(point) : 0,
-    ),
-    1,
-  );
-  const amountTicks = buildChartTicks(maxVisibleAmount);
-  const volumeTicks = buildChartTicks(maxVisibleVolume);
+  const amountAxisMax = getNiceAmountAxisMax(maxVisibleAmount);
+  const amountTicks = buildChartTicks({
+    formatter: formatAmountTick,
+    maxValue: amountAxisMax,
+  });
   const slotWidth =
     (dashboardChartFrame.right - dashboardChartFrame.left) /
     Math.max(trendPoints.length, 1);
-  const linePoints = chartVisibility.volume
-    ? trendPoints
-        .map((point, index) => {
-          const x = dashboardChartFrame.left + slotWidth * index + slotWidth / 2;
-          const y =
-            dashboardChartFrame.bottom -
-            (getTrendVolume(point) / maxVisibleVolume) *
-              (dashboardChartFrame.bottom - dashboardChartFrame.top);
-          return `${x},${y}`;
-        })
-        .join(" ")
-    : "";
+  const chartHeight = dashboardChartFrame.bottom - dashboardChartFrame.top;
+  const chartPoints = trendPoints.map((point, index) => {
+    const x = dashboardChartFrame.left + slotWidth * index + slotWidth / 2;
+    const volume = getTrendVolume(point);
+    const vickreyAmount = chartVisibility.vickrey
+      ? getTrendVickreyAmount(point)
+      : 0;
+    const fixedPriceAmount = chartVisibility.fixedPrice
+      ? getTrendFixedPriceAmount(point)
+      : 0;
+    const totalAmount = vickreyAmount + fixedPriceAmount;
+    const y =
+      dashboardChartFrame.bottom -
+      (clampChartValue(totalAmount, amountAxisMax) / amountAxisMax) *
+        chartHeight;
+
+    return {
+      ...point,
+      leftPercent: (x / dashboardChartWidth) * 100,
+      topPercent: (y / dashboardChartHeight) * 100,
+      totalAmount,
+      x,
+      volume,
+    };
+  });
+  const activeTrendPoint =
+    activeTrendIndex !== null ? chartPoints[activeTrendIndex] : null;
   const averageTransaction =
-    currentMonthVolume > 0 ? currentMonthAmount / currentMonthVolume : 0;
-  const trendPeriodLabel = getMonthRangeLabel(dashboardNow);
+    currentPeriodVolume > 0 ? currentPeriodAverage : 0;
   const dashboardCards: SuperAdminDashboardCard[] = [
     {
       label: "Unit Aktif Nasional",
@@ -746,20 +890,27 @@ export function SuperAdminDashboardPage({
       value:
         governance?.validatedTransactionValueLabel ??
         validatedSnapshot?.value ??
-        formatCompactCurrency(currentMonthAmount),
+        formatCompactCurrency(currentPeriodAmount),
       icon: WalletCards,
       tone: "green",
     },
   ];
   const complianceLevels = governance?.complianceLevels ?? [];
-  const maxComplianceCount = Math.max(
-    ...complianceLevels.map((level) => level.count),
-    1,
-  );
-  const leaderboardRows = [...unitRows]
+  const topTransactionUnitRows = [...unitRows]
     .sort(
       (left, right) =>
+        Number(right.validatedTransactionValue ?? 0) -
+          Number(left.validatedTransactionValue ?? 0) ||
         right.soldItems - left.soldItems ||
+        left.unitName.localeCompare(right.unitName),
+    )
+    .slice(0, 3);
+  const bottomTransactionUnitRows = [...unitRows]
+    .sort(
+      (left, right) =>
+        Number(left.validatedTransactionValue ?? 0) -
+          Number(right.validatedTransactionValue ?? 0) ||
+        left.soldItems - right.soldItems ||
         left.unitName.localeCompare(right.unitName),
     )
     .slice(0, 3);
@@ -769,7 +920,7 @@ export function SuperAdminDashboardPage({
       <section className="-mx-4 -mt-5 overflow-visible border-b border-[#eef3f0] bg-white sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8">
         <p className="sr-only">Dashboard Nasional</p>
         <p className="sr-only">Superadmin Nasional</p>
-        <div className="relative h-[12.5rem] overflow-hidden bg-[#f8fbfc] sm:h-[14.25rem] lg:h-[15.25rem]">
+        <div className="relative h-[16.5rem] overflow-hidden bg-[#f8fbfc] sm:h-[17.75rem] lg:h-[18.5rem]">
           <Image
             alt="Gedung Pegadaian untuk Dashboard Nasional Superadmin"
             className="pointer-events-none object-cover object-center"
@@ -780,11 +931,30 @@ export function SuperAdminDashboardPage({
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,rgba(255,255,255,0.96)_24%,rgba(255,255,255,0.58)_49%,rgba(255,255,255,0.05)_100%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_86%,#ffffff_100%)]" />
+          <div className="relative z-[1] flex h-full items-start px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
+            <div className="max-w-[45rem]">
+              <p className="text-[0.84rem] font-black leading-none text-[#17221d] sm:text-[0.9rem]">
+                Selamat datang kembali,
+              </p>
+              <h1 className="mt-2 font-headline text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
+                Halo, Superadmin Nasional
+              </h1>
+              <p className="mt-4 max-w-[39rem] text-[0.98rem] font-semibold leading-7 text-[#647067] sm:text-[1.05rem]">
+                Anda siap memantau kinerja unit, meninjau pelanggaran, dan
+                mengendalikan keputusan lintas cabang dari satu pusat kendali
+                yang ringkas.
+              </p>
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#cfe2d8] bg-white/78 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#07593f] shadow-[0_18px_38px_-34px_rgba(15,23,42,0.38)]">
+                <ShieldCheck aria-hidden="true" className="size-4" strokeWidth={2} />
+                Akses Superadmin
+              </div>
+            </div>
+          </div>
         </div>
 
         <section
           aria-label="Snapshot Nasional"
-          className="relative z-[1] -mt-[4.35rem] px-4 pb-5 sm:-mt-[4.55rem] sm:px-6 lg:-mt-[4.85rem] lg:px-8"
+          className="relative z-[1] -mt-[1.1rem] px-4 pb-6 sm:-mt-[1.3rem] sm:px-6 lg:-mt-[1.55rem] lg:px-8"
         >
           <p className="sr-only">Snapshot Nasional</p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:gap-4">
@@ -823,304 +993,368 @@ export function SuperAdminDashboardPage({
         </section>
       </section>
 
-      <section className="overflow-hidden rounded-[1.6rem] border border-[#d9e7df] bg-white shadow-[0_24px_70px_-58px_rgba(8,69,50,0.34)]">
-        <div className="grid lg:grid-cols-[0.24fr_0.76fr]">
-          <aside className="border-b border-[#edf2ee] bg-white p-5 sm:p-6 lg:border-b-0 lg:border-r lg:p-7">
-            <p className="font-headline text-[0.98rem] font-black text-[#17221d]">
-              Performa Bulan Ini
+      <section className="relative rounded-[1.05rem] border border-[#dce6e1] bg-white px-4 py-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.24)] sm:px-5 sm:py-5">
+        <div className="grid gap-3 xl:grid-cols-[0.27fr_0.33fr_0.4fr] xl:items-center">
+          <h2 className="font-headline text-[1.05rem] font-black leading-tight text-[#17221d] sm:text-[1.18rem]">
+            Tren Nilai Transaksi Tervalidasi
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-5 text-[0.7rem] font-black text-[#3f4f48] xl:justify-center">
+            <button
+              aria-pressed={chartVisibility.vickrey}
+              className={`inline-flex items-center gap-2 rounded-md px-1.5 py-1 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5f8f6] active:scale-[0.98] ${
+                chartVisibility.vickrey ? "opacity-100" : "opacity-40"
+              }`}
+              onClick={() =>
+                setChartVisibility((current) => ({
+                  ...current,
+                  vickrey: !current.vickrey,
+                }))
+              }
+              type="button"
+            >
+              <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+              Vickrey Auction (Rp)
+            </button>
+            <button
+              aria-pressed={chartVisibility.fixedPrice}
+              className={`inline-flex items-center gap-2 rounded-md px-1.5 py-1 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5f8f6] active:scale-[0.98] ${
+                chartVisibility.fixedPrice ? "opacity-100" : "opacity-40"
+              }`}
+              onClick={() =>
+                setChartVisibility((current) => ({
+                  ...current,
+                  fixedPrice: !current.fixedPrice,
+                }))
+              }
+              type="button"
+            >
+              <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+              Fixed Price (Rp)
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+            {dashboardTrendRangeOptions.map((option) => {
+              const active = activeTrendRange === option.key;
+
+              return (
+                <button
+                  aria-pressed={active}
+                  className={`inline-flex min-w-[5.9rem] items-center justify-center rounded-[0.82rem] border px-3 py-2 text-[0.76rem] font-black transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
+                    active
+                      ? "border-[#179353] bg-[linear-gradient(180deg,#1a9b56,#13844a)] text-white shadow-[0_16px_32px_-22px_rgba(19,132,74,0.65)]"
+                      : "border-[#ebeeea] bg-white text-[#2a352f] shadow-[0_10px_24px_-22px_rgba(15,23,42,0.34)] hover:border-[#d7e4da] hover:bg-[#fbfcfb]"
+                  }`}
+                  key={option.key}
+                  onClick={() => {
+                    setActiveTrendRange(option.key);
+                    setActiveTrendIndex(null);
+                  }}
+                  type="button"
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-5 lg:grid-cols-[0.29fr_0.71fr] lg:gap-6">
+          <aside className="space-y-4 border-b border-[#edf2ee] pb-4 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+            <p className="font-headline text-[0.88rem] font-black text-[#17221d]">
+              Performa {activeTrendRangeData.label}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <p className="font-headline text-[2.15rem] font-black leading-none text-[#006747]">
-                {formatCompactCurrency(currentMonthAmount)}
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-headline text-[1.95rem] font-black leading-none text-[#00563b] sm:text-[2.2rem]">
+                {formatFullCurrency(currentPeriodAmount)}
               </p>
-              <span className="rounded-full bg-[#e7f5ed] px-3 py-1 text-xs font-black text-[#006747]">
-                {formatDashboardCount(currentMonthVolume)} transaksi
+              <span className="rounded-full bg-[#dff5e7] px-2.5 py-1 text-xs font-black text-[#006747]">
+                {formatDashboardCount(currentPeriodVolume)} transaksi
               </span>
             </div>
-            <p className="mt-3 text-sm font-semibold leading-6 text-[#647067]">
-              {trendPeriodLabel}
-            </p>
+            <div className="h-px bg-[#e8eeea]" />
 
-            <dl className="mt-7 grid gap-4 text-sm">
-              <div>
-                <dt className="font-semibold text-[#647067]">
-                  Rata-rata Transaksi
-                </dt>
-                <dd className="mt-1 font-headline text-lg font-black text-[#17221d]">
-                  {formatCompactCurrency(averageTransaction)}
-                </dd>
+            <dl className="grid gap-3 text-sm">
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#edf8f1] text-[#118850] ring-1 ring-[#d7ecd9]">
+                  <TrendingUp className="size-5" strokeWidth={1.8} />
+                </span>
+                <div>
+                  <dt className="text-[0.8rem] font-semibold text-[#647067]">
+                    Rata-rata Transaksi
+                  </dt>
+                  <dd className="mt-0.5 font-headline text-[1rem] font-black text-[#17221d]">
+                    {formatCompactCurrency(averageTransaction)}
+                  </dd>
+                </div>
               </div>
-              <div>
-                <dt className="font-semibold text-[#647067]">Dominasi Mode</dt>
-                <dd className="mt-1 font-headline text-lg font-black text-[#17221d]">
-                  {modeTotal > 0
-                    ? `${dominantMode} (${dominantPercent}%)`
-                    : "Belum ada transaksi"}
-                </dd>
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#edf8f1] text-[#118850] ring-1 ring-[#d7ecd9]">
+                  <PieChart className="size-5" strokeWidth={1.8} />
+                </span>
+                <div>
+                  <dt className="text-[0.8rem] font-semibold text-[#647067]">
+                    Dominasi Mode
+                  </dt>
+                  <dd className="mt-0.5 font-headline text-[1rem] font-black text-[#17221d]">
+                    {currentPeriodVickrey + currentPeriodFixedPrice > 0
+                      ? `${currentPeriodDominantMode} (${currentPeriodDominantPercent}%)`
+                      : "Belum ada transaksi"}
+                  </dd>
+                </div>
               </div>
             </dl>
           </aside>
 
-          <div className="p-5 sm:p-6 lg:p-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-[0.68rem] font-black uppercase tracking-[0.2em] text-[#6d887a]">
-                  Combo Chart
-                </p>
-                <h2 className="mt-2 font-headline text-[1.05rem] font-black tracking-tight text-[#17221d] sm:text-[1.12rem]">
-                  Tren Nilai Transaksi Tervalidasi
-                </h2>
-              </div>
-              <div className="flex flex-wrap gap-2 text-[0.72rem] font-black text-[#52615d]">
-                <button
-                  aria-pressed={chartVisibility.vickrey}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
-                    chartVisibility.vickrey
-                      ? "border-[#d8e4de] bg-white text-[#31443e] shadow-[0_10px_26px_-24px_rgba(8,69,50,0.55)]"
-                      : "border-[#e7eeea] bg-[#f8fbf9] text-[#91a097]"
-                  }`}
-                  onClick={() =>
-                    setChartVisibility((current) => ({
-                      ...current,
-                      vickrey: !current.vickrey,
-                    }))
-                  }
-                  type="button"
+          {trendPoints.length === 0 ? (
+            <EmptyState
+              className="p-6"
+              description="Transaksi lunas atau selesai akan membentuk tren nasional di area ini."
+              icon={TrendingUp}
+              title="Belum ada tren tervalidasi"
+            />
+          ) : (
+            <div className="relative min-h-[15rem]">
+              <svg
+                aria-label="Grafik tren nilai transaksi tervalidasi"
+                className="h-[15rem] w-full"
+                preserveAspectRatio="none"
+                role="img"
+                viewBox={`0 0 ${dashboardChartWidth} ${dashboardChartHeight}`}
+              >
+                <text
+                  fill="#53635d"
+                  fontSize="11"
+                  fontWeight="800"
+                  x={dashboardChartFrame.left - 6}
+                  y="16"
                 >
-                  <span className="size-2 rounded-full bg-[#004a23]" />
-                  Vickrey Auction
-                </button>
-                <button
-                  aria-pressed={chartVisibility.fixedPrice}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
-                    chartVisibility.fixedPrice
-                      ? "border-[#d8e4de] bg-white text-[#31443e] shadow-[0_10px_26px_-24px_rgba(8,69,50,0.55)]"
-                      : "border-[#e7eeea] bg-[#f8fbf9] text-[#91a097]"
-                  }`}
-                  onClick={() =>
-                    setChartVisibility((current) => ({
-                      ...current,
-                      fixedPrice: !current.fixedPrice,
-                    }))
-                  }
-                  type="button"
-                >
-                  <span className="size-2 rounded-full bg-[#86efac]" />
-                  Fixed Price
-                </button>
-                <button
-                  aria-pressed={chartVisibility.volume}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
-                    chartVisibility.volume
-                      ? "border-[#f4ddb0] bg-white text-[#31443e] shadow-[0_10px_26px_-24px_rgba(245,158,11,0.6)]"
-                      : "border-[#f8ebcc] bg-[#fff9ef] text-[#b89957]"
-                  }`}
-                  onClick={() =>
-                    setChartVisibility((current) => ({
-                      ...current,
-                      volume: !current.volume,
-                    }))
-                  }
-                  type="button"
-                >
-                  <span className="size-2 rounded-full bg-[#f59e0b]" />
-                  Volume
-                </button>
-              </div>
-            </div>
-
-            {trendPoints.length === 0 ? (
-              <EmptyState
-                className="mt-5 p-6"
-                description="Transaksi lunas atau selesai akan membentuk tren nasional di area ini."
-                icon={TrendingUp}
-                title="Belum ada tren tervalidasi"
-              />
-            ) : (
-              <div className="mt-5 overflow-hidden rounded-[1.45rem] border border-[#edf2ee] bg-[#fbfdfb] px-4 py-5 sm:px-5">
-                <svg
-                  aria-label="Grafik tren nilai transaksi tervalidasi"
-                  className="h-[17rem] w-full sm:h-[18rem]"
-                  preserveAspectRatio="none"
-                  role="img"
-                  viewBox={`0 0 ${dashboardChartWidth} ${dashboardChartHeight}`}
-                >
-                  <text
-                    fill="#647067"
-                    fontSize="11"
-                    fontWeight="700"
-                    x={dashboardChartFrame.left - 6}
-                    y="16"
-                  >
-                    Nilai (Rp Juta)
-                  </text>
-                  <text
-                    fill="#647067"
-                    fontSize="11"
-                    fontWeight="700"
-                    textAnchor="end"
-                    x={dashboardChartWidth - 8}
-                    y="16"
-                  >
-                    Volume (Transaksi)
-                  </text>
-                  {amountTicks.map((tick) => {
-                    return (
-                      <g key={`amount-${tick.value}`}>
-                        <line
-                          stroke="#e5ebe7"
-                          strokeDasharray="4 7"
-                          strokeWidth="1"
-                          x1={dashboardChartFrame.left}
-                          x2={dashboardChartFrame.right}
-                          y1={tick.y}
-                          y2={tick.y}
-                        />
-                        <text
-                          fill="#647067"
-                          fontSize="11"
-                          fontWeight="700"
-                          textAnchor="end"
-                          x={dashboardChartFrame.left - 10}
-                          y={tick.y + 4}
-                        >
-                          {formatChartAmountTick(tick.value)}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  {volumeTicks.map((tick) => (
+                  Nilai (Rp Juta)
+                </text>
+                {amountTicks.map((tick) => (
+                  <g key={`amount-${tick.value}`}>
+                    <line
+                      stroke="#e5ebe7"
+                      strokeDasharray="4 7"
+                      strokeWidth="1"
+                      x1={dashboardChartFrame.left}
+                      x2={dashboardChartFrame.right}
+                      y1={tick.y}
+                      y2={tick.y}
+                    />
                     <text
-                      fill="#647067"
+                      fill="#53635d"
                       fontSize="11"
-                      fontWeight="700"
-                      key={`volume-${tick.value}`}
-                      x={dashboardChartFrame.right + 12}
+                      fontWeight="800"
+                      textAnchor="end"
+                      x={dashboardChartFrame.left - 12}
                       y={tick.y + 4}
                     >
-                      {tick.value}
+                      {tick.displayValue}
                     </text>
-                  ))}
-                  {trendPoints.map((point, index) => {
-                    const xCenter =
-                      dashboardChartFrame.left +
-                      slotWidth * index +
-                      slotWidth / 2;
-                    const barWidth = Math.min(34, Math.max(16, slotWidth * 0.44));
-                    const x = xCenter - barWidth / 2;
-                    const vickreyAmount = chartVisibility.vickrey
-                      ? getTrendVickreyAmount(point)
-                      : 0;
-                    const fixedPriceAmount = chartVisibility.fixedPrice
-                      ? getTrendFixedPriceAmount(point)
-                      : 0;
-                    const totalAmount = vickreyAmount + fixedPriceAmount;
-                    const chartHeight =
-                      dashboardChartFrame.bottom - dashboardChartFrame.top;
-                    const totalHeight =
-                      totalAmount > 0
-                        ? Math.max(
-                            (totalAmount / maxVisibleAmount) * chartHeight,
-                            8,
-                          )
-                        : 0;
-                    const fixedHeight =
-                      totalAmount > 0
-                        ? (fixedPriceAmount / totalAmount) * totalHeight
-                        : 0;
-                    const vickreyHeight = totalHeight - fixedHeight;
-                    const vickreyY =
-                      dashboardChartFrame.bottom - vickreyHeight;
-                    const fixedY = vickreyY - fixedHeight;
+                  </g>
+                ))}
+                <line
+                  stroke="#d8e2dc"
+                  strokeWidth="1.2"
+                  x1={dashboardChartFrame.left}
+                  x2={dashboardChartFrame.right}
+                  y1={dashboardChartFrame.bottom}
+                  y2={dashboardChartFrame.bottom}
+                />
 
-                    return (
-                      <g key={point.label}>
-                        <title>{`${point.label}: ${formatCompactCurrency(point.amount)}, ${getTrendVolume(point)} transaksi`}</title>
-                        {vickreyHeight > 0 ? (
+                {chartPoints.map((point, index) => {
+                  const active = activeTrendIndex === index;
+                  const xCenter = point.x;
+                  const barWidth = Math.min(29, Math.max(19, slotWidth * 0.42));
+                  const x = xCenter - barWidth / 2;
+                  const vickreyAmount = chartVisibility.vickrey
+                    ? getTrendVickreyAmount(point)
+                    : 0;
+                  const fixedPriceAmount = chartVisibility.fixedPrice
+                    ? getTrendFixedPriceAmount(point)
+                    : 0;
+                  const totalAmount = vickreyAmount + fixedPriceAmount;
+                  const totalHeight =
+                    totalAmount > 0
+                      ? Math.max(
+                          (clampChartValue(totalAmount, amountAxisMax) /
+                            amountAxisMax) *
+                            chartHeight,
+                          7,
+                        )
+                      : 0;
+                  const fixedHeight =
+                    totalAmount > 0
+                      ? (fixedPriceAmount / totalAmount) * totalHeight
+                      : 0;
+                  const vickreyHeight = totalHeight - fixedHeight;
+                  const totalY = dashboardChartFrame.bottom - totalHeight;
+                  const vickreyY = dashboardChartFrame.bottom - vickreyHeight;
+                  const hasStackedSegments =
+                    fixedHeight > 0 && vickreyHeight > 0;
+                  const darkSegmentY = hasStackedSegments
+                    ? vickreyY - 0.35
+                    : vickreyY;
+                  const darkSegmentHeight = hasStackedSegments
+                    ? vickreyHeight + 0.35
+                    : vickreyHeight;
+
+                  return (
+                    <g key={point.label}>
+                      {fixedHeight > 0 ? (
+                        <rect
+                          fill={active ? "#87ca7f" : "#9bd191"}
+                          height={hasStackedSegments ? totalHeight : fixedHeight}
+                          opacity={active ? 1 : 0.96}
+                          rx="6"
+                          width={barWidth}
+                          x={x}
+                          y={hasStackedSegments ? totalY : dashboardChartFrame.bottom - fixedHeight}
+                        />
+                      ) : null}
+                      {vickreyHeight > 0 ? (
+                        hasStackedSegments ? (
+                          <path
+                            d={makeBottomRoundedRectPath({
+                              height: darkSegmentHeight,
+                              radius: 6,
+                              width: barWidth,
+                              x,
+                              y: darkSegmentY,
+                            })}
+                            fill={active ? "#00451f" : "#005626"}
+                            opacity={active ? 1 : 0.98}
+                          />
+                        ) : (
                           <rect
-                            className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                            fill="#005626"
+                            fill={active ? "#00451f" : "#005626"}
                             height={vickreyHeight}
+                            opacity={active ? 1 : 0.96}
                             rx="6"
                             width={barWidth}
                             x={x}
                             y={vickreyY}
                           />
-                        ) : null}
-                        {fixedHeight > 0 ? (
-                          <rect
-                            className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                            fill="#9cd59f"
-                            height={fixedHeight}
-                            rx="6"
-                            width={barWidth}
-                            x={x}
-                            y={fixedY}
-                          />
-                        ) : null}
-                        <text
-                          fill="#647067"
-                          fontSize="11"
-                          fontWeight="700"
-                          textAnchor="middle"
-                          x={xCenter}
-                          y="236"
-                        >
-                          {point.label}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  {linePoints ? (
-                    <polyline
-                      className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                      fill="none"
-                      points={linePoints}
+                        )
+                      ) : null}
+                      <text
+                        fill={active ? "#00563b" : "#465850"}
+                        fontSize="11"
+                        fontWeight={active ? "900" : "760"}
+                        textAnchor="middle"
+                        x={xCenter}
+                        y="214"
+                      >
+                        {point.label}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {activeTrendPoint ? (
+                  <g>
+                    <line
                       stroke="#f59e0b"
-                      strokeLinecap="round"
-                      strokeWidth="3"
+                      strokeDasharray="4 6"
+                      strokeOpacity="0.32"
+                      strokeWidth="1.5"
+                      x1={activeTrendPoint.x}
+                      x2={activeTrendPoint.x}
+                      y1={dashboardChartFrame.top}
+                      y2={dashboardChartFrame.bottom}
                     />
-                  ) : null}
-                  {trendPoints.map((point, index) => {
-                    if (!chartVisibility.volume) {
-                      return null;
-                    }
+                  </g>
+                ) : null}
+              </svg>
 
-                    const x =
-                      dashboardChartFrame.left +
-                      slotWidth * index +
-                      slotWidth / 2;
-                    const y =
-                      dashboardChartFrame.bottom -
-                      (getTrendVolume(point) / maxVisibleVolume) *
-                        (dashboardChartFrame.bottom - dashboardChartFrame.top);
+              {chartPoints.map((point, index) => (
+                <button
+                  aria-label={`${point.label}: Vickrey ${formatFullCurrency(getTrendVickreyAmount(point))}, Fixed Price ${formatFullCurrency(getTrendFixedPriceAmount(point))}, Volume ${formatDashboardCount(point.volume)} transaksi`}
+                  className="absolute rounded-lg outline-none transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  key={`${point.label}-hotspot`}
+                  onBlur={() => setActiveTrendIndex(null)}
+                  onFocus={() => setActiveTrendIndex(index)}
+                  onMouseEnter={() => setActiveTrendIndex(index)}
+                  onMouseLeave={() => setActiveTrendIndex(null)}
+                  style={{
+                    height: `${(chartHeight / dashboardChartHeight) * 100}%`,
+                    left: `${((dashboardChartFrame.left + slotWidth * index) / dashboardChartWidth) * 100}%`,
+                    top: `${(dashboardChartFrame.top / dashboardChartHeight) * 100}%`,
+                    width: `${(slotWidth / dashboardChartWidth) * 100}%`,
+                  }}
+                  type="button"
+                />
+              ))}
 
-                    return (
-                      <circle
-                        className="transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                        cx={x}
-                        cy={y}
-                        fill="#ffffff"
-                        key={`${point.label}-volume`}
-                        r="5"
-                        stroke="#f59e0b"
-                        strokeWidth="3"
-                      />
-                    );
-                  })}
-                </svg>
-              </div>
-            )}
-          </div>
+              {activeTrendPoint ? (
+                <div
+                  className="pointer-events-none absolute z-[3] w-[16.25rem] -translate-x-1/2 -translate-y-full rounded-[0.95rem] border border-[#cfe7d8] bg-white px-3.5 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  role="tooltip"
+                  style={{
+                    left: `clamp(7rem, ${activeTrendPoint.leftPercent}%, calc(100% - 7rem))`,
+                    top: `clamp(8.4rem, calc(${activeTrendPoint.topPercent}% - 0.7rem), calc(100% - 0.5rem))`,
+                  }}
+                >
+                  <div className="absolute left-1/2 top-full size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#cfe7d8] bg-white" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">
+                        {activeTrendPoint.label}
+                      </p>
+                      <p className="mt-1 font-headline text-[1.15rem] font-black leading-none text-[#00563b]">
+                        {formatFullCurrency(activeTrendPoint.amount)}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-[#fff7e6] px-2.5 py-1 text-[0.68rem] font-black text-[#c97900]">
+                      {formatDashboardCount(activeTrendPoint.volume)} trx
+                    </span>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-[0.75rem] font-bold text-[#52615d]">
+                    <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+                        Vickrey
+                      </span>
+                      <span className="font-black text-[#00563b]">
+                        {formatFullCurrency(getTrendVickreyAmount(activeTrendPoint))}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+                        Fixed Price
+                      </span>
+                      <span className="font-black text-[#3f8d42]">
+                        {formatFullCurrency(getTrendFixedPriceAmount(activeTrendPoint))}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#fff9ef] px-2.5 py-2">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-2.5 rounded-full border-2 border-[#f59e0b] bg-white" />
+                        Volume
+                      </span>
+                      <span className="font-black text-[#c97900]">
+                        {formatDashboardCount(activeTrendPoint.volume)} transaksi
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-        <Card className="border border-[#d9e7df] bg-white">
-          <CardHeader>
-            <CardTitle>Status Kepatuhan Ekosistem</CardTitle>
+        <Card className="h-full border border-[#d9e7df] bg-white">
+          <CardHeader className="px-5 pb-2 pt-5">
+            <CardTitle className="text-[1.02rem] leading-6">
+              Status Kepatuhan Ekosistem
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-3 px-5 pb-5 pt-1">
             {complianceLevels.length === 0 ? (
               <EmptyState
                 className="p-5"
@@ -1131,36 +1365,33 @@ export function SuperAdminDashboardPage({
             ) : (
               complianceLevels.map((level) => {
                 const tone = getComplianceToneClasses(level.tone);
-                const width = Math.max(
-                  (level.count / maxComplianceCount) * 100,
-                  level.count > 0 ? 8 : 0,
-                );
 
                 return (
-                  <div key={level.label}>
-                    <div className="mb-2 flex items-start justify-between gap-4">
-                      <div className="flex min-w-0 gap-3">
-                        <span
-                          className={`mt-1.5 size-2.5 shrink-0 rounded-full ${tone.dot}`}
-                        />
-                        <div className="min-w-0">
-                          <p className="font-semibold text-[#17221d]">
+                  <div
+                    className="relative overflow-hidden rounded-[0.72rem] py-2 pl-5 pr-2 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
+                    key={level.label}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute left-0 top-2 h-[calc(100%-1rem)] w-1.5 rounded-r-full ${tone.rail}`}
+                    />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`size-2.5 shrink-0 rounded-full ${tone.dot}`}
+                          />
+                          <p className="text-[0.78rem] font-black leading-4 text-[#17221d]">
                             {level.label}
                           </p>
-                          <p className="mt-1 text-xs font-semibold leading-5 text-[#647067]">
-                            {level.description}
-                          </p>
                         </div>
+                        <p className="ml-[1.125rem] mt-0.5 text-[0.66rem] font-semibold leading-4 text-[#647067]">
+                          {level.description}
+                        </p>
                       </div>
-                      <p className="font-headline text-xl font-black text-[#17221d]">
+                      <p className="shrink-0 font-headline text-base font-black leading-4 text-[#17221d]">
                         {level.count}
                       </p>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-[#edf2ee]">
-                      <div
-                        className={`h-1.5 rounded-full ${tone.bar}`}
-                        style={{ width: `${width}%` }}
-                      />
                     </div>
                   </div>
                 );
@@ -1169,48 +1400,93 @@ export function SuperAdminDashboardPage({
           </CardContent>
         </Card>
 
-        <Card className="border border-[#d9e7df] bg-white">
-          <CardHeader>
-            <CardTitle>Leaderboard Barang Terjual</CardTitle>
+        <Card className="h-full border border-[#d9e7df] bg-white">
+          <CardHeader className="px-5 pb-2 pt-5">
+            <CardTitle className="text-[1.02rem] leading-6">
+              Leaderboard Kinerja Unit
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            {leaderboardRows.length === 0 ? (
+          <CardContent className="px-5 pb-5 pt-1">
+            {unitRows.length === 0 ? (
               <EmptyState
                 className="p-5"
-                description="Unit akan tampil setelah barang terjual tercatat dari transaksi sah."
+                description="Unit akan tampil setelah transaksi tervalidasi tercatat dari cabang terkait."
                 icon={Building2}
-                title="Belum ada unit dengan barang terjual"
+                title="Belum ada kinerja unit yang tercatat"
               />
             ) : (
-              <div className="space-y-3">
-                {leaderboardRows.map((row, index) => (
-                  <div
-                    className="flex items-center justify-between gap-4 rounded-[1rem] border border-[#edf2ee] bg-[#fbfdfb] p-4"
-                    key={row.id}
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#edf8f1] text-sm font-black text-[#006747] ring-1 ring-[#bfe7c4]">
-                        {index + 1}
+              <div className="grid gap-4 md:grid-cols-2 md:divide-x md:divide-[#dfe8e3]">
+                <div className="min-w-0 md:pr-4">
+                  <div className="mb-4 flex h-8 items-center gap-1.5">
+                    <TrendingUp
+                      aria-hidden="true"
+                      className="size-4 shrink-0 text-[#1faa55]"
+                      strokeWidth={2.3}
+                    />
+                    <p className="min-w-0 whitespace-nowrap text-[0.74rem] font-black leading-none text-[#17221d] 2xl:text-[0.82rem]">
+                      Top 3 Cabang{" "}
+                      <span className="text-[0.65rem] font-semibold text-[#647067] 2xl:text-[0.74rem]">
+                        (Nilai Transaksi Tertinggi)
                       </span>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-[#17221d]">
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    {topTransactionUnitRows.map((row, index) => (
+                      <div
+                        className="grid min-h-8 grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3"
+                        key={`top-${row.id}`}
+                      >
+                        <span className="grid size-8 place-items-center rounded-full bg-[#daf5e1] text-[0.78rem] font-black text-[#0b7a3c] ring-1 ring-[#bcecc8]">
+                          {index + 1}
+                        </span>
+                        <p className="min-w-0 truncate text-[0.82rem] font-semibold text-[#33463e]">
                           {row.unitName}
                         </p>
-                        <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#647067]">
-                          {row.unitCode}
+                        <p className="whitespace-nowrap text-right text-[0.82rem] font-black text-[#006747]">
+                          {formatLeaderboardCurrency(
+                            Number(row.validatedTransactionValue ?? 0),
+                          )}
                         </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-headline text-xl font-black text-[#006747]">
-                        {formatDashboardCount(row.soldItems)}
-                      </p>
-                      <p className="text-xs font-semibold text-[#647067]">
-                        barang terjual
-                      </p>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                <div className="min-w-0 md:pl-4">
+                  <div className="mb-4 flex h-8 items-center gap-1.5">
+                    <TrendingDown
+                      aria-hidden="true"
+                      className="size-4 shrink-0 text-[#ef4444]"
+                      strokeWidth={2.3}
+                    />
+                    <p className="min-w-0 whitespace-nowrap text-[0.74rem] font-black leading-none text-[#17221d] 2xl:text-[0.82rem]">
+                      Bottom 3 Cabang{" "}
+                      <span className="text-[0.65rem] font-semibold text-[#647067] 2xl:text-[0.74rem]">
+                        (Nilai Transaksi Terendah)
+                      </span>
+                    </p>
+                  </div>
+                  <div className="grid gap-3">
+                    {bottomTransactionUnitRows.map((row, index) => (
+                      <div
+                        className="grid min-h-8 grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3"
+                        key={`bottom-${row.id}`}
+                      >
+                        <span className="grid size-8 place-items-center rounded-full bg-[#ffe1e1] text-[0.78rem] font-black text-[#dc2626] ring-1 ring-[#ffc9c9]">
+                          {index + 1}
+                        </span>
+                        <p className="min-w-0 truncate text-[0.82rem] font-semibold text-[#33463e]">
+                          {row.unitName}
+                        </p>
+                        <p className="whitespace-nowrap text-right text-[0.82rem] font-black text-[#1f2937]">
+                          {formatLeaderboardCurrency(
+                            Number(row.validatedTransactionValue ?? 0),
+                          )}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

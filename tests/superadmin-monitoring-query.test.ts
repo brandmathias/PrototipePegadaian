@@ -9,5 +9,7 @@ describe("superadmin monitoring query", () => {
 
     expect(rendered).toContain('"monitoring_units"."id"');
     expect(rendered).not.toContain('= "id"');
+    expect(rendered).toContain("coalesce(sum(t.amount), 0)");
+    expect(rendered).toContain("t.status in ($");
   }, 15000);
 });

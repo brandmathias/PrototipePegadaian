@@ -51,8 +51,112 @@ const MONTH_LABELS = [
   "Des",
 ];
 
+const WEEK_DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+const MONTH_WEEK_LABELS = [
+  "Pekan 1",
+  "Pekan 2",
+  "Pekan 3",
+  "Pekan 4",
+  "Pekan 5",
+];
+
 function toNumber(value: unknown) {
   return Number(value ?? 0);
+}
+
+type ValidatedTransactionTrendRow = {
+  amount: string | number;
+  transactionType: string | null;
+  marketingMode: string | null;
+  verifiedAt: Date | null;
+  updatedAt: Date;
+  createdAt: Date;
+};
+
+type ValidatedTrendPoint = {
+  label: string;
+  amount: number;
+  vickreyAmount: number;
+  fixedPriceAmount: number;
+  count: number;
+  volume: number;
+};
+
+function createTrendPoint(label: string): ValidatedTrendPoint {
+  return {
+    label,
+    amount: 0,
+    vickreyAmount: 0,
+    fixedPriceAmount: 0,
+    count: 0,
+    volume: 0,
+  };
+}
+
+function startOfDay(value: Date) {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function addDays(value: Date, days: number) {
+  const next = new Date(value);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function startOfWeek(value: Date) {
+  const date = startOfDay(value);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+
+  return addDays(date, diff);
+}
+
+function addRowToTrendPoint(
+  point: ValidatedTrendPoint,
+  row: ValidatedTransactionTrendRow,
+) {
+  const amount = Number(row.amount);
+  const mode = String(
+    row.transactionType ?? row.marketingMode ?? "",
+  ).toLowerCase();
+
+  if (mode.includes("fixed")) {
+    point.fixedPriceAmount += amount;
+  } else {
+    point.vickreyAmount += amount;
+  }
+
+  point.amount += amount;
+  point.count += 1;
+  point.volume = point.count;
+}
+
+function summarizeTrendPoints(points: ValidatedTrendPoint[]) {
+  const totalAmount = points.reduce((sum, point) => sum + point.amount, 0);
+  const transactionCount = points.reduce((sum, point) => sum + point.count, 0);
+  const vickreyAmount = points.reduce(
+    (sum, point) => sum + point.vickreyAmount,
+    0,
+  );
+  const fixedPriceAmount = points.reduce(
+    (sum, point) => sum + point.fixedPriceAmount,
+    0,
+  );
+  const dominantMode =
+    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+  const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
+  const modeTotal = vickreyAmount + fixedPriceAmount;
+
+  return {
+    averageAmount: transactionCount > 0 ? totalAmount / transactionCount : 0,
+    dominantMode,
+    dominantPercent:
+      modeTotal > 0 ? Math.round((dominantAmount / modeTotal) * 100) : 0,
+    fixedPriceAmount,
+    totalAmount,
+    transactionCount,
+    vickreyAmount,
+  };
 }
 
 function buildValidatedTrend(
@@ -67,14 +171,9 @@ function buildValidatedTrend(
   now = new Date(),
 ) {
   const currentYear = now.getFullYear();
-  const buckets = Array.from({ length: 12 }, (_, monthIndex) => ({
-    label: MONTH_LABELS[monthIndex],
-    amount: 0,
-    vickreyAmount: 0,
-    fixedPriceAmount: 0,
-    count: 0,
-    volume: 0,
-  }));
+  const buckets = Array.from({ length: 12 }, (_, monthIndex) =>
+    createTrendPoint(MONTH_LABELS[monthIndex]),
+  );
 
   for (const row of rows) {
     const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
@@ -83,23 +182,77 @@ function buildValidatedTrend(
     }
 
     const current = buckets[eventAt.getMonth()];
-    const amount = Number(row.amount);
-    const mode = String(
-      row.transactionType ?? row.marketingMode ?? "",
-    ).toLowerCase();
-
-    if (mode.includes("fixed")) {
-      current.fixedPriceAmount += amount;
-    } else {
-      current.vickreyAmount += amount;
-    }
-
-    current.amount += amount;
-    current.count += 1;
-    current.volume = current.count;
+    addRowToTrendPoint(current, row);
   }
 
   return buckets;
+}
+
+function buildValidatedTrendRanges(
+  rows: ValidatedTransactionTrendRow[],
+  now = new Date(),
+) {
+  const weekStart = startOfWeek(now);
+  const weekEnd = addDays(weekStart, 7);
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const ranges = {
+    week: {
+      label: "Minggu Ini",
+      points: WEEK_DAY_LABELS.map(createTrendPoint),
+    },
+    month: {
+      label: "Bulan Ini",
+      points: MONTH_WEEK_LABELS.map(createTrendPoint),
+    },
+    year: {
+      label: "Tahun Ini",
+      points: MONTH_LABELS.map(createTrendPoint),
+    },
+  };
+
+  for (const row of rows) {
+    const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+
+    if (eventAt >= weekStart && eventAt < weekEnd) {
+      const dayIndex = Math.floor(
+        (startOfDay(eventAt).getTime() - weekStart.getTime()) /
+          (24 * 60 * 60 * 1000),
+      );
+      const point = ranges.week.points[dayIndex];
+
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
+    }
+
+    if (
+      eventAt.getFullYear() === currentYear &&
+      eventAt.getMonth() === currentMonth
+    ) {
+      const weekIndex = Math.min(Math.floor((eventAt.getDate() - 1) / 7), 4);
+      addRowToTrendPoint(ranges.month.points[weekIndex], row);
+    }
+
+    if (eventAt.getFullYear() === currentYear) {
+      addRowToTrendPoint(ranges.year.points[eventAt.getMonth()], row);
+    }
+  }
+
+  return {
+    week: {
+      ...ranges.week,
+      summary: summarizeTrendPoints(ranges.week.points),
+    },
+    month: {
+      ...ranges.month,
+      summary: summarizeTrendPoints(ranges.month.points),
+    },
+    year: {
+      ...ranges.year,
+      summary: summarizeTrendPoints(ranges.year.points),
+    },
+  };
 }
 
 export function buildSuperAdminUnitRowsQuery() {
@@ -132,6 +285,17 @@ export function buildSuperAdminUnitRowsQuery() {
         left join transaksi t on t.pemasaran_id = p.id
         where b.unit_id = ${outerUnitId}
           and (b.status = 'terjual' or t.status in ('lunas', 'selesai'))
+      )`,
+      validatedTransactionValue: sql<number>`(
+        select coalesce(sum(t.amount), 0)
+        from transaksi t
+        inner join pemasaran p on p.id = t.pemasaran_id
+        inner join barang b on b.id = p.barang_id
+        where b.unit_id = ${outerUnitId}
+          and t.status in (${sql.join(
+            VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+            sql`, `,
+          )})
       )`,
       followUpItems: sql<number>`(
         select count(distinct p.id)::int
@@ -630,6 +794,10 @@ export async function getSuperAdminMonitoring() {
       }),
       lifecycle,
       validatedTrend: buildValidatedTrend(validatedTransactionRows, now),
+      validatedTrendRanges: buildValidatedTrendRanges(
+        validatedTransactionRows,
+        now,
+      ),
       complianceLevels: [
         {
           label: "Level 1 (Ringan)",
@@ -661,6 +829,7 @@ export async function getSuperAdminMonitoring() {
       collateralItems: toNumber(row.collateralItems),
       marketedItems: toNumber(row.marketedItems),
       soldItems: toNumber(row.soldItems),
+      validatedTransactionValue: toNumber(row.validatedTransactionValue),
       followUpItems: toNumber(row.followUpItems),
       heldTransactions: toNumber(row.heldTransactions),
       activeViolations: toNumber(row.activeViolations),

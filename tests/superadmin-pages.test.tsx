@@ -25,6 +25,62 @@ const dashboardMonthFixture = [
   "Des",
 ];
 
+function makeDashboardTrendPoint(
+  label: string,
+  values: {
+    amount?: number;
+    fixedPriceAmount?: number;
+    vickreyAmount?: number;
+    volume?: number;
+  } = {},
+) {
+  const amount = values.amount ?? 0;
+  const vickreyAmount = values.vickreyAmount ?? amount;
+  const fixedPriceAmount = values.fixedPriceAmount ?? 0;
+  const volume = values.volume ?? (amount > 0 ? 1 : 0);
+
+  return {
+    label,
+    amount,
+    count: volume,
+    fixedPriceAmount,
+    vickreyAmount,
+    volume,
+  };
+}
+
+function makeDashboardTrendRange(label: string, points: ReturnType<typeof makeDashboardTrendPoint>[]) {
+  const totalAmount = points.reduce((sum, point) => sum + point.amount, 0);
+  const transactionCount = points.reduce((sum, point) => sum + point.volume, 0);
+  const vickreyAmount = points.reduce(
+    (sum, point) => sum + point.vickreyAmount,
+    0,
+  );
+  const fixedPriceAmount = points.reduce(
+    (sum, point) => sum + point.fixedPriceAmount,
+    0,
+  );
+  const dominantMode =
+    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+  const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
+  const modeTotal = vickreyAmount + fixedPriceAmount;
+
+  return {
+    label,
+    points,
+    summary: {
+      averageAmount: transactionCount > 0 ? totalAmount / transactionCount : 0,
+      dominantMode,
+      dominantPercent:
+        modeTotal > 0 ? Math.round((dominantAmount / modeTotal) * 100) : 0,
+      fixedPriceAmount,
+      totalAmount,
+      transactionCount,
+      vickreyAmount,
+    },
+  };
+}
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -43,7 +99,7 @@ describe("superadmin pages", () => {
   });
 
   it("renders monitoring metrics from backend payload", () => {
-    render(
+    const { container } = render(
       <SuperAdminDashboardPage
         summary={{
           headline: "Pantau seluruh unit dari satu control center.",
@@ -162,6 +218,7 @@ describe("superadmin pages", () => {
             collateralItems: 8,
             marketedItems: 5,
             soldItems: 3,
+            validatedTransactionValue: 78400000,
             followUpItems: 0,
             heldTransactions: 0,
             activeViolations: 0,
@@ -180,13 +237,20 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Pelanggaran Aktif")).toBeInTheDocument();
     expect(screen.getByText("Barang Terjual")).toBeInTheDocument();
     expect(screen.getByText("Total Tervalidasi")).toBeInTheDocument();
-    expect(screen.getByText("Performa Bulan Ini")).toBeInTheDocument();
+    expect(screen.getByText("Performa Tahun Ini")).toBeInTheDocument();
     expect(
       screen.getByText("Tren Nilai Transaksi Tervalidasi"),
     ).toBeInTheDocument();
     expect(screen.getByText("Status Kepatuhan Ekosistem")).toBeInTheDocument();
-    expect(screen.getByText("Leaderboard Barang Terjual")).toBeInTheDocument();
-    expect(screen.getByText("Pegadaian CP Manado")).toBeInTheDocument();
+    expect(screen.getByText("Leaderboard Kinerja Unit")).toBeInTheDocument();
+    expect(
+      screen.getByText("Top 3 Cabang", { exact: false }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Bottom 3 Cabang", { exact: false }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Rp 78,4 Jt")).toHaveLength(2);
+    expect(screen.getAllByText("Pegadaian CP Manado")).toHaveLength(2);
     expect(
       screen.queryByText("Lifecycle Barang Nasional"),
     ).not.toBeInTheDocument();
@@ -326,7 +390,29 @@ describe("superadmin pages", () => {
   });
 
   it("uses current-month trend data and keeps chart legends interactive", () => {
-    render(
+    const yearlyTrend = dashboardMonthFixture.map((label, index) =>
+      makeDashboardTrendPoint(label, {
+        amount: index === 3 ? 48000000 : index === 4 ? 82000000 : 0,
+        fixedPriceAmount:
+          index === 3 ? 12000000 : index === 4 ? 30000000 : 0,
+        vickreyAmount: index === 3 ? 36000000 : index === 4 ? 52000000 : 0,
+        volume: index === 3 ? 6 : index === 4 ? 4 : 0,
+      }),
+    );
+    const monthlyTrend = ["Pekan 1", "Pekan 2", "Pekan 3", "Pekan 4", "Pekan 5"].map(
+      (label, index) =>
+        makeDashboardTrendPoint(label, {
+          amount: index === 3 ? 48000000 : 0,
+          fixedPriceAmount: index === 3 ? 12000000 : 0,
+          vickreyAmount: index === 3 ? 36000000 : 0,
+          volume: index === 3 ? 6 : 0,
+        }),
+    );
+    const weeklyTrend = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map(
+      (label) => makeDashboardTrendPoint(label),
+    );
+
+    const { container } = render(
       <SuperAdminDashboardPage
         governance={{
           lifecycle: [],
@@ -337,15 +423,12 @@ describe("superadmin pages", () => {
               detail: "Lunas atau selesai",
             },
           ],
-          validatedTrend: dashboardMonthFixture.map((label, index) => ({
-            label,
-            amount: index === 3 ? 48000000 : index === 4 ? 82000000 : 0,
-            vickreyAmount: index === 3 ? 36000000 : index === 4 ? 52000000 : 0,
-            fixedPriceAmount:
-              index === 3 ? 12000000 : index === 4 ? 30000000 : 0,
-            count: index === 3 ? 6 : index === 4 ? 4 : 0,
-            volume: index === 3 ? 6 : index === 4 ? 4 : 0,
-          })),
+          validatedTrend: yearlyTrend,
+          validatedTrendRanges: {
+            month: makeDashboardTrendRange("Bulan Ini", monthlyTrend),
+            week: makeDashboardTrendRange("Minggu Ini", weeklyTrend),
+            year: makeDashboardTrendRange("Tahun Ini", yearlyTrend),
+          },
           complianceLevels: [],
           validatedTransactionValueLabel: "Rp 130 jt",
         }}
@@ -362,9 +445,28 @@ describe("superadmin pages", () => {
       />,
     );
 
-    expect(screen.getByText("Rp 48 jt")).toBeInTheDocument();
-    expect(screen.getByText("6 transaksi")).toBeInTheDocument();
-    expect(screen.getByText("01 Apr - 30 Apr")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tahun ini/i })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByText("Rp 130.000.000")).toBeInTheDocument();
+    expect(container.querySelector("path[fill='#005626']")).toBeInTheDocument();
+    const chartTexts = Array.from(container.querySelectorAll("svg text")).map(
+      (node) => node.textContent,
+    );
+    expect(chartTexts).toEqual(
+      expect.arrayContaining([
+        "Nilai (Rp Juta)",
+        "25",
+        "50",
+        "75",
+        "100",
+      ]),
+    );
+    expect(chartTexts).not.toEqual(expect.arrayContaining(["Volume (Unit)"]));
+    expect(chartTexts).not.toEqual(expect.arrayContaining(["55"]));
 
     const vickreyToggle = screen.getByRole("button", {
       name: /Vickrey Auction/i,
@@ -374,6 +476,24 @@ describe("superadmin pages", () => {
     fireEvent.click(vickreyToggle);
 
     expect(vickreyToggle).toHaveAttribute("aria-pressed", "false");
+
+    const aprilHotspot = screen.getByRole("button", {
+      name: /Apr: Vickrey Rp 36.000.000/i,
+    });
+    fireEvent.mouseEnter(aprilHotspot);
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Rp 48.000.000");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Volume");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("6 transaksi");
+
+    fireEvent.click(screen.getByRole("button", { name: /bulan ini/i }));
+
+    expect(screen.getByRole("button", { name: /bulan ini/i })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByText("Performa Bulan Ini")).toBeInTheDocument();
+    expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
   });
 
   it("updates superadmin countdown on monitoring page", () => {
@@ -441,6 +561,7 @@ describe("superadmin pages", () => {
                 collateralItems: 8,
                 marketedItems: 5,
                 soldItems: 3,
+                validatedTransactionValue: 78400000,
                 followUpItems: 2,
                 heldTransactions: 1,
                 activeViolations: 1,
