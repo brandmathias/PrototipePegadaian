@@ -9,6 +9,7 @@ import {
   SuperAdminPolicyPage,
   SuperAdminMonitoringPage,
 } from "@/components/pages/superadmin-pages";
+import { SuperadminBlacklistDetailWorkspace } from "@/components/superadmin/superadmin-blacklist-detail-workspace";
 
 const dashboardMonthFixture = [
   "Jan",
@@ -680,6 +681,85 @@ describe("superadmin pages", () => {
     expect(
       screen.getByRole("dialog", { name: /putuskan review buyer/i }),
     ).toBeInTheDocument();
+  });
+
+  it("renders superadmin violation dossier detail with timeline and countdown", () => {
+    render(
+      <SuperadminBlacklistDetailWorkspace
+        entry={{
+          activeAuctionRestriction: "Pembatasan akun masih aktif secara nasional.",
+          blockedUntilAt: "2026-06-28T14:00:00.000Z",
+          email: "buyer.demo13b@email.com",
+          history: [
+            {
+              action: "blokir_otomatis",
+              actionLabel: "Blokir otomatis",
+              actorLabel: "Sistem otomatis",
+              date: "28 Mei 2026",
+              note: "Sistem otomatis menerapkan pembatasan Level 2.",
+            },
+          ],
+          lastIncident: "2026-05-28",
+          lastIncidentAt: "2026-05-28T14:00:00.000Z",
+          level: 2,
+          name: "Buyer Demo 13 B",
+          reason: "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
+          status: "AKTIF",
+          unit: "UPC Ranotana",
+          unpaidAuctionTraces: [
+            {
+              amount: 4500000,
+              auctionMode: "VICKREY_AUCTION",
+              basePrice: 4000000,
+              id: "violation-13b",
+              imageUrl: "/uploads/barang/cincin-emas.jpg",
+              itemAppraisalValue: 5000000,
+              itemName: "Cincin Emas 5 Gram",
+              lotLabel: "BRG-13B",
+              note: "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
+              occurredAt: "2026-05-28T06:00:00.000Z",
+              occurredAtLabel: "28 Mei 2026, 14.00 WIB",
+              paymentDeadlineLabel: "29 Mei 2026, 14.00 WIB",
+              transactionStatus: "menunggu_pembayaran",
+              unitName: "UPC Ranotana",
+            },
+            {
+              amount: 2500000,
+              auctionMode: "FIXED_PRICE",
+              id: "violation-13b-old",
+              itemName: "Gelang Emas",
+              note: "Pelanggaran sebelumnya sudah selesai.",
+              occurredAt: "2026-01-10T14:00:00.000Z",
+              occurredAtLabel: "10 Januari 2026, 14.00 WIB",
+              paymentDeadlineLabel: "11 Januari 2026, 14.00 WIB",
+              transactionStatus: "gagal_bayar",
+              unitName: "UPC Ranotana",
+            },
+          ],
+          until: "2026-06-28",
+          userId: "buyer-13b",
+          violations: 2,
+        }}
+        serverNow="2026-06-16T05:15:00.000Z"
+      />,
+    );
+
+    expect(screen.getByText("Detail Pelanggaran Pengguna")).toBeInTheDocument();
+    expect(screen.getAllByText("Buyer Demo 13 B").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cincin Emas 5 Gram").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pelanggaran Level 2/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
+    expect(screen.getByText("Riwayat Pelanggaran (Timeline)")).toBeInTheDocument();
+    expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
+    expect(screen.getByText("Log Keputusan Sistem")).toBeInTheDocument();
+    expect(screen.getByText("Masa hukuman selesai")).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        /Tidak Bayar Dalam 1x24 Jam/i,
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/29 Mei 2026.*14.00/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Rp 4.500.000/i).length).toBeGreaterThan(0);
   });
 
   it("keeps management forms inside pop up panels until requested", () => {

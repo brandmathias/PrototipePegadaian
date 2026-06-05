@@ -6,6 +6,8 @@ import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertTriangle,
+  BadgeCheck,
+  Ban,
   Pencil,
   Building2,
   Clock3,
@@ -17,6 +19,7 @@ import {
   Package,
   PieChart,
   Plus,
+  Search,
   SearchX,
   Shield,
   ShieldAlert,
@@ -30,13 +33,13 @@ import {
   X,
 } from "lucide-react";
 
+import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { BlacklistReviewQueue } from "@/components/superadmin/blacklist-review-queue";
 import {
   AdminUnitForm,
   DeactivateAdminButton,
 } from "@/components/superadmin/admin-form";
-import { CabutBlacklistForm } from "@/components/superadmin/cabut-blacklist-form";
 import {
   ActivateRekeningButton,
   RekeningForm,
@@ -51,6 +54,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export type SuperAdminMetric = {
   label: string;
@@ -258,6 +262,119 @@ export type SuperAdminBlacklistReviewCase = {
     mimeType: string;
   }>;
 };
+
+type SuperAdminRestrictionLevelFilter = "Semua" | "Level 1" | "Level 2" | "Level 3";
+
+const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
+  "Semua",
+  "Level 1",
+  "Level 2",
+  "Level 3",
+];
+
+const DAY_MS = 86_400_000;
+
+function getSuperadminInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function getSuperadminRestrictionLevel(entry: SuperAdminBlacklistItem) {
+  return Math.min(Math.max(Number(entry.total ?? 0), 0), 3);
+}
+
+function getRestrictionDurationDays(level: number) {
+  if (level >= 3) return 365;
+  if (level === 2) return 30;
+  if (level === 1) return 7;
+
+  return 0;
+}
+
+function getRestrictionLevelMeta(level: number) {
+  if (level >= 3) {
+    return {
+      avatar: "bg-rose-50 text-rose-700 ring-rose-100",
+      badge: "bg-red-600 text-white shadow-[0_14px_26px_-20px_rgba(220,38,38,0.72)]",
+      label: "Level 3 (365 Hari)",
+      progress: "bg-red-600"
+    };
+  }
+
+  if (level === 2) {
+    return {
+      avatar: "bg-orange-50 text-orange-700 ring-orange-100",
+      badge: "bg-orange-500 text-white shadow-[0_14px_26px_-20px_rgba(249,115,22,0.72)]",
+      label: "Level 2 (30 Hari)",
+      progress: "bg-orange-500"
+    };
+  }
+
+  return {
+    avatar: "bg-amber-50 text-amber-800 ring-amber-100",
+    badge: "bg-amber-400 text-amber-950 shadow-[0_14px_26px_-20px_rgba(245,158,11,0.72)]",
+    label: "Level 1 (7 Hari)",
+    progress: "bg-amber-400"
+  };
+}
+
+function getRestrictionProgress(entry: SuperAdminBlacklistItem, serverNow?: string) {
+  if (!entry.countdownAt) return 100;
+
+  const targetTime = new Date(entry.countdownAt).getTime();
+  const nowTime = serverNow ? new Date(serverNow).getTime() : Date.now();
+
+  if (Number.isNaN(targetTime) || Number.isNaN(nowTime)) return 100;
+
+  const level = getSuperadminRestrictionLevel(entry);
+  const durationMs = getRestrictionDurationDays(level) * DAY_MS;
+  const remainingMs = Math.max(targetTime - nowTime, 0);
+
+  if (durationMs <= 0) return remainingMs > 0 ? 100 : 0;
+
+  return Math.min(Math.max((remainingMs / durationMs) * 100, 4), 100);
+}
+
+function matchesSuperadminRestrictionQuery(entry: SuperAdminBlacklistItem, query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  return [entry.name, entry.email, entry.unit, entry.reason, entry.status, String(entry.total)]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+}
+
+function isSuperadminReviewTerminalStatus(status: string) {
+  return status === "DISETUJUI" || status === "DITOLAK";
+}
+
+function SuperAdminHeroPill({
+  children,
+  icon: Icon,
+  tone = "default"
+}: {
+  children: ReactNode;
+  icon?: LucideIcon;
+  tone?: "danger" | "default";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 backdrop-blur",
+        tone === "danger"
+          ? "bg-rose-50/92 text-rose-700 ring-rose-200"
+          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65"
+      )}
+    >
+      {Icon ? <Icon className="size-4" /> : null}
+      {children}
+    </span>
+  );
+}
 
 function StatusBadge({ value }: { value: string }) {
   const normalized = value.toLowerCase();
@@ -2463,168 +2580,267 @@ export function SuperAdminBlacklistPage({
   reviewCases?: SuperAdminBlacklistReviewCase[];
   serverNow?: string;
 }) {
-  const [blacklistActionOpen, setBlacklistActionOpen] = useState(false);
-  const activeRestriction = entries.find((entry) => entry.status === "Aktif");
+  const [query, setQuery] = useState("");
+  const [levelFilter, setLevelFilter] =
+    useState<SuperAdminRestrictionLevelFilter>("Semua");
+  const activeEntries = entries.filter((entry) => entry.status === "Aktif");
+  const pendingReviewCount = reviewCases.filter(
+    (item) => !isSuperadminReviewTerminalStatus(item.status),
+  ).length;
+  const levelThreeCount = activeEntries.filter(
+    (entry) => getSuperadminRestrictionLevel(entry) >= 3,
+  ).length;
+  const ledgerEntries = activeEntries;
   const expiringEntry = entries.find(
     (entry) => entry.status === "Aktif" && entry.countdownAt,
   );
+  const filteredEntries = ledgerEntries.filter((entry) => {
+    const level = getSuperadminRestrictionLevel(entry);
+    const matchesLevel =
+      levelFilter === "Semua" ||
+      (levelFilter === "Level 1" && level === 1) ||
+      (levelFilter === "Level 2" && level === 2) ||
+      (levelFilter === "Level 3" && level >= 3);
+
+    return matchesLevel && matchesSuperadminRestrictionQuery(entry, query);
+  });
+  const filterCounts = restrictionLevelFilters.reduce(
+    (accumulator, filter) => {
+      accumulator[filter] = ledgerEntries.filter((entry) => {
+        const level = getSuperadminRestrictionLevel(entry);
+
+        return (
+          filter === "Semua" ||
+          (filter === "Level 1" && level === 1) ||
+          (filter === "Level 2" && level === 2) ||
+          (filter === "Level 3" && level >= 3)
+        );
+      }).length;
+
+      return accumulator;
+    },
+    {} as Record<SuperAdminRestrictionLevelFilter, number>,
+  );
 
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        eyebrow="Review & Pelanggaran"
+    <div className="space-y-6">
+      <AdminPageHero
+        description="Pusat pengawasan keputusan review buyer, pembatasan aktif, dan riwayat pelanggaran pembayaran Vickrey lintas unit."
+        eyebrow="Superadmin / Review & Pelanggaran"
+        icon={Ban}
+        rightRail={
+          <>
+            <SuperAdminHeroPill icon={BadgeCheck}>
+              {activeEntries.length} aktif
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={ShieldAlert} tone="danger">
+              {pendingReviewCount} review
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill tone="danger">
+              Level 3: {levelThreeCount}
+            </SuperAdminHeroPill>
+          </>
+        }
         title="Review & Pelanggaran"
-        description="Pusat keputusan untuk review buyer, pembatasan aktif, dan riwayat keputusan pelanggaran pembayaran Vickrey."
       />
 
-      <BlacklistReviewQueue cases={reviewCases} />
-
-      <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Pembatasan Aktif</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {entries.length === 0 ? (
-              <EmptyState
-                className="p-6"
-                description="Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
-                icon={ShieldBan}
-                title="Belum ada blacklist aktif"
-              />
-            ) : (
-              entries.map((item) => (
-                <div
-                  className="rounded-[1.5rem] border border-border/70 p-5"
-                  key={item.id}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground">
-                        {item.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {item.email}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {item.unit}
-                      </p>
-                    </div>
-                    <StatusBadge value={item.status} />
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {item.reason}
-                  </p>
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {item.total} pelanggaran | Berlaku sampai {item.until}
-                  </p>
-                  <div className="mt-3">
-                    <SuperAdminCountdown
-                      className="text-sm font-semibold text-primary"
-                      countdownAt={item.countdownAt}
-                      countdownLabel={item.countdownLabel}
-                      expiredLabel={item.expiredLabel}
-                      serverNow={serverNow}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Riwayat Keputusan & Aksi</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="mt-1 size-5 text-accent-foreground" />
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      Cabut pembatasan lebih awal
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Tuliskan alasan pencabutan agar riwayat keputusan tetap
-                      tersimpan di sistem.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {expiringEntry ? (
-                <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.04] p-5">
-                  <p className="text-sm font-semibold text-foreground">
-                    Masa blokir terdekat untuk ditinjau
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {expiringEntry.name} dari {expiringEntry.unit}
-                  </p>
-                  <div className="mt-3">
-                    <SuperAdminCountdown
-                      className="text-sm font-semibold text-primary"
-                      countdownAt={expiringEntry.countdownAt}
-                      countdownLabel={expiringEntry.countdownLabel}
-                      expiredLabel={expiringEntry.expiredLabel}
-                      serverNow={serverNow}
-                    />
-                  </div>
-                </div>
-              ) : null}
-
-              {activeRestriction ? (
-                <Button
-                  type="button"
-                  onClick={() => setBlacklistActionOpen(true)}
-                >
-                  <ShieldCheck className="size-4" />
-                  Cabut Pembatasan
-                </Button>
-              ) : (
-                <EmptyState
-                  className="p-6"
-                  description="Tidak ada akun aktif yang perlu dicabut blokirnya. Jika ada kasus baru, tombol tindakan akan muncul di sini."
-                  icon={ShieldBan}
-                  title="Belum ada aksi blacklist yang perlu diproses"
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Pengingat kebijakan</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                Pelanggaran buyer aktif hanya dibuat saat pemenang lelang
-                Vickrey tidak membayar dalam 24 jam.
-              </p>
-              <p>
-                Level 1 menahan bid Vickrey, level 2 menahan transaksi baru, dan
-                level 3 memerlukan review manual.
-              </p>
-              <p>
-                Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk
-                tindak lanjut operasional.
-              </p>
-            </CardContent>
-          </Card>
+      <div className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_18px_48px_-42px_rgba(8,69,50,0.38)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
+          <Input
+            className="h-12 rounded-[1.05rem] border-[#dbe7df] bg-[#fbfcfb] pl-12 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0a6a49]/15"
+            placeholder="Cari nama, email, unit, atau status..."
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
+            {ledgerEntries.length} akun aktif
+          </span>
+          <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
+            {reviewCases.length} histori review
+          </span>
         </div>
       </div>
 
-      <SuperAdminDialog
-        description="Gunakan hanya ketika hasil review atau bukti manual sudah cukup untuk mencabut pembatasan lebih awal."
-        onClose={() => setBlacklistActionOpen(false)}
-        open={blacklistActionOpen && Boolean(activeRestriction)}
-        title="Cabut pembatasan"
-      >
-        {activeRestriction ? (
-          <CabutBlacklistForm userId={activeRestriction.userId} />
-        ) : null}
-      </SuperAdminDialog>
+      <BlacklistReviewQueue cases={reviewCases} query={query} />
+
+      <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
+        <div className="border-b border-[#edf2ee] p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
+                Pembatasan Aktif
+              </h2>
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                Ledger blacklist buyer berdasarkan level pelanggaran real dari sistem.
+              </p>
+            </div>
+            {expiringEntry ? (
+              <div className="rounded-[1rem] bg-[#f4faf6] px-4 py-3 text-sm ring-1 ring-[#d8e8dd]">
+                <p className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-[#0a6a49]/62">
+                  Berakhir terdekat
+                </p>
+                <p className="mt-1 font-bold text-[#122018]">
+                  {expiringEntry.name}
+                </p>
+                <SuperAdminCountdown
+                  className="text-xs font-black text-primary"
+                  countdownAt={expiringEntry.countdownAt}
+                  countdownLabel={expiringEntry.countdownLabel}
+                  expiredLabel={expiringEntry.expiredLabel}
+                  serverNow={serverNow}
+                />
+              </div>
+            ) : null}
+          </div>
+
+          <div className="admin-choice-shell mt-4 flex flex-wrap gap-2 rounded-[1.15rem] p-1">
+            {restrictionLevelFilters.map((filter) => {
+              const active = levelFilter === filter;
+
+              return (
+                <button
+                  aria-pressed={active}
+                  className="admin-choice-button inline-flex items-center gap-2 rounded-[0.92rem] px-3 py-2 text-[0.72rem] font-black uppercase tracking-[0.12em]"
+                  data-active={active}
+                  key={filter}
+                  type="button"
+                  onClick={() => setLevelFilter(filter)}
+                >
+                  {filter}
+                  <span className="admin-choice-count">
+                    {filterCounts[filter]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {ledgerEntries.length === 0 ? (
+          <div className="p-4 sm:p-5">
+            <EmptyState
+              className="p-6"
+              description="Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
+              icon={ShieldBan}
+              title="Belum ada blacklist aktif"
+            />
+          </div>
+        ) : filteredEntries.length === 0 ? (
+          <div className="p-4 sm:p-5">
+            <EmptyState
+              className="p-6"
+              description="Tidak ada pembatasan yang cocok dengan pencarian atau filter level saat ini."
+              icon={SearchX}
+              title="Data tidak ditemukan"
+            />
+          </div>
+        ) : (
+          <>
+            <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
+              <div>Pengguna</div>
+              <div>Unit Asal</div>
+              <div>Tingkat Pelanggaran</div>
+              <div>Sisa Waktu</div>
+              <div className="text-right">Aksi</div>
+            </div>
+
+            <div className="divide-y divide-[#edf2ee]">
+              {filteredEntries.map((item) => {
+                const level = getSuperadminRestrictionLevel(item);
+                const meta = getRestrictionLevelMeta(level);
+
+                return (
+                  <article
+                    className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfb] lg:grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] lg:items-center sm:px-5"
+                    key={item.id}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span
+                        className={cn(
+                          "grid size-10 shrink-0 place-items-center rounded-full text-sm font-black ring-1",
+                          meta.avatar,
+                        )}
+                      >
+                        {getSuperadminInitials(item.name || "Buyer")}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-headline text-sm font-black tracking-[-0.01em] text-[#111827]">
+                          {item.name}
+                        </p>
+                        <p className="mt-1 truncate text-xs font-semibold text-[#42526b]">
+                          {item.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-[#42526b]">
+                      <Building2 className="size-4 shrink-0 text-[#536279]" />
+                      <span className="truncate">{item.unit}</span>
+                    </div>
+
+                    <div>
+                      <span
+                        className={cn(
+                          "inline-flex min-w-[9.1rem] justify-center rounded-md px-3 py-1.5 text-xs font-black",
+                          meta.badge,
+                        )}
+                      >
+                        {meta.label}
+                      </span>
+                      <p className="mt-1 text-[0.68rem] font-bold text-muted-foreground">
+                        {item.total} pelanggaran
+                      </p>
+                    </div>
+
+                    <div>
+                      <SuperAdminCountdown
+                        className="text-xs font-black text-[#42526b]"
+                        countdownAt={item.countdownAt}
+                        countdownLabel={item.countdownLabel}
+                        expiredLabel={item.expiredLabel}
+                        serverNow={serverNow}
+                      />
+                      {!item.countdownAt ? (
+                        <p className="text-xs font-black text-[#42526b]">
+                          {item.until}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-wrap justify-start gap-3 lg:justify-end">
+                      <Link
+                        className="text-sm font-black text-[#005f3e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#003d27] active:scale-[0.98]"
+                        href={`/superadmin/review-pelanggaran/detail/${item.userId}`}
+                      >
+                        Detail
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm leading-6 text-muted-foreground shadow-[0_18px_48px_-42px_rgba(8,69,50,0.34)] md:grid-cols-3">
+        <p>
+          Pelanggaran buyer aktif hanya dibuat saat pemenang lelang Vickrey
+          tidak membayar dalam 24 jam.
+        </p>
+        <p>
+          Level 1 menahan bid Vickrey, level 2 menahan transaksi baru, dan level
+          3 memerlukan review manual.
+        </p>
+        <p>
+          Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk
+          tindak lanjut operasional.
+        </p>
+      </section>
+
     </div>
   );
 }
