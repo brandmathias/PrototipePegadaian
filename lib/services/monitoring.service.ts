@@ -270,13 +270,24 @@ export function buildSuperAdminUnitRowsQuery() {
         from barang b
         where b.unit_id = ${outerUnitId}
           and b.status in ('gadai', 'jaminan')
+          and b.due_date > now()
       )`,
       marketedItems: sql<number>`(
         select count(distinct b.id)::int
         from barang b
-        left join pemasaran p on p.barang_id = b.id
+        inner join pemasaran p on p.barang_id = b.id
         where b.unit_id = ${outerUnitId}
-          and (b.status = 'dipasarkan' or p.status = 'aktif')
+          and b.status = 'dipasarkan'
+          and p.status = 'aktif'
+          and (
+            p.mode <> 'fixed_price'
+            or not exists (
+              select 1
+              from transaksi locked_t
+              where locked_t.pemasaran_id = p.id
+                and locked_t.status in ('bukti_diunggah', 'menunggu_konfirmasi_langsung', 'lunas', 'selesai')
+            )
+          )
       )`,
       soldItems: sql<number>`(
         select count(distinct b.id)::int
@@ -298,25 +309,36 @@ export function buildSuperAdminUnitRowsQuery() {
           )})
       )`,
       followUpItems: sql<number>`(
-        select count(distinct p.id)::int
-        from pemasaran p
-        inner join barang b on b.id = p.barang_id
+        select count(distinct b.id)::int
+        from barang b
+        left join pemasaran p on p.barang_id = b.id
         left join transaksi t on t.pemasaran_id = p.id
         where b.unit_id = ${outerUnitId}
+          and b.status not in ('terjual', 'ditebus')
+          and not exists (
+            select 1
+            from pemasaran active_p
+            where active_p.barang_id = b.id
+              and b.status = 'dipasarkan'
+              and active_p.status = 'aktif'
+              and (
+                active_p.mode <> 'fixed_price'
+                or not exists (
+                  select 1
+                  from transaksi locked_t
+                  where locked_t.pemasaran_id = active_p.id
+                    and locked_t.status in ('bukti_diunggah', 'menunggu_konfirmasi_langsung', 'lunas', 'selesai')
+                )
+              )
+          )
           and (
+            b.status = 'gagal'
+            or p.status = 'gagal'
+            or
             (
               t.status = 'ditolak_bukti'
               and coalesce(t.type, p.mode) = 'fixed_price'
-            )
-            or (
-              p.status = 'gagal'
-              and not exists (
-                select 1
-                from pelanggaran_user pu
-                where pu.pemasaran_id = p.id
-                  and pu.escalation_eligible = true
-                  and pu.resolved_at is null
-              )
+              and p.status <> 'aktif'
             )
           )
       )`,
@@ -423,12 +445,22 @@ export async function getSuperAdminMonitoring() {
 
   const [nationalStats] = await db
     .select({
-      collateralItems: sql<number>`count(*) filter (where ${barang.status} in ('gadai', 'jaminan'))`,
+      collateralItems: sql<number>`count(*) filter (where ${barang.status} in ('gadai', 'jaminan') and ${barang.dueDate} > now())`,
       marketedItems: sql<number>`(
         select count(distinct b.id)::int
         from barang b
-        left join pemasaran p on p.barang_id = b.id
-        where b.status = 'dipasarkan' or p.status = 'aktif'
+        inner join pemasaran p on p.barang_id = b.id
+        where b.status = 'dipasarkan'
+          and p.status = 'aktif'
+          and (
+            p.mode <> 'fixed_price'
+            or not exists (
+              select 1
+              from transaksi locked_t
+              where locked_t.pemasaran_id = p.id
+                and locked_t.status in ('bukti_diunggah', 'menunggu_konfirmasi_langsung', 'lunas', 'selesai')
+            )
+          )
       )`,
       soldItems: sql<number>`(
         select count(distinct b.id)::int
@@ -438,22 +470,38 @@ export async function getSuperAdminMonitoring() {
         where b.status = 'terjual' or t.status in ('lunas', 'selesai')
       )`,
       followUpItems: sql<number>`(
-        select count(distinct p.id)::int
-        from pemasaran p
+        select count(distinct b.id)::int
+        from barang b
+        left join pemasaran p on p.barang_id = b.id
         left join transaksi t on t.pemasaran_id = p.id
         where
-          (
-            t.status = 'ditolak_bukti'
-            and coalesce(t.type, p.mode) = 'fixed_price'
+          b.status not in ('terjual', 'ditebus')
+          and
+          not exists (
+            select 1
+            from pemasaran active_p
+            where active_p.barang_id = b.id
+              and b.status = 'dipasarkan'
+              and active_p.status = 'aktif'
+              and (
+                active_p.mode <> 'fixed_price'
+                or not exists (
+                  select 1
+                  from transaksi locked_t
+                  where locked_t.pemasaran_id = active_p.id
+                    and locked_t.status in ('bukti_diunggah', 'menunggu_konfirmasi_langsung', 'lunas', 'selesai')
+                )
+              )
           )
-          or (
-            p.status = 'gagal'
-            and not exists (
-              select 1
-              from pelanggaran_user pu
-              where pu.pemasaran_id = p.id
-                and pu.escalation_eligible = true
-                and pu.resolved_at is null
+          and
+          (
+            b.status = 'gagal'
+            or p.status = 'gagal'
+            or
+            (
+              t.status = 'ditolak_bukti'
+              and coalesce(t.type, p.mode) = 'fixed_price'
+              and p.status <> 'aktif'
             )
           )
       )`,

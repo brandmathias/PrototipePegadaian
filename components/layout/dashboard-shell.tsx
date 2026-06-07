@@ -11,12 +11,10 @@ import {
   LayoutDashboard,
   Megaphone,
   Menu,
-  Moon,
   Package,
   Search,
   ShieldCheck,
   ShoppingBag,
-  SunMedium,
   UserCog,
   WalletCards,
   X
@@ -70,7 +68,6 @@ type DashboardShellProps = {
   sidebarMetrics?: SidebarMetric[];
   sidebarUpdatedAt?: string;
   showHeaderSearch?: boolean;
-  showThemeToggle?: boolean;
   forceWhiteShell?: boolean;
   currentUser?: {
     name: string;
@@ -80,27 +77,6 @@ type DashboardShellProps = {
   profileHref?: string;
   children: ReactNode;
 };
-
-type ThemeMode = "light" | "dark";
-type ThemeTransitionDirection = "to-light" | "to-dark" | null;
-
-const THEME_STORAGE_KEY = "pegadaian:admin-theme";
-
-function getPreferredTheme(): ThemeMode {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-
-  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (storedTheme === "light" || storedTheme === "dark") {
-    return storedTheme;
-  }
-
-  return typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
 
 function clearGlobalThemeSideEffects() {
   document.documentElement.classList.remove("dark");
@@ -121,7 +97,6 @@ export function DashboardShell({
   sidebarMetrics,
   sidebarUpdatedAt,
   showHeaderSearch = true,
-  showThemeToggle = true,
   forceWhiteShell = false,
   currentUser,
   profileHref,
@@ -130,34 +105,15 @@ export function DashboardShell({
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [theme, setTheme] = useState<ThemeMode>("light");
-  const [isThemeTransitioning, setIsThemeTransitioning] = useState(false);
-  const [themeTransitionDirection, setThemeTransitionDirection] = useState<ThemeTransitionDirection>(null);
   const profileRoleLabel = currentUser?.role === "super_admin" ? "Super Admin" : "Admin Unit";
 
   useEffect(() => {
-    const preferredTheme = getPreferredTheme();
-    setTheme(preferredTheme);
     clearGlobalThemeSideEffects();
 
     return () => {
       clearGlobalThemeSideEffects();
     };
   }, []);
-
-  const toggleTheme = () => {
-    setIsThemeTransitioning(true);
-    setTheme((currentTheme) => {
-      const nextTheme = currentTheme === "dark" ? "light" : "dark";
-      setThemeTransitionDirection(nextTheme === "dark" ? "to-dark" : "to-light");
-      window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-      return nextTheme;
-    });
-    window.setTimeout(() => {
-      setIsThemeTransitioning(false);
-      setThemeTransitionDirection(null);
-    }, 940);
-  };
 
   const renderNavIcon = (icon?: NavIconName) => {
     switch (icon) {
@@ -370,12 +326,11 @@ export function DashboardShell({
     <div
       className={cn(
         "min-h-dvh bg-white text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
-        forceWhiteShell && "bg-white dark:bg-white",
-        theme === "dark" && "dark"
+        forceWhiteShell && "bg-white dark:bg-white"
       )}
       data-admin-shell="true"
-      data-admin-theme={theme}
-      style={{ colorScheme: theme }}
+      data-admin-theme="light"
+      style={{ colorScheme: "light" }}
     >
       {isMenuOpen ? (
         <button
@@ -556,35 +511,6 @@ export function DashboardShell({
 
                 <div className="flex items-center justify-end gap-2">
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
-                  {showThemeToggle ? (
-                    <button
-                      aria-label={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
-                      aria-pressed={theme === "dark"}
-                      data-theme-target={themeTransitionDirection ?? undefined}
-                      data-theme-switching={isThemeTransitioning ? "true" : "false"}
-                      className={cn(
-                        "admin-theme-toggle group relative inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57]",
-                        isThemeTransitioning && "admin-theme-toggle-switching",
-                        theme === "dark" ? "admin-theme-toggle-dark" : "admin-theme-toggle-light"
-                      )}
-                      onClick={toggleTheme}
-                      title={theme === "dark" ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
-                      type="button"
-                    >
-                      <span className="admin-theme-toggle-flash" />
-                      <span className="admin-theme-toggle-sweep" />
-                      <span className="admin-theme-toggle-aura" />
-                      <span className="admin-theme-toggle-orbit" />
-                      <span className="admin-theme-toggle-ripple" />
-                      <span className="admin-theme-toggle-core">
-                        {theme === "dark" ? (
-                          <SunMedium aria-hidden="true" className="size-[1.05rem]" />
-                        ) : (
-                          <Moon aria-hidden="true" className="size-[1.05rem]" />
-                        )}
-                      </span>
-                    </button>
-                  ) : null}
                   {profileHref && currentUser ? (
                     <AdminProfileMenu
                       helpHref={`${profileHref}#panduan`}

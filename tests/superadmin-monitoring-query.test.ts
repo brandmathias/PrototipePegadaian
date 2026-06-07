@@ -9,6 +9,8 @@ describe("superadmin monitoring query", () => {
 
     expect(rendered).toContain('"monitoring_units"."id"');
     expect(rendered).not.toContain('= "id"');
+    expect(rendered).toContain("b.due_date > now()");
+    expect(rendered).toContain("locked_t.status in");
     expect(rendered).toContain("coalesce(sum(t.amount), 0)");
     expect(rendered).toContain("t.status in ($");
   }, 15000);

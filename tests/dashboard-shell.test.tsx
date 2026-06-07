@@ -114,38 +114,19 @@ describe("DashboardShell", () => {
     expect(screen.getByRole("link", { name: /daftar operasional/i })).toBeInTheDocument();
   });
 
-  it("toggles dark and light mode from the header", () => {
+  it("removes the light and dark mode toggle from the admin header", () => {
     navigationMock.pathname = "/admin";
 
     const { container } = renderShell();
     const shell = container.querySelector("[data-admin-shell]");
     expect(shell).toBeTruthy();
     expect(shell).toHaveAttribute("data-admin-theme", "light");
+    expect((shell as HTMLElement).style.colorScheme).toBe("light");
 
     const notificationButton = screen.getByRole("button", { name: /notifikasi/i });
-    const darkModeButton = screen.getByRole("button", { name: /aktifkan mode gelap/i });
-    expect(notificationButton.compareDocumentPosition(darkModeButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-
-    fireEvent.click(darkModeButton);
-
-    expect(shell).toHaveClass("dark");
-    expect(shell).toHaveAttribute("data-admin-theme", "dark");
-    expect((shell as HTMLElement).style.colorScheme).toBe("dark");
-    expect(document.documentElement).not.toHaveClass("dark");
-    expect(document.documentElement.style.colorScheme).toBe("");
-    expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("dark");
-
-    const lightModeButton = screen.getByRole("button", { name: /aktifkan mode terang/i });
-    expect(lightModeButton).toHaveAttribute("aria-pressed", "true");
-    expect(lightModeButton).toHaveAttribute("data-theme-switching", "true");
-    fireEvent.click(lightModeButton);
-
-    expect(shell).not.toHaveClass("dark");
-    expect(shell).toHaveAttribute("data-admin-theme", "light");
-    expect((shell as HTMLElement).style.colorScheme).toBe("light");
-    expect(document.documentElement).not.toHaveClass("dark");
-    expect(document.documentElement.style.colorScheme).toBe("");
-    expect(window.localStorage.getItem("pegadaian:admin-theme")).toBe("light");
+    expect(notificationButton).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /aktifkan mode gelap/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /aktifkan mode terang/i })).not.toBeInTheDocument();
   });
 
   it("uses the same profile dropdown for superadmin accounts", () => {
@@ -185,9 +166,6 @@ describe("DashboardShell", () => {
 
     expect(document.documentElement).not.toHaveClass("dark");
     expect(document.documentElement.style.colorScheme).toBe("");
-
-    fireEvent.click(screen.getByRole("button", { name: /aktifkan mode gelap/i }));
-    expect(document.documentElement).not.toHaveClass("dark");
 
     unmount();
 

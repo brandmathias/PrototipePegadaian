@@ -11,7 +11,11 @@ export default async function Page({
   try {
     const unit = await getUnitById(id);
     return <SuperAdminUnitDetailPage unit={unit} />;
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message !== "Unit belum ditemukan.") {
+      throw error;
+    }
+
     return <SuperAdminUnitDetailPage unit={null} />;
   }
 }

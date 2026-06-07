@@ -88,6 +88,10 @@ export type MarketingSession = {
   unitAddress?: string | null;
   status: string;
   mode: string;
+  iteration?: number;
+  createdAt?: string;
+  totalIterations?: number;
+  iterationHistory?: MarketingSession[];
   media?: MarketingMedia[];
   primaryMedia?: MarketingMedia | null;
   startsAt?: string | null;
@@ -878,10 +882,10 @@ const VICKREY_PAYMENT_STATUSES = new Set([
 function getVickreyStage(auction: MarketingSession) {
   const transactionStatus = auction.transactionStatus ?? "";
 
-  if (needsMarketingStrategy(auction)) {
+  if (isFailedAuction(auction)) {
     return {
-      label: getAuctionStrategyReason(auction),
-      detail: "Detail barang bisa dievaluasi lalu dibuatkan sesi lelang baru.",
+      label: getAuctionFailureReason(auction),
+      detail: "Detail barang bisa dievaluasi lalu dijadwalkan untuk dipasarkan ulang.",
       tone: "neutral" as const,
       icon: AlertTriangle
     };
@@ -967,7 +971,7 @@ const MARKETING_METHOD_FILTERS = [
   { label: "Vickrey Auction", value: "VICKREY_AUCTION" }
 ] as const;
 
-const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Menunggu Buyer", "Selesai", "Perlu Strategi"] as const;
+const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Menunggu Buyer", "Selesai", "Gagal"] as const;
 
 type MarketingMethodFilter = (typeof MARKETING_METHOD_FILTERS)[number]["value"];
 type MarketingStatusFilter = (typeof MARKETING_STATUS_FILTERS)[number];
@@ -1039,7 +1043,7 @@ function getFixedPriceVisibleBuyerName(auction: MarketingSession) {
   return auction.buyerName ?? null;
 }
 
-function needsMarketingStrategy(auction: MarketingSession) {
+function isFailedAuction(auction: MarketingSession) {
   return (
     (auction.mode === "VICKREY_AUCTION" && auction.status === "GAGAL") ||
     (auction.mode === "VICKREY_AUCTION" &&
@@ -1049,7 +1053,7 @@ function needsMarketingStrategy(auction: MarketingSession) {
   );
 }
 
-function getAuctionStrategyReason(auction: MarketingSession) {
+function getAuctionFailureReason(auction: MarketingSession) {
   if (auction.transactionStatus === "GAGAL" || auction.winner || auction.buyerName) {
     return "Pemenang gagal bayar 24 jam";
   }
@@ -1061,8 +1065,8 @@ function getMarketingWorkflowStatus(auction: MarketingSession) {
   if (auction.mode === "FIXED_PRICE") {
     return getFixedPriceWorkflowStatus(auction);
   }
-  if (needsMarketingStrategy(auction)) {
-    return "Perlu Strategi";
+  if (isFailedAuction(auction)) {
+    return "Gagal";
   }
   if (auction.transactionStatus === "LUNAS") {
     return "Menunggu Buyer";
@@ -1126,10 +1130,16 @@ function getVickreyWinnerWorkspaceHref(auction: MarketingSession) {
   return `/admin/pemasaran/vickrey-auction/${auction.id}`;
 }
 
+function getMarketingDetailHref(auction: MarketingSession) {
+  return auction.mode === "VICKREY_AUCTION"
+    ? `/admin/pemasaran/vickrey-auction/${auction.id}`
+    : `/admin/pemasaran/fixed-price/${auction.id}`;
+}
+
 function getMarketingAction(auction: MarketingSession) {
-  if (needsMarketingStrategy(auction)) {
+  if (isFailedAuction(auction)) {
     return {
-      href: getVickreyWinnerWorkspaceHref(auction),
+      href: getMarketingDetailHref(auction),
       label: "Lihat Detail",
       variant: "default" as const
     };
@@ -1137,7 +1147,7 @@ function getMarketingAction(auction: MarketingSession) {
 
   if (auction.mode === "VICKREY_AUCTION" && auction.transactionId && isPaymentQueue(auction)) {
     return {
-      href: getVickreyWinnerWorkspaceHref(auction),
+      href: getMarketingDetailHref(auction),
       label: "Lihat Detail",
       variant: "secondary" as const
     };
@@ -1145,7 +1155,7 @@ function getMarketingAction(auction: MarketingSession) {
 
   if (auction.mode === "VICKREY_AUCTION" && isVickreyPaymentFulfilled(auction)) {
     return {
-      href: getVickreyWinnerWorkspaceHref(auction),
+      href: getMarketingDetailHref(auction),
       label: "Lihat Detail",
       variant: "secondary" as const
     };
@@ -1153,14 +1163,14 @@ function getMarketingAction(auction: MarketingSession) {
 
   if (auction.mode === "VICKREY_AUCTION") {
     return {
-      href: `/admin/pemasaran/vickrey-auction/${auction.id}`,
+      href: getMarketingDetailHref(auction),
       label: "Lihat Detail",
       variant: "default" as const
     };
   }
 
   return {
-    href: `/admin/pemasaran/fixed-price/${auction.id}`,
+    href: getMarketingDetailHref(auction),
     label: "Lihat Detail",
     variant: "secondary" as const
   };
@@ -1324,7 +1334,7 @@ function MarketingMetricCard({
   icon: typeof CalendarDays;
   label: string;
   meta?: string;
-  tone: "emerald" | "orange" | "violet";
+  tone: "emerald" | "orange" | "violet" | "red";
   value: string;
 }) {
   const toneClasses = {
@@ -1333,13 +1343,16 @@ function MarketingMetricCard({
     orange:
       "border-[#f1e1ca] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#fff8ed_100%)] text-[#d16b00] dark:border-amber-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(128,74,18,0.22)_100%)] dark:text-amber-200",
     violet:
-      "border-[#e5ddf4] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#f7f4ff_100%)] text-[#6152de] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(80,67,167,0.22)_100%)] dark:text-violet-200"
+      "border-[#e5ddf4] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#f7f4ff_100%)] text-[#6152de] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(80,67,167,0.22)_100%)] dark:text-violet-200",
+    red:
+      "border-[#f2d7d7] bg-[linear-gradient(135deg,#ffffff_0%,#ffffff_64%,#fff4f4_100%)] text-[#b42318] dark:border-red-300/16 dark:bg-[linear-gradient(135deg,#101a15_0%,#101a15_64%,rgba(138,36,36,0.22)_100%)] dark:text-red-200"
   }[tone];
 
   const iconClasses = {
     emerald: "bg-[#ecf8f0] dark:bg-emerald-300/10",
     orange: "bg-[#fff2e4] dark:bg-amber-300/10",
-    violet: "bg-[#f0ecff] dark:bg-violet-300/10"
+    violet: "bg-[#f0ecff] dark:bg-violet-300/10",
+    red: "bg-[#fff1f1] dark:bg-red-300/10"
   }[tone];
 
   return (
@@ -1369,14 +1382,14 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
   const action = getMarketingAction(auction);
   const workflowStatus = getMarketingWorkflowStatus(auction);
   const visibleBuyerName = auction.mode === "FIXED_PRICE" ? getFixedPriceVisibleBuyerName(auction) : auction.buyerName;
-  const strategyReason = needsMarketingStrategy(auction) ? getAuctionStrategyReason(auction) : null;
+  const failureReason = isFailedAuction(auction) ? getAuctionFailureReason(auction) : null;
   const statusDotClass =
     workflowStatus === "Aktif"
       ? "bg-[#0fa35a]"
       : workflowStatus === "Menunggu Bayar"
         ? "bg-[#d89b12]"
-        : workflowStatus === "Perlu Strategi"
-          ? "bg-[#6f58e8]"
+        : workflowStatus === "Gagal"
+          ? "bg-[#d61f1f]"
           : "bg-slate-400";
   const modeLabel = auction.mode === "VICKREY_AUCTION" ? "Vickrey Auction" : "Fixed Price";
   const modeTone =
@@ -1405,6 +1418,11 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           <span className={`rounded-full px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.16em] ${modeTone}`}>
             {modeLabel}
           </span>
+          {(auction.totalIterations ?? 0) > 1 ? (
+            <span className="rounded-full bg-[#f4f7f4] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#40558b] ring-1 ring-[#d9e7df] dark:bg-white/[0.045] dark:text-slate-300 dark:ring-white/10">
+              Iterasi {auction.iteration ?? auction.totalIterations}/{auction.totalIterations}
+            </span>
+          ) : null}
         </div>
 
         <div className="mt-3">
@@ -1451,17 +1469,19 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           </div>
           <div className="rounded-[0.95rem] bg-white px-3 py-2 text-sm leading-6 text-black/58 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ring-1 ring-black/[0.045] dark:bg-[#101a15] dark:text-slate-300/72 dark:ring-white/8">
             <p className="font-bold text-[#15211b] dark:text-slate-100">
-              {strategyReason ||
+              {failureReason ||
                 visibleBuyerName ||
                 auction.winner ||
                 (auction.mode === "VICKREY_AUCTION" ? "Bid masih tertutup" : "Belum ada pembeli")}
             </p>
             <p className="mt-0.5">
-              {strategyReason
-                ? "Buka arsip gagal lalu jadwalkan pasarkan ulang"
+              {failureReason
+                ? "Buka detail untuk jadwalkan pasarkan ulang"
                 : auction.finalPrice
                 ? `${currency.format(auction.finalPrice)} harga final`
-                : auction.mode === "VICKREY_AUCTION"
+                : (auction.totalIterations ?? 0) > 1
+                  ? `Riwayat ${auction.totalIterations} sesi pemasaran`
+                  : auction.mode === "VICKREY_AUCTION"
                   ? `${auction.participants ?? 0} penawaran tercatat`
                   : getFixedPriceOperationalNote(auction)}
             </p>
@@ -1482,6 +1502,210 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
   );
 }
 
+function getMarketingSessionTimestamp(auction: MarketingSession) {
+  const value = auction.createdAt ?? auction.startsAt ?? auction.endingAt ?? auction.soldAt;
+  const time = value ? new Date(value).getTime() : Number.NaN;
+
+  return Number.isFinite(time) ? time : 0;
+}
+
+function getMarketingIterationNumber(auction: MarketingSession) {
+  return typeof auction.iteration === "number" && Number.isFinite(auction.iteration) ? auction.iteration : 0;
+}
+
+function compareMarketingRecency(left: MarketingSession, right: MarketingSession) {
+  const iterationDiff = getMarketingIterationNumber(right) - getMarketingIterationNumber(left);
+  if (iterationDiff !== 0) {
+    return iterationDiff;
+  }
+
+  return getMarketingSessionTimestamp(right) - getMarketingSessionTimestamp(left);
+}
+
+function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {
+  const groups = new Map<string, MarketingSession[]>();
+
+  for (const auction of auctions) {
+    const key = auction.lotId || auction.id;
+    const collection = groups.get(key) ?? [];
+    collection.push(auction);
+    groups.set(key, collection);
+  }
+
+  return Array.from(groups.values())
+    .map((group) => {
+      const sortedHistory = [...group].sort(compareMarketingRecency);
+      const latest = sortedHistory[0];
+
+      return {
+        ...latest,
+        totalIterations: sortedHistory.length,
+        iterationHistory: sortedHistory
+      };
+    })
+    .sort(compareMarketingRecency);
+}
+
+function getMarketingSearchValues(auction: MarketingSession) {
+  const history = auction.iterationHistory?.length ? auction.iterationHistory : [auction];
+
+  return [
+    auction.lot,
+    auction.code,
+    auction.id,
+    auction.category,
+    auction.condition,
+    ...history.flatMap((entry) => [
+      entry.id,
+      entry.code,
+      getMarketingWorkflowStatus(entry),
+      isFailedAuction(entry) ? getAuctionFailureReason(entry) : null,
+      entry.winner,
+      entry.buyerName
+    ])
+  ];
+}
+
+function getMarketingIterationDateLabel(auction: MarketingSession) {
+  return getMarketingTimeValue(auction).replace(/\.(?=\d{2}\s*WIB)/u, ":").toUpperCase();
+}
+
+function getMarketingIterationSummary(auction: MarketingSession) {
+  if (isFailedAuction(auction)) {
+    return getAuctionFailureReason(auction);
+  }
+
+  if (auction.mode === "VICKREY_AUCTION") {
+    if (auction.winner || auction.buyerName) {
+      return `${auction.winner || auction.buyerName} - ${auction.finalPrice ? currency.format(auction.finalPrice) : "hasil dibuka"}`;
+    }
+
+    if (auction.visibility === "TERKUNCI") {
+      return `${auction.participants ?? 0} peserta tercatat`;
+    }
+
+    return auction.note || "Hasil lelang sudah dibuka";
+  }
+
+  return auction.buyerName || getFixedPriceOperationalNote(auction);
+}
+
+function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession }) {
+  const router = useRouter();
+  const history = useMemo(() => {
+    const rows = auction.iterationHistory?.length ? auction.iterationHistory : [auction];
+    const uniqueRows = new Map<string, MarketingSession>();
+
+    for (const row of rows) {
+      uniqueRows.set(row.id, row);
+    }
+
+    return Array.from(uniqueRows.values()).sort(compareMarketingRecency);
+  }, [auction]);
+  const [selectedIterationId, setSelectedIterationId] = useState(() => auction.id);
+
+  useEffect(() => {
+    setSelectedIterationId(auction.id);
+  }, [auction.id]);
+
+  if (history.length <= 1) {
+    return null;
+  }
+
+  const selectedIteration = history.find((entry) => entry.id === selectedIterationId) ?? history[0];
+  const latestIterationId = history[0]?.id;
+  const selectedStatus = getMarketingWorkflowStatus(selectedIteration);
+  const selectedFailed = selectedStatus === "Gagal";
+  const selectedSettled = selectedStatus === "Selesai" || selectedStatus === "Menunggu Buyer";
+  const selectedActive = selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
+  const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
+    value: entry.id,
+    label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
+    icon: FileText
+  }));
+  const handleIterationChange = useCallback(
+    (nextId: string) => {
+      const nextIteration = history.find((entry) => entry.id === nextId);
+      if (!nextIteration) {
+        return;
+      }
+
+      setSelectedIterationId(nextId);
+
+      if (nextIteration.id !== auction.id) {
+        router.push(getMarketingDetailHref(nextIteration));
+      }
+    },
+    [auction.id, history, router]
+  );
+
+  return (
+    <section className="overflow-hidden rounded-[1.15rem] border border-[#d8e8dd] border-l-[5px] border-l-[#008f4a] bg-white px-5 py-5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] print:hidden">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
+            Riwayat Iterasi Pemasaran
+          </p>
+          <h2 className="mt-2 font-headline text-[1.48rem] font-black leading-none text-[#13211c]">
+            {auction.lot}
+          </h2>
+        </div>
+        <AdminSelect
+          ariaLabel="Pilih iterasi pemasaran"
+          className="w-full sm:w-[13.75rem] [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.92rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
+          options={iterationOptions}
+          value={selectedIteration.id}
+          onValueChange={handleIterationChange}
+        />
+      </div>
+
+      <div className="mt-5 border-t border-[#e6eee9] pt-5">
+        <Link
+          aria-current={selectedIteration.id === auction.id ? "page" : undefined}
+          className="group grid gap-3 rounded-[0.95rem] text-sm transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:grid-cols-[11.5rem_minmax(0,1fr)_11.5rem] sm:items-center"
+          href={getMarketingDetailHref(selectedIteration)}
+        >
+          <span
+            className={cn(
+              "inline-flex h-9 w-fit items-center gap-2 rounded-[0.45rem] px-3.5 text-[0.82rem] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]",
+              selectedFailed
+                ? "bg-[#fff1f1] text-[#b42318]"
+                : selectedSettled
+                  ? "bg-[#eaf8f0] text-[#006747]"
+                  : selectedActive
+                    ? "bg-[#fff6df] text-[#9b5c00]"
+                    : "bg-[#eef3f1] text-[#52655d]"
+            )}
+          >
+            <span
+              className={cn(
+                "relative size-3 rounded-full",
+                selectedFailed
+                  ? "bg-[#d61f1f]"
+                  : selectedSettled
+                    ? "bg-[#00a85a]"
+                    : selectedActive
+                      ? "bg-[#d89b12]"
+                      : "bg-[#94a3a0]"
+              )}
+            >
+              <span className="absolute inset-0 rounded-full bg-current opacity-20 transition duration-700 group-hover:scale-[1.85]" />
+            </span>
+            {selectedStatus}
+          </span>
+          <span className="min-w-0 truncate font-black text-[#0f172a]">
+            {getMarketingIterationSummary(selectedIteration)}
+          </span>
+          <span className="inline-flex items-center gap-2 font-mono text-[0.76rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
+            <Clock3 className="size-4 shrink-0" />
+            {getMarketingIterationDateLabel(selectedIteration)}
+          </span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function AdminMarketingUnifiedPage({
   auctions,
   unitName = "Unit aktif"
@@ -1492,9 +1716,10 @@ export function AdminMarketingUnifiedPage({
   const [methodFilter, setMethodFilter] = useState<MarketingMethodFilter>("ALL");
   const [statusFilter, setStatusFilter] = useState<MarketingStatusFilter>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const marketingFeedItems = useMemo(() => buildLatestMarketingFeedItems(auctions), [auctions]);
 
   const metrics = useMemo(() => {
-    const activeSessions = auctions.filter(isMarketingActive);
+    const activeSessions = marketingFeedItems.filter(isMarketingActive);
     const fixedActive = activeSessions.filter((auction) => auction.mode === "FIXED_PRICE").length;
     const vickreyActive = activeSessions.filter((auction) => auction.mode === "VICKREY_AUCTION").length;
 
@@ -1502,26 +1727,26 @@ export function AdminMarketingUnifiedPage({
       active: activeSessions.length,
       fixedActive,
       vickreyActive,
-      sold: auctions.filter(isMarketingSold).length,
-      strategy: auctions.filter(needsMarketingStrategy).length
+      sold: marketingFeedItems.filter(isMarketingSold).length,
+      failed: marketingFeedItems.filter(isFailedAuction).length
     };
-  }, [auctions]);
+  }, [marketingFeedItems]);
 
   const filteredAuctions = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return auctions.filter((auction) => {
+    return marketingFeedItems.filter((auction) => {
       const matchesMethod = methodFilter === "ALL" || auction.mode === methodFilter;
       const matchesStatus = statusFilter === "Semua" || getMarketingWorkflowStatus(auction) === statusFilter;
       const matchesSearch =
         !normalizedQuery ||
-        [auction.lot, auction.code, auction.id, auction.category, auction.condition]
+        getMarketingSearchValues(auction)
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(normalizedQuery));
 
       return matchesMethod && matchesStatus && matchesSearch;
     });
-  }, [auctions, methodFilter, searchQuery, statusFilter]);
+  }, [marketingFeedItems, methodFilter, searchQuery, statusFilter]);
 
   const pagination = useAdminPagination(filteredAuctions, `${methodFilter}-${statusFilter}-${searchQuery}`);
 
@@ -1580,10 +1805,10 @@ export function AdminMarketingUnifiedPage({
         <MarketingMetricCard
           description="Pemenang gagal bayar 24 jam / tanpa peserta"
           icon={Target}
-          label="Perlu Strategi Ulang"
-          meta="Siap lelang ulang"
-          tone="violet"
-          value={`${metrics.strategy} Produk`}
+          label="Lelang Gagal"
+          meta="Perlu tindakan"
+          tone="red"
+          value={`${metrics.failed} Produk`}
         />
       </section>
 
@@ -2079,6 +2304,8 @@ export function AdminFixedPriceDetailPage({
           </div>
         </div>
       </section>
+
+      <MarketingIterationHistoryPanel auction={auction} />
 
       <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
         <div className="space-y-4">
@@ -4929,6 +5156,8 @@ export function AdminVickreyAuctionDetailPage({
           <VickreyLiveBadge status={auction.status} />
         </div>
       </section>
+
+      <MarketingIterationHistoryPanel auction={auction} />
 
       {showFailureArchive ? (
         <VickreyFailedArchiveWorkspace auction={auction} />

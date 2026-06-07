@@ -343,11 +343,27 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
-  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId] = await Promise.all([
+  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId, historyRows] = await Promise.all([
     getMarketingMediaByBarangIds([row.item.id]),
     getLatestTransactionsByPemasaranIds([row.marketing.id]),
-    getLotStatsByIds([row.marketing.id])
+    getLotStatsByIds([row.marketing.id]),
+    db
+      .select({
+        marketing: pemasaran,
+        bidCount: sql<number>`count(${bids.id})`,
+        winnerName: users.name
+      })
+      .from(pemasaran)
+      .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
+      .leftJoin(users, eq(users.id, pemasaran.winnerId))
+      .where(eq(pemasaran.barangId, row.item.id))
+      .groupBy(pemasaran.id, users.name)
+      .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
   ]);
+
+  const historyTransactionByPemasaranId = await getLatestTransactionsByPemasaranIds(
+    historyRows.map((history) => history.marketing.id)
+  );
 
   const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
   const bidRows = shouldRevealBids
@@ -368,7 +384,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
         .orderBy(asc(bids.createdAt))
     : [];
 
-  return serializeAdminPemasaran(row.marketing, {
+  const baseExtra = {
     lotName: row.item.name,
     lotCode: row.item.code,
     lotCategory: row.item.category,
@@ -377,12 +393,28 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     lotAppraisalValue: row.item.appraisalValue,
     lotSpecifications: row.item.specifications,
     unitName: row.unitName,
-    unitAddress: row.unitAddress,
-    media: mediaByBarangId.get(row.item.id) ?? [],
-    bidCount: Number(row.bidCount ?? 0),
-    insights: statsByPemasaranId.get(row.marketing.id) ?? null,
-    winnerName: row.winnerName ?? null,
-    transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
-    bids: bidRows
-  });
+    unitAddress: row.unitAddress
+  };
+
+  const iterationHistory = historyRows.map((history) =>
+    serializeAdminPemasaran(history.marketing, {
+      ...baseExtra,
+      bidCount: Number(history.bidCount ?? 0),
+      winnerName: history.winnerName ?? null,
+      transaction: historyTransactionByPemasaranId.get(history.marketing.id) ?? null
+    })
+  );
+
+  return {
+    ...serializeAdminPemasaran(row.marketing, {
+      ...baseExtra,
+      media: mediaByBarangId.get(row.item.id) ?? [],
+      bidCount: Number(row.bidCount ?? 0),
+      insights: statsByPemasaranId.get(row.marketing.id) ?? null,
+      winnerName: row.winnerName ?? null,
+      transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
+      bids: bidRows
+    }),
+    iterationHistory
+  };
 }

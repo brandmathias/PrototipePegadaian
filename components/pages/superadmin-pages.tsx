@@ -2,38 +2,82 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  type FocusEvent as ReactFocusEvent,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   AlertTriangle,
   BadgeCheck,
   Ban,
+  BarChart3,
+  CheckCircle2,
   Pencil,
   Building2,
+  CalendarClock,
+  CalendarDays,
+  CarFront,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
-  ClipboardCheck,
+  Download,
   Eye,
   CreditCard,
+  FileText,
+  FileWarning,
+  Gavel,
+  Gem,
+  Hash,
+  Info,
   Landmark,
   ListChecks,
+  Mail,
+  Megaphone,
+  Medal,
+  MonitorSmartphone,
+  MoreVertical,
   Package,
+  Package2,
+  PackagePlus,
+  Printer,
+  Phone,
   PieChart,
   Plus,
+  RefreshCcw,
+  RefreshCw,
+  ReceiptText,
+  Ruler,
   Search,
   SearchX,
+  Scale,
   Shield,
   ShieldAlert,
   ShieldCheck,
   ShieldBan,
+  ShoppingBag,
+  Sparkles,
+  LockKeyhole,
+  Trophy,
   TrendingDown,
   TrendingUp,
   type LucideIcon,
   UserCog,
+  UserRound,
+  UsersRound,
   WalletCards,
   X,
 } from "lucide-react";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
+import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
+import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { BlacklistReviewQueue } from "@/components/superadmin/blacklist-review-queue";
 import {
@@ -45,15 +89,17 @@ import {
   RekeningForm,
 } from "@/components/superadmin/rekening-form";
 import {
-  DeactivateUnitButton,
   UnitForm,
 } from "@/components/superadmin/unit-form";
 import { SectionHeading } from "@/components/shared/section-heading";
+import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
+import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { cn } from "@/lib/utils";
 
 export type SuperAdminMetric = {
@@ -123,6 +169,116 @@ export type SuperAdminUnitDetail = {
     phone: string;
     status: string;
   }>;
+  items?: SuperAdminUnitBarangItem[];
+};
+
+export type SuperAdminUnitBarangItem = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  imageUrl?: string | null;
+  marketingModeLabel: string;
+  operationalStatus: string;
+  operationalTone: "amber" | "blue" | "emerald" | "red" | "slate";
+  value: number;
+};
+
+export type SuperAdminUnitBarangDetailMedia = {
+  id: string;
+  type: string;
+  url: string;
+  fileName?: string;
+};
+
+export type SuperAdminUnitBarangMarketingSession = {
+  id: string;
+  lotId: string;
+  lot: string;
+  code?: string;
+  category?: string;
+  condition?: string;
+  description?: string;
+  status: string;
+  mode: string;
+  iteration?: number;
+  totalIterations?: number;
+  iterationHistory?: SuperAdminUnitBarangMarketingSession[];
+  media?: SuperAdminUnitBarangDetailMedia[];
+  primaryMedia?: SuperAdminUnitBarangDetailMedia | null;
+  startsAt?: string | null;
+  createdAt?: string;
+  ending?: string;
+  endingAt?: string;
+  revealDeadline?: string | null;
+  revealDeadlineAt?: string | null;
+  participants?: number;
+  revealedBidCount?: number;
+  pendingRevealCount?: number;
+  price?: number | null;
+  transactionId?: string | null;
+  transactionStatus?: string | null;
+  buyerName?: string | null;
+  buyerEmail?: string | null;
+  buyerPhone?: string | null;
+  buyerNationalId?: string | null;
+  paymentMethod?: string | null;
+  proofUrl?: string | null;
+  reference?: string | null;
+  soldAt?: string | null;
+  paymentDeadline?: string | null;
+  basePrice?: number | null;
+  appraisalValue?: number | null;
+  finalPrice?: number | null;
+  winner?: string | null;
+  visibility?: string;
+  specifications?: Record<string, string> | null;
+  note?: string;
+  bids?: Array<{
+    id: string;
+    bidderId: string;
+    bidderName: string;
+    submittedAtLabel: string;
+    amount?: number | null;
+    isRevealed?: boolean;
+    rank: number;
+    isWinner: boolean;
+    determinesFinalPrice: boolean;
+  }>;
+};
+
+export type SuperAdminUnitBarangHistoryEntry = {
+  id: string;
+  barangId: string;
+  actionLabel: string;
+  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
+  note: string;
+  actorName: string;
+  createdAtLabel: string;
+};
+
+export type SuperAdminUnitBarangDetail = {
+  unit: {
+    id: string;
+    code: string;
+    name: string;
+    address: string;
+    status: string;
+  };
+  item: Record<string, any> & {
+    id: string;
+    code?: string;
+    name?: string;
+    category?: string;
+    condition?: string;
+    status?: string;
+    media?: SuperAdminUnitBarangDetailMedia[];
+    specifications?: Record<string, string>;
+  };
+  operationalStatus: string;
+  operationalTone: SuperAdminUnitBarangItem["operationalTone"];
+  marketing: SuperAdminUnitBarangMarketingSession | null;
+  history: SuperAdminUnitBarangHistoryEntry[];
 };
 
 export type SuperAdminAdminItem = {
@@ -1769,11 +1925,395 @@ export function SuperAdminUnitsPage({
   );
 }
 
+const unitDetailPageSizeOptions = [10, 20, 50] as const;
+const unitDetailFilterAll = "Semua";
+const unitDetailModeOptions = [
+  { label: "Fixed Price", value: "fixed_price" },
+  { label: "Vickrey Auction", value: "vickrey" },
+] as const;
+
+type UnitDetailSelectOption = {
+  label: string;
+  value: string;
+};
+
+function normalizeUnitDetailOptionValue(value: string) {
+  return value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+function formatUnitDetailCategory(value: string) {
+  const normalized = normalizeUnitDetailOptionValue(value);
+
+  if (normalized === "logam_mulia") {
+    return "Logam Mulia";
+  }
+
+  return normalized
+    .split("_")
+    .filter(Boolean)
+    .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
+    .join(" ");
+}
+
+function getSuperAdminSpecificationIcon(category: unknown, label: string) {
+  const normalizedCategory = String(category ?? "").toLowerCase();
+  const normalizedLabel = label.toLowerCase();
+
+  if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+    if (normalizedLabel.includes("berat")) return Scale;
+    if (normalizedLabel.includes("kadar")) return Sparkles;
+    if (normalizedLabel.includes("panjang") || normalizedLabel.includes("diameter")) return Ruler;
+    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    return Gem;
+  }
+
+  if (normalizedCategory.includes("logam")) {
+    if (normalizedLabel.includes("berat")) return Scale;
+    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    return Medal;
+  }
+
+  if (normalizedCategory.includes("kendara")) {
+    if (normalizedLabel.includes("nomor")) return Hash;
+    if (normalizedLabel.includes("dokumen")) return FileText;
+    return CarFront;
+  }
+
+  if (normalizedCategory.includes("elektronik")) {
+    if (normalizedLabel.includes("garansi")) return ShieldCheck;
+    if (normalizedLabel.includes("kapasitas") || normalizedLabel.includes("spesifikasi")) return FileText;
+    return MonitorSmartphone;
+  }
+
+  if (normalizedLabel.includes("ukuran")) return Ruler;
+  if (normalizedLabel.includes("material")) return Sparkles;
+  return Package2;
+}
+
+function getUnitDetailMarketingModeValue(value: string) {
+  const normalized = normalizeUnitDetailOptionValue(value);
+
+  if (normalized.includes("fixed")) {
+    return "fixed_price";
+  }
+
+  if (normalized.includes("vickrey")) {
+    return "vickrey";
+  }
+
+  return "";
+}
+
+function getUnitDetailMarketingModeLabel(value: string) {
+  const modeValue = getUnitDetailMarketingModeValue(value);
+  return unitDetailModeOptions.find((option) => option.value === modeValue)?.label ?? value;
+}
+
+function UnitDetailSelect({
+  ariaLabel,
+  icon,
+  label,
+  onChange,
+  options,
+  showActiveState = true,
+  value,
+  widthClass = "min-w-[12rem]",
+}: {
+  ariaLabel: string;
+  icon?: ReactNode;
+  label: string;
+  onChange: (value: string) => void;
+  options: UnitDetailSelectOption[];
+  showActiveState?: boolean;
+  value: string;
+  widthClass?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const listboxId = `${ariaLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-listbox`;
+  const selectedOption = options.find((option) => option.value === value);
+  const triggerLabel = value === unitDetailFilterAll ? label : (selectedOption?.label ?? label);
+  const hasActiveFilter = showActiveState && value !== unitDetailFilterAll;
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className={cn("relative", widthClass)} ref={rootRef}>
+      <button
+        aria-controls={open ? listboxId : undefined}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={ariaLabel}
+        className={cn(
+          "group inline-flex h-11 w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 text-left text-sm font-bold shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] outline-none transition-[transform,border-color,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#fbfefd] focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/10 active:scale-[0.985]",
+          open || hasActiveFilter ? "border-[#9acdaf] text-[#00563b]" : "border-[#d8e4de] text-[#273954]",
+        )}
+        role="combobox"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {icon ? <span className="shrink-0 text-[#007a4d]">{icon}</span> : null}
+          <span className="truncate">{triggerLabel}</span>
+        </span>
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-[#6a7d73] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            open && "rotate-180 text-[#00563b]",
+          )}
+        />
+      </button>
+
+      <div
+        aria-hidden={!open}
+        className={cn(
+          "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 origin-top overflow-hidden rounded-xl border border-[#d8e4de] bg-white p-1.5 shadow-[0_24px_58px_-34px_rgba(8,69,50,0.42)] ring-1 ring-white/70 transition-[opacity,transform,visibility] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          open
+            ? "visible translate-y-0 scale-100 opacity-100"
+            : "invisible -translate-y-1 scale-[0.98] opacity-0",
+        )}
+        id={listboxId}
+        role="listbox"
+      >
+        {options.map((option) => {
+          const active = option.value === value;
+
+          return (
+            <button
+              aria-selected={active}
+              className={cn(
+                "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-bold transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:translate-x-0.5 hover:bg-[#f5faf7] active:scale-[0.99]",
+                active ? "bg-[#eaf8f0] text-[#00563b]" : "text-[#273954]",
+              )}
+              key={option.value}
+              role="option"
+              type="button"
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              <span className="truncate">{option.label}</span>
+              {active ? <BadgeCheck className="size-4 shrink-0 text-[#007a4d]" /> : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function getUnitDetailStatusToneClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
+  if (tone === "amber") {
+    return "bg-amber-50 text-amber-700 ring-amber-100";
+  }
+  if (tone === "red") {
+    return "bg-rose-50 text-rose-700 ring-rose-100";
+  }
+  if (tone === "blue") {
+    return "bg-blue-50 text-blue-700 ring-blue-100";
+  }
+  if (tone === "slate") {
+    return "bg-slate-100 text-slate-700 ring-slate-200";
+  }
+
+  return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+}
+
+function getUnitDetailStatusDotClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
+  if (tone === "amber") return "bg-amber-500";
+  if (tone === "red") return "bg-rose-500";
+  if (tone === "blue") return "bg-blue-500";
+  if (tone === "slate") return "bg-slate-500";
+  return "bg-emerald-500";
+}
+
+function getUnitTypeLabel(name: string) {
+  if (/upc/i.test(name)) {
+    return "Unit Pelayanan Cabang";
+  }
+  if (/cp/i.test(name)) {
+    return "Cabang Pegadaian";
+  }
+
+  return "Unit Pegadaian";
+}
+
+function getUnitDetailVisiblePages(currentPage: number, totalPages: number) {
+  return Array.from({ length: totalPages }, (_, index) => index + 1).filter(
+    (page) =>
+      totalPages <= 5 ||
+      page === 1 ||
+      page === totalPages ||
+      Math.abs(page - currentPage) <= 1,
+  );
+}
+
 export function SuperAdminUnitDetailPage({
   unit,
 }: {
   unit: SuperAdminUnitDetail | null;
 }) {
+  const items = unit?.items ?? [];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState(unitDetailFilterAll);
+  const [statusFilter, setStatusFilter] = useState(unitDetailFilterAll);
+  const [modeFilter, setModeFilter] = useState(unitDetailFilterAll);
+  const [pageSize, setPageSize] = useState<(typeof unitDetailPageSizeOptions)[number]>(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const periodLabel = getMonitoringPeriodLabel();
+  const categoryOptions = useMemo(() => {
+    const categoryMap = new Map<string, string>();
+
+    items.forEach((item) => {
+      const value = normalizeUnitDetailOptionValue(item.category);
+      if (value && !categoryMap.has(value)) {
+        categoryMap.set(value, formatUnitDetailCategory(item.category));
+      }
+    });
+
+    return [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
+        left.label.localeCompare(right.label, "id-ID"),
+      ),
+    ];
+  }, [items]);
+  const statusOptions = useMemo(
+    () => [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...Array.from(new Set(items.map((item) => item.operationalStatus).filter(Boolean)))
+        .sort()
+        .map((status) => ({ label: status, value: status })),
+    ],
+    [items],
+  );
+  const modeOptions = useMemo(
+    () => [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...unitDetailModeOptions,
+    ],
+    [],
+  );
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const matchesSearch =
+        !normalizedQuery ||
+        item.name.toLowerCase().includes(normalizedQuery) ||
+        item.code.toLowerCase().includes(normalizedQuery);
+      const matchesCategory =
+        categoryFilter === unitDetailFilterAll ||
+        normalizeUnitDetailOptionValue(item.category) === categoryFilter;
+      const matchesStatus =
+        statusFilter === unitDetailFilterAll || item.operationalStatus === statusFilter;
+      const matchesMode =
+        modeFilter === unitDetailFilterAll ||
+        getUnitDetailMarketingModeValue(item.marketingModeLabel) === modeFilter;
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesMode;
+    });
+  }, [categoryFilter, items, modeFilter, searchQuery, statusFilter]);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const visiblePages = getUnitDetailVisiblePages(currentPage, totalPages);
+  const currentPageStart =
+    filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const currentPageEnd = Math.min(currentPage * pageSize, filteredItems.length);
+  const collateralCount = items.filter(
+    (item) => item.operationalStatus === "Barang Jaminan",
+  ).length;
+  const readyCount = items.filter(
+    (item) => item.operationalStatus === "Siap Dipasarkan",
+  ).length;
+  const marketedCount = items.filter(
+    (item) => item.operationalStatus === "Sedang Dipasarkan",
+  ).length;
+  const soldCount = items.filter((item) => item.operationalStatus === "Terjual").length;
+  const followUpCount = items.filter(
+    (item) => item.operationalStatus === "Ada Tindak Lanjut",
+  ).length;
+  const unitDetailMetrics = [
+    {
+      label: "Barang Jaminan",
+      value: collateralCount,
+      icon: Clock3,
+      iconClass: "bg-amber-50 text-amber-600 ring-amber-100",
+      filter: "Barang Jaminan",
+    },
+    {
+      label: "Siap Dipasarkan",
+      value: readyCount,
+      icon: Package,
+      iconClass: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+      filter: "Siap Dipasarkan",
+    },
+    {
+      label: "Sedang Dipasarkan",
+      value: marketedCount,
+      icon: Megaphone,
+      iconClass: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+      filter: "Sedang Dipasarkan",
+    },
+    {
+      label: "Terjual",
+      value: soldCount,
+      icon: BadgeCheck,
+      iconClass: "bg-blue-50 text-blue-700 ring-blue-100",
+      filter: "Terjual",
+    },
+    {
+      label: "Perlu Tindak Lanjut",
+      value: followUpCount,
+      icon: AlertTriangle,
+      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
+      filter: "Ada Tindak Lanjut",
+    },
+  ];
+  const resetFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter(unitDetailFilterAll);
+    setStatusFilter(unitDetailFilterAll);
+    setModeFilter(unitDetailFilterAll);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, modeFilter, pageSize, searchQuery, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
   if (!unit) {
     return (
       <Card className="border border-border/70 bg-white p-8">
@@ -1782,96 +2322,2418 @@ export function SuperAdminUnitDetailPage({
     );
   }
 
+  const unitLabel = `${unit.name} (${unit.code})`;
+  const unitTypeLabel = getUnitTypeLabel(`${unit.name} ${unit.code}`);
+
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        eyebrow="Detail Unit"
-        title={unit.name}
-        description="Lihat status unit, admin yang bertugas, dan rekening aktif saat ini dalam satu tempat."
-        action={
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/superadmin/unit/${unit.id}/rekening`}>
-              <Button>
-                <WalletCards className="size-4" />
-                Kelola Rekening
-              </Button>
-            </Link>
-            <DeactivateUnitButton disabled={!unit.isActive} unitId={unit.id} />
+    <div className="space-y-4 lg:space-y-5">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-[#536279]"
+      >
+        <Link
+          className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[#00563b]"
+          href="/superadmin/monitoring-unit"
+        >
+          Monitoring Unit
+        </Link>
+        <span className="text-[#c5d1cb]">/</span>
+        <span>Detail Unit</span>
+        <span className="text-[#c5d1cb]">/</span>
+        <span className="text-[#13211c]">{unit.name}</span>
+      </nav>
+
+      <section className="rounded-[1.25rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.48)] sm:p-5 lg:p-6">
+        <div className="flex flex-col gap-4 border-b border-[#edf2ee] pb-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-[1rem] bg-emerald-50 text-[#007a4d] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] ring-1 ring-emerald-100">
+              <Building2 className="size-7" strokeWidth={1.9} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="font-headline text-2xl font-black tracking-tight text-[#13211c]">
+                  {unitLabel}
+                </h2>
+                <StatusBadge value={unit.status} />
+              </div>
+              <p className="mt-1 text-sm font-semibold text-[#536279]">
+                {unitTypeLabel}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-[0.72rem] font-bold text-[#52615d]">
+                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
+                  {formatDashboardCount(unit.adminCount)} admin aktif
+                </span>
+                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
+                  {formatDashboardCount(unit.accountCount)} rekening
+                </span>
+                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
+                  {unit.address}
+                </span>
+              </div>
+            </div>
           </div>
-        }
-      />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "Kode Unit", value: unit.code },
-          { label: "Status", value: unit.status },
-          { label: "Admin Aktif", value: String(unit.adminCount) },
-          { label: "Jumlah Rekening", value: String(unit.accountCount) },
-        ].map((item) => (
-          <Card
-            className="border border-border/70 bg-white p-5"
-            key={item.label}
-          >
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {item.label}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="relative">
+              <select
+                aria-label="Periode monitoring unit"
+                className="h-11 w-full appearance-none rounded-xl border border-[#d8e4de] bg-white pl-10 pr-10 text-sm font-bold text-[#273954] shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#b9d8c7] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 sm:w-[13.75rem]"
+                defaultValue={periodLabel}
+              >
+                <option value={periodLabel}>Periode: {periodLabel}</option>
+              </select>
+              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#007a4d]" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#6a7d73]" />
+            </div>
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-4 text-sm font-bold text-[#273954] shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#b9d8c7] hover:bg-[#fbfcfb] active:scale-[0.98]"
+              type="button"
+            >
+              <Download className="size-4" />
+              Export
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {unitDetailMetrics.map((metric) => {
+            const Icon = metric.icon;
+
+            return (
+              <button
+                aria-label={`Ringkasan ${metric.label}`}
+                className="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe8e2] bg-white p-4 text-left shadow-[0_20px_48px_-44px_rgba(8,69,50,0.44)] outline-none transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:shadow-[0_22px_58px_-44px_rgba(8,69,50,0.55)] focus-visible:ring-2 focus-visible:ring-primary/20"
+                key={metric.label}
+                onClick={() => setStatusFilter(metric.filter)}
+                type="button"
+              >
+                <span className="flex min-w-0 items-center gap-4">
+                  <span
+                    className={cn(
+                      "grid size-12 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
+                      metric.iconClass,
+                    )}
+                  >
+                    <Icon className="size-5" strokeWidth={1.9} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-headline text-3xl font-black leading-none tracking-[-0.04em] text-[#13211c]">
+                      {formatDashboardCount(metric.value)}
+                    </span>
+                    <span className="mt-1 block text-xs font-semibold text-[#536279]">
+                      {metric.label}
+                    </span>
+                  </span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-[#9aa8a0] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5" />
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 rounded-xl border border-[#edf2ee] bg-[#fbfcfb] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#536279]" />
+              <input
+                aria-label="Cari nama barang atau ID barang"
+                className="h-11 w-full rounded-xl border border-[#d8e4de] bg-white pl-11 pr-4 text-sm font-semibold text-[#273954] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-[#8a97a8] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Cari nama barang atau ID barang..."
+                value={searchQuery}
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[12rem_13rem_12.5rem_auto]">
+              {[
+                {
+                  label: "Kategori Barang",
+                  value: categoryFilter,
+                  onChange: setCategoryFilter,
+                  options: categoryOptions,
+                },
+                {
+                  label: "Status Operasional",
+                  value: statusFilter,
+                  onChange: setStatusFilter,
+                  options: statusOptions,
+                },
+                {
+                  label: "Mode Pemasaran",
+                  value: modeFilter,
+                  onChange: setModeFilter,
+                  options: modeOptions,
+                },
+              ].map((filter) => (
+                <UnitDetailSelect
+                  ariaLabel={filter.label}
+                  key={filter.label}
+                  label={filter.label}
+                  onChange={filter.onChange}
+                  options={filter.options}
+                  value={filter.value}
+                  widthClass="w-full"
+                />
+              ))}
+
+              <button
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-[#536279] transition-[transform,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:text-[#00563b] active:scale-[0.98]"
+                onClick={resetFilters}
+                type="button"
+              >
+                <RefreshCw className="size-4" />
+                Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 overflow-hidden rounded-xl border border-[#dfe8e2]">
+          {filteredItems.length === 0 ? (
+            <EmptyState
+              className="p-8"
+              description="Tidak ada barang yang sesuai dengan pencarian atau filter saat ini."
+              icon={SearchX}
+              title="Barang tidak ditemukan"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1080px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#dfe8e2] bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
+                    <th className="w-16 px-5 py-3.5" scope="col">
+                      No
+                    </th>
+                    <th className="w-24 px-4 py-3.5" scope="col">
+                      Gambar
+                    </th>
+                    <th className="px-4 py-3.5" scope="col">
+                      Nama Barang & ID Barang
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Kategori
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Mode Pemasaran
+                    </th>
+                    <th className="px-4 py-3.5 text-right" scope="col">
+                      Nilai Barang
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Status Operasional
+                    </th>
+                    <th className="px-5 py-3.5 text-center" scope="col">
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#edf2ee] bg-white">
+                  {paginatedItems.map((item, index) => (
+                    <tr
+                      className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
+                      key={item.id}
+                    >
+                      <td className="px-5 py-3.5 font-semibold text-[#273954]">
+                        {formatDashboardCount(currentPageStart + index)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
+                          {item.imageUrl ? (
+                            <img
+                              alt={item.name}
+                              className="size-full object-cover"
+                              src={item.imageUrl}
+                            />
+                          ) : (
+                            <Package className="size-5 text-[#7b9186]" strokeWidth={1.8} />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <p className="font-bold leading-tight text-[#13211c]">
+                          {item.name}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-[#536279]">
+                          ({item.code})
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                        {formatUnitDetailCategory(item.category)}
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                        {getUnitDetailMarketingModeLabel(item.marketingModeLabel)}
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#273954]">
+                        {formatFullCurrency(item.value)}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
+                            getUnitDetailStatusToneClass(item.operationalTone),
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "size-1.5 rounded-full",
+                              getUnitDetailStatusDotClass(item.operationalTone),
+                            )}
+                          />
+                          {item.operationalStatus}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
+                            className="inline-flex h-9 items-center justify-center rounded-lg border border-[#d8e4de] bg-white px-3 text-xs font-bold text-[#007a4d] transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#afd4bd] hover:bg-[#f8fbf9] active:scale-[0.98]"
+                          >
+                            Detail
+                          </Link>
+                          <button
+                            aria-label={`Menu ${item.name}`}
+                            className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
+                            type="button"
+                          >
+                            <MoreVertical className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 text-sm font-semibold text-[#536279] lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <p>
+              Menampilkan {formatDashboardCount(currentPageStart)}-{formatDashboardCount(currentPageEnd)} dari{" "}
+              {formatDashboardCount(filteredItems.length)} barang
             </p>
-            <p className="mt-4 text-2xl font-extrabold text-primary">
-              {item.value}
+            <label className="inline-flex items-center gap-2 text-xs font-bold text-[#536279]">
+              Tampilkan
+              <UnitDetailSelect
+                ariaLabel="Jumlah barang per halaman"
+                label={String(pageSize)}
+                onChange={(value) =>
+                  setPageSize(Number(value) as (typeof unitDetailPageSizeOptions)[number])
+                }
+                options={unitDetailPageSizeOptions.map((option) => ({
+                  label: String(option),
+                  value: String(option),
+                }))}
+                showActiveState={false}
+                value={String(pageSize)}
+                widthClass="w-[6.25rem]"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              aria-label="Halaman sebelumnya"
+              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              type="button"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            {visiblePages.map((page, index) => {
+              const previousPage = visiblePages[index - 1];
+              const shouldShowGap = previousPage !== undefined && page - previousPage > 1;
+
+              return (
+                <span className="inline-flex items-center gap-1.5" key={page}>
+                  {shouldShowGap ? (
+                    <span className="grid size-9 place-items-center text-[#8a97a8]">
+                      ...
+                    </span>
+                  ) : null}
+                  <button
+                    aria-current={currentPage === page ? "page" : undefined}
+                    className={cn(
+                      "grid size-9 place-items-center rounded-lg border text-sm font-black tabular-nums shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.98]",
+                      currentPage === page
+                        ? "border-[#007a4d] bg-[#007a4d] text-white shadow-[0_18px_34px_-24px_rgba(0,122,77,0.64)]"
+                        : "border-[#d8e4de] bg-white text-[#273954] hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b]",
+                    )}
+                    onClick={() => setCurrentPage(page)}
+                    type="button"
+                  >
+                    {page}
+                  </button>
+                </span>
+              );
+            })}
+            <button
+              aria-label="Halaman berikutnya"
+              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              type="button"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  );
+}
+
+function formatSuperAdminDisplayLabel(value: unknown) {
+  const normalized = String(value ?? "")
+    .replace(/_/g, " ")
+    .trim();
+
+  if (!normalized) {
+    return "-";
+  }
+
+  return normalized
+    .toLowerCase()
+    .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
+}
+
+function formatSuperAdminDateTime(value?: string | null) {
+  if (!value) {
+    return "-";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Makassar",
+    timeZoneName: "short",
+  })
+    .format(parsed)
+    .replace(/\./g, ":")
+    .replace("GMT+8", "WIB");
+}
+
+function getSuperAdminMarketingModeLabel(session?: SuperAdminUnitBarangMarketingSession | null) {
+  if (!session) {
+    return "Belum dipasarkan";
+  }
+
+  return getUnitDetailMarketingModeLabel(session.mode);
+}
+
+function getSuperAdminMarketingPriceLabel(session: SuperAdminUnitBarangMarketingSession) {
+  if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
+    return session.finalPrice ? "Harga final Vickrey" : "Harga dasar Vickrey";
+  }
+
+  return "Harga Fixed Price";
+}
+
+function getSuperAdminMarketingPriceValue(session: SuperAdminUnitBarangMarketingSession) {
+  if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
+    return session.finalPrice ?? session.basePrice ?? session.appraisalValue ?? 0;
+  }
+
+  return session.price ?? session.finalPrice ?? session.appraisalValue ?? 0;
+}
+
+function getSuperAdminMarketingSummary(session: SuperAdminUnitBarangMarketingSession) {
+  if (session.note) {
+    return session.note;
+  }
+
+  if (session.winner || session.buyerName) {
+    return `${session.winner || session.buyerName} - ${formatFullCurrency(
+      session.finalPrice ?? session.price ?? 0,
+    )}`;
+  }
+
+  if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
+    return `${formatDashboardCount(session.participants ?? 0)} peserta tercatat`;
+  }
+
+  return "Belum ada pembeli pada sesi ini.";
+}
+
+function getSuperAdminIterationHistory(marketing: SuperAdminUnitBarangMarketingSession | null) {
+  if (!marketing) {
+    return [];
+  }
+
+  const rows = marketing.iterationHistory?.length ? marketing.iterationHistory : [];
+  const uniqueRows = new Map<string, SuperAdminUnitBarangMarketingSession>();
+
+  for (const row of rows) {
+    uniqueRows.set(row.id, row);
+  }
+
+  uniqueRows.set(marketing.id, {
+    ...(uniqueRows.get(marketing.id) ?? {}),
+    ...marketing,
+  });
+
+  return Array.from(uniqueRows.values()).sort((left, right) => {
+    const iterationDiff = Number(right.iteration ?? 0) - Number(left.iteration ?? 0);
+    if (iterationDiff !== 0) {
+      return iterationDiff;
+    }
+
+    const rightTime = right.createdAt ? new Date(right.createdAt).getTime() : 0;
+    const leftTime = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+    return rightTime - leftTime;
+  });
+}
+
+function getSuperAdminMarketingDateLabel(session: SuperAdminUnitBarangMarketingSession) {
+  return (
+    session.ending ||
+    formatSuperAdminDateTime(session.endingAt ?? session.soldAt ?? session.paymentDeadline ?? session.createdAt)
+  );
+}
+
+function getSuperAdminWinnerBid(session: SuperAdminUnitBarangMarketingSession) {
+  return (session.bids ?? []).find((bid) => bid.isWinner) ?? null;
+}
+
+function getSuperAdminHighestBidAmount(session: SuperAdminUnitBarangMarketingSession) {
+  const amounts = (session.bids ?? [])
+    .map((bid) => bid.amount)
+    .filter((amount): amount is number => typeof amount === "number" && Number.isFinite(amount))
+    .sort((left, right) => right - left);
+
+  return amounts[0] ?? session.finalPrice ?? session.basePrice ?? null;
+}
+
+function formatSuperAdminOptionalCurrency(value?: number | null) {
+  return typeof value === "number" && Number.isFinite(value) ? formatFullCurrency(value) : "Rp ********";
+}
+
+function getSuperAdminCurrencyDigitCount(value?: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+
+  return String(Math.trunc(Math.abs(value))).length;
+}
+
+function getSuperAdminCompactCurrencyTextClass(value?: number | null) {
+  const digits = getSuperAdminCurrencyDigitCount(value);
+
+  if (digits >= 12) {
+    return "text-[0.64rem] sm:text-[0.74rem] xl:text-[0.82rem] 2xl:text-[0.9rem]";
+  }
+
+  if (digits >= 10) {
+    return "text-[0.74rem] sm:text-[0.84rem] xl:text-[0.92rem] 2xl:text-[1rem]";
+  }
+
+  if (digits >= 8) {
+    return "text-[0.84rem] sm:text-[0.94rem] xl:text-[1.02rem] 2xl:text-[1.1rem]";
+  }
+
+  return "text-[0.98rem] sm:text-[1.08rem] xl:text-[1.16rem]";
+}
+
+function isSuperAdminVickreyPaymentVerified(session: SuperAdminUnitBarangMarketingSession) {
+  return session.transactionStatus === "LUNAS" || session.transactionStatus === "SELESAI";
+}
+
+function isSuperAdminVickreyPaymentFulfilled(session: SuperAdminUnitBarangMarketingSession) {
+  return session.transactionStatus === "SELESAI";
+}
+
+const FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES = new Set([
+  "GAGAL",
+  "DIBATALKAN",
+  "DIBATALKAN_OTOMATIS",
+]);
+
+function getSuperAdminVickreyFailureKind(session: SuperAdminUnitBarangMarketingSession) {
+  const hasWinnerTrace = Boolean(session.winner || session.buyerName || session.transactionId);
+  const failedTransaction = FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(session.transactionStatus ?? "");
+
+  return hasWinnerTrace || failedTransaction ? "unpaid" : "no_bids";
+}
+
+function isSuperAdminVickreyFailureArchive(session: SuperAdminUnitBarangMarketingSession) {
+  if (getUnitDetailMarketingModeValue(session.mode) !== "vickrey") {
+    return false;
+  }
+
+  const noWinnerAfterReveal = !session.transactionId && !session.winner && !session.buyerName;
+
+  return (
+    session.status === "GAGAL" ||
+    FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(session.transactionStatus ?? "") ||
+    noWinnerAfterReveal
+  );
+}
+
+function getSuperAdminVickreyArchiveDate(session: SuperAdminUnitBarangMarketingSession) {
+  return formatSuperAdminDateTime(session.soldAt ?? session.paymentDeadline ?? session.endingAt ?? session.createdAt);
+}
+
+function getSuperAdminInitials(name?: string | null) {
+  const parts = (name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!parts.length) {
+    return "SA";
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
+
+type SuperAdminMarketingReceiptContext = {
+  itemCode: string;
+  itemMedia: SuperAdminUnitBarangDetailMedia[];
+  itemTitle: string;
+  unitAddress: string;
+  unitName: string;
+};
+
+function getSuperAdminMarketingReceiptImageUrl(
+  session: SuperAdminUnitBarangMarketingSession,
+  itemMedia: SuperAdminUnitBarangDetailMedia[],
+) {
+  if (session.primaryMedia?.type !== "video" && session.primaryMedia?.url) {
+    return session.primaryMedia.url;
+  }
+
+  const sessionImage = session.media?.find((entry) => entry.type !== "video")?.url;
+  if (sessionImage) {
+    return sessionImage;
+  }
+
+  return itemMedia.find((entry) => entry.type !== "video")?.url;
+}
+
+function getSuperAdminMarketingPaymentMethodLabel(session: SuperAdminUnitBarangMarketingSession) {
+  if (session.paymentMethod === "BAYAR_LANGSUNG") {
+    return "Langsung di unit";
+  }
+
+  if (session.paymentMethod === "TRANSFER_BANK") {
+    return "Transfer Bank";
+  }
+
+  return session.paymentMethod ? formatSuperAdminDisplayLabel(session.paymentMethod) : "Transfer Bank";
+}
+
+function getSuperAdminVickreyReceiptPrintRootId(session: SuperAdminUnitBarangMarketingSession) {
+  return `superadmin-vickrey-receipt-print-root-${String(session.transactionId || session.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function getSuperAdminVickreyReceiptTerms(unitName: string) {
+  return [
+    "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
+    `Pengambilan barang dilakukan di unit ${unitName}.`,
+    "Pembayaran hasil lelang sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+    "Simpan nota ini untuk keperluan administrasi atau pengambilan barang.",
+  ];
+}
+
+function SuperAdminReadOnlyAuditFooter({
+  icon: Icon,
+  note,
+}: {
+  icon: LucideIcon;
+  note: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-[#dce9df] bg-[#f8fcf9] px-4 py-3 text-[0.78rem] font-semibold text-[#52675e] shadow-[0_16px_40px_-34px_rgba(8,69,50,0.32)]">
+      <Icon className="size-4 shrink-0 text-[#006747]" />
+      <span>{note}</span>
+    </div>
+  );
+}
+
+function SuperAdminMarketingArchiveStatusCard({
+  eyebrow,
+  title,
+  detail,
+  tone = "emerald",
+}: {
+  eyebrow: string;
+  title: string;
+  detail: string;
+  tone?: "emerald" | "red";
+}) {
+  const titleClass = tone === "red" ? "text-[#7f1d1d]" : "text-[#111b46]";
+  const eyebrowClass = tone === "red" ? "text-[#991b1b]" : "text-[#006747]";
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <p className={`text-[0.78rem] font-black uppercase tracking-[0.04em] ${eyebrowClass}`}>{eyebrow}</p>
+      <p className={`mt-2 font-headline text-[1rem] font-black leading-tight ${titleClass}`}>{title}</p>
+      <p className="mt-2 text-[0.74rem] font-semibold leading-5 text-[#52655d]">{detail}</p>
+    </section>
+  );
+}
+
+function SuperAdminVickreySettlementBanner({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const serverNow = new Date().toISOString();
+
+  if (fulfilled) {
+    return (
+      <section className="rounded-[1.1rem] border border-[#86d9ad] bg-[#f0fdf4] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(0,103,71,0.34)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#006747] text-white shadow-[0_18px_30px_-20px_rgba(0,103,71,0.74)]">
+              <CheckCircle2 className="size-7" strokeWidth={2.5} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#006747] sm:text-[1.12rem]">
+                Lelang Selesai Sempurna - Aset Telah Diserahkan
+              </h2>
+              <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
+                Pembayaran telah dilunasi 100% oleh pemenang dan barang telah diserahkan kepada pemenang.
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-[#b7e8cc] pt-3 lg:min-w-[22rem] lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <span className="inline-flex rounded-full border border-[#a7d9c7] bg-white/68 px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#006747]">
+              Status Arsip
+            </span>
+            <p className="mt-2 font-headline text-[0.92rem] font-black uppercase tracking-[0.01em] text-[#006747]">
+              Pembayaran & Penyerahan Selesai
             </p>
-          </Card>
-        ))}
-      </div>
+            <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#2f6a52]">
+              Arsip ini bersifat final dan telah ditutup.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-      <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <UnitForm
-          initialValue={{
-            code: unit.code,
-            name: unit.name,
-            address: unit.address,
-            isActive: unit.isActive,
-          }}
-          mode="update"
-          unitId={unit.id}
-        />
+  if (verified) {
+    return (
+      <section className="rounded-[1.1rem] border border-[#b9e4cc] bg-[#f4fcf6] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(0,103,71,0.28)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#20b96b] text-white shadow-[0_18px_30px_-20px_rgba(32,185,107,0.64)]">
+              <ShieldCheck className="size-7" strokeWidth={2.5} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#075b3f] sm:text-[1.12rem]">
+                Pembayaran Terverifikasi - Menunggu Buyer Selesai
+              </h2>
+              <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
+                Admin sudah memverifikasi pembayaran. Tahap final baru tercapai setelah buyer menekan Pembelian Selesai.
+              </p>
+            </div>
+          </div>
 
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Admin yang ditugaskan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {unit.admins.length === 0 ? (
-              <EmptyState
-                className="p-6"
-                description="Tambahkan admin unit agar operasional harian, verifikasi transaksi, dan pengelolaan aset bisa mulai berjalan."
-                icon={UserCog}
-                title="Belum ada admin yang ditugaskan"
+          <div className="border-t border-[#c9ead3] pt-3 lg:min-w-[22rem] lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <span className="inline-flex rounded-full border border-[#b9e4cc] bg-white/72 px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#075b3f]">
+              Status Transaksi
+            </span>
+            <p className="mt-2 font-headline text-[0.92rem] font-black uppercase tracking-[0.01em] text-[#075b3f]">
+              Nota tersedia, arsip final belum ditutup
+            </p>
+            <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#2f6a52]">
+              Buyer perlu mengonfirmasi dari halaman transaksi.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-[1.1rem] border border-[#fde68a] bg-[#fffbeb] px-4 py-3 shadow-[0_18px_42px_-36px_rgba(146,64,14,0.34)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[radial-gradient(circle_at_34%_22%,#facc15_0%,#f59e0b_48%,#b45309_100%)] text-white shadow-[0_14px_26px_-18px_rgba(180,83,9,0.72)]">
+            <Trophy className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-headline text-[0.92rem] font-black uppercase tracking-[0.02em] text-[#7c2d12]">
+              Lelang Selesai - Menunggu Pelunasan Nasabah
+            </h2>
+            <p className="mt-1 text-[0.78rem] font-semibold leading-5 text-[#9a3412]">
+              Pemenang wajib melakukan pelunasan sebelum batas waktu berakhir.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <p className="text-[0.62rem] font-black uppercase tracking-[0.13em] text-[#162461]">
+            Batas Waktu Pelunasan
+          </p>
+          <span className="rounded-lg border border-[#e9edf1] bg-white px-3 py-2 text-[0.72rem] font-black text-[#7c2d12] shadow-[0_10px_24px_-20px_rgba(8,69,50,0.25)]">
+            {session.paymentDeadline ? (
+              <AdminLiveCountdown
+                expiredLabel="Batas bayar terlewati"
+                fallbackLabel={formatSuperAdminDateTime(session.paymentDeadline)}
+                prefix="Sisa"
+                serverNow={serverNow}
+                targetAt={session.paymentDeadline}
               />
             ) : (
-              unit.admins.map((admin) => (
-                <div
-                  className="rounded-[1.5rem] border border-border/70 p-5"
-                  key={admin.id}
+              "-"
+            )}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyWinnerProfilePanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const winnerName = session.buyerName || session.winner || "Pemenang belum tercatat";
+  const winnerBid = getSuperAdminWinnerBid(session);
+  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+
+  return (
+    <section className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      {verified ? (
+        <CheckCircle2 className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#f0f6f2]" strokeWidth={2.6} />
+      ) : null}
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        {fulfilled ? "Manifes Penyerahan & Pemenang" : verified ? "Pemenang Terverifikasi" : "Detail Pemenang Lelang"}
+      </p>
+      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="grid size-14 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1.25rem] font-black text-[#006747]">
+            {getSuperAdminInitials(winnerName)}
+          </span>
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#111b46]">
+                {winnerName}
+              </h3>
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#d6efe1] bg-[#f1fbf6] px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em] text-[#006747]">
+                <CheckCircle2 className="size-3" />
+                Terverifikasi
+              </span>
+            </div>
+            <p className="mt-2 text-[0.74rem] font-bold text-[#52655d]">
+              Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-2 border-t border-[#edf2ee] pt-3 text-[0.76rem] font-bold text-[#111b46] md:border-l md:border-t-0 md:pl-5 md:pt-0">
+          <p className="flex min-w-0 items-center gap-2">
+            <Phone className="size-4 shrink-0 text-[#40558b]" />
+            <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
+          </p>
+          <p className="flex min-w-0 items-center gap-2">
+            <Mail className="size-4 shrink-0 text-[#40558b]" />
+            <span className="min-w-0 truncate font-mono text-[0.72rem]">
+              {session.buyerEmail || "email-belum-tercatat"}
+            </span>
+          </p>
+        </div>
+      </div>
+      {verified ? (
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-[#edf2ee] pt-3">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#006747] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
+            <CheckCircle2 className="size-3.5" />
+            Pembayaran Terverifikasi
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2463eb] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
+            <ShieldCheck className="size-3.5" />
+            {fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai"}
+          </span>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function SuperAdminVickreyMechanismPanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const highestBid = getSuperAdminHighestBidAmount(session);
+  const paymentPrice = session.finalPrice ?? session.basePrice ?? null;
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <div className="flex items-center gap-2">
+        <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Vickrey Second-Price"}
+        </p>
+        <Info className="size-3.5 text-[#2f6fff]" />
+      </div>
+
+      <div className={`mt-4 grid gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(highestBid)}`}>
+            {formatSuperAdminOptionalCurrency(highestBid)}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
+            Penawaran tertinggi oleh pemenang
+          </p>
+        </div>
+
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+            {formatSuperAdminOptionalCurrency(paymentPrice)}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
+            Harga yang harus dibayarkan pemenang
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
+          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#e9f8ef] px-3 py-1 text-[0.68rem] font-black uppercase text-[#006747]">
+            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3.5" />
+          </span>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
+            {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
+          </p>
+        </div>
+
+        {fulfilled ? (
+          <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+            <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
+            <p className="mt-2 font-mono text-[0.78rem] font-black leading-tight text-[#111b46]">
+              {formatSuperAdminDateTime(session.endingAt)}
+            </p>
+            <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
+              Tanggal sesi ditutup
+            </p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-3 flex items-start gap-2 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+        <ReceiptText className="mt-0.5 size-4 shrink-0 text-[#006747]" />
+        {fulfilled ? (
+          <div className="grid flex-1 gap-2 sm:grid-cols-3">
+            <p>
+              <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+                Mekanisme
+              </span>
+              e-Bidding - Vickrey Second-Price
+            </p>
+            <p>
+              <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+                Pemenang
+              </span>
+              {session.buyerName || session.winner || "-"}
+            </p>
+            <p>
+              <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+                Tanggal Arsip
+              </span>
+              {getSuperAdminVickreyArchiveDate(session)}
+            </p>
+          </div>
+        ) : (
+          <p>
+            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga menang ditentukan berdasarkan
+            penawaran tertinggi kedua sesuai mekanisme Vickrey (second-price).
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyRankingTable({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const rows = [...(session.bids ?? [])].sort((left, right) => (left.rank || 0) - (right.rank || 0));
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          {fulfilled ? "Bidders Ranking Table (Arsip)" : "Ranking Peserta Lelang (Admin View)"}
+        </h3>
+      </div>
+      <div>
+        <table className="w-full table-fixed text-left text-[0.72rem]">
+          <colgroup>
+            <col className="w-[6%]" />
+            <col className="w-[19%]" />
+            <col className="w-[17%]" />
+            <col className="w-[19%]" />
+            <col className="w-[18%]" />
+            <col className="w-[21%]" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
+              <th className="px-2 py-2.5 text-center">#</th>
+              <th className="px-2 py-2.5">Member ID</th>
+              <th className="px-2 py-2.5">Nama Peserta</th>
+              <th className="px-2 py-2.5">Waktu Penawaran</th>
+              <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
+              <th className="px-2 py-2.5 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
+            {rows.map((bid) => {
+              const isRunnerUp = bid.determinesFinalPrice;
+              const rowTone = fulfilled
+                ? bid.isWinner
+                  ? "bg-[#e9f8ef]"
+                  : "bg-white text-[#8b9a93]"
+                : bid.isWinner
+                  ? "bg-[#e9f8ef]"
+                  : isRunnerUp
+                    ? "bg-[#fff8e7]"
+                    : "bg-white";
+              const status = fulfilled
+                ? bid.isWinner
+                  ? "Lunas & Diserahkan"
+                  : "Tidak Menang"
+                : bid.isWinner
+                  ? "Pemenang"
+                  : isRunnerUp
+                    ? "Harga Bayar"
+                    : "-";
+              const statusTone = fulfilled
+                ? bid.isWinner
+                  ? "bg-[#e9f8ef] text-[#006747]"
+                  : "bg-[#eef2f0] text-[#8b9a93]"
+                : bid.isWinner
+                  ? "bg-[#006747] text-white"
+                  : isRunnerUp
+                    ? "bg-[#f59e0b] text-white"
+                    : "text-[#40558b]";
+
+              return (
+                <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#f4fbf7]`} key={bid.id}>
+                  <td className="px-2 py-2.5 text-center font-mono text-[#006747]">{bid.rank}</td>
+                  <td className="break-all px-2 py-2.5 font-mono text-[0.64rem] leading-4">{bid.bidderId}</td>
+                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">{bid.bidderName}</td>
+                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
+                    {bid.submittedAtLabel}
+                  </td>
+                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
+                    {formatSuperAdminOptionalCurrency(bid.amount)}
+                  </td>
+                  <td className="px-2 py-2.5 text-center">
+                    {status === "-" ? (
+                      <span className="font-black text-[#40558b]">-</span>
+                    ) : (
+                      <span className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}>
+                        {fulfilled ? (
+                          bid.isWinner ? (
+                            <CheckCircle2 className="size-3" />
+                          ) : (
+                            <X className="size-3" />
+                          )
+                        ) : bid.isWinner ? (
+                          <Trophy className="size-3" />
+                        ) : (
+                          <ReceiptText className="size-3" />
+                        )}
+                        <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
+        Total {session.participants ?? rows.length} peserta
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyProgressPanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+  const activeStep = fulfilled ? 3 : verified ? 2 : 1;
+  const steps = fulfilled
+    ? [
+        { label: "Pembayaran", icon: CheckCircle2 },
+        { label: "Verifikasi", icon: CheckCircle2 },
+        { label: "Selesai", icon: CheckCircle2 },
+      ]
+    : verified
+      ? [
+          { label: "Pembayaran", icon: CheckCircle2 },
+          { label: "Verifikasi", icon: ShieldCheck },
+          { label: "Selesai Buyer", icon: CheckCircle2 },
+        ]
+      : [
+          { label: "Menunggu Pembayaran", icon: WalletCards },
+          { label: "Verifikasi", icon: FileText },
+          { label: "Selesai", icon: CheckCircle2 },
+        ];
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        {verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
+      </p>
+      <div className="relative mt-5 flex items-start justify-between px-2 text-center">
+        <span className={`absolute left-[14%] right-[14%] top-6 h-px border-t border-dashed ${fulfilled ? "border-[#1a8f63]" : "border-[#8bd5f7]"}`} />
+        {steps.map((step, index) => {
+          const position = index + 1;
+          const Icon = step.icon;
+          const active = fulfilled || position <= activeStep;
+          const iconTone = fulfilled
+            ? active
+              ? "border-[#006747] bg-[#006747] text-white"
+              : "border-[#dfe6e2] text-[#111b46]"
+            : active
+              ? "border-[#006747] bg-white text-[#006747]"
+              : "border-[#dfe6e2] bg-white text-[#111b46]";
+
+          return (
+            <div className="relative z-[1] grid flex-1 justify-items-center gap-2" key={step.label}>
+              <span
+                aria-label={fulfilled ? `Tahap ${step.label} selesai` : `Tahap ${position}: ${step.label}`}
+                className={`grid size-12 place-items-center rounded-full border shadow-[0_14px_28px_-24px_rgba(8,69,50,0.35)] ${iconTone}`}
+                role="img"
+              >
+                <Icon className="size-5" />
+              </span>
+              {fulfilled ? (
+                <p className="text-[0.62rem] font-bold leading-4 text-[#6b7b73]">Selesai</p>
+              ) : (
+                <span
+                  className={`grid size-4 place-items-center rounded-full text-[0.58rem] font-black ${
+                    active ? "bg-[#006747] text-white" : "bg-[#eef2f0] text-[#40558b]"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground">
-                        {admin.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {admin.email}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {admin.phone}
-                      </p>
+                  {position}
+                </span>
+              )}
+              <p className="max-w-[6.6rem] text-[0.66rem] font-black leading-4 text-[#006747]">{step.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyNotePanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+
+  if (fulfilled) {
+    return (
+      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+        <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
+          Nota Dokumen Final
+        </p>
+        <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+          Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
+        </p>
+
+        <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+          <div className="flex items-center justify-between gap-4">
+            <span>Harga Bayar Vickrey</span>
+            <span className="font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+          </div>
+          <div className="border-t border-[#dfe7e2] pt-2">
+            <div className="flex items-end justify-between gap-4">
+              <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
+                Total Pelunasan Kasir
+              </span>
+              <span className="font-mono text-[1.05rem] font-black leading-none text-[#006747]">
+                {formatFullCurrency(paymentPrice)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (verified) {
+    return (
+      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+        <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
+          Nota & Konfirmasi Buyer
+        </p>
+        <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+          Nota sudah dapat dicetak, tetapi arsip final menunggu buyer menekan Pembelian Selesai.
+        </p>
+
+        <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+          <div className="flex items-center justify-between gap-4">
+            <span>Harga Bayar Vickrey</span>
+            <span className="font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+          </div>
+          <div className="border-t border-[#dfe7e2] pt-2">
+            <div className="flex items-end justify-between gap-4">
+              <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
+                Status Admin
+              </span>
+              <span className="text-right font-mono text-[0.9rem] font-black leading-tight text-[#006747]">
+                Terverifikasi
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">Total Pembayaran</p>
+      <div className="mt-4 space-y-3 text-[0.8rem] font-bold text-[#111b46]">
+        <div className="flex items-center justify-between gap-4">
+          <span>Harga Bayar (Second Price)</span>
+          <span className="font-mono">{formatFullCurrency(paymentPrice)}</span>
+        </div>
+        <div className="border-t border-[#edf2ee] pt-3">
+          <div className="flex items-end justify-between gap-4">
+            <span className="text-[0.84rem] font-black">Status Pembayaran</span>
+            <span className="font-headline text-[1.15rem] font-black leading-none text-[#7c2d12]">
+              {formatSuperAdminDisplayLabel(session.transactionStatus) || "Menunggu bayar"}
+            </span>
+          </div>
+        </div>
+        <div className="rounded-lg border border-[#fde2a5] bg-[#fffbeb] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#9a3412]">
+          Status saat ini: <span className="font-black">{formatSuperAdminDisplayLabel(session.transactionStatus) || "Menunggu Bayar"}</span>. Menunggu pelunasan oleh pemenang hingga batas waktu yang ditentukan.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyReceiptInlinePrint({
+  receiptContext,
+  session,
+  buttonClassName,
+  label = "Cetak Nota",
+}: {
+  receiptContext: SuperAdminMarketingReceiptContext;
+  session: SuperAdminUnitBarangMarketingSession;
+  buttonClassName: string;
+  label?: string;
+}) {
+  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const imageUrl = getSuperAdminMarketingReceiptImageUrl(session, receiptContext.itemMedia);
+  const isCompleted = isSuperAdminVickreyPaymentFulfilled(session);
+  const paymentMethodLabel = getSuperAdminMarketingPaymentMethodLabel(session);
+  const verifiedAt = formatSuperAdminDateTime(
+    session.soldAt ?? session.paymentDeadline ?? session.endingAt ?? session.createdAt,
+  );
+  const noteNumber = String(session.reference || session.transactionId || session.id).replace(/^#/, "");
+
+  return (
+    <TransactionReceiptInlinePrint
+      buttonClassName={buttonClassName}
+      label={label}
+      rootId={getSuperAdminVickreyReceiptPrintRootId(session)}
+    >
+      <TransactionReceiptDocument
+        buyerEmail={session.buyerEmail ?? undefined}
+        buyerName={session.buyerName || session.winner || "-"}
+        buyerPhone={session.buyerPhone ?? undefined}
+        extraMeta={[
+          { label: "Jenis transaksi", value: "Lelang" },
+          { label: "Kode aset", value: receiptContext.itemCode },
+        ]}
+        footerText="Dokumen ini diterbitkan sebagai salinan monitoring superadmin Pegadaian Lelang."
+        imageUrl={imageUrl}
+        itemSubtitle={paymentMethodLabel}
+        itemTitle={receiptContext.itemTitle}
+        noteNumber={noteNumber}
+        paymentMethodLabel={paymentMethodLabel}
+        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        subtotal={paymentPrice}
+        terms={getSuperAdminVickreyReceiptTerms(receiptContext.unitName)}
+        total={paymentPrice}
+        transactionId={session.transactionId || session.id}
+        unitAddress={receiptContext.unitAddress}
+        unitName={receiptContext.unitName}
+        verifiedAt={verifiedAt}
+        outputLayout
+      />
+    </TransactionReceiptInlinePrint>
+  );
+}
+
+function SuperAdminPassiveActionButton({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className: string;
+}) {
+  return (
+    <button
+      aria-disabled="true"
+      className={className}
+      onClick={(event) => event.preventDefault()}
+      title="Aksi operasional dilakukan dari workspace admin unit"
+      type="button"
+    >
+      {children}
+    </button>
+  );
+}
+
+function SuperAdminVickreyActionFooter({
+  receiptContext,
+  session,
+}: {
+  receiptContext: SuperAdminMarketingReceiptContext;
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  if (isSuperAdminVickreyPaymentFulfilled(session)) {
+    return (
+      <div className="grid gap-3 print:hidden">
+        <SuperAdminVickreyReceiptInlinePrint
+          buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+          receiptContext={receiptContext}
+          session={session}
+        />
+        <SuperAdminPassiveActionButton className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]">
+          <LockKeyhole className="size-4.5" />
+          Tutup & Arsipkan Berkas Lelang
+        </SuperAdminPassiveActionButton>
+      </div>
+    );
+  }
+
+  if (isSuperAdminVickreyPaymentVerified(session)) {
+    return (
+      <div className="grid gap-3 print:hidden">
+        <SuperAdminVickreyReceiptInlinePrint
+          buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+          receiptContext={receiptContext}
+          session={session}
+        />
+        <Button
+          className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+          disabled
+          variant="secondary"
+        >
+          <CheckCircle2 className="size-4" />
+          Menunggu Buyer Selesai
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 print:hidden sm:grid-cols-[minmax(0,1fr)_16rem]">
+      <Button
+        className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)]"
+        disabled
+      >
+        <ReceiptText className="size-4.5" />
+        Menunggu Verifikasi Pembayaran
+      </Button>
+      <button
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#a7d9c7] bg-white px-5 text-[0.86rem] font-black text-[#006747] shadow-[0_18px_34px_-28px_rgba(0,103,71,0.42)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f5fbf7] active:scale-[0.99]"
+        onClick={() => window.print()}
+        type="button"
+      >
+        <Printer className="size-4" />
+        Cetak Ringkasan Lelang
+      </button>
+    </div>
+  );
+}
+
+function SuperAdminVickreyFailureActionFooter() {
+  return (
+    <div className="grid gap-3 print:hidden">
+      <SuperAdminPassiveActionButton className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]">
+        <RefreshCcw className="size-4.5" />
+        Jadwalkan Pasarkan Ulang
+      </SuperAdminPassiveActionButton>
+    </div>
+  );
+}
+
+function SuperAdminVickreyFailureBanner({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+
+  return (
+    <section className="rounded-[1.1rem] border border-[#fecaca] bg-[#fff1f2] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(185,28,28,0.34)]">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="grid size-14 shrink-0 place-items-center rounded-full bg-[#b91c1c] text-white shadow-[0_18px_30px_-20px_rgba(185,28,28,0.72)]">
+            <AlertTriangle className="size-7" strokeWidth={2.5} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#7f1d1d] sm:text-[1.12rem]">
+              {unpaid ? "Lelang Gagal - Pemenang Dikenakan Sanksi" : "Lelang Gagal - Tidak Ada Peserta"}
+            </h2>
+            <p className="mt-1 max-w-3xl text-[0.8rem] font-semibold leading-5 text-[#9f1239]">
+              {unpaid
+                ? "Pemenang tidak melakukan pelunasan dalam batas waktu 24 jam setelah hasil lelang diumumkan, sehingga sesi dinyatakan gagal dan akun pemenang dikenai sanksi."
+                : "Sesi berakhir tanpa peserta yang mengirim bid, sehingga tidak ada pemenang dan barang perlu dijadwalkan untuk lelang ulang."}
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-[#fecdd3] pt-3 lg:min-w-[20rem] lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+          <span className="inline-flex rounded-full border border-[#fecaca] bg-white/72 px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#991b1b]">
+            Status Arsip
+          </span>
+          <p className="mt-2 font-headline text-[0.92rem] font-black uppercase tracking-[0.01em] text-[#7f1d1d]">
+            {unpaid ? "Batas 24 Jam Terlewati" : "Tidak Ada Bid Masuk"}
+          </p>
+          <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#9f1239]">
+            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)} - {session.code || session.id}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyFailureProfilePanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+  const winnerName = session.buyerName || session.winner || "Pemenang tidak tercatat";
+  const winnerBid = getSuperAdminWinnerBid(session);
+  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
+
+  return (
+    <section className="relative overflow-hidden rounded-xl border border-[#e5d8d8] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(127,29,29,0.34)]">
+      <X className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#fff1f2]" strokeWidth={2.6} />
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        {unpaid ? "Manifes Penyerahan & Pemenang" : "Manifes Kegagalan Sesi"}
+      </p>
+      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(15rem,0.56fr)] md:items-center">
+        <div className="flex min-w-0 items-center gap-4">
+          <span
+            className={`grid size-14 shrink-0 place-items-center rounded-full border font-headline text-[1.1rem] font-black ${
+              unpaid ? "border-[#fecaca] bg-[#fff1f2] text-[#991b1b]" : "border-[#dfe7e2] bg-[#eef3f1] text-[#006747]"
+            }`}
+          >
+            {unpaid ? getSuperAdminInitials(winnerName) : <UsersRound className="size-6" />}
+          </span>
+          <div className="min-w-0">
+            <h3 className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#111b46]">
+              {unpaid ? winnerName : "Pemenang Belum Tersedia"}
+            </h3>
+            <p className="mt-2 text-[0.74rem] font-bold leading-5 text-[#52655d]">
+              {unpaid ? (
+                <>
+                  Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
+                </>
+              ) : (
+                "Tidak ada peserta mengirim bid pada sesi ini."
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-2 border-t border-[#edf2ee] pt-3 text-[0.76rem] font-bold text-[#111b46] md:border-l md:border-t-0 md:pl-5 md:pt-0">
+          {unpaid ? (
+            <>
+              <p className="flex min-w-0 items-center gap-2">
+                <Phone className="size-4 shrink-0 text-[#40558b]" />
+                <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
+              </p>
+              <p className="flex min-w-0 items-center gap-2">
+                <Mail className="size-4 shrink-0 text-[#40558b]" />
+                <span className="min-w-0 truncate font-mono text-[0.72rem]">
+                  {session.buyerEmail || "email-belum-tercatat"}
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="flex min-w-0 items-center gap-2">
+                <UsersRound className="size-4 shrink-0 text-[#40558b]" />
+                <span>{session.participants ?? 0} peserta tercatat</span>
+              </p>
+              <p className="flex min-w-0 items-center gap-2">
+                <Gavel className="size-4 shrink-0 text-[#40558b]" />
+                <span>Tidak ada penawaran valid</span>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-[#edf2ee] pt-3">
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#b91c1c] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
+          <X className="size-3.5" />
+          {unpaid ? "Gagal Pelunasan" : "0 Peserta"}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#f59e0b] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
+          <AlertTriangle className="size-3.5" />
+          {unpaid ? "Pelanggaran Dicatat" : "Siap Lelang Ulang"}
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyFailureMechanismPanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+  const highestBid = getSuperAdminHighestBidAmount(session);
+  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? null;
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <div className="flex items-center gap-2">
+        <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          Mekanisme Lelang (Arsip)
+        </p>
+        <Info className="size-3.5 text-[#2f6fff]" />
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(highestBid)}`}>
+            {unpaid ? formatSuperAdminOptionalCurrency(highestBid) : "Belum ada bid"}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
+            {unpaid ? "Bid tertinggi dari pemenang gagal bayar" : "Tidak ada penawaran yang tersimpan"}
+          </p>
+        </div>
+
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+            {formatSuperAdminOptionalCurrency(paymentPrice)}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
+            {unpaid ? "Nilai final sebelum sesi dibatalkan" : "Nilai awal untuk penjadwalan ulang"}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-[#fecaca] bg-[#fff1f2] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#991b1b]">Status Lelang</p>
+          <span className="mt-2 inline-flex min-w-fit items-center gap-1.5 whitespace-nowrap rounded-full bg-[#b91c1c] px-3 py-1 text-[0.62rem] font-black uppercase text-white">
+            {unpaid ? "Batal / Gagal" : "Tanpa Bid"}
+            <X className="size-3.5" />
+          </span>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#9f1239]">
+            {unpaid ? "Pemenang gagal memenuhi batas bayar" : "Sesi belum menghasilkan pemenang"}
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+          <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
+          <p className="mt-2 font-mono text-[0.76rem] font-black leading-tight text-[#111b46]">
+            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
+            Tanggal sesi ditutup
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d] sm:grid-cols-3">
+        <p>
+          <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+            Mekanisme
+          </span>
+          e-Bidding - Vickrey Second-Price
+        </p>
+        <p>
+          <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+            Hasil
+          </span>
+          {unpaid ? session.buyerName || session.winner || "-" : "Belum menghasilkan pemenang"}
+        </p>
+        <p>
+          <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
+            Tanggal Arsip
+          </span>
+          {getSuperAdminVickreyArchiveDate(session)}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyFailureRankingTable({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const rows = [...(session.bids ?? [])].sort((left, right) => (left.rank || 0) - (right.rank || 0));
+
+  return (
+    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          Bidders Ranking Table (Arsip)
+        </h3>
+      </div>
+      <table className="w-full table-fixed text-left text-[0.72rem]">
+        <colgroup>
+          <col className="w-[6%]" />
+          <col className="w-[19%]" />
+          <col className="w-[17%]" />
+          <col className="w-[19%]" />
+          <col className="w-[18%]" />
+          <col className="w-[21%]" />
+        </colgroup>
+        <thead>
+          <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
+            <th className="px-2 py-2.5 text-center">#</th>
+            <th className="px-2 py-2.5">Member ID</th>
+            <th className="px-2 py-2.5">Nama Peserta</th>
+            <th className="px-2 py-2.5">Waktu Penawaran</th>
+            <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
+            <th className="px-2 py-2.5 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
+          {rows.length ? (
+            rows.map((bid) => {
+              const rowTone = bid.isWinner ? "bg-[#fff1f2]" : bid.determinesFinalPrice ? "bg-[#fff8e7]" : "bg-white";
+              const status = bid.isWinner ? "Gagal / Pelanggaran" : bid.determinesFinalPrice ? "Harga Pembanding" : "Tidak Menang";
+              const statusTone = bid.isWinner
+                ? "bg-[#b91c1c] text-white"
+                : bid.determinesFinalPrice
+                  ? "bg-[#f59e0b] text-white"
+                  : "bg-[#eef2f0] text-[#40558b]";
+
+              return (
+                <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#fef2f2]`} key={bid.id}>
+                  <td className="px-2 py-2.5 text-center font-mono text-[#991b1b]">{bid.rank}</td>
+                  <td className="break-all px-2 py-2.5 font-mono text-[0.64rem] leading-4">{bid.bidderId}</td>
+                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
+                    {bid.bidderName}
+                  </td>
+                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
+                    {bid.submittedAtLabel}
+                  </td>
+                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
+                    {formatSuperAdminOptionalCurrency(bid.amount)}
+                  </td>
+                  <td className="px-2 py-2.5 text-center">
+                    <span className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}>
+                      {bid.isWinner ? <X className="size-3" /> : bid.determinesFinalPrice ? <ReceiptText className="size-3" /> : <CheckCircle2 className="size-3" />}
+                      <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
+                    </span>
+                  </td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]" colSpan={6}>
+                Belum ada peserta yang mengirim penawaran.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
+        Total {session.participants ?? rows.length} peserta
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyFailureProgressPanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+  const steps = unpaid
+    ? [
+        { label: "Pemenang Diumumkan", meta: "Selesai", icon: Trophy, tone: "done" },
+        { label: "Gagal Bayar", meta: "Terjadi", icon: X, tone: "failed" },
+        { label: "Selesai", meta: "Belum Tercapai", icon: CheckCircle2, tone: "pending" },
+      ]
+    : [
+        { label: "Sesi Ditutup", meta: "Selesai", icon: CheckCircle2, tone: "done" },
+        { label: "Tanpa Bid", meta: "Terjadi", icon: X, tone: "failed" },
+        { label: "Lelang Ulang", meta: "Belum Dijadwalkan", icon: RefreshCcw, tone: "pending" },
+      ];
+
+  return (
+    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        Progress Penyelesaian
+      </p>
+      <div className="relative mt-5 flex items-start justify-between px-2 text-center">
+        <span className="absolute left-[14%] right-[14%] top-6 h-px border-t border-dashed border-[#fecaca]" />
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          const iconTone =
+            step.tone === "done"
+              ? "border-[#006747] bg-[#006747] text-white"
+              : step.tone === "failed"
+                ? "border-[#b91c1c] bg-[#b91c1c] text-white"
+                : "border-[#dfe6e2] bg-white text-[#40558b]";
+
+          return (
+            <div className="relative z-[1] grid flex-1 justify-items-center gap-2" key={step.label}>
+              <span className={`grid size-12 place-items-center rounded-full border shadow-[0_14px_28px_-24px_rgba(8,69,50,0.35)] ${iconTone}`}>
+                <Icon className="size-5" />
+              </span>
+              <span
+                className={`grid size-4 place-items-center rounded-full text-[0.58rem] font-black ${
+                  step.tone === "failed"
+                    ? "bg-[#b91c1c] text-white"
+                    : step.tone === "done"
+                      ? "bg-[#006747] text-white"
+                      : "bg-[#eef2f0] text-[#40558b]"
+                }`}
+              >
+                {index + 1}
+              </span>
+              <div className="max-w-[7rem]">
+                <p className={`text-[0.66rem] font-black leading-4 ${step.tone === "failed" ? "text-[#991b1b]" : "text-[#006747]"}`}>
+                  {step.label}
+                </p>
+                <p className="mt-1 text-[0.58rem] font-bold leading-3 text-[#6b7b73]">{step.meta}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminFixedPriceWorkspace({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const sold = session.transactionStatus === "SELESAI" || session.status === "SELESAI" || Boolean(session.soldAt);
+  const verified = session.transactionStatus === "LUNAS";
+  const hasBuyer = Boolean(session.transactionId || session.buyerName || session.winner);
+  const isFailed = session.status === "GAGAL" || session.transactionStatus === "GAGAL";
+  const statusTitle = isFailed
+    ? "Sesi Fixed Price Diarsipkan"
+    : sold
+      ? "Pembelian Fixed Price Selesai"
+      : verified
+        ? "Pembayaran Fixed Price Terverifikasi"
+        : hasBuyer
+          ? "Bukti Pembayaran Masuk"
+          : "Masih Tersedia di Katalog";
+  const statusDetail = isFailed
+    ? "Iterasi fixed price ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
+    : sold
+      ? "Penjualan fixed price sudah selesai dan siap masuk arsip transaksi."
+      : verified
+        ? "Pembayaran fixed price sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai."
+        : hasBuyer
+          ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
+          : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
+
+  return (
+    <div className="space-y-4">
+      <section className={cn(
+        "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
+        isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
+      )}>
+        <div className="flex items-start gap-4">
+          <span className={cn(
+            "grid size-14 shrink-0 place-items-center rounded-full text-white",
+            isFailed ? "bg-[#b91c1c]" : "bg-[#006747]",
+          )}>
+            {isFailed ? <AlertTriangle className="size-7" strokeWidth={2.5} /> : <ShoppingBag className="size-7" strokeWidth={2.2} />}
+          </span>
+          <div className="min-w-0">
+            <h2 className={cn(
+              "font-headline text-[1rem] font-black uppercase tracking-[0.02em] sm:text-[1.12rem]",
+              isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
+            )}>
+              {statusTitle}
+            </h2>
+            <p className={cn(
+              "mt-1 text-[0.8rem] font-semibold leading-5",
+              isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
+            )}>
+              {statusDetail}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
+        <div className="space-y-4">
+          <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+            <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+              Ringkasan Sesi Fixed Price
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <SuperAdminDetailInfoCard
+                icon={ShoppingBag}
+                label="Status Sesi"
+                value={formatSuperAdminDisplayLabel(session.status)}
+              />
+              <SuperAdminDetailInfoCard
+                icon={CreditCard}
+                label="Status Pembayaran"
+                value={formatSuperAdminDisplayLabel(session.transactionStatus)}
+              />
+              <SuperAdminDetailInfoCard
+                icon={WalletCards}
+                label="Buyer"
+                value={session.buyerName || session.winner || "Belum ada pembeli"}
+              />
+              <SuperAdminDetailInfoCard
+                icon={Clock3}
+                label="Waktu Sesi"
+                value={getSuperAdminMarketingDateLabel(session)}
+              />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+            <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+              Harga & Catatan Sesi
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+                <p className="text-[0.66rem] font-black text-[#92400e]">Harga Fixed Price</p>
+                <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
+                  {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
+                </p>
+              </div>
+              <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+                <p className="text-[0.66rem] font-black text-[#40558b]">Referensi</p>
+                <p className="mt-2 text-[0.9rem] font-black leading-tight text-[#111b46]">
+                  {session.reference || "-"}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+              {session.note || "Belum ada catatan tambahan pada iterasi fixed price ini."}
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-4">
+          <SuperAdminMarketingArchiveStatusCard
+            detail={hasBuyer ? "Data buyer dan status transaksi ditampilkan read-only untuk kebutuhan audit." : "Belum ada pembeli tercatat pada sesi fixed price ini."}
+            eyebrow="Status Transaksi"
+            title={hasBuyer ? formatSuperAdminDisplayLabel(session.transactionStatus) : "Belum ada pembeli"}
+            tone={isFailed ? "red" : "emerald"}
+          />
+          <SuperAdminReadOnlyAuditFooter
+            icon={ShieldCheck}
+            note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminVickreyWorkspace({
+  receiptContext,
+  session,
+}: {
+  receiptContext: SuperAdminMarketingReceiptContext;
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const failureArchive = isSuperAdminVickreyFailureArchive(session);
+  const verified = isSuperAdminVickreyPaymentVerified(session);
+
+  if (failureArchive) {
+    const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+
+    return (
+      <div className="space-y-4">
+        <SuperAdminVickreyFailureBanner session={session} />
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
+        <div className="space-y-4">
+          <SuperAdminVickreyFailureProfilePanel session={session} />
+          <SuperAdminVickreyFailureMechanismPanel session={session} />
+          <SuperAdminVickreyFailureRankingTable session={session} />
+        </div>
+          <div className="space-y-4 2xl:sticky 2xl:top-4">
+            <SuperAdminVickreyFailureProgressPanel session={session} />
+            <SuperAdminVickreyFailureActionFooter />
+          </div>
+        </div>
+        <SuperAdminReadOnlyAuditFooter
+          icon={ShieldCheck}
+          note={
+            unpaid
+              ? "Riwayat gagal bayar, pelanggaran pemenang, dan ranking bid diarsipkan sebagai bukti audit."
+              : "Riwayat sesi tanpa peserta disiapkan menjadi dasar penjadwalan lelang ulang."
+          }
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <SuperAdminVickreySettlementBanner session={session} />
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
+        <div className="space-y-4">
+          <SuperAdminVickreyWinnerProfilePanel session={session} />
+          <SuperAdminVickreyMechanismPanel session={session} />
+          <SuperAdminVickreyRankingTable session={session} />
+        </div>
+        <div className="space-y-4 2xl:sticky 2xl:top-4">
+          <SuperAdminVickreyProgressPanel session={session} />
+          <SuperAdminVickreyNotePanel session={session} />
+          <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
+        </div>
+      </div>
+      <SuperAdminReadOnlyAuditFooter
+        icon={ShieldCheck}
+        note={
+          verified
+            ? "Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
+            : "Ringkasan sesi, pemenang, dan ranking bid ditampilkan read-only untuk monitoring lintas unit."
+        }
+      />
+    </div>
+  );
+}
+
+function SuperAdminDetailInfoCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3.5 shadow-[0_14px_34px_-30px_rgba(8,69,50,0.34)]">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-[#f1f8f4] text-[#007a4d] ring-1 ring-[#d6eadf]">
+          <Icon className="size-4" strokeWidth={1.9} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">
+            {label}
+          </p>
+          <div className="mt-1.5 text-[0.95rem] font-bold leading-6 text-[#13211c]">
+            {value}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminMarketingAuditPanel({
+  marketing,
+  receiptContext,
+}: {
+  marketing: SuperAdminUnitBarangMarketingSession | null;
+  receiptContext: SuperAdminMarketingReceiptContext;
+}) {
+  const iterationHistory = getSuperAdminIterationHistory(marketing);
+  const [selectedIterationId, setSelectedIterationId] = useState(() => marketing?.id ?? "");
+
+  useEffect(() => {
+    setSelectedIterationId(marketing?.id ?? "");
+  }, [marketing?.id]);
+
+  if (!marketing) {
+    return null;
+  }
+
+  const latestIterationId = iterationHistory[0]?.id;
+  const selectedIteration =
+    iterationHistory.find((entry) => entry.id === selectedIterationId) ?? iterationHistory[0] ?? marketing;
+  const selectedStatus = formatSuperAdminDisplayLabel(selectedIteration.status);
+  const selectedStatusKey = normalizeUnitDetailOptionValue(selectedIteration.status);
+  const selectedIsFailed =
+    selectedStatusKey.includes("gagal") || selectedStatusKey.includes("ditolak");
+  const selectedIsSettled =
+    selectedStatusKey.includes("selesai") ||
+    selectedStatusKey.includes("terverifikasi") ||
+    selectedStatusKey.includes("menunggu_buyer");
+  const selectedIsActive =
+    !selectedIsFailed &&
+    !selectedIsSettled &&
+    (selectedStatusKey.includes("aktif") ||
+      selectedStatusKey.includes("menunggu") ||
+      selectedStatusKey.includes("jalan") ||
+      selectedStatusKey.includes("proses"));
+  const isVickrey = getUnitDetailMarketingModeValue(selectedIteration.mode) === "vickrey";
+  const iterationOptions: AdminSelectOption[] = iterationHistory.map((entry, index) => ({
+    value: entry.id,
+    label: `Iterasi ${entry.iteration ?? iterationHistory.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
+    icon: FileText,
+  }));
+
+  return (
+    <section className="space-y-4 overflow-hidden rounded-[1.15rem] border border-[#d8e8dd] border-l-[5px] border-l-[#008f4a] bg-white px-5 py-5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
+            Riwayat Iterasi Pemasaran
+          </p>
+          <p className="mt-2 font-headline text-[1.48rem] font-black leading-none text-[#13211c]">
+            {marketing.lot}
+          </p>
+        </div>
+        {iterationOptions.length > 1 ? (
+          <AdminSelect
+            ariaLabel="Pilih iterasi pemasaran"
+            className="w-full sm:w-[13.75rem] [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.92rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
+            onValueChange={setSelectedIterationId}
+            options={iterationOptions}
+            value={selectedIteration.id}
+          />
+        ) : (
+          <span className="inline-flex h-9 w-fit items-center gap-2 rounded-[0.45rem] bg-[#eef3f1] px-3.5 text-[0.82rem] font-black text-[#52655d] shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]">
+            <FileText className="size-4" />
+            Iterasi {selectedIteration.iteration ?? 1}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-5 border-t border-[#e6eee9] pt-5">
+        <div className="grid gap-3 rounded-[0.95rem] text-sm sm:grid-cols-[11.5rem_minmax(0,1fr)_11.5rem] sm:items-center">
+          <span
+            className={cn(
+              "inline-flex h-9 w-fit items-center gap-2 rounded-[0.45rem] px-3.5 text-[0.82rem] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]",
+              selectedIsFailed
+                ? "bg-[#fff1f1] text-[#b42318]"
+                : selectedIsSettled
+                  ? "bg-[#eaf8f0] text-[#006747]"
+                  : selectedIsActive
+                    ? "bg-[#fff6df] text-[#9b5c00]"
+                    : "bg-[#eef3f1] text-[#52655d]",
+            )}
+          >
+            <span
+              className={cn(
+                "relative size-3 rounded-full",
+                selectedIsFailed
+                  ? "bg-[#d61f1f]"
+                  : selectedIsSettled
+                    ? "bg-[#00a85a]"
+                    : selectedIsActive
+                      ? "bg-[#d89b12]"
+                      : "bg-[#94a3a0]",
+              )}
+            >
+              <span className="absolute inset-0 rounded-full bg-current opacity-20" />
+            </span>
+            {selectedStatus}
+          </span>
+          <span className="min-w-0 truncate font-black text-[#0f172a]">
+            {getSuperAdminMarketingSummary(selectedIteration)}
+          </span>
+          <span className="inline-flex items-center gap-2 font-mono text-[0.76rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
+            <Clock3 className="size-4 shrink-0" />
+            {selectedIteration.ending || formatSuperAdminDateTime(selectedIteration.endingAt ?? selectedIteration.createdAt)}
+          </span>
+        </div>
+      </div>
+
+      <div className="border-t border-[#e6eee9] pt-5">
+        {isVickrey ? (
+          <SuperAdminVickreyWorkspace receiptContext={receiptContext} session={selectedIteration} />
+        ) : (
+          <SuperAdminFixedPriceWorkspace session={selectedIteration} />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminAssetTimeline({
+  history,
+  item,
+}: {
+  history: SuperAdminUnitBarangHistoryEntry[];
+  item: SuperAdminUnitBarangDetail["item"];
+}) {
+  const timelineEntries =
+    history.length > 0
+      ? history
+      : [
+          {
+            id: `${item.id}-received`,
+            barangId: item.id,
+            actionLabel: "Barang Diterima Unit",
+            actionKey: "input_baru" as const,
+            note: "Barang dicatat sebagai aset jaminan unit.",
+            actorName: "Admin Unit",
+            createdAtLabel: String(item.pawnedAt ?? item.date ?? "-"),
+          },
+        ];
+  const iconMap: Record<SuperAdminUnitBarangHistoryEntry["actionKey"], LucideIcon> = {
+    input_baru: PackagePlus,
+    perpanjangan: CalendarClock,
+    ditebus: ReceiptText,
+    dipasarkan: Gavel,
+    terjual: BadgeCheck,
+    gagal: FileWarning,
+  };
+
+  return (
+    <aside className="flex h-full max-h-[min(44rem,calc(100vh-8rem))] min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e2ebe6] bg-white shadow-[0_18px_54px_-46px_rgba(8,69,50,0.34)]">
+      <div className="px-4 py-4">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
+            <ShoppingBag className="size-4.5" />
+          </span>
+          <h3 className="text-[1.28rem] font-medium tracking-[-0.02em] text-[#14213d]">
+            Riwayat Kronologi Aset
+          </h3>
+        </div>
+      </div>
+
+      <div className="scrollbar-none relative min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+        <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
+        {timelineEntries.map((entry) => {
+          const EntryIcon = iconMap[entry.actionKey] ?? FileText;
+          const stamp = String(entry.createdAtLabel ?? "").split(",");
+
+          return (
+            <div
+              className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_5.8rem] gap-3 py-3.5"
+              key={entry.id}
+            >
+              <div className="relative flex justify-center">
+                <span className="grid size-9 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62] shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
+                  <EntryIcon className="size-4" />
+                </span>
+                <span className="absolute -right-1 top-3 size-2.5 rounded-full bg-[#099561] ring-4 ring-white" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
+                  {entry.actionLabel}
+                </h3>
+                <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
+                  {entry.note}
+                </p>
+              </div>
+              <div className="pt-0.5 text-right text-[0.78rem] leading-6 text-[#667085]">
+                <p>{stamp[0]?.trim() || "-"}</p>
+                <p>{stamp.slice(1).join(",").trim()}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
+export function SuperAdminUnitBarangDetailPage({
+  detail,
+}: {
+  detail: SuperAdminUnitBarangDetail | null;
+}) {
+  if (!detail) {
+    return (
+      <Card className="border border-border/70 bg-white p-8">
+        <p className="text-muted-foreground">Barang tidak ditemukan pada unit ini.</p>
+      </Card>
+    );
+  }
+
+  const { item, marketing, unit } = detail;
+  const itemName = String(item.name ?? "Detail Barang");
+  const itemCode = String(item.code ?? item.id);
+  const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
+  const specificationRows = getBarangSpecificationRows(
+    String(item.category ?? ""),
+    item.specifications ?? {},
+  );
+  const summaryMetrics = [
+    {
+      label: "Kategori",
+      value: formatUnitDetailCategory(String(item.category ?? "-")),
+      icon: Package2,
+    },
+    {
+      label: "Kondisi",
+      value: formatSuperAdminDisplayLabel(item.condition),
+      icon: ShieldCheck,
+    },
+    {
+      label: "Nilai Taksiran",
+      value: formatFullCurrency(Number(item.appraisalValue ?? 0)),
+      icon: Landmark,
+    },
+  ];
+  const specificationInfoRows = specificationRows.map((row) => ({
+    label: row.label,
+    value: row.value || "-",
+    icon: getSuperAdminSpecificationIcon(item.category, row.label),
+  }));
+  const topInfoRows = [
+    ...specificationInfoRows,
+    { label: "Jatuh Tempo", value: item.dueDate || "-", icon: CalendarClock },
+  ].filter(Boolean) as Array<{
+    label: string;
+    value: ReactNode;
+    icon: LucideIcon;
+  }>;
+  const bottomInfoRows = [
+    { label: "Tanggal Gadai", value: item.pawnedAt || item.date || "-", icon: CalendarDays },
+    { label: "Nama Nasabah", value: item.ownerName || "-", icon: UserRound },
+    { label: "Nomor Telepon Nasabah", value: item.customerNumber || "-", icon: Phone },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-[#536279]"
+      >
+        <span>Superadmin / Detail Barang</span>
+        <span className="text-[#c5d1cb]">/</span>
+        <Link
+          className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[#00563b]"
+          href={`/superadmin/unit/${unit.id}`}
+        >
+          {unit.name}
+        </Link>
+        <span className="text-[#c5d1cb]">/</span>
+        <span className="text-[#13211c]">{itemCode}</span>
+      </nav>
+
+      <AdminPageHero
+        description="Pantau detail barang lintas unit secara read-only, termasuk aset, media, status pemasaran, transaksi, dan riwayat iterasinya."
+        eyebrow="Superadmin / Monitoring Unit"
+        icon={Package2}
+        rightRail={
+          <>
+            <span
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.14em] ring-1",
+                getUnitDetailStatusToneClass(detail.operationalTone),
+              )}
+            >
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  getUnitDetailStatusDotClass(detail.operationalTone),
+                )}
+              />
+              Status {detail.operationalStatus}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/78 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#006747] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 ring-[#8fd0a9]/65">
+              <Building2 className="size-4" strokeWidth={1.9} />
+              {unit.name}
+            </span>
+          </>
+        }
+        title={itemName}
+      />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_21.5rem]">
+        <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+          <div className="space-y-5 p-4 lg:p-5">
+            <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
+              <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
+              <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
+                <div className="w-full shrink-0 lg:w-[18rem]">
+                  <AdminBarangDetailMediaViewer
+                    category={formatUnitDetailCategory(String(item.category ?? ""))}
+                    media={media}
+                    title={itemName}
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-4">
+                  <div>
+                    <p className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
+                      {itemName}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
+                      <span className="font-medium">Kode Barang:</span>
+                      <span className="font-medium text-[#0a9f62]">{itemCode}</span>
                     </div>
-                    <StatusBadge value={admin.status} />
+                  </div>
+
+                  <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
+                    {summaryMetrics.map((metric) => (
+                      <div
+                        className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                        key={metric.label}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                            <metric.icon className="size-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
+                              {metric.label}
+                            </p>
+                            <p
+                              className={cn(
+                                "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
+                                metric.label === "Nilai Taksiran"
+                                  ? "text-[0.82rem] xl:text-[0.88rem]"
+                                  : "text-[0.93rem]",
+                              )}
+                            >
+                              {metric.value}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+              </div>
+            </div>
+
+            <div className="h-px bg-[#eef1ee]" />
+
+            <div className="space-y-4 rounded-2xl border border-[#eef1ee] bg-[linear-gradient(180deg,#ffffff,#fbfcfb)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+              <div className="space-y-3">
+                <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#6a7d73]">
+                  Spesifikasi Barang
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {topInfoRows.map((row) => (
+                  <div
+                    className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
+                    key={row.label}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
+                        <row.icon className="size-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[0.72rem] font-medium text-[#667085]">
+                          {row.label}
+                        </p>
+                        <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
+                          {row.value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-[#eef1ee]" />
+
+              <div className="space-y-3">
+                <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#6a7d73]">
+                  Informasi Gadai
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {bottomInfoRows.map((row) => (
+                  <div
+                    className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
+                    key={row.label}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
+                        <row.icon className="size-4.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[0.72rem] font-medium text-[#667085]">
+                          {row.label}
+                        </p>
+                        <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
+                          {row.value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+              <div className="flex items-start gap-3.5">
+                <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
+                  <FileText className="size-5" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
+                    Deskripsi Barang
+                  </h3>
+                  <p className="mt-3 text-[0.96rem] leading-7 text-[#5f6f86]">
+                    {item.description || "Belum ada deskripsi barang yang dicatat."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-4">
+          <SuperAdminAssetTimeline history={detail.history} item={item} />
+        </div>
       </div>
+
+      {marketing ? (
+        <SuperAdminMarketingAuditPanel
+          marketing={marketing}
+          receiptContext={{
+            itemCode,
+            itemMedia: media,
+            itemTitle: itemName,
+            unitAddress: unit.address,
+            unitName: unit.name,
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -2287,6 +5149,92 @@ export function SuperAdminPolicyPage() {
   );
 }
 
+const monitoringItemsPerPage = 10;
+const monitoringStatusFilterAll = "Semua Status";
+const monitoringChartSeries = [
+  {
+    key: "collateralItems",
+    label: "Barang Jaminan",
+    barClass: "bg-[#f59e0b]",
+    dotClass: "bg-[#f59e0b]",
+  },
+  {
+    key: "marketedItems",
+    label: "Sedang Dipasarkan",
+    barClass: "bg-[#007a4d]",
+    dotClass: "bg-[#007a4d]",
+  },
+  {
+    key: "soldItems",
+    label: "Terjual",
+    barClass: "bg-[#2563eb]",
+    dotClass: "bg-[#2563eb]",
+  },
+] as const;
+
+type MonitoringUnitTone = "active" | "attention" | "inactive" | "neutral";
+type MonitoringChartSeriesKey = (typeof monitoringChartSeries)[number]["key"];
+const monitoringChartToneClasses: Record<
+  MonitoringChartSeriesKey,
+  { pill: string; row: string; value: string }
+> = {
+  collateralItems: {
+    pill: "bg-[#fff7e6] text-[#c97900]",
+    row: "bg-[#fff9ed]",
+    value: "text-[#c97900]",
+  },
+  marketedItems: {
+    pill: "bg-[#eef8f3] text-[#00563b]",
+    row: "bg-[#f5faf7]",
+    value: "text-[#00563b]",
+  },
+  soldItems: {
+    pill: "bg-[#eef4ff] text-[#1d4ed8]",
+    row: "bg-[#f5f8ff]",
+    value: "text-[#1d4ed8]",
+  },
+};
+type MonitoringChartTooltip = {
+  anchorX: number;
+  id: string;
+  key: MonitoringChartSeriesKey;
+  label: string;
+  row: SuperAdminMonitoringUnitRow;
+  value: number;
+};
+
+function getCompactUnitName(name: string) {
+  return name.replace(/^Pegadaian\s+/i, "");
+}
+
+function getMonitoringUnitTone(status: string): MonitoringUnitTone {
+  const normalized = status.toLowerCase();
+
+  if (normalized.includes("nonaktif")) return "inactive";
+  if (normalized.includes("tindak") || normalized.includes("review")) {
+    return "attention";
+  }
+  if (normalized.includes("aktif") || normalized.includes("normal")) {
+    return "active";
+  }
+
+  return "neutral";
+}
+
+function getMonitoringPeriodLabel(serverNow?: string) {
+  const date = serverNow ? new Date(serverNow) : new Date();
+
+  if (Number.isNaN(date.getTime())) {
+    return "Data aktif";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    month: "long",
+    timeZone: "Asia/Makassar",
+    year: "numeric",
+  }).format(date);
+}
+
 export function SuperAdminMonitoringPage({
   data,
   serverNow,
@@ -2295,278 +5243,754 @@ export function SuperAdminMonitoringPage({
   serverNow?: string;
 }) {
   const unitRows = data.unitRows ?? [];
-  const [selectedUnitRow, setSelectedUnitRow] =
-    useState<SuperAdminMonitoringUnitRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState(monitoringStatusFilterAll);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeMetricIndex, setActiveMetricIndex] = useState<number | null>(null);
+  const [activeChartTooltip, setActiveChartTooltip] =
+    useState<MonitoringChartTooltip | null>(null);
+  const chartPlotRef = useRef<HTMLDivElement | null>(null);
+  const periodLabel = getMonitoringPeriodLabel(serverNow);
+  const statusOptions = useMemo(
+    () => [
+      monitoringStatusFilterAll,
+      ...Array.from(new Set(unitRows.map((row) => row.status).filter(Boolean))),
+    ],
+    [unitRows],
+  );
+  const filteredUnitRows = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return unitRows.filter((row) => {
+      const matchesSearch =
+        !normalizedQuery ||
+        row.unitName.toLowerCase().includes(normalizedQuery) ||
+        row.unitCode.toLowerCase().includes(normalizedQuery);
+      const matchesStatus =
+        statusFilter === monitoringStatusFilterAll ||
+        row.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchQuery, statusFilter, unitRows]);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredUnitRows.length / monitoringItemsPerPage),
+  );
+  const paginatedUnitRows = filteredUnitRows.slice(
+    (currentPage - 1) * monitoringItemsPerPage,
+    currentPage * monitoringItemsPerPage,
+  );
+  const visiblePageNumbers = Array.from(
+    { length: totalPages },
+    (_, index) => index + 1,
+  ).filter(
+    (page) =>
+      totalPages <= 5 ||
+      Math.abs(page - currentPage) <= 2 ||
+      page === 1 ||
+      page === totalPages,
+  );
+  const currentPageStart =
+    filteredUnitRows.length === 0
+      ? 0
+      : (currentPage - 1) * monitoringItemsPerPage + 1;
+  const currentPageEnd = Math.min(
+    currentPage * monitoringItemsPerPage,
+    filteredUnitRows.length,
+  );
+  const maxChartValue = Math.max(
+    1,
+    ...filteredUnitRows.flatMap((row) =>
+      monitoringChartSeries.map((series) => Number(row[series.key] ?? 0)),
+    ),
+  );
+  const chartMinWidth = Math.max(920, filteredUnitRows.length * 128);
+  const activeUnitCount = unitRows.filter(
+    (row) => getMonitoringUnitTone(row.status) === "active",
+  ).length;
+  const followUpUnitCount = unitRows.filter(
+    (row) => Number(row.followUpItems) > 0,
+  ).length;
+  const topMarketedUnit = [...unitRows].sort(
+    (left, right) =>
+      Number(right.marketedItems ?? 0) - Number(left.marketedItems ?? 0),
+  )[0];
+  const itemMonitoringMetrics = [
+    {
+      label: "Barang Jaminan",
+      value: unitRows.reduce(
+        (sum, row) => sum + Number(row.collateralItems ?? 0),
+        0,
+      ),
+      detail:
+        unitRows.length > 0
+          ? `Tercatat pada ${formatDashboardCount(unitRows.length)} unit`
+          : "Belum ada unit tercatat",
+      icon: Package,
+      iconClass: "bg-amber-50 text-amber-700 ring-amber-100",
+      valueClass: "text-[#13211c]",
+      tooltipRows: [
+        {
+          label: "Unit tercatat",
+          value: formatDashboardCount(unitRows.length),
+        },
+        {
+          label: "Unit aktif",
+          value: formatDashboardCount(activeUnitCount),
+        },
+      ],
+    },
+    {
+      label: "Sedang Dipasarkan",
+      value: unitRows.reduce(
+        (sum, row) => sum + Number(row.marketedItems ?? 0),
+        0,
+      ),
+      detail:
+        topMarketedUnit && Number(topMarketedUnit.marketedItems) > 0
+          ? `Tertinggi di ${getCompactUnitName(topMarketedUnit.unitName)}`
+          : "Belum ada barang dipasarkan",
+      icon: Megaphone,
+      iconClass: "bg-emerald-50 text-[#007a4d] ring-emerald-100",
+      valueClass: "text-[#13211c]",
+      tooltipRows: [
+        {
+          label: "Unit tertinggi",
+          value: topMarketedUnit
+            ? getCompactUnitName(topMarketedUnit.unitName)
+            : "-",
+        },
+        {
+          label: "Barang tertinggi",
+          value: formatDashboardCount(topMarketedUnit?.marketedItems ?? 0),
+        },
+      ],
+    },
+    {
+      label: "Terjual",
+      value: unitRows.reduce(
+        (sum, row) => sum + Number(row.soldItems ?? 0),
+        0,
+      ),
+      detail: "Selesai dari transaksi terverifikasi",
+      icon: BadgeCheck,
+      iconClass: "bg-[#e8f3ec] text-[#007a4d] ring-[#cfe8d8]",
+      valueClass: "text-[#13211c]",
+      tooltipRows: [
+        {
+          label: "Nilai tervalidasi",
+          value: formatCompactCurrency(
+            unitRows.reduce(
+              (sum, row) => sum + Number(row.validatedTransactionValue ?? 0),
+              0,
+            ),
+          ),
+        },
+        {
+          label: "Basis data",
+          value: "Transaksi lunas / selesai",
+        },
+      ],
+    },
+    {
+      label: "Perlu Tindak Lanjut",
+      value: unitRows.reduce(
+        (sum, row) => sum + Number(row.followUpItems ?? 0),
+        0,
+      ),
+      detail:
+        followUpUnitCount > 0
+          ? `${formatDashboardCount(followUpUnitCount)} unit perlu dipantau`
+          : "Tidak ada tindak lanjut aktif",
+      icon: AlertTriangle,
+      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
+      valueClass:
+        followUpUnitCount > 0 ? "text-rose-600" : "text-[#13211c]",
+      tooltipRows: [
+        {
+          label: "Unit terdampak",
+          value: formatDashboardCount(followUpUnitCount),
+        },
+        {
+          label: "Status fokus",
+          value: followUpUnitCount > 0 ? "Perlu dipantau" : "Aman",
+        },
+      ],
+    },
+  ];
+  const activeChartRows = activeChartTooltip
+    ? monitoringChartSeries.map((series) => ({
+        ...series,
+        rowClass:
+          activeChartTooltip.key === series.key
+            ? monitoringChartToneClasses[series.key].row
+            : "bg-white",
+        value: Number(activeChartTooltip.row[series.key] ?? 0),
+        valueClass:
+          activeChartTooltip.key === series.key
+            ? monitoringChartToneClasses[series.key].value
+            : "text-[#13211c]",
+      }))
+    : [];
+  const activeChartTone = activeChartTooltip
+    ? monitoringChartToneClasses[activeChartTooltip.key]
+    : null;
+  const setAnchoredChartTooltip = (
+    event: ReactFocusEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    tooltip: Omit<MonitoringChartTooltip, "anchorX">,
+  ) => {
+    const plotRect = chartPlotRef.current?.getBoundingClientRect();
+    const targetRect = event.currentTarget.getBoundingClientRect();
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const rawAnchorX = plotRect ? targetCenterX - plotRect.left : targetCenterX;
+    const anchorX = Math.min(Math.max(rawAnchorX, 156), chartMinWidth - 156);
+
+    setActiveChartTooltip({
+      ...tooltip,
+      anchorX,
+    });
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
 
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        eyebrow="Komparasi Unit"
+    <div className="space-y-5 lg:space-y-6">
+      <AdminPageHero
+        description="Bandingkan distribusi barang lintas unit dari data database: barang jaminan, pemasaran aktif, penjualan, dan tindak lanjut unit."
+        eyebrow="Superadmin / Monitoring Unit"
+        icon={ShieldCheck}
+        rightRail={
+          <>
+            <SuperAdminHeroPill icon={Building2}>
+              {formatDashboardCount(unitRows.length)} unit tercatat
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={BadgeCheck}>
+              {formatDashboardCount(activeUnitCount)} unit aktif
+            </SuperAdminHeroPill>
+          </>
+        }
         title="Monitoring Unit"
-        description="Bandingkan kondisi unit secara ringkas: lifecycle barang, transaksi tertahan, tindak lanjut operasional, dan pelanggaran buyer aktif."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {data.summary.metrics.map((metric) => (
-          <Card
-            className="border border-border/70 bg-white p-5"
-            key={metric.label}
-          >
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              {metric.label}
-            </p>
-            <p className="mt-4 text-3xl font-extrabold text-primary">
-              {metric.value}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {metric.detail}
-            </p>
-          </Card>
-        ))}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {itemMonitoringMetrics.map((metric, index) => {
+          const Icon = metric.icon;
+
+          return (
+            <Card
+              aria-describedby={
+                activeMetricIndex === index
+                  ? `monitoring-metric-tooltip-${index}`
+                  : undefined
+              }
+              aria-label={`Ringkasan ${metric.label}`}
+              className="group relative border border-border/70 bg-white p-5 shadow-[0_18px_55px_-44px_rgba(8,69,50,0.45)] outline-none transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:shadow-[0_22px_65px_-46px_rgba(8,69,50,0.5)] focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+              key={metric.label}
+              onBlur={() => setActiveMetricIndex(null)}
+              onFocus={() => setActiveMetricIndex(index)}
+              onMouseEnter={() => setActiveMetricIndex(index)}
+              onMouseLeave={() => setActiveMetricIndex(null)}
+              style={{ animationDelay: `${index * 70}ms` }}
+              tabIndex={0}
+            >
+              <div className="flex items-start gap-4">
+                <span
+                  className={cn(
+                    "grid size-14 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
+                    metric.iconClass,
+                  )}
+                >
+                  <Icon className="size-6" strokeWidth={1.9} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#273954]">
+                    {metric.label}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-2 font-headline text-4xl font-black tracking-[-0.04em]",
+                      metric.valueClass,
+                    )}
+                  >
+                    {formatDashboardCount(metric.value)}
+                  </p>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-[#536279]">
+                    {metric.detail}
+                  </p>
+                </div>
+              </div>
+              {activeMetricIndex === index ? (
+                <div
+                  className="pointer-events-none absolute left-5 right-5 top-[calc(100%-0.35rem)] z-[3] rounded-[0.95rem] border border-[#cfe7d8] bg-white px-3.5 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70"
+                  id={`monitoring-metric-tooltip-${index}`}
+                  role="tooltip"
+                >
+                  <div className="absolute left-8 top-0 size-3 -translate-y-1/2 rotate-45 border-l border-t border-[#cfe7d8] bg-white" />
+                  <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">
+                    {metric.label}
+                  </p>
+                  <p className="mt-1 font-headline text-lg font-black leading-none text-[#00563b]">
+                    {formatDashboardCount(metric.value)} item
+                  </p>
+                  <div className="mt-3 grid gap-2 text-[0.72rem] font-bold text-[#52615d]">
+                    {metric.tooltipRows.map((row) => (
+                      <div
+                        className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2"
+                        key={row.label}
+                      >
+                        <span>{row.label}</span>
+                        <span className="text-right font-black text-[#00563b]">
+                          {row.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </Card>
+          );
+        })}
       </div>
 
-      <Card className="border border-border/70 bg-white">
-        <CardHeader>
-          <CardTitle>Tabel komparasi unit</CardTitle>
+      <Card className="border border-border/70 bg-white shadow-[0_24px_80px_-68px_rgba(8,69,50,0.45)]">
+        <CardHeader className="gap-4 border-b border-border/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
+              <BarChart3 className="size-4" strokeWidth={2} />
+            </span>
+            <CardTitle>Grafik Barang pada Tiap Unit</CardTitle>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954]">
+              <CalendarDays className="size-4 text-primary" />
+              Periode: {periodLabel}
+            </div>
+            <select
+              aria-label="Filter status unit"
+              className="h-10 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954] shadow-none outline-none transition-colors focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  Status: {status}
+                </option>
+              ))}
+            </select>
+          </div>
         </CardHeader>
-        <CardContent>
-          {unitRows.length === 0 ? (
+        <CardContent className="relative space-y-4 pt-5">
+          {filteredUnitRows.length === 0 ? (
             <EmptyState
               className="p-6"
-              description="Data unit komparatif akan muncul setelah layanan monitoring mengirim agregasi per unit."
+              description="Tidak ada unit yang sesuai dengan filter saat ini."
               icon={Building2}
               title="Belum ada data unit"
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[940px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border/70 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                    <th className="py-3 pr-4" scope="col">
-                      Unit
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Barang Jaminan
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Sedang Dipasarkan
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Terjual
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Perlu Tindak Lanjut
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Transaksi Tertahan
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Pelanggaran Aktif
-                    </th>
-                    <th className="px-4 py-3" scope="col">
-                      Status Unit
-                    </th>
-                    <th className="py-3 pl-4" scope="col">
-                      Aksi Detail
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {unitRows.map((row) => (
-                    <tr
-                      className="border-b border-border/60 last:border-0"
+            <div className="overflow-x-auto pb-2">
+              <span
+                aria-label="Grafik barang pada tiap unit"
+                className="sr-only"
+                role="img"
+              >
+                Grafik komparasi barang jaminan, barang dipasarkan, dan barang
+                terjual pada setiap unit.
+              </span>
+              <div
+                className="relative h-[18.5rem]"
+                ref={chartPlotRef}
+                style={{ minWidth: `${chartMinWidth}px` }}
+              >
+                <div className="absolute inset-x-0 bottom-[4.6rem] top-5 flex flex-col justify-between">
+                  {[4, 3, 2, 1, 0].map((tick) => (
+                    <div className="flex items-center gap-3" key={tick}>
+                      <span className="w-8 text-right text-xs font-semibold text-[#435476]">
+                        {Math.round((maxChartValue / 4) * tick)}
+                      </span>
+                      <span className="h-px flex-1 border-t border-dashed border-[#dce5ef]" />
+                    </div>
+                  ))}
+                </div>
+                <div className="relative ml-11 flex h-full items-end gap-5 px-2 pb-12 pt-8">
+                  {filteredUnitRows.map((row) => (
+                    <div
+                      className="flex min-w-[6.4rem] flex-1 flex-col items-center"
                       key={row.id}
                     >
-                      <td className="py-4 pr-4">
-                        <p className="font-semibold text-foreground">
-                          {row.unitName}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                          {row.unitCode}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.collateralItems}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.marketedItems}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.soldItems}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.followUpItems}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.heldTransactions}
-                      </td>
-                      <td className="px-4 py-4 font-semibold text-foreground">
-                        {row.activeViolations}
-                      </td>
-                      <td className="px-4 py-4">
-                        <StatusBadge value={row.status} />
-                      </td>
-                      <td className="py-4 pl-4">
-                        <Button
-                          size="sm"
-                          type="button"
-                          variant="secondary"
-                          onClick={() => setSelectedUnitRow(row)}
-                        >
-                          <Eye className="size-4" />
-                          Detail
-                        </Button>
-                      </td>
-                    </tr>
+                      <div className="flex h-40 items-end justify-center gap-1.5">
+                        {monitoringChartSeries.map((series) => {
+                          const value = Number(row[series.key] ?? 0);
+                          const height = value > 0
+                            ? Math.max((value / maxChartValue) * 100, 8)
+                            : 1;
+                          const tooltipId = `${row.id}-${series.key}`;
+                          const active =
+                            activeChartTooltip?.id === tooltipId;
+
+                          return (
+                            <div
+                              className="flex h-full flex-col items-center justify-end gap-1"
+                              key={series.key}
+                            >
+                              {(value > 0 || filteredUnitRows.length <= 8) ? (
+                                <span className="text-[0.68rem] font-black text-[#13211c]">
+                                  {formatDashboardCount(value)}
+                                </span>
+                              ) : null}
+                              <div className="relative h-full w-4">
+                                <button
+                                  aria-describedby={
+                                    active
+                                      ? "monitoring-chart-tooltip"
+                                      : undefined
+                                  }
+                                  aria-label={`${series.label} ${row.unitName}: ${formatDashboardCount(value)} item`}
+                                  className={cn(
+                                    "absolute bottom-0 left-0 w-4 rounded-t-md border border-white/50 outline-none shadow-[0_10px_18px_-14px_rgba(15,23,42,0.5)] transition-[height,opacity,transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-x-125 hover:opacity-95 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                                    value > 0
+                                      ? series.barClass
+                                      : "bg-[#dfe6ee]",
+                                    active && "scale-x-125 opacity-95",
+                                  )}
+                                  onBlur={() => setActiveChartTooltip(null)}
+                                  onFocus={(event) =>
+                                    setAnchoredChartTooltip(event, {
+                                      id: tooltipId,
+                                      key: series.key,
+                                      label: series.label,
+                                      row,
+                                      value,
+                                    })
+                                  }
+                                  onMouseEnter={(event) =>
+                                    setAnchoredChartTooltip(event, {
+                                      id: tooltipId,
+                                      key: series.key,
+                                      label: series.label,
+                                      row,
+                                      value,
+                                    })
+                                  }
+                                  onMouseLeave={() => setActiveChartTooltip(null)}
+                                  style={{ height: `${height}%` }}
+                                  type="button"
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-3 w-28 truncate text-center text-xs font-bold text-[#273954]">
+                        {getCompactUnitName(row.unitName)}
+                      </p>
+                      <p className="mt-0.5 text-center text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#536279]">
+                        ({row.unitCode})
+                      </p>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+                {activeChartTooltip ? (
+                  <div
+                    className="pointer-events-none absolute top-4 z-[4] w-[18.75rem] max-w-[calc(100%_-_2rem)] -translate-x-1/2 rounded-[1.05rem] border border-[#cfe7d8] bg-white p-4 text-left shadow-[0_24px_62px_-34px_rgba(0,82,45,0.48)] ring-1 ring-white/70"
+                    id="monitoring-chart-tooltip"
+                    role="tooltip"
+                    style={{ left: `${activeChartTooltip.anchorX}px` }}
+                  >
+                    <div className="absolute left-1/2 top-full size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#cfe7d8] bg-white" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#6a7d73]">
+                          {activeChartTooltip.row.unitCode}
+                        </p>
+                        <p className="mt-1 truncate text-[0.8rem] font-bold text-[#5b6d63]">
+                          {getCompactUnitName(activeChartTooltip.row.unitName)}
+                        </p>
+                      </div>
+                      <span
+                        className={cn(
+                          "rounded-full px-3 py-1 text-[0.7rem] font-black",
+                          activeChartTone?.pill,
+                        )}
+                      >
+                        {formatDashboardCount(activeChartTooltip.value)} item
+                      </span>
+                    </div>
+
+                    <p className="mt-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#6a7d73]">
+                      {activeChartTooltip.label}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 font-headline text-[1.55rem] font-black leading-none",
+                        activeChartTone?.value,
+                      )}
+                    >
+                      {formatDashboardCount(activeChartTooltip.value)} item
+                    </p>
+
+                    <div className="mt-3 grid gap-2 text-[0.78rem] font-bold text-[#52615d]">
+                      {activeChartRows.map((series) => (
+                        <div
+                          className={cn(
+                            "flex items-center justify-between gap-3 rounded-[0.82rem] px-3 py-2.5 ring-1 ring-[#e2ece5]",
+                            series.rowClass,
+                          )}
+                          key={series.key}
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <span
+                              className={cn(
+                                "size-2.5 rounded-[0.2rem]",
+                                series.dotClass,
+                              )}
+                            />
+                            {series.label}
+                          </span>
+                          <span className={cn("font-black", series.valueClass)}>
+                            {formatDashboardCount(series.value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
           )}
+          <div className="flex flex-wrap justify-center gap-5 border-t border-border/60 pt-4 text-xs font-bold text-[#536279]">
+            {monitoringChartSeries.map((series) => (
+              <span className="inline-flex items-center gap-2" key={series.key}>
+                <span className={cn("size-2.5 rounded-sm", series.dotClass)} />
+                {series.label}
+              </span>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      <SuperAdminDialog
-        description="Ringkasan lifecycle, transaksi tertahan, dan status operasional unit."
-        onClose={() => setSelectedUnitRow(null)}
-        open={selectedUnitRow !== null}
-        title={selectedUnitRow?.unitName ?? "Detail unit"}
-      >
-        {selectedUnitRow ? (
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-start justify-between gap-3 rounded-[1rem] border border-border/70 bg-surface-low/60 p-4">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                  {selectedUnitRow.unitCode}
-                </p>
-                <p className="mt-2 text-lg font-bold text-foreground">
-                  {selectedUnitRow.unitName}
-                </p>
-              </div>
-              <StatusBadge value={selectedUnitRow.status} />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                {
-                  label: "Barang jaminan",
-                  value: selectedUnitRow.collateralItems,
-                  icon: Landmark,
-                },
-                {
-                  label: "Sedang dipasarkan",
-                  value: selectedUnitRow.marketedItems,
-                  icon: ClipboardCheck,
-                },
-                {
-                  label: "Terjual",
-                  value: selectedUnitRow.soldItems,
-                  icon: TrendingUp,
-                },
-                {
-                  label: "Perlu tindak lanjut",
-                  value: selectedUnitRow.followUpItems,
-                  icon: AlertTriangle,
-                },
-                {
-                  label: "Transaksi tertahan",
-                  value: selectedUnitRow.heldTransactions,
-                  icon: Clock3,
-                },
-                {
-                  label: "Pelanggaran aktif",
-                  value: selectedUnitRow.activeViolations,
-                  icon: ShieldBan,
-                },
-              ].map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div
-                    className="flex items-center justify-between gap-4 rounded-[1rem] border border-border/70 bg-white p-4"
-                    key={item.label}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="size-4" />
-                      </span>
-                      <p className="text-sm font-semibold text-muted-foreground">
-                        {item.label}
-                      </p>
-                    </div>
-                    <p className="text-xl font-extrabold text-foreground">
-                      {item.value}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Link href={`/superadmin/unit/${selectedUnitRow.id}`}>
-                <Button>
-                  <Building2 className="size-4" />
-                  Buka Detail Unit
-                </Button>
-              </Link>
-              <Link href={`/superadmin/unit/${selectedUnitRow.id}/rekening`}>
-                <Button variant="secondary">
-                  <WalletCards className="size-4" />
-                  Kelola Rekening
-                </Button>
-              </Link>
-            </div>
+      <Card className="overflow-hidden border border-border/70 bg-white shadow-[0_24px_80px_-68px_rgba(8,69,50,0.45)]">
+        <CardHeader className="gap-4 border-b border-border/60 bg-[linear-gradient(180deg,#ffffff,#fbfcfb)] pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
+              <ListChecks className="size-4" strokeWidth={2} />
+            </span>
+            <CardTitle>Daftar Komparasi Unit</CardTitle>
           </div>
-        ) : null}
-      </SuperAdminDialog>
+          <div className="relative w-full sm:w-80">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#536279]" />
+            <Input
+              aria-label="Cari unit atau kode cabang"
+              className="h-10 rounded-xl border-border/70 bg-white pl-9 text-sm"
+              placeholder="Cari unit atau kode cabang..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {filteredUnitRows.length === 0 ? (
+            <EmptyState
+              className="p-8"
+              description="Tidak ada unit yang cocok dengan pencarian atau filter status."
+              icon={SearchX}
+              title="Unit tidak ditemukan"
+            />
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[980px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border/70 bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
+                      <th className="px-6 py-3.5" scope="col">
+                        Unit / Cabang
+                      </th>
+                      <th className="px-4 py-3.5 text-center" scope="col">
+                        Barang Jaminan
+                      </th>
+                      <th className="px-4 py-3.5 text-center" scope="col">
+                        Sedang Dipasarkan
+                      </th>
+                      <th className="px-4 py-3.5 text-center" scope="col">
+                        Terjual
+                      </th>
+                      <th className="px-4 py-3.5 text-center" scope="col">
+                        Perlu Tindak Lanjut
+                      </th>
+                      <th className="px-4 py-3.5 text-center" scope="col">
+                        Status Unit
+                      </th>
+                      <th className="px-6 py-3.5 text-right" scope="col">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60 bg-white">
+                    {paginatedUnitRows.map((row) => {
+                      const tone = getMonitoringUnitTone(row.status);
 
-      <div className="grid gap-4">
-        {data.pendingMonitoring.length === 0 ? (
-          <EmptyState
-            description="Tidak ada unit, rekening, akun admin, atau transaksi yang membutuhkan perhatian cepat saat ini."
-            icon={Shield}
-            title="Monitoring sedang tenang"
-          />
-        ) : (
-          data.pendingMonitoring.map((item) => (
-            <Card className="border border-border/70 bg-white" key={item.id}>
-              <CardContent className="grid gap-4 p-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge variant="muted">{item.scope}</Badge>
-                    <StatusBadge value={item.status} />
-                  </div>
-                  <p className="text-lg font-bold text-foreground">
-                    {item.unit}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.activity}
-                  </p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {item.detail}
-                  </p>
-                  <SuperAdminCountdown
-                    className="text-sm font-semibold text-primary"
-                    countdownAt={item.countdownAt}
-                    countdownLabel={item.countdownLabel}
-                    expiredLabel={item.expiredLabel}
-                    serverNow={serverNow}
-                  />
+                      return (
+                        <tr
+                          className="transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f7fbf8]"
+                          key={row.id}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={cn(
+                                  "relative grid size-10 shrink-0 place-items-center rounded-xl ring-1",
+                                  tone === "active" &&
+                                    "bg-emerald-50 text-[#007a4d] ring-emerald-100",
+                                  tone === "attention" &&
+                                    "bg-rose-50 text-rose-600 ring-rose-100",
+                                  tone === "inactive" &&
+                                    "bg-slate-100 text-slate-500 ring-slate-200",
+                                  tone === "neutral" &&
+                                    "bg-slate-50 text-slate-500 ring-slate-200",
+                                )}
+                              >
+                                <Building2 className="size-5" strokeWidth={1.9} />
+                                <span
+                                  className={cn(
+                                    "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-white",
+                                    tone === "active" && "bg-[#007a4d]",
+                                    tone === "attention" && "bg-rose-500",
+                                    tone === "inactive" && "bg-slate-400",
+                                    tone === "neutral" && "bg-slate-400",
+                                  )}
+                                />
+                              </span>
+                              <div className="min-w-0">
+                                <p
+                                  className={cn(
+                                    "font-bold text-[#13211c]",
+                                    tone === "attention" && "text-rose-700",
+                                  )}
+                                >
+                                  {row.unitName}
+                                </p>
+                                <p className="mt-0.5 text-xs font-bold text-[#435476]">
+                                  ({row.unitCode})
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                            {formatDashboardCount(row.collateralItems)}
+                          </td>
+                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                            {formatDashboardCount(row.marketedItems)}
+                          </td>
+                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                            {formatDashboardCount(row.soldItems)}
+                          </td>
+                          <td
+                            className={cn(
+                              "px-4 py-4 text-center font-black",
+                              row.followUpItems > 0
+                                ? "text-rose-600"
+                                : "text-slate-300",
+                            )}
+                          >
+                            {formatDashboardCount(row.followUpItems)}
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <StatusBadge value={row.status} />
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <Link
+                              className="interactive-tap inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface-lowest px-4 text-sm font-semibold text-primary transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-out hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              href={`/superadmin/unit/${row.id}`}
+                            >
+                              <Eye className="size-4" />
+                              Detail
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-border/60 bg-[#fbfcfb] px-6 py-4 text-xs font-semibold text-[#536279] sm:flex-row sm:items-center sm:justify-between">
+                <p>
+                  Menampilkan{" "}
+                  <span className="font-black text-[#13211c]">
+                    {formatDashboardCount(currentPageStart)}
+                  </span>
+                  {" - "}
+                  <span className="font-black text-[#13211c]">
+                    {formatDashboardCount(currentPageEnd)}
+                  </span>{" "}
+                  dari{" "}
+                  <span className="font-black text-[#13211c]">
+                    {formatDashboardCount(filteredUnitRows.length)}
+                  </span>{" "}
+                  unit
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    disabled={currentPage === 1}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  >
+                    <ChevronLeft className="size-4" />
+                    Prev
+                  </Button>
+                  {visiblePageNumbers.map((page, index) => {
+                    const previousPage = visiblePageNumbers[index - 1];
+                    const shouldShowGap =
+                      previousPage !== undefined && page - previousPage > 1;
+
+                    return (
+                      <div className="flex items-center gap-2" key={page}>
+                        {shouldShowGap ? (
+                          <span className="px-1 text-[#8a97a8]">...</span>
+                        ) : null}
+                        <Button
+                          className={cn(
+                            "w-9 px-0",
+                            currentPage === page &&
+                              "bg-primary text-primary-foreground hover:bg-primary",
+                          )}
+                          size="sm"
+                          type="button"
+                          variant={currentPage === page ? "default" : "secondary"}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  <Button
+                    disabled={currentPage === totalPages}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
+                  >
+                    Next
+                    <ChevronRight className="size-4" />
+                  </Button>
                 </div>
-                <div className="space-y-3 rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5">
-                  <p className="text-sm text-muted-foreground">
-                    Tinjau unit ini untuk memastikan rekening aktif, admin
-                    aktif, dan status operasionalnya tetap sinkron.
-                  </p>
-                  <Link href={item.href ?? `/superadmin/unit/${item.unitId}`}>
-                    <Button variant="secondary">Buka Unit Terkait</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

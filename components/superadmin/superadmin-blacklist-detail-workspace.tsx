@@ -478,22 +478,23 @@ function CountdownPanel({
         <CalendarClock className="size-4" />
         {formatDisplayDate(parseDate(entry.lastIncidentAt ?? entry.lastIncident))} - {formatDisplayDate(parseDate(deadline))}
       </p>
-      <div className="mt-5 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+      <div className="mt-5 grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-1.5">
         {[
           ["Hari", ticker.days],
           ["Jam", ticker.hours],
-          ["Mnt", ticker.minutes]
+          ["Mnt", ticker.minutes],
+          ["Dtk", ticker.seconds]
         ].map(([label, value], index) => (
           <div className="contents" key={label}>
-            <div className="rounded-[1rem] border border-[#e2e8f0] bg-white p-3 text-center shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]">
-              <p className={cn("font-headline text-3xl font-black leading-none", tone.text)}>
+            <div className="rounded-[0.9rem] border border-[#e2e8f0] bg-white px-2 py-3 text-center shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)]">
+              <p className={cn("font-headline text-[1.45rem] font-black leading-none sm:text-[1.65rem]", tone.text)}>
                 {value}
               </p>
-              <p className="mt-1 text-[0.65rem] font-black uppercase tracking-[0.12em] text-[#536279]">
+              <p className="mt-1 text-[0.58rem] font-black uppercase tracking-[0.1em] text-[#536279]">
                 {label}
               </p>
             </div>
-            {index < 2 ? <span className="pb-5 text-xl font-black text-[#94a3b8]">:</span> : null}
+            {index < 3 ? <span className="pb-5 text-lg font-black text-[#94a3b8]">:</span> : null}
           </div>
         ))}
       </div>

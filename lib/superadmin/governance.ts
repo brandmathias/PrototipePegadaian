@@ -89,7 +89,7 @@ export function buildGovernanceSnapshot(input: GovernanceSnapshotInput): Governa
     {
       label: "Barang Jaminan",
       value: compactNumberFormatter.format(input.collateralItems),
-      detail: "Barang unit yang belum masuk pemasaran aktif"
+      detail: "Barang unit yang belum jatuh tempo"
     },
     {
       label: "Sedang Dipasarkan",

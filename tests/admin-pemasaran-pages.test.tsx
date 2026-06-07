@@ -71,6 +71,27 @@ describe("admin pemasaran pages", () => {
             bids: []
           },
           {
+            id: "pm-sold-old-failed",
+            lotId: "barang-3",
+            lot: "Gelang Pernah Gagal",
+            code: "BRG-003",
+            category: "perhiasan",
+            condition: "sangat baik",
+            status: "GAGAL",
+            mode: "VICKREY_AUCTION",
+            iteration: 1,
+            createdAt: "2026-05-02T00:00:00.000Z",
+            ending: "2026-05-02",
+            endingAt: "2026-05-02T00:00:00.000Z",
+            participants: 0,
+            basePrice: 16000000,
+            finalPrice: null,
+            winner: null,
+            visibility: "HASIL_DIBUKA",
+            media: [{ id: "m3-old", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }],
+            primaryMedia: { id: "m3-old", type: "foto", url: "/uploads/gelang.jpg", fileName: "gelang.jpg" }
+          },
+          {
             id: "pm-sold",
             lotId: "barang-3",
             lot: "Gelang Sudah Terjual",
@@ -79,6 +100,8 @@ describe("admin pemasaran pages", () => {
             condition: "sangat baik",
             status: "SELESAI",
             mode: "FIXED_PRICE",
+            iteration: 2,
+            createdAt: "2026-05-03T00:00:00.000Z",
             price: 17000000,
             transactionStatus: "LUNAS",
             buyerName: "Raras Maheswari Demo",
@@ -144,10 +167,12 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText("Kode Lot").length).toBeGreaterThan(0);
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
+    expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
     expect(screen.getByText(/pemenang gagal bayar 24 jam \/ tanpa peserta/i)).toBeInTheDocument();
     expect(screen.getByText("2 Produk")).toBeInTheDocument();
+    expect(screen.getByText("Lelang Gagal")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Aktif" }));
 
@@ -158,13 +183,15 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Menunggu Buyer" }));
 
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
+    expect(screen.getByText("Iterasi 2/2")).toBeInTheDocument();
     expect(screen.queryByText("Kalung Emas Aktif")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Perlu Strategi" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gagal" }));
 
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
       "href",
       "/admin/pemasaran/vickrey-auction/pm-failed"
@@ -576,6 +603,83 @@ describe("admin pemasaran pages", () => {
     expect(bidLogTable).not.toHaveClass("min-w-[46rem]");
     expect(bidLogTable?.parentElement).toHaveClass("overflow-hidden");
     expect(bidLogTable?.parentElement).not.toHaveClass("overflow-x-auto");
+  });
+
+  it("shows iteration history links on marketing detail pages", () => {
+    const firstIteration = {
+      id: "pm-ipad-iteration-1",
+      lotId: "barang-ipad-history",
+      lot: "Ipad",
+      code: "BRG-42969709",
+      category: "elektronik",
+      condition: "baik",
+      status: "GAGAL",
+      mode: "VICKREY_AUCTION",
+      iteration: 1,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      ending: "1 Jun 2026",
+      endingAt: "2026-06-01T07:16:00.000Z",
+      participants: 0,
+      basePrice: 10000000,
+      finalPrice: null,
+      winner: null,
+      visibility: "HASIL_DIBUKA",
+      media: [{ id: "ipad-1", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+      primaryMedia: { id: "ipad-1", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }
+    };
+    const secondIteration = {
+      id: "pm-ipad-iteration-2",
+      lotId: "barang-ipad-history",
+      lot: "Ipad",
+      code: "BRG-42969709",
+      category: "elektronik",
+      condition: "baik",
+      status: "GAGAL",
+      mode: "VICKREY_AUCTION",
+      iteration: 2,
+      createdAt: "2026-06-02T00:00:00.000Z",
+      ending: "2 Jun 2026",
+      endingAt: "2026-06-02T20:13:00.000Z",
+      participants: 2,
+      basePrice: 10000000,
+      finalPrice: 10000000,
+      winner: "Buyer Satu",
+      buyerName: "Buyer Satu",
+      transactionId: "trx-ipad-failed",
+      transactionStatus: "GAGAL",
+      paymentDeadline: "2026-06-03T20:13:00.000Z",
+      visibility: "HASIL_DIBUKA",
+      media: [{ id: "ipad-2", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+      primaryMedia: { id: "ipad-2", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" },
+      bids: []
+    };
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          ...secondIteration,
+          iterationHistory: [firstIteration, secondIteration]
+        }}
+      />
+    );
+
+    expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /iterasi 2 \(terkini\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /gagal pemenang gagal bayar 24 jam/i })).toHaveAttribute(
+      "href",
+      "/admin/pemasaran/vickrey-auction/pm-ipad-iteration-2"
+    );
+    expect(screen.queryByText("Tidak ada peserta")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /iterasi 2 \(terkini\)/i }));
+    const visualFirstIterationOption = screen
+      .getAllByRole("option", { name: /iterasi 1/i })
+      .find((element) => element.tagName.toLowerCase() === "button");
+    expect(visualFirstIterationOption).toBeDefined();
+    fireEvent.click(visualFirstIterationOption!);
+
+    expect(router.push).toHaveBeenCalledWith("/admin/pemasaran/vickrey-auction/pm-ipad-iteration-1");
+    expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeInTheDocument();
   });
 
   it("refreshes the admin vickrey detail automatically when the live countdown expires", () => {

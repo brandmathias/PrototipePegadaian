@@ -1,5 +1,5 @@
 import React from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,6 +8,8 @@ import {
   SuperAdminManagementPage,
   SuperAdminPolicyPage,
   SuperAdminMonitoringPage,
+  SuperAdminUnitDetailPage,
+  SuperAdminUnitBarangDetailPage,
 } from "@/components/pages/superadmin-pages";
 import { SuperadminBlacklistDetailWorkspace } from "@/components/superadmin/superadmin-blacklist-detail-workspace";
 
@@ -96,6 +98,7 @@ describe("superadmin pages", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -497,53 +500,40 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
   });
 
-  it("updates superadmin countdown on monitoring page", () => {
-    render(
-      <SuperAdminMonitoringPage
-        data={
-          {
-            summary: {
-              headline: "Pantau seluruh unit dari satu control center.",
-              metrics: [{ label: "Total Unit", value: "2", detail: "2 aktif" }],
-              spotlight: [],
-              priorities: [],
-            },
-            unitsNeedAttention: [],
-            pendingMonitoring: [
-              {
-                id: "monitor-2",
-                unitId: "unit-1",
-                unit: "Pegadaian CP Manado",
-                scope: "Lelang",
-                status: "Perlu Review",
-                activity: "1 sesi Vickrey akan ditutup.",
-                detail: "Pantau hasil lelang lintas unit.",
-                countdownLabel: "45 detik",
-                countdownAt: new Date(
-                  "2026-04-29T10:00:45+08:00",
-                ).toISOString(),
-                expiredLabel: "Sesi berakhir",
-              },
-            ],
-          } as any
-        }
-      />,
-    );
-
-    expect(
-      screen.getByText((content) => content.includes("Sisa waktu 45 detik")),
-    ).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    expect(
-      screen.getByText((content) => content.includes("Sisa waktu 44 detik")),
-    ).toBeInTheDocument();
-  });
-
   it("renders monitoring unit as comparative table without risk heat indicator", () => {
+    const makeRect = (left: number, width: number) =>
+      ({
+        bottom: 1,
+        height: 1,
+        left,
+        right: left + width,
+        top: 0,
+        width,
+        x: left,
+        y: 0,
+        toJSON: () => ({}),
+      }) as DOMRect;
+    const originalGetBoundingClientRect =
+      Element.prototype.getBoundingClientRect;
+    const rectSpy = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: Element) {
+        const element = this as HTMLElement;
+
+        if (element.style.minWidth === "920px") {
+          return makeRect(96, 920);
+        }
+
+        if (
+          element.getAttribute("aria-label") ===
+          "Barang Jaminan Pegadaian CP Manado: 8 item"
+        ) {
+          return makeRect(442, 16);
+        }
+
+        return originalGetBoundingClientRect.call(this);
+      });
+
     render(
       <SuperAdminMonitoringPage
         data={
@@ -568,6 +558,19 @@ describe("superadmin pages", () => {
                 activeViolations: 1,
                 status: "Aktif",
               },
+              {
+                id: "unit-2",
+                unitName: "Pegadaian UPC Ranotana",
+                unitCode: "UPC-RNT-02",
+                collateralItems: 4,
+                marketedItems: 2,
+                soldItems: 1,
+                validatedTransactionValue: 24000000,
+                followUpItems: 1,
+                heldTransactions: 2,
+                activeViolations: 0,
+                status: "Aktif",
+              },
             ],
             unitsNeedAttention: [],
             pendingMonitoring: [],
@@ -577,13 +580,579 @@ describe("superadmin pages", () => {
     );
 
     expect(screen.getByText("Monitoring Unit")).toBeInTheDocument();
+    expect(screen.getAllByText("Barang Jaminan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Sedang Dipasarkan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Terjual").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("12").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Perlu Penugasan Admin")).not.toBeInTheDocument();
+    expect(screen.queryByText("SLA Terlewati")).not.toBeInTheDocument();
+    expect(screen.queryByText("Buka Unit Terkait")).not.toBeInTheDocument();
+    expect(screen.queryByText("Monitoring sedang tenang")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Unit" }),
+      screen.getByRole("img", { name: "Grafik barang pada tiap unit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Filter status unit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: "Cari unit atau kode cabang" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Unit / Cabang" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("columnheader", { name: "Perlu Tindak Lanjut" }),
     ).toBeInTheDocument();
+    const metricCard = screen.getByLabelText("Ringkasan Barang Jaminan");
+    fireEvent.mouseEnter(metricCard);
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Unit tercatat");
+    fireEvent.mouseLeave(metricCard);
+
+    const chartBar = screen.getByRole("button", {
+      name: "Barang Jaminan Pegadaian CP Manado: 8 item",
+    });
+    fireEvent.mouseEnter(chartBar);
+    expect(screen.getByRole("tooltip")).toHaveTextContent("CP-MND-01");
+    expect(screen.getByRole("tooltip")).toHaveStyle("left: 354px");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("8 item");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Barang Jaminan");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Sedang Dipasarkan");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Terjual");
+    expect(screen.queryByText(/dari filter/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Dominan/i)).not.toBeInTheDocument();
+    fireEvent.mouseLeave(chartBar);
+    rectSpy.mockRestore();
+
+    expect(
+      screen.queryByRole("columnheader", { name: "Transaksi Tertahan" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Pelanggaran Aktif" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+      "href",
+      "/superadmin/unit/unit-1",
+    );
+    expect(screen.queryByText("Kelola Rekening")).not.toBeInTheDocument();
     expect(screen.queryByText(/risk heat indicator/i)).not.toBeInTheDocument();
+  }, 10000);
+
+  it("keeps superadmin unit detail lifecycle buckets separated by due date", () => {
+    const unitItems = Array.from({ length: 12 }, (_, index) => {
+      const itemNumber = index + 1;
+
+      return {
+        id: `barang-${itemNumber}`,
+        code: `BRG-${String(itemNumber).padStart(3, "0")}`,
+        name: `Guci Antik ${String(itemNumber).padStart(2, "0")}`,
+        category:
+          itemNumber === 2
+            ? "perhiasan"
+            : itemNumber === 6
+              ? "logam_mulia"
+              : "elektronik",
+        imageUrl: itemNumber === 1 ? "/uploads/barang/guci.png" : null,
+        marketingModeLabel:
+          itemNumber === 3 ? "Vickrey Second-Price" : itemNumber === 4 ? "Fixed Price" : "Belum dipasarkan",
+        operationalStatus:
+          itemNumber === 1 || itemNumber === 2
+            ? "Barang Jaminan"
+            : itemNumber === 3
+              ? "Sedang Dipasarkan"
+              : itemNumber === 4
+                ? "Ada Tindak Lanjut"
+                : itemNumber === 5
+                  ? "Terjual"
+                  : "Siap Dipasarkan",
+        operationalTone:
+          itemNumber === 1 || itemNumber === 2
+            ? "amber"
+            : itemNumber === 3
+              ? "blue"
+              : itemNumber === 4
+                ? "red"
+                : itemNumber === 5
+                  ? "slate"
+                  : "emerald",
+        value: itemNumber * 1_000_000,
+      };
+    });
+
+    render(
+      <SuperAdminUnitDetailPage
+        unit={
+          {
+            id: "unit-1",
+            code: "CP-MND-13",
+            name: "UPC Ranotana",
+            address: "Jl. Sam Ratulangi",
+            status: "Aktif",
+            isActive: true,
+            adminCount: 1,
+            accountCount: 1,
+            activeAccount: null,
+            accounts: [],
+            admins: [],
+            items: unitItems,
+          } as any
+        }
+      />,
+    );
+
+    expect(screen.getByText("UPC Ranotana (CP-MND-13)")).toBeInTheDocument();
+    expect(screen.getByText("Unit Pelayanan Cabang")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 10")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 11")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Perhiasan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Logam Mulia").length).toBeGreaterThan(0);
+    expect(screen.queryByText("logam_mulia")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Barang Jaminan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Sedang Dipasarkan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ada Tindak Lanjut").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Ringkasan Barang Jaminan")).toHaveTextContent("2");
+    expect(screen.getByLabelText("Ringkasan Siap Dipasarkan")).toHaveTextContent("7");
+    expect(screen.getByText("Menampilkan 1-10 dari 12 barang")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+      "href",
+      "/superadmin/unit/unit-1/barang/barang-1",
+    );
+    expect(screen.queryByRole("dialog", { name: /Detail barang/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText("Ringkasan Barang Jaminan"));
+    expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 02")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 06")).not.toBeInTheDocument();
+    expect(screen.getByText("Menampilkan 1-2 dari 2 barang")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText("Ringkasan Siap Dipasarkan"));
+    expect(screen.getByText("Guci Antik 06")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 01")).not.toBeInTheDocument();
+    expect(screen.getByText("Menampilkan 1-7 dari 7 barang")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset Filter" }));
+    expect(screen.getByText("Menampilkan 1-10 dari 12 barang")).toBeInTheDocument();
+  });
+
+  it("keeps superadmin item status helper synchronized with due date", async () => {
+    process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
+
+    const { getUnitItemOperationalState, resolveUnitMarketingModeLabel } = await import("@/lib/services/unit.service");
+    const now = new Date("2026-06-06T00:00:00.000Z");
+
+    expect(
+      resolveUnitMarketingModeLabel({
+        activeMarketingMode: null,
+        latestMarketingMode: "vickrey",
+        transactionType: "vickrey",
+      }),
+    ).toBe("Vickrey Auction");
+
+    expect(
+      resolveUnitMarketingModeLabel({
+        activeMarketingMode: null,
+        latestMarketingMode: "fixed_price",
+        transactionType: "fixed_price",
+      }),
+    ).toBe("Fixed Price");
+
+    expect(
+      resolveUnitMarketingModeLabel({
+        activeMarketingMode: null,
+        itemStatus: "terjual",
+        latestMarketingMode: null,
+        transactionStatus: null,
+        transactionType: null,
+      }),
+    ).toBe("Mode tidak tercatat");
+
+    expect(
+      resolveUnitMarketingModeLabel({
+        activeMarketingMode: null,
+        itemStatus: "jaminan",
+        latestMarketingMode: null,
+        transactionStatus: null,
+        transactionType: null,
+      }),
+    ).toBe("Belum dipasarkan");
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "jaminan",
+        dueDate: new Date("2026-07-01T00:00:00.000Z"),
+        now,
+      }),
+    ).toEqual({
+      operationalStatus: "Barang Jaminan",
+      operationalTone: "amber",
+    });
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "jaminan",
+        dueDate: new Date("2026-05-01T00:00:00.000Z"),
+        now,
+      }),
+    ).toEqual({
+      operationalStatus: "Siap Dipasarkan",
+      operationalTone: "emerald",
+    });
+
+    expect(
+      getUnitItemOperationalState({
+        activeMarketingStatus: "aktif",
+        itemStatus: "dipasarkan",
+        dueDate: new Date("2026-07-01T00:00:00.000Z"),
+        now,
+      }).operationalStatus,
+    ).toBe("Sedang Dipasarkan");
+
+    expect(
+      getUnitItemOperationalState({
+        activeMarketingMode: "fixed_price",
+        activeMarketingStatus: "aktif",
+        itemStatus: "dipasarkan",
+        dueDate: new Date("2026-07-01T00:00:00.000Z"),
+        now,
+        transactionStatus: "ditolak_bukti",
+      }).operationalStatus,
+    ).toBe("Sedang Dipasarkan");
+
+    expect(
+      getUnitItemOperationalState({
+        activeMarketingMode: "fixed_price",
+        activeMarketingStatus: "aktif",
+        itemStatus: "dipasarkan",
+        dueDate: new Date("2026-07-01T00:00:00.000Z"),
+        now,
+        transactionStatus: "bukti_diunggah",
+      }).operationalStatus,
+    ).toBe("Bukti Diunggah");
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "menunggu_pembayaran",
+        dueDate: new Date("2026-05-01T00:00:00.000Z"),
+        now,
+      }).operationalStatus,
+    ).toBe("Menunggu Pembayaran");
+  });
+
+  it("renders superadmin unit detail inventory canvas with compact pagination controls", () => {
+    const unitItems = Array.from({ length: 12 }, (_, index) => {
+      const itemNumber = index + 1;
+
+      return {
+        id: `barang-${itemNumber}`,
+        code: `BRG-${String(itemNumber).padStart(3, "0")}`,
+        name: `Guci Antik ${String(itemNumber).padStart(2, "0")}`,
+        category:
+          itemNumber === 2
+            ? "perhiasan"
+            : itemNumber === 6
+              ? "logam_mulia"
+              : "elektronik",
+        imageUrl: itemNumber === 1 ? "/uploads/barang/guci.png" : null,
+        marketingModeLabel:
+          itemNumber === 3 ? "Vickrey Second-Price" : itemNumber === 4 ? "Fixed Price" : "Belum dipasarkan",
+        operationalStatus:
+          itemNumber === 3
+            ? "Sedang Dipasarkan"
+            : itemNumber === 4
+              ? "Ada Tindak Lanjut"
+              : itemNumber === 5
+                ? "Terjual"
+                : "Siap Dipasarkan",
+        operationalTone:
+          itemNumber === 3
+            ? "blue"
+            : itemNumber === 4
+              ? "red"
+              : itemNumber === 5
+                ? "slate"
+                : "emerald",
+        value: itemNumber * 1_000_000,
+      };
+    });
+
+    render(
+      <SuperAdminUnitDetailPage
+        unit={
+          {
+            id: "unit-1",
+            code: "CP-MND-13",
+            name: "UPC Ranotana",
+            address: "Jl. Sam Ratulangi",
+            status: "Aktif",
+            isActive: true,
+            adminCount: 1,
+            accountCount: 1,
+            activeAccount: null,
+            accounts: [],
+            admins: [],
+            items: unitItems,
+          } as any
+        }
+      />,
+    );
+
+    expect(screen.getByText("UPC Ranotana (CP-MND-13)")).toBeInTheDocument();
+    expect(screen.getByText("Unit Pelayanan Cabang")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 10")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 11")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Perhiasan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Logam Mulia").length).toBeGreaterThan(0);
+    expect(screen.queryByText("logam_mulia")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Sedang Dipasarkan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ada Tindak Lanjut").length).toBeGreaterThan(0);
+    expect(screen.getByText("Menampilkan 1-10 dari 12 barang")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Detail" })[2]).toHaveAttribute(
+      "href",
+      "/superadmin/unit/unit-1/barang/barang-3",
+    );
+
+    const categoryFilter = screen.getByRole("combobox", {
+      name: "Kategori Barang",
+    });
+    fireEvent.click(categoryFilter);
+    const categoryListbox = screen.getByRole("listbox");
+    expect(within(categoryListbox).queryByRole("option", { name: "Kategori Barang" })).not.toBeInTheDocument();
+    expect(within(categoryListbox).getByRole("option", { name: "Semua" })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    const modeFilter = screen.getByRole("combobox", {
+      name: "Mode Pemasaran",
+    });
+    fireEvent.click(modeFilter);
+    const modeListbox = screen.getByRole("listbox");
+    expect(within(modeListbox).getByRole("option", { name: "Fixed Price" })).toBeInTheDocument();
+    expect(within(modeListbox).getByRole("option", { name: "Vickrey Auction" })).toBeInTheDocument();
+    expect(within(modeListbox).queryByRole("option", { name: "Belum dipasarkan" })).not.toBeInTheDocument();
+    expect(within(modeListbox).queryByRole("option", { name: "Vickrey Second-Price" })).not.toBeInTheDocument();
+    fireEvent.click(within(modeListbox).getByRole("option", { name: "Vickrey Auction" }));
+
+    expect(screen.getByText("Guci Antik 03")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 04")).not.toBeInTheDocument();
+    expect(screen.getByText("Menampilkan 1-1 dari 1 barang")).toBeInTheDocument();
+
+    fireEvent.click(modeFilter);
+    fireEvent.click(within(screen.getByRole("listbox")).getByRole("option", { name: "Fixed Price" }));
+
+    expect(screen.getByText("Guci Antik 04")).toBeInTheDocument();
+    expect(screen.queryByText("Guci Antik 03")).not.toBeInTheDocument();
+
+    fireEvent.click(modeFilter);
+    fireEvent.click(within(screen.getByRole("listbox")).getByRole("option", { name: "Semua" }));
+
+    const pageSizeSelect = screen.getByRole("combobox", {
+      name: "Jumlah barang per halaman",
+    });
+    expect(pageSizeSelect).toHaveTextContent("10");
+
+    fireEvent.click(pageSizeSelect);
+    expect(screen.getByRole("option", { name: "50" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("option", { name: "20" }));
+
+    expect(screen.getByText("Guci Antik 11")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 12")).toBeInTheDocument();
+    expect(screen.getByText("Menampilkan 1-12 dari 12 barang")).toBeInTheDocument();
+  });
+
+  it("renders superadmin item detail as a full read-only marketing-aware page", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-1",
+              code: "CP-MND-13",
+              name: "UPC Ranotana",
+              address: "Jl. Sam Ratulangi",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-3",
+              code: "BRG-003",
+              name: "Cincin Emas Ranotana",
+              category: "perhiasan",
+              condition: "baik",
+              status: "TERJUAL",
+              pawnedAt: "29 Mei 2026",
+              dueDate: "29 Juni 2026",
+              appraisalValue: 22_000_000,
+              loanValue: 17_000_000,
+              ownerName: "Brando Mathias Zusriadi",
+              customerNumber: "081200001234",
+              description: "Cincin emas dengan dokumen appraisal lengkap.",
+              specifications: {
+                berat: "5 gram",
+                kadar: "22K",
+                sertifikat: "Ada",
+              },
+              media: [
+                {
+                  id: "media-1",
+                  type: "foto",
+                  url: "/uploads/barang/cincin-ranotana.png",
+                  fileName: "cincin-ranotana.png",
+                },
+                {
+                  id: "media-2",
+                  type: "video",
+                  url: "/uploads/barang/cincin-ranotana.mp4",
+                  fileName: "cincin-ranotana.mp4",
+                },
+              ],
+            },
+            operationalStatus: "Terjual",
+            operationalTone: "slate",
+            marketing: {
+              id: "pemasaran-2",
+              lotId: "barang-3",
+              lot: "Cincin Emas Ranotana",
+              code: "BRG-003",
+              category: "perhiasan",
+              condition: "baik",
+              status: "SELESAI",
+              mode: "VICKREY_AUCTION",
+              iteration: 2,
+              totalIterations: 2,
+              createdAt: "2026-05-30T02:00:00.000Z",
+              ending: "30 Mei 2026, 10:00 WIB",
+              endingAt: "2026-05-30T10:00:00+08:00",
+              revealDeadline: "30 Mei 2026, 10:10 WIB",
+              revealDeadlineAt: "2026-05-30T10:10:00+08:00",
+              participants: 3,
+              revealedBidCount: 3,
+              pendingRevealCount: 0,
+              basePrice: 18_000_000,
+              finalPrice: 21_000_000,
+              winner: "Buyer Ranotana",
+              buyerName: "Buyer Ranotana",
+              buyerEmail: "buyer.ranotana@example.com",
+              buyerPhone: "081211112222",
+              transactionId: "trx-1",
+              transactionStatus: "SELESAI",
+              paymentMethod: "Transfer Bank",
+              reference: "PEG-20260530-003",
+              soldAt: "2026-05-31T08:30:00+08:00",
+              paymentDeadline: "2026-05-31T10:10:00+08:00",
+              note: "Pembayaran pemenang sudah terverifikasi dari transaksi.",
+              bids: [
+                {
+                  id: "bid-1",
+                  bidderId: "buyer-1",
+                  bidderName: "Buyer Ranotana",
+                  submittedAtLabel: "30 Mei 2026, 09:40 WIB",
+                  amount: 23_000_000,
+                  isRevealed: true,
+                  rank: 1,
+                  isWinner: true,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-2",
+                  bidderId: "buyer-2",
+                  bidderName: "Andi Rahman",
+                  submittedAtLabel: "30 Mei 2026, 09:25 WIB",
+                  amount: 21_000_000,
+                  isRevealed: true,
+                  rank: 2,
+                  isWinner: false,
+                  determinesFinalPrice: true,
+                },
+              ],
+              iterationHistory: [
+                {
+                  id: "pemasaran-2",
+                  lotId: "barang-3",
+                  lot: "Cincin Emas Ranotana",
+                  code: "BRG-003",
+                  status: "SELESAI",
+                  mode: "VICKREY_AUCTION",
+                  iteration: 2,
+                  participants: 3,
+                  finalPrice: 21_000_000,
+                  winner: "Buyer Ranotana",
+                  note: "Iterasi kedua selesai dan menghasilkan pemenang.",
+                  createdAt: "2026-05-30T02:00:00.000Z",
+                  ending: "30 Mei 2026, 10:00 WIB",
+                },
+                {
+                  id: "pemasaran-1",
+                  lotId: "barang-3",
+                  lot: "Cincin Emas Ranotana",
+                  code: "BRG-003",
+                  status: "GAGAL",
+                  mode: "FIXED_PRICE",
+                  iteration: 1,
+                  participants: 0,
+                  price: 20_000_000,
+                  note: "Iterasi pertama belum mendapatkan pembeli.",
+                  createdAt: "2026-05-29T02:00:00.000Z",
+                  ending: "29 Mei 2026, 10:00 WIB",
+                },
+              ],
+            },
+            history: [
+              {
+                id: "hist-1",
+                barangId: "barang-3",
+                actionLabel: "Terjual",
+                actionKey: "terjual",
+                note: "Barang selesai setelah pembayaran pemenang diverifikasi.",
+                actorName: "Admin Unit",
+                createdAtLabel: "31 Mei 2026, 08:30 WIB",
+              },
+              {
+                id: "hist-2",
+                barangId: "barang-3",
+                actionLabel: "Dipasarkan",
+                actionKey: "dipasarkan",
+                note: "Barang masuk sesi Vickrey Auction iterasi kedua.",
+                actorName: "Admin Unit",
+                createdAtLabel: "30 Mei 2026, 02:00 WIB",
+              },
+            ],
+          } as any
+        }
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Cincin Emas Ranotana" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Superadmin / Detail Barang")).toBeInTheDocument();
+    expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
+    expect(screen.getByText("Status Terjual")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-detail-active-media")).toBeInTheDocument();
+    expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
+    expect(screen.getAllByText("Buyer Ranotana").length).toBeGreaterThan(0);
+    expect(screen.getByText("Bidders Ranking Table (Arsip)")).toBeInTheDocument();
+    expect(screen.getByText("Harga Bayar")).toBeInTheDocument();
+    expect(screen.getAllByText("Rp 21.000.000").length).toBeGreaterThan(0);
+    expect(screen.getByText("Lelang Selesai Sempurna - Aset Telah Diserahkan")).toBeInTheDocument();
+    expect(screen.getByText("Manifes Penyerahan & Pemenang")).toBeInTheDocument();
+    expect(screen.getByText("Mekanisme Lelang (Arsip)")).toBeInTheDocument();
+    expect(screen.getByText("Progress Penyelesaian")).toBeInTheDocument();
+    expect(screen.getByText("Nota Dokumen Final")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cetak Nota" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tutup & Arsipkan Berkas Lelang" })).toBeInTheDocument();
+    expect(screen.getAllByText("Iterasi 2 (Terkini)").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: /Iterasi 2 \(Terkini\)/i }));
+    fireEvent.click(screen.getAllByRole("option", { name: "Iterasi 1" })[1]);
+    expect(screen.getByText("Sesi Fixed Price Diarsipkan")).toBeInTheDocument();
+    expect(screen.getByText("Ringkasan Sesi Fixed Price")).toBeInTheDocument();
+    expect(screen.getByText("Harga Fixed Price")).toBeInTheDocument();
+    expect(screen.getAllByText("Rp 20.000.000").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cetak Nota" })).not.toBeInTheDocument();
+    expect(screen.getByText("Riwayat Kronologi Aset")).toBeInTheDocument();
+    expect(screen.queryByText("Edit Data Barang")).not.toBeInTheDocument();
+    expect(screen.queryByText("Pasarkan Barang")).not.toBeInTheDocument();
+    expect(screen.queryByText("Catat Penebusan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
   it("updates blacklist countdown on superadmin blacklist page", () => {
@@ -751,6 +1320,7 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
     expect(screen.getByText("Riwayat Pelanggaran (Timeline)")).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
+    expect(screen.getByText("Dtk")).toBeInTheDocument();
     expect(screen.getByText("Log Keputusan Sistem")).toBeInTheDocument();
     expect(screen.getByText("Masa hukuman selesai")).toBeInTheDocument();
     expect(
