@@ -28,7 +28,7 @@ export function LotCard({ lot, serverNow }: LotCardProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={lot.mode === "vickrey" ? "accent" : "default"}>
-              {lot.mode === "vickrey" ? "Vickrey" : "Fixed Price"}
+              {lot.mode === "vickrey" ? "Lelang Tertutup" : "Harga Tetap"}
             </Badge>
             <Badge variant="muted">{lot.code}</Badge>
           </div>

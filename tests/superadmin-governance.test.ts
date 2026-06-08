@@ -7,7 +7,7 @@ import {
 } from "@/lib/superadmin/governance";
 
 describe("superadmin governance rules", () => {
-  it("keeps rejected fixed price proof in follow-up, not active buyer violation", () => {
+  it("keeps rejected harga tetap proof in follow-up, not active buyer violation", () => {
     const caseInfo = classifyGovernanceFollowUp({
       marketingMode: "fixed_price",
       marketingStatus: "aktif",
@@ -32,7 +32,7 @@ describe("superadmin governance rules", () => {
     expect(isActiveBuyerViolation(caseInfo)).toBe(false);
   });
 
-  it("only treats overdue unpaid Vickrey winner incidents as active buyer violations", () => {
+  it("only treats overdue unpaid Lelang Tertutup winner incidents as active buyer violations", () => {
     const caseInfo = classifyGovernanceFollowUp({
       bidCount: 3,
       hasViolationIncident: true,

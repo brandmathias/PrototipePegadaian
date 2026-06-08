@@ -108,12 +108,12 @@ export function AuctionWinnerPageContent({
   const summaryCode = transaction.applicationNumber || transaction.id;
   const winnerContext =
     transaction.winnerContext ??
-    "Harga final mengikuti mekanisme settlement Vickrey yang berlaku di sistem.";
+    "Harga akhir mengikuti mekanisme lelang yang berlaku di sistem.";
 
   return (
-    <div className="relative left-1/2 min-h-screen w-screen -translate-x-1/2 bg-white">
+    <div className="full-bleed-safe min-h-dvh bg-white">
       <div className="space-y-8 bg-white pb-10 md:space-y-10 md:pb-14">
-      <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-[#032f22]">
+      <section className="relative overflow-hidden bg-[#032f22]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(34,158,105,0.26),transparent_28%),radial-gradient(circle_at_72%_24%,rgba(212,175,55,0.18),transparent_20%),linear-gradient(120deg,#042f22_0%,#063d2c_46%,#03281d_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_18%,rgba(0,0,0,0.14)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.18))]" />
@@ -196,7 +196,7 @@ export function AuctionWinnerPageContent({
                     <p className="text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#7b857d]">
                       Harga Akhir (Harga Menang)
                     </p>
-                    <p className="mt-3 font-headline text-[3rem] font-black leading-none tracking-[-0.07em] text-[#0f4735] md:text-[3.55rem]">
+                    <p className="mt-3 break-words font-headline text-[clamp(2rem,10vw,3rem)] font-black leading-none tracking-[-0.04em] text-[#0f4735] md:text-[3.55rem] md:tracking-[-0.07em]">
                       {currency.format(transaction.amount)}
                     </p>
                   </div>
@@ -272,7 +272,7 @@ export function AuctionWinnerPageContent({
                   <p className="text-sm font-medium text-[#5f6f68]">
                     Total yang Harus Dibayarkan
                   </p>
-                  <p className="mt-3 font-headline text-[3rem] font-black leading-none tracking-[-0.06em] text-[#0f4735]">
+                  <p className="mt-3 break-words font-headline text-[clamp(2rem,10vw,3rem)] font-black leading-none tracking-[-0.04em] text-[#0f4735] md:tracking-[-0.06em]">
                     {currency.format(transaction.amount)}
                   </p>
                 </div>

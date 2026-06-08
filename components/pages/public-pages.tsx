@@ -47,7 +47,7 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
   }
 
   if (!status.blacklist.until) {
-    return "Akun sedang dibatasi untuk mengikuti lelang Vickrey.";
+    return "Akun sedang dibatasi untuk mengikuti Lelang Tertutup.";
   }
 
   return `Akun sedang dibatasi sampai ${formatAppDate(status.blacklist.until)}. Selama blacklist aktif, Anda tidak dapat mengirim bid baru.`;
@@ -103,7 +103,7 @@ export function LotDetailPage({
   const isActionBlocked =
     hasActiveRestriction &&
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
-  const modeLabel = isVickrey ? "Lelang Vickrey" : "Harga Tetap";
+  const modeLabel = isVickrey ? "Lelang Tertutup" : "Harga Tetap";
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
   const specificationRows = lot.specs;
@@ -267,7 +267,7 @@ export function LotDetailPage({
                     </span>
                     {bidState.paymentAmount ? (
                       <span className="rounded-full bg-[#f7f2e8] px-3 py-1.5">
-                        Harga bayar Vickrey {currency.format(bidState.paymentAmount)}
+                        Harga akhir lelang {currency.format(bidState.paymentAmount)}
                       </span>
                     ) : null}
                   </div>
@@ -408,7 +408,7 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
       <SectionHeading
         description="Fixed price menggunakan transfer bank. Transaksi baru dibuat setelah Anda melanjutkan pembayaran."
-        eyebrow="Pembayaran Fixed Price"
+        eyebrow="Pembayaran Harga Tetap"
         title="Detail pembayaran"
       />
       <PurchaseWorkflow lot={lot} />
@@ -440,7 +440,7 @@ export function BidPage({
         }
         description="Masukkan bid tertutup dengan nominal minimal sama dengan harga dasar. Hasil lelang baru dibuka sistem setelah sesi berakhir."
         eyebrow="Bid Tertutup"
-        title="Kirim penawaran untuk sesi Vickrey"
+        title="Kirim penawaran untuk sesi Lelang Tertutup"
       />
       <VickreyBidForm
         buyerId={buyerId}
@@ -488,7 +488,7 @@ export function LoginPage() {
             </h1>
             <p className="max-w-xl text-base leading-8 text-white/74">
               Temukan barang bernilai, pilih harga tetap untuk proses cepat,
-              atau ikuti Vickrey Auction dengan penawaran tertutup yang aman.
+              atau ikuti Lelang Tertutup dengan penawaran tertutup yang aman.
             </p>
           </div>
 
@@ -581,7 +581,7 @@ export function RegisterPage() {
                 Buat akun pembeli baru
               </h1>
               <p className="mt-4 max-w-xl text-base leading-8 text-emerald-50/66">
-                Satu akun untuk melihat katalog harga tetap, mengikuti Vickrey,
+                Satu akun untuk melihat katalog harga tetap, mengikuti Lelang Tertutup,
                 memantau pembayaran, dan menyimpan riwayat transaksi.
               </p>
             </div>
@@ -614,7 +614,7 @@ export function RegisterPage() {
           <div className="grid max-w-2xl grid-cols-3 gap-4">
             {[
               { label: "Harga tetap", value: "Beli" },
-              { label: "Vickrey", value: "Bid" },
+              { label: "Lelang Tertutup", value: "Bid" },
               { label: "Nota", value: "Arsip" }
             ].map((item) => (
               <div

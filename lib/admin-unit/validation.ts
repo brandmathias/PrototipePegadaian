@@ -99,7 +99,7 @@ export function validateAdminBarangPayload(input: {
 
 export function validateFixedPriceMarketingPricePayload(input: { marketingPrice?: unknown }) {
   return {
-    marketingPrice: normalizeMoney(input.marketingPrice, "Harga fixed price harus lebih dari 0.")
+    marketingPrice: normalizeMoney(input.marketingPrice, "Harga harga tetap harus lebih dari 0.")
   };
 }
 

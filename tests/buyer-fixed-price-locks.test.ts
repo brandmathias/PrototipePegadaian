@@ -96,7 +96,7 @@ describe("createFixedPricePurchase locking rules", () => {
     vi.clearAllMocks();
   });
 
-  it("creates a fixed price transaction directly in proof review after receiving payment proof", async () => {
+  it("creates a harga tetap transaction directly in proof review after receiving payment proof", async () => {
     mocks.db.select
       .mockImplementationOnce(() =>
         mockMarketingQuery({
@@ -222,7 +222,7 @@ describe("createFixedPricePurchase locking rules", () => {
     expect(mocks.db.update).not.toHaveBeenCalled();
   });
 
-  it("blocks proof upload after admin rejects the fixed price payment proof", async () => {
+  it("blocks proof upload after admin rejects the harga tetap payment proof", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockBlacklistQuery())
       .mockImplementationOnce(() =>

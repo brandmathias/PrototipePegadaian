@@ -94,7 +94,7 @@ export function buildGovernanceSnapshot(input: GovernanceSnapshotInput): Governa
     {
       label: "Sedang Dipasarkan",
       value: compactNumberFormatter.format(input.marketedItems),
-      detail: "Fixed price dan Vickrey yang sedang aktif"
+      detail: "Fixed price dan Lelang Tertutup yang sedang aktif"
     },
     {
       label: "Terjual",

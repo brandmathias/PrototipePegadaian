@@ -38,6 +38,7 @@ export function AdminSelect({
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null);
+  const [menuPlacement, setMenuPlacement] = useState<"bottom" | "top">("bottom");
   const normalizedValue = String(value);
   const selectedOption = options.find((option) => String(option.value) === normalizedValue) ?? options[0];
   const SelectedIcon = selectedOption?.icon;
@@ -82,18 +83,31 @@ export function AdminSelect({
       const rect = trigger.getBoundingClientRect();
       const gap = 6;
       const viewportPadding = 12;
-      const top = rect.bottom + gap + window.scrollY;
-      const maxWidth = window.innerWidth - viewportPadding * 2;
+      const visualViewport = window.visualViewport;
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
+      const viewportWidth = visualViewport?.width ?? window.innerWidth;
+      const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
+      const bottomSpace = viewportOffsetTop + viewportHeight - rect.bottom - viewportPadding;
+      const topSpace = rect.top - viewportOffsetTop - viewportPadding;
+      const openUp = bottomSpace < 180 && topSpace > bottomSpace;
+      const availableSpace = Math.max(openUp ? topSpace : bottomSpace, 160);
+      const maxHeight = Math.max(160, Math.min(288, availableSpace - gap));
+      const top = openUp
+        ? rect.top + window.scrollY - maxHeight - gap
+        : rect.bottom + gap + window.scrollY;
+      const maxWidth = viewportWidth - viewportPadding * 2;
       const optionWidths = Array.from(menu.querySelectorAll<HTMLElement>(".admin-select-option")).map(
         (option) => option.scrollWidth
       );
       const contentWidth = Math.max(menu.scrollWidth, ...optionWidths);
       const width = Math.min(Math.max(rect.width, contentWidth), maxWidth);
       const left = Math.min(
-        Math.max(viewportPadding, rect.left + window.scrollX),
-        window.scrollX + window.innerWidth - width - viewportPadding
+        Math.max(viewportOffsetLeft + viewportPadding, rect.left + window.scrollX),
+        window.scrollX + viewportOffsetLeft + viewportWidth - width - viewportPadding
       );
-      const maxHeight = 288;
+
+      setMenuPlacement(openUp ? "top" : "bottom");
 
       setMenuStyle({
         left,
@@ -104,27 +118,21 @@ export function AdminSelect({
         zIndex: 160
       });
 
-      window.requestAnimationFrame(() => {
-        const menuRect = menu.getBoundingClientRect();
-        const overflowBottom = menuRect.bottom - (window.innerHeight - viewportPadding);
-
-        if (overflowBottom > 0 && typeof window.scrollBy === "function") {
-          window.scrollBy({
-            top: overflowBottom + 16,
-            behavior: "smooth"
-          });
-        }
-      });
     }
 
     const rafId = window.requestAnimationFrame(updateMenuPosition);
+    const visualViewport = window.visualViewport;
     window.addEventListener("resize", updateMenuPosition);
     window.addEventListener("scroll", updateMenuPosition, true);
+    visualViewport?.addEventListener("resize", updateMenuPosition);
+    visualViewport?.addEventListener("scroll", updateMenuPosition);
 
     return () => {
       window.cancelAnimationFrame(rafId);
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
+      visualViewport?.removeEventListener("resize", updateMenuPosition);
+      visualViewport?.removeEventListener("scroll", updateMenuPosition);
     };
   }, [open]);
 
@@ -178,6 +186,7 @@ export function AdminSelect({
           <div
             aria-labelledby={selectId}
             className="admin-select-menu"
+            data-placement={menuPlacement}
             ref={menuRef}
             role="listbox"
             style={menuStyle ?? undefined}

@@ -29,7 +29,7 @@ const directPaymentLot: Lot = {
   city: "Manado",
   condition: "Baik",
   status: "Aktif",
-  description: "Barang fixed price dengan pembayaran langsung di unit.",
+  description: "Barang harga tetap dengan pembayaran langsung di unit.",
   bankName: "Bank Rakyat Indonesia (BRI)",
   bankAccountNumber: "0123-4567-8901-234",
   bankAccountHolder: "PT Pegadaian (Persero) UPC Ranotana",
@@ -53,7 +53,7 @@ describe("PurchaseWorkflow", () => {
     refreshMock.mockReset();
   });
 
-  it("creates a fixed price transfer transaction only after buyer uploads payment proof", async () => {
+  it("creates a harga tetap transfer transaction only after buyer uploads payment proof", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
@@ -65,7 +65,7 @@ describe("PurchaseWorkflow", () => {
 
     renderPurchaseWorkflow();
 
-    expect(screen.getByText(/konfirmasi pembayaran fixed price/i)).toBeInTheDocument();
+    expect(screen.getByText(/konfirmasi pembayaran harga tetap/i)).toBeInTheDocument();
     expect(screen.getAllByText(/transfer bank/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/belum membuat transaksi/i).length).toBeGreaterThan(0);
@@ -96,7 +96,7 @@ describe("PurchaseWorkflow", () => {
     });
   });
 
-  it("confirms before returning to fixed price detail without creating a transaction", async () => {
+  it("confirms before returning to harga tetap detail without creating a transaction", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();

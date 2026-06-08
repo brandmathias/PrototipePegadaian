@@ -292,9 +292,9 @@ export function AdminBarangEditForm({
                 <Tag className="size-4.5" />
               </span>
               <div>
-                <FieldLabel htmlFor="admin-barang-marketing-price">Harga fixed price aktif</FieldLabel>
+                <FieldLabel htmlFor="admin-barang-marketing-price">Harga harga tetap aktif</FieldLabel>
                 <p className="mt-1 text-sm leading-6 text-black/55">
-                  Harga ini tampil di katalog buyer dan bisa disesuaikan selama barang fixed price belum terjual.
+                  Harga ini tampil di katalog buyer dan bisa disesuaikan selama barang harga tetap belum terjual.
                 </p>
               </div>
             </div>

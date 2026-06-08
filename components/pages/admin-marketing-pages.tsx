@@ -635,8 +635,8 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
       </div>
 
       {isDetailOpen ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#10231b]/42 px-4 py-6">
-          <div className="w-full max-w-3xl overflow-hidden rounded-[1.6rem] border border-[#d7e7df] bg-white shadow-[0_32px_90px_-44px_rgba(8,69,50,0.62)]">
+        <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain bg-[#10231b]/42 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 sm:py-6">
+          <div className="modal-viewport my-auto w-full max-w-3xl overflow-hidden rounded-[1.35rem] border border-[#d7e7df] bg-white shadow-[0_32px_90px_-44px_rgba(8,69,50,0.62)] sm:rounded-[1.6rem]">
             <div className="flex items-start justify-between gap-4 border-b border-[#edf2ee] px-5 py-4">
               <div>
                 <p className="text-[0.76rem] font-black uppercase tracking-[0.1em] text-[#10231b]">
@@ -656,7 +656,7 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
               </button>
             </div>
 
-            <div className="max-h-[70dvh] overflow-y-auto p-5">
+            <div className="max-h-[min(70dvh,calc(100dvh-9rem))] overflow-y-auto p-4 sm:p-5">
               <div className="mb-4 rounded-[1.15rem] border border-[#dbe9e2] bg-[linear-gradient(135deg,#ffffff_0%,#fbfdfb_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#8a9891]">
                   Deskripsi Barang
@@ -949,7 +949,7 @@ function getVickreyStage(auction: MarketingSession) {
 
   return {
     label: "Hasil dibuka",
-    detail: "Pemenang dan harga final sudah bisa ditinjau.",
+    detail: "Pemenang dan harga akhir sudah bisa ditinjau.",
     tone: "green" as const,
     icon: ShieldCheck
   };
@@ -967,8 +967,8 @@ function getVickreySummary(auctions: MarketingSession[]) {
 
 const MARKETING_METHOD_FILTERS = [
   { label: "Semua", value: "ALL" },
-  { label: "Fixed Price", value: "FIXED_PRICE" },
-  { label: "Vickrey Auction", value: "VICKREY_AUCTION" }
+  { label: "Harga Tetap", value: "FIXED_PRICE" },
+  { label: "Lelang Tertutup", value: "VICKREY_AUCTION" }
 ] as const;
 
 const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Menunggu Buyer", "Selesai", "Gagal"] as const;
@@ -1021,7 +1021,7 @@ function getFixedPriceWorkflowStatus(auction: MarketingSession) {
 
 function getFixedPriceOperationalNote(auction: MarketingSession) {
   if (isMarketingSold(auction)) {
-    return "Pembelian fixed price selesai";
+    return "Pembelian harga tetap selesai";
   }
 
   if (auction.transactionStatus === "LUNAS") {
@@ -1029,7 +1029,7 @@ function getFixedPriceOperationalNote(auction: MarketingSession) {
   }
 
   if (hasFixedPricePaymentSubmission(auction)) {
-    return "Pembelian fixed price tercatat";
+    return "Pembelian harga tetap tercatat";
   }
 
   return "Menunggu pembeli dari katalog";
@@ -1391,7 +1391,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
         : workflowStatus === "Gagal"
           ? "bg-[#d61f1f]"
           : "bg-slate-400";
-  const modeLabel = auction.mode === "VICKREY_AUCTION" ? "Vickrey Auction" : "Fixed Price";
+  const modeLabel = auction.mode === "VICKREY_AUCTION" ? "Lelang Tertutup" : "Harga Tetap";
   const modeTone =
     auction.mode === "VICKREY_AUCTION"
       ? "bg-[#fff3e8] text-[#a8570b] dark:bg-amber-300/10 dark:text-amber-200"
@@ -1478,7 +1478,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
               {failureReason
                 ? "Buka detail untuk jadwalkan pasarkan ulang"
                 : auction.finalPrice
-                ? `${currency.format(auction.finalPrice)} harga final`
+                ? `${currency.format(auction.finalPrice)} harga akhir`
                 : (auction.totalIterations ?? 0) > 1
                   ? `Riwayat ${auction.totalIterations} sesi pemasaran`
                   : auction.mode === "VICKREY_AUCTION"
@@ -1608,21 +1608,6 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
     setSelectedIterationId(auction.id);
   }, [auction.id]);
 
-  if (history.length <= 1) {
-    return null;
-  }
-
-  const selectedIteration = history.find((entry) => entry.id === selectedIterationId) ?? history[0];
-  const latestIterationId = history[0]?.id;
-  const selectedStatus = getMarketingWorkflowStatus(selectedIteration);
-  const selectedFailed = selectedStatus === "Gagal";
-  const selectedSettled = selectedStatus === "Selesai" || selectedStatus === "Menunggu Buyer";
-  const selectedActive = selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
-  const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
-    value: entry.id,
-    label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
-    icon: FileText
-  }));
   const handleIterationChange = useCallback(
     (nextId: string) => {
       const nextIteration = history.find((entry) => entry.id === nextId);
@@ -1638,6 +1623,22 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
     },
     [auction.id, history, router]
   );
+
+  if (history.length <= 1) {
+    return null;
+  }
+
+  const selectedIteration = history.find((entry) => entry.id === selectedIterationId) ?? history[0];
+  const latestIterationId = history[0]?.id;
+  const selectedStatus = getMarketingWorkflowStatus(selectedIteration);
+  const selectedFailed = selectedStatus === "Gagal";
+  const selectedSettled = selectedStatus === "Selesai" || selectedStatus === "Menunggu Buyer";
+  const selectedActive = selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
+  const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
+    value: entry.id,
+    label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
+    icon: FileText
+  }));
 
   return (
     <section className="overflow-hidden rounded-[1.15rem] border border-[#d8e8dd] border-l-[5px] border-l-[#008f4a] bg-white px-5 py-5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] print:hidden">
@@ -1917,7 +1918,7 @@ function FixedPriceCard({ auction }: { auction: MarketingSession }) {
       <div className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="default">Fixed Price</Badge>
+            <Badge variant="default">Harga Tetap</Badge>
             <Badge variant="muted">{auction.code || "BRG"}</Badge>
           </div>
           <AdminStatusBadge status={auction.status as any} />
@@ -1982,7 +1983,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
       <div className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="accent">Vickrey</Badge>
+            <Badge variant="accent">Lelang Tertutup</Badge>
             <Badge variant="muted">{auction.code || "BRG"}</Badge>
           </div>
           <AdminStatusBadge status={auction.status as any} />
@@ -2061,7 +2062,7 @@ function VickreyCard({ auction }: { auction: MarketingSession }) {
 
 export function AdminFixedPriceListPage({
   auctions,
-  emptyDescription = "Belum ada sesi fixed price untuk unit ini."
+  emptyDescription = "Belum ada sesi harga tetap untuk unit ini."
 }: {
   auctions: MarketingSession[];
   emptyDescription?: string;
@@ -2074,7 +2075,7 @@ export function AdminFixedPriceListPage({
         accent="green"
         description="Pantau sesi penjualan harga tetap, media barang, dan status pembayaran tanpa unsur lelang."
         eyebrow="Admin Unit / Pemasaran"
-        title="Fixed Price"
+        title="Harga Tetap"
       />
 
       {auctions.length ? (
@@ -2102,7 +2103,7 @@ export function AdminFixedPriceListPage({
 
 export function AdminVickreyAuctionListPage({
   auctions,
-  emptyDescription = "Belum ada sesi vickrey auction untuk unit ini."
+  emptyDescription = "Belum ada sesi lelang tertutup untuk unit ini."
 }: {
   auctions: MarketingSession[];
   emptyDescription?: string;
@@ -2118,7 +2119,7 @@ export function AdminVickreyAuctionListPage({
         accent="amber"
         description="Ruang kerja lelang tertutup untuk memantau sesi aktif, pembukaan hasil, pembayaran pemenang, dan arsip tanpa membuka nominal bid sebelum deadline."
         eyebrow="Admin Unit / Pemasaran"
-        title="Vickrey Auction"
+        title="Lelang Tertutup"
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -2182,7 +2183,7 @@ export function AdminVickreyAuctionListPage({
                 Antrian pembayaran
               </p>
               <h3 className="mt-1 text-xl font-bold tracking-tight text-foreground">
-                Pemenang Vickrey yang perlu dipantau
+                Pemenang Lelang Tertutup yang perlu dipantau
               </h3>
             </div>
             <Badge variant="default">{paymentQueue.length} sesi</Badge>
@@ -2272,7 +2273,7 @@ export function AdminFixedPriceDetailPage({
             <div className="flex flex-wrap items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.17em] text-[#14352b]/58">
               <span>Admin Unit</span>
               <ChevronRight className="size-3.5 text-[#8fa59a]" />
-              <span className="text-[#13211c]">Detail Pemasaran Fixed Price</span>
+              <span className="text-[#13211c]">Detail Pemasaran Harga Tetap</span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <h1 className="font-headline text-[2rem] font-black leading-none text-[#101921] sm:text-[2.45rem]">
@@ -2404,7 +2405,7 @@ export function AdminFixedPriceDetailPage({
                   Pembeli tercatat: <span className="font-black text-[#13211c]">{buyerName}</span>.
                 </p>
               ) : (
-                <p>Belum ada pembeli dengan bukti pembayaran masuk pada sesi fixed price ini.</p>
+                <p>Belum ada pembeli dengan bukti pembayaran masuk pada sesi harga tetap ini.</p>
               )}
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
@@ -2417,7 +2418,7 @@ export function AdminFixedPriceDetailPage({
         <p className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4 text-[0.92rem] font-semibold leading-7 text-[#31433b]">
           {auction.description ||
             auction.note ||
-            "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual fixed price."}
+            "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
         </p>
       </section>
 
@@ -2444,7 +2445,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
   if (isMarketingSold(auction)) {
     return {
       badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
-      detail: "Penjualan fixed price sudah selesai dan siap masuk arsip transaksi.",
+      detail: "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi.",
       icon: BadgeCheck,
       label: "Selesai"
     };
@@ -2453,7 +2454,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
   if (auction.transactionStatus === "LUNAS") {
     return {
       badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
-      detail: "Pembayaran fixed price sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
+      detail: "Pembayaran harga tetap sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
       icon: BadgeCheck,
       label: "Terverifikasi"
     };
@@ -2470,7 +2471,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
 
   return {
     badgeClassName: "border-[#fed7aa] bg-[#fff8e8] text-[#b45309]",
-    detail: "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian fixed price.",
+    detail: "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian harga tetap.",
     icon: CheckCircle2,
     label: "Tersedia di Katalog"
   };
@@ -2685,7 +2686,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
         </CardTitle>
         <CardDescription>
           {hasTransaction
-            ? "Transaksi pemenang terbaca dari database. Untuk lelang Vickrey, pembayaran diproses langsung di unit."
+            ? "Transaksi pemenang terbaca dari database. Untuk Lelang Tertutup, pembayaran diproses langsung di unit."
             : "Belum ada transaksi pemenang yang perlu diverifikasi dari sesi ini."}
         </CardDescription>
       </CardHeader>
@@ -2721,7 +2722,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                Harga final Vickrey
+                Harga akhir Lelang Tertutup
               </p>
               <p className={`mt-1 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-extrabold text-primary [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.finalPrice ?? auction.basePrice ?? 0)}`}>
                 {currency.format(auction.finalPrice ?? auction.basePrice ?? 0)}
@@ -3092,7 +3093,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Vickrey Second-Price"}
+          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Lelang Tertutup"}
         </p>
         <Info className="size-3.5 text-[#2f6fff]" />
       </div>
@@ -3149,7 +3150,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
               <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
                 Mekanisme
               </span>
-              e-Bidding - Vickrey Second-Price
+              e-Bidding - Lelang Tertutup
             </p>
             <p>
               <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
@@ -3166,8 +3167,8 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
           </div>
         ) : (
           <p>
-            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga menang ditentukan berdasarkan
-            penawaran tertinggi kedua sesuai mekanisme Vickrey (second-price).
+            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga akhir mengikuti mekanisme lelang
+            dan dihitung dari penawaran tertinggi kedua.
           </p>
         )}
       </div>
@@ -3435,7 +3436,7 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
-            <span>Harga Bayar Vickrey</span>
+            <span>Harga akhir lelang</span>
             <span className="font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
@@ -3465,7 +3466,7 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
-            <span>Harga Bayar Vickrey</span>
+            <span>Harga akhir lelang</span>
             <span className="font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
@@ -3578,9 +3579,9 @@ function getFixedPriceVerificationAction(auction: MarketingSession) {
   return {
     endpoint: `/api/admin/transaksi/${auction.transactionId}/verifikasi`,
     label: "Setujui Pembayaran",
-    pendingTitle: "Memverifikasi pembayaran fixed price",
-    pendingDescription: "Sistem sedang memverifikasi pembayaran fixed price dan membuka nota transaksi.",
-    successTitle: "Pembayaran fixed price disetujui",
+    pendingTitle: "Memverifikasi pembayaran harga tetap",
+    pendingDescription: "Sistem sedang memverifikasi pembayaran harga tetap dan membuka nota transaksi.",
+    successTitle: "Pembayaran harga tetap disetujui",
     successDescription: "Pembayaran buyer sudah tervalidasi. Tahap selesai tetap menunggu buyer menekan Pembelian Selesai.",
     note: "Periksa bukti transfer, nominal harga jual, dan identitas buyer sebelum pembayaran disetujui.",
     icon: ReceiptText
@@ -3670,7 +3671,7 @@ function VickreyPaymentVerificationModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[150] overflow-y-auto px-4 py-6 print:hidden sm:px-6 lg:py-8">
+    <div className="fixed inset-0 z-[150] overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] print:hidden sm:px-6 sm:py-6 lg:py-8">
       <button
         aria-label="Tutup pop up verifikasi pembayaran"
         className="fixed inset-0 bg-[#07131e]/60 backdrop-blur-[5px]"
@@ -3691,7 +3692,7 @@ function VickreyPaymentVerificationModal({
           </div>
           <button
             aria-label="Tutup"
-            className="absolute right-5 top-5 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7"
+            className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7 sm:size-9"
             onClick={() => onOpenChange(false)}
             type="button"
           >
@@ -3798,9 +3799,8 @@ function VickreyPaymentVerificationModal({
                 <div className="flex items-start gap-3">
                   <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" />
                   <p>
-                    Sesuai dengan mekanisme lelang Vickrey, pemenang lelang wajib membayar sesuai dengan jumlah
-                    pelunasan yang sah dan berlaku, sebagaimana ditetapkan oleh sistem berdasarkan alur dan hasil
-                    lelang yang valid.
+                    Harga akhir mengikuti mekanisme lelang. Pemenang wajib membayar sesuai jumlah pelunasan yang sah
+                    dan berlaku sebagaimana ditetapkan oleh sistem.
                   </p>
                 </div>
               </div>
@@ -3828,7 +3828,7 @@ function VickreyPaymentVerificationModal({
 
         <div className="flex flex-col-reverse gap-3 rounded-b-[2rem] border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
           <Button
-            className="h-12 rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] hover:bg-[#f6faf8]"
+            className="min-h-12 w-full rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] hover:bg-[#f6faf8] sm:w-auto"
             onClick={() => onOpenChange(false)}
             type="button"
             variant="secondary"
@@ -3837,7 +3837,7 @@ function VickreyPaymentVerificationModal({
           </Button>
           {action ? (
             <AdminUnitActionButton
-              className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+              className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] sm:w-auto"
               endpoint={action.endpoint}
               payload={{ reference }}
               pendingDescription={action.pendingDescription}
@@ -3848,7 +3848,7 @@ function VickreyPaymentVerificationModal({
               {action.label}
             </AdminUnitActionButton>
           ) : (
-            <Button className="h-12 rounded-[0.82rem]" disabled>
+            <Button className="min-h-12 w-full rounded-[0.82rem] sm:w-auto" disabled>
               Belum bisa diverifikasi
             </Button>
           )}
@@ -3999,9 +3999,9 @@ function FixedPricePaymentVerificationModal({
   }
 
   return createPortal(
-    <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto px-4 py-6 print:hidden sm:px-6 lg:py-8">
+    <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] print:hidden sm:px-6 sm:py-6 lg:py-8">
       <button
-        aria-label="Tutup pop up verifikasi pembayaran fixed price"
+        aria-label="Tutup pop up verifikasi pembayaran harga tetap"
         className="fixed inset-0 bg-[#07131e]/66 backdrop-blur-[5px]"
         onClick={() => onOpenChange(false)}
         type="button"
@@ -4009,7 +4009,7 @@ function FixedPricePaymentVerificationModal({
       <section
         aria-labelledby="fixed-price-payment-verification-title"
         aria-modal="true"
-        className="relative z-[151] mx-auto flex max-h-[calc(100dvh-2.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-8 sm:pt-9"
+        className="relative z-[151] mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-8 sm:max-h-[calc(100dvh-2.5rem)] sm:pt-9"
         role="dialog"
       >
         <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
@@ -4021,7 +4021,7 @@ function FixedPricePaymentVerificationModal({
           <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
             <button
               aria-label="Tutup"
-              className="absolute right-5 top-5 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7"
+              className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7 sm:size-9"
               onClick={() => onOpenChange(false)}
               type="button"
             >
@@ -4033,7 +4033,7 @@ function FixedPricePaymentVerificationModal({
                 className="mx-auto max-w-[42rem] font-headline text-[1.55rem] font-black leading-tight tracking-tight text-[#15231d] sm:text-[1.78rem]"
                 id="fixed-price-payment-verification-title"
               >
-                Verifikasi Pelunasan Dana Fixed Price
+                Verifikasi Pelunasan Dana Harga Tetap
               </h2>
               <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
                 Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap.
@@ -4041,14 +4041,14 @@ function FixedPricePaymentVerificationModal({
             </div>
           </div>
 
-          <div className="scrollbar-none min-h-0 overflow-y-auto px-5 py-5 sm:px-7">
+          <div className="scrollbar-none min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-5">
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
             <div className="space-y-4">
               <div className="relative overflow-hidden rounded-[1.05rem] border border-[#cce6da] bg-[radial-gradient(circle_at_88%_32%,rgba(46,196,125,0.18),transparent_29%),linear-gradient(135deg,#fbfffd_0%,#eef9f3_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-[0.82rem] font-black leading-none text-[#18231e]">
-                      Kewajiban Nominal Fixed Price
+                      Kewajiban Nominal Harga Tetap
                     </p>
                     <p className="mt-3 break-words font-headline text-[2.55rem] font-black leading-none tracking-[-0.04em] text-[#00593b] [font-variant-numeric:tabular-nums] sm:text-[3.15rem]">
                       {currency.format(paymentPrice)}
@@ -4162,7 +4162,7 @@ function FixedPricePaymentVerificationModal({
                   <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
                 </div>
                 <p className="mt-4 text-[0.88rem] font-semibold leading-6 text-[#47564f]">
-                  Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi fixed price
+                  Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap
                   dicairkan.
                 </p>
               </div>
@@ -4176,7 +4176,7 @@ function FixedPricePaymentVerificationModal({
                 </label>
                 <div className="mt-4">
                   <AdminSelect
-                    ariaLabel="Alasan penolakan pembayaran fixed price"
+                    ariaLabel="Alasan penolakan pembayaran harga tetap"
                     allowWrap
                     className="[&_.admin-select-trigger]:h-auto [&_.admin-select-trigger]:min-h-14 [&_.admin-select-trigger]:items-start [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:border-[#006747]/35 [&_.admin-select-trigger]:bg-white [&_.admin-select-trigger]:px-4 [&_.admin-select-trigger]:py-3 [&_.admin-select-trigger]:text-[0.9rem] [&_.admin-select-trigger]:font-black [&_.admin-select-trigger]:text-[#111827] [&_.admin-select-trigger]:shadow-[0_18px_36px_-28px_rgba(15,23,42,0.26)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747] [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.55),0_20px_40px_-30px_rgba(0,103,71,0.4)] [&_.admin-select-trigger[data-active='true']]:border-[#006747]/55 [&_.admin-select-trigger[data-active='true']]:bg-white [&_.admin-select-trigger[data-active='true']]:text-[#111827] [&_.admin-select-menu]:border-[#cfe1d8] [&_.admin-select-menu]:shadow-[0_28px_58px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-[3.25rem] [&_.admin-select-option]:items-start [&_.admin-select-option]:py-3 [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed]"
                     id="fixed-price-rejection-reason"
@@ -4195,7 +4195,7 @@ function FixedPricePaymentVerificationModal({
                   <div className="min-w-0">
                     <p className="font-headline text-[0.92rem] font-black leading-tight text-[#7c3f00]">Perhatian</p>
                     <p className="mt-2 font-semibold">
-                      Pastikan nominal yang diterima sesuai harga fixed price dan dana masuk ke rekening tujuan unit.
+                      Pastikan nominal yang diterima sesuai harga harga tetap dan dana masuk ke rekening tujuan unit.
                       Penolakan hanya dipakai jika bukti pembayaran tidak valid.
                     </p>
                   </div>
@@ -4218,13 +4218,13 @@ function FixedPricePaymentVerificationModal({
         <div className="flex shrink-0 flex-col gap-3 border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
           {hasRejectionReason && rejectEndpoint ? (
             <AdminUnitActionButton
-              className="h-12 rounded-[0.82rem] border border-[#dc2626] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] shadow-[0_18px_34px_-28px_rgba(185,28,28,0.46)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99]"
+              className="min-h-12 w-full rounded-[0.82rem] border border-[#dc2626] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] shadow-[0_18px_34px_-28px_rgba(185,28,28,0.46)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99] sm:w-auto"
               endpoint={rejectEndpoint}
               payload={{ reason: rejectionReason }}
               pendingDescription="Sistem sedang mengembalikan transaksi ke buyer dengan alasan penolakan yang dipilih."
-              pendingTitle="Menolak pembayaran fixed price"
+              pendingTitle="Menolak pembayaran harga tetap"
               successDescription="Buyer akan menerima alasan penolakan dan transaksi masuk arsip dibatalkan."
-              successTitle="Pembayaran fixed price ditolak"
+              successTitle="Pembayaran harga tetap ditolak"
               variant="secondary"
             >
               <X className="size-4.5" />
@@ -4232,7 +4232,7 @@ function FixedPricePaymentVerificationModal({
             </AdminUnitActionButton>
           ) : (
             <Button
-              className="h-12 rounded-[0.82rem] border border-[#f0b8b8] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c]"
+              className="min-h-12 w-full rounded-[0.82rem] border border-[#f0b8b8] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] sm:w-auto"
               disabled
               type="button"
               variant="secondary"
@@ -4244,7 +4244,7 @@ function FixedPricePaymentVerificationModal({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <Button
-              className="h-12 rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8]"
+              className="min-h-12 w-full rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8] sm:w-auto"
               onClick={() => onOpenChange(false)}
               type="button"
               variant="secondary"
@@ -4254,7 +4254,7 @@ function FixedPricePaymentVerificationModal({
 
             {action && !hasRejectionReason ? (
               <AdminUnitActionButton
-                className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+                className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] sm:w-auto"
                 endpoint={action.endpoint}
                 payload={{ reference }}
                 pendingDescription={action.pendingDescription}
@@ -4266,7 +4266,7 @@ function FixedPricePaymentVerificationModal({
                 {action.label}
               </AdminUnitActionButton>
             ) : (
-              <Button className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white" disabled>
+              <Button className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white sm:w-auto" disabled>
                 <CheckCircle2 className="size-4.5" />
                 {action?.label ?? "Setujui Pembayaran"}
               </Button>
@@ -4349,7 +4349,7 @@ function getFixedPriceReceiptTerms(auction: MarketingSession) {
   return [
     "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
     `Pengambilan barang dilakukan di unit ${unitName}.`,
-    "Pembayaran fixed price sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+    "Pembayaran harga tetap sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
     "Simpan nota ini untuk keperluan administrasi atau pengambilan barang."
   ];
 }
@@ -4392,7 +4392,7 @@ function FixedPriceReceiptInlinePrint({
         buyerEmail={auction.buyerEmail ?? undefined}
         buyerName={auction.buyerName || auction.winner || "-"}
         buyerPhone={auction.buyerPhone ?? undefined}
-        extraMeta={[{ label: "Jenis transaksi", value: "Fixed Price" }]}
+        extraMeta={[{ label: "Jenis transaksi", value: "Harga Tetap" }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
@@ -4774,7 +4774,7 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
             Mekanisme
           </span>
-          e-Bidding - Vickrey Second-Price
+          e-Bidding - Lelang Tertutup
         </p>
         <p>
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">

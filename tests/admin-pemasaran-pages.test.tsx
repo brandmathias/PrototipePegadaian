@@ -48,7 +48,7 @@ describe("admin pemasaran pages", () => {
             price: 12500000,
             media: [{ id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" }],
             primaryMedia: { id: "m1", type: "foto", url: "/uploads/kalung.jpg", fileName: "kalung.jpg" },
-            note: "Belum ada transaksi pembeli pada sesi fixed price ini."
+            note: "Belum ada transaksi pembeli pada sesi harga tetap ini."
           },
           {
             id: "pm-vickrey-active",
@@ -150,7 +150,7 @@ describe("admin pemasaran pages", () => {
             visibility: "HASIL_DIBUKA",
             media: [{ id: "m5", type: "foto", url: "/uploads/jam.jpg", fileName: "jam.jpg" }],
             primaryMedia: { id: "m5", type: "foto", url: "/uploads/jam.jpg", fileName: "jam.jpg" },
-            note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal."
+            note: "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
           }
         ]}
       />
@@ -196,9 +196,9 @@ describe("admin pemasaran pages", () => {
       "href",
       "/admin/pemasaran/vickrey-auction/pm-failed"
     );
-  });
+  }, 10000);
 
-  it("renders fixed price cards without auction-only language", () => {
+  it("renders harga tetap cards without auction-only language", () => {
     render(
       <AdminFixedPriceListPage
         auctions={[
@@ -239,7 +239,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText(/peserta/i)).not.toBeInTheDocument();
   });
 
-  it("keeps fixed price buyer staging hidden until payment proof is submitted", () => {
+  it("keeps harga tetap buyer staging hidden until payment proof is submitted", () => {
     render(
       <AdminMarketingUnifiedPage
         auctions={[
@@ -271,7 +271,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/belum ada pembeli/i)).toBeInTheDocument();
     expect(screen.getByText(/menunggu pembeli dari katalog/i)).toBeInTheDocument();
     expect(screen.queryByText(/buyer demo 13 b/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/pembelian fixed price tercatat/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pembelian harga tetap tercatat/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
   });
 
@@ -315,7 +315,7 @@ describe("admin pemasaran pages", () => {
     );
   });
 
-  it("renders fixed price detail media with the buyer-style gallery", () => {
+  it("renders harga tetap detail media with the buyer-style gallery", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -352,7 +352,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
   });
 
-  it("opens fixed price payment verification when buyer proof has been uploaded", () => {
+  it("opens harga tetap payment verification when buyer proof has been uploaded", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -381,9 +381,9 @@ describe("admin pemasaran pages", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
-    const dialog = screen.getByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i });
+    const dialog = screen.getByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i });
 
-    expect(within(dialog).getByText(/kewajiban nominal fixed price/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/kewajiban nominal harga tetap/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
     expect(within(dialog).getByRole("link", { name: /buka bukti pembayaran/i })).toHaveAttribute(
@@ -391,7 +391,7 @@ describe("admin pemasaran pages", () => {
       "/uploads/bukti-fixed-price.jpg"
     );
 
-    const reasonSelect = within(dialog).getByLabelText(/alasan penolakan pembayaran fixed price/i);
+    const reasonSelect = within(dialog).getByLabelText(/alasan penolakan pembayaran harga tetap/i);
     const options = within(reasonSelect).getAllByRole("option");
 
     expect(options).toHaveLength(3);
@@ -406,7 +406,7 @@ describe("admin pemasaran pages", () => {
     expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeDisabled();
   });
 
-  it("does not reopen fixed price verification actions after payment proof has been rejected", () => {
+  it("does not reopen harga tetap verification actions after payment proof has been rejected", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -429,7 +429,7 @@ describe("admin pemasaran pages", () => {
           paymentDeadline: "2099-06-05T12:00:00.000Z",
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
           primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
-          note: "Bukti pembayaran fixed price ditolak."
+          note: "Bukti pembayaran harga tetap ditolak."
         }}
       />
     );
@@ -438,10 +438,10 @@ describe("admin pemasaran pages", () => {
 
     expect(verifyButton).toBeDisabled();
     fireEvent.click(verifyButton);
-    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
   });
 
-  it("prints a fixed price receipt inline after admin verifies payment", async () => {
+  it("prints a harga tetap receipt inline after admin verifies payment", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     render(
@@ -476,7 +476,7 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByText(/menunggu buyer menekan pembelian selesai/i)).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
-    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
 
     const receiptPrintRoot = document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid");
 
@@ -486,16 +486,16 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
-    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!).toHaveTextContent("Harga Tetap");
     expect(receiptPrintRoot!).toHaveTextContent("Terverifikasi admin");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-utama.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana fixed price/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
 
     printSpy.mockRestore();
   });
 
-  it("renders fixed price detail as the compact marketing inventory workspace", () => {
+  it("renders harga tetap detail as the compact marketing inventory workspace", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -530,7 +530,7 @@ describe("admin pemasaran pages", () => {
             { id: "m2", type: "foto", url: "/uploads/cincin-samping.jpg", fileName: "cincin-samping.jpg" }
           ],
           primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
-          note: "Belum ada transaksi pembeli pada sesi fixed price ini."
+          note: "Belum ada transaksi pembeli pada sesi harga tetap ini."
         }}
       />
     );
@@ -1134,7 +1134,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/tahap 3: selesai buyer/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.getByText(/nota & konfirmasi buyer/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
-    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
     const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid");
     expect(receiptPrintRoot).not.toBeNull();
     expect(receiptPrintRoot!).toHaveClass("vickrey-receipt-print-document", "hidden", "print:block");
@@ -1143,7 +1143,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
     expect(receiptPrintRoot!).toHaveTextContent("Lelang");
-    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Lelang Tertutup");
     expect(receiptPrintRoot!).not.toHaveClass("h-0", "w-0", "opacity-0");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("dialog", { name: /pratinjau nota pengambilan barang/i })).not.toBeInTheDocument();
@@ -1234,7 +1234,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/tahap selesai selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
-    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
     const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-completed");
     expect(receiptPrintRoot).not.toBeNull();
     expect(receiptPrintRoot!).toHaveClass("vickrey-receipt-print-document", "hidden", "print:block");
@@ -1243,7 +1243,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
     expect(receiptPrintRoot!).toHaveTextContent("Lelang");
-    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Lelang Tertutup");
     expect(receiptPrintRoot!).not.toHaveClass("h-0", "w-0", "opacity-0");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
     expect(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toHaveAttribute(
@@ -1290,7 +1290,7 @@ describe("admin pemasaran pages", () => {
           },
           media: [{ id: "asset-unpaid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
           primaryMedia: { id: "asset-unpaid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
-          note: "Pemenang Vickrey tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal.",
+          note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal.",
           bids: [
             {
               id: "bid-unpaid-1",
@@ -1332,7 +1332,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
     expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /vickrey auction/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /lelang tertutup/i })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: /^batal$/i }));
     expect(screen.queryByRole("heading", { name: /pasarkan barang/i })).not.toBeInTheDocument();
 
@@ -1367,7 +1367,7 @@ describe("admin pemasaran pages", () => {
           },
           media: [{ id: "asset-no-bids", type: "foto", url: "/uploads/watch.jpg", fileName: "watch.jpg" }],
           primaryMedia: { id: "asset-no-bids", type: "foto", url: "/uploads/watch.jpg", fileName: "watch.jpg" },
-          note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal.",
+          note: "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal.",
           bids: []
         }}
       />

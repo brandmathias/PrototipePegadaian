@@ -40,7 +40,7 @@ describe("AdminMarketingForm", () => {
     vi.unstubAllGlobals();
   });
 
-  it("submits fixed price marketing without requiring duration fields", async () => {
+  it("submits harga tetap marketing without requiring duration fields", async () => {
     renderWithToast(
       <AdminMarketingForm
         barangId="barang-1"
@@ -87,8 +87,8 @@ describe("AdminMarketingForm", () => {
       />
     );
 
-    const fixedPriceButton = screen.getByRole("button", { name: /fixed price/i });
-    const vickreyButton = screen.getByRole("button", { name: /vickrey auction/i });
+    const fixedPriceButton = screen.getByRole("button", { name: /harga tetap/i });
+    const vickreyButton = screen.getByRole("button", { name: /lelang tertutup/i });
 
     expect(fixedPriceButton).toHaveAttribute("aria-pressed", "true");
     expect(vickreyButton).toHaveAttribute("aria-pressed", "false");
@@ -148,7 +148,7 @@ describe("AdminMarketingForm", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /vickrey auction/i }));
+    fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
 
     const minutesInput = screen.getByLabelText("Menit") as HTMLInputElement;
     fireEvent.focus(minutesInput);
@@ -171,7 +171,7 @@ describe("AdminMarketingForm", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /vickrey auction/i }));
+    fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
 
     const daysInput = screen.getByLabelText("Hari") as HTMLInputElement;
     fireEvent.focus(daysInput);
@@ -194,7 +194,7 @@ describe("AdminMarketingForm", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /vickrey auction/i }));
+    fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
 
     const minutesInput = screen.getByLabelText("Menit") as HTMLInputElement;
     const secondsInput = screen.getByLabelText("Detik") as HTMLInputElement;

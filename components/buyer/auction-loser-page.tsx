@@ -62,7 +62,7 @@ function RecommendationCard({
 
   return (
     <Link
-      className="group grid min-h-[7.6rem] grid-cols-[7.25rem_minmax(0,1fr)] gap-4 rounded-[1.15rem] border border-[#edf0eb] bg-white p-3.5 shadow-[0_14px_34px_-30px_rgba(16,24,40,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#cfe5d8] hover:shadow-[0_20px_44px_-32px_rgba(16,24,40,0.24)]"
+      className="group grid min-h-[7.6rem] grid-cols-[5.75rem_minmax(0,1fr)] gap-3 rounded-[1.15rem] border border-[#edf0eb] bg-white p-3.5 shadow-[0_14px_34px_-30px_rgba(16,24,40,0.18)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#cfe5d8] hover:shadow-[0_20px_44px_-32px_rgba(16,24,40,0.24)] sm:grid-cols-[7.25rem_minmax(0,1fr)] sm:gap-4"
       href={`/katalog/${lot.id}`}
     >
       <div className="relative min-h-[6.3rem] overflow-hidden rounded-[1rem] bg-[#f8faf9]">
@@ -129,8 +129,8 @@ export function AuctionLoserPageContent({
     .slice(0, 3);
 
   return (
-    <div className="relative left-1/2 min-h-screen w-screen -translate-x-1/2 bg-[#fafafa] pb-8">
-      <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-[#09111b]">
+    <div className="full-bleed-safe min-h-dvh bg-[#fafafa] pb-8">
+      <section className="relative overflow-hidden bg-[#09111b]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_18%,rgba(255,145,156,0.18),transparent_28%),radial-gradient(circle_at_72%_22%,rgba(209,219,230,0.12),transparent_24%),linear-gradient(120deg,#09111b_0%,#111c28_48%,#0c1520_100%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_18%,rgba(0,0,0,0.18)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.16))]" />
@@ -199,22 +199,22 @@ export function AuctionLoserPageContent({
               </h2>
 
               <dl className="mt-5 grid gap-0 text-[0.95rem]">
-                <div className="grid grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] items-center border-b border-dashed border-[#dde4df] py-3">
+                <div className="grid gap-1 border-b border-dashed border-[#dde4df] py-3 sm:grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] sm:items-center">
                   <dt className="font-semibold text-[#667085]">No. Transaksi</dt>
-                  <dd className="font-black tracking-[-0.015em] text-[#101828]">
+                  <dd className="break-words font-black tracking-[-0.015em] text-[#101828]">
                     {bid.bidHash ? `BID-${bid.lotId.slice(0, 8).toUpperCase()}` : bid.lotId}
                   </dd>
                 </div>
-                <div className="grid grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] items-center border-b border-dashed border-[#dde4df] py-3">
+                <div className="grid gap-1 border-b border-dashed border-[#dde4df] py-3 sm:grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] sm:items-center">
                   <dt className="font-semibold text-[#667085]">Unit</dt>
-                  <dd className="font-black tracking-[-0.015em] text-[#101828]">{bid.unit}</dd>
+                  <dd className="break-words font-black tracking-[-0.015em] text-[#101828]">{bid.unit}</dd>
                 </div>
-                <div className="grid grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] items-center py-3">
+                <div className="grid gap-1 py-3 sm:grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] sm:items-center">
                   <dt className="inline-flex items-center gap-2 font-semibold text-[#667085]">
                     <CalendarIcon className="size-4" strokeWidth={1.75} />
                     Tanggal Lelang Selesai
                   </dt>
-                  <dd className="font-black tracking-[-0.015em] text-[#101828]">
+                  <dd className="break-words font-black tracking-[-0.015em] text-[#101828]">
                     {bid.closingAt ? formatAppDateTime(bid.closingAt) : bid.closing}
                   </dd>
                 </div>
@@ -242,7 +242,7 @@ export function AuctionLoserPageContent({
         </section>
 
         <section className="rounded-[1.15rem] border border-[#f2dada] bg-[#fffafa] p-4 shadow-[0_12px_30px_-28px_rgba(224,32,32,0.2)]">
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <span className="grid size-16 shrink-0 place-items-center rounded-full bg-[#fff0f0] text-[#e02020]">
               <PartyIcon className="size-8" strokeWidth={1.85} />
             </span>
@@ -304,7 +304,7 @@ export function AuctionLoserPageContent({
         </section>
 
         <section className="rounded-[1.15rem] border border-[#f2dada] bg-[#fffafa] p-4 shadow-[0_12px_30px_-28px_rgba(224,32,32,0.18)]">
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <span className="auction-loser-heart grid size-16 shrink-0 place-items-center rounded-full bg-[#fff0f0] text-[#e02020]">
               <HeartIcon className="size-8" strokeWidth={1.8} />
             </span>

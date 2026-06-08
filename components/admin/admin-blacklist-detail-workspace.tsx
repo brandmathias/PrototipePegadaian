@@ -44,8 +44,8 @@ const LEVEL_RULES: Record<
   1: {
     duration: "7 hari",
     durationDays: 7,
-    label: "Level 1: Vickrey dibatasi",
-    restriction: "Tidak bisa ikut lelang Vickrey. Fixed Price masih boleh.",
+    label: "Level 1: Lelang Tertutup dibatasi",
+    restriction: "Tidak bisa ikut Lelang Tertutup. Harga Tetap masih boleh.",
     tone: "success",
   },
   2: {
@@ -53,7 +53,7 @@ const LEVEL_RULES: Record<
     durationDays: 30,
     label: "Level 2: Transaksi baru dibatasi",
     restriction:
-      "Tidak bisa ikut lelang Vickrey dan tidak bisa membuat transaksi Fixed Price baru.",
+      "Tidak bisa ikut Lelang Tertutup dan tidak bisa membuat transaksi Harga Tetap baru.",
     tone: "warning",
   },
   3: {

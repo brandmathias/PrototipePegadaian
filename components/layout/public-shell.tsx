@@ -49,7 +49,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   return (
     <div
       className={cn(
-        "min-h-screen bg-white",
+        "app-responsive-shell min-h-dvh bg-white",
         isBuyerCatalogSurface && "buyer-experience-root"
       )}
     >
@@ -62,18 +62,18 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
         />
       ) : (
         <header
-          className="sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur"
+          className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"
         >
-          <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
-            <div className="flex items-center gap-6">
+          <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
+            <div className="flex min-w-0 items-center gap-3 lg:gap-6">
               <Link
-                className="flex items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
+                className="flex min-w-0 items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
                 href="/"
               >
-                <span className="rounded-2xl bg-primary p-2 text-white">
+                <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
                   <Gavel className="size-4" />
                 </span>
-                Pegadaian Lelang
+                <span className="hidden truncate sm:inline">Pegadaian Lelang</span>
               </Link>
               <nav
                 className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex"
@@ -101,7 +101,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
               </nav>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
               <CatalogSearchInput
                 inputClassName="hidden w-72 lg:block xl:w-80"
                 placeholder="Cari lot atau unit..."
@@ -116,7 +116,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
                     {getViewerLabel(viewer.role)}
                   </Link>
                   <LogoutButton
-                    className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
                     redirectTo="/login"
                   >
                     <LogOut className="size-4" />
@@ -133,22 +133,47 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
               )}
             </div>
           </div>
+          <nav
+            aria-label="Navigasi publik mobile"
+            className="container grid grid-cols-2 gap-2 pb-3 md:hidden"
+          >
+            {navItems.map((item) => {
+              const active =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+
+              return (
+                <Link
+                  className={cn(
+                    "inline-flex min-h-10 items-center justify-center rounded-full border px-3 text-sm font-bold transition",
+                    active
+                      ? "border-primary/15 bg-primary text-white shadow-[0_12px_28px_-22px_rgba(0,74,35,0.52)]"
+                      : "border-border/70 bg-white text-muted-foreground hover:text-primary"
+                  )}
+                  href={item.href}
+                  key={item.href}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </header>
       )}
 
-      <main className={cn(isBuyerCatalogSurface && "buyer-motion-main")}>{children}</main>
+      <main className={cn("min-w-0", isBuyerCatalogSurface && "buyer-motion-main")}>{children}</main>
 
       <footer
         className="mt-20 border-t border-black/5 bg-white py-12"
       >
-        <div className="container grid gap-10 md:grid-cols-4">
+        <div className="container grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div className="space-y-4">
             <h3 className="font-headline text-xl font-bold text-primary">
               Pegadaian Lelang
             </h3>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Platform resmi untuk katalog barang jaminan, pembelian fixed price, dan lelang
-              tertutup Vickrey lintas unit Pegadaian.
+              Platform resmi untuk katalog barang jaminan, pembelian harga tetap, dan lelang
+              tertutup lintas unit Pegadaian.
             </p>
           </div>
           <div className="space-y-3 text-sm text-muted-foreground">

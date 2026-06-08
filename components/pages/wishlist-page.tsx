@@ -69,7 +69,7 @@ const modeCopy: Record<Exclude<SaleMode, "all">, { label: string; icon: ReactNod
     tone: "bg-[#d99900] text-white",
   },
   vickrey: {
-    label: "Lelang Vickrey",
+    label: "Lelang Tertutup",
     icon: <Gavel className="size-3.5" />,
     tone: "bg-[#006b42] text-white",
   },
@@ -932,7 +932,7 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
         </span>
         <h1 className="relative mt-5 font-headline text-3xl font-black text-[#161b17]">Belum ada barang disukai</h1>
         <p className="relative mx-auto mt-2 max-w-xl text-sm leading-6 text-black/56">
-          Simpan barang dari katalog agar Anda bisa membandingkan harga tetap dan lelang Vickrey tanpa mencari ulang.
+          Simpan barang dari katalog agar Anda bisa membandingkan harga tetap dan Lelang Tertutup tanpa mencari ulang.
         </p>
         <Link className={cn(buttonVariants({ variant: "default" }), "relative mt-6 rounded-md")} href="/katalog">
           Jelajahi Katalog
@@ -962,7 +962,7 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
               <WishlistPill
                 active={mode === "vickrey"}
                 count={modeCounts.vickrey}
-                label="Lelang Vickrey"
+                label="Lelang Tertutup"
                 onClick={() => setMode("vickrey")}
               />
             </div>

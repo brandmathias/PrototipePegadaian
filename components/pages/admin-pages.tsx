@@ -712,7 +712,7 @@ export function AdminInventoryDetailPage({
     {
       title: "Pasarkan Barang",
       description:
-        "Pilih fixed price atau Vickrey Auction, lalu tayangkan ke katalog pembeli.",
+        "Pilih harga tetap atau Lelang Tertutup, lalu tayangkan ke katalog pembeli.",
       href: `/admin/barang/${item.id}/pasarkan`,
       icon: Megaphone,
     },
@@ -1406,7 +1406,7 @@ export function AdminMarketingHubPage({
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Pilih jalur pemasaran yang mau dipantau. Fixed Price untuk harga tetap, Vickrey Auction untuk sesi lelang tertutup."
+        description="Pilih jalur pemasaran yang mau dipantau. Harga Tetap untuk harga tetap, Lelang Tertutup untuk sesi lelang tertutup."
         eyebrow="Admin Unit / Pemasaran"
         icon={Gavel}
         rightRail={<AdminHeroPill icon={BadgeCheck}>Workspace pemasaran unit</AdminHeroPill>}
@@ -1420,14 +1420,14 @@ export function AdminMarketingHubPage({
               <ShoppingBag className="size-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-black/85">Fixed Price</h3>
+              <h3 className="text-xl font-bold text-black/85">Harga Tetap</h3>
               <p className="mt-2 text-sm leading-6 text-black/60">
                 {fixedPriceCount} sesi aktif atau tersimpan di jalur harga
                 tetap.
               </p>
             </div>
             <Link href="/admin/pemasaran/fixed-price">
-              <Button className="w-full rounded-2xl">Buka Fixed Price</Button>
+              <Button className="w-full rounded-2xl">Buka Harga Tetap</Button>
             </Link>
           </CardContent>
         </Card>
@@ -1439,7 +1439,7 @@ export function AdminMarketingHubPage({
             </div>
             <div>
               <h3 className="text-xl font-bold text-black/85">
-                Vickrey Auction
+                Lelang Tertutup
               </h3>
               <p className="mt-2 text-sm leading-6 text-black/60">
                 {vickreyCount} sesi aktif atau tersimpan di jalur lelang
@@ -1448,7 +1448,7 @@ export function AdminMarketingHubPage({
             </div>
             <Link href="/admin/pemasaran/vickrey-auction">
               <Button className="w-full rounded-2xl" variant="secondary">
-                Buka Vickrey Auction
+                Buka Lelang Tertutup
               </Button>
             </Link>
           </CardContent>
@@ -1599,7 +1599,7 @@ export function AdminAuctionDetailPage({
                 <div className="mt-4 space-y-2">
                   <p>Pemenang: {auction.winner ?? "-"}</p>
                   <p>
-                    Harga final:{" "}
+                    Harga akhir:{" "}
                     {auction.finalPrice
                       ? currency.format(auction.finalPrice)
                       : "-"}

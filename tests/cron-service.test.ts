@@ -85,7 +85,7 @@ describe("cron service", () => {
     });
   });
 
-  it("breaks equal highest Vickrey bids by earliest submitted bid and charges the tied bid amount", async () => {
+  it("breaks equal highest Lelang Tertutup bids by earliest submitted bid and charges the tied bid amount", async () => {
     expect(
       cronService.resolveVickreyOutcome({
         basePrice: "10000000",

@@ -64,7 +64,7 @@ describe("CatalogPage", () => {
     expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
     expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Lelang Vickrey")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Lelang Tertutup")[0]).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /semua mode/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /emas & perhiasan/i })).toBeInTheDocument();
@@ -81,14 +81,14 @@ describe("CatalogPage", () => {
     expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
   });
 
-  it("does not show auction countdowns on fixed price lots even if stale endsAt data exists", () => {
+  it("does not show auction countdowns on harga tetap lots even if stale endsAt data exists", () => {
     render(
       <CatalogPage
         lots={[
           {
             id: "lot-db-fixed",
             code: "LOT-FIXED",
-            name: "Cincin Fixed Price",
+            name: "Cincin Harga Tetap",
             category: "Emas & Perhiasan",
             mode: "fixed_price",
             price: 12500000,
@@ -97,7 +97,7 @@ describe("CatalogPage", () => {
             city: "Manado",
             condition: "Baik",
             status: "Tersedia",
-            description: "Data fixed price dari database.",
+            description: "Data harga tetap dari database.",
             endsAt: new Date("2026-05-05T10:00:00+08:00").toISOString(),
             media: [],
             specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
@@ -106,7 +106,7 @@ describe("CatalogPage", () => {
       />
     );
 
-    expect(screen.getByText("Cincin Fixed Price")).toBeInTheDocument();
+    expect(screen.getByText("Cincin Harga Tetap")).toBeInTheDocument();
     expect(screen.queryByText(/menunggu hasil/i)).not.toBeInTheDocument();
   });
 
@@ -206,7 +206,7 @@ describe("CatalogPage", () => {
     expect(screen.queryByText("Laptop Kantor")).not.toBeInTheDocument();
     expect(screen.getByText(/pencarian: manado/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /lelang vickrey/i }));
+    fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
 
     expect(screen.queryByText("Kalung Emas")).not.toBeInTheDocument();
     expect(screen.getByText(/belum ada barang sesuai filter/i)).toBeInTheDocument();

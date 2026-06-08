@@ -37,7 +37,7 @@ export function BuyerShell({
   return (
     <div
       className={cn(
-        "buyer-experience-root min-h-screen bg-white"
+        "app-responsive-shell buyer-experience-root min-h-dvh bg-white"
       )}
     >
       <BuyerTopNav image={summary.image} name={buyer.name} wishlistCount={summary.wishlistCount} />

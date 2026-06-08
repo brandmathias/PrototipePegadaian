@@ -451,7 +451,7 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
   const marketingContext = await getMarketingEditContext(barangId);
 
   if (!canEditMarketedBarang({ status: current.status, ...marketingContext })) {
-    throw new Error("Barang fixed price dapat diedit saat aktif, sedangkan barang lelang hanya dapat diedit setelah gagal karena tanpa peserta atau pemenang tidak membayar dalam 24 jam.");
+    throw new Error("Barang harga tetap dapat diedit saat aktif, sedangkan barang lelang hanya dapat diedit setelah gagal karena tanpa peserta atau pemenang tidak membayar dalam 24 jam.");
   }
 
   const payload = validateAdminBarangPayload(input);
@@ -459,7 +459,7 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
   const marketingPricePayload = shouldUpdateMarketingPrice ? validateFixedPriceMarketingPricePayload(input) : null;
 
   if (marketingPricePayload && marketingContext.activeMarketingMode !== "fixed_price") {
-    throw new Error("Harga pemasaran hanya dapat diperbarui untuk barang fixed price yang masih aktif.");
+    throw new Error("Harga pemasaran hanya dapat diperbarui untuk barang harga tetap yang masih aktif.");
   }
 
   const [updated] = await db

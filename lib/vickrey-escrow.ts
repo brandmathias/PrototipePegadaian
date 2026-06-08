@@ -25,7 +25,7 @@ function getEscrowSecret() {
   }
 
   if (process.env.NODE_ENV === "production") {
-    throw new Error("VICKREY_ESCROW_SECRET wajib diatur untuk membuka escrow Vickrey.");
+    throw new Error("VICKREY_ESCROW_SECRET wajib diatur untuk membuka escrow Lelang Tertutup.");
   }
 
   return "dev-only-vickrey-escrow-secret";

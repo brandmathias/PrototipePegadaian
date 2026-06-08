@@ -41,13 +41,13 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b backdrop-blur print:hidden",
+        "sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] backdrop-blur print:hidden",
         isLuxury
           ? "border-[#eadfcb] bg-white/[0.88] text-[#183f32] shadow-[0_18px_48px_rgba(74,54,24,0.06)]"
           : "border-black/5 bg-white/[0.92]"
       )}
     >
-      <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
+      <div className="container flex min-h-16 items-center justify-between gap-2 py-3 sm:gap-4">
         <div className="flex min-w-0 items-center gap-4 xl:gap-6">
           <Link
             aria-label="Pegadaian Lelang"
@@ -103,7 +103,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
             })}
           </nav>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
           <CatalogSearchInput
             inputClassName={cn(
               "hidden w-72 lg:block xl:w-80",
@@ -120,7 +120,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
               wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"
             }
             className={cn(
-              "interactive-tap relative inline-flex size-11 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12",
+              "interactive-tap relative inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12",
               isLuxury &&
                 "border-[#eadfcb] bg-white/[0.82] text-[#8a661e] shadow-[0_14px_32px_rgba(74,54,24,0.08)] hover:bg-[#fff8ec] hover:text-[#17633f] focus-visible:ring-[#d4af37]/35",
               pathname === "/wishlist" &&

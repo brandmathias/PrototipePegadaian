@@ -10,7 +10,7 @@ export default async function Page() {
   return (
     <AdminVickreyAuctionListPage
       auctions={vickreyAuctions}
-      emptyDescription="Belum ada sesi vickrey auction untuk unit ini."
+      emptyDescription="Belum ada sesi lelang tertutup untuk unit ini."
     />
   );
 }

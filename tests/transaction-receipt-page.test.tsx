@@ -118,7 +118,7 @@ describe("transaction receipt page", () => {
     expect(receipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     expect(receipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receipt!).toHaveTextContent("Lelang");
-    expect(receipt!).not.toHaveTextContent("Vickrey");
+    expect(receipt!).not.toHaveTextContent("Lelang Tertutup");
     expect(receipt!).toHaveTextContent("Langsung di unit");
     expect(receipt!).toHaveTextContent("Pembayaran hasil lelang sudah diverifikasi admin unit");
     expect(receipt!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.");

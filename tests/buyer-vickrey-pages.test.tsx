@@ -78,7 +78,7 @@ const winningBid: BuyerBid = {
   closing: "4 Mei 2026, 22.07",
   bidAmount: 150000000,
   basePrice: 90000000,
-  note: "Anda menang. Harga bayar Vickrey adalah Rp 100.000.000.",
+  note: "Anda memenangkan Lelang Tertutup. Harga akhir mengikuti mekanisme lelang: Rp 100.000.000.",
   linkedTransactionId: "trx-vickrey-1",
   finalPrice: 100000000,
   paymentAmount: 100000000,
@@ -239,10 +239,10 @@ describe("buyer vickrey pages", () => {
     expect(within(dialog).getByText(/status pelanggaran anda saat ini:\s*0x/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 1/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/7 hari/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/tidak bisa ikut vickrey\./i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/tidak bisa ikut lelang tertutup\./i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 2/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/30 hari/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/tidak bisa membuat pembelian fixed price baru/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/tidak bisa membuat pembelian harga tetap baru/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 3\+/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/365 hari/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/review admin/i)).toBeInTheDocument();
@@ -260,7 +260,7 @@ describe("buyer vickrey pages", () => {
   it("shows winner payment context in vickrey bid history", () => {
     render(<BidHistoryPage bids={[winningBid]} buyer={buyer} />);
 
-    expect(screen.getAllByText(/harga bayar vickrey/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/harga akhir lelang/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/status transaksi/i)).toBeInTheDocument();
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lanjutkan pembayaran/i })).toHaveAttribute(
@@ -319,13 +319,13 @@ describe("buyer vickrey pages", () => {
       reference: "-",
       applicationNumber: "PGJ-VIC-TRXVICKR",
       paymentLabel: "Bayar langsung di unit",
-      paymentNotes: ["Anda memenangkan lelang Vickrey dan membayar langsung di unit."],
-      winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+      paymentNotes: ["Anda memenangkan Lelang Tertutup dan membayar langsung di unit."],
+      winnerContext: "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."
     };
 
     render(<TransactionDetailPage buyer={buyer} transaction={transaction} transactionId={transaction.id} />);
 
-    expect(screen.getByText(/harga final vickrey/i)).toBeInTheDocument();
+    expect(screen.getByText(/harga akhir mengikuti mekanisme lelang/i)).toBeInTheDocument();
     expect(screen.getByText(/bukan nominal bid tertinggi anda/i)).toBeInTheDocument();
     expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
@@ -350,8 +350,8 @@ describe("buyer vickrey pages", () => {
       reference: "-",
       applicationNumber: "PGJ-VIC-TRXVICKR",
       paymentLabel: "Bayar langsung di unit",
-      paymentNotes: ["Anda memenangkan lelang Vickrey dan membayar langsung di unit."],
-      winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+      paymentNotes: ["Anda memenangkan Lelang Tertutup dan membayar langsung di unit."],
+      winnerContext: "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."
     };
 
     render(<AuctionWinnerPage transaction={transaction} transactionId={transaction.id} />);
@@ -387,8 +387,8 @@ describe("buyer vickrey pages", () => {
       reference: "-",
       applicationNumber: "PGJ-VIC-TRXVICKR",
       paymentLabel: "Bayar langsung di unit",
-      paymentNotes: ["Anda memenangkan lelang Vickrey dan membayar langsung di unit."],
-      winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+      paymentNotes: ["Anda memenangkan Lelang Tertutup dan membayar langsung di unit."],
+      winnerContext: "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."
     };
 
     const { container } = render(
@@ -431,7 +431,7 @@ describe("buyer vickrey pages", () => {
       {
         ...fixedPriceLot,
         id: "pm-fixed-recommendation",
-        name: "Gelang Fixed Price",
+        name: "Gelang Harga Tetap",
         endsAt: undefined
       },
       {
@@ -467,7 +467,7 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByText("Jam Tangan Rolex Oyster 41")).toBeInTheDocument();
     expect(screen.getAllByText(/sedang berlangsung/i).length).toBeGreaterThan(0);
     expect(screen.queryByText("Cincin Sudah Selesai")).not.toBeInTheDocument();
-    expect(screen.queryByText("Gelang Fixed Price")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gelang Harga Tetap")).not.toBeInTheDocument();
     expect(screen.queryByText(/menunggu hasil/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/penawaran tertinggi anda/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/selisih/i)).not.toBeInTheDocument();

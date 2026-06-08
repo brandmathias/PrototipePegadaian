@@ -58,7 +58,7 @@ function mockNoUpdatedTransaction() {
   };
 }
 
-describe("overdue Vickrey payment settlement", () => {
+describe("overdue Lelang Tertutup payment settlement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));

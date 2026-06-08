@@ -45,7 +45,7 @@ const transaction: BuyerTransaction = {
 };
 
 describe("buyer transaction detail page", () => {
-  it("renders the fixed price payment flow as transaction details, destination account, and proof upload", () => {
+  it("renders the harga tetap payment flow as transaction details, destination account, and proof upload", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -102,7 +102,7 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
     expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
-    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!).toHaveTextContent("Harga Tetap");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/kalung-emas.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
@@ -150,7 +150,7 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!).toHaveTextContent("Lelang");
-    expect(receiptPrintRoot!).not.toHaveTextContent("Vickrey");
+    expect(receiptPrintRoot!).not.toHaveTextContent("Lelang Tertutup");
     expect(receiptPrintRoot!).toHaveTextContent("Langsung di unit");
     expect(receiptPrintRoot!).toHaveTextContent("Pembayaran hasil lelang sudah diverifikasi admin unit");
     expect(receiptPrintRoot!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.");

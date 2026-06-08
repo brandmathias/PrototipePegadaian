@@ -71,7 +71,7 @@ export function BidRevealForm({ buyerId, lotId }: BidRevealFormProps) {
 
       toast({
         title: "Bid berhasil dibuka",
-      description: "Nominal kini masuk database dan bisa ikut proses settlement Vickrey.",
+      description: "Nominal kini masuk database dan bisa ikut proses mekanisme lelang.",
         variant: "success",
         scope: "buyer"
       });

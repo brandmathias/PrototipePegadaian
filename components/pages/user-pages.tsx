@@ -163,7 +163,7 @@ const bidStatusMeta: Record<
   MENUNGGU_HASIL: {
     label: "Menunggu Hasil",
     variant: "accent",
-    description: "Bid tertutup menunggu reveal nominal atau settlement hasil."
+    description: "Bid tertutup menunggu reveal nominal atau penentuan hasil."
   },
   MENANG: {
     label: "Menang",
@@ -178,7 +178,7 @@ const bidStatusMeta: Record<
   GAGAL: {
     label: "Pembayaran Gagal",
     variant: "danger",
-    description: "Anda menang, tetapi transaksi pembayaran Vickrey melewati batas waktu."
+    description: "Anda menang, tetapi transaksi pembayaran Lelang Tertutup melewati batas waktu."
   }
 };
 
@@ -250,7 +250,7 @@ function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverte
       {paymentAmount ? (
         <div>
           <p className={cn("text-[10px] font-bold uppercase tracking-[0.18em]", inverted ? "text-white/60" : "text-muted-foreground")}>
-            Harga bayar Vickrey
+            Harga akhir lelang
           </p>
           <p className={cn("mt-2 font-semibold", inverted ? "text-white" : "text-primary")}>
             {currency.format(paymentAmount)}
@@ -419,7 +419,7 @@ function getUrgentTransactionRank(transaction: BuyerTransaction) {
 function getUrgentDashboardCopy(transaction: BuyerTransaction) {
   if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) {
     return {
-      eyebrow: "Pemenang Vickrey",
+      eyebrow: "Pemenang Lelang Tertutup",
       title: `Anda memenangkan lelang ${transaction.title}.`,
       detail: `Bayar ${currency.format(transaction.amount)} sebelum batas waktu berakhir.`,
       tone: "danger" as const
@@ -554,9 +554,9 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
     {
       id: "payment",
       label: "Melakukan Pembayaran",
-      headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Vickrey di Unit" : "Bayar di Loket Unit",
+      headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Lelang Tertutup di Unit" : "Bayar di Loket Unit",
       detail: paymentDetail,
-      meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Vickrey bayar di loket" : "Bayar di loket",
+      meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Lelang Tertutup bayar di loket" : "Bayar di loket",
       icon: Landmark
     },
     {
@@ -584,7 +584,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
       currentStep={currentStep}
       description={
         isVickreyWin
-          ? "Vickrey hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
+          ? "Lelang Tertutup hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
           : isTransfer
             ? transaction.status === "DITOLAK_BUKTI"
               ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
@@ -642,7 +642,7 @@ function getReceiptPaymentMethodLabel(transaction: BuyerTransaction) {
 }
 
 function getReceiptMarketingTypeLabel(transaction: BuyerTransaction) {
-  return transaction.kind === "VICKREY_WIN" ? "Lelang" : "Fixed Price";
+  return transaction.kind === "VICKREY_WIN" ? "Lelang" : "Harga Tetap";
 }
 
 function getReceiptFooterText(transaction: BuyerTransaction) {
@@ -755,11 +755,11 @@ export function UserDashboardPage({
           : "Normal";
   const restrictionRules = summary.blacklist.active
     ? [
-        "Akses lelang Vickrey dibatasi selama masa pembatasan.",
-        ...(restrictionLevel >= 2 ? ["Pembelian Fixed Price baru ikut dibatasi sementara."] : []),
+        "Akses Lelang Tertutup dibatasi selama masa pembatasan.",
+        ...(restrictionLevel >= 2 ? ["Pembelian Harga Tetap baru ikut dibatasi sementara."] : []),
         ...(restrictionLevel >= 3 ? ["Akun perlu peninjauan admin sebelum dipulihkan."] : [])
       ]
-    : ["Akun dapat mengikuti fixed price, Vickrey, transaksi, dan nota sesuai aturan layanan."];
+    : ["Akun dapat mengikuti harga tetap, Lelang Tertutup, transaksi, dan nota sesuai aturan layanan."];
   const importantNotes = [
     {
       icon: Clock3,
@@ -769,7 +769,7 @@ export function UserDashboardPage({
     {
       icon: Gavel,
       title: "Pantau jadwal lelang",
-      detail: "Bid Vickrey tetap tertutup sampai deadline. Hasil dan instruksi pembayaran tampil otomatis setelah sesi selesai."
+      detail: "Bid Lelang Tertutup tetap tertutup sampai deadline. Hasil dan instruksi pembayaran tampil otomatis setelah sesi selesai."
     },
     {
       icon: ShieldCheck,
@@ -1049,7 +1049,7 @@ export function UserDashboardPage({
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Ringkasan hal yang perlu Anda ingat saat mengikuti fixed price, Vickrey, dan pembayaran di Pegadaian Lelang.
+              Ringkasan hal yang perlu Anda ingat saat mengikuti harga tetap, Lelang Tertutup, dan pembayaran di Pegadaian Lelang.
             </p>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1.12fr_0.94fr_0.94fr]">
@@ -1217,7 +1217,7 @@ export function TransactionDetailPage({
               {isProofRejected
                 ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
                 : isFixedPrice
-                ? "Selesaikan pembayaran fixed price, unggah bukti transfer, lalu tunggu admin unit memverifikasi transaksi."
+                ? "Selesaikan pembayaran harga tetap, unggah bukti transfer, lalu tunggu admin unit memverifikasi transaksi."
                 : "Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai."}
             </p>
           </div>
@@ -1238,7 +1238,7 @@ export function TransactionDetailPage({
                 <div className="flex items-center gap-3">
                   <Gavel className="size-5" />
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
-                    Pemenang Vickrey
+                    Pemenang Lelang Tertutup
                   </p>
                 </div>
                 <p className="mt-4 font-headline text-3xl font-black tracking-tight">
@@ -1247,7 +1247,7 @@ export function TransactionDetailPage({
                 <p className="mt-2 text-sm leading-7 text-white/75">Harga yang perlu dibayar</p>
               </div>
               <div className="space-y-3">
-                <CardTitle>Harga final Vickrey</CardTitle>
+                <CardTitle>Harga akhir Lelang Tertutup</CardTitle>
                 <p className="text-sm leading-7 text-muted-foreground">
                   Jumlah pembayaran ini bukan nominal bid tertinggi Anda. Sistem memakai penawaran
                   tertinggi kedua, atau harga dasar jika hanya ada satu penawar.

@@ -106,9 +106,29 @@ function getToastClasses(variant: ToastVariant) {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([]);
   const [notifications, setNotifications] = React.useState<ToastNotification[]>([]);
+  const dismissTimersRef = React.useRef(new Map<string, number>());
+
+  const clearDismissTimer = React.useCallback((id: string) => {
+    const timerId = dismissTimersRef.current.get(id);
+
+    if (timerId === undefined) {
+      return;
+    }
+
+    window.clearTimeout(timerId);
+    dismissTimersRef.current.delete(id);
+  }, []);
 
   const dismiss = React.useCallback((id: string) => {
+    clearDismissTimer(id);
     setToasts((current) => current.filter((toast) => toast.id !== id));
+  }, [clearDismissTimer]);
+
+  React.useEffect(() => {
+    return () => {
+      dismissTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      dismissTimersRef.current.clear();
+    };
   }, []);
 
   const markAsRead = React.useCallback((id: string) => {
@@ -147,9 +167,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       setNotifications((current) => [{ ...item, read: false }, ...current].slice(0, 12));
     }
 
-    window.setTimeout(() => {
+    const timerId = window.setTimeout(() => {
+      dismissTimersRef.current.delete(id);
       setToasts((current) => current.filter((toastItem) => toastItem.id !== id));
     }, item.duration);
+    dismissTimersRef.current.set(id, timerId);
 
     return id;
   }, []);
@@ -174,7 +196,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed inset-x-0 top-4 z-[200] flex justify-center px-4 sm:justify-end"
+        className="pointer-events-none fixed inset-x-0 top-3 z-[200] flex max-h-[calc(100dvh-1rem)] justify-center overflow-y-auto px-3 pt-[env(safe-area-inset-top)] sm:top-4 sm:justify-end sm:px-4"
       >
         <div className="flex w-full max-w-md flex-col gap-3">
           {toasts.map((item) => {
@@ -199,7 +221,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {classes.chrome ? <div className={cn("pointer-events-none absolute inset-0", classes.chrome)} /> : null}
                 <div className="toast-sheen pointer-events-none absolute inset-0" />
                 <div className={cn("absolute inset-y-0 left-0 w-1.5", classes.accent)} />
-                <div className="flex items-start gap-3 p-4 pl-5">
+                <div className="flex min-w-0 items-start gap-3 p-3 pl-4 sm:p-4 sm:pl-5">
                   <div
                     className={cn(
                       "toast-icon-pop mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
@@ -221,7 +243,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   <button
                     aria-label="Tutup notifikasi"
                     className={cn(
-                      "interactive-tap rounded-full p-1 transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2",
+                      "interactive-tap -mr-1 -mt-1 grid size-10 shrink-0 place-items-center rounded-full p-1 transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 sm:mr-0 sm:mt-0",
                       classes.close
                     )}
                     onClick={() => dismiss(item.id)}

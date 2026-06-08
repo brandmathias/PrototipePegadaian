@@ -41,7 +41,7 @@ const editPayload = {
   description: "Detail diperbarui",
   dueDate: "2026-07-01",
   loanValue: "8000000",
-  name: "Cincin Fixed Price",
+  name: "Cincin Harga Tetap",
   ownerName: "Nasabah Demo",
   pawnedAt: "2026-05-01",
   specifications: {
@@ -159,7 +159,7 @@ describe("listAdminBarang", () => {
     expect(result.media).toEqual(mediaRows);
   });
 
-  it("allows active fixed price barang to be updated through the Drizzle service gate", async () => {
+  it("allows active harga tetap barang to be updated through the Drizzle service gate", async () => {
     const current = {
       id: "barang-fixed",
       unitId: "unit-1",
@@ -168,7 +168,7 @@ describe("listAdminBarang", () => {
     };
     const updated = {
       ...current,
-      name: "Cincin Fixed Price",
+      name: "Cincin Harga Tetap",
       status: "dipasarkan"
     };
     const updateSet = vi.fn().mockReturnValue({
@@ -228,13 +228,13 @@ describe("listAdminBarang", () => {
 
     expect(updateSet).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "Cincin Fixed Price"
+        name: "Cincin Harga Tetap"
       })
     );
-    expect(result.name).toBe("Cincin Fixed Price");
+    expect(result.name).toBe("Cincin Harga Tetap");
   });
 
-  it("updates active fixed price marketing price through the pemasaran table", async () => {
+  it("updates active harga tetap marketing price through the pemasaran table", async () => {
     const current = {
       id: "barang-fixed",
       unitId: "unit-1",
@@ -243,7 +243,7 @@ describe("listAdminBarang", () => {
     };
     const updated = {
       ...current,
-      name: "Cincin Fixed Price",
+      name: "Cincin Harga Tetap",
       status: "dipasarkan"
     };
     const updateBarangSet = vi.fn().mockReturnValue({
@@ -419,7 +419,7 @@ describe("listAdminBarangHistory", () => {
             id: "hist-sold",
             oldStatus: "dipasarkan",
             newStatus: "terjual",
-            note: "Pembayaran fixed price disetujui admin unit.",
+            note: "Pembayaran harga tetap disetujui admin unit.",
             createdAt: new Date("2026-06-03T02:00:00.000Z")
           },
           {
@@ -427,7 +427,7 @@ describe("listAdminBarangHistory", () => {
             id: "hist-failed",
             oldStatus: "dipasarkan",
             newStatus: "gagal",
-            note: "Sesi Vickrey berakhir tanpa penawar.",
+            note: "Sesi Lelang Tertutup berakhir tanpa penawar.",
             createdAt: new Date("2026-06-03T01:00:00.000Z")
           }
         ])

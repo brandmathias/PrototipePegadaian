@@ -30,11 +30,11 @@ function formatUnitMarketingMode(value: string | null | undefined) {
   }
 
   if (value === "vickrey") {
-    return "Vickrey Auction";
+    return "Lelang Tertutup";
   }
 
   if (value === "fixed_price") {
-    return "Fixed Price";
+    return "Harga Tetap";
   }
 
   return value

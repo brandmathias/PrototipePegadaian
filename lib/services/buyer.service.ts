@@ -395,8 +395,8 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
       reason: blacklist
         ? blacklistPolicy.blocksFixedPrice
           ? "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
-          : "Akun masih dibatasi untuk mengikuti lelang Vickrey dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
-        : "Tidak ada pembatasan aktif. Akun dapat mengikuti fixed price dan lelang."
+          : "Akun masih dibatasi untuk mengikuti Lelang Tertutup dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
+        : "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
     },
     metrics: [
       {
@@ -416,7 +416,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
     ],
     highlights: [
       "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat.",
-      "Bid Vickrey tersimpan tertutup dan hanya diproses setelah sesi berakhir.",
+      "Bid Lelang Tertutup tersimpan tertutup dan hanya diproses setelah sesi berakhir.",
       "Pembatasan akun berlaku bertingkat sesuai jumlah pelanggaran pembayaran."
     ]
   };
@@ -448,7 +448,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   ensureActiveMarketing(row);
 
   if (row.marketing.mode !== "fixed_price") {
-    throw new Error("Barang ini bukan transaksi fixed price.");
+    throw new Error("Barang ini bukan transaksi harga tetap.");
   }
 
   const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
@@ -481,12 +481,12 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
 
   if (blacklist && blacklistPolicy.blocksFixedPrice) {
-    throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi fixed price baru.");
+    throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi harga tetap baru.");
   }
 
   const amount = Number(row.marketing.price ?? 0);
   if (amount <= 0) {
-    throw new Error("Harga fixed price belum valid.");
+    throw new Error("Harga harga tetap belum valid.");
   }
 
   if (!row.account?.accountNumber) {
@@ -527,7 +527,7 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
   ensureActiveMarketing(row);
 
   if (row.marketing.mode !== "vickrey") {
-    throw new Error("Barang ini bukan sesi lelang Vickrey.");
+    throw new Error("Barang ini bukan sesi Lelang Tertutup.");
   }
 
   if (row.marketing.endsAt && row.marketing.endsAt.getTime() <= Date.now()) {
@@ -539,8 +539,8 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     const restriction = getBlacklistRestrictionPolicy(blacklist.totalViolations);
     throw new Error(
       restriction.requiresManualReview
-        ? "Akun Anda sedang dalam pembatasan level 3 dan perlu review admin sebelum ikut lelang Vickrey."
-        : "Akun Anda sedang dibatasi untuk mengikuti lelang Vickrey."
+        ? "Akun Anda sedang dalam pembatasan level 3 dan perlu review admin sebelum ikut Lelang Tertutup."
+        : "Akun Anda sedang dibatasi untuk mengikuti Lelang Tertutup."
     );
   }
 

@@ -274,7 +274,7 @@ export function AdminUnitForm({
         />
       ) : null}
       <Button
-        className="h-10 rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+        className="min-h-10 w-full justify-center rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
         disabled={loading || units.length === 0}
         type="submit"
         variant={mode === "create" ? "secondary" : "default"}
@@ -351,7 +351,7 @@ export function DeactivateAdminButton({ adminId, adminName, compact = false, dis
     <>
       <Button
         aria-label={compact ? `Hapus admin ${adminName ?? "unit"}` : undefined}
-        className={compact ? "ml-auto size-8 rounded-xl p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-600" : undefined}
+        className={compact ? "ml-auto size-10 rounded-xl p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-600 md:size-8" : undefined}
         disabled={disabled || loading}
         onClick={() => setOpen(true)}
         type="button"

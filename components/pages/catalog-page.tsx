@@ -73,7 +73,7 @@ const modeCopy: Record<Exclude<SaleMode, "all">, { label: string; icon: ReactNod
     tone: "bg-[#d99900] text-white"
   },
   vickrey: {
-    label: "Lelang Vickrey",
+    label: "Lelang Tertutup",
     icon: <Gavel className="size-3.5" />,
     tone: "bg-[#006b42] text-white"
   }
@@ -1000,7 +1000,7 @@ export function CatalogPage({
             <HeroInfoCard
               icon={<Gavel className="size-7" />}
               items={["Penawaran tertutup (sealed-bid)", "Pemenang dengan harga terbaik", "Aturan jelas & transparan", "Peluang menang lebih besar"]}
-              title="Lelang Vickrey"
+              title="Lelang Tertutup"
               tone="gold"
             />
           </div>
@@ -1043,7 +1043,7 @@ export function CatalogPage({
                     active={mode === "vickrey"}
                     count={modeCounts.vickrey}
                     icon={<Gavel className="size-3.5" />}
-                    label="Lelang Vickrey"
+                    label="Lelang Tertutup"
                     onClick={() => setMode("vickrey")}
                   />
                 </div>

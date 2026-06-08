@@ -49,8 +49,8 @@ function serializeBlacklist(row: {
     blocksTransactionSettlement: policy.blocksTransactionSettlement,
     requiresManualReview: policy.requiresManualReview,
     activeAuctionRestriction: isCurrentlyActive
-      ? "User tidak dapat mengikuti lelang Vickrey selama masa blokir aktif."
-      : "Pembatasan lelang Vickrey sudah tidak aktif.",
+      ? "User tidak dapat mengikuti Lelang Tertutup selama masa blokir aktif."
+      : "Pembatasan Lelang Tertutup sudah tidak aktif.",
     unit: row.blacklist.unitId ?? "-",
   };
 }

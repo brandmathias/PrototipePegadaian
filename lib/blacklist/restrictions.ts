@@ -38,7 +38,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       blocksFixedPrice: false,
       blocksTransactionSettlement: true,
       requiresManualReview: false,
-      label: "Level 1: Vickrey dibatasi"
+      label: "Level 1: Lelang Tertutup dibatasi"
     };
   }
 

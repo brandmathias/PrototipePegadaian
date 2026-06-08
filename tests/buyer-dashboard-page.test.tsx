@@ -45,7 +45,7 @@ const summary = {
   },
   highlights: [
     "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat.",
-    "Bid Vickrey tersimpan tertutup.",
+    "Bid Lelang Tertutup tersimpan tertutup.",
     "Pembatasan akun berlaku bertingkat."
   ],
   metrics: [
@@ -112,7 +112,7 @@ const winningAuctionTransaction: BuyerTransaction = {
   applicationNumber: "PGJ-VIC-MOTOR",
   paymentLabel: "Bayar langsung di unit",
   paymentNotes: ["Datang ke unit untuk menyelesaikan pembayaran pemenang lelang."],
-  winnerContext: "Pemenang Vickrey membayar harga final yang dihitung sistem."
+  winnerContext: "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."
 };
 
 describe("buyer dashboard page", () => {
@@ -147,7 +147,7 @@ describe("buyer dashboard page", () => {
     expect(screen.queryByText(/nota tersedia:/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /transaksi aktif/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: /lelang vickrey yang diikuti/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /lelang tertutup yang diikuti/i })).not.toBeInTheDocument();
   });
 
   it("hides the urgent banner and shows a calm empty state when nothing requires action", () => {
@@ -173,7 +173,7 @@ describe("buyer dashboard page", () => {
     expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
   });
 
-  it("does not treat rejected fixed price proof as an urgent payment action", () => {
+  it("does not treat rejected harga tetap proof as an urgent payment action", () => {
     render(
       <UserDashboardPage
         buyer={buyer}
@@ -191,7 +191,7 @@ describe("buyer dashboard page", () => {
     expect(screen.getByText(/belum ada aktivitas yang perlu ditindaklanjuti/i)).toBeInTheDocument();
   });
 
-  it("opens active Vickrey winners from the dashboard into the winner announcement page first", () => {
+  it("opens active Lelang Tertutup winners from the dashboard into the winner announcement page first", () => {
     render(
       <UserDashboardPage
         buyer={buyer}
@@ -203,7 +203,7 @@ describe("buyer dashboard page", () => {
       />
     );
 
-    expect(screen.getByText(/pemenang vickrey/i)).toBeInTheDocument();
+    expect(screen.getByText(/pemenang lelang tertutup/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
       "href",
       "/transaksi/trx-vickrey-1/pemenang"

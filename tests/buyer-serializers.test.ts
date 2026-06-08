@@ -113,7 +113,7 @@ describe("buyer serializers", () => {
     expect(transaction.deadlineAt).toBeUndefined();
   });
 
-  it("exposes rejected proof reason as canceled fixed price content", () => {
+  it("exposes rejected proof reason as canceled harga tetap content", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-rejected",
       pemasaranId: "pm-fixed",
@@ -196,7 +196,7 @@ describe("buyer serializers", () => {
     expect(bid.paymentAmount).toBe(100000000);
     expect(bid.transactionStatus).toBe("MENUNGGU_PEMBAYARAN");
     expect(bid.paymentDeadlineAt).toBe("2026-05-05T14:07:00.000Z");
-    expect(bid.note).toMatch(/harga bayar vickrey/i);
+    expect(bid.note).toMatch(/harga akhir mengikuti mekanisme lelang/i);
   });
 
   it("keeps unrevealed vickrey bid nominal hidden in buyer history", () => {
@@ -303,6 +303,6 @@ describe("buyer serializers", () => {
     } as any);
 
     expect(bid.status).toBe("GAGAL");
-    expect(bid.note).toMatch(/pembayaran vickrey gagal/i);
+    expect(bid.note).toMatch(/pembayaran lelang tertutup gagal/i);
   });
 });

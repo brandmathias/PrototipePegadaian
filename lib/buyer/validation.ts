@@ -55,7 +55,7 @@ export function validateBuyerPurchasePayload(input: unknown): BuyerPurchasePaylo
   }
 
   if (!fileName) {
-    throw new Error("Bukti pembayaran wajib diunggah saat membeli fixed price.");
+    throw new Error("Bukti pembayaran wajib diunggah saat membeli harga tetap.");
   }
 
   if (!/\.(jpg|jpeg|png|pdf)$/i.test(fileName)) {

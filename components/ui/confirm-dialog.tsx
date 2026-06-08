@@ -60,7 +60,7 @@ export function ConfirmDialog({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:py-6">
       <button
         aria-label="Tutup dialog"
         className="absolute inset-0 bg-[#052315]/35 backdrop-blur-[3px]"
@@ -71,11 +71,11 @@ export function ConfirmDialog({
         aria-describedby={descriptionId}
         aria-labelledby={titleId}
         aria-modal="true"
-        className="toast-enter relative z-[121] w-full max-w-md overflow-hidden rounded-[1.75rem] border border-border/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
+        className="toast-enter modal-viewport relative z-[121] my-auto w-full max-w-md rounded-[1.45rem] border border-border/70 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)] sm:rounded-[1.75rem]"
         role="dialog"
       >
         <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/75 to-accent" />
-        <div className="flex items-start justify-between gap-4 p-6 pb-0">
+        <div className="flex items-start justify-between gap-3 p-4 pb-0 sm:gap-4 sm:p-6 sm:pb-0">
           <div className="flex items-start gap-3">
             <div
               className={cn(
@@ -98,15 +98,16 @@ export function ConfirmDialog({
           </div>
           <button
             aria-label="Tutup dialog"
-            className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-surface-low hover:text-foreground"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-surface-low hover:text-foreground"
             onClick={() => onOpenChange(false)}
             type="button"
           >
             <X className="size-4" />
           </button>
         </div>
-        <div className="flex flex-wrap justify-end gap-3 p-6">
+        <div className="flex flex-col-reverse gap-3 p-6 sm:flex-row sm:flex-wrap sm:justify-end">
           <Button
+            className="w-full sm:w-auto"
             disabled={loading}
             onClick={onCancel ?? (() => onOpenChange(false))}
             type="button"
@@ -115,6 +116,7 @@ export function ConfirmDialog({
             {cancelLabel}
           </Button>
           <Button
+            className="w-full sm:w-auto"
             disabled={loading}
             onClick={onConfirm}
             type="button"

@@ -174,8 +174,8 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     changedByUserId: adminId,
     note:
       row.transaction.type === "vickrey"
-        ? "Pemenang lelang Vickrey menyelesaikan pembayaran dalam batas waktu 24 jam dan diverifikasi admin unit."
-        : "Pembayaran fixed price disetujui admin unit sehingga barang tercatat terjual."
+        ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dalam batas waktu 24 jam dan diverifikasi admin unit."
+        : "Pembayaran harga tetap disetujui admin unit sehingga barang tercatat terjual."
   });
   await notifyPaymentVerified({
     userId: updated.userId,
@@ -230,7 +230,7 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
       oldStatus: row.item.status,
       newStatus: "gagal",
       changedByUserId: null,
-      note: `Verifikasi bukti pembayaran fixed price ditolak admin unit. Alasan: ${payload.reason}.`
+      note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${payload.reason}.`
     });
   }
 

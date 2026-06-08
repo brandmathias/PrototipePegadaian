@@ -26,7 +26,7 @@ const transactions = [
     deadline: "5 Mei 2026 11.00",
     deadlineAt: "2026-05-05T03:00:00.000Z",
     proofFile: "/uploads/bukti-kalung.jpg",
-    pemasaranMode: "Fixed Price",
+    pemasaranMode: "Harga Tetap",
     buyerEmail: "raras@example.com",
     buyerPhone: "+62 812 1111 2222",
     buyerNationalId: "7171010101010001",
@@ -45,7 +45,7 @@ const transactions = [
     deadline: "2 Mei 2026 16.00",
     deadlineAt: "2026-05-02T08:00:00.000Z",
     proofFile: "",
-    pemasaranMode: "Fixed Price",
+    pemasaranMode: "Harga Tetap",
     buyerEmail: "sinta@example.com",
     buyerPhone: "+62 812 3333 4444",
     buyerNationalId: "7171010101010002",
@@ -67,7 +67,7 @@ const transactions = [
     deadline: "4 Mei 2026 22.07",
     deadlineAt: null,
     proofFile: "/uploads/bukti-selesai.jpg",
-    pemasaranMode: "Fixed Price",
+    pemasaranMode: "Harga Tetap",
     buyerEmail: "raras.maheswari@example.com",
     buyerPhone: "081200009999",
     buyerNationalId: "7371000000000001",
@@ -86,7 +86,7 @@ const transactions = [
     deadline: "5 Mei 2026 14.00",
     deadlineAt: "2026-05-05T06:00:00.000Z",
     proofFile: "",
-    pemasaranMode: "Fixed Price",
+    pemasaranMode: "Harga Tetap",
     buyerEmail: "arta@example.com",
     buyerPhone: "+62 812 5555 6666",
     buyerNationalId: "7171010101010003",
@@ -105,7 +105,7 @@ const transactions = [
     deadline: "6 Mei 2026 10.00",
     deadlineAt: "2026-05-06T02:00:00.000Z",
     proofFile: "",
-    pemasaranMode: "Fixed Price",
+    pemasaranMode: "Harga Tetap",
     buyerEmail: "dian@example.com",
     buyerPhone: "+62 812 7777 8888",
     buyerNationalId: "7171010101010004",
@@ -145,7 +145,7 @@ describe("admin transaction pages", () => {
     expect(screen.queryByText(/raras@example.com/i)).not.toBeInTheDocument();
   });
 
-  it("filters fixed price verification records by payment status", async () => {
+  it("filters harga tetap verification records by payment status", async () => {
     const user = userEvent.setup();
     render(<AdminTransactionVerificationPage transactions={transactions} />);
 
@@ -201,7 +201,7 @@ describe("admin transaction pages", () => {
     );
   });
 
-  it("prints the fixed price receipt inline without opening a dedicated receipt tab", async () => {
+  it("prints the harga tetap receipt inline without opening a dedicated receipt tab", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     render(
@@ -221,7 +221,7 @@ describe("admin transaction pages", () => {
     expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
     expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
-    expect(receiptPrintRoot!).toHaveTextContent("Fixed Price");
+    expect(receiptPrintRoot!).toHaveTextContent("Harga Tetap");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-emas.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
 

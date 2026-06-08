@@ -28,7 +28,7 @@ async function readPurchasePayload(request: Request) {
   const reference = typeof referenceValue === "string" ? referenceValue.trim() : "";
 
   if (!(file instanceof File) || file.size === 0) {
-    throw new Error("Bukti pembayaran wajib diunggah saat membeli fixed price.");
+    throw new Error("Bukti pembayaran wajib diunggah saat membeli harga tetap.");
   }
 
   if (file.size > MAX_PROOF_SIZE) {

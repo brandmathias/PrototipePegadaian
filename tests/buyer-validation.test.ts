@@ -9,7 +9,7 @@ import {
 } from "@/lib/buyer/validation";
 
 describe("buyer validation", () => {
-  it("accepts fixed price transfer payment only when proof metadata is present", () => {
+  it("accepts harga tetap transfer payment only when proof metadata is present", () => {
     expect(
       validateBuyerPurchasePayload({
         paymentMethod: "transfer",
@@ -23,9 +23,9 @@ describe("buyer validation", () => {
     });
   });
 
-  it("rejects fixed price purchase without payment proof", () => {
+  it("rejects harga tetap purchase without payment proof", () => {
     expect(() => validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toThrow(
-      "Bukti pembayaran wajib diunggah saat membeli fixed price."
+      "Bukti pembayaran wajib diunggah saat membeli harga tetap."
     );
   });
 

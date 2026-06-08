@@ -20,7 +20,7 @@ export async function notifyVickreyWinner(
   return createNotificationOnce({
     userId: input.userId,
     title: `Anda memenangkan lelang ${input.lotName}`,
-    message: `Hasil Vickrey sudah dibuka. Silakan bayar langsung di ${input.unitName} maksimal 24 jam agar transaksi dapat diverifikasi.`,
+    message: `Hasil Lelang Tertutup sudah dibuka. Silakan bayar langsung di ${input.unitName} maksimal 24 jam agar transaksi dapat diverifikasi.`,
     type: "vickrey_win",
     entityType: "transaction",
     entityId: input.transactionId,

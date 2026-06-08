@@ -22,7 +22,7 @@ describe("FixedPriceBuyButton", () => {
     refreshMock.mockReset();
   });
 
-  it("opens the fixed price payment panel without creating a transaction", async () => {
+  it("opens the harga tetap payment panel without creating a transaction", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();

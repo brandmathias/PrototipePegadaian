@@ -103,7 +103,7 @@ describe("WishlistPage", () => {
     expect(screen.getByRole("combobox", { name: /urut/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /semua barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /harga tetap/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /lelang vickrey/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lelang tertutup/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /tampilan grid/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /tampilan daftar/i })).toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: /kategori/i })).not.toBeInTheDocument();

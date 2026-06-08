@@ -8,7 +8,7 @@ import {
 } from "@/lib/blacklist/restrictions";
 
 describe("blacklist restriction policy", () => {
-  it("uses three graduated levels with fixed price blocked from the second violation", () => {
+  it("uses three graduated levels with harga tetap blocked from the second violation", () => {
     expect(getBlacklistRestrictionPolicy(0)).toMatchObject({
       level: 0,
       durationDays: 0,

@@ -320,7 +320,7 @@ export function BlacklistReviewQueue({
   const decisionDialog =
     selectedCase && typeof document !== "undefined"
       ? createPortal(
-          <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto px-4 py-6 print:hidden sm:px-6 lg:py-8">
+          <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] print:hidden sm:px-6 sm:py-6 lg:py-8">
             <button
               aria-label="Tutup panel keputusan"
               className="fixed inset-0 bg-[#07131e]/66 backdrop-blur-[5px]"
@@ -330,7 +330,7 @@ export function BlacklistReviewQueue({
             <section
               aria-labelledby="superadmin-review-decision-title"
               aria-modal="true"
-              className="relative z-[151] mx-auto flex max-h-[calc(100dvh-2.5rem)] w-full max-w-[72rem] flex-col overflow-visible pt-8 sm:pt-9"
+              className="relative z-[151] mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[72rem] flex-col overflow-visible pt-8 sm:max-h-[calc(100dvh-2.5rem)] sm:pt-9"
               role="dialog"
             >
               <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
@@ -349,7 +349,7 @@ export function BlacklistReviewQueue({
                 <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
                   <button
                     aria-label="Tutup"
-                    className="absolute right-5 top-5 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7"
+                    className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7 sm:size-9"
                     onClick={closeDecisionDialog}
                     type="button"
                   >
@@ -372,7 +372,7 @@ export function BlacklistReviewQueue({
                   </div>
                 </div>
 
-                <div className="scrollbar-none min-h-0 overflow-y-auto px-5 py-5 sm:px-7">
+                <div className="scrollbar-none min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-5">
                   <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
                     <div className="space-y-4">
                       <section className="overflow-hidden rounded-[1.05rem] border border-[#cce6da] bg-white shadow-[0_22px_54px_-44px_rgba(8,69,50,0.38)]">
@@ -563,7 +563,7 @@ export function BlacklistReviewQueue({
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <Button
-                      className="h-12 rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8]"
+                      className="min-h-12 w-full rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8] sm:w-auto"
                       disabled={isPending}
                       onClick={closeDecisionDialog}
                       type="button"
@@ -572,7 +572,7 @@ export function BlacklistReviewQueue({
                       Kembali
                     </Button>
                     <Button
-                      className="h-12 rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+                      className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] sm:w-auto"
                       disabled={isPending}
                       type="submit"
                     >

@@ -124,7 +124,7 @@ describe("buyer auction state refresh", () => {
     });
   });
 
-  it("settles expired Vickrey sessions and overdue winner payments before listing buyer transactions", async () => {
+  it("settles expired Lelang Tertutup sessions and overdue winner payments before listing buyer transactions", async () => {
     mocks.db.select.mockImplementationOnce(() =>
       mockBuyerTransactionRows([
         {
@@ -153,7 +153,7 @@ describe("buyer auction state refresh", () => {
     ]);
   });
 
-  it("omits legacy fixed price waiting-payment rows that do not have payment proof", async () => {
+  it("omits legacy harga tetap waiting-payment rows that do not have payment proof", async () => {
     mocks.db.select.mockImplementationOnce(() =>
       mockBuyerTransactionRows([
         {
@@ -181,7 +181,7 @@ describe("buyer auction state refresh", () => {
     ]);
   });
 
-  it("refreshes overdue Vickrey payments before reading the buyer blacklist summary", async () => {
+  it("refreshes overdue Lelang Tertutup payments before reading the buyer blacklist summary", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockLimitRows([]))
       .mockImplementationOnce(() =>

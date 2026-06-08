@@ -137,7 +137,7 @@ export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
     }
 
     // Tie-breaker policy: equal bid amounts are won by the earliest submitted bid.
-    // The later equal bid remains runner-up, so the Vickrey final price equals the tied amount.
+    // The later equal bid remains runner-up, so the Lelang Tertutup final price equals the tied amount.
     const leftTime = left.createdAt?.getTime() ?? 0;
     const rightTime = right.createdAt?.getTime() ?? 0;
     if (leftTime !== rightTime) {
@@ -336,7 +336,7 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           barangId: session.item.id,
           oldStatus: session.item.status,
           newStatus: "gagal",
-          note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal."
+          note: "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
         });
 
         return "gagal" as const;
@@ -428,7 +428,7 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
         barangId: session.item.id,
         oldStatus: session.item.status,
         newStatus: "menunggu_pembayaran",
-        note: "Sesi Vickrey selesai dan sistem membuat transaksi bayar langsung untuk pemenang."
+        note: "Sesi Lelang Tertutup selesai dan sistem membuat transaksi bayar langsung untuk pemenang."
       });
 
       return "selesai" as const;
@@ -570,7 +570,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         barangId: row.item.id,
         oldStatus: row.item.status,
         newStatus: "gagal",
-        note: "Pemenang Vickrey tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
+        note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
       });
 
       const violationId = randomUUID();
@@ -664,7 +664,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         performedByUserId: null,
         note: shouldSuspendLogin
           ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3 dan membutuhkan review manual.`
-          : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil lelang Vickrey.`
+          : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil Lelang Tertutup.`
       });
     });
 

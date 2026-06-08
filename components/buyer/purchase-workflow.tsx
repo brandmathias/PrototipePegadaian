@@ -32,7 +32,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const { toast } = useToast();
   const [status, setStatus] = useState<PurchaseStatus>("idle");
   const [message, setMessage] = useState(
-    "Transaksi fixed price dibuat setelah bukti transfer dikirim dari halaman ini."
+    "Transaksi harga tetap dibuat setelah bukti transfer dikirim dari halaman ini."
   );
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [reference, setReference] = useState("");
@@ -146,7 +146,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             Detail Pembayaran
           </p>
           <h2 className="font-headline text-3xl font-black tracking-tight text-[#13211c] md:text-4xl">
-            Konfirmasi pembayaran fixed price
+            Konfirmasi pembayaran harga tetap
           </h2>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground">
             Transfer sesuai total harga ke rekening tujuan unit, lalu unggah bukti dari halaman ini.
@@ -245,7 +245,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                     setMessage(
                       nextFile
                         ? `Bukti ${nextFile.name} siap dikirim untuk verifikasi admin unit.`
-                        : "Transaksi fixed price dibuat setelah bukti transfer dikirim dari halaman ini."
+                        : "Transaksi harga tetap dibuat setelah bukti transfer dikirim dari halaman ini."
                     );
                   }}
                   type="file"

@@ -157,7 +157,7 @@ export const publicLots: Lot[] = [
     condition: "Baik",
     status: "Tersedia",
     description:
-      "Logam mulia dengan sertifikat asli dan permukaan mulus. Ditampilkan sebagai produk fixed price paling cepat bergerak.",
+      "Logam mulia dengan sertifikat asli dan permukaan mulus. Ditampilkan sebagai produk harga tetap paling cepat bergerak.",
     specs: [
       { label: "Berat", value: "10 gram" },
       { label: "Produsen", value: "Antam" },
@@ -182,7 +182,7 @@ export const publicLots: Lot[] = [
     }).label,
     endsAt: demoAuctionEndsAt.headphone.toISOString(),
     description:
-      "Perangkat audio kondisi prima dengan paket lengkap. Digunakan sebagai contoh lot Vickrey yang mendekati deadline.",
+      "Perangkat audio kondisi prima dengan paket lengkap. Digunakan sebagai contoh lot Lelang Tertutup yang mendekati deadline.",
     specs: [
       { label: "Baterai", value: "32 jam" },
       { label: "Warna", value: "Midnight Black" },
@@ -294,7 +294,7 @@ export const userSummary = {
     active: false,
     violations: 0,
     until: "-",
-    reason: "Tidak ada pembatasan aktif. Akun dapat mengikuti fixed price dan lelang."
+    reason: "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
   },
   metrics: [
     { label: "Transaksi aktif", value: "4", accent: "primary" },
@@ -304,7 +304,7 @@ export const userSummary = {
   ],
   highlights: [
     "Unggah bukti transfer maksimal 24 jam setelah transaksi dibuat.",
-    "Pemenang Vickrey membayar harga penawar tertinggi kedua atau harga dasar bila hanya ada satu penawar.",
+    "Pemenang Lelang Tertutup membayar harga penawar tertinggi kedua atau harga dasar bila hanya ada satu penawar.",
     "Keterlambatan pembayaran lelang dapat berujung pada blacklist otomatis."
   ]
 };
@@ -408,7 +408,7 @@ export const userTransactions: BuyerTransaction[] = [
     deadlineAt: demoPaymentDeadlines.trx0033.toISOString(),
     reference: "VIC-2026-0033",
     applicationNumber: "PGJ-VIC-2026-0033",
-    paymentLabel: "Pemenang lelang Vickrey",
+    paymentLabel: "Pemenang Lelang Tertutup",
     paymentNotes: [
       "Anda memenangkan lelang tertutup dan wajib menyelesaikan pembayaran dalam 24 jam.",
       "Nominal yang dibayar mengikuti harga penawar tertinggi kedua sesuai PRD.",
@@ -418,7 +418,7 @@ export const userTransactions: BuyerTransaction[] = [
     bankAccountNumber: "9880-2211-6633",
     bankAccountHolder: "PT Pegadaian (Persero) UPC Malioboro",
     bankBranch: "Cabang Yogyakarta",
-    winnerContext: "Pemenang Vickrey membayar harga penawar tertinggi kedua."
+    winnerContext: "Pemenang Lelang Tertutup membayar harga penawar tertinggi kedua."
   },
   {
     id: "TRX-2026-0027",
@@ -436,7 +436,7 @@ export const userTransactions: BuyerTransaction[] = [
     applicationNumber: "PGJ-FP-2026-0027",
     paymentLabel: "Pembayaran selesai dan diverifikasi",
     paymentNotes: [
-      "Transaksi fixed price telah diverifikasi admin unit.",
+      "Transaksi harga tetap telah diverifikasi admin unit.",
       "Nota digital siap diunduh sebagai bukti penyelesaian transaksi."
     ],
     bankName: "Mandiri",
@@ -608,7 +608,7 @@ export const adminInventory: Array<{
     dueDate: "30 Maret 2026",
     ownerName: "Nina Paramitha",
     customerNumber: "NAS-559204",
-    description: "Perhiasan unggulan dengan dokumentasi foto lengkap. Menunggu keputusan admin untuk dipasarkan sebagai fixed price atau Vickrey.",
+    description: "Perhiasan unggulan dengan dokumentasi foto lengkap. Menunggu keputusan admin untuk dipasarkan sebagai harga tetap atau Lelang Tertutup.",
     mediaSummary: "5 foto, 0 video",
     nextAction: "Pilih mode pemasaran dan konfigurasi harga atau durasi lelang."
   },
@@ -628,7 +628,7 @@ export const adminInventory: Array<{
     dueDate: "25 Maret 2026",
     ownerName: "Lestari Wijaya",
     customerNumber: "NAS-990017",
-    description: "Barang sedang dipasarkan dengan mode Vickrey Auction dan countdown aktif di katalog publik.",
+    description: "Barang sedang dipasarkan dengan mode Lelang Tertutup dan countdown aktif di katalog publik.",
     marketingMode: "VICKREY_AUCTION",
     marketingIteration: 1,
     mediaSummary: "5 foto, 1 video",
@@ -650,11 +650,11 @@ export const adminInventory: Array<{
     dueDate: "27 Maret 2026",
     ownerName: "Rika Febriani",
     customerNumber: "NAS-111204",
-    description: "Barang fixed price aktif di katalog publik dan menunggu penyelesaian transaksi pembeli.",
+    description: "Barang harga tetap aktif di katalog publik dan menunggu penyelesaian transaksi pembeli.",
     marketingMode: "FIXED_PRICE",
     marketingIteration: 1,
     mediaSummary: "4 foto, 0 video",
-    nextAction: "Pantau transaksi fixed price dan verifikasi pembayaran yang masuk."
+    nextAction: "Pantau transaksi harga tetap dan verifikasi pembayaran yang masuk."
   },
   {
     id: "lot-107",
@@ -906,7 +906,7 @@ export const adminAuctions: Array<{
     visibility: "HASIL_DIBUKA",
     finalPrice: 28400000,
     winner: "Rifki Nugroho",
-    note: "Deadline telah berakhir. Sistem sudah membuka hasil Vickrey dan membuat transaksi pemenang."
+    note: "Deadline telah berakhir. Sistem sudah membuka hasil Lelang Tertutup dan membuat transaksi pemenang."
   },
   {
     id: "AUC-MND-011",
@@ -942,7 +942,7 @@ export const adminBlacklist: Array<{
     status: "AKTIF",
     reason: "Tidak menyelesaikan pembayaran lelang dalam batas waktu.",
     lastIncident: "18 April 2026",
-    activeAuctionRestriction: "Tidak dapat ikut lelang Vickrey sampai masa blokir selesai.",
+    activeAuctionRestriction: "Tidak dapat ikut Lelang Tertutup sampai masa blokir selesai.",
     history: [
       {
         date: "18 April 2026",
@@ -950,7 +950,7 @@ export const adminBlacklist: Array<{
         actionLabel: "Blokir otomatis",
         actorLabel: "Sistem otomatis",
         actorType: "system",
-        note: "Pemenang Vickrey tidak membayar dalam 24 jam."
+        note: "Pemenang Lelang Tertutup tidak membayar dalam 24 jam."
       }
     ]
   },
@@ -963,7 +963,7 @@ export const adminBlacklist: Array<{
     status: "AKTIF",
     reason: "Mengulang pelanggaran pada dua sesi lelang berturut-turut.",
     lastIncident: "20 April 2026",
-    activeAuctionRestriction: "Level 2: tidak bisa submit bid Vickrey atau membuat transaksi fixed price baru.",
+    activeAuctionRestriction: "Level 2: tidak bisa submit bid Lelang Tertutup atau membuat transaksi harga tetap baru.",
     history: [
       {
         date: "15 Maret 2026",
@@ -1027,7 +1027,7 @@ export const superAdminSummary = {
   metrics: [
     { label: "Total Unit", value: "142", detail: "137 aktif, 5 perlu perhatian" },
     { label: "Admin Aktif", value: "428", detail: "12 akun baru minggu ini" },
-    { label: "Barang Dipasarkan", value: "24.591", detail: "Lintas fixed price & Vickrey" },
+    { label: "Barang Dipasarkan", value: "24.591", detail: "Lintas harga tetap & Lelang Tertutup" },
     { label: "Transaksi Pending", value: "318", detail: "Butuh tindak lanjut unit" },
     { label: "Blacklist Aktif", value: "87", detail: "11 perlu review lebih awal" }
   ],
@@ -1263,7 +1263,7 @@ export const superAdminBlacklist = [
     unit: "Pegadaian UPC Panakkukang",
     total: 3,
     until: "30 Juni 2026",
-    reason: "Pelanggaran berulang pada pembayaran hasil lelang Vickrey.",
+    reason: "Pelanggaran berulang pada pembayaran hasil Lelang Tertutup.",
     ktpMasked: "7371********2204",
     status: "Aktif"
   }

@@ -460,13 +460,13 @@ export function BlacklistHelpCaseForm({
             <div
               aria-labelledby={previewTitleId}
               aria-modal="true"
-              className="fixed inset-0 z-[140] flex items-center justify-center bg-[#081b14]/72 p-4 backdrop-blur-md sm:p-6"
+              className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
               onClick={() => setIsPreviewOpen(false)}
               role="dialog"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
               <div
-                className="relative z-[141] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+                className="modal-viewport relative z-[141] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
                 onClick={(event) => event.stopPropagation()}
               >
                 <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
@@ -497,17 +497,17 @@ export function BlacklistHelpCaseForm({
                       {isImageFile ? (
                         <img
                           alt="Preview penuh bukti pendukung"
-                          className="max-h-[78dvh] w-full object-contain bg-[#f8f8f5]"
+                          className="media-preview-frame w-full object-contain bg-[#f8f8f5]"
                           src={filePreviewUrl ?? undefined}
                         />
                       ) : isPdfFile ? (
                         <iframe
-                          className="h-[78dvh] w-full bg-white"
+                          className="media-preview-frame-fixed w-full bg-white"
                           src={`${filePreviewUrl}#toolbar=1&navpanes=0`}
                           title="Preview penuh PDF bukti pendukung"
                         />
                       ) : (
-                        <div className="flex h-[70dvh] items-center justify-center bg-[#f8f8f5]">
+                        <div className="media-preview-frame-fixed flex items-center justify-center bg-[#f8f8f5]">
                           <div className="flex items-center gap-3 rounded-[1.15rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_40px_-30px_rgba(8,69,50,0.28)]">
                             <span className="grid size-12 place-items-center rounded-[1rem] bg-[#f1f3ee] text-primary">
                               <FileText className="size-5" />

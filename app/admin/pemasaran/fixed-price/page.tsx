@@ -10,7 +10,7 @@ export default async function Page() {
   return (
     <AdminFixedPriceListPage
       auctions={fixedPriceAuctions}
-      emptyDescription="Belum ada sesi fixed price untuk unit ini."
+      emptyDescription="Belum ada sesi harga tetap untuk unit ini."
     />
   );
 }

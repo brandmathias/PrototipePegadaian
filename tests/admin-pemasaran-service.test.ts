@@ -128,7 +128,7 @@ describe("publishAdminBarang", () => {
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("allows a failed vickrey lot without bidders to be republished as fixed price", async () => {
+  it("allows a failed vickrey lot without bidders to be republished as harga tetap", async () => {
     const item = {
       id: "barang-failed",
       unitId: "unit-1",

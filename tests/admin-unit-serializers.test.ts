@@ -39,7 +39,7 @@ describe("admin unit serializers", () => {
     expect(item.specifications).toEqual({ berat: "3 gram" });
   });
 
-  it("returns fixed price marketing data without auction-only fields", () => {
+  it("returns harga tetap marketing data without auction-only fields", () => {
     const row: any = {
       id: "pm-fixed",
       barangId: "barang-1",

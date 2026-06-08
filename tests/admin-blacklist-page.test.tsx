@@ -25,7 +25,7 @@ function makeBlacklistEntry(index: number) {
         actorLabel: "Sistem otomatis",
         actorType: "system",
         date: "18 Mei 2026",
-        note: "Pemenang Vickrey tidak membayar dalam 24 jam.",
+        note: "Pemenang Lelang Tertutup tidak membayar dalam 24 jam.",
       },
     ],
     lastIncident: "18 Mei 2026",
@@ -48,7 +48,7 @@ function makeBlacklistEntry(index: number) {
       transactionStatus: "menunggu_pembayaran",
     },
     level: Math.min(index, 3),
-    levelLabel: `Level ${Math.min(index, 3)}: Vickrey dibatasi`,
+    levelLabel: `Level ${Math.min(index, 3)}: Lelang Tertutup dibatasi`,
     name: `Pengguna ${index}`,
     phone: "081234567890",
     reason: "Tidak menyelesaikan pembayaran lelang dalam batas waktu.",
@@ -205,7 +205,7 @@ describe("AdminBlacklistPage", () => {
         /Pemenang lelang tidak menyelesaikan pembayaran dalam 24 jam/i,
       ),
     ).toBeInTheDocument();
-    expect(within(dialog).getByText(/Vickrey Auction/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Barang Lelang Terkait/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/Rp 90.000.000/i)).toBeInTheDocument();
     expect(
       within(dialog).getByRole("img", { name: /foto barang kalung emas/i }),
@@ -240,7 +240,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText("Nilai Taksiran")).toBeInTheDocument();
     expect(screen.getByText("Rp 220.000.000")).toBeInTheDocument();
     expect(screen.getByText(/30 hari/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vickrey Auction/i)).toBeInTheDocument();
+    expect(screen.getByText(/Lelang Tertutup/i)).toBeInTheDocument();
     expect(
       screen.getAllByText(/Pemenang lelang tidak menyelesaikan pembayaran/i)
         .length,
@@ -255,6 +255,6 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText(/7 hari/i)).toBeInTheDocument();
     expect(screen.getAllByText("Kalung Emas 2").length).toBeGreaterThan(0);
     expect(screen.getByText("Rp 85.000.000")).toBeInTheDocument();
-    expect(screen.getAllByText(/Fixed Price/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Harga Tetap/i).length).toBeGreaterThan(0);
   });
 });

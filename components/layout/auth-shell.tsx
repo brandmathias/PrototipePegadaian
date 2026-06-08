@@ -21,29 +21,29 @@ export function AuthShell({ children }: AuthShellProps) {
   const isStandaloneAuthPage = pathname === "/login" || pathname === "/register";
 
   if (isStandaloneAuthPage) {
-    return <div className="min-h-screen overflow-hidden bg-[#04150d]">{children}</div>;
+    return <div className="app-responsive-shell min-h-dvh bg-[#04150d]">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(0,92,52,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(191,146,0,0.14),transparent_28%),linear-gradient(180deg,#fbfaf6_0%,#f3efe4_100%)]">
-      <div className="container flex min-h-screen flex-col py-6 md:py-8">
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+    <div className="app-responsive-shell min-h-dvh bg-[radial-gradient(circle_at_top_left,rgba(0,92,52,0.12),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(191,146,0,0.14),transparent_28%),linear-gradient(180deg,#fbfaf6_0%,#f3efe4_100%)]">
+      <div className="container flex min-h-dvh flex-col py-6 md:py-8">
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <Link
-              className="flex items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
+              className="flex min-w-0 items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
               href="/"
             >
-              <span className="rounded-2xl bg-primary p-2 text-white">
+              <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
                 <Gavel className="size-4" />
               </span>
-              Pegadaian Lelang
+              <span className="hidden truncate sm:inline">Pegadaian Lelang</span>
             </Link>
             <span className="hidden text-sm text-muted-foreground md:block">
               Akses aman untuk pembeli
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               className="hidden items-center gap-2 rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/20 hover:text-primary md:inline-flex"
               href="/"
@@ -74,7 +74,7 @@ export function AuthShell({ children }: AuthShellProps) {
           </div>
         </header>
 
-        <main className="flex flex-1 items-center py-8 md:py-12">
+        <main className="flex min-w-0 flex-1 items-center py-8 md:py-12">
           <div className="grid w-full gap-8 xl:grid-cols-[0.88fr_1.12fr] xl:items-center">
             <section className="hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(145deg,rgba(0,92,52,0.96),rgba(1,55,32,0.98))] p-8 text-white shadow-[0_34px_100px_rgba(0,50,28,0.22)] xl:block">
               <div className="space-y-8">
@@ -93,7 +93,7 @@ export function AuthShell({ children }: AuthShellProps) {
 
                 <div className="grid gap-4">
                   {[
-                    "Jelajahi lot fixed price dan sesi lelang dari berbagai unit Pegadaian.",
+                    "Jelajahi lot harga tetap dan sesi lelang dari berbagai unit Pegadaian.",
                     "Pantau pembayaran, status verifikasi, dan dokumen transaksi di satu akun.",
                     "Pindah antara masuk dan daftar dengan alur yang lebih jelas dan ringan."
                   ].map((item) => (

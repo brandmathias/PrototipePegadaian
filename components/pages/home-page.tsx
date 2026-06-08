@@ -38,7 +38,7 @@ export function HomePage({
               </h1>
               <p className="max-w-2xl text-lg leading-relaxed text-white/75">
                 Mulai dari katalog untuk melihat lot yang tersedia. Setelah masuk, Anda bisa
-                melanjutkan pembelian fixed price, ikut lelang Vickrey, dan memantau transaksi
+                melanjutkan pembelian harga tetap, ikut Lelang Tertutup, dan memantau transaksi
                 dari akun pembeli.
               </p>
             </div>
@@ -147,7 +147,7 @@ export function HomePage({
             {
               title: "2. Pilih beli langsung atau ikut lelang",
               detail:
-                "Setiap lot sudah menjelaskan apakah barang bisa dibeli fixed price atau diikuti lewat bid tertutup."
+                "Setiap lot sudah menjelaskan apakah barang bisa dibeli harga tetap atau diikuti lewat bid tertutup."
             },
             {
               title: "3. Masuk untuk melanjutkan transaksi",
@@ -210,7 +210,7 @@ export function HomePage({
           />
           <StatCard
             label="Mode transaksi"
-            value="Fixed Price & Vickrey"
+            value="Harga Tetap & Lelang Tertutup"
             detail="Guest bisa langsung memahami perbedaan alur beli langsung dan ikut lelang."
             accent="secondary"
           />

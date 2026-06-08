@@ -245,7 +245,7 @@ describe("TransactionsPage", () => {
     expect(screen.getAllByText(/riwayat lelang tersimpan/i).length).toBeGreaterThan(0);
   });
 
-  it("places rejected fixed price proof transactions in Dibatalkan instead of Perlu Tindakan", async () => {
+  it("places rejected harga tetap proof transactions in Dibatalkan instead of Perlu Tindakan", async () => {
     const user = userEvent.setup();
 
     render(

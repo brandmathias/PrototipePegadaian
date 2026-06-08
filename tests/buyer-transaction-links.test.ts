@@ -7,7 +7,7 @@ import {
 } from "@/lib/buyer/transaction-links";
 
 describe("buyer transaction links", () => {
-  it("routes active Vickrey winners to the winner announcement page before payment detail", () => {
+  it("routes active Lelang Tertutup winners to the winner announcement page before payment detail", () => {
     expect(
       isBuyerWinnerAnnouncementTransaction({
         kind: "VICKREY_WIN",

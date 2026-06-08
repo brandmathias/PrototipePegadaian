@@ -143,7 +143,7 @@ function summarizeTrendPoints(points: ValidatedTrendPoint[]) {
     0,
   );
   const dominantMode =
-    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+    vickreyAmount >= fixedPriceAmount ? "Lelang Tertutup" : "Harga Tetap";
   const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
   const modeTotal = vickreyAmount + fixedPriceAmount;
 
@@ -669,7 +669,7 @@ export async function getSuperAdminMonitoring() {
         unit: item.unit,
         scope: "Lelang",
         status: "Perlu Review",
-        activity: `Sesi Vickrey ${item.lotName} segera ditutup dan menunggu pemantauan hasil.`,
+        activity: `Sesi Lelang Tertutup ${item.lotName} segera ditutup dan menunggu pemantauan hasil.`,
         detail: `${item.unit} | Harga dasar ${currencyFormatter.format(Number(item.basePrice ?? 0))}`,
         countdownLabel: countdown.label,
         countdownAt: item.endsAt?.toISOString(),
@@ -720,7 +720,7 @@ export async function getSuperAdminMonitoring() {
       value: toNumber(nationalStats?.followUpItems),
       title: "Pemasaran perlu tindak lanjut",
       detail:
-        "Ada fixed price ditolak, lelang tanpa bid, atau pemasaran gagal yang perlu dibaca sebagai tindak lanjut.",
+        "Ada harga tetap ditolak, lelang tanpa bid, atau pemasaran gagal yang perlu dibaca sebagai tindak lanjut.",
       href: "/superadmin/monitoring-unit",
       action: "Buka monitoring",
     },

@@ -160,7 +160,7 @@ describe("admin gadai action forms", () => {
     });
   });
 
-  it("submits fixed price marketing price when editing an active fixed price barang", async () => {
+  it("submits harga tetap marketing price when editing an active harga tetap barang", async () => {
     renderWithToast(
       <AdminBarangEditForm
         item={{
@@ -185,7 +185,7 @@ describe("admin gadai action forms", () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText("Harga fixed price aktif"), {
+    fireEvent.change(screen.getByLabelText("Harga harga tetap aktif"), {
       target: { value: "13500000" }
     });
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));

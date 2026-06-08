@@ -51,11 +51,11 @@ type FilterTone = "green" | "orange" | "amber" | "red" | "slate";
 function getTransactionModeMeta(kind: BuyerTransaction["kind"]) {
   return kind === "VICKREY_WIN"
     ? {
-        label: "Vickrey",
+        label: "Lelang Tertutup",
         className: "bg-[#eaf7ef] text-[#0b7a4a]",
       }
     : {
-        label: "Fixed Price",
+        label: "Harga Tetap",
         className: "bg-[#eaf7ef] text-[#0b7a4a]",
       };
 }
@@ -99,7 +99,7 @@ function getTransactionDescription(transaction: BuyerTransaction) {
     case "MENUNGGU_PEMBAYARAN":
       return transaction.kind === "VICKREY_WIN"
         ? "Anda memenangkan lelang. Segera selesaikan pembayaran sebelum batas waktu berakhir."
-        : "Transaksi fixed price. Segera selesaikan pembayaran sebelum batas waktu berakhir.";
+        : "Transaksi harga tetap. Segera selesaikan pembayaran sebelum batas waktu berakhir.";
     case "DITOLAK_BUKTI":
       return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
     case "BUKTI_DIUNGGAH":
@@ -123,24 +123,21 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
     case "MENUNGGU_PEMBAYARAN":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
-        amountLabel:
-          transaction.kind === "VICKREY_WIN" ? "Harga lelang (Vickrey)" : "Total yang harus dibayar",
+        amountLabel: transaction.kind === "VICKREY_WIN" ? "Harga akhir lelang" : "Total yang harus dibayar",
         momentLabel: "Batas waktu pembayaran",
         momentValue: transaction.deadlineAt ? formatAppDateTime(transaction.deadlineAt) : transaction.deadline,
       };
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_VERIFIKASI":
       return {
-        amountLabel:
-          transaction.kind === "VICKREY_WIN" ? "Harga lelang (Vickrey)" : "Total yang harus dibayar",
+        amountLabel: transaction.kind === "VICKREY_WIN" ? "Harga akhir lelang" : "Total yang harus dibayar",
         momentLabel: "Pembayaran diterima",
         momentValue: fallbackMoment,
       };
     case "LUNAS":
     case "SELESAI":
       return {
-        amountLabel:
-          transaction.kind === "VICKREY_WIN" ? "Harga lelang (Vickrey)" : "Total pembayaran",
+        amountLabel: transaction.kind === "VICKREY_WIN" ? "Harga akhir lelang" : "Total pembayaran",
         momentLabel: "Selesai pada",
         momentValue: transaction.verifiedAt || transaction.createdAt,
       };
@@ -656,7 +653,7 @@ function BidRow({ item }: { item: BuyerBid }) {
           </p>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-            <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Vickrey" />
+            <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
             <TransactionBadge className={statusMeta.className} label={statusMeta.label} />
           </div>
 
@@ -665,7 +662,7 @@ function BidRow({ item }: { item: BuyerBid }) {
 
         <div className="space-y-2.5 lg:pl-1">
           <p className="text-[0.94rem] font-medium tracking-[-0.01em] text-slate-500">
-            {item.status === "MENANG" ? "Harga lelang (Vickrey)" : "Nominal bid"}
+            {item.status === "MENANG" ? "Harga akhir lelang" : "Nominal bid"}
           </p>
           <p className="font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] text-[#006747] sm:text-[2rem]">
             {currency.format(amount)}

@@ -285,11 +285,11 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
 
       {isOpen ? (
         <div
-          className="feedback-pop absolute right-0 top-[calc(100%+0.85rem)] z-[90] w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-[1.6rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)]"
+          className="feedback-pop absolute right-0 top-[calc(100%+0.85rem)] z-[90] w-[min(28rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[1.35rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:rounded-[1.6rem]"
           role="dialog"
         >
           <div className="border-b border-black/6 px-5 py-4 dark:border-white/8">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                   {copy.label}
@@ -302,7 +302,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                 </p>
               </div>
               <button
-                className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
                 onClick={handleMarkAllAsRead}
                 type="button"
               >
@@ -312,7 +312,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             </div>
           </div>
 
-          <div className="max-h-[26rem] overflow-y-auto px-3 py-3">
+          <div className="max-h-[min(26rem,calc(100dvh-12rem))] overflow-y-auto px-3 py-3">
             {displayedNotifications.length ? (
               <div className="space-y-2">
                 {displayedNotifications.map((notification, index) => {

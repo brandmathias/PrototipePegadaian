@@ -92,7 +92,7 @@ export function BuyerProfileMenu({
 
       {isOpen ? (
         <div
-          className="absolute right-0 mt-3 w-56 overflow-hidden rounded-[1.35rem] border border-primary/10 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80"
+          className="absolute right-0 mt-3 w-[min(14rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.35rem] border border-primary/10 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80"
           role="menu"
         >
           <div className="px-3 pb-2 pt-2">

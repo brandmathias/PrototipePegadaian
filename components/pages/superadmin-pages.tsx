@@ -907,7 +907,7 @@ function summarizeDashboardTrend(points: SuperAdminValidatedTrendPoint[]) {
     0,
   );
   const dominantMode =
-    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+    vickreyAmount >= fixedPriceAmount ? "Lelang Tertutup" : "Harga Tetap";
   const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
   const modeTotal = vickreyAmount + fixedPriceAmount;
 
@@ -1076,8 +1076,8 @@ export function SuperAdminDashboardPage({
   const currentPeriodDominantMode =
     trendSummary.dominantMode ??
     (currentPeriodVickrey >= currentPeriodFixedPrice
-      ? "Vickrey Auction"
-      : "Fixed Price");
+      ? "Lelang Tertutup"
+      : "Harga Tetap");
   const currentPeriodDominantPercent = Number(
     trendSummary.dominantPercent ?? 0,
   );
@@ -1289,7 +1289,7 @@ export function SuperAdminDashboardPage({
               type="button"
             >
               <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
-              Vickrey Auction (Rp)
+              Lelang Tertutup (Rp)
             </button>
             <button
               aria-pressed={chartVisibility.fixedPrice}
@@ -1305,7 +1305,7 @@ export function SuperAdminDashboardPage({
               type="button"
             >
               <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
-              Fixed Price (Rp)
+              Harga Tetap (Rp)
             </button>
           </div>
 
@@ -1546,7 +1546,7 @@ export function SuperAdminDashboardPage({
 
               {chartPoints.map((point, index) => (
                 <button
-                  aria-label={`${point.label}: Vickrey ${formatFullCurrency(getTrendVickreyAmount(point))}, Fixed Price ${formatFullCurrency(getTrendFixedPriceAmount(point))}, Volume ${formatDashboardCount(point.volume)} transaksi`}
+                  aria-label={`${point.label}: Lelang Tertutup ${formatFullCurrency(getTrendVickreyAmount(point))}, Harga Tetap ${formatFullCurrency(getTrendFixedPriceAmount(point))}, Volume ${formatDashboardCount(point.volume)} transaksi`}
                   className="absolute rounded-lg outline-none transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   key={`${point.label}-hotspot`}
                   onBlur={() => setActiveTrendIndex(null)}
@@ -1590,7 +1590,7 @@ export function SuperAdminDashboardPage({
                     <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2">
                       <span className="inline-flex items-center gap-2">
                         <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
-                        Vickrey
+                        Lelang Tertutup
                       </span>
                       <span className="font-black text-[#00563b]">
                         {formatFullCurrency(getTrendVickreyAmount(activeTrendPoint))}
@@ -1599,7 +1599,7 @@ export function SuperAdminDashboardPage({
                     <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2">
                       <span className="inline-flex items-center gap-2">
                         <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
-                        Fixed Price
+                        Harga Tetap
                       </span>
                       <span className="font-black text-[#3f8d42]">
                         {formatFullCurrency(getTrendFixedPriceAmount(activeTrendPoint))}
@@ -1813,7 +1813,7 @@ export function SuperAdminUnitsPage({
               />
               <select
                 aria-label="Filter status unit"
-                className="h-11 rounded-xl border border-border/70 bg-white px-4 text-sm outline-none"
+                className="min-h-11 rounded-xl border border-border/70 bg-white px-4 text-sm outline-none"
                 onChange={(event) => setStatusFilter(event.target.value)}
                 value={statusFilter}
               >
@@ -1930,8 +1930,8 @@ export function SuperAdminUnitsPage({
 const unitDetailPageSizeOptions = [10, 20, 50] as const;
 const unitDetailFilterAll = "Semua";
 const unitDetailModeOptions = [
-  { label: "Fixed Price", value: "fixed_price" },
-  { label: "Vickrey Auction", value: "vickrey" },
+  { label: "Harga Tetap", value: "fixed_price" },
+  { label: "Lelang Tertutup", value: "vickrey" },
 ] as const;
 
 type UnitDetailSelectOption = {
@@ -2340,7 +2340,7 @@ function SuperAdminUnitDetailPopup({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:py-6">
       <button
         aria-label="Tutup panel detail"
         className="absolute inset-0 bg-[#052315]/34 backdrop-blur-[3px]"
@@ -2350,7 +2350,7 @@ function SuperAdminUnitDetailPopup({
       <section
         aria-label={title}
         aria-modal="true"
-        className="toast-enter relative z-[121] w-full max-w-xl overflow-hidden rounded-[1.55rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-36px_rgba(8,69,50,0.38)]"
+        className="toast-enter modal-viewport relative z-[121] my-auto w-full max-w-xl overflow-hidden rounded-[1.35rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-36px_rgba(8,69,50,0.38)] sm:rounded-[1.55rem]"
         role="dialog"
       >
         <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-5 py-4">
@@ -2378,7 +2378,7 @@ function SuperAdminUnitDetailPopup({
             </button>
           </div>
         </div>
-        <div className="grid gap-3 p-5 sm:grid-cols-2">{children}</div>
+        <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">{children}</div>
       </section>
     </div>,
     document.body,
@@ -2417,18 +2417,20 @@ function SuperAdminUnitDetailAccountLedger({
           <div className="divide-y divide-[#edf2ee]">
             {accounts.map((account) => (
               <div
-                className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] md:items-center md:gap-3"
                 key={account.id}
               >
                 <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
                   <Landmark className="size-4 shrink-0 text-[#006747]" />
                   <span className="truncate">{account.bankName}</span>
                 </div>
-                <p className="truncate font-mono font-bold text-black/58">
-                  {account.accountNumber}
+                <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/58 md:block md:rounded-none md:bg-transparent md:p-0">
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Rekening</span>
+                  <span className="min-w-0 truncate">{account.accountNumber}</span>
                 </p>
-                <p className="truncate font-semibold text-black/55">
-                  {account.accountHolder}
+                <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/55 md:block md:rounded-none md:bg-transparent md:p-0">
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Pemilik</span>
+                  <span className="min-w-0 truncate text-right md:text-left">{account.accountHolder}</span>
                 </p>
                 <div className="flex justify-start md:justify-end">
                   {account.status === "AKTIF" ? (
@@ -2442,7 +2444,7 @@ function SuperAdminUnitDetailAccountLedger({
                 <div className="flex justify-start gap-1.5 md:justify-end">
                   <button
                     aria-label={`Lihat detail rekening ${account.bankName}`}
-                    className="grid size-8 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98]"
+                    className="grid size-10 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98] md:size-8"
                     onClick={() => setPreviewAccount(account)}
                     type="button"
                   >
@@ -2510,7 +2512,7 @@ function SuperAdminUnitDetailAdminLedger({
           <div className="divide-y divide-[#edf2ee]">
             {admins.map((admin) => (
               <div
-                className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] md:items-center md:gap-3"
                 key={admin.id}
               >
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -2519,13 +2521,19 @@ function SuperAdminUnitDetailAdminLedger({
                   </span>
                   <span className="truncate font-black text-[#13211c]">{admin.name}</span>
                 </div>
-                <p className="flex min-w-0 items-center gap-1.5 truncate font-semibold text-black/50">
+                <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/50 md:justify-start md:rounded-none md:bg-transparent md:p-0">
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Email</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
                   <Mail className="size-3.5 shrink-0 text-[#006747]" />
                   <span className="truncate">{admin.email}</span>
+                  </span>
                 </p>
-                <p className="flex min-w-0 items-center gap-1.5 truncate font-semibold text-black/46">
+                <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/46 md:justify-start md:rounded-none md:bg-transparent md:p-0">
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Telepon</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
                   <Phone className="size-3.5 shrink-0 text-[#006747]" />
                   <span className="truncate">{admin.phone || "-"}</span>
+                  </span>
                 </p>
                 <div className="flex justify-start md:justify-end">
                   <StatusBadge value={admin.status} />
@@ -2533,7 +2541,7 @@ function SuperAdminUnitDetailAdminLedger({
                 <div className="flex justify-start gap-1.5 md:justify-end">
                   <button
                     aria-label={`Lihat detail admin ${admin.name}`}
-                    className="grid size-8 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98]"
+                    className="grid size-10 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98] md:size-8"
                     onClick={() => setPreviewAdmin(admin)}
                     type="button"
                   >
@@ -2693,7 +2701,7 @@ export function SuperAdminUnitDetailPage({
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-4 z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-4 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl">
+      <div className="safe-sticky-actions sticky z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-3 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-2 text-[0.72rem] font-bold text-black/48">
             <Info className="size-4 shrink-0 text-[#64756e]" />
@@ -2703,13 +2711,13 @@ export function SuperAdminUnitDetailPage({
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98]"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-center text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98] sm:w-auto"
               href="/superadmin/manajemen-unit"
             >
               Kembali
             </Link>
             <Button
-              className="h-11 rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+              className="min-h-11 w-full rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
               form={profileFormId}
               type="submit"
             >
@@ -2771,10 +2779,10 @@ function getSuperAdminMarketingModeLabel(session?: SuperAdminUnitBarangMarketing
 
 function getSuperAdminMarketingPriceLabel(session: SuperAdminUnitBarangMarketingSession) {
   if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
-    return session.finalPrice ? "Harga final Vickrey" : "Harga dasar Vickrey";
+    return session.finalPrice ? "Harga akhir Lelang Tertutup" : "Harga dasar Lelang Tertutup";
   }
 
-  return "Harga Fixed Price";
+  return "Harga Tetap";
 }
 
 function getSuperAdminMarketingPriceValue(session: SuperAdminUnitBarangMarketingSession) {
@@ -3222,7 +3230,7 @@ function SuperAdminVickreyMechanismPanel({
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Vickrey Second-Price"}
+          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Lelang Tertutup"}
         </p>
         <Info className="size-3.5 text-[#2f6fff]" />
       </div>
@@ -3279,7 +3287,7 @@ function SuperAdminVickreyMechanismPanel({
               <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
                 Mekanisme
               </span>
-              e-Bidding - Vickrey Second-Price
+              e-Bidding - Lelang Tertutup
             </p>
             <p>
               <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
@@ -3296,8 +3304,8 @@ function SuperAdminVickreyMechanismPanel({
           </div>
         ) : (
           <p>
-            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga menang ditentukan berdasarkan
-            penawaran tertinggi kedua sesuai mekanisme Vickrey (second-price).
+            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga akhir mengikuti mekanisme lelang
+            dan dihitung dari penawaran tertinggi kedua.
           </p>
         )}
       </div>
@@ -3510,7 +3518,7 @@ function SuperAdminVickreyNotePanel({
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
-            <span>Harga Bayar Vickrey</span>
+            <span>Harga akhir lelang</span>
             <span className="font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
@@ -3540,7 +3548,7 @@ function SuperAdminVickreyNotePanel({
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
-            <span>Harga Bayar Vickrey</span>
+            <span>Harga akhir lelang</span>
             <span className="font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
@@ -3923,7 +3931,7 @@ function SuperAdminVickreyFailureMechanismPanel({
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
             Mekanisme
           </span>
-          e-Bidding - Vickrey Second-Price
+          e-Bidding - Lelang Tertutup
         </p>
         <p>
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
@@ -4098,20 +4106,20 @@ function SuperAdminFixedPriceWorkspace({
   const hasBuyer = Boolean(session.transactionId || session.buyerName || session.winner);
   const isFailed = session.status === "GAGAL" || session.transactionStatus === "GAGAL";
   const statusTitle = isFailed
-    ? "Sesi Fixed Price Diarsipkan"
+    ? "Sesi Harga Tetap Diarsipkan"
     : sold
-      ? "Pembelian Fixed Price Selesai"
+      ? "Pembelian Harga Tetap Selesai"
       : verified
-        ? "Pembayaran Fixed Price Terverifikasi"
+        ? "Pembayaran Harga Tetap Terverifikasi"
         : hasBuyer
           ? "Bukti Pembayaran Masuk"
           : "Masih Tersedia di Katalog";
   const statusDetail = isFailed
-    ? "Iterasi fixed price ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
+    ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
     : sold
-      ? "Penjualan fixed price sudah selesai dan siap masuk arsip transaksi."
+      ? "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
       : verified
-        ? "Pembayaran fixed price sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai."
+        ? "Pembayaran harga tetap sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai."
         : hasBuyer
           ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
           : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
@@ -4150,7 +4158,7 @@ function SuperAdminFixedPriceWorkspace({
         <div className="space-y-4">
           <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
             <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-              Ringkasan Sesi Fixed Price
+              Ringkasan Sesi Harga Tetap
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <SuperAdminDetailInfoCard
@@ -4182,7 +4190,7 @@ function SuperAdminFixedPriceWorkspace({
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
-                <p className="text-[0.66rem] font-black text-[#92400e]">Harga Fixed Price</p>
+                <p className="text-[0.66rem] font-black text-[#92400e]">Harga Tetap</p>
                 <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
                   {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
                 </p>
@@ -4195,14 +4203,14 @@ function SuperAdminFixedPriceWorkspace({
               </div>
             </div>
             <div className="mt-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-              {session.note || "Belum ada catatan tambahan pada iterasi fixed price ini."}
+              {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
             </div>
           </section>
         </div>
 
         <div className="space-y-4">
           <SuperAdminMarketingArchiveStatusCard
-            detail={hasBuyer ? "Data buyer dan status transaksi ditampilkan read-only untuk kebutuhan audit." : "Belum ada pembeli tercatat pada sesi fixed price ini."}
+            detail={hasBuyer ? "Data buyer dan status transaksi ditampilkan read-only untuk kebutuhan audit." : "Belum ada pembeli tercatat pada sesi harga tetap ini."}
             eyebrow="Status Transaksi"
             title={hasBuyer ? formatSuperAdminDisplayLabel(session.transactionStatus) : "Belum ada pembeli"}
             tone={isFailed ? "red" : "emerald"}
@@ -4989,9 +4997,9 @@ export function SuperAdminManagementPage({
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link href="/superadmin/manajemen-unit/tambah">
+                  <Link className="w-full sm:w-auto" href="/superadmin/manajemen-unit/tambah">
                     <Button
-                      className="h-10 rounded-[1.05rem] px-4 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+                      className="min-h-10 w-full rounded-[1.05rem] px-4 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
                       type="button"
                     >
                       <Plus className="size-4" />
@@ -5080,9 +5088,9 @@ export function SuperAdminManagementPage({
                       </div>
 
                       <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
-                        <Link href={`/superadmin/unit/${unit.id}`}>
+                        <Link className="w-full sm:w-auto" href={`/superadmin/unit/${unit.id}`}>
                           <Button
-                            className="h-9 rounded-[0.95rem] px-3 text-[0.74rem]"
+                            className="min-h-9 w-full rounded-[0.95rem] px-3 text-[0.74rem] sm:w-auto"
                             size="sm"
                             variant="secondary"
                           >
@@ -5124,7 +5132,7 @@ export function SuperAdminManagementPage({
                   <div className="ml-0 flex max-w-full flex-wrap items-center gap-1 lg:ml-3">
                     <button
                       aria-label="Halaman sebelumnya"
-                      className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+                      className="grid size-10 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35 md:size-8"
                       disabled={currentPage === 0}
                       type="button"
                       onClick={() => setPageIndex(Math.max(0, currentPage - 1))}
@@ -5136,6 +5144,7 @@ export function SuperAdminManagementPage({
                         aria-current={index === currentPage ? "page" : undefined}
                         className={cn(
                           "grid size-8 place-items-center rounded-xl text-[0.72rem] font-black transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                          "size-10 md:size-8",
                           index === currentPage
                             ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46),inset_0_1px_0_rgba(255,255,255,0.9)]"
                             : "text-black/52 hover:bg-white hover:text-[#0a6a49]"
@@ -5149,7 +5158,7 @@ export function SuperAdminManagementPage({
                     ))}
                     <button
                       aria-label="Halaman berikutnya"
-                      className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+                      className="grid size-10 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35 md:size-8"
                       disabled={currentPage >= totalPages - 1}
                       type="button"
                       onClick={() => setPageIndex(Math.min(totalPages - 1, currentPage + 1))}
@@ -5251,7 +5260,7 @@ export function SuperAdminPolicyPage() {
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Referensi read-only untuk sanksi progresif buyer yang gagal membayar transaksi lelang Vickrey dalam 24 jam."
+        description="Referensi read-only untuk sanksi progresif buyer yang gagal membayar transaksi Lelang Tertutup dalam 24 jam."
         eyebrow="Superadmin / Kebijakan"
         icon={ShieldAlert}
         title="Kebijakan Pelanggaran"
@@ -5288,7 +5297,7 @@ export function SuperAdminPolicyPage() {
                 <div className="flex items-center gap-4 rounded-[0.9rem] border border-[#cfe8d8] bg-[#f5fbf7] px-4 py-3.5 text-[#006747]">
                   <CheckCircle2 className="size-7 shrink-0" strokeWidth={2.2} />
                   <p className="text-sm font-black uppercase">
-                    Fixed Price: Aktif
+                    Harga Tetap: Aktif
                   </p>
                 </div>
               </div>
@@ -5332,7 +5341,7 @@ export function SuperAdminPolicyPage() {
                 <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-200 bg-orange-50/50 px-4 py-3.5 text-orange-600">
                   <Ban className="size-7 shrink-0" strokeWidth={2.2} />
                   <p className="text-sm font-black uppercase">
-                    Fixed Price: Ban Total 30 Hari
+                    Harga Tetap: Ban Total 30 Hari
                   </p>
                 </div>
                 <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-300 bg-orange-50/60 px-4 py-3.5 text-orange-700">
@@ -6308,7 +6317,7 @@ export function SuperAdminBlacklistPage({
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Pusat pengawasan keputusan review buyer, pembatasan aktif, dan riwayat pelanggaran pembayaran Vickrey lintas unit."
+        description="Pusat pengawasan keputusan review buyer, pembatasan aktif, dan riwayat pelanggaran pembayaran Lelang Tertutup lintas unit."
         eyebrow="Superadmin / Review & Pelanggaran"
         icon={Ban}
         rightRail={
@@ -6511,11 +6520,11 @@ export function SuperAdminBlacklistPage({
 
       <section className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm leading-6 text-muted-foreground shadow-[0_18px_48px_-42px_rgba(8,69,50,0.34)] md:grid-cols-3">
         <p>
-          Pelanggaran buyer aktif hanya dibuat saat pemenang lelang Vickrey
+          Pelanggaran buyer aktif hanya dibuat saat pemenang Lelang Tertutup
           tidak membayar dalam 24 jam.
         </p>
         <p>
-          Level 1 menahan bid Vickrey, level 2 menahan transaksi baru, dan level
+          Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru, dan level
           3 memerlukan review manual.
         </p>
         <p>

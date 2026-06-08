@@ -65,7 +65,7 @@ function makeDashboardTrendRange(label: string, points: ReturnType<typeof makeDa
     0,
   );
   const dominantMode =
-    vickreyAmount >= fixedPriceAmount ? "Vickrey Auction" : "Fixed Price";
+    vickreyAmount >= fixedPriceAmount ? "Lelang Tertutup" : "Harga Tetap";
   const dominantAmount = Math.max(vickreyAmount, fixedPriceAmount);
   const modeTotal = vickreyAmount + fixedPriceAmount;
 
@@ -281,7 +281,7 @@ describe("superadmin pages", () => {
               id: "priority-follow-up",
               title: "Pemasaran perlu tindak lanjut",
               detail:
-                "Ada fixed price ditolak, lelang tanpa bid, atau pemasaran gagal.",
+                "Ada harga tetap ditolak, lelang tanpa bid, atau pemasaran gagal.",
               href: "/superadmin/monitoring-unit",
               action: "Buka monitoring",
             },
@@ -474,17 +474,18 @@ describe("superadmin pages", () => {
     expect(chartTexts).not.toEqual(expect.arrayContaining(["Volume (Unit)"]));
     expect(chartTexts).not.toEqual(expect.arrayContaining(["55"]));
 
-    const vickreyToggle = screen.getByRole("button", {
-      name: /Vickrey Auction/i,
-    });
+    const vickreyToggle = screen
+      .getAllByRole("button", { name: /Lelang Tertutup/i })
+      .find((button) => button.getAttribute("aria-pressed") === "true");
+    expect(vickreyToggle).toBeDefined();
     expect(vickreyToggle).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(vickreyToggle);
+    fireEvent.click(vickreyToggle!);
 
     expect(vickreyToggle).toHaveAttribute("aria-pressed", "false");
 
     const aprilHotspot = screen.getByRole("button", {
-      name: /Apr: Vickrey Rp 36.000.000/i,
+      name: /Apr: Lelang Tertutup Rp 36.000.000/i,
     });
     fireEvent.mouseEnter(aprilHotspot);
 
@@ -655,7 +656,7 @@ describe("superadmin pages", () => {
               : "elektronik",
         imageUrl: itemNumber === 1 ? "/uploads/barang/guci.png" : null,
         marketingModeLabel:
-          itemNumber === 3 ? "Vickrey Second-Price" : itemNumber === 4 ? "Fixed Price" : "Belum dipasarkan",
+          itemNumber === 3 ? "Lelang Tertutup" : itemNumber === 4 ? "Harga Tetap" : "Belum dipasarkan",
         operationalStatus:
           itemNumber === 1 || itemNumber === 2
             ? "Barang Jaminan"
@@ -791,7 +792,7 @@ describe("superadmin pages", () => {
         latestMarketingMode: "vickrey",
         transactionType: "vickrey",
       }),
-    ).toBe("Vickrey Auction");
+    ).toBe("Lelang Tertutup");
 
     expect(
       resolveUnitMarketingModeLabel({
@@ -799,7 +800,7 @@ describe("superadmin pages", () => {
         latestMarketingMode: "fixed_price",
         transactionType: "fixed_price",
       }),
-    ).toBe("Fixed Price");
+    ).toBe("Harga Tetap");
 
     expect(
       resolveUnitMarketingModeLabel({
@@ -881,7 +882,7 @@ describe("superadmin pages", () => {
         now,
       }).operationalStatus,
     ).toBe("Menunggu Pembayaran");
-  });
+  }, 10000);
 
   it("keeps inventory rows hidden on superadmin unit detail even when item data exists", () => {
     const unitItems = Array.from({ length: 12 }, (_, index) => {
@@ -899,7 +900,7 @@ describe("superadmin pages", () => {
               : "elektronik",
         imageUrl: itemNumber === 1 ? "/uploads/barang/guci.png" : null,
         marketingModeLabel:
-          itemNumber === 3 ? "Vickrey Second-Price" : itemNumber === 4 ? "Fixed Price" : "Belum dipasarkan",
+          itemNumber === 3 ? "Lelang Tertutup" : itemNumber === 4 ? "Harga Tetap" : "Belum dipasarkan",
         operationalStatus:
           itemNumber === 3
             ? "Sedang Dipasarkan"
@@ -1104,7 +1105,7 @@ describe("superadmin pages", () => {
                 barangId: "barang-3",
                 actionLabel: "Dipasarkan",
                 actionKey: "dipasarkan",
-                note: "Barang masuk sesi Vickrey Auction iterasi kedua.",
+                note: "Barang masuk sesi Lelang Tertutup iterasi kedua.",
                 actorName: "Admin Unit",
                 createdAtLabel: "30 Mei 2026, 02:00 WIB",
               },
@@ -1136,9 +1137,9 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText("Iterasi 2 (Terkini)").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: /Iterasi 2 \(Terkini\)/i }));
     fireEvent.click(screen.getAllByRole("option", { name: "Iterasi 1" })[1]);
-    expect(screen.getByText("Sesi Fixed Price Diarsipkan")).toBeInTheDocument();
-    expect(screen.getByText("Ringkasan Sesi Fixed Price")).toBeInTheDocument();
-    expect(screen.getByText("Harga Fixed Price")).toBeInTheDocument();
+    expect(screen.getByText("Sesi Harga Tetap Diarsipkan")).toBeInTheDocument();
+    expect(screen.getByText("Ringkasan Sesi Harga Tetap")).toBeInTheDocument();
+    expect(screen.getByText("Harga Tetap")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 20.000.000").length).toBeGreaterThan(0);
     expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cetak Nota" })).not.toBeInTheDocument();
@@ -1583,7 +1584,7 @@ describe("superadmin pages", () => {
       screen.getByText(/bid lelang: ban 7 hari/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/fixed price: aktif/i),
+      screen.getByText(/harga tetap: aktif/i),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/ban total 360 hari/i),

@@ -186,7 +186,7 @@ function UnitTextInput({
         {label}
       </FieldLabel>
       <Input
-        className="h-10 rounded-[0.9rem] border-[#dce6df] bg-[#fbfcfb] text-[0.78rem] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] placeholder:text-black/30 focus-visible:border-[#0a6a49]/24 focus-visible:ring-[#0a6a49]/16"
+        className="min-h-10 w-full rounded-[0.9rem] border-[#dce6df] bg-[#fbfcfb] text-[0.78rem] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] placeholder:text-black/30 focus-visible:border-[#0a6a49]/24 focus-visible:ring-[#0a6a49]/16"
         id={id}
         {...props}
       />
@@ -656,7 +656,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   />
                 </div>
                 <Button
-                  className="h-10 rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+                  className="min-h-10 w-full justify-center rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
                   onClick={addAccount}
                   type="button"
                   variant="secondary"
@@ -687,7 +687,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
 
                       return (
                         <div
-                          className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.35fr_4rem] md:items-center md:gap-3"
+                          className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.35fr_4rem] md:items-center md:gap-3"
                           key={account.id}
                         >
                           <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
@@ -696,9 +696,13 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                             </span>
                             <span className="truncate">{account.bankName}</span>
                           </div>
-                          <p className="truncate font-mono font-bold text-black/58">{account.accountNumber}</p>
-                          <div className="flex min-w-0 items-center gap-2">
-                            <p className="truncate font-semibold text-black/55">{account.accountHolderName}</p>
+                          <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/58 md:block md:rounded-none md:bg-transparent md:p-0">
+                            <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Rekening</span>
+                            <span className="min-w-0 truncate">{account.accountNumber}</span>
+                          </p>
+                          <div className="flex min-w-0 items-center justify-between gap-2 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 md:justify-start md:rounded-none md:bg-transparent md:p-0">
+                            <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Pemilik</span>
+                            <p className="min-w-0 truncate text-right font-semibold text-black/55 md:text-left">{account.accountHolderName}</p>
                             {index === 0 ? (
                               <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-0.5 text-[0.58rem] font-black uppercase tracking-[0.12em] text-emerald-700">
                                 Utama
@@ -707,7 +711,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                           </div>
                           <button
                             aria-label={`Hapus rekening ${account.bankName}`}
-                            className="ml-auto grid size-8 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50"
+                            className="ml-auto grid size-10 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 md:size-8"
                             onClick={() => setAccounts((current) => current.filter((item) => item.id !== account.id))}
                             type="button"
                           >
@@ -784,7 +788,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   <div className="relative">
                     <Input
                       autoComplete="new-password"
-                      className="h-10 rounded-[0.9rem] border-[#dce6df] bg-[#fbfcfb] pr-10 font-mono text-[0.78rem] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] placeholder:text-black/30 focus-visible:border-[#0a6a49]/24 focus-visible:ring-[#0a6a49]/16"
+                      className="min-h-10 rounded-[0.9rem] border-[#dce6df] bg-[#fbfcfb] pr-10 font-mono text-[0.78rem] font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] placeholder:text-black/30 focus-visible:border-[#0a6a49]/24 focus-visible:ring-[#0a6a49]/16"
                       id="admin-password"
                       name="new-admin-temporary-password"
                       onFocus={() => setCredentialFieldsUnlocked(true)}
@@ -805,7 +809,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   </div>
                 </div>
                 <Button
-                  className="h-10 rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+                  className="min-h-10 w-full justify-center rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
                   onClick={addAdmin}
                   type="button"
                   variant="secondary"
@@ -834,7 +838,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   <div className="divide-y divide-[#edf2ee]">
                     {admins.map((admin) => (
                       <div
-                        className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.05fr_0.9fr_1fr_4rem] md:items-center md:gap-3"
+                        className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.05fr_0.9fr_1fr_4rem] md:items-center md:gap-3"
                         key={admin.id}
                       >
                         <div className="flex min-w-0 items-center gap-2.5">
@@ -843,10 +847,17 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                           </span>
                           <span className="truncate font-black text-[#13211c]">{admin.name}</span>
                         </div>
-                        <p className="truncate font-semibold text-black/50">{admin.email}</p>
-                        <p className="truncate font-mono font-bold text-black/46">{maskNationalId(admin.nationalId)}</p>
-                        <div className="flex min-w-0 items-center gap-2">
-                          <span className="truncate font-mono font-bold tracking-[0.18em] text-black/46">
+                        <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/50 md:block md:rounded-none md:bg-transparent md:p-0">
+                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Email</span>
+                          <span className="min-w-0 truncate text-right md:text-left">{admin.email}</span>
+                        </p>
+                        <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/46 md:block md:rounded-none md:bg-transparent md:p-0">
+                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">NIK</span>
+                          <span className="min-w-0 truncate text-right md:text-left">{maskNationalId(admin.nationalId)}</span>
+                        </p>
+                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 md:justify-start md:rounded-none md:bg-transparent md:p-0">
+                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Password</span>
+                          <span className="min-w-0 truncate font-mono font-bold tracking-[0.18em] text-black/46">
                             {admin.showPassword ? admin.temporaryPassword : "********"}
                           </span>
                           <button
@@ -866,7 +877,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                         </div>
                         <button
                           aria-label={`Hapus admin ${admin.name}`}
-                          className="ml-auto grid size-8 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50"
+                          className="ml-auto grid size-10 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 md:size-8"
                           onClick={() => setAdmins((current) => current.filter((item) => item.id !== admin.id))}
                           type="button"
                         >
@@ -893,7 +904,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
         </CardContent>
       </Card>
 
-      <div className="sticky bottom-4 z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-4 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl">
+      <div className="safe-sticky-actions sticky z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-3 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-black/48">
             <Info className="size-4 shrink-0 text-[#64756e]" />
@@ -914,13 +925,13 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98]"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-center text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98] sm:w-auto"
               href="/superadmin/manajemen-unit"
             >
               Batalkan Setup
             </Link>
             <Button
-              className="h-11 rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+              className="min-h-11 w-full rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
               disabled={loading || !canSubmit}
               type="submit"
             >

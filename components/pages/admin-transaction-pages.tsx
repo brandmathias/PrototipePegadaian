@@ -97,7 +97,7 @@ function receiptMarketingLabel(mode?: string | null) {
     return "Lelang";
   }
 
-  return mode || "Fixed Price";
+  return mode || "Harga Tetap";
 }
 
 function isProofPreviewable(url?: string | null) {
@@ -122,7 +122,7 @@ function getVerificationTransactions(transactions: AdminTransactionItem[]) {
 }
 
 function getFixedPriceTransactions(transactions: AdminTransactionItem[]) {
-  return transactions.filter((transaction) => transaction.pemasaranMode === "Fixed Price");
+  return transactions.filter((transaction) => transaction.pemasaranMode === "Harga Tetap");
 }
 
 function getHistoryTransactions(transactions: AdminTransactionItem[]) {
@@ -491,8 +491,8 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       completed={completed}
       currentStep={currentIndex}
       description={
-        transaction.pemasaranMode === "Vickrey Auction"
-          ? "Vickrey selesai melalui loket unit, tanpa upload bukti online."
+        transaction.pemasaranMode === "Lelang Tertutup"
+          ? "Lelang Tertutup selesai melalui loket unit, tanpa upload bukti online."
           : isTransfer
             ? "Fixed price transfer perlu bukti buyer sebelum tombol verifikasi aktif."
             : "Fixed price bayar langsung cukup dikonfirmasi saat dana diterima di loket."
@@ -726,7 +726,7 @@ function TransactionLedgerList({
 export function VerificationWorkspace({
   transaction,
   title = "Panel Verifikasi Pembayaran",
-  description = "Periksa pembayaran fixed price, cocokkan bukti atau pembayaran langsung, lalu putuskan status transaksi.",
+  description = "Periksa pembayaran harga tetap, cocokkan bukti atau pembayaran langsung, lalu putuskan status transaksi.",
   serverNow
 }: {
   transaction: AdminTransactionItem;
@@ -1004,7 +1004,7 @@ export function AdminTransactionVerificationPage({
       <PageHeader
         eyebrow="Admin Unit / Transaksi"
         title="Verifikasi Pembayaran"
-        description="Review pengajuan fixed price, bukti pembayaran, pembayaran langsung di unit, dan cetak nota setelah transaksi diverifikasi."
+        description="Review pengajuan harga tetap, bukti pembayaran, pembayaran langsung di unit, dan cetak nota setelah transaksi diverifikasi."
         actions={<Badge variant="accent">{actionableQueue.length} perlu tindakan</Badge>}
       />
 

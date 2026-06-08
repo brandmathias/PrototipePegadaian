@@ -77,12 +77,12 @@ export function LoginHistoryDialog({
         <div
           aria-labelledby={titleId}
           aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-center bg-[#102018]/45 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-[#102018]/45 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
           onClick={() => setOpen(false)}
           role="dialog"
         >
           <div
-            className="w-full max-w-xl overflow-hidden rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
+            className="modal-viewport my-auto w-full max-w-xl rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="relative overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(242,250,244,0.9)_58%,rgba(255,248,223,0.84))]">
@@ -132,7 +132,7 @@ export function LoginHistoryDialog({
 
                 <div className="rounded-[1.5rem] border border-primary/10 bg-white/82 p-2">
                   {visibleEntries.length > 0 ? (
-                    <div className="divide-y divide-primary/10">
+                    <div className="max-h-96 divide-y divide-primary/10 overflow-y-auto overscroll-contain">
                       {visibleEntries.map((entry, index) => (
                         <div
                           className="flex items-center justify-between gap-4 px-3 py-3.5"

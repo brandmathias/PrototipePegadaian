@@ -160,7 +160,7 @@ function getDurationDays(level: number) {
 function getRestrictionCopy(level: number) {
   if (level >= 3) return "Pembatasan 365 hari";
   if (level === 2) return "Transaksi baru dibatasi";
-  if (level === 1) return "Vickrey dibatasi";
+  if (level === 1) return "Lelang Tertutup dibatasi";
 
   return "Tidak ada pembatasan";
 }

@@ -26,7 +26,7 @@ describe("notification event helpers", () => {
     mocks.createNotificationOnce.mockResolvedValue({ id: "notif-1" });
   });
 
-  it("creates a Vickrey winner notification with direct-payment guidance", async () => {
+  it("creates a Lelang Tertutup winner notification with direct-payment guidance", async () => {
     await notifyVickreyWinner({
       userId: "buyer-1",
       transactionId: "trx-vickrey-1",
@@ -48,7 +48,7 @@ describe("notification event helpers", () => {
     );
   });
 
-  it("creates a non-winner Vickrey notification that links to the result page", async () => {
+  it("creates a non-winner Lelang Tertutup notification that links to the result page", async () => {
     await notifyVickreyLoss({
       userId: "buyer-2",
       pemasaranId: "pmr-77",

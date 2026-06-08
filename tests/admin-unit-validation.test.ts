@@ -111,7 +111,7 @@ describe("admin unit validation", () => {
     );
   });
 
-  it("validates pemasaran fixed price and structured vickrey durations", () => {
+  it("validates pemasaran harga tetap and structured vickrey durations", () => {
     expect(validatePemasaranPayload({ mode: "fixed_price", price: "12500000" })).toEqual({
       mode: "fixed_price",
       price: "12500000"
@@ -217,13 +217,13 @@ describe("admin unit validation", () => {
     );
   });
 
-  it("validates active fixed price marketing price edits", () => {
+  it("validates active harga tetap marketing price edits", () => {
     expect(validateFixedPriceMarketingPricePayload({ marketingPrice: "13500000" })).toEqual({
       marketingPrice: "13500000"
     });
 
     expect(() => validateFixedPriceMarketingPricePayload({ marketingPrice: "0" })).toThrow(
-      "Harga fixed price harus lebih dari 0."
+      "Harga harga tetap harus lebih dari 0."
     );
   });
 

@@ -110,7 +110,7 @@ describe("admin transaction service", () => {
     return vi.fn().mockResolvedValue(undefined);
   }
 
-  it("treats an already rejected fixed price proof as an idempotent result", async () => {
+  it("treats an already rejected harga tetap proof as an idempotent result", async () => {
     const result = await rejectAdminTransactionProof("unit-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
     });
@@ -128,7 +128,7 @@ describe("admin transaction service", () => {
     expect(mocks.serializeAdminTransaction).toHaveBeenCalledTimes(1);
   });
 
-  it("records sold item history when admin verifies a fixed price payment", async () => {
+  it("records sold item history when admin verifies a harga tetap payment", async () => {
     const verifiedAt = new Date("2026-06-03T10:00:00.000Z");
     vi.useFakeTimers();
     vi.setSystemTime(verifiedAt);
@@ -161,13 +161,13 @@ describe("admin transaction service", () => {
         oldStatus: "dipasarkan",
         newStatus: "terjual",
         changedByUserId: "admin-1",
-        note: expect.stringMatching(/fixed price disetujui/i)
+        note: expect.stringMatching(/harga tetap disetujui/i)
       })
     );
 
   });
 
-  it("records failed item history when admin rejects a fixed price proof", async () => {
+  it("records failed item history when admin rejects a harga tetap proof", async () => {
     mocks.query.limit.mockResolvedValue([makeTransactionJoin("bukti_diunggah", "fixed_price")]);
 
     const updatedTransaction = {
@@ -192,7 +192,7 @@ describe("admin transaction service", () => {
         oldStatus: "dipasarkan",
         newStatus: "gagal",
         changedByUserId: null,
-        note: expect.stringMatching(/fixed price ditolak/i)
+        note: expect.stringMatching(/harga tetap ditolak/i)
       })
     );
   });

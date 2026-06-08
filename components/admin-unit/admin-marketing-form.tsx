@@ -260,7 +260,7 @@ export function AdminMarketingForm({
     normalizedDurationMinutes * 60 +
     normalizedDurationSeconds;
   const baseNowMs = useMemo(() => new Date(serverNow).getTime(), [serverNow]);
-  const selectedModeLabel = mode === "fixed_price" ? "Fixed Price" : "Vickrey Auction";
+  const selectedModeLabel = mode === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup";
   const priceLabel = mode === "fixed_price" ? "Harga Jual Instan" : "Harga Dasar Lelang";
   const estimatedEnd = useMemo(() => {
     if (
@@ -325,7 +325,7 @@ export function AdminMarketingForm({
     ) {
       toast({
         title: "Durasi lelang belum sesuai",
-        description: "Durasi Vickrey perlu diisi lebih presisi dengan batas maksimal 365 hari.",
+        description: "Durasi Lelang Tertutup perlu diisi lebih presisi dengan batas maksimal 365 hari.",
         variant: "error",
         scope: "admin-unit",
       });
@@ -338,7 +338,7 @@ export function AdminMarketingForm({
       description:
         mode === "vickrey"
           ? "Sesi lelang tertutup sedang dibuat dengan countdown sesuai durasi."
-          : "Barang sedang dipublikasikan sebagai fixed price.",
+          : "Barang sedang dipublikasikan sebagai harga tetap.",
       variant: "info",
       scope: "admin-unit",
       duration: 2800,
@@ -435,14 +435,14 @@ export function AdminMarketingForm({
                     description="Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
                     icon={<Tag className="size-4.5" strokeWidth={2.2} />}
                     onClick={() => setMode("fixed_price")}
-                    title="Fixed Price"
+                    title="Harga Tetap"
                   />
                   <ModeCard
                     active={mode === "vickrey"}
                     description="Lelang tertutup (sealed-bid) di mana pemenang membayar harga penawaran tertinggi kedua."
                     icon={<Gavel className="size-4.5" strokeWidth={2.2} />}
                     onClick={() => setMode("vickrey")}
-                    title="Vickrey Auction"
+                    title="Lelang Tertutup"
                   />
                 </div>
               </div>
@@ -601,8 +601,10 @@ export function AdminMarketingForm({
     }
 
     return (
-      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-5">
-        {marketingCard}
+      <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-5">
+        <div className="modal-viewport my-auto w-full max-w-[66rem]">
+          {marketingCard}
+        </div>
       </div>
     );
   }

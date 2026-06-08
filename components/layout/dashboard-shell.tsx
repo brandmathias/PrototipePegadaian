@@ -325,7 +325,7 @@ export function DashboardShell({
   return (
     <div
       className={cn(
-        "min-h-dvh bg-white text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
+        "app-responsive-shell min-h-dvh bg-white text-foreground transition-colors duration-300 dark:bg-[#07110d] dark:text-[#e8f5ec] print:bg-white lg:pl-[17rem] print:lg:pl-0",
         forceWhiteShell && "bg-white dark:bg-white"
       )}
       data-admin-shell="true"
@@ -342,7 +342,7 @@ export function DashboardShell({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-3 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(36,189,129,0.18),transparent_30%),linear-gradient(180deg,#052d23_0%,#031912_100%)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.46)] print:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[17rem] max-w-[calc(100vw-1rem)] flex-col overflow-hidden bg-[radial-gradient(circle_at_top,rgba(28,132,99,0.26),transparent_28%),linear-gradient(180deg,#07563f_0%,#053c2b_100%)] px-3 py-3 text-white shadow-[0_24px_60px_rgba(0,0,0,0.28)] transition-transform duration-300 dark:bg-[radial-gradient(circle_at_top,rgba(36,189,129,0.18),transparent_30%),linear-gradient(180deg,#052d23_0%,#031912_100%)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.46)] print:hidden",
           isMenuOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
         )}
@@ -428,7 +428,7 @@ export function DashboardShell({
       </aside>
 
       <div className={cn("relative min-h-dvh", forceWhiteShell && "bg-white")}>
-        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/95 backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
+        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
           <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex min-w-0 items-start gap-3 sm:items-center lg:gap-5">
@@ -509,7 +509,7 @@ export function DashboardShell({
                   </div>
                 ) : null}
 
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex min-w-0 items-center justify-end gap-2">
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
                   {profileHref && currentUser ? (
                     <AdminProfileMenu

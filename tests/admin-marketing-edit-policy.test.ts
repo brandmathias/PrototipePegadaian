@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { canEditMarketedBarang } from "@/lib/admin-unit/marketing-edit-policy";
 
 describe("admin marketing edit policy", () => {
-  it("allows active fixed price barang to keep its public details editable", () => {
+  it("allows active harga tetap barang to keep its public details editable", () => {
     expect(
       canEditMarketedBarang({
         status: "dipasarkan",
@@ -55,7 +55,7 @@ describe("admin marketing edit policy", () => {
     ).toBe(true);
   });
 
-  it("does not treat failed fixed price sessions as auction strategy cases", () => {
+  it("does not treat failed harga tetap sessions as auction strategy cases", () => {
     expect(
       canEditMarketedBarang({
         status: "gagal",

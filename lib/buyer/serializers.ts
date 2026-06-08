@@ -158,7 +158,7 @@ function getPaymentNotes(row: BuyerTransactionShape) {
 
   if (row.type === "vickrey" && row.paymentMethod === "langsung") {
     return [
-      "Anda memenangkan lelang Vickrey dan pembayaran hanya dapat diselesaikan langsung di unit.",
+      "Anda memenangkan Lelang Tertutup dan pembayaran hanya dapat diselesaikan langsung di unit.",
       "Datang ke unit Pegadaian sesuai alamat yang tertera dan tunjukkan nomor pengajuan.",
       "Admin unit akan memverifikasi pembayaran langsung setelah dana diterima."
     ];
@@ -174,14 +174,14 @@ function getPaymentNotes(row: BuyerTransactionShape) {
 
   if (row.type === "vickrey") {
     return [
-      "Anda memenangkan lelang Vickrey dan perlu menyelesaikan pembayaran dalam 24 jam.",
-      "Nominal bayar mengikuti harga final sesuai mekanisme Vickrey.",
+      "Anda memenangkan Lelang Tertutup dan perlu menyelesaikan pembayaran dalam 24 jam.",
+      "Nominal bayar mengikuti harga akhir sesuai mekanisme lelang.",
       "Unggah bukti transfer agar admin unit dapat memverifikasi pembayaran."
     ];
   }
 
   return [
-    "Transaksi fixed price sudah dibuat.",
+    "Transaksi harga tetap sudah dibuat.",
     "Transfer sesuai total pembayaran ke rekening unit.",
     "Unggah bukti pembayaran dari halaman ini sebelum batas waktu berakhir."
   ];
@@ -275,9 +275,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     bankBranch: row.account?.branchName ?? undefined,
     paymentProof: proof.proofUrl,
     rejectionReason: row.rejectionReason ?? undefined,
-    winnerContext: isVickrey
-      ? "Pemenang Vickrey membayar harga final yang dihitung sistem."
-      : undefined,
+    winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
     receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined
   };
@@ -308,9 +306,9 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
 
   let note = "Hash bid tertutup tersimpan. Reveal nominal setelah deadline agar bid bisa ikut settlement.";
   if (status === "GAGAL") {
-    note = "Pembayaran Vickrey gagal karena melewati batas waktu. Akses lelang dapat dibatasi sesuai aturan.";
+    note = "Pembayaran Lelang Tertutup gagal karena melewati batas waktu. Akses lelang dapat dibatasi sesuai aturan.";
   } else if (status === "MENANG") {
-    note = `Anda memenangkan lelang. Harga bayar Vickrey adalah ${formatRupiah(paymentAmount ?? finalPrice ?? toNumber(row.basePrice))}.`;
+    note = `Anda memenangkan Lelang Tertutup. Harga akhir mengikuti mekanisme lelang: ${formatRupiah(paymentAmount ?? finalPrice ?? toNumber(row.basePrice))}.`;
   } else if (status === "TIDAK_MENANG") {
     note = "Bid tidak menjadi pemenang sesi ini.";
   } else if (canReveal) {
@@ -318,9 +316,9 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   } else if (isEscrowed && !ended) {
     note = "Bid terenkripsi tersimpan. Sistem akan membuka escrow otomatis saat deadline lelang berakhir.";
   } else if (isEscrowed) {
-    note = "Deadline sudah lewat. Sistem sedang membuka escrow dan menghitung hasil Vickrey otomatis.";
+    note = "Deadline sudah lewat. Sistem sedang membuka escrow dan menghitung hasil Lelang Tertutup otomatis.";
   } else if (isRevealed) {
-    note = "Bid sudah direveal dan menunggu settlement hasil Vickrey.";
+    note = "Bid sudah direveal dan menunggu penentuan hasil Lelang Tertutup.";
   } else if (ended && revealEnded) {
     note = "Periode reveal selesai. Bid belum direveal, sehingga tidak ikut penentuan pemenang.";
   }

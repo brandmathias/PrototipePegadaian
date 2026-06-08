@@ -234,7 +234,7 @@ export function serializeAdminPemasaran(
       if (extra.transaction) {
         return "Pembeli sudah mulai proses pembayaran dan menunggu verifikasi admin.";
       }
-      return "Belum ada transaksi pembeli pada sesi fixed price ini.";
+      return "Belum ada transaksi pembeli pada sesi harga tetap ini.";
     }
 
     if (visibility === "TERKUNCI") {
@@ -354,7 +354,7 @@ export function serializeAdminTransaction(
     deadlineAt: row.paymentDeadline?.toISOString(),
     proofFile: proof.proofUrl,
     rejectionReason: row.rejectionReason,
-    pemasaranMode: row.type === "fixed_price" ? "Fixed Price" : "Vickrey",
+    pemasaranMode: row.type === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup",
     bankName: row.bankName ?? "-",
     accountNumber: row.accountNumber ?? "-",
     accountName: row.accountName ?? "-",

@@ -52,12 +52,12 @@ const VICKREY_TERMS = [
 const VIOLATION_LEVELS = [
   {
     duration: "7 hari",
-    impact: "Tidak bisa ikut Vickrey.",
+    impact: "Tidak bisa ikut Lelang Tertutup.",
     label: "Level 1"
   },
   {
     duration: "30 hari",
-    impact: "Tidak bisa ikut Vickrey dan tidak bisa membuat pembelian Fixed Price baru.",
+    impact: "Tidak bisa ikut Lelang Tertutup dan tidak bisa membuat pembelian Harga Tetap baru.",
     label: "Level 2"
   },
   {
@@ -163,7 +163,7 @@ export function VickreyBidForm({
   const helperText = useMemo(() => {
     if (blocked) {
       const untilLabel = blacklistUntil ? formatAppDate(blacklistUntil) : "batas waktu belum tersedia";
-      return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut lelang Vickrey.`;
+      return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut Lelang Tertutup.`;
     }
 
     if (hasExistingBid) {
@@ -499,7 +499,7 @@ export function VickreyBidForm({
       <Card className="overflow-hidden border border-border/70 bg-white">
         <CardHeader className="space-y-3 border-b border-border/60 bg-surface-low/60">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-secondary">
-            Lelang Vickrey
+            Lelang Tertutup
           </p>
           <CardTitle>Masukkan penawaran tertutup Anda</CardTitle>
           <p className="text-sm leading-relaxed text-muted-foreground">

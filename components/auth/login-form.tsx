@@ -211,7 +211,7 @@ export function LoginForm() {
         </span>
       </Button>
       <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 text-sm leading-7 text-emerald-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-        Kelola pembelian harga tetap, pantau sesi Vickrey, cek status pembayaran,
+        Kelola pembelian harga tetap, pantau sesi Lelang Tertutup, cek status pembayaran,
         dan buka nota transaksi dari satu area akun pembeli.
       </div>
       <div className="text-center text-sm text-emerald-50/62">
