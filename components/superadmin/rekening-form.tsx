@@ -1,8 +1,8 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,9 @@ type RekeningFormProps = {
   unitId: string;
   mode?: "create" | "update";
   accountId?: string;
+  showTitle?: boolean;
+  showActiveToggle?: boolean;
+  submitLabel?: string;
   initialValue?: {
     bankName: string;
     accountNumber: string;
@@ -29,6 +32,9 @@ export function RekeningForm({
   unitId,
   mode = "create",
   accountId,
+  showTitle = true,
+  showActiveToggle = true,
+  submitLabel,
   initialValue
 }: RekeningFormProps) {
   const router = useRouter();
@@ -36,11 +42,14 @@ export function RekeningForm({
   const [bankName, setBankName] = useState(initialValue?.bankName ?? "");
   const [accountNumber, setAccountNumber] = useState(initialValue?.accountNumber ?? "");
   const [accountHolderName, setAccountHolderName] = useState(initialValue?.accountHolderName ?? "");
-  const [branchName, setBranchName] = useState(initialValue?.branchName ?? "");
   const [isActive, setIsActive] = useState(initialValue?.isActive ?? true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const generatedId = useId();
+  const bankId = `${generatedId}-rekening-bank`;
+  const accountNumberId = `${generatedId}-rekening-number`;
+  const accountHolderId = `${generatedId}-rekening-holder`;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -60,7 +69,7 @@ export function RekeningForm({
           bankName,
           accountNumber,
           accountHolderName,
-          branchName,
+          branchName: initialValue?.branchName ?? "",
           isActive
         })
       });
@@ -85,7 +94,6 @@ export function RekeningForm({
         setBankName("");
         setAccountNumber("");
         setAccountHolderName("");
-        setBranchName("");
         setIsActive(true);
       }
       router.refresh();
@@ -107,70 +115,97 @@ export function RekeningForm({
     }
   }
 
+  const resolvedSubmitLabel =
+    submitLabel ?? (mode === "create" ? "Simpan Rekening" : "Perbarui Rekening");
+
+  const form = (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={bankId}>
+            Nama bank
+          </label>
+          <Input
+            autoComplete="off"
+            id={bankId}
+            onChange={(event) => setBankName(event.target.value)}
+            placeholder="Contoh: Bank Mandiri"
+            value={bankName}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={accountNumberId}>
+            Nomor rekening
+          </label>
+          <Input
+            autoComplete="off"
+            id={accountNumberId}
+            onChange={(event) => setAccountNumber(event.target.value)}
+            placeholder="Masukkan nomor rekening"
+            value={accountNumber}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={accountHolderId}>
+          Nama pemilik rekening
+        </label>
+        <Input
+          autoComplete="off"
+          id={accountHolderId}
+          onChange={(event) => setAccountHolderName(event.target.value)}
+          placeholder="Nama pemilik rekening"
+          value={accountHolderName}
+        />
+      </div>
+      {showActiveToggle ? (
+        <label className="flex items-center gap-3 text-sm text-foreground">
+          <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
+          Jadikan sebagai rekening aktif unit
+        </label>
+      ) : null}
+      {error ? (
+        <InlineFeedback className="feedback-pop" description={error} title="Cek lagi data rekening ini." variant="error" />
+      ) : null}
+      {!error && message ? (
+        <InlineFeedback
+          className="feedback-pop"
+          description="Pastikan nama bank, pemilik, dan nomor rekening sesuai dokumen resmi unit."
+          title={message}
+          variant="success"
+        />
+      ) : null}
+      <Button
+        className="h-10 rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+        disabled={loading}
+        type="submit"
+        variant={mode === "create" ? "secondary" : "default"}
+      >
+        {loading ? (
+          <>
+            <LoaderCircle className="size-4 animate-spin" />
+            Menyimpan...
+          </>
+        ) : (
+          <>
+            {mode === "create" ? <Plus className="size-4" /> : null}
+            {resolvedSubmitLabel}
+          </>
+        )}
+      </Button>
+    </form>
+  );
+
+  if (!showTitle) {
+    return form;
+  }
+
   return (
     <Card className="border border-border/70 bg-white">
       <CardHeader>
         <CardTitle>{mode === "create" ? "Tambah rekening unit" : "Perbarui rekening unit"}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Nama bank
-            </label>
-            <Input onChange={(event) => setBankName(event.target.value)} placeholder="Contoh: Bank Mandiri" value={bankName} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Nomor rekening
-            </label>
-            <Input onChange={(event) => setAccountNumber(event.target.value)} placeholder="Masukkan nomor rekening" value={accountNumber} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Nama pemilik rekening
-            </label>
-            <Input
-              onChange={(event) => setAccountHolderName(event.target.value)}
-              placeholder="Nama pemilik rekening"
-              value={accountHolderName}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              Cabang bank
-            </label>
-            <Input onChange={(event) => setBranchName(event.target.value)} placeholder="Contoh: Manado Pusat" value={branchName} />
-          </div>
-          <label className="flex items-center gap-3 text-sm text-foreground">
-            <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
-            Jadikan sebagai rekening aktif unit
-          </label>
-          {error ? (
-            <InlineFeedback className="feedback-pop" description={error} title="Cek lagi data rekening ini." variant="error" />
-          ) : null}
-          {!error && message ? (
-            <InlineFeedback
-              className="feedback-pop"
-              description="Pastikan nama bank, pemilik, dan nomor rekening sesuai dokumen resmi unit."
-              title={message}
-              variant="success"
-            />
-          ) : null}
-          <Button disabled={loading} type="submit">
-            {loading ? (
-              <>
-                <LoaderCircle className="size-4 animate-spin" />
-                Menyimpan...
-              </>
-            ) : mode === "create" ? (
-              "Simpan Rekening"
-            ) : (
-              "Perbarui Rekening"
-            )}
-          </Button>
-        </form>
-      </CardContent>
+      <CardContent>{form}</CardContent>
     </Card>
   );
 }
@@ -254,6 +289,78 @@ export function ActivateRekeningButton({ unitId, account }: ActivateRekeningButt
         onOpenChange={setOpen}
         open={open}
         title="Jadikan rekening ini sebagai rekening aktif?"
+      />
+    </>
+  );
+}
+
+type DeleteRekeningButtonProps = {
+  unitId: string;
+  account: {
+    id: string;
+    bankName: string;
+    accountNumber: string;
+    status: string;
+  };
+};
+
+export function DeleteRekeningButton({ unitId, account }: DeleteRekeningButtonProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  async function handleClick() {
+    setLoading(true);
+
+    try {
+      await fetchSuperAdminJson(`/api/superadmin/unit/${unitId}/rekening/${account.id}`, {
+        method: "DELETE"
+      });
+      toast({
+        title: "Rekening unit berhasil dihapus.",
+        description: `${account.bankName} ${account.accountNumber} tidak lagi tampil pada daftar rekening unit.`,
+        variant: "success"
+      });
+      router.refresh();
+      setOpen(false);
+    } catch (caughtError) {
+      toast({
+        title: "Rekening belum bisa dihapus.",
+        description: caughtError instanceof Error ? caughtError.message : "Terjadi kendala saat menghapus rekening unit.",
+        variant: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <Button
+        aria-label={`Hapus rekening ${account.bankName}`}
+        className="ml-auto size-8 rounded-xl p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-600"
+        disabled={loading}
+        onClick={() => setOpen(true)}
+        type="button"
+        variant="ghost"
+      >
+        {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+      </Button>
+      <ConfirmDialog
+        cancelLabel="Batal"
+        confirmLabel="Ya, hapus"
+        description={
+          account.status === "AKTIF"
+            ? "Rekening utama aktif akan dihapus. Jika masih ada rekening lain, sistem akan menjadikan salah satunya sebagai rekening aktif baru."
+            : "Rekening ini akan dihapus dari daftar rekening operasional unit."
+        }
+        loading={loading}
+        onConfirm={handleClick}
+        onOpenChange={setOpen}
+        open={open}
+        title="Hapus rekening unit ini?"
+        variant="destructive"
       />
     </>
   );

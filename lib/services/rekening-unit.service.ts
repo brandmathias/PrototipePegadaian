@@ -125,3 +125,48 @@ export async function updateUnitAccount(
 
   return listUnitAccounts(unitId);
 }
+
+export async function deleteUnitAccount(unitId: string, accountId: string) {
+  await ensureUnitExists(unitId);
+
+  const [account] = await db
+    .select()
+    .from(unitAccounts)
+    .where(and(eq(unitAccounts.id, accountId), eq(unitAccounts.unitId, unitId)))
+    .limit(1);
+
+  if (!account) {
+    throw new Error("Rekening unit belum ditemukan.");
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(unitAccounts)
+      .where(and(eq(unitAccounts.id, accountId), eq(unitAccounts.unitId, unitId)));
+
+    if (!account.isActive) {
+      return;
+    }
+
+    const [replacement] = await tx
+      .select()
+      .from(unitAccounts)
+      .where(eq(unitAccounts.unitId, unitId))
+      .orderBy(desc(unitAccounts.createdAt))
+      .limit(1);
+
+    if (!replacement) {
+      return;
+    }
+
+    await tx
+      .update(unitAccounts)
+      .set({
+        isActive: true,
+        updatedAt: new Date()
+      })
+      .where(eq(unitAccounts.id, replacement.id));
+  });
+
+  return listUnitAccounts(unitId);
+}

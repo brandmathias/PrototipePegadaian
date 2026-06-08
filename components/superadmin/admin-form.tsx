@@ -1,8 +1,8 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Trash2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,9 @@ type AdminFormProps = {
   mode?: "create" | "update";
   adminId?: string;
   showTitle?: boolean;
+  showNationalIdField?: boolean;
+  showUnitField?: boolean;
+  submitLabel?: string;
   initialValue?: {
     name: string;
     email: string;
@@ -31,6 +34,9 @@ export function AdminUnitForm({
   mode = "create",
   adminId,
   showTitle = true,
+  showNationalIdField = false,
+  showUnitField = true,
+  submitLabel,
   initialValue
 }: AdminFormProps) {
   const router = useRouter();
@@ -38,18 +44,34 @@ export function AdminUnitForm({
   const [name, setName] = useState(initialValue?.name ?? "");
   const [email, setEmail] = useState(initialValue?.email ?? "");
   const [phoneNumber, setPhoneNumber] = useState(initialValue?.phoneNumber ?? "");
+  const [nationalId, setNationalId] = useState("");
   const [unitId, setUnitId] = useState(initialValue?.unitId ?? units[0]?.id ?? "");
   const [temporaryPassword, setTemporaryPassword] = useState("");
   const [isActive, setIsActive] = useState(initialValue?.isActive ?? true);
+  const [credentialFieldsUnlocked, setCredentialFieldsUnlocked] = useState(mode === "update");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const generatedId = useId();
+  const nameId = `${generatedId}-admin-name`;
+  const emailId = `${generatedId}-admin-email`;
+  const phoneId = `${generatedId}-admin-phone`;
+  const nationalIdId = `${generatedId}-admin-national-id`;
+  const unitIdField = `${generatedId}-admin-unit`;
+  const passwordId = `${generatedId}-admin-password`;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setLoading(true);
     setError(null);
     setMessage(null);
+
+    const normalizedNationalId = nationalId.replace(/\D/g, "");
+    if (showNationalIdField && normalizedNationalId && normalizedNationalId.length !== 16) {
+      setError("NIK admin unit harus 16 digit bila diisi.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const path = mode === "create" ? "/api/superadmin/admin" : `/api/superadmin/admin/${adminId}`;
@@ -85,8 +107,10 @@ export function AdminUnitForm({
         setName("");
         setEmail("");
         setPhoneNumber("");
+        setNationalId("");
         setTemporaryPassword("");
         setUnitId(units[0]?.id ?? "");
+        setCredentialFieldsUnlocked(false);
       }
       router.refresh();
     } catch (caughtError) {
@@ -107,86 +131,193 @@ export function AdminUnitForm({
     }
   }
 
+  const resolvedSubmitLabel =
+    submitLabel ?? (mode === "create" ? "Simpan Admin Unit" : "Perbarui Admin Unit");
+
+  const form = (
+    <form autoComplete="off" className="space-y-4" onSubmit={handleSubmit}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={nameId}>
+            Nama lengkap
+          </label>
+          <Input
+            autoComplete="off"
+            id={nameId}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Nama admin unit"
+            value={name}
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={emailId}>
+            Email
+          </label>
+          <Input
+            autoComplete="off"
+            id={emailId}
+            name="new-admin-unit-email"
+            onChange={(event) => setEmail(event.target.value)}
+            onFocus={() => setCredentialFieldsUnlocked(true)}
+            placeholder="Email admin unit"
+            readOnly={!credentialFieldsUnlocked}
+            type="email"
+            value={email}
+          />
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={phoneId}>
+            Nomor telepon
+          </label>
+          <Input
+            autoComplete="off"
+            id={phoneId}
+            onChange={(event) => setPhoneNumber(event.target.value)}
+            placeholder="Nomor telepon admin"
+            value={phoneNumber}
+          />
+        </div>
+        {showNationalIdField ? (
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={nationalIdId}>
+              NIK Admin
+            </label>
+            <Input
+              autoComplete="off"
+              id={nationalIdId}
+              inputMode="numeric"
+              maxLength={19}
+              onChange={(event) => setNationalId(event.target.value)}
+              placeholder="16 digit NIK"
+              value={nationalId}
+            />
+            <p className="text-xs font-semibold leading-5 text-muted-foreground">
+              Unik sebagai catatan form, tidak dikirim sebagai identitas akun buyer.
+            </p>
+          </div>
+        ) : null}
+        {showUnitField ? (
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={unitIdField}>
+              Unit penugasan
+            </label>
+            {units.length === 1 ? (
+              <div
+                className="min-h-11 rounded-xl border border-primary/10 bg-surface-low px-4 py-2 text-sm font-semibold text-foreground"
+                id={unitIdField}
+              >
+                <span className="block truncate">{units[0]?.name}</span>
+                <span className="mt-0.5 block text-xs font-bold uppercase tracking-[0.16em] text-primary/65">
+                  {units[0]?.code}
+                </span>
+              </div>
+            ) : (
+              <select
+                className="h-11 w-full rounded-xl border border-transparent bg-surface-low px-4 py-2 text-sm font-semibold text-foreground focus-visible:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                id={unitIdField}
+                onChange={(event) => setUnitId(event.target.value)}
+                value={unitId}
+              >
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.name} ({unit.code})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        ) : null}
+      </div>
+      {mode === "create" ? (
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor={passwordId}>
+            Password sementara
+          </label>
+          <Input
+            autoComplete="new-password"
+            id={passwordId}
+            name="new-admin-unit-temporary-password"
+            onChange={(event) => setTemporaryPassword(event.target.value)}
+            onFocus={() => setCredentialFieldsUnlocked(true)}
+            placeholder="Password sementara"
+            readOnly={!credentialFieldsUnlocked}
+            type="password"
+            value={temporaryPassword}
+          />
+        </div>
+      ) : (
+        <label className="flex items-center gap-3 text-sm text-foreground">
+          <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
+          Akun admin aktif dan dapat login
+        </label>
+      )}
+      {error ? (
+        <InlineFeedback
+          className="feedback-pop"
+          description={error}
+          title={mode === "create" ? "Lengkapi data admin terlebih dahulu." : "Periksa lagi perubahan admin ini."}
+          variant="error"
+        />
+      ) : null}
+      {!error && message ? (
+        <InlineFeedback
+          className="feedback-pop"
+          description={
+            mode === "create"
+              ? "Simpan kredensial sementara sebelum akun diberikan ke admin unit terkait."
+              : "Perubahan baru akan langsung dipakai pada sesi login berikutnya."
+          }
+          title={message}
+          variant="success"
+        />
+      ) : null}
+      <Button
+        className="h-10 rounded-[0.9rem] border-[#0a6a49]/28 px-4 text-[0.75rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+        disabled={loading || units.length === 0}
+        type="submit"
+        variant={mode === "create" ? "secondary" : "default"}
+      >
+        {loading
+          ? (
+            <>
+              <LoaderCircle className="size-4 animate-spin" />
+              {mode === "create" ? "Membuat akun..." : "Menyimpan perubahan..."}
+            </>
+          )
+          : (
+            <>
+              {mode === "create" ? <UserPlus className="size-4" /> : null}
+              {resolvedSubmitLabel}
+            </>
+          )}
+      </Button>
+    </form>
+  );
+
+  if (!showTitle) {
+    return form;
+  }
+
   return (
     <Card className="border border-border/70 bg-white">
-      {showTitle ? (
-        <CardHeader>
-          <CardTitle>{mode === "create" ? "Tambah admin unit" : "Perbarui admin unit"}</CardTitle>
-        </CardHeader>
-      ) : null}
-      <CardContent className={showTitle ? undefined : "p-0"}>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input onChange={(event) => setName(event.target.value)} placeholder="Nama admin unit" value={name} />
-          <Input onChange={(event) => setEmail(event.target.value)} placeholder="Email admin unit" type="email" value={email} />
-          <Input onChange={(event) => setPhoneNumber(event.target.value)} placeholder="Nomor telepon admin" value={phoneNumber} />
-          <select
-            className="h-11 w-full rounded-xl border border-transparent bg-surface-low px-4 py-2 text-sm text-foreground focus-visible:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-            onChange={(event) => setUnitId(event.target.value)}
-            value={unitId}
-          >
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unit.name} ({unit.code})
-              </option>
-            ))}
-          </select>
-          {mode === "create" ? (
-            <Input
-              onChange={(event) => setTemporaryPassword(event.target.value)}
-              placeholder="Password sementara"
-              type="password"
-              value={temporaryPassword}
-            />
-          ) : (
-            <label className="flex items-center gap-3 text-sm text-foreground">
-              <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
-              Akun admin aktif dan dapat login
-            </label>
-          )}
-          {error ? (
-            <InlineFeedback
-              className="feedback-pop"
-              description={error}
-              title={mode === "create" ? "Lengkapi data admin terlebih dahulu." : "Periksa lagi perubahan admin ini."}
-              variant="error"
-            />
-          ) : null}
-          {!error && message ? (
-            <InlineFeedback
-              className="feedback-pop"
-              description={
-                mode === "create"
-                  ? "Simpan kredensial sementara sebelum akun diberikan ke admin unit terkait."
-                  : "Perubahan baru akan langsung dipakai pada sesi login berikutnya."
-              }
-              title={message}
-              variant="success"
-            />
-          ) : null}
-          <Button disabled={loading || units.length === 0} type="submit">
-            {loading
-              ? (
-                <>
-                  <LoaderCircle className="size-4 animate-spin" />
-                  {mode === "create" ? "Membuat akun..." : "Menyimpan perubahan..."}
-                </>
-              )
-              : mode === "create"
-                ? "Simpan Admin Unit"
-                : "Perbarui Admin Unit"}
-          </Button>
-        </form>
-      </CardContent>
+      <CardHeader>
+        <CardTitle>{mode === "create" ? "Tambah admin unit" : "Perbarui admin unit"}</CardTitle>
+      </CardHeader>
+      <CardContent>{form}</CardContent>
     </Card>
   );
 }
 
 type DeactivateAdminButtonProps = {
   adminId: string;
+  adminName?: string;
+  compact?: boolean;
   disabled?: boolean;
 };
 
-export function DeactivateAdminButton({ adminId, disabled }: DeactivateAdminButtonProps) {
+export function DeactivateAdminButton({ adminId, adminName, compact = false, disabled }: DeactivateAdminButtonProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -218,25 +349,34 @@ export function DeactivateAdminButton({ adminId, disabled }: DeactivateAdminButt
 
   return (
     <>
-      <Button disabled={disabled || loading} onClick={() => setOpen(true)} type="button" variant="secondary">
+      <Button
+        aria-label={compact ? `Hapus admin ${adminName ?? "unit"}` : undefined}
+        className={compact ? "ml-auto size-8 rounded-xl p-0 text-rose-500 hover:bg-rose-50 hover:text-rose-600" : undefined}
+        disabled={disabled || loading}
+        onClick={() => setOpen(true)}
+        type="button"
+        variant={compact ? "ghost" : "secondary"}
+      >
         {loading ? (
           <>
             <LoaderCircle className="size-4 animate-spin" />
-            Memproses...
+            {compact ? null : "Memproses..."}
           </>
+        ) : compact ? (
+          <Trash2 className="size-4" />
         ) : (
           "Nonaktifkan Akun"
         )}
       </Button>
       <ConfirmDialog
         cancelLabel="Batal"
-        confirmLabel="Ya, nonaktifkan"
+        confirmLabel={compact ? "Ya, hapus" : "Ya, nonaktifkan"}
         description="Akun ini akan langsung kehilangan akses login. Session aktif yang masih tersisa juga akan diputus."
         loading={loading}
         onConfirm={handleClick}
         onOpenChange={setOpen}
         open={open}
-        title="Nonaktifkan akun admin ini?"
+        title={compact ? "Hapus admin dari unit ini?" : "Nonaktifkan akun admin ini?"}
         variant="destructive"
       />
     </>

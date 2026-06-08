@@ -14,6 +14,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   AlertTriangle,
+  ArrowLeft,
   BadgeCheck,
   Ban,
   BarChart3,
@@ -86,6 +87,7 @@ import {
 } from "@/components/superadmin/admin-form";
 import {
   ActivateRekeningButton,
+  DeleteRekeningButton,
   RekeningForm,
 } from "@/components/superadmin/rekening-form";
 import {
@@ -2173,147 +2175,411 @@ function getUnitDetailVisiblePages(currentPage: number, totalPages: number) {
   );
 }
 
+function SuperAdminUnitDetailStepNumber({ value }: { value: string }) {
+  return (
+    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#006747] font-headline text-[0.78rem] font-black text-white shadow-[0_16px_30px_-22px_rgba(0,103,71,0.52)]">
+      {value}
+    </span>
+  );
+}
+
+function SuperAdminUnitDetailSetupSection({
+  children,
+  description,
+  icon: Icon,
+  step,
+  title,
+}: {
+  children: ReactNode;
+  description: string;
+  icon: LucideIcon;
+  step: string;
+  title: string;
+}) {
+  return (
+    <section className="border-t border-[#edf2ee] first:border-t-0">
+      <div className="flex flex-col gap-4 px-4 py-5 sm:px-5 lg:px-6">
+        <div className="flex items-center gap-3 border-b border-[#edf2ee] pb-3">
+          <SuperAdminUnitDetailStepNumber value={step} />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Icon className="size-4 text-[#006747]" strokeWidth={2} />
+              <h3 className="font-headline text-[0.98rem] font-black tracking-[-0.02em] text-[#13211c]">
+                {title}
+              </h3>
+            </div>
+            <p className="text-[0.72rem] font-semibold leading-5 text-black/42">
+              {description}
+            </p>
+          </div>
+        </div>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminUnitDetailInfoTile({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="rounded-[1rem] border border-[#dfe8e3] bg-[#fbfcfa] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+      <div className="flex items-start gap-2.5">
+        <span className="grid size-8 shrink-0 place-items-center rounded-[0.8rem] border border-[#d9e8df] bg-white text-[#006747]">
+          <Icon className="size-4" strokeWidth={2} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] text-black/36">
+            {label}
+          </p>
+          <div className="mt-1 break-words text-[0.8rem] font-bold leading-5 text-[#13211c]">
+            {value}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminUnitDetailEmptyLedger({
+  description,
+  icon: Icon,
+  title,
+}: {
+  description: string;
+  icon: LucideIcon;
+  title: string;
+}) {
+  return (
+    <div className="grid min-h-36 place-items-center px-4 py-7 text-center">
+      <div className="max-w-sm">
+        <span className="mx-auto grid size-10 place-items-center rounded-full bg-[#f2faf5] text-[#006747] ring-1 ring-[#d9e8df]">
+          <Icon className="size-5" strokeWidth={2} />
+        </span>
+        <p className="mt-3 text-[0.84rem] font-black text-[#13211c]">{title}</p>
+        <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-black/42">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminUnitDetailPopupRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="rounded-[0.95rem] border border-[#e4ece7] bg-[#fbfcfa] px-3.5 py-3">
+      <div className="flex items-start gap-2.5">
+        <span className="grid size-8 shrink-0 place-items-center rounded-[0.8rem] border border-[#d9e8df] bg-white text-[#006747]">
+          <Icon className="size-4" strokeWidth={2} />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[0.62rem] font-black uppercase tracking-[0.16em] text-black/38">
+            {label}
+          </p>
+          <div className="mt-1 break-words text-[0.82rem] font-bold leading-5 text-[#13211c]">
+            {value}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminUnitDetailPopup({
+  children,
+  icon: Icon,
+  onOpenChange,
+  open,
+  subtitle,
+  title,
+}: {
+  children: ReactNode;
+  icon: LucideIcon;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  subtitle: string;
+  title: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onOpenChange(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onOpenChange, open]);
+
+  if (!mounted || !open) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
+      <button
+        aria-label="Tutup panel detail"
+        className="absolute inset-0 bg-[#052315]/34 backdrop-blur-[3px]"
+        onClick={() => onOpenChange(false)}
+        type="button"
+      />
+      <section
+        aria-label={title}
+        aria-modal="true"
+        className="toast-enter relative z-[121] w-full max-w-xl overflow-hidden rounded-[1.55rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-36px_rgba(8,69,50,0.38)]"
+        role="dialog"
+      >
+        <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-5 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-[1rem] border border-[#cde7da] bg-[#ecfff3] text-[#006747]">
+                <Icon className="size-5" strokeWidth={2} />
+              </span>
+              <div className="min-w-0">
+                <p className="font-headline text-[1.02rem] font-black tracking-[-0.02em] text-[#13211c]">
+                  {title}
+                </p>
+                <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-black/48">
+                  {subtitle}
+                </p>
+              </div>
+            </div>
+            <button
+              aria-label="Tutup panel detail"
+              className="grid size-9 shrink-0 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] active:scale-[0.98]"
+              onClick={() => onOpenChange(false)}
+              type="button"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+        <div className="grid gap-3 p-5 sm:grid-cols-2">{children}</div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
+function SuperAdminUnitDetailAccountLedger({
+  accounts,
+  unitId,
+}: {
+  accounts: SuperAdminUnitAccount[];
+  unitId: string;
+}) {
+  const [previewAccount, setPreviewAccount] = useState<SuperAdminUnitAccount | null>(null);
+
+  return (
+    <>
+      <div className="min-w-0 overflow-hidden rounded-[1rem] border border-[#dfe8e3] bg-white">
+        <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-4 py-3 text-[0.66rem] font-black uppercase tracking-[0.18em] text-black/40">
+          Daftar Rekening Terdaftar ({accounts.length})
+        </div>
+        <div className="hidden grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
+          <span>Bank</span>
+          <span>Nomor Rekening</span>
+          <span>Nama Pemilik</span>
+          <span className="text-right">Status</span>
+          <span className="text-right">Aksi</span>
+        </div>
+        {accounts.length === 0 ? (
+          <SuperAdminUnitDetailEmptyLedger
+            description="Rekening yang ditambahkan akan tampil sebagai ledger audit."
+            icon={WalletCards}
+            title="Belum ada rekening unit"
+          />
+        ) : (
+          <div className="divide-y divide-[#edf2ee]">
+            {accounts.map((account) => (
+              <div
+                className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                key={account.id}
+              >
+                <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
+                  <Landmark className="size-4 shrink-0 text-[#006747]" />
+                  <span className="truncate">{account.bankName}</span>
+                </div>
+                <p className="truncate font-mono font-bold text-black/58">
+                  {account.accountNumber}
+                </p>
+                <p className="truncate font-semibold text-black/55">
+                  {account.accountHolder}
+                </p>
+                <div className="flex justify-start md:justify-end">
+                  {account.status === "AKTIF" ? (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-emerald-700">
+                      Utama
+                    </span>
+                  ) : (
+                    <StatusBadge value={account.status} />
+                  )}
+                </div>
+                <div className="flex justify-start gap-1.5 md:justify-end">
+                  <button
+                    aria-label={`Lihat detail rekening ${account.bankName}`}
+                    className="grid size-8 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98]"
+                    onClick={() => setPreviewAccount(account)}
+                    type="button"
+                  >
+                    <Eye className="size-4" />
+                  </button>
+                  <DeleteRekeningButton account={account} unitId={unitId} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <SuperAdminUnitDetailPopup
+        icon={WalletCards}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setPreviewAccount(null);
+          }
+        }}
+        open={Boolean(previewAccount)}
+        subtitle="Informasi rekening operasional yang sudah tersimpan pada unit ini."
+        title="Detail Rekening Unit"
+      >
+        <SuperAdminUnitDetailPopupRow icon={Landmark} label="Bank" value={previewAccount?.bankName ?? "-"} />
+        <SuperAdminUnitDetailPopupRow icon={CreditCard} label="Nomor Rekening" value={previewAccount?.accountNumber ?? "-"} />
+        <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Pemilik" value={previewAccount?.accountHolder ?? "-"} />
+        <SuperAdminUnitDetailPopupRow icon={Building2} label="Cabang" value={previewAccount?.branch || "-"} />
+        <SuperAdminUnitDetailPopupRow
+          icon={CheckCircle2}
+          label="Status"
+          value={previewAccount ? <StatusBadge value={previewAccount.status} /> : "-"}
+        />
+      </SuperAdminUnitDetailPopup>
+    </>
+  );
+}
+
+function SuperAdminUnitDetailAdminLedger({
+  admins,
+}: {
+  admins: SuperAdminUnitDetail["admins"];
+}) {
+  const [previewAdmin, setPreviewAdmin] = useState<SuperAdminUnitDetail["admins"][number] | null>(null);
+
+  return (
+    <>
+      <div className="min-w-0 overflow-hidden rounded-[1rem] border border-[#dfe8e3] bg-white">
+        <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-4 py-3 text-[0.66rem] font-black uppercase tracking-[0.18em] text-black/40">
+          Daftar Admin Unit Terdaftar ({admins.length})
+        </div>
+        <div className="hidden grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
+          <span>Admin</span>
+          <span>Email</span>
+          <span>Telepon</span>
+          <span className="text-right">Status</span>
+          <span className="text-right">Aksi</span>
+        </div>
+        {admins.length === 0 ? (
+          <SuperAdminUnitDetailEmptyLedger
+            description="Admin penanggung jawab yang ditambahkan akan tampil di sini."
+            icon={UserCog}
+            title="Belum ada admin unit"
+          />
+        ) : (
+          <div className="divide-y divide-[#edf2ee]">
+            {admins.map((admin) => (
+              <div
+                className="grid gap-2 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                key={admin.id}
+              >
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.68rem] font-black text-[#006747]">
+                    {getSuperAdminInitials(admin.name)}
+                  </span>
+                  <span className="truncate font-black text-[#13211c]">{admin.name}</span>
+                </div>
+                <p className="flex min-w-0 items-center gap-1.5 truncate font-semibold text-black/50">
+                  <Mail className="size-3.5 shrink-0 text-[#006747]" />
+                  <span className="truncate">{admin.email}</span>
+                </p>
+                <p className="flex min-w-0 items-center gap-1.5 truncate font-semibold text-black/46">
+                  <Phone className="size-3.5 shrink-0 text-[#006747]" />
+                  <span className="truncate">{admin.phone || "-"}</span>
+                </p>
+                <div className="flex justify-start md:justify-end">
+                  <StatusBadge value={admin.status} />
+                </div>
+                <div className="flex justify-start gap-1.5 md:justify-end">
+                  <button
+                    aria-label={`Lihat detail admin ${admin.name}`}
+                    className="grid size-8 place-items-center rounded-xl text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] active:scale-[0.98]"
+                    onClick={() => setPreviewAdmin(admin)}
+                    type="button"
+                  >
+                    <Eye className="size-4" />
+                  </button>
+                  <DeactivateAdminButton
+                    adminId={admin.id}
+                    adminName={admin.name}
+                    compact
+                    disabled={admin.status.toLowerCase() !== "aktif"}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <SuperAdminUnitDetailPopup
+        icon={UserCog}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setPreviewAdmin(null);
+          }
+        }}
+        open={Boolean(previewAdmin)}
+        subtitle="Informasi admin penanggung jawab yang sudah terhubung ke unit ini."
+        title="Detail Admin Unit"
+      >
+        <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Admin" value={previewAdmin?.name ?? "-"} />
+        <SuperAdminUnitDetailPopupRow icon={Mail} label="Email" value={previewAdmin?.email ?? "-"} />
+        <SuperAdminUnitDetailPopupRow icon={Phone} label="Nomor Telepon" value={previewAdmin?.phone || "-"} />
+        <SuperAdminUnitDetailPopupRow
+          icon={CheckCircle2}
+          label="Status"
+          value={previewAdmin ? <StatusBadge value={previewAdmin.status} /> : "-"}
+        />
+      </SuperAdminUnitDetailPopup>
+    </>
+  );
+}
+
 export function SuperAdminUnitDetailPage({
   unit,
 }: {
   unit: SuperAdminUnitDetail | null;
 }) {
-  const items = unit?.items ?? [];
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState(unitDetailFilterAll);
-  const [statusFilter, setStatusFilter] = useState(unitDetailFilterAll);
-  const [modeFilter, setModeFilter] = useState(unitDetailFilterAll);
-  const [pageSize, setPageSize] = useState<(typeof unitDetailPageSizeOptions)[number]>(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const periodLabel = getMonitoringPeriodLabel();
-  const categoryOptions = useMemo(() => {
-    const categoryMap = new Map<string, string>();
-
-    items.forEach((item) => {
-      const value = normalizeUnitDetailOptionValue(item.category);
-      if (value && !categoryMap.has(value)) {
-        categoryMap.set(value, formatUnitDetailCategory(item.category));
-      }
-    });
-
-    return [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
-      ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
-        left.label.localeCompare(right.label, "id-ID"),
-      ),
-    ];
-  }, [items]);
-  const statusOptions = useMemo(
-    () => [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
-      ...Array.from(new Set(items.map((item) => item.operationalStatus).filter(Boolean)))
-        .sort()
-        .map((status) => ({ label: status, value: status })),
-    ],
-    [items],
-  );
-  const modeOptions = useMemo(
-    () => [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
-      ...unitDetailModeOptions,
-    ],
-    [],
-  );
-  const filteredItems = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return items.filter((item) => {
-      const matchesSearch =
-        !normalizedQuery ||
-        item.name.toLowerCase().includes(normalizedQuery) ||
-        item.code.toLowerCase().includes(normalizedQuery);
-      const matchesCategory =
-        categoryFilter === unitDetailFilterAll ||
-        normalizeUnitDetailOptionValue(item.category) === categoryFilter;
-      const matchesStatus =
-        statusFilter === unitDetailFilterAll || item.operationalStatus === statusFilter;
-      const matchesMode =
-        modeFilter === unitDetailFilterAll ||
-        getUnitDetailMarketingModeValue(item.marketingModeLabel) === modeFilter;
-
-      return matchesSearch && matchesCategory && matchesStatus && matchesMode;
-    });
-  }, [categoryFilter, items, modeFilter, searchQuery, statusFilter]);
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
-  const paginatedItems = filteredItems.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
-  const visiblePages = getUnitDetailVisiblePages(currentPage, totalPages);
-  const currentPageStart =
-    filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const currentPageEnd = Math.min(currentPage * pageSize, filteredItems.length);
-  const collateralCount = items.filter(
-    (item) => item.operationalStatus === "Barang Jaminan",
-  ).length;
-  const readyCount = items.filter(
-    (item) => item.operationalStatus === "Siap Dipasarkan",
-  ).length;
-  const marketedCount = items.filter(
-    (item) => item.operationalStatus === "Sedang Dipasarkan",
-  ).length;
-  const soldCount = items.filter((item) => item.operationalStatus === "Terjual").length;
-  const followUpCount = items.filter(
-    (item) => item.operationalStatus === "Ada Tindak Lanjut",
-  ).length;
-  const unitDetailMetrics = [
-    {
-      label: "Barang Jaminan",
-      value: collateralCount,
-      icon: Clock3,
-      iconClass: "bg-amber-50 text-amber-600 ring-amber-100",
-      filter: "Barang Jaminan",
-    },
-    {
-      label: "Siap Dipasarkan",
-      value: readyCount,
-      icon: Package,
-      iconClass: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-      filter: "Siap Dipasarkan",
-    },
-    {
-      label: "Sedang Dipasarkan",
-      value: marketedCount,
-      icon: Megaphone,
-      iconClass: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-      filter: "Sedang Dipasarkan",
-    },
-    {
-      label: "Terjual",
-      value: soldCount,
-      icon: BadgeCheck,
-      iconClass: "bg-blue-50 text-blue-700 ring-blue-100",
-      filter: "Terjual",
-    },
-    {
-      label: "Perlu Tindak Lanjut",
-      value: followUpCount,
-      icon: AlertTriangle,
-      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
-      filter: "Ada Tindak Lanjut",
-    },
-  ];
-  const resetFilters = () => {
-    setSearchQuery("");
-    setCategoryFilter(unitDetailFilterAll);
-    setStatusFilter(unitDetailFilterAll);
-    setModeFilter(unitDetailFilterAll);
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [categoryFilter, modeFilter, pageSize, searchQuery, statusFilter]);
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
-
   if (!unit) {
     return (
       <Card className="border border-border/70 bg-white p-8">
@@ -2324,364 +2590,135 @@ export function SuperAdminUnitDetailPage({
 
   const unitLabel = `${unit.name} (${unit.code})`;
   const unitTypeLabel = getUnitTypeLabel(`${unit.name} ${unit.code}`);
+  const unitOption = [{ id: unit.id, name: unit.name, code: unit.code }];
+  const profileFormId = `superadmin-unit-profile-${unit.id}`;
 
   return (
-    <div className="space-y-4 lg:space-y-5">
-      <nav
-        aria-label="Breadcrumb"
-        className="flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-[#536279]"
+    <div className="space-y-5 md:space-y-6">
+      <Link
+        className="inline-flex items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#0a6a49] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#064b35]"
+        href="/superadmin/manajemen-unit"
       >
-        <Link
-          className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[#00563b]"
-          href="/superadmin/monitoring-unit"
-        >
-          Monitoring Unit
-        </Link>
-        <span className="text-[#c5d1cb]">/</span>
-        <span>Detail Unit</span>
-        <span className="text-[#c5d1cb]">/</span>
-        <span className="text-[#13211c]">{unit.name}</span>
-      </nav>
+        <ArrowLeft className="size-3.5" />
+        Kembali ke Daftar Unit Pelaksana
+      </Link>
 
-      <section className="rounded-[1.25rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.48)] sm:p-5 lg:p-6">
-        <div className="flex flex-col gap-4 border-b border-[#edf2ee] pb-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-start gap-4">
-            <span className="grid size-14 shrink-0 place-items-center rounded-[1rem] bg-emerald-50 text-[#007a4d] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] ring-1 ring-emerald-100">
-              <Building2 className="size-7" strokeWidth={1.9} />
-            </span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-headline text-2xl font-black tracking-tight text-[#13211c]">
-                  {unitLabel}
-                </h2>
-                <StatusBadge value={unit.status} />
-              </div>
-              <p className="mt-1 text-sm font-semibold text-[#536279]">
+      <AdminPageHero
+        description="Perbarui profil unit, tambah rekening operasional, dan tambah admin penanggung jawab dari data unit yang sudah tersimpan."
+        eyebrow="Superadmin / Detail Unit"
+        icon={Building2}
+        title="Detail & Edit Unit Pelaksana"
+      />
+
+      <Card className="overflow-hidden rounded-[1.45rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-74px_rgba(8,69,50,0.34)]">
+        <CardContent className="p-0">
+          <SuperAdminUnitDetailSetupSection
+            description="Informasi unit sudah terisi dari database dan bisa diedit tanpa membuat unit baru."
+            icon={Building2}
+            step="01"
+            title="Profil & Lokasi Unit"
+          >
+            <div className="mb-4 flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-black/48">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-[#fbfcfa] px-2.5 py-1 text-[#475569]">
+                <Building2 className="size-3.5 text-[#006747]" />
+                {unitLabel}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-emerald-700">
+                <CheckCircle2 className="size-3.5" />
+                {unit.isActive ? "Unit aktif" : "Unit nonaktif"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-white px-2.5 py-1 text-[#475569]">
+                <Info className="size-3.5 text-[#006747]" />
                 {unitTypeLabel}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[0.72rem] font-bold text-[#52615d]">
-                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
-                  {formatDashboardCount(unit.adminCount)} admin aktif
-                </span>
-                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
-                  {formatDashboardCount(unit.accountCount)} rekening
-                </span>
-                <span className="rounded-full bg-[#f5faf7] px-3 py-1 ring-1 ring-[#dfeae4]">
-                  {unit.address}
-                </span>
+              </span>
+            </div>
+            <UnitForm
+              formId={profileFormId}
+              initialValue={{
+                address: unit.address,
+                code: unit.code,
+                isActive: unit.isActive,
+                name: unit.name,
+              }}
+              mode="update"
+              showSubmitButton={false}
+              showTitle={false}
+              submitLabel="Simpan Perubahan"
+              unitId={unit.id}
+            />
+          </SuperAdminUnitDetailSetupSection>
+
+          <SuperAdminUnitDetailSetupSection
+            description="Tambah rekening operasional baru dari halaman detail dan pantau rekening yang sudah tersimpan."
+            icon={Landmark}
+            step="02"
+            title="Rekening Operasional Cabang"
+          >
+            <div className="grid gap-5 xl:grid-cols-12 xl:gap-7">
+              <div className="xl:col-span-5">
+                <RekeningForm
+                  showActiveToggle={false}
+                  showTitle={false}
+                  submitLabel="Tambah Rekening"
+                  unitId={unit.id}
+                />
+              </div>
+              <div className="xl:col-span-7">
+                <SuperAdminUnitDetailAccountLedger accounts={unit.accounts} unitId={unit.id} />
               </div>
             </div>
-          </div>
+          </SuperAdminUnitDetailSetupSection>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="relative">
-              <select
-                aria-label="Periode monitoring unit"
-                className="h-11 w-full appearance-none rounded-xl border border-[#d8e4de] bg-white pl-10 pr-10 text-sm font-bold text-[#273954] shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#b9d8c7] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 sm:w-[13.75rem]"
-                defaultValue={periodLabel}
-              >
-                <option value={periodLabel}>Periode: {periodLabel}</option>
-              </select>
-              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#007a4d]" />
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#6a7d73]" />
-            </div>
-            <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-4 text-sm font-bold text-[#273954] shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#b9d8c7] hover:bg-[#fbfcfb] active:scale-[0.98]"
-              type="button"
-            >
-              <Download className="size-4" />
-              Export
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {unitDetailMetrics.map((metric) => {
-            const Icon = metric.icon;
-
-            return (
-              <button
-                aria-label={`Ringkasan ${metric.label}`}
-                className="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe8e2] bg-white p-4 text-left shadow-[0_20px_48px_-44px_rgba(8,69,50,0.44)] outline-none transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:shadow-[0_22px_58px_-44px_rgba(8,69,50,0.55)] focus-visible:ring-2 focus-visible:ring-primary/20"
-                key={metric.label}
-                onClick={() => setStatusFilter(metric.filter)}
-                type="button"
-              >
-                <span className="flex min-w-0 items-center gap-4">
-                  <span
-                    className={cn(
-                      "grid size-12 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
-                      metric.iconClass,
-                    )}
-                  >
-                    <Icon className="size-5" strokeWidth={1.9} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-headline text-3xl font-black leading-none tracking-[-0.04em] text-[#13211c]">
-                      {formatDashboardCount(metric.value)}
-                    </span>
-                    <span className="mt-1 block text-xs font-semibold text-[#536279]">
-                      {metric.label}
-                    </span>
-                  </span>
-                </span>
-                <ChevronRight className="size-5 shrink-0 text-[#9aa8a0] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5" />
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-5 rounded-xl border border-[#edf2ee] bg-[#fbfcfb] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-            <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#536279]" />
-              <input
-                aria-label="Cari nama barang atau ID barang"
-                className="h-11 w-full rounded-xl border border-[#d8e4de] bg-white pl-11 pr-4 text-sm font-semibold text-[#273954] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-[#8a97a8] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Cari nama barang atau ID barang..."
-                value={searchQuery}
-              />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[12rem_13rem_12.5rem_auto]">
-              {[
-                {
-                  label: "Kategori Barang",
-                  value: categoryFilter,
-                  onChange: setCategoryFilter,
-                  options: categoryOptions,
-                },
-                {
-                  label: "Status Operasional",
-                  value: statusFilter,
-                  onChange: setStatusFilter,
-                  options: statusOptions,
-                },
-                {
-                  label: "Mode Pemasaran",
-                  value: modeFilter,
-                  onChange: setModeFilter,
-                  options: modeOptions,
-                },
-              ].map((filter) => (
-                <UnitDetailSelect
-                  ariaLabel={filter.label}
-                  key={filter.label}
-                  label={filter.label}
-                  onChange={filter.onChange}
-                  options={filter.options}
-                  value={filter.value}
-                  widthClass="w-full"
+          <SuperAdminUnitDetailSetupSection
+            description="Admin unit bisa ditambahkan langsung untuk unit ini tanpa kembali ke direktori admin."
+            icon={UserCog}
+            step="03"
+            title="Otoritas Admin Penanggung Jawab"
+          >
+            <div className="grid gap-5 xl:grid-cols-12 xl:gap-7">
+              <div className="xl:col-span-5">
+                <AdminUnitForm
+                  showNationalIdField
+                  showTitle={false}
+                  showUnitField={false}
+                  submitLabel="Tambah Admin"
+                  units={unitOption}
                 />
-              ))}
-
-              <button
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-[#536279] transition-[transform,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:text-[#00563b] active:scale-[0.98]"
-                onClick={resetFilters}
-                type="button"
-              >
-                <RefreshCw className="size-4" />
-                Reset Filter
-              </button>
+              </div>
+              <div className="xl:col-span-7">
+                <SuperAdminUnitDetailAdminLedger admins={unit.admins} />
+              </div>
             </div>
+          </SuperAdminUnitDetailSetupSection>
+        </CardContent>
+      </Card>
+
+      <div className="sticky bottom-4 z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-4 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-2 text-[0.72rem] font-bold text-black/48">
+            <Info className="size-4 shrink-0 text-[#64756e]" />
+            <span className="min-w-0">
+              Perubahan profil unit disimpan melalui tombol ini. Rekening dan admin baru memakai tombol tambah pada section masing-masing.
+            </span>
           </div>
-        </div>
-
-        <div className="mt-5 overflow-hidden rounded-xl border border-[#dfe8e2]">
-          {filteredItems.length === 0 ? (
-            <EmptyState
-              className="p-8"
-              description="Tidak ada barang yang sesuai dengan pencarian atau filter saat ini."
-              icon={SearchX}
-              title="Barang tidak ditemukan"
-            />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1080px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-[#dfe8e2] bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
-                    <th className="w-16 px-5 py-3.5" scope="col">
-                      No
-                    </th>
-                    <th className="w-24 px-4 py-3.5" scope="col">
-                      Gambar
-                    </th>
-                    <th className="px-4 py-3.5" scope="col">
-                      Nama Barang & ID Barang
-                    </th>
-                    <th className="px-4 py-3.5 text-center" scope="col">
-                      Kategori
-                    </th>
-                    <th className="px-4 py-3.5 text-center" scope="col">
-                      Mode Pemasaran
-                    </th>
-                    <th className="px-4 py-3.5 text-right" scope="col">
-                      Nilai Barang
-                    </th>
-                    <th className="px-4 py-3.5 text-center" scope="col">
-                      Status Operasional
-                    </th>
-                    <th className="px-5 py-3.5 text-center" scope="col">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#edf2ee] bg-white">
-                  {paginatedItems.map((item, index) => (
-                    <tr
-                      className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
-                      key={item.id}
-                    >
-                      <td className="px-5 py-3.5 font-semibold text-[#273954]">
-                        {formatDashboardCount(currentPageStart + index)}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
-                          {item.imageUrl ? (
-                            <img
-                              alt={item.name}
-                              className="size-full object-cover"
-                              src={item.imageUrl}
-                            />
-                          ) : (
-                            <Package className="size-5 text-[#7b9186]" strokeWidth={1.8} />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <p className="font-bold leading-tight text-[#13211c]">
-                          {item.name}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-[#536279]">
-                          ({item.code})
-                        </p>
-                      </td>
-                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
-                        {formatUnitDetailCategory(item.category)}
-                      </td>
-                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
-                        {getUnitDetailMarketingModeLabel(item.marketingModeLabel)}
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#273954]">
-                        {formatFullCurrency(item.value)}
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
-                            getUnitDetailStatusToneClass(item.operationalTone),
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "size-1.5 rounded-full",
-                              getUnitDetailStatusDotClass(item.operationalTone),
-                            )}
-                          />
-                          {item.operationalStatus}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center justify-center gap-2">
-                          <Link
-                            href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
-                            className="inline-flex h-9 items-center justify-center rounded-lg border border-[#d8e4de] bg-white px-3 text-xs font-bold text-[#007a4d] transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#afd4bd] hover:bg-[#f8fbf9] active:scale-[0.98]"
-                          >
-                            Detail
-                          </Link>
-                          <button
-                            aria-label={`Menu ${item.name}`}
-                            className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
-                            type="button"
-                          >
-                            <MoreVertical className="size-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 flex flex-col gap-3 text-sm font-semibold text-[#536279] lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
-            <p>
-              Menampilkan {formatDashboardCount(currentPageStart)}-{formatDashboardCount(currentPageEnd)} dari{" "}
-              {formatDashboardCount(filteredItems.length)} barang
-            </p>
-            <label className="inline-flex items-center gap-2 text-xs font-bold text-[#536279]">
-              Tampilkan
-              <UnitDetailSelect
-                ariaLabel="Jumlah barang per halaman"
-                label={String(pageSize)}
-                onChange={(value) =>
-                  setPageSize(Number(value) as (typeof unitDetailPageSizeOptions)[number])
-                }
-                options={unitDetailPageSizeOptions.map((option) => ({
-                  label: String(option),
-                  value: String(option),
-                }))}
-                showActiveState={false}
-                value={String(pageSize)}
-                widthClass="w-[6.25rem]"
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              aria-label="Halaman sebelumnya"
-              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-              type="button"
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Link
+              className="inline-flex h-11 items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98]"
+              href="/superadmin/manajemen-unit"
             >
-              <ChevronLeft className="size-4" />
-            </button>
-            {visiblePages.map((page, index) => {
-              const previousPage = visiblePages[index - 1];
-              const shouldShowGap = previousPage !== undefined && page - previousPage > 1;
-
-              return (
-                <span className="inline-flex items-center gap-1.5" key={page}>
-                  {shouldShowGap ? (
-                    <span className="grid size-9 place-items-center text-[#8a97a8]">
-                      ...
-                    </span>
-                  ) : null}
-                  <button
-                    aria-current={currentPage === page ? "page" : undefined}
-                    className={cn(
-                      "grid size-9 place-items-center rounded-lg border text-sm font-black tabular-nums shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.98]",
-                      currentPage === page
-                        ? "border-[#007a4d] bg-[#007a4d] text-white shadow-[0_18px_34px_-24px_rgba(0,122,77,0.64)]"
-                        : "border-[#d8e4de] bg-white text-[#273954] hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b]",
-                    )}
-                    onClick={() => setCurrentPage(page)}
-                    type="button"
-                  >
-                    {page}
-                  </button>
-                </span>
-              );
-            })}
-            <button
-              aria-label="Halaman berikutnya"
-              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-              type="button"
+              Kembali
+            </Link>
+            <Button
+              className="h-11 rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+              form={profileFormId}
+              type="submit"
             >
-              <ChevronRight className="size-4" />
-            </button>
+              <CheckCircle2 className="size-4" />
+              Simpan Perubahan
+            </Button>
           </div>
         </div>
-      </section>
-
+      </div>
     </div>
   );
 }
@@ -4880,6 +4917,8 @@ export function SuperAdminAdminsPage({
   );
 }
 
+const managementUnitPageSizeOptions = [10, 20, 50] as const;
+
 export function SuperAdminManagementPage({
   units,
   admins,
@@ -4888,12 +4927,8 @@ export function SuperAdminManagementPage({
   admins: SuperAdminAdminItem[];
 }) {
   const [query, setQuery] = useState("");
-  const [activePanel, setActivePanel] = useState<"unit" | "admin" | null>(null);
-  const unitOptions = units.map((unit) => ({
-    id: unit.id,
-    name: unit.name,
-    code: unit.code,
-  }));
+  const [pageSize, setPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
+  const [pageIndex, setPageIndex] = useState(0);
   const filteredUnits = useMemo(() => {
     const normalized = query.toLowerCase();
 
@@ -4906,245 +4941,469 @@ export function SuperAdminManagementPage({
       );
     });
   }, [query, units]);
+  const totalPages = Math.max(1, Math.ceil(filteredUnits.length / pageSize));
+  const currentPage = Math.min(pageIndex, totalPages - 1);
+  const visibleUnits = filteredUnits.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+  const pageStart = filteredUnits.length === 0 ? 0 : currentPage * pageSize + 1;
+  const pageEnd = Math.min(filteredUnits.length, (currentPage + 1) * pageSize);
+  const activeAdmins = admins.filter((admin) => admin.status === "Aktif");
+  const activeUnitCount = units.filter((unit) => unit.status !== "Nonaktif").length;
+  const activeAccountCount = units.filter((unit) => unit.activeAccount).length;
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [filteredUnits.length, pageSize, query]);
 
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        eyebrow="Manajemen Unit"
+    <div className="space-y-6 md:space-y-7">
+      <AdminPageHero
+        description="Kelola unit, rekening aktif utama, dan admin unit dari data database dalam tampilan ledger yang ringkas."
+        eyebrow="Superadmin / Manajemen Unit"
+        icon={Building2}
+        rightRail={
+          <>
+            <SuperAdminHeroPill icon={Building2}>
+              {activeUnitCount} unit aktif
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={WalletCards}>
+              {activeAccountCount} rekening utama
+            </SuperAdminHeroPill>
+          </>
+        }
         title="Manajemen Unit"
-        description="Kelola unit, rekening aktif utama, dan admin unit dari satu workspace ringkas."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardContent className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center">
-              <Input
-                name="managementSearch"
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Cari unit, kode, atau alamat..."
-                value={query}
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" onClick={() => setActivePanel("unit")}>
-                  <Plus className="size-4" />
-                  Tambah Unit
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setActivePanel("admin")}
-                >
-                  <UserCog className="size-4" />
-                  Tambah Admin
-                </Button>
-                <Link href="/superadmin/admin">
-                  <Button variant="secondary">
-                    <ListChecks className="size-4" />
-                    Direktori Admin
-                  </Button>
-                </Link>
+      <Card className="overflow-hidden border border-[#dfe8e3] bg-white shadow-[0_28px_80px_-68px_rgba(8,69,50,0.32)]">
+        <CardContent className="p-0">
+          <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <section className="min-w-0">
+              <div className="grid gap-3 border-b border-[#e5eee9] bg-[#fbfcfa] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:px-5">
+                <div className="relative min-w-0">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-black/35" />
+                  <Input
+                    className="h-11 rounded-[1.15rem] bg-white pl-10 text-[0.88rem] font-semibold shadow-[0_16px_34px_-30px_rgba(15,23,42,0.34)]"
+                    name="managementSearch"
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Cari unit, kode, atau alamat..."
+                    value={query}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link href="/superadmin/manajemen-unit/tambah">
+                    <Button
+                      className="h-10 rounded-[1.05rem] px-4 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+                      type="button"
+                    >
+                      <Plus className="size-4" />
+                      Tambah Unit
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Unit, rekening, dan admin</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              <div className="hidden grid-cols-[minmax(17rem,1.25fr)_minmax(13rem,0.85fr)_minmax(9rem,0.55fr)_9rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+                <span>Unit & alamat</span>
+                <span>Rekening utama</span>
+                <span>Admin/Rekening</span>
+                <span className="text-right">Aksi</span>
+              </div>
+
               {filteredUnits.length === 0 ? (
                 <EmptyState
-                  className="p-6"
+                  className="m-5 p-6"
                   description="Coba kata kunci lain atau tambahkan unit baru melalui tombol tambah unit."
                   icon={SearchX}
                   title="Belum ada unit yang sesuai"
                 />
               ) : (
-                filteredUnits.map((unit) => (
-                  <div
-                    className="rounded-[1.25rem] border border-border/70 p-5"
-                    key={unit.id}
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <p className="font-semibold text-foreground">
-                            {unit.name}
+                <div className="divide-y divide-[#edf2ee]">
+                  {visibleUnits.map((unit) => (
+                    <article
+                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(17rem,1.25fr)_minmax(13rem,0.85fr)_minmax(9rem,0.55fr)_9rem] lg:items-center lg:px-5"
+                      key={unit.id}
+                    >
+                      <div className="flex min-w-0 gap-3">
+                        <span className="grid size-11 shrink-0 place-items-center rounded-[1.05rem] border border-[#d9e8df] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#006747] shadow-[0_18px_34px_-28px_rgba(10,106,73,0.42),inset_0_1px_0_rgba(255,255,255,0.9)]">
+                          <Building2 className="size-5" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <Link
+                              className="min-w-0 truncate font-headline text-[0.98rem] font-black leading-tight tracking-[-0.02em] text-[#13211c] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#006747]"
+                              href={`/superadmin/unit/${unit.id}`}
+                            >
+                              {unit.name}
+                            </Link>
+                            <StatusBadge value={unit.status} />
+                          </div>
+                          <p className="mt-1 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
+                            {unit.code}
                           </p>
-                          <StatusBadge value={unit.status} />
+                          <p className="mt-1 line-clamp-2 text-[0.78rem] font-medium leading-5 text-black/50">
+                            {unit.address}
+                          </p>
                         </div>
-                        <p className="text-sm font-semibold text-muted-foreground">
-                          {unit.code}
-                        </p>
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                          {unit.address}
-                        </p>
                       </div>
-                      <div className="grid min-w-[220px] gap-2 text-sm text-muted-foreground">
-                        <p>
-                          Admin aktif:{" "}
-                          <span className="font-bold text-foreground">
-                            {unit.adminCount}
-                          </span>
-                        </p>
-                        <p>
-                          Rekening tersimpan:{" "}
-                          <span className="font-bold text-foreground">
-                            {unit.accountCount}
-                          </span>
-                        </p>
+
+                      <div className="min-w-0">
+                        {unit.activeAccount ? (
+                          <div className="w-full max-w-full rounded-[1rem] border border-[#dfe8e3] bg-[#f8faf9] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <Landmark className="size-4 shrink-0 text-[#006747]" />
+                              <p className="truncate text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#13211c]">
+                                {unit.activeAccount.bankName}
+                              </p>
+                            </div>
+                            <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[0.78rem] font-bold text-black/62">
+                              {unit.activeAccount.accountNumber}
+                            </p>
+                            <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-black/42">
+                              {unit.activeAccount.accountHolder}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="rounded-[1rem] border border-dashed border-[#dfe8e3] bg-[#fbfcfa] px-3 py-3 text-[0.78rem] font-semibold text-black/45">
+                            Belum ada rekening utama aktif.
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="mt-4 rounded-2xl bg-surface-low/70 p-4 text-sm text-muted-foreground">
-                      {unit.activeAccount ? (
-                        <p>
-                          Rekening utama:{" "}
-                          <span className="font-semibold text-foreground">
-                            {unit.activeAccount.bankName}
-                          </span>{" "}
-                          {unit.activeAccount.accountNumber}
-                        </p>
-                      ) : (
-                        <p>Belum ada rekening utama aktif.</p>
-                      )}
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <Link href={`/superadmin/unit/${unit.id}`}>
-                        <Button size="sm" variant="secondary">
-                          Detail Unit
-                        </Button>
-                      </Link>
-                      <Link href={`/superadmin/unit/${unit.id}/rekening`}>
-                        <Button size="sm" variant="secondary">
-                          <WalletCards className="size-4" />
-                          Rekening
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))
+
+                      <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
+                        <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                          <UsersRound className="size-4 shrink-0 text-[#006747]" />
+                          {unit.adminCount} Admin
+                        </div>
+                        <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                          <CreditCard className="size-4 shrink-0 text-[#006747]" />
+                          {unit.accountCount} Rekening
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                        <Link href={`/superadmin/unit/${unit.id}`}>
+                          <Button
+                            className="h-9 rounded-[0.95rem] px-3 text-[0.74rem]"
+                            size="sm"
+                            variant="secondary"
+                          >
+                            Lihat detail
+                            <ChevronRight className="size-3.5" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
 
-        <div className="space-y-6">
-          <Card className="border border-border/70 bg-white">
-            <CardHeader>
-              <CardTitle>Admin unit aktif</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {admins.length === 0 ? (
-                <EmptyState
-                  className="p-6"
-                  description="Admin unit yang dibuat akan muncul di sini sebagai ringkasan cepat."
-                  icon={UserCog}
-                  title="Belum ada admin unit"
-                />
-              ) : (
-                admins.slice(0, 5).map((admin) => (
-                  <div
-                    className="rounded-2xl border border-border/70 p-4"
-                    key={admin.id}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-foreground">
-                          {admin.name}
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {admin.unit}
-                        </p>
-                      </div>
-                      <StatusBadge value={admin.status} />
-                    </div>
+              <div className="flex flex-col gap-3 border-t border-[#e5eee9] bg-[#fbfcfa] px-4 py-3 text-[0.72rem] font-semibold text-black/48 lg:flex-row lg:items-center lg:justify-between lg:px-5">
+                <p>
+                  Menampilkan <span className="font-black text-[#13211c]">{pageStart}</span> sampai{" "}
+                  <span className="font-black text-[#13211c]">{pageEnd}</span> dari{" "}
+                  <span className="font-black text-[#13211c]">{filteredUnits.length}</span> unit
+                </p>
+                <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                  <label className="font-bold text-black/45" htmlFor="management-unit-page-size">
+                    Baris per halaman:
+                  </label>
+                  <AdminSelect
+                    ariaLabel="Baris per halaman unit"
+                    className="min-w-[7.4rem]"
+                    id="management-unit-page-size"
+                    options={managementUnitPageSizeOptions.map((size) => ({
+                      value: size,
+                      label: `${size} data`,
+                    }))}
+                    size="compact"
+                    value={pageSize}
+                    onValueChange={(nextValue) => {
+                      setPageSize(Number(nextValue));
+                      setPageIndex(0);
+                    }}
+                  />
+                  <div className="ml-0 flex max-w-full flex-wrap items-center gap-1 lg:ml-3">
+                    <button
+                      aria-label="Halaman sebelumnya"
+                      className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+                      disabled={currentPage === 0}
+                      type="button"
+                      onClick={() => setPageIndex(Math.max(0, currentPage - 1))}
+                    >
+                      <ChevronLeft className="size-4" />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <button
+                        aria-current={index === currentPage ? "page" : undefined}
+                        className={cn(
+                          "grid size-8 place-items-center rounded-xl text-[0.72rem] font-black transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                          index === currentPage
+                            ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                            : "text-black/52 hover:bg-white hover:text-[#0a6a49]"
+                        )}
+                        key={index}
+                        type="button"
+                        onClick={() => setPageIndex(index)}
+                      >
+                        {index + 1}
+                      </button>
+                    ))}
+                    <button
+                      aria-label="Halaman berikutnya"
+                      className="grid size-8 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35"
+                      disabled={currentPage >= totalPages - 1}
+                      type="button"
+                      onClick={() => setPageIndex(Math.min(totalPages - 1, currentPage + 1))}
+                    >
+                      <ChevronRight className="size-4" />
+                    </button>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                </div>
+              </div>
+            </section>
 
-      <SuperAdminDialog
-        description="Wizard 2 langkah untuk membuat data unit dan rekening aktif utama. Rekening utama wajib diisi sebelum unit disimpan."
-        onClose={() => setActivePanel(null)}
-        open={activePanel === "unit"}
-        title="Tambah unit baru"
-      >
-        <UnitForm showTitle={false} />
-      </SuperAdminDialog>
+            <aside className="border-t border-[#e5eee9] bg-white px-4 py-5 xl:border-l xl:border-t-0 lg:px-5">
+              <div className="border-b border-[#edf2ee] pb-3">
+                <div>
+                  <p className="page-heading-eyebrow">Admin Aktif</p>
+                  <h3 className="mt-1 font-headline text-[1.05rem] font-black tracking-[-0.02em] text-[#13211c]">
+                    Admin unit aktif
+                  </h3>
+                </div>
+              </div>
 
-      <SuperAdminDialog
-        description="Buat akun admin unit dan hubungkan langsung ke unit yang sudah tersedia."
-        onClose={() => setActivePanel(null)}
-        open={activePanel === "admin"}
-        title="Tambah admin unit"
+              <div className="mt-4 space-y-3">
+                {activeAdmins.length === 0 ? (
+                  <EmptyState
+                    className="p-5"
+                    description="Admin unit aktif yang tersimpan di database akan muncul sebagai feed singkat."
+                    icon={UserCog}
+                    title="Belum ada admin aktif"
+                  />
+                ) : (
+                  activeAdmins.slice(0, 6).map((admin) => (
+                    <div
+                      className="group flex items-center justify-between gap-3 rounded-[1.05rem] px-2 py-2 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f6faf7]"
+                      key={admin.id}
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#f8faf9] font-headline text-[0.72rem] font-black text-[#006747] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-[#006747]/35">
+                          {getSuperAdminInitials(admin.name)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-[0.82rem] font-black text-[#13211c]">
+                            {admin.name}
+                          </p>
+                          <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-black/45">
+                            {admin.unit}
+                          </p>
+                          <p className="mt-0.5 flex min-w-0 items-center gap-1.5 truncate text-[0.7rem] font-semibold text-black/38">
+                            <Mail className="size-3.5 shrink-0" />
+                            <span className="truncate">{admin.email}</span>
+                          </p>
+                        </div>
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#edf7ef] px-2 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#006747]">
+                        <BadgeCheck className="size-3.5" />
+                        Aktif
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </aside>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function SuperAdminCreateUnitPage() {
+  return (
+    <div className="space-y-5 md:space-y-6">
+      <Link
+        className="inline-flex items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#0a6a49] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#064b35]"
+        href="/superadmin/manajemen-unit"
       >
-        <AdminUnitForm showTitle={false} units={unitOptions} />
-      </SuperAdminDialog>
+        <ArrowLeft className="size-3.5" />
+        Kembali ke Daftar Unit Pelaksana
+      </Link>
+
+      <AdminPageHero
+        description="Lengkapi profil unit, rekening operasional, dan admin penanggung jawab dalam satu setup compact yang tersambung ke data sistem."
+        eyebrow="Superadmin / Tambah Unit"
+        icon={Building2}
+        rightRail={
+          <>
+            <SuperAdminHeroPill icon={Landmark}>Rekening utama aktif</SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={UserCog}>Admin penanggung jawab</SuperAdminHeroPill>
+          </>
+        }
+        title="Registrasi & Setup Unit Pelaksana Baru"
+      />
+
+      <UnitForm showTitle={false} />
     </div>
   );
 }
 
 export function SuperAdminPolicyPage() {
-  const followUpItems = [
-    "Fixed price yang bukti pembayarannya ditolak admin unit masuk Perlu Tindak Lanjut dan bukan pelanggaran buyer.",
-    "Lelang Vickrey tanpa bid masuk Perlu Tindak Lanjut dan bukan pelanggaran buyer.",
-    "Pemasaran gagal tanpa insiden tidak bayar 24 jam masuk Perlu Tindak Lanjut dan bukan pelanggaran buyer.",
-  ];
-
   return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        eyebrow="Read-only"
+    <div className="space-y-6">
+      <AdminPageHero
+        description="Referensi read-only untuk sanksi progresif buyer yang gagal membayar transaksi lelang Vickrey dalam 24 jam."
+        eyebrow="Superadmin / Kebijakan"
+        icon={ShieldAlert}
         title="Kebijakan Pelanggaran"
-        description="Referensi ringkas untuk menjaga keputusan Superadmin konsisten dengan aturan sistem."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Aturan pelanggaran buyer aktif</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm leading-relaxed text-muted-foreground">
-            <div className="rounded-[1.25rem] border border-primary/15 bg-primary/[0.03] p-5">
-              <p className="font-semibold text-foreground">
-                Pelanggaran buyer hanya terjadi saat pemenang lelang tidak
-                menyelesaikan pembayaran dalam 24 jam.
+      <section className="grid gap-5 xl:grid-cols-3">
+        <article className="flex min-h-[31.5rem] flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-5 text-center shadow-[0_24px_72px_-58px_rgba(8,69,50,0.46)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
+          <span className="mx-auto inline-flex min-w-[12rem] justify-center rounded-full border border-amber-300 bg-amber-50 px-5 py-2 text-sm font-black uppercase tracking-[0.02em] text-orange-600">
+            TIER 1 - STRIKE ONE
+          </span>
+
+          <div className="mt-8 flex flex-1 flex-col">
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-amber-50 text-orange-500 ring-1 ring-amber-100">
+              <AlertTriangle className="size-8" strokeWidth={2.1} />
+            </span>
+            <h3 className="mt-7 font-headline text-2xl font-black tracking-[-0.03em] text-[#111827]">
+              Pelanggaran Pertama
+            </h3>
+            <p className="mx-auto mt-3 max-w-xs text-sm font-semibold leading-6 text-[#42526b]">
+              No payment within 24 hours.
+            </p>
+
+            <div className="mt-10 border-t border-[#dce2e6] pt-5">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#42526b]">
+                Konsekuensi
               </p>
-              <p className="mt-2">
-                Sistem membuat insiden dari transaksi Vickrey yang melewati
-                batas pembayaran dan memicu pembatasan sesuai level akumulasi.
+              <div className="mt-4 space-y-3 text-left">
+                <div className="flex items-center gap-4 rounded-[0.9rem] border border-amber-200 bg-amber-50/45 px-4 py-3.5 text-orange-600">
+                  <Ban className="size-7 shrink-0" strokeWidth={2.2} />
+                  <p className="text-sm font-black uppercase">
+                    Bid Lelang: Ban 7 Hari
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 rounded-[0.9rem] border border-[#cfe8d8] bg-[#f5fbf7] px-4 py-3.5 text-[#006747]">
+                  <CheckCircle2 className="size-7 shrink-0" strokeWidth={2.2} />
+                  <p className="text-sm font-black uppercase">
+                    Fixed Price: Aktif
+                  </p>
+                </div>
+              </div>
+              <p className="mt-7 flex items-center justify-center gap-2 text-sm font-semibold text-[#42526b]">
+                <Info className="size-4 shrink-0" />
+                Ini adalah tingkat akumulasi pertama.
               </p>
             </div>
-            <p>
-              Halaman ini read-only. Perubahan kebijakan harus dilakukan lewat
-              perubahan kode dan audit produk, bukan lewat input bebas di UI.
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+        </article>
 
-        <Card className="border border-border/70 bg-white">
-          <CardHeader>
-            <CardTitle>Masuk Perlu Tindak Lanjut</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {followUpItems.map((item) => (
-              <div
-                className="flex items-start gap-3 rounded-[1.25rem] border border-border/70 p-4"
-                key={item}
-              >
-                <Shield className="mt-0.5 size-4 shrink-0 text-primary" />
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {item}
+        <article className="flex min-h-[31.5rem] flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-5 text-center shadow-[0_24px_72px_-58px_rgba(8,69,50,0.46)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
+          <span className="mx-auto inline-flex min-w-[12rem] justify-center rounded-full bg-orange-500 px-5 py-2 text-sm font-black uppercase tracking-[0.02em] text-white shadow-[0_16px_30px_-24px_rgba(249,115,22,0.82)]">
+            TIER 2 - STRIKE TWO
+          </span>
+
+          <div className="mt-8 flex flex-1 flex-col">
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-orange-50 text-orange-500 ring-1 ring-orange-100">
+              <AlertTriangle className="size-8" strokeWidth={2.1} />
+            </span>
+            <h3 className="mt-7 font-headline text-2xl font-black tracking-[-0.03em] text-[#111827]">
+              Pelanggaran Kedua
+              <br />
+              (Akumulasi 2x)
+            </h3>
+            <p className="mx-auto mt-3 max-w-xs text-sm font-semibold leading-6 text-[#42526b]">
+              Akumulasi pelanggaran berulang karena gagal melakukan pembayaran.
+            </p>
+
+            <div className="mt-8 border-t border-[#dce2e6] pt-5">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#42526b]">
+                Konsekuensi
+              </p>
+              <div className="mt-4 space-y-3 text-left">
+                <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-200 bg-orange-50/50 px-4 py-3.5 text-orange-600">
+                  <Ban className="size-7 shrink-0" strokeWidth={2.2} />
+                  <p className="text-sm font-black uppercase">
+                    Bid Lelang: Ban Total 30 Hari
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-200 bg-orange-50/50 px-4 py-3.5 text-orange-600">
+                  <Ban className="size-7 shrink-0" strokeWidth={2.2} />
+                  <p className="text-sm font-black uppercase">
+                    Fixed Price: Ban Total 30 Hari
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-300 bg-orange-50/60 px-4 py-3.5 text-orange-700">
+                  <AlertTriangle className="size-7 shrink-0" strokeWidth={2.1} />
+                  <p className="text-sm font-semibold leading-5">
+                    Pelanggaran berikutnya memicu sanksi Kritis Tier 3 (Lock
+                    Akses Login)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article className="flex min-h-[31.5rem] flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-5 text-center shadow-[0_24px_72px_-58px_rgba(8,69,50,0.46)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5">
+          <span className="mx-auto inline-flex min-w-[12rem] justify-center rounded-full bg-red-600 px-5 py-2 text-sm font-black uppercase tracking-[0.02em] text-white shadow-[0_16px_30px_-24px_rgba(220,38,38,0.82)]">
+            TIER 3 - SYSTEM REJECTION
+          </span>
+
+          <div className="mt-8 flex flex-1 flex-col">
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-100">
+              <LockKeyhole className="size-8" strokeWidth={2.1} />
+            </span>
+            <h3 className="mt-7 font-headline text-2xl font-black tracking-[-0.03em] text-[#111827]">
+              Pelanggaran Ketiga
+              <br />
+              (Akumulasi 3x)
+            </h3>
+
+            <div className="mt-[4.85rem] border-t border-[#dce2e6] pt-5">
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[#42526b]">
+                Konsekuensi
+              </p>
+              <div className="mt-4 rounded-[0.9rem] border border-red-200 bg-red-50/50 p-5 text-center text-red-600">
+                <span className="mx-auto grid size-14 place-items-center rounded-full border border-red-400 bg-white text-red-600">
+                  <LockKeyhole className="size-7" strokeWidth={2.2} />
+                </span>
+                <p className="mt-5 font-headline text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
+                  Ban Total 360 Hari
+                  <br />
+                  + Lock Login Access
+                </p>
+                <p className="mt-4 text-sm font-semibold text-[#42526b]">
+                  Dilarang masuk ke aplikasi sama sekali.
                 </p>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="rounded-[1.35rem] border border-[#8fd0a9] bg-white p-6 shadow-[0_18px_48px_-42px_rgba(8,69,50,0.34)]">
+        <div className="grid gap-5 md:grid-cols-[10rem_minmax(0,1fr)] md:items-center">
+          <div className="relative mx-auto grid size-28 place-items-center text-[#0a6a49]">
+            <Sparkles className="absolute left-0 top-6 size-5 text-[#0a6a49]/70" />
+            <Sparkles className="absolute right-3 top-1 size-4 text-[#0a6a49]/70" />
+            <ShieldCheck className="size-24" strokeWidth={1.75} />
+          </div>
+          <div className="space-y-3">
+            <h3 className="font-headline text-xl font-black uppercase tracking-[0.03em] text-[#00563b]">
+              Mekanisme Sanggahan & Pengajuan Review
+            </h3>
+            <p className="max-w-5xl text-sm font-semibold leading-7 text-[#42526b]">
+              Pengguna dapat mengajukan sanggahan atau review secara resmi
+              apabila terdapat kondisi khusus atau keadaan di luar kendali.
+              Ajukan review dengan bukti pendukung yang kuat, valid, dan
+              lengkap untuk dilakukan evaluasi oleh admin/superadmin.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
