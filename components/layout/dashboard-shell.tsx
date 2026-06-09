@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   UserCog,
+  UsersRound,
   WalletCards,
   X
 } from "lucide-react";
@@ -36,6 +37,7 @@ type NavIconName =
   | "profil"
   | "unit"
   | "admin"
+  | "superadmin"
   | "monitoring"
   | "rekening";
 
@@ -137,6 +139,8 @@ export function DashboardShell({
         return <Building2 className="size-5" />;
       case "admin":
         return <UserCog className="size-5" />;
+      case "superadmin":
+        return <UsersRound className="size-5" />;
       case "monitoring":
         return <ShieldCheck className="size-5" />;
       case "rekening":

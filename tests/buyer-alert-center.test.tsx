@@ -50,6 +50,14 @@ function renderAlertCenter() {
   );
 }
 
+function renderSuperAdminAlertCenter() {
+  return render(
+    <ToastProvider>
+      <AlertCenter scope="superadmin" />
+    </ToastProvider>
+  );
+}
+
 describe("buyer alert center", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -203,5 +211,73 @@ describe("buyer alert center", () => {
 
     expect(link).toHaveAttribute("href", "/riwayat-bid/pmr-77/bukan-pemenang");
     expect(screen.getByText(/anda belum memenangkan sesi ini/i)).toBeInTheDocument();
+  });
+
+  it("loads persistent superadmin access alerts from the superadmin endpoint", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+
+        if (url.includes("/api/superadmin/notifikasi/read-all")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { updated: 1 } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        if (init?.method === "PATCH") {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { id: "notif-super-1", isRead: true } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: [
+                {
+                  id: "notif-super-1",
+                  title: "Akun superadmin dibuat",
+                  message: "Operator Nasional ditambahkan sebagai Operator.",
+                  type: "superadmin_account_created",
+                  actionHref: "/superadmin/manajemen-superadmin",
+                  isRead: false,
+                  createdAt: "2026-06-09T02:00:00.000Z"
+                }
+              ]
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            }
+          )
+        );
+      })
+    );
+
+    const user = userEvent.setup();
+    renderSuperAdminAlertCenter();
+
+    expect(await screen.findByText("1")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
+
+    const link = await screen.findByRole("link", { name: /akun superadmin dibuat/i });
+    expect(link).toHaveAttribute("href", "/superadmin/manajemen-superadmin");
+    expect(screen.getByText(/operator nasional ditambahkan/i)).toBeInTheDocument();
+
+    await user.click(link);
+
+    await waitFor(() => {
+      expect(screen.queryByText("1")).not.toBeInTheDocument();
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/superadmin/notifikasi/notif-super-1", {
+      method: "PATCH"
+    });
   });
 });

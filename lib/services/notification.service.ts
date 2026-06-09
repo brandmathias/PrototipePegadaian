@@ -15,9 +15,20 @@ export type NotificationType =
   | "blacklist_review_submitted"
   | "blacklist_review_approved"
   | "blacklist_review_rejected"
-  | "transaction_created";
+  | "transaction_created"
+  | "superadmin_account_created"
+  | "superadmin_account_updated"
+  | "superadmin_account_reset"
+  | "superadmin_account_guardrail";
 
-export type NotificationEntityType = "transaction" | "pemasaran" | "blacklist" | "blacklist_review" | "barang";
+export type NotificationEntityType =
+  | "transaction"
+  | "pemasaran"
+  | "blacklist"
+  | "blacklist_review"
+  | "barang"
+  | "superadmin_account"
+  | "superadmin_audit";
 
 export type NotificationInput = {
   userId: string;

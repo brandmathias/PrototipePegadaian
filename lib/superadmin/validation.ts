@@ -1,4 +1,22 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const SUPERADMIN_LEVELS = ["owner", "operator"] as const;
+export type SuperAdminLevel = (typeof SUPERADMIN_LEVELS)[number];
+
+function normalizeEmail(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+export function normalizeSuperAdminLevel(value: unknown): SuperAdminLevel {
+  return value === "operator" ? "operator" : "owner";
+}
+
+function validateSuperAdminLevel(value: unknown): SuperAdminLevel {
+  if (value === "owner" || value === "operator") {
+    return value;
+  }
+
+  throw new Error("Level superadmin belum valid.");
+}
 
 export function normalizeUnitCode(value: string) {
   return value.trim().toUpperCase();
@@ -102,6 +120,99 @@ export function validateAdminUnitPayload(input: {
   }
 
   return { name, email, unitId, temporaryPassword, phoneNumber };
+}
+
+export function validateSuperAdminAccountCreatePayload(input: {
+  name?: string;
+  email?: string;
+  temporaryPassword?: string;
+  phoneNumber?: string;
+  level?: string;
+}) {
+  const name = String(input.name ?? "").trim();
+  const email = normalizeEmail(input.email);
+  const temporaryPassword = String(input.temporaryPassword ?? "");
+  const phoneNumber = String(input.phoneNumber ?? "").trim();
+  const level = validateSuperAdminLevel(input.level ?? "operator");
+
+  if (!name || !email || !temporaryPassword) {
+    throw new Error("Data superadmin belum lengkap.");
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    throw new Error("Format email superadmin belum valid.");
+  }
+
+  if (temporaryPassword.length < 8) {
+    throw new Error("Password sementara superadmin minimal 8 karakter.");
+  }
+
+  return { name, email, temporaryPassword, phoneNumber, level };
+}
+
+export function validateSuperAdminAccountUpdatePayload(input: {
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  level?: string;
+  isActive?: boolean;
+}) {
+  const next: {
+    name?: string;
+    email?: string;
+    phoneNumber?: string;
+    level?: SuperAdminLevel;
+    isActive?: boolean;
+  } = {};
+
+  if ("name" in input) {
+    const name = String(input.name ?? "").trim();
+    if (!name) {
+      throw new Error("Nama superadmin wajib diisi.");
+    }
+    next.name = name;
+  }
+
+  if ("email" in input) {
+    const email = normalizeEmail(input.email);
+    if (!email || !EMAIL_REGEX.test(email)) {
+      throw new Error("Format email superadmin belum valid.");
+    }
+    next.email = email;
+  }
+
+  if ("phoneNumber" in input) {
+    next.phoneNumber = String(input.phoneNumber ?? "").trim();
+  }
+
+  if ("level" in input) {
+    next.level = validateSuperAdminLevel(input.level);
+  }
+
+  if ("isActive" in input) {
+    if (typeof input.isActive !== "boolean") {
+      throw new Error("Status superadmin belum valid.");
+    }
+    next.isActive = input.isActive;
+  }
+
+  if (Object.keys(next).length === 0) {
+    throw new Error("Tidak ada perubahan superadmin yang dikirim.");
+  }
+
+  return next;
+}
+
+export function validateSuperAdminPasswordResetPayload(input: {
+  temporaryPassword?: string;
+}) {
+  const temporaryPassword = String(input.temporaryPassword ?? "");
+
+  if (temporaryPassword.length < 8) {
+    throw new Error("Password sementara superadmin minimal 8 karakter.");
+  }
+
+  return { temporaryPassword };
 }
 
 export function validateBlacklistRevokePayload(input: { reason?: string; reasonCode?: string; note?: string }) {

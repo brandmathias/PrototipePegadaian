@@ -8,6 +8,7 @@ const nav = [
   { href: "/superadmin/review-pelanggaran", label: "Review & Pelanggaran", icon: "blacklist" as const },
   { href: "/superadmin/monitoring-unit", label: "Monitoring Unit", icon: "monitoring" as const },
   { href: "/superadmin/manajemen-unit", label: "Manajemen Unit", icon: "unit" as const },
+  { href: "/superadmin/manajemen-superadmin", label: "Manajemen Superadmin", icon: "superadmin" as const },
   { href: "/superadmin/kebijakan-pelanggaran", label: "Kebijakan Pelanggaran", icon: "admin" as const }
 ];
 

@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { users } from "@/lib/db/schema/auth";
@@ -91,5 +91,23 @@ export const blacklistActionLogs = pgTable(
   (table) => ({
     blacklistIdIdx: index("blacklist_action_log_blacklist_id_idx").on(table.blacklistId),
     targetUserIdx: index("blacklist_action_log_target_user_id_idx").on(table.targetUserId)
+  })
+);
+
+export const superadminAccountAuditLogs = pgTable(
+  "superadmin_account_audit_log",
+  {
+    id: text("id").primaryKey(),
+    actorUserId: text("actor_user_id").references(() => users.id, { onDelete: "set null" }),
+    targetUserId: text("target_user_id").references(() => users.id, { onDelete: "set null" }),
+    action: text("action").notNull(),
+    note: text("note").notNull(),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => ({
+    actorUserIdx: index("superadmin_account_audit_actor_user_idx").on(table.actorUserId),
+    targetUserIdx: index("superadmin_account_audit_target_user_idx").on(table.targetUserId),
+    actionCreatedIdx: index("superadmin_account_audit_action_created_idx").on(table.action, table.createdAt)
   })
 );

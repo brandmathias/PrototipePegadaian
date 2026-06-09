@@ -609,56 +609,62 @@ export function AdminBlacklistReviewInbox({ cases }: { cases: AdminReviewCase[] 
       : null;
 
   return (
-    <section className="rounded-[1.8rem] border border-black/8 bg-white p-5 shadow-[0_24px_72px_-56px_rgba(8,69,50,0.45)]">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#edf2ee] px-4 py-4 sm:px-5">
         <div>
-          <h2 className="font-headline text-3xl font-black tracking-[-0.035em] text-[#122018]">
+          <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
             Pengajuan review dari buyer
           </h2>
-          <p className="mt-2 max-w-2xl text-base font-semibold leading-7 text-[#64748b]">
-            Admin unit hanya memberi konteks dan rekomendasi.
+          <p className="mt-1 text-xs font-semibold text-muted-foreground">
+            Antrean review lokal sebelum superadmin mengambil keputusan final.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full bg-[#eff7f2] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#0a6a49]">
-          <ShieldAlert className="size-4" />
-          {cases.length} pengajuan
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-2 rounded-lg bg-[#e7f4ed] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#005f3e] ring-1 ring-[#cfe7d8]">
+            <ShieldAlert className="size-3.5" />
+            {cases.length} pengajuan
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-lg bg-[#f3f4f6] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-slate-500 ring-1 ring-slate-200">
+            <CheckCircle2 className="size-3.5" />
+            {cases.filter((item) => item.hasRecommendation).length} direkomendasikan
+          </span>
+        </div>
       </div>
 
-      {feedback ? <InlineFeedback className="mt-5" {...feedback} /> : null}
+      {feedback ? <InlineFeedback className="mx-4 mt-4 sm:mx-5" {...feedback} /> : null}
 
-      <div className="mt-6 grid gap-4">
+      <div className="divide-y divide-[#edf2ee]">
         {cases.length === 0 ? (
-          <div className="rounded-[1.2rem] border border-dashed border-black/10 bg-[#fbfbf8] p-6 text-sm font-semibold text-black/52">
+          <div className="m-4 rounded-[1.1rem] border border-dashed border-[#d8e4de] bg-[#f8faf8] p-6 text-sm font-semibold text-muted-foreground">
             Belum ada pengajuan review insiden untuk unit ini.
           </div>
         ) : (
           cases.map((item) => (
             <article
-              className="relative overflow-hidden rounded-[1.05rem] border border-[#e1e7e3] bg-white shadow-[0_24px_58px_-46px_rgba(15,23,42,0.42)]"
+              className="relative overflow-hidden bg-white transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfb]"
               key={item.id}
             >
               <div
                 className={cn(
-                  "absolute inset-y-0 left-0 w-2",
+                  "absolute inset-y-4 left-3 w-1 rounded-full sm:left-4",
                   item.hasRecommendation ? "bg-[#0a6a49]" : "bg-[#f59e0b]"
                 )}
               />
-              <div className="grid gap-4 px-5 py-5 lg:grid-cols-[minmax(15rem,1.1fr)_minmax(16rem,1fr)_auto_auto] lg:items-center lg:px-7">
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="grid size-16 shrink-0 place-items-center rounded-full bg-[#fff4db] font-headline text-lg font-black text-[#b45309] ring-1 ring-[#f3d99d]">
+              <div className="grid gap-4 px-4 py-4 pl-8 lg:grid-cols-[minmax(15rem,1.1fr)_minmax(16rem,1fr)_auto_auto] lg:items-center sm:px-5 sm:pl-10">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-full bg-[#fff4db] font-headline text-sm font-black text-[#b45309] ring-1 ring-[#f3d99d]">
                     {getInitials(item.buyerName)}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="truncate font-headline text-xl font-black tracking-tight text-[#15231d]">
+                    <h3 className="truncate font-headline text-sm font-black tracking-[-0.01em] text-[#111827]">
                       {item.buyerName}
                     </h3>
-                    <p className="mt-1 truncate text-sm font-semibold text-[#64748b]">{item.buyerEmail}</p>
+                    <p className="mt-1 truncate text-xs font-semibold text-[#42526b]">{item.buyerEmail}</p>
                   </div>
                 </div>
 
                 <div className="min-w-0 border-[#e5e7eb] lg:border-l lg:pl-7">
-                  <p className="text-sm font-semibold text-[#64748b]">
+                  <p className="truncate text-sm font-semibold text-[#64748b]">
                     Barang: <span className="font-black text-[#15231d]">{item.itemName}</span>
                   </p>
                   <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#64748b]">

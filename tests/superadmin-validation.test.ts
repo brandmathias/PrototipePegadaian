@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   normalizeUnitCode,
+  normalizeSuperAdminLevel,
   validateAdminUnitPayload,
   validateBlacklistRevokePayload,
   validateManagedUnitCreatePayload,
+  validateSuperAdminAccountCreatePayload,
+  validateSuperAdminAccountUpdatePayload,
+  validateSuperAdminPasswordResetPayload,
   validateUnitAccountPayload,
   validateUnitPayload
 } from "@/lib/superadmin/validation";
@@ -47,6 +51,47 @@ describe("superadmin validation", () => {
         temporaryPassword: ""
       })
     ).toThrow("Data admin unit belum lengkap.");
+  });
+
+  it("validates superadmin account create and reset payloads", () => {
+    expect(
+      validateSuperAdminAccountCreatePayload({
+        name: " Owner Nasional ",
+        email: " OWNER@PEGADAIAN.TEST ",
+        temporaryPassword: "rahasia-123",
+        level: "owner"
+      })
+    ).toMatchObject({
+      name: "Owner Nasional",
+      email: "owner@pegadaian.test",
+      level: "owner"
+    });
+
+    expect(() =>
+      validateSuperAdminAccountCreatePayload({
+        name: "Operator Nasional",
+        email: "operator",
+        temporaryPassword: "pendek"
+      })
+    ).toThrow("Format email superadmin belum valid.");
+
+    expect(() => validateSuperAdminPasswordResetPayload({ temporaryPassword: "1234567" })).toThrow(
+      "Password sementara superadmin minimal 8 karakter."
+    );
+  });
+
+  it("normalizes legacy superadmin level to owner and rejects invalid updates", () => {
+    expect(normalizeSuperAdminLevel(null)).toBe("owner");
+    expect(normalizeSuperAdminLevel("operator")).toBe("operator");
+
+    expect(validateSuperAdminAccountUpdatePayload({ level: "operator", isActive: false })).toEqual({
+      level: "operator",
+      isActive: false
+    });
+
+    expect(() => validateSuperAdminAccountUpdatePayload({ level: "viewer" })).toThrow(
+      "Level superadmin belum valid."
+    );
   });
 
   it("requires a reason before revoking blacklist", () => {

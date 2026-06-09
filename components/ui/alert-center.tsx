@@ -11,13 +11,19 @@ import {
   CheckCircle2,
   Clock3,
   Info,
+  KeyRound,
+  ShieldCheck,
   Trophy
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
-import { useBuyerNotifications, type BuyerNotification } from "@/components/ui/use-buyer-notifications";
+import {
+  useBuyerNotifications,
+  useSuperAdminNotifications,
+  type PersistedNotification
+} from "@/components/ui/use-buyer-notifications";
 
 type AlertCenterProps = {
   scope: "buyer" | "admin-unit" | "superadmin";
@@ -39,6 +45,14 @@ function getPersistedVariant(type: string) {
   }
 
   if (type === "payment_deadline" || type === "vickrey_loss") {
+    return "info" as const;
+  }
+
+  if (type === "superadmin_account_guardrail") {
+    return "error" as const;
+  }
+
+  if (type === "superadmin_account_updated" || type === "superadmin_account_reset") {
     return "info" as const;
   }
 
@@ -70,6 +84,18 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
     return Ban;
   }
 
+  if (type === "superadmin_account_created" || type === "superadmin_account_updated") {
+    return ShieldCheck;
+  }
+
+  if (type === "superadmin_account_reset") {
+    return KeyRound;
+  }
+
+  if (type === "superadmin_account_guardrail") {
+    return AlertTriangle;
+  }
+
   if (variant === "success") {
     return CheckCircle2;
   }
@@ -86,6 +112,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   const panelRef = React.useRef<HTMLDivElement | null>(null);
   const { notifications, markAllAsRead, markAsRead } = useToast();
   const buyerNotifications = useBuyerNotifications(scope === "buyer");
+  const superAdminNotifications = useSuperAdminNotifications(scope === "superadmin");
 
   const scopedNotifications = React.useMemo(
     () =>
@@ -97,9 +124,15 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   );
 
   const persistedNotifications = React.useMemo(
-    () =>
-      scope === "buyer"
-        ? buyerNotifications.notifications.map((notification) => ({
+    () => {
+      const sourceNotifications =
+        scope === "buyer"
+          ? buyerNotifications.notifications
+          : scope === "superadmin"
+            ? superAdminNotifications.notifications
+            : [];
+
+      return sourceNotifications.map((notification) => ({
             id: notification.id,
             title: notification.title,
             description: notification.message,
@@ -110,9 +143,9 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             type: notification.type,
             source: "server" as const,
             raw: notification
-          }))
-        : [],
-    [buyerNotifications.notifications, scope]
+          }));
+    },
+    [buyerNotifications.notifications, scope, superAdminNotifications.notifications]
   );
   const localNotifications = React.useMemo(
     () =>
@@ -126,7 +159,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         href: undefined,
         type: `local_${notification.variant}`,
         source: "local" as const,
-        raw: null as BuyerNotification | null
+        raw: null as PersistedNotification | null
       })),
     [scopedNotifications]
   );
@@ -154,6 +187,16 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         description: "Ringkasan penting dari lelang, pembayaran, dan pembatasan akun tersimpan di sini.",
         emptyTitle: "Belum ada notifikasi penting.",
         emptyDescription: "Notifikasi akan muncul saat ada hasil lelang, perubahan pembayaran, deadline, atau pembatasan akun."
+      };
+    }
+
+    if (scope === "superadmin") {
+      return {
+        label: "Pusat Alert Superadmin",
+        title: "Alert akses penting",
+        description: "Aksi sensitif Manajemen Superadmin yang tersimpan untuk kontrol Owner.",
+        emptyTitle: "Belum ada alert superadmin.",
+        emptyDescription: "Pembuatan akun, perubahan level, reset password, dan guardrail akan muncul di sini."
       };
     }
 
@@ -197,17 +240,25 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     if (scope === "buyer") {
       void buyerNotifications.markAllAsRead();
     }
-  }, [buyerNotifications, markAllAsRead, scope]);
+    if (scope === "superadmin") {
+      void superAdminNotifications.markAllAsRead();
+    }
+  }, [buyerNotifications, markAllAsRead, scope, superAdminNotifications]);
 
   const handleMarkAsRead = React.useCallback(
     (notification: (typeof displayedNotifications)[number]) => {
       if (notification.source === "server") {
-        void buyerNotifications.markAsRead(notification.id);
+        if (scope === "buyer") {
+          void buyerNotifications.markAsRead(notification.id);
+        }
+        if (scope === "superadmin") {
+          void superAdminNotifications.markAsRead(notification.id);
+        }
       } else {
         markAsRead(notification.id);
       }
     },
-    [buyerNotifications, markAsRead]
+    [buyerNotifications, markAsRead, scope, superAdminNotifications]
   );
 
   const renderNotificationContent = React.useCallback(

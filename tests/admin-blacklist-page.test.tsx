@@ -116,12 +116,12 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText("Pengguna 1")).toBeInTheDocument();
     expect(screen.getByText("Pengajuan review dari buyer")).toBeInTheDocument();
     expect(screen.queryByText("Pengguna 11")).not.toBeInTheDocument();
-    expect(screen.getByText("Total Blacklist")).toBeInTheDocument();
-    expect(screen.getByText("Pelanggaran 7 Hari Terakhir")).toBeInTheDocument();
-    expect(screen.getAllByText("Blacklist Permanen").length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(
-      10,
-    );
+    expect(screen.getByText("Pembatasan Unit")).toBeInTheDocument();
+    expect(screen.getByText(/ledger blacklist buyer di unit ini/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /level 3/i })).toBeInTheDocument();
+    expect(screen.getByText(/insiden 7 hari/i)).toBeInTheDocument();
+    expect(screen.getByText("Tingkat Pelanggaran")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /detail/i })).toHaveLength(10);
     expect(
       screen.queryByRole("link", { name: /perpanjang/i }),
     ).not.toBeInTheDocument();

@@ -187,6 +187,11 @@ export function VickreyBidForm({
   }
 
   function handleConfirmBid() {
+    if (!buyerId) {
+      router.push(`/login?next=${encodeURIComponent(`/katalog/${lot.id}`)}`);
+      return;
+    }
+
     if (!acceptedBidTerms) {
       openTermsModal();
       return;

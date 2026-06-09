@@ -135,7 +135,7 @@ export function AdminRedeemForm({
 
   return (
     <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-6">
-      <div className="modal-viewport my-auto w-full max-w-[42rem]">
+      <div className="my-auto w-full max-w-[42rem] py-8 sm:py-10">
         <div className="relative rounded-[2rem] border border-[#dfe8e2] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
           <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
             <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">

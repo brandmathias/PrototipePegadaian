@@ -602,7 +602,7 @@ export function AdminMarketingForm({
 
     return (
       <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-5">
-        <div className="modal-viewport my-auto w-full max-w-[66rem]">
+        <div className="my-auto w-full max-w-[66rem] py-8 sm:py-10">
           {marketingCard}
         </div>
       </div>

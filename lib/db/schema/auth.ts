@@ -20,6 +20,7 @@ export const users = pgTable(
     phoneNumber: text("phone_number"),
     nationalId: text("national_id"),
     unitId: text("unit_id"),
+    superAdminLevel: text("super_admin_level"),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
