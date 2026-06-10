@@ -35,11 +35,13 @@ import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timez
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
+  "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung"
 ];
 
 const FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES = [
+  "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung",
   "lunas",
@@ -169,10 +171,6 @@ async function getTransactionRows(userId: string) {
     .orderBy(desc(transaksi.createdAt));
 }
 
-function isLegacyFixedPriceWaitingPaymentDraft(row: Awaited<ReturnType<typeof getTransactionRows>>[number]) {
-  return row.type === "fixed_price" && row.status === "menunggu_pembayaran" && !row.proofUrl;
-}
-
 async function getTransactionRowById(userId: string, transactionId: string) {
   const [row] = await db
     .select(transactionSelection())
@@ -192,7 +190,7 @@ export async function listBuyerTransactions(userId: string, options?: BuyerReadO
   await refreshBuyerAuctionSettlementState(options);
 
   const rows = await getTransactionRows(userId);
-  return rows.filter((row) => !isLegacyFixedPriceWaitingPaymentDraft(row)).map(serializeBuyerTransaction);
+  return rows.map(serializeBuyerTransaction);
 }
 
 export async function getBuyerTransactionById(userId: string, transactionId: string, options?: BuyerReadOptions) {
@@ -493,6 +491,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     throw new Error("Rekening tujuan unit belum tersedia untuk pembayaran transfer.");
   }
 
+  const hasProof = Boolean(payload.fileName);
   const [created] = await db
     .insert(transaksi)
     .values({
@@ -502,10 +501,10 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       type: "fixed_price",
       amount: String(amount),
       paymentMethod: payload.paymentMethod,
-      status: "bukti_diunggah",
-      proofUrl: payload.fileName,
+      status: hasProof ? "bukti_diunggah" : "menunggu_pembayaran",
+      proofUrl: payload.fileName ?? null,
       referenceNumber: payload.reference ?? null,
-      paymentDeadline: null
+      paymentDeadline: hasProof ? null : plusHours(24)
     })
     .returning();
 

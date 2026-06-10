@@ -6,6 +6,7 @@ import { barang, mediaBarang, pemasaran, transaksi, unitAccounts, units } from "
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 const FIXED_PRICE_CATALOG_LOCKED_TRANSACTION_STATUSES = [
+  "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung",
   "lunas",

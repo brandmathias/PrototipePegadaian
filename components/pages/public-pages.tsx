@@ -407,7 +407,7 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
       <SectionHeading
-        description="Fixed price menggunakan transfer bank. Transaksi baru dibuat setelah Anda melanjutkan pembayaran."
+        description="Fixed price menggunakan transfer bank. Buat transaksi, lalu selesaikan pembayaran dari workflow detail transaksi."
         eyebrow="Pembayaran Harga Tetap"
         title="Detail pembayaran"
       />

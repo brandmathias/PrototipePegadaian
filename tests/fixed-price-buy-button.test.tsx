@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
+import { ToastProvider } from "@/components/ui/toast";
 
 describe("FixedPriceBuyButton", () => {
   afterEach(() => {
@@ -22,17 +23,32 @@ describe("FixedPriceBuyButton", () => {
     refreshMock.mockReset();
   });
 
-  it("opens the harga tetap payment panel without creating a transaction", async () => {
-    const fetchMock = vi.fn();
+  it("creates a harga tetap transaction and opens the payment workflow detail", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ data: { id: "trx-fixed-1", status: "MENUNGGU_PEMBAYARAN" } })
+    });
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
 
-    render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
+    render(
+      <ToastProvider>
+        <FixedPriceBuyButton lotId="lot-fixed-1" />
+      </ToastProvider>
+    );
 
     await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
 
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(replaceMock).toHaveBeenCalledWith("/katalog/lot-fixed-1/beli");
-    expect(refreshMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/user/beli/lot-fixed-1",
+      expect.objectContaining({
+        body: JSON.stringify({ paymentMethod: "transfer" }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      })
+    );
+    expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-fixed-1");
+    expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 });

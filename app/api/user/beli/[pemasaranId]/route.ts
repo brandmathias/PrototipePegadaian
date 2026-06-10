@@ -28,7 +28,10 @@ async function readPurchasePayload(request: Request) {
   const reference = typeof referenceValue === "string" ? referenceValue.trim() : "";
 
   if (!(file instanceof File) || file.size === 0) {
-    throw new Error("Bukti pembayaran wajib diunggah saat membeli harga tetap.");
+    return {
+      paymentMethod: "transfer",
+      ...(reference ? { reference } : {})
+    };
   }
 
   if (file.size > MAX_PROOF_SIZE) {

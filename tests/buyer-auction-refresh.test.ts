@@ -153,7 +153,7 @@ describe("buyer auction state refresh", () => {
     ]);
   });
 
-  it("omits legacy harga tetap waiting-payment rows that do not have payment proof", async () => {
+  it("keeps harga tetap waiting-payment rows visible so buyers can finish payment proof upload", async () => {
     mocks.db.select.mockImplementationOnce(() =>
       mockBuyerTransactionRows([
         {
@@ -174,6 +174,10 @@ describe("buyer auction state refresh", () => {
     const rows = await listBuyerTransactions("buyer-1");
 
     expect(rows).toEqual([
+      expect.objectContaining({
+        id: "trx-draft-fixed",
+        status: "menunggu_pembayaran"
+      }),
       expect.objectContaining({
         id: "trx-review-fixed",
         status: "bukti_diunggah"

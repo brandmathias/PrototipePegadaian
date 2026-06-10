@@ -9,7 +9,13 @@ import {
 } from "@/lib/buyer/validation";
 
 describe("buyer validation", () => {
-  it("accepts harga tetap transfer payment only when proof metadata is present", () => {
+  it("accepts harga tetap transfer checkout before proof metadata is present", () => {
+    expect(validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toEqual({
+      paymentMethod: "transfer"
+    });
+  });
+
+  it("accepts harga tetap transfer payment when proof metadata is present", () => {
     expect(
       validateBuyerPurchasePayload({
         paymentMethod: "transfer",
@@ -21,12 +27,6 @@ describe("buyer validation", () => {
       fileName: "bukti-transfer.png",
       reference: "BRI-2026-001"
     });
-  });
-
-  it("rejects harga tetap purchase without payment proof", () => {
-    expect(() => validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toThrow(
-      "Bukti pembayaran wajib diunggah saat membeli harga tetap."
-    );
   });
 
   it("rejects unsupported buyer payment methods", () => {

@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   CreditCard,
-  FileCheck2,
   Landmark,
   LoaderCircle,
   ShieldCheck,
@@ -16,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
@@ -32,43 +30,23 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const { toast } = useToast();
   const [status, setStatus] = useState<PurchaseStatus>("idle");
   const [message, setMessage] = useState(
-    "Transaksi harga tetap dibuat setelah bukti transfer dikirim dari halaman ini."
+    "Buat transaksi terlebih dahulu, lalu unggah bukti transfer dari halaman detail pembayaran."
   );
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [reference, setReference] = useState("");
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
-  async function submitPaymentProof() {
+  async function startPaymentWorkflow() {
     if (status === "loading") {
       return;
     }
 
-    if (!proofFile) {
-      const nextMessage = "Pilih file bukti pembayaran terlebih dahulu.";
-      setStatus("error");
-      setMessage(nextMessage);
-      toast({
-        title: "Bukti pembayaran belum dipilih",
-        description: nextMessage,
-        variant: "error",
-        scope: "buyer"
-      });
-      return;
-    }
-
     setStatus("loading");
-    setMessage("Mengirim bukti pembayaran untuk diverifikasi admin unit.");
+    setMessage("Membuat transaksi harga tetap dan membuka workflow pembayaran.");
 
     try {
-      const body = new FormData();
-      body.append("file", proofFile);
-      if (reference.trim()) {
-        body.append("reference", reference.trim());
-      }
-
       const response = await fetch(`/api/user/beli/${lot.id}`, {
         method: "POST",
-        body
+        body: JSON.stringify({ paymentMethod: "transfer" }),
+        headers: { "Content-Type": "application/json" }
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -78,7 +56,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
       }
 
       if (!response.ok) {
-        const nextMessage = payload.message ?? "Bukti pembayaran belum bisa dikirim. Silakan coba lagi.";
+        const nextMessage = payload.message ?? "Transaksi belum bisa dibuat. Silakan coba lagi.";
         setStatus("error");
         setMessage(nextMessage);
         toast({
@@ -92,7 +70,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
 
       const transactionId = payload?.data?.id;
       if (!transactionId) {
-        const nextMessage = "Bukti pembayaran diterima, tetapi ID transaksi belum diterima.";
+        const nextMessage = "Transaksi dibuat, tetapi ID transaksi belum diterima.";
         setStatus("error");
         setMessage(nextMessage);
         toast({
@@ -105,15 +83,15 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
       }
 
       toast({
-        title: "Bukti pembayaran dikirim",
-        description: "Transaksi dibuat dan menunggu verifikasi admin unit.",
+        title: "Transaksi harga tetap dibuat",
+        description: "Lanjutkan pembayaran dan unggah bukti transfer dari halaman detail transaksi.",
         variant: "success",
         scope: "buyer"
       });
       router.replace(`/transaksi/${transactionId}`);
       router.refresh();
     } catch {
-      const nextMessage = "Koneksi terputus. Coba kirim bukti pembayaran lagi dalam beberapa saat.";
+      const nextMessage = "Koneksi terputus. Coba buat transaksi lagi dalam beberapa saat.";
       setStatus("error");
       setMessage(nextMessage);
       toast({
@@ -146,11 +124,11 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             Detail Pembayaran
           </p>
           <h2 className="font-headline text-3xl font-black tracking-tight text-[#13211c] md:text-4xl">
-            Konfirmasi pembayaran harga tetap
+            Lanjutkan ke detail pembayaran
           </h2>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-            Transfer sesuai total harga ke rekening tujuan unit, lalu unggah bukti dari halaman ini.
-            Transaksi baru masuk daftar setelah bukti pembayaran dikirim.
+            Sistem akan membuat transaksi harga tetap lebih dulu. Setelah itu Anda masuk ke workflow
+            pembayaran untuk transfer, unggah bukti, dan menunggu verifikasi admin unit.
           </p>
 
           <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
@@ -169,8 +147,8 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
           <div className="grid gap-4">
             {[
               { icon: CreditCard, label: "Metode pembayaran", value: "Transfer Bank" },
-              { icon: ShieldCheck, label: "Status saat ini", value: "Belum membuat transaksi" },
-              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Menunggu verifikasi admin" }
+              { icon: ShieldCheck, label: "Status saat ini", value: "Siap membuat transaksi" },
+              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Upload bukti di detail transaksi" }
             ].map((item) => {
               const Icon = item.icon;
 
@@ -220,52 +198,17 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                 </span>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Upload Bukti
+                    Workflow Pembayaran
                   </p>
-                  <p className="text-sm font-semibold text-foreground">JPG, PNG, atau PDF maksimal 5 MB.</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    Upload bukti dilakukan setelah transaksi dibuat.
+                  </p>
                 </div>
               </div>
-
-              <div className="grid gap-2">
-                <label
-                  className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground"
-                  htmlFor="payment-proof-file"
-                >
-                  File Bukti Pembayaran
-                </label>
-                <Input
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  aria-label="File Bukti Pembayaran"
-                  className="h-auto cursor-pointer border-[#dbe8df] bg-white py-3 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-primary"
-                  id="payment-proof-file"
-                  onChange={(event) => {
-                    const nextFile = event.target.files?.[0] ?? null;
-                    setProofFile(nextFile);
-                    setStatus("idle");
-                    setMessage(
-                      nextFile
-                        ? `Bukti ${nextFile.name} siap dikirim untuk verifikasi admin unit.`
-                        : "Transaksi harga tetap dibuat setelah bukti transfer dikirim dari halaman ini."
-                    );
-                  }}
-                  type="file"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <label
-                  className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground"
-                  htmlFor="payment-reference"
-                >
-                  Nomor Referensi
-                </label>
-                <Input
-                  id="payment-reference"
-                  onChange={(event) => setReference(event.target.value)}
-                  placeholder="Contoh: BRI-2026-001"
-                  value={reference}
-                />
-              </div>
+              <p className="rounded-[1rem] border border-[#d7eadc] bg-[#f3fbf6] px-4 py-3 text-sm font-medium leading-6 text-[#0d6845]">
+                Di halaman detail transaksi, tahap pertama akan aktif untuk melakukan pembayaran.
+                Setelah bukti dikirim, tahap pembayaran menjadi hijau dan verifikasi admin berjalan.
+              </p>
             </div>
           </div>
 
@@ -281,9 +224,9 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             </div>
             {isError ? (
               <div className="flex flex-wrap gap-3">
-                <Button disabled={isLoading || !proofFile} onClick={submitPaymentProof}>
-                  Kirim Bukti Pembayaran
-                  <FileCheck2 className="size-4" />
+                <Button disabled={isLoading} onClick={startPaymentWorkflow}>
+                  Lanjut ke Detail Pembayaran
+                  <CheckCircle2 className="size-4" />
                 </Button>
                 <Button onClick={() => setIsBackConfirmOpen(true)} variant="secondary">
                   Kembali ke Detail Barang
@@ -292,16 +235,16 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
-                <Button className="w-full" disabled={isLoading || !proofFile} onClick={submitPaymentProof}>
+                <Button className="w-full" disabled={isLoading} onClick={startPaymentWorkflow}>
                   {isLoading ? (
                     <>
                       <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
-                      Mengirim bukti
+                      Membuat transaksi
                     </>
                   ) : (
                     <>
-                      Kirim Bukti Pembayaran
-                      <FileCheck2 className="size-4" />
+                      Lanjut ke Detail Pembayaran
+                      <CheckCircle2 className="size-4" />
                     </>
                   )}
                 </Button>

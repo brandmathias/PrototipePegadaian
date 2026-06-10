@@ -1179,7 +1179,7 @@ export function TransactionDetailPage({
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
   const isFixedPriceCatalogHidden =
     isFixedPrice &&
-    ["BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS", "SELESAI"].includes(transaction.status);
+    ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS", "SELESAI"].includes(transaction.status);
   const hasSubmittedTransferProof = isTransfer && Boolean(transaction.paymentProof);
   const proofPanelTitle = isTransfer
     ? isProofInReview
