@@ -2,9 +2,6 @@
 
 import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.BETTER_AUTH_URL ??
-    "http://localhost:3000"
-});
+// Auth routes are served by the same Next.js app, so let Better Auth use the
+// current browser origin instead of baking a Docker build-time URL into JS.
+export const authClient = createAuthClient();
