@@ -157,7 +157,7 @@ describe("createFixedPricePurchase locking rules", () => {
     );
   });
 
-  it("blocks another buyer once the earlier buyer has an active fixed price checkout", async () => {
+  it("allows another buyer to start checkout while the earlier buyer is only waiting for payment", async () => {
     mocks.db.select
       .mockImplementationOnce(() =>
         mockMarketingQuery({
@@ -174,6 +174,71 @@ describe("createFixedPricePurchase locking rules", () => {
             id: "trx-other-2",
             userId: "buyer-lain",
             status: "menunggu_pembayaran",
+            createdAt: new Date("2026-05-27T09:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockBlacklistQuery());
+
+    const insertValuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([
+        {
+          id: "trx-baru-2",
+          pemasaranId: "pemasaran-1",
+          userId: "buyer-baru",
+          type: "fixed_price",
+          amount: "12500000",
+          paymentMethod: "transfer",
+          status: "menunggu_pembayaran",
+          proofUrl: null,
+          referenceNumber: null,
+          paymentDeadline: new Date("2026-05-28T09:00:00.000Z"),
+          createdAt: new Date("2026-05-27T09:05:00.000Z"),
+          updatedAt: new Date("2026-05-27T09:05:00.000Z")
+        }
+      ])
+    });
+
+    mocks.db.insert.mockImplementationOnce(() => ({
+      values: insertValuesSpy
+    }));
+
+    const result = await createFixedPricePurchase("buyer-baru", "pemasaran-1", {
+      paymentMethod: "transfer"
+    });
+
+    expect(insertValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "menunggu_pembayaran",
+        userId: "buyer-baru"
+      })
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: "trx-baru-2",
+        status: "menunggu_pembayaran",
+        userId: "buyer-baru"
+      })
+    );
+  });
+
+  it("blocks another buyer once the earlier buyer has uploaded payment proof", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
+      .mockImplementationOnce(() =>
+        mockTransactionListQuery([
+          {
+            id: "trx-other-proof",
+            userId: "buyer-lain",
+            status: "bukti_diunggah",
             createdAt: new Date("2026-05-27T09:00:00.000Z")
           }
         ])

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { and, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
+import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
@@ -38,14 +39,6 @@ const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung"
-];
-
-const FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES = [
-  "menunggu_pembayaran",
-  "bukti_diunggah",
-  "menunggu_konfirmasi_langsung",
-  "lunas",
-  "selesai"
 ];
 
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
@@ -459,7 +452,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   const lockedByOtherBuyer = activeTransactions.find(
     (item) =>
       item.userId !== userId &&
-      FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES.includes(item.status)
+      isFixedPriceLockedByOtherBuyerStatus(item.status)
   );
 
   if (lockedByOtherBuyer) {
@@ -709,7 +702,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
         eq(transaksi.pemasaranId, row.pemasaranId),
         ne(transaksi.id, transactionId),
         ne(transaksi.userId, userId),
-        inArray(transaksi.status, FIXED_PRICE_LOCKED_BY_OTHER_BUYER_STATUSES)
+        inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
       )
     )
     .limit(1);
@@ -861,4 +854,10 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
   }
 
   return getBuyerSummary(userId);
+}
+
+function isFixedPriceLockedByOtherBuyerStatus(status: string) {
+  return FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES.includes(
+    status as (typeof FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)[number]
+  );
 }

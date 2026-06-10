@@ -1,17 +1,10 @@
 import { and, asc, desc, eq, gt, inArray, isNull, lte, ne, notExists, or } from "drizzle-orm";
 
+import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializePublicLot } from "@/lib/buyer/serializers";
 import { db } from "@/lib/db/client";
 import { barang, mediaBarang, pemasaran, transaksi, unitAccounts, units } from "@/lib/db/schema";
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
-
-const FIXED_PRICE_CATALOG_LOCKED_TRANSACTION_STATUSES = [
-  "menunggu_pembayaran",
-  "bukti_diunggah",
-  "menunggu_konfirmasi_langsung",
-  "lunas",
-  "selesai"
-];
 
 function publicLotSelection() {
   return {
@@ -45,7 +38,7 @@ function fixedPriceCatalogAvailabilityPredicate() {
         .where(
           and(
             eq(transaksi.pemasaranId, pemasaran.id),
-            inArray(transaksi.status, FIXED_PRICE_CATALOG_LOCKED_TRANSACTION_STATUSES)
+            inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
           )
         )
     )

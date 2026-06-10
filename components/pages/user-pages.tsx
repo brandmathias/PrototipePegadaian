@@ -42,6 +42,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
+import { isFixedPriceBuyerCatalogHiddenStatus } from "@/lib/buyer/fixed-price-visibility";
 import {
   getBuyerBidMonitoringHref,
   getBuyerBidTransactionHref,
@@ -1179,7 +1180,7 @@ export function TransactionDetailPage({
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
   const isFixedPriceCatalogHidden =
     isFixedPrice &&
-    ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS", "SELESAI"].includes(transaction.status);
+    isFixedPriceBuyerCatalogHiddenStatus(transaction.status);
   const hasSubmittedTransferProof = isTransfer && Boolean(transaction.paymentProof);
   const proofPanelTitle = isTransfer
     ? isProofInReview

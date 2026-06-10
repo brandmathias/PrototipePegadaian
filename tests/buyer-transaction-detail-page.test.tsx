@@ -64,6 +64,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
     expect(screen.getByText(/0123-4567-8901-234/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kembali ke detail barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });
 
@@ -183,6 +184,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /bukti sedang direview admin/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^kirim bukti pembayaran$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kembali ke detail barang/i })).not.toBeInTheDocument();
   });
 
   it("keeps the uploaded proof preview visible after the transaction is completed", () => {
