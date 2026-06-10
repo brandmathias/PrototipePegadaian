@@ -4,6 +4,8 @@ import { getBuyerBidState, getBuyerProfileStatus } from "@/lib/services/buyer.se
 import { getPublicLotById } from "@/lib/services/public-catalog.service";
 import { getBuyerWishlistIds } from "@/lib/services/wishlist.service";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({
   params
 }: {

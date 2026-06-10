@@ -2,6 +2,8 @@ import { PurchasePage } from "@/components/pages/public-pages";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getPublicLotById } from "@/lib/services/public-catalog.service";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page({
   params
 }: {

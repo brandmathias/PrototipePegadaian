@@ -5,6 +5,8 @@ import { getRoleHomePath, isAuthRole } from "@/lib/auth/guards";
 import { getServerSession } from "@/lib/auth/session";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession();
   const role = isAuthRole(session?.user.role) ? session.user.role : null;

@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAppPathFromRequestHeaders, getSuperAdminSessionUser } from "@/lib/auth/session";
 
+export const dynamic = "force-dynamic";
+
 const nav = [
   { href: "/superadmin", label: "Dashboard Nasional", icon: "dashboard" as const },
   { href: "/superadmin/review-pelanggaran", label: "Review & Pelanggaran", icon: "blacklist" as const },

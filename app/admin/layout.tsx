@@ -13,6 +13,8 @@ import { listAdminBarang } from "@/lib/services/admin-barang.service";
 import { listAdminPemasaran } from "@/lib/services/admin-pemasaran.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
+export const dynamic = "force-dynamic";
+
 const baseNav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "dashboard" },
   {
