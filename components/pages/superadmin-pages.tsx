@@ -4598,7 +4598,7 @@ export function SuperAdminUnitBarangDetailPage({
       <AdminPageHero
         description="Pantau detail barang lintas unit secara read-only, termasuk aset, media, status pemasaran, transaksi, dan riwayat iterasinya."
         eyebrow="Superadmin / Monitoring Unit"
-        icon={Package2}
+        icon={ShieldCheck}
         rightRail={
           <>
             <span
@@ -5262,7 +5262,7 @@ export function SuperAdminPolicyPage() {
       <AdminPageHero
         description="Referensi read-only untuk sanksi progresif buyer yang gagal membayar transaksi Lelang Tertutup dalam 24 jam."
         eyebrow="Superadmin / Kebijakan"
-        icon={ShieldAlert}
+        icon={UserCog}
         title="Kebijakan Pelanggaran"
       />
 

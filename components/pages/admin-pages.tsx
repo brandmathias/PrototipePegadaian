@@ -11,7 +11,6 @@ import {
   FileText,
   FileCheck2,
   FileWarning,
-  FolderOpen,
   Gavel,
   Gem,
   Hash,
@@ -19,6 +18,8 @@ import {
   Medal,
   Megaphone,
   MonitorSmartphone,
+  Ban,
+  Package,
   Package2,
   PackagePlus,
   PencilLine,
@@ -29,7 +30,6 @@ import {
   RotateCcw,
   Scale,
   ScrollText,
-  ShieldEllipsis,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -37,6 +37,7 @@ import {
   ReceiptText,
   UploadCloud,
   Wallet,
+  WalletCards,
 } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
@@ -562,7 +563,7 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
       <AdminPageHero
         description="Kelola barang jaminan, baca tahap operasional terbaru, dan buka detail saat admin perlu mengambil keputusan berikutnya."
         eyebrow="Admin Unit / Barang"
-        icon={FolderOpen}
+        icon={Package}
         rightRail={
           <>
             <AdminHeroPill icon={BadgeCheck}>Workspace operasional barang</AdminHeroPill>
@@ -860,7 +861,7 @@ export function AdminInventoryDetailPage({
       <AdminPageHero
         description="Gunakan halaman ini untuk melihat posisi barang saat ini, memeriksa data pendukung, dan melanjutkan langkah yang memang tersedia."
         eyebrow="Admin Unit / Detail Barang"
-        icon={Package2}
+        icon={Package}
         rightRail={
           <AdminHeroPill icon={ShieldCheck}>
             Status {formatDisplayLabel(item.status)}
@@ -877,7 +878,7 @@ export function AdminInventoryDetailPage({
               icon={action.icon}
               key={action.title}
               title={action.title}
-              variant={action.variant === "secondary" ? "secondary" : "default"}
+              variant={"variant" in action && action.variant === "secondary" ? "secondary" : "default"}
             />
           ))
         ) : (
@@ -1408,7 +1409,7 @@ export function AdminMarketingHubPage({
       <AdminPageHero
         description="Pilih jalur pemasaran yang mau dipantau. Harga Tetap untuk harga tetap, Lelang Tertutup untuk sesi lelang tertutup."
         eyebrow="Admin Unit / Pemasaran"
-        icon={Gavel}
+        icon={Megaphone}
         rightRail={<AdminHeroPill icon={BadgeCheck}>Workspace pemasaran unit</AdminHeroPill>}
         title="Pemasaran"
       />
@@ -1480,7 +1481,7 @@ export function AdminAuctionListPage({
       <AdminPageHero
         description={description}
         eyebrow={eyebrow}
-        icon={Gavel}
+        icon={Megaphone}
         rightRail={<AdminHeroPill icon={Clock3}>Pantau sesi pemasaran</AdminHeroPill>}
         title={title}
       />
@@ -1712,7 +1713,7 @@ export function AdminTransactionsPage({
       <AdminPageHero
         description="Kelola seluruh penyelesaian pembayaran dari penjualan langsung maupun hasil lelang, lalu terbitkan nota saat transaksi sudah benar-benar selesai."
         eyebrow="Admin Unit / Transaksi"
-        icon={Wallet}
+        icon={WalletCards}
         rightRail={<AdminHeroPill icon={FileCheck2}>Antrian pembayaran unit</AdminHeroPill>}
         title="Kelola Pembayaran & Nota"
       />
@@ -2050,7 +2051,7 @@ export function AdminBlacklistPage({
       <AdminPageHero
         description="Fokus pada kasus gagal bayar yang perlu dipantau, termasuk bantuan review dari buyer sebelum superadmin mengambil keputusan final."
         eyebrow="Admin Unit / Pelanggaran"
-        icon={ShieldEllipsis}
+        icon={Ban}
         rightRail={
           <>
             <AdminHeroPill icon={BadgeCheck}>{activeCount} aktif</AdminHeroPill>
