@@ -124,7 +124,7 @@ describe("createFixedPricePurchase locking rules", () => {
           status: "menunggu_pembayaran",
           proofUrl: null,
           referenceNumber: null,
-          paymentDeadline: new Date("2026-05-28T09:00:00.000Z"),
+          paymentDeadline: null,
           createdAt: new Date("2026-05-27T09:00:00.000Z"),
           updatedAt: new Date("2026-05-27T09:00:00.000Z")
         }
@@ -145,7 +145,7 @@ describe("createFixedPricePurchase locking rules", () => {
         status: "menunggu_pembayaran",
         proofUrl: null,
         referenceNumber: null,
-        paymentDeadline: expect.any(Date)
+        paymentDeadline: null
       })
     );
     expect(result).toEqual(
@@ -192,7 +192,7 @@ describe("createFixedPricePurchase locking rules", () => {
           status: "menunggu_pembayaran",
           proofUrl: null,
           referenceNumber: null,
-          paymentDeadline: new Date("2026-05-28T09:00:00.000Z"),
+          paymentDeadline: null,
           createdAt: new Date("2026-05-27T09:05:00.000Z"),
           updatedAt: new Date("2026-05-27T09:05:00.000Z")
         }
@@ -210,7 +210,8 @@ describe("createFixedPricePurchase locking rules", () => {
     expect(insertValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "menunggu_pembayaran",
-        userId: "buyer-baru"
+        userId: "buyer-baru",
+        paymentDeadline: null
       })
     );
     expect(result).toEqual(

@@ -335,7 +335,7 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
   }
 
   if (transaction.status === "MENUNGGU_PEMBAYARAN" && transaction.method === "TRANSFER_BANK") {
-    return "Transaksi sudah aktif. Lakukan transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu berakhir.";
+    return "Transaksi harga tetap sudah dibuat. Lakukan transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini.";
   }
 
   if (transaction.status === "DITOLAK_BUKTI") {
@@ -393,7 +393,9 @@ function getDashboardActionDescription(transaction: BuyerTransaction) {
     return "Pembayaran dilakukan langsung di unit. Simpan nomor pengajuan saat datang ke loket.";
   }
 
-  return "Selesaikan pembayaran sebelum batas waktu agar transaksi tetap aktif.";
+  return transaction.kind === "VICKREY_WIN"
+    ? "Selesaikan pembayaran sebelum batas waktu agar transaksi tetap aktif."
+    : "Lanjutkan dari halaman detail transaksi sesuai instruksi pembayaran.";
 }
 
 function isDashboardActiveTransaction(transaction: BuyerTransaction) {
@@ -401,8 +403,9 @@ function isDashboardActiveTransaction(transaction: BuyerTransaction) {
 }
 
 function isDashboardPaymentWaiting(transaction: BuyerTransaction) {
-  return ["MENUNGGU_PEMBAYARAN", "BUKTI_DIUNGGAH", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(
-    transaction.status
+  return (
+    transaction.kind === "VICKREY_WIN" &&
+    ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(transaction.status)
   );
 }
 
@@ -411,9 +414,7 @@ function isDashboardActiveBid(bid: BuyerBid) {
 }
 
 function getUrgentTransactionRank(transaction: BuyerTransaction) {
-  if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) return 0;
-  if (transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG") return 2;
-  if (transaction.status === "MENUNGGU_PEMBAYARAN") return 3;
+  if (isDashboardPaymentWaiting(transaction)) return 0;
   return 9;
 }
 
@@ -538,7 +539,9 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
   const paymentDetail = isTransfer
     ? transaction.status === "DITOLAK_BUKTI"
       ? "Pembayaran sudah dicoba, tetapi bukti transfer ditolak admin unit sehingga transaksi ini dibatalkan."
-      : "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
+      : isVickreyWin
+        ? "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
+        : "Transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini."
     : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
   const verificationDetail = isTransfer
     ? transaction.status === "DITOLAK_BUKTI"

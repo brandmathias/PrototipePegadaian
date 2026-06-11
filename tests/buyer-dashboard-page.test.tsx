@@ -116,7 +116,7 @@ const winningAuctionTransaction: BuyerTransaction = {
 };
 
 describe("buyer dashboard page", () => {
-  it("renders the focused buyer home with account status and an urgent payment banner", () => {
+  it("renders the focused buyer home without an urgent banner for fixed price proof upload", () => {
     render(
       <UserDashboardPage
         buyer={buyer}
@@ -133,11 +133,8 @@ describe("buyer dashboard page", () => {
     expect(screen.getByText(/akun terverifikasi/i)).toBeInTheDocument();
     expect(screen.getByText(/member sejak 4 mei 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/raras@example\.com/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembayaran menunggu/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /bayar sekarang/i })).toHaveAttribute(
-      "href",
-      "/transaksi/trx-fixed-1"
-    );
+    expect(screen.queryByText(/pembayaran menunggu/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^status akun$/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /catatan penting/i })).toBeInTheDocument();

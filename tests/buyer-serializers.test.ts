@@ -113,6 +113,35 @@ describe("buyer serializers", () => {
     expect(transaction.deadlineAt).toBeUndefined();
   });
 
+  it("keeps fixed price waiting payment as proof upload without a countdown deadline", () => {
+    const transaction = serializeBuyerTransaction({
+      id: "trx-fixed-waiting",
+      pemasaranId: "pm-fixed",
+      type: "fixed_price",
+      amount: "12450000",
+      paymentMethod: "transfer",
+      status: "menunggu_pembayaran",
+      proofUrl: null,
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: null,
+      verifiedAt: null,
+      createdAt: new Date("2026-05-04T02:30:00Z"),
+      lotName: "Kalung Emas 18K",
+      lotId: "barang-1",
+      imageUrl: "/uploads/barang/kalung.jpg",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      account: null
+    });
+
+    expect(transaction.kind).toBe("FIXED_PRICE");
+    expect(transaction.status).toBe("MENUNGGU_PEMBAYARAN");
+    expect(transaction.deadline).toBe("Unggah bukti pembayaran");
+    expect(transaction.deadlineAt).toBeUndefined();
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/24 jam|batas waktu/i);
+  });
+
   it("exposes rejected proof reason as canceled harga tetap content", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-rejected",

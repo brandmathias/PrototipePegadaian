@@ -183,7 +183,7 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   return [
     "Transaksi harga tetap sudah dibuat.",
     "Transfer sesuai total pembayaran ke rekening unit.",
-    "Unggah bukti pembayaran dari halaman ini sebelum batas waktu berakhir."
+    "Unggah bukti pembayaran dari halaman detail transaksi agar admin unit dapat memverifikasi."
   ];
 }
 
@@ -236,6 +236,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
   const proof = splitLegacyProofValue(row.proofUrl);
   const status = toTransactionStatus(row.status);
   const hasFinalReceipt = row.status === "lunas" || row.status === "selesai";
+  const isFixedPriceWaitingPayment = !isVickrey && status === "MENUNGGU_PEMBAYARAN";
   const deadlineLabel =
     status === "BUKTI_DIUNGGAH"
       ? "Menunggu verifikasi admin"
@@ -243,11 +244,13 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
         ? "Dibatalkan"
         : hasFinalReceipt
           ? "Selesai"
+          : isFixedPriceWaitingPayment
+            ? "Unggah bukti pembayaran"
           : getCountdownState(row.paymentDeadline, {
               expiredLabel: "Waktu pembayaran berakhir"
             }).label;
   const deadlineAt =
-    status === "BUKTI_DIUNGGAH" || status === "DITOLAK_BUKTI" || hasFinalReceipt
+    status === "BUKTI_DIUNGGAH" || status === "DITOLAK_BUKTI" || hasFinalReceipt || isFixedPriceWaitingPayment
       ? undefined
       : row.paymentDeadline?.toISOString();
 

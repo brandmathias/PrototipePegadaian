@@ -497,7 +497,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       status: hasProof ? "bukti_diunggah" : "menunggu_pembayaran",
       proofUrl: payload.fileName ?? null,
       referenceNumber: payload.reference ?? null,
-      paymentDeadline: hasProof ? null : plusHours(24)
+      paymentDeadline: null
     })
     .returning();
 
