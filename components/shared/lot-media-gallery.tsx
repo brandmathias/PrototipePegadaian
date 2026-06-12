@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Image as ImageIcon, PlayCircle } from "lucide-react";
 
@@ -92,14 +91,12 @@ export function LotMediaGallery({
               src={activeMedia.url}
             />
           ) : (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               alt={activeMediaLabel}
-              fill
-              className="object-cover transition duration-500 ease-out"
-              priority={priority}
-              sizes="(min-width: 1280px) 58vw, (min-width: 768px) 72vw, 100vw"
+              className="size-full object-cover transition duration-500 ease-out"
+              loading={priority ? "eager" : "lazy"}
               src={activeMedia.url}
-              unoptimized={priority}
             />
           )}
         </div>
@@ -183,11 +180,11 @@ export function LotMediaGallery({
                         src={item.url}
                       />
                     ) : (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         alt={`${title} foto ${index + 1}`}
-                        fill
-                        className="object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.025]"
-                        sizes="(min-width: 1280px) 18vw, (min-width: 640px) 45vw, 100vw"
+                        className="size-full object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.025]"
+                        loading="lazy"
                         src={item.url}
                       />
                     )}

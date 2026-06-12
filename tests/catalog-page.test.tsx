@@ -156,9 +156,48 @@ describe("CatalogPage", () => {
       />
     );
 
-    expect(screen.getByRole("img", { name: "Emas & Perhiasan foto utama" }).getAttribute("src")).toContain(
-      "%2Fuploads%2Fbarang%2Fkalung.jpg"
+    expect(screen.getByRole("img", { name: "Emas & Perhiasan foto utama" })).toHaveAttribute(
+      "src",
+      "/uploads/barang/kalung.jpg"
     );
+  });
+
+  it("renders remote uploaded lot media directly so object storage previews stay visible", () => {
+    const remoteMediaUrl = "https://pub-example.r2.dev/barang/liontin.jpg";
+
+    render(
+      <CatalogPage
+        lots={[
+          {
+            id: "lot-remote-media",
+            code: "LOT-REMOTE",
+            name: "Liontin Dengan Foto R2",
+            category: "Perhiasan",
+            mode: "fixed_price",
+            price: 10250000,
+            location: "Manado",
+            unitName: "UPC Ranotana",
+            city: "Manado",
+            condition: "Baik",
+            status: "Tersedia",
+            description: "Data media berasal dari object storage.",
+            media: [
+              {
+                id: "media-r2-1",
+                type: "foto",
+                url: remoteMediaUrl,
+                fileName: "liontin.jpg"
+              }
+            ],
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
+          }
+        ]}
+      />
+    );
+
+    const image = screen.getByRole("img", { name: "Perhiasan foto utama" });
+    expect(image).toHaveAttribute("src", remoteMediaUrl);
+    expect(image).not.toHaveAttribute("srcset");
   });
 
   it("filters catalog items with the incoming buyer search query and visual mode controls", () => {

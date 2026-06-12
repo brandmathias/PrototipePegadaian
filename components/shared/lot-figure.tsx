@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Gem, Laptop, Car, Coins, Package } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -78,13 +77,12 @@ export function LotFigure({
             src={primaryMedia.url}
           />
         ) : (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             alt={primaryMediaLabel}
-            fill
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             decoding="async"
             loading="lazy"
-            sizes="(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw"
             src={primaryMedia.url}
           />
         )}

@@ -144,6 +144,35 @@ describe("WishlistPage", () => {
     expect(router.refresh).toHaveBeenCalled();
   });
 
+  it("renders object storage media directly on wishlist cards", () => {
+    const remoteMediaUrl = "https://pub-example.r2.dev/barang/wishlist-cincin.jpg";
+
+    render(
+      <WishlistPage
+        activeItems={[
+          makeWishlistItem({
+            lot: {
+              ...makeWishlistItem().lot,
+              media: [
+                {
+                  id: "remote-media-1",
+                  type: "foto",
+                  url: remoteMediaUrl,
+                  fileName: "wishlist-cincin.jpg"
+                }
+              ]
+            }
+          })
+        ]}
+        unavailableItems={[]}
+      />
+    );
+
+    const image = screen.getByRole("img", { name: "Emas & Perhiasan foto utama" });
+    expect(image).toHaveAttribute("src", remoteMediaUrl);
+    expect(image).not.toHaveAttribute("srcset");
+  });
+
   it("renders a composed empty state when the buyer has not liked any item yet", () => {
     render(<WishlistPage activeItems={[]} unavailableItems={[]} />);
 

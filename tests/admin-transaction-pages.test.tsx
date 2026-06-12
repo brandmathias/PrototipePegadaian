@@ -201,6 +201,28 @@ describe("admin transaction pages", () => {
     );
   });
 
+  it("renders remote transaction media and payment proof directly", () => {
+    const itemImageUrl = "https://pub-example.r2.dev/items/kalung.jpg";
+    const proofUrl = "https://pub-example.r2.dev/proofs/bukti-kalung.jpg";
+
+    render(
+      <AdminTransactionDetailWorkspacePage
+        backHref="/admin/pemasaran"
+        backLabel="Kembali ke pemasaran"
+        transaction={{
+          ...transactions[0],
+          id: "trx-remote",
+          lot: "Kalung Remote",
+          imageUrl: itemImageUrl,
+          proofFile: proofUrl
+        }}
+      />
+    );
+
+    expect(screen.getByRole("img", { name: "Foto barang Kalung Remote" })).toHaveAttribute("src", itemImageUrl);
+    expect(screen.getByRole("img", { name: "Bukti pembayaran trx-remote" })).toHaveAttribute("src", proofUrl);
+  });
+
   it("prints the harga tetap receipt inline without opening a dedicated receipt tab", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 

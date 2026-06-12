@@ -238,6 +238,7 @@ describe("LoginForm", () => {
     expect(status).toHaveTextContent("Sesi Anda sudah ditutup dengan aman");
     expect(status).toHaveTextContent("Sampai jumpa kembali");
     expect(status).toHaveClass("auth-logout-stage");
+    expect(status.parentElement).toBe(document.body);
     await waitFor(() => {
       expect(navigationMocks.push).toHaveBeenCalledWith("/login");
     }, { timeout: 1800 });

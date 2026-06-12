@@ -2565,11 +2565,10 @@ function FixedPriceAuditGallery({
               />
             ) : (
               <div className="relative min-h-[19rem]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   alt={`${auction.lot} foto ${activeIndex + 1}`}
-                  fill
-                  className="object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  sizes="(min-width: 1536px) 44vw, (min-width: 1280px) 54vw, (min-width: 768px) 82vw, 100vw"
+                  className="h-full min-h-[19rem] w-full object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                   src={activeMedia.url}
                 />
               </div>
@@ -2614,11 +2613,10 @@ function FixedPriceAuditGallery({
                         src={item.url}
                       />
                     ) : (
-                      <Image
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
                         alt={`${auction.lot} foto thumbnail ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(min-width: 1280px) 8vw, 20vw"
+                        className="size-full object-cover"
                         src={item.url}
                       />
                     )}
@@ -4101,13 +4099,11 @@ function FixedPricePaymentVerificationModal({
                 {auction.proofUrl ? (
                   <div className="mt-3 overflow-hidden rounded-[0.9rem] border border-[#d4dce8] bg-[#1e293b]">
                     <div className="relative h-52 w-full overflow-hidden bg-[#111827] sm:h-60">
-                      <Image
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                         alt={`Bukti pembayaran ${auction.lot}`}
-                        className="object-cover opacity-72 transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                        fill
-                        sizes="(min-width: 1280px) 44vw, (min-width: 768px) 60vw, 100vw"
+                        className="size-full object-cover opacity-72 transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
                         src={auction.proofUrl}
-                        unoptimized
                       />
                       <div className="absolute inset-0 grid place-items-center bg-[#111827]/32">
                         <Link
