@@ -152,9 +152,39 @@ describe("DashboardShell", () => {
     fireEvent.click(screen.getByRole("button", { name: /super admin demo/i }));
 
     expect(screen.getByText("Super Admin")).toBeInTheDocument();
+    expect(screen.getByRole("menu")).toHaveClass("z-[80]");
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/superadmin/profil");
     expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/superadmin/profil#panduan");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
+  });
+
+  it("keeps admin unit header actions contained on compact screens", () => {
+    navigationMock.pathname = "/admin";
+
+    const { container } = render(
+      <DashboardShell
+        currentUser={{
+          image: null,
+          name: "Admin Unit Demo",
+          role: "admin_unit"
+        }}
+        nav={nav}
+        profileHref="/admin/profil"
+        showHeaderSearch={false}
+        subtitle="Pusat kendali operasional unit"
+        title="UPC Ranotana"
+      >
+        <div>Konten admin unit</div>
+      </DashboardShell>
+    );
+
+    expect(container.querySelector("[data-admin-header-actions]")).toHaveClass("w-full", "md:w-auto");
+
+    fireEvent.click(screen.getByRole("button", { name: /admin unit demo/i }));
+
+    expect(screen.getByRole("menu")).toHaveClass("z-[80]");
+    expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/admin/profil");
+    expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/admin/profil#panduan");
   });
 
   it("cleans legacy global dark mode so buyer routes are not affected after leaving admin", () => {

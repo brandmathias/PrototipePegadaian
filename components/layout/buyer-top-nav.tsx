@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Gavel, Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
@@ -37,6 +38,7 @@ const buyerNav = [
 export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
   const pathname = usePathname();
   const isLuxury = variant === "luxury";
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   return (
     <header
@@ -137,10 +139,21 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
               </span>
             ) : null}
           </Link>
-          <BuyerProfileMenu image={image} name={name} profileHref="/profil" />
+          <BuyerProfileMenu
+            image={image}
+            name={name}
+            onOpenChange={setIsProfileMenuOpen}
+            profileHref="/profil"
+          />
         </div>
       </div>
-      <div className="container grid gap-3 pb-3 lg:hidden">
+      <div
+        className={cn(
+          "container grid gap-3 pb-3 lg:hidden",
+          isProfileMenuOpen && "hidden"
+        )}
+        data-buyer-mobile-nav-panel
+      >
         <CatalogSearchInput
           inputClassName={cn(
             "h-11 w-full text-sm",

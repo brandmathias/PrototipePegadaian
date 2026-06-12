@@ -217,9 +217,15 @@ describe("AdminBlacklistPage", () => {
   });
 
   it("shows violation detail with level, countdown context, and unpaid auction traces", () => {
+    const entry = makeBlacklistEntry(2);
+    const remoteItemImageUrl = "https://pub-example.r2.dev/blacklist/motor-racing.jpg";
+
+    entry.latestUnpaidAuction.imageUrl = remoteItemImageUrl;
+    entry.unpaidAuctionTraces[0].imageUrl = remoteItemImageUrl;
+
     render(
       <AdminBlacklistDetailPage
-        entry={makeBlacklistEntry(2)}
+        entry={entry}
         userId="user-2"
       />,
     );
@@ -234,7 +240,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getAllByText("Motor Racing 2").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("img", { name: /foto barang motor racing 2/i }),
-    ).toBeInTheDocument();
+    ).toHaveAttribute("src", remoteItemImageUrl);
     expect(screen.getByText("Harga Dasar")).toBeInTheDocument();
     expect(screen.getByText("Rp 150.000.000")).toBeInTheDocument();
     expect(screen.getByText("Nilai Taksiran")).toBeInTheDocument();

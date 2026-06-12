@@ -1276,7 +1276,7 @@ describe("superadmin pages", () => {
               auctionMode: "VICKREY_AUCTION",
               basePrice: 4000000,
               id: "violation-13b",
-              imageUrl: "/uploads/barang/cincin-emas.jpg",
+              imageUrl: "https://pub-example.r2.dev/superadmin/cincin-emas.jpg",
               itemAppraisalValue: 5000000,
               itemName: "Cincin Emas 5 Gram",
               lotLabel: "BRG-13B",
@@ -1313,6 +1313,10 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText("Cincin Emas 5 Gram").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Pelanggaran Level 2/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /foto barang cincin emas 5 gram/i })).toHaveAttribute(
+      "src",
+      "https://pub-example.r2.dev/superadmin/cincin-emas.jpg"
+    );
     expect(screen.getByText("Riwayat Pelanggaran (Timeline)")).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
     expect(screen.getByText("Dtk")).toBeInTheDocument();
