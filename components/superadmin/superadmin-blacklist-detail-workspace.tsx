@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
@@ -308,10 +309,11 @@ function TriggerCaseCard({ trace }: { trace: Record<string, any> | null }) {
       <div className="mt-4 grid gap-4 rounded-[1.1rem] border border-[#edf1ee] bg-[#fbfcfb] p-3 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-center">
         <div className="relative min-h-32 overflow-hidden rounded-[1rem] border border-[#e1e8e4] bg-white">
           {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Foto barang ${itemName}`}
-              className="size-full object-cover"
+              className="object-cover"
+              fill
+              sizes="128px"
               src={imageUrl}
             />
           ) : (

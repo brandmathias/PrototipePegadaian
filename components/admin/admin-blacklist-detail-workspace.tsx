@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   BadgeCheck,
@@ -274,10 +275,11 @@ function AuctionDetailPanel({ trace }: { trace: Record<string, any> | null }) {
       <div className="grid gap-0 md:grid-cols-[11rem_minmax(0,1fr)]">
         <div className="relative min-h-[12rem] bg-[#ecebe5]">
           {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Foto barang ${itemName}`}
-              className="size-full object-cover"
+              className="object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 192px"
               src={imageUrl}
             />
           ) : (

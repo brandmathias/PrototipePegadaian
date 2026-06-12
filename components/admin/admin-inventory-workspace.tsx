@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -784,10 +785,11 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div className="relative size-11 shrink-0 overflow-hidden rounded-xl border border-[#d6e7db] bg-[#edf4ef] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
                         {item.previewImageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             alt={item.name}
-                            className="size-full object-cover"
+                            className="object-cover"
+                            fill
+                            sizes="44px"
                             src={item.previewImageUrl}
                           />
                         ) : (

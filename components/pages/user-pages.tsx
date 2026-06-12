@@ -1977,7 +1977,7 @@ export function ProfilePage({
   const restrictionLabel = hasRestriction ? "Pembatasan aktif" : "Tidak ada pembatasan";
 
   return (
-    <div className="full-bleed-safe relative -my-8 min-h-[calc(100dvh-4rem)] overflow-hidden bg-[#f8f4ea] py-8 md:-my-10 md:py-10">
+    <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 overflow-hidden bg-[#f8f4ea] py-8 md:-my-10 md:py-10">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <Image
           alt=""

@@ -56,12 +56,10 @@ describe("BuyerShell", () => {
     expect(screen.queryByText(/blacklist aktif sampai 5 mei 2026/i)).not.toBeInTheDocument();
     expect(screen.getByText("Konten akun")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^keluar$/i })).not.toBeInTheDocument();
-    expect(container.querySelector("[data-buyer-mobile-nav-panel]")).not.toHaveClass("hidden");
 
     fireEvent.click(screen.getByRole("button", { name: /raras maheswari/i }));
 
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
-    expect(container.querySelector("[data-buyer-mobile-nav-panel]")).toHaveClass("hidden");
   });
 });

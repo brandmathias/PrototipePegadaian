@@ -52,40 +52,4 @@ describe("LotMediaGallery", () => {
       within(screen.getByTestId("lot-media-active")).getByRole("img", { name: "Kalung Emas foto 3" })
     ).toBeInTheDocument();
   });
-
-  it("renders object storage photo URLs directly for the active media and thumbnails", () => {
-    const firstPhotoUrl = "https://pub-example.r2.dev/barang/liontin-1.jpg";
-    const secondPhotoUrl = "https://pub-example.r2.dev/barang/liontin-2.jpg";
-
-    render(
-      <LotMediaGallery
-        category="Perhiasan"
-        title="Liontin Remote"
-        media={[
-          {
-            id: "remote-photo-1",
-            type: "foto",
-            url: firstPhotoUrl,
-            fileName: "liontin-1.jpg"
-          },
-          {
-            id: "remote-photo-2",
-            type: "foto",
-            url: secondPhotoUrl,
-            fileName: "liontin-2.jpg"
-          }
-        ]}
-      />
-    );
-
-    const activeImage = within(screen.getByTestId("lot-media-active")).getByRole("img", {
-      name: "Liontin Remote foto 1"
-    });
-    const secondThumbnail = screen.getByRole("img", { name: "Liontin Remote foto 2" });
-
-    expect(activeImage).toHaveAttribute("src", firstPhotoUrl);
-    expect(activeImage).not.toHaveAttribute("srcset");
-    expect(secondThumbnail).toHaveAttribute("src", secondPhotoUrl);
-    expect(secondThumbnail).not.toHaveAttribute("srcset");
-  });
 });

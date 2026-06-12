@@ -12,7 +12,6 @@ type BuyerProfileMenuProps = {
   image?: string | null;
   profileHref?: string;
   className?: string;
-  onOpenChange?: (isOpen: boolean) => void;
 };
 
 function getInitials(name: string) {
@@ -31,15 +30,10 @@ export function BuyerProfileMenu({
   name,
   image,
   profileHref = "/profil",
-  className,
-  onOpenChange
+  className
 }: BuyerProfileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    onOpenChange?.(isOpen);
-  }, [isOpen, onOpenChange]);
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {

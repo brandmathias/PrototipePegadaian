@@ -431,8 +431,8 @@ export function DashboardShell({
         ) : null}
       </aside>
 
-      <div className={cn("relative min-h-dvh min-w-0", forceWhiteShell && "bg-white")}>
-        <header className="sticky top-0 z-30 overflow-visible border-b border-black/5 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
+      <div className={cn("relative min-h-dvh", forceWhiteShell && "bg-white")}>
+        <header className="sticky top-0 z-30 border-b border-black/5 bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-colors duration-300 dark:border-white/8 dark:bg-[#07110d]/88 print:hidden">
           <div className="mx-auto flex w-full max-w-[1460px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex min-w-0 items-start gap-3 sm:items-center lg:gap-5">
@@ -513,7 +513,7 @@ export function DashboardShell({
                   </div>
                 ) : null}
 
-                <div className="relative z-[70] flex w-full min-w-0 items-center justify-end gap-2 md:w-auto" data-admin-header-actions>
+                <div className="flex min-w-0 items-center justify-end gap-2">
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
                   {profileHref && currentUser ? (
                     <AdminProfileMenu

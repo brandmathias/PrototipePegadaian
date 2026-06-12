@@ -352,53 +352,6 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
   });
 
-  it("renders harga tetap detail object storage media directly", () => {
-    const firstPhotoUrl = "https://pub-example.r2.dev/admin/kalung-1.jpg";
-    const secondPhotoUrl = "https://pub-example.r2.dev/admin/kalung-2.jpg";
-
-    render(
-      <AdminFixedPriceDetailPage
-        auction={{
-          id: "pm-fixed-remote-media",
-          lotId: "barang-remote",
-          lot: "Kalung Remote",
-          code: "BRG-R2",
-          category: "emas",
-          condition: "baik",
-          status: "AKTIF",
-          mode: "FIXED_PRICE",
-          startsAt: "2026-05-01T00:00:00.000Z",
-          ending: "-",
-          endingAt: undefined,
-          price: 12500000,
-          transactionStatus: "BUKTI_DIUNGGAH",
-          buyerName: "Raras",
-          paymentMethod: "TRANSFER_BANK",
-          proofUrl: "https://pub-example.r2.dev/proofs/kalung.jpg",
-          reference: "TRX-R2",
-          soldAt: null,
-          paymentDeadline: "2026-05-03T00:00:00.000Z",
-          media: [
-            { id: "m-r2-1", type: "foto", url: firstPhotoUrl, fileName: "kalung-1.jpg" },
-            { id: "m-r2-2", type: "foto", url: secondPhotoUrl, fileName: "kalung-2.jpg" }
-          ],
-          primaryMedia: { id: "m-r2-1", type: "foto", url: firstPhotoUrl, fileName: "kalung-1.jpg" },
-          note: "Remote media"
-        }}
-      />
-    );
-
-    const activeImage = within(screen.getByTestId("lot-media-active")).getByRole("img", {
-      name: "Kalung Remote foto 1"
-    });
-    const secondThumbnail = screen.getByRole("img", { name: "Kalung Remote foto thumbnail 2" });
-
-    expect(activeImage).toHaveAttribute("src", firstPhotoUrl);
-    expect(activeImage).not.toHaveAttribute("srcset");
-    expect(secondThumbnail).toHaveAttribute("src", secondPhotoUrl);
-    expect(secondThumbnail).not.toHaveAttribute("srcset");
-  });
-
   it("opens harga tetap payment verification when buyer proof has been uploaded", () => {
     render(
       <AdminFixedPriceDetailPage

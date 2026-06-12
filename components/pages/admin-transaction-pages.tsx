@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
@@ -275,11 +276,12 @@ function TransactionSummaryDossier({
       <CardContent className="space-y-5 p-5 sm:p-6">
         <div className="overflow-hidden rounded-[1.45rem] border border-black/8 bg-[#f6f7f3] dark:border-white/8 dark:bg-[#14201a]">
           {transaction.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Foto barang ${transaction.lot}`}
               className="aspect-[16/10] w-full object-cover"
+              height={720}
               src={transaction.imageUrl}
+              width={960}
             />
           ) : (
             <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-[radial-gradient(circle_at_30%_20%,rgba(215,173,47,0.28),transparent_30%),linear-gradient(135deg,#0a6a49_0%,#073f30_100%)] text-white">
@@ -616,11 +618,12 @@ function TransactionLedgerRow({
       <div className="flex min-w-0 items-center gap-3">
         <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-black/8 bg-[#f1f3ef] dark:border-white/8 dark:bg-[#17241d]">
           {transaction.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Foto barang ${transaction.lot}`}
               className="size-full object-cover"
+              height={112}
               src={transaction.imageUrl}
+              width={112}
             />
           ) : (
             <ReceiptText className="size-5 text-[#0a6a49] dark:text-emerald-200" />
@@ -824,11 +827,12 @@ function ProofPreview({ transaction }: { transaction: AdminTransactionItem }) {
     <div className="space-y-3">
       <div className="overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#f7f7f4] dark:border-white/8 dark:bg-[#14201a]">
         {isProofPreviewable(transaction.proofFile) ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             alt={`Bukti pembayaran ${transaction.id}`}
             className="aspect-[4/3] w-full object-cover"
+            height={900}
             src={transaction.proofFile}
+            width={1200}
           />
         ) : (
           <div className="flex aspect-[4/3] items-center justify-center bg-[#f4f4ef] text-black/46 dark:bg-[#17241d] dark:text-slate-400">
