@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 
 import { requireBuyerApiSession } from "@/lib/auth/session";
 import { createFixedPricePurchase } from "@/lib/services/buyer.service";
+import { saveUserUploadFile } from "@/lib/storage/user-upload-storage";
 
 type Context = { params: Promise<{ pemasaranId: string }> };
 
 const MAX_PROOF_SIZE = 5 * 1024 * 1024;
-const PROOF_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "bukti");
-
-function sanitizeFileName(fileName: string) {
-  const normalized = fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
-  return `${Date.now()}-${normalized}`;
-}
 
 async function readPurchasePayload(request: Request) {
   const contentType = request.headers.get("content-type") ?? "";
@@ -42,15 +35,14 @@ async function readPurchasePayload(request: Request) {
     throw new Error("Format bukti pembayaran harus JPG, PNG, atau PDF.");
   }
 
-  await mkdir(PROOF_UPLOAD_DIR, { recursive: true });
-  const storedFileName = sanitizeFileName(file.name);
-  const storedPath = path.join(PROOF_UPLOAD_DIR, storedFileName);
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(storedPath, buffer);
+  const savedFile = await saveUserUploadFile({
+    file,
+    folder: "bukti"
+  });
 
   return {
     paymentMethod: "transfer",
-    fileName: `/uploads/bukti/${storedFileName}`,
+    fileName: savedFile.url,
     ...(reference ? { reference } : {})
   };
 }

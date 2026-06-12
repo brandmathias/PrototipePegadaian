@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 
 import { requireBuyerApiSession } from "@/lib/auth/session";
 import { uploadBuyerPaymentProof } from "@/lib/services/buyer.service";
+import { saveUserUploadFile } from "@/lib/storage/user-upload-storage";
 
 type Context = { params: Promise<{ id: string }> };
 const MAX_PROOF_SIZE = 5 * 1024 * 1024;
@@ -31,13 +30,13 @@ async function readProofPayload(request: Request) {
     throw new Error("Format bukti pembayaran harus JPG, PNG, atau PDF.");
   }
 
-  const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "bukti");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, safeFileName), Buffer.from(await file.arrayBuffer()));
+  const savedFile = await saveUserUploadFile({
+    file,
+    folder: "bukti"
+  });
 
   return {
-    fileName: `/uploads/bukti/${safeFileName}`,
+    fileName: savedFile.url,
     reference: typeof reference === "string" ? reference : ""
   };
 }

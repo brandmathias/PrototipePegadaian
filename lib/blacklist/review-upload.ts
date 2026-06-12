@@ -1,5 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { saveUserUploadFile } from "@/lib/storage/user-upload-storage";
 
 const MAX_REVIEW_EVIDENCE_SIZE = 5 * 1024 * 1024;
 
@@ -17,13 +16,13 @@ async function persistEvidenceFile(file: File) {
     throw new Error("Format bukti review harus JPG, PNG, atau PDF.");
   }
 
-  const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "blacklist-review");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, safeFileName), Buffer.from(await file.arrayBuffer()));
+  const savedFile = await saveUserUploadFile({
+    file,
+    folder: "blacklist-review"
+  });
 
   return {
-    fileUrl: `/uploads/blacklist-review/${safeFileName}`,
+    fileUrl: savedFile.url,
     fileName: file.name,
     mimeType: file.type || "application/octet-stream"
   };
