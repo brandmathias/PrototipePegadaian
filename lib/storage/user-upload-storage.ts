@@ -45,6 +45,20 @@ function readEnv(name: string) {
   return value ? value : undefined;
 }
 
+function getRequestedStorageProvider(): UserUploadStorageProvider {
+  const configuredProvider = readEnv("USER_UPLOAD_STORAGE_DRIVER");
+
+  if (!configuredProvider) {
+    return process.env.NODE_ENV === "production" ? "r2" : "local";
+  }
+
+  if (configuredProvider === "local" || configuredProvider === "r2") {
+    return configuredProvider;
+  }
+
+  throw new Error("USER_UPLOAD_STORAGE_DRIVER harus bernilai local atau r2.");
+}
+
 function getR2Config(): R2Config | null {
   const accountId = readEnv("R2_ACCOUNT_ID");
   const accessKeyId = readEnv("R2_ACCESS_KEY_ID");
@@ -122,6 +136,7 @@ function createR2Client(config: R2Config) {
 async function saveUserUploadBody(input: SaveUserUploadBufferInput): Promise<SavedUserUploadFile> {
   const key = createUserUploadKey(input.folder, input.storedName);
   const contentType = input.contentType || "application/octet-stream";
+  const requestedStorageProvider = getRequestedStorageProvider();
   const r2Config = getR2Config();
 
   if (r2Config) {
@@ -141,6 +156,12 @@ async function saveUserUploadBody(input: SaveUserUploadBufferInput): Promise<Sav
       storedName: input.storedName,
       url: `${r2Config.publicBaseUrl}/${key}`
     };
+  }
+
+  if (requestedStorageProvider === "r2") {
+    throw new Error(
+      "R2 belum dikonfigurasi untuk upload production. Lengkapi R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, dan R2_PUBLIC_BASE_URL di environment Dokploy."
+    );
   }
 
   const targetPath = path.join(getLocalUploadRoot(), ...key.split("/"));

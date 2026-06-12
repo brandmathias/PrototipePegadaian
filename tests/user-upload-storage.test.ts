@@ -62,6 +62,22 @@ describe("user upload storage", () => {
     expect(sendMock).not.toHaveBeenCalled();
   });
 
+  test("rejects production uploads instead of silently falling back to local storage when R2 is missing", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+
+    const { saveUserUploadFile } = await import("@/lib/storage/user-upload-storage");
+    const file = createUploadFile("foto barang", "cincin.png", "image/png");
+
+    await expect(
+      saveUserUploadFile({
+        file,
+        folder: "barang",
+        storedName: "cincin.png"
+      })
+    ).rejects.toThrow(/R2 belum dikonfigurasi/i);
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
   test("uploads to R2 and returns the configured public URL when R2 env is complete", async () => {
     vi.stubEnv("R2_ACCOUNT_ID", "account-id");
     vi.stubEnv("R2_ACCESS_KEY_ID", "access-key");

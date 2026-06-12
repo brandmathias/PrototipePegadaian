@@ -45,6 +45,16 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.queryByText(/pencarian langsung/i)).not.toBeInTheDocument();
   });
 
+  it("renders remote preview images directly so R2 media is not blocked by the Next image optimizer", () => {
+    const remotePreviewUrl = "https://pub-example.r2.dev/barang/cincin-emas.png";
+
+    render(<AdminInventoryWorkspace items={[{ ...makeItem(1), previewImageUrl: remotePreviewUrl }]} />);
+
+    const preview = screen.getByRole("img", { name: "Barang Demo 1" });
+    expect(preview).toHaveAttribute("src", remotePreviewUrl);
+    expect(preview).not.toHaveAttribute("srcset");
+  });
+
   it("does not render marketed or finished goods in the inventory table", () => {
     render(
       <AdminInventoryWorkspace
