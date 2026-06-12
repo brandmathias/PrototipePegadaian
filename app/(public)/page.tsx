@@ -1,9 +1,13 @@
-import { HomePage } from "@/components/pages/home-page";
-import { getPublicHomeData } from "@/lib/services/public-home.service";
+import { redirect } from "next/navigation";
+
+import { getAuthenticatedLoginRedirectPath } from "@/lib/auth/guards";
+import { getServerSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const data = await getPublicHomeData();
-  return <HomePage featuredLots={data.featuredLots} serverNow={new Date().toISOString()} stats={data.stats} />;
+  const session = await getServerSession();
+  const redirectPath = getAuthenticatedLoginRedirectPath(session?.user);
+
+  redirect(redirectPath ?? "/katalog");
 }

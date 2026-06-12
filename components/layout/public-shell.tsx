@@ -25,10 +25,6 @@ type PublicShellProps = {
 
 const guestNav = [
   {
-    href: "/",
-    label: "Beranda"
-  },
-  {
     href: "/katalog",
     label: "Katalog"
   }
@@ -45,6 +41,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const isBuyer = viewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
   const navItems = guestNav;
+  const brandHref = viewer?.homeHref ?? "/katalog";
 
   return (
     <div
@@ -68,7 +65,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
             <div className="flex min-w-0 items-center gap-3 lg:gap-6">
               <Link
                 className="flex min-w-0 items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
-                href="/"
+                href={brandHref}
               >
                 <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
                   <Gavel className="size-4" />
@@ -135,7 +132,10 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           </div>
           <nav
             aria-label="Navigasi publik mobile"
-            className="container grid grid-cols-2 gap-2 pb-3 md:hidden"
+            className={cn(
+              "container grid gap-2 pb-3 md:hidden",
+              navItems.length > 1 ? "grid-cols-2" : "grid-cols-1"
+            )}
           >
             {navItems.map((item) => {
               const active =

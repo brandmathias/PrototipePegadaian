@@ -14,6 +14,21 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("PublicShell", () => {
+  it("keeps guest navigation focused on the catalog only", () => {
+    render(
+      <ToastProvider>
+        <PublicShell>
+          <div>Konten katalog guest</div>
+        </PublicShell>
+      </ToastProvider>
+    );
+
+    expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/katalog");
+    expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
+  });
+
   it("keeps buyer navigation when an authenticated buyer opens the public catalog", () => {
     const { container } = render(
       <ToastProvider>
