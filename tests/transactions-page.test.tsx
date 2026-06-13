@@ -311,7 +311,7 @@ describe("TransactionsPage", () => {
     expect(
       screen
         .getAllByRole("link", { name: /lihat detail/i })
-        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250520-FAIL")
+        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250520-FAIL/pemenang")
     ).toBe(true);
   });
 

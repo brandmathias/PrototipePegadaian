@@ -358,12 +358,11 @@ describe("buyer vickrey pages", () => {
 
     expect(screen.getByText(/anda memenangkan lelang/i)).toBeInTheDocument();
     expect(screen.getByText(/batas waktu pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/workflow pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/bayar lelang tertutup di unit/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/maksimal 24 jam/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/jika tidak dibayar tepat waktu, transaksi akan gagal otomatis/i)).toBeInTheDocument();
-    expect(screen.getByText(/verifikasi admin/i)).toBeInTheDocument();
-    expect(screen.getByText(/selesai & nota/i)).toBeInTheDocument();
+    expect(screen.getByText(/langkah selanjutnya: lihat detail transaksi/i)).toBeInTheDocument();
+    expect(screen.queryByText(/workflow pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/bayar lelang tertutup di unit/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/verifikasi admin/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/selesai & nota/i)).not.toBeInTheDocument();
     expect(screen.getByText(/ringkasan lelang anda/i)).toBeInTheDocument();
     expect(screen.getByText("Jam")).toBeInTheDocument();
     expect(screen.getByText("Menit")).toBeInTheDocument();
@@ -399,10 +398,13 @@ describe("buyer vickrey pages", () => {
 
     render(<AuctionWinnerPage transaction={transaction} transactionId={transaction.id} />);
 
-    expect(screen.getByText(/workflow pembayaran gagal/i)).toBeInTheDocument();
-    expect(screen.getByText(/melewati 24 jam/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/transaksi ditutup karena pemenang tidak melakukan pembayaran dalam waktu 24 jam/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/akun dapat terkena pembatasan sesuai aturan lelang/i)).toBeInTheDocument();
+    expect(screen.queryByText(/workflow pembayaran gagal/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/melewati 24 jam/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/batas waktu berakhir/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /lihat detail transaksi/i })).toHaveAttribute(
+      "href",
+      "/transaksi/trx-vickrey-failed"
+    );
   });
 
   it("keeps winner hero particle styles deterministic for hydration", () => {

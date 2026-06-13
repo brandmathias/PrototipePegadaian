@@ -9,6 +9,8 @@ export function isBuyerWinnerAnnouncementTransaction(
       "MENUNGGU_PEMBAYARAN",
       "MENUNGGU_KONFIRMASI_LANGSUNG",
       "LUNAS",
+      "SELESAI",
+      "GAGAL",
     ].includes(transaction.status)
   );
 }

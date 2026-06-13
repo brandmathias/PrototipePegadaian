@@ -31,7 +31,13 @@ describe("buyer transaction links", () => {
         kind: "VICKREY_WIN",
         status: "SELESAI",
       })
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      isBuyerWinnerAnnouncementTransaction({
+        kind: "VICKREY_WIN",
+        status: "GAGAL",
+      })
+    ).toBe(true);
     expect(
       getBuyerTransactionHref({
         id: "trx-vickrey-1",
@@ -53,5 +59,19 @@ describe("buyer transaction links", () => {
         status: "LUNAS",
       })
     ).toBe("/transaksi/trx-vickrey-lunas/pemenang");
+    expect(
+      getBuyerTransactionHref({
+        id: "trx-vickrey-selesai",
+        kind: "VICKREY_WIN",
+        status: "SELESAI",
+      })
+    ).toBe("/transaksi/trx-vickrey-selesai/pemenang");
+    expect(
+      getBuyerTransactionHref({
+        id: "trx-vickrey-gagal",
+        kind: "VICKREY_WIN",
+        status: "GAGAL",
+      })
+    ).toBe("/transaksi/trx-vickrey-gagal/pemenang");
   });
 });
