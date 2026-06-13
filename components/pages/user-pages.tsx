@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import {
   AlertTriangle,
+  ArrowLeft,
   CheckCircle2,
   Clock3,
   ExternalLink,
@@ -20,6 +21,7 @@ import {
   ShoppingBag,
   UploadCloud,
   UserRound,
+  X,
 } from "lucide-react";
 
 import { AccountCopyButton } from "@/components/buyer/account-copy-button";
@@ -1179,164 +1181,361 @@ function VickreyPaymentFailedDetail({
   buyer: BuyerSessionUser;
   transaction: BuyerTransaction;
 }) {
+  const sessionDate = transaction.createdAt.split(",")[0]?.trim() || transaction.createdAt;
+  const failureReference = `TRX-FAIL-${transaction.applicationNumber || transaction.id}`;
+  const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
+
   return (
-    <div className="space-y-7 bg-white md:space-y-8">
-      <section className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <Link className="hover:text-primary" href="/dashboard">
-                Dashboard
-              </Link>
-              <span aria-hidden="true">›</span>
-              <Link className="hover:text-primary" href="/transaksi">
-                Transaksi
-              </Link>
-              <span aria-hidden="true">›</span>
-              <span className="font-bold uppercase tracking-[0.16em] text-foreground">Gagal</span>
-            </div>
-            <h1 className="font-headline text-4xl font-black tracking-tight text-primary md:text-6xl">
-              Pembayaran Lelang Gagal
+    <div className="flex flex-col gap-4 bg-white md:gap-5">
+      <div className="order-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link
+              aria-label="Kembali ke Transaksi"
+              className="interactive-tap grid size-10 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
+              href="/transaksi"
+            >
+              <ArrowLeft className="size-5" />
+            </Link>
+            <h1 className="font-headline text-2xl font-black tracking-tight text-foreground md:text-[1.7rem]">
+              Detail Transaksi Lelang Gagal
             </h1>
-            <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-              Batas pembayaran 24 jam untuk pemenang Lelang Tertutup telah lewat. Transaksi ini ditandai gagal
-              dan tidak lagi berada dalam antrean pembayaran aktif.
-            </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/transaksi">
-              <Button variant="ghost">Kembali ke Transaksi</Button>
-            </Link>
+            <div>
+              <Button
+                className="h-12 rounded-lg border-border bg-white px-5 text-foreground shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+                type="button"
+                variant="secondary"
+              >
+                <Printer className="size-5" />
+                Cetak Ringkasan
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Card className="overflow-hidden border border-red-100 bg-[radial-gradient(circle_at_top_left,rgba(255,223,172,0.38),transparent_34%),linear-gradient(135deg,#fffdf8_0%,#fff6f3_100%)]">
-          <CardContent className="grid gap-6 p-5 md:grid-cols-[0.78fr_1.22fr] md:p-6">
-            <div className="rounded-[1.5rem] bg-[#9f2f2f] p-5 text-white">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="size-5" />
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">
-                  Status Akhir Lelang
-                </p>
-              </div>
-              <p className="mt-4 font-headline text-3xl font-black tracking-tight">Gagal</p>
-              <p className="mt-2 text-sm leading-7 text-white/78">
-                Pemenang tidak menyelesaikan pembayaran dalam batas 24 jam.
+      <div className="order-2">
+        <PaymentProgressRail transaction={transaction} />
+      </div>
+
+      <Card className="order-3 overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <CardContent className="grid p-0 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="flex min-h-[150px] flex-col items-center justify-center bg-[#d6060d] p-6 text-center text-white md:min-h-[166px]">
+            <span className="grid size-16 place-items-center rounded-full border-[3px] border-white">
+              <X className="size-10" strokeWidth={2.4} />
+            </span>
+            <p className="mt-5 font-headline text-2xl font-black uppercase tracking-wide">Gagal</p>
+          </div>
+
+          <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)] lg:items-center lg:p-8">
+            <div className="min-w-0">
+              <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+                Batas Waktu Pelunasan Habis (SLA Timeout)
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+                Transaksi ini dinyatakan gagal secara otomatis oleh sistem karena pemenang tidak menyelesaikan
+                pelunasan dalam batas waktu 24 jam.
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <CardTitle className="text-2xl">Ringkasan kegagalan pembayaran</CardTitle>
-                  <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-                    Sistem menutup proses pembayaran Lelang Tertutup karena tenggat telah habis. Riwayat bid tetap
-                    tersimpan sebagai catatan aktivitas akun.
-                  </p>
-                </div>
-                <StatusPill status="GAGAL" />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Nominal lelang
-                  </p>
-                  <p className="mt-2 text-lg font-black text-[#9f2f2f]">{currency.format(transaction.amount)}</p>
-                </div>
-                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Batas pembayaran
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{transaction.deadline}</p>
-                </div>
-                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Unit
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-foreground">{transaction.unit}</p>
-                </div>
-              </div>
+            <div className="grid rounded-xl border border-border/70 bg-white sm:grid-cols-3 sm:divide-x sm:divide-border/70 lg:border-0">
+              <AuctionPaymentMetric label="Nominal Lelang" value={currency.format(transaction.amount)} />
+              <AuctionPaymentMetric label="Unit Pelaksana" value={transaction.unit} />
+              <AuctionPaymentMetric label="Tanggal Sesi" value={sessionDate} />
             </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <PaymentProgressRail transaction={transaction} />
-
-      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card className="border border-border/70 bg-white shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
-          <CardContent className="space-y-6 p-6">
-            <div className="flex items-start gap-4">
+          </div>
+        </CardContent>
+      </Card>
+      <div className="order-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
+        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <CardContent className="p-6 md:p-7">
+            <CardTitle className="text-xl">Informasi Barang & Pemenang</CardTitle>
+            <div className="mt-4 grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
               {transaction.imageUrl ? (
                 <Image
                   alt={`Foto barang ${transaction.title}`}
-                  className="size-24 shrink-0 rounded-xl bg-[#efefec] object-cover"
-                  height={160}
+                  className="h-48 w-full rounded-lg bg-[#eef0ed] object-cover md:h-52"
+                  height={260}
                   src={transaction.imageUrl}
-                  width={160}
+                  width={320}
                 />
               ) : (
-                <div className="grid size-24 shrink-0 place-items-center rounded-xl bg-[#efefec] text-primary">
-                  <ShoppingBag className="size-8" />
+                <div className="grid h-48 w-full place-items-center rounded-lg bg-[#eef0ed] text-primary md:h-52">
+                  <ShoppingBag className="size-10" />
                 </div>
               )}
+
               <div className="min-w-0">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Barang Lelang
-                </p>
-                <h2 className="mt-2 font-headline text-2xl font-black tracking-tight text-foreground">
+                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
                   {transaction.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{transaction.id}</p>
+                <div className="mt-4 space-y-4">
+                  <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
+                  <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
+                  <AuctionPaymentInfoRow label="Email" value={buyer.email} />
+                  <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />
+                </div>
               </div>
-            </div>
-
-            <div className="divide-y divide-border/70">
-              <PaymentInfoRow label="Nomor pengajuan" value={transaction.applicationNumber} />
-              <PaymentInfoRow label="Pembeli" value={buyer.name} />
-              <PaymentInfoRow label="Email" value={buyer.email} />
-              <PaymentInfoRow label="Metode" value="Bayar langsung di unit" />
-              <PaymentInfoRow label="Alamat unit" value={transaction.unitAddress} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border border-red-100 bg-white shadow-[0_18px_42px_rgba(155,44,44,0.05)]">
-          <CardContent className="space-y-5 p-6">
+        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <CardContent className="p-6 md:p-7">
             <div className="flex items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-red-50 text-[#9f2f2f]">
-                <Clock3 className="size-5" />
-              </span>
-              <div>
-                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
-                  Tenggat 24 jam terlewati
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Tidak ada unggah bukti atau proses review pembayaran untuk kasus ini.
-                </p>
-              </div>
+              <ReceiptText className="size-5 text-foreground" />
+              <CardTitle className="text-xl">Log Audit Sistem</CardTitle>
             </div>
+            <div className="my-5 h-px bg-border" />
 
-            <div className="rounded-[1.35rem] border border-red-100 bg-red-50/55 p-5">
-              <p className="text-sm font-semibold leading-7 text-[#7a2c2c]">
-                Sistem mencatat kegagalan pembayaran karena pemenang lelang tidak menyelesaikan pembayaran dalam
-                waktu 24 jam. Ikuti arahan unit bila akun mendapat pembatasan sementara.
+            <div className="space-y-4">
+              <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
+              <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
+              <AuctionPaymentAuditRow
+                label="Referensi Transaksi"
+                value={
+                  <span className="block rounded-md border border-border bg-surface-low/40 px-3 py-2 font-medium text-foreground">
+                    {failureReference}
+                  </span>
+                }
+              />
+              <AuctionPaymentAuditRow
+                label="Status Restriksi Aktif"
+                value={
+                  <span className="block rounded-lg border border-red-200 bg-red-50/80 px-4 py-3 text-[#9f1d24]">
+                    <span className="block font-bold">Tier 1 Bidding Suspension</span>
+                    <span className="mt-1 block text-sm font-medium">Aktif selama 7 hari</span>
+                  </span>
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function AuctionPaymentMetric({
+  label,
+  value
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="px-5 py-4">
+      <p className="text-sm leading-6 text-muted-foreground">{label}</p>
+      <p className="mt-2 break-words text-base font-black text-foreground md:text-lg">{value}</p>
+    </div>
+  );
+}
+
+function AuctionPaymentInfoRow({
+  label,
+  value
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="grid gap-1 text-sm sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words font-medium text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function AuctionPaymentAuditRow({
+  label,
+  value
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="grid gap-2 text-sm sm:grid-cols-[190px_minmax(0,1fr)] sm:items-start sm:gap-4">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="min-w-0 break-words text-foreground">{value}</span>
+    </div>
+  );
+}
+
+function VickreyPaymentSuccessDetail({
+  buyer,
+  settlementLockMessage,
+  transaction
+}: {
+  buyer: BuyerSessionUser;
+  settlementLockMessage: string | null;
+  transaction: BuyerTransaction;
+}) {
+  const isCompleted = transaction.status === "SELESAI";
+  const settlementDate =
+    (transaction.verifiedAt ?? transaction.createdAt).split(",")[0]?.trim() ||
+    transaction.verifiedAt ||
+    transaction.createdAt;
+  const successReference = `TRX-SUK-${
+    transaction.applicationNumber || transaction.receiptNumber || transaction.reference || transaction.id
+  }`;
+  const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
+
+  return (
+    <div className="flex flex-col gap-4 bg-white md:gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            aria-label="Kembali ke Transaksi"
+            className="interactive-tap grid size-10 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-primary/5 hover:text-primary"
+            href="/transaksi"
+          >
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="font-headline text-2xl font-black tracking-tight text-foreground md:text-[1.7rem]">
+            Detail Transaksi Lelang Berhasil
+          </h1>
+        </div>
+        <Button
+          className="h-12 self-start rounded-lg border-border bg-white px-5 text-foreground shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:self-auto"
+          type="button"
+          variant="secondary"
+        >
+          <Printer className="size-5" />
+          Cetak Ringkasan
+        </Button>
+      </div>
+
+      <PaymentProgressRail transaction={transaction} />
+
+      <Card className="overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <CardContent className="grid p-0 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <div className="flex min-h-[150px] flex-col items-center justify-center bg-primary p-6 text-center text-white md:min-h-[166px]">
+            <span className="grid size-16 place-items-center rounded-full border-[3px] border-white">
+              <CheckCircle2 className="size-10" strokeWidth={2.4} />
+            </span>
+            <p className="mt-5 font-headline text-2xl font-black uppercase tracking-wide">Berhasil</p>
+          </div>
+
+          <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)] lg:items-center lg:p-8">
+            <div className="min-w-0">
+              <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+                Pelunasan Berhasil dalam Batas Waktu 24 Jam
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+                Transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan sebelum batas waktu 24 jam
+                berakhir.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Dibuat
-                </p>
-                <p className="mt-2 text-sm font-semibold text-foreground">{transaction.createdAt}</p>
+            <div className="grid rounded-xl border border-border/70 bg-white sm:grid-cols-3 sm:divide-x sm:divide-border/70 lg:border-0">
+              <AuctionPaymentMetric label="Nominal Lelang" value={currency.format(transaction.amount)} />
+              <AuctionPaymentMetric label="Unit Pelaksana" value={transaction.unit} />
+              <AuctionPaymentMetric label="Tanggal Pelunasan" value={settlementDate} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
+        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <CardContent className="p-6 md:p-7">
+            <CardTitle className="text-xl">Informasi Barang & Pemenang</CardTitle>
+            <div className="mt-4 grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
+              {transaction.imageUrl ? (
+                <Image
+                  alt={`Foto barang ${transaction.title}`}
+                  className="h-48 w-full rounded-lg bg-[#eef0ed] object-cover md:h-52"
+                  height={260}
+                  src={transaction.imageUrl}
+                  width={320}
+                />
+              ) : (
+                <div className="grid h-48 w-full place-items-center rounded-lg bg-[#eef0ed] text-primary md:h-52">
+                  <ShoppingBag className="size-10" />
+                </div>
+              )}
+
+              <div className="min-w-0">
+                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+                  {transaction.title}
+                </h2>
+                <div className="mt-4 space-y-4">
+                  <AuctionPaymentInfoRow label="ID Penagihan" value={transaction.applicationNumber} />
+                  <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
+                  <AuctionPaymentInfoRow label="Email" value={buyer.email} />
+                  <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />
+                </div>
               </div>
-              <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Referensi
-                </p>
-                <p className="mt-2 break-all text-sm font-semibold text-foreground">{transaction.reference}</p>
-              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
+          <CardContent className="p-6 md:p-7">
+            <div className="flex items-center gap-3">
+              <FileCheck2 className="size-5 text-foreground" />
+              <CardTitle className="text-xl">Log Audit Sistem</CardTitle>
+            </div>
+            <div className="my-5 h-px bg-border" />
+
+            <div className="space-y-4">
+              <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
+              <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
+              <AuctionPaymentAuditRow
+                label="Referensi Transaksi"
+                value={
+                  <span className="block rounded-md border border-border bg-surface-low/40 px-3 py-2 font-medium text-foreground">
+                    {successReference}
+                  </span>
+                }
+              />
+              <AuctionPaymentAuditRow
+                label="Status Validasi"
+                value={
+                  <span
+                    className={cn(
+                      "flex items-start gap-3 rounded-lg border px-4 py-3",
+                      settlementLockMessage
+                        ? "border-amber-200 bg-amber-50 text-[#7a4f00]"
+                        : "border-primary/20 bg-primary/[0.05] text-primary"
+                    )}
+                  >
+                    <CheckCircle2 className="mt-0.5 size-5 shrink-0" />
+                    <span>
+                      <span className="block font-bold">
+                        {settlementLockMessage ? "Validasi Tertahan" : "Pembayaran Tervalidasi"}
+                      </span>
+                      <span className="mt-1 block text-sm font-medium">
+                        {settlementLockMessage ?? "Tidak ada restriksi aktif"}
+                      </span>
+                    </span>
+                  </span>
+                }
+              />
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {!isCompleted ? (
+                settlementLockMessage ? (
+                  <BuyerSettlementLockNotice message={settlementLockMessage} />
+                ) : (
+                  <CompletePurchaseButton transactionId={transaction.id} />
+                )
+              ) : (
+                <Button className="w-full" disabled type="button">
+                  <CheckCircle2 className="size-4" />
+                  Pembelian Selesai
+                </Button>
+              )}
+              <BuyerTransactionInlineReceiptPrint
+                buyer={buyer}
+                buttonClassName="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-primary bg-white px-4 py-2.5 text-center text-sm font-semibold leading-tight text-primary transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-out hover:bg-primary/5 active:scale-[0.99]"
+                label="Cetak Nota"
+                rootSuffix="status"
+                transaction={transaction}
+              />
             </div>
           </CardContent>
         </Card>
@@ -1375,6 +1574,7 @@ export function TransactionDetailPage({
   const isProofInReview = transaction.status === "BUKTI_DIUNGGAH";
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
+  const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
   const isFixedPriceCatalogHidden =
     isFixedPrice &&
     isFixedPriceBuyerCatalogHiddenStatus(transaction.status);
@@ -1394,6 +1594,16 @@ export function TransactionDetailPage({
 
   if (isFailedVickreyPayment) {
     return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
+  }
+
+  if (isSuccessfulVickreyPayment) {
+    return (
+      <VickreyPaymentSuccessDetail
+        buyer={buyer}
+        settlementLockMessage={settlementLockMessage}
+        transaction={transaction}
+      />
+    );
   }
 
   return (
