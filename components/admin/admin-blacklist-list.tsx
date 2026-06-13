@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import {
-  Building2,
   CalendarClock,
   Eye,
   Gavel,
@@ -370,7 +369,6 @@ export function AdminBlacklistList({
           entry.userId,
           entry.phone,
           entry.reason,
-          entry.unit,
           entry.levelLabel,
           entry.until,
         ]
@@ -421,7 +419,7 @@ export function AdminBlacklistList({
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
             <Input
               className="h-12 rounded-[1.05rem] border-[#dbe7df] bg-[#fbfcfb] pl-12 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0a6a49]/15"
-              placeholder="Cari nama, email, unit, level, atau alasan..."
+              placeholder="Cari nama, email, level, atau alasan..."
               value={query}
               onChange={(event) => {
                 const value = event.target.value;
@@ -472,9 +470,8 @@ export function AdminBlacklistList({
         </div>
       ) : (
         <>
-          <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(13rem,0.9fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
+          <div className="hidden grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.82fr)_minmax(14rem,1fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
             <div>Pengguna</div>
-            <div>Unit</div>
             <div>Tingkat Pelanggaran</div>
             <div>Masa Pembatasan</div>
             <div className="text-right">Aksi</div>
@@ -489,7 +486,7 @@ export function AdminBlacklistList({
 
               return (
                 <article
-                  className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfb] lg:grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(13rem,0.9fr)_7rem] lg:items-center sm:px-5"
+                  className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfb] lg:grid-cols-[minmax(15rem,1.25fr)_minmax(12rem,0.82fr)_minmax(14rem,1fr)_7rem] lg:items-center sm:px-5"
                   key={entry.userId}
                 >
                   <div className="flex min-w-0 items-start gap-3 lg:items-center">
@@ -518,11 +515,6 @@ export function AdminBlacklistList({
                         <LevelPill entry={entry} />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-[#42526b]">
-                    <Building2 className="size-4 shrink-0 text-[#536279]" />
-                    <span className="truncate">{entry.unit ?? "Unit ini"}</span>
                   </div>
 
                   <div>

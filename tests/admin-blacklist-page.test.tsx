@@ -118,6 +118,11 @@ describe("AdminBlacklistPage", () => {
     expect(screen.queryByText("Pengguna 11")).not.toBeInTheDocument();
     expect(screen.getByText("Pembatasan Unit")).toBeInTheDocument();
     expect(screen.getByText(/ledger blacklist buyer di unit ini/i)).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Cari nama, email, level, atau alasan..."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Unit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ranotana")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /level 3/i })).toBeInTheDocument();
     expect(screen.getByText(/insiden 7 hari/i)).toBeInTheDocument();
     expect(screen.getByText("Tingkat Pelanggaran")).toBeInTheDocument();

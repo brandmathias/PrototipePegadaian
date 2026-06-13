@@ -62,7 +62,7 @@ export function AdminProfileMenu({
   }, []);
 
   return (
-    <div className={cn("relative shrink-0", className)} ref={menuRef}>
+    <div className={cn("relative shrink-0", isOpen && "z-[90]", className)} ref={menuRef}>
       <button
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -92,7 +92,7 @@ export function AdminProfileMenu({
 
       {isOpen ? (
         <div
-          className="absolute right-0 mt-3 w-[min(15rem,calc(100vw-1.5rem))] overflow-hidden rounded-[1.35rem] border border-black/8 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80 dark:border-white/10 dark:bg-[#101a15] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] dark:ring-white/5"
+          className="absolute right-0 z-[90] mt-3 max-h-[calc(100dvh-7rem)] w-[min(15rem,calc(100vw-1rem))] overflow-y-auto overscroll-contain rounded-[1.35rem] border border-black/8 bg-white p-2 text-sm shadow-[0_24px_70px_-35px_rgba(8,69,50,0.44)] ring-1 ring-white/80 scrollbar-none dark:border-white/10 dark:bg-[#101a15] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] dark:ring-white/5"
           role="menu"
         >
           <div className="px-3 pb-2 pt-2">

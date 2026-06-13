@@ -59,6 +59,10 @@ describe("BuyerShell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /raras maheswari/i }));
 
+    const menu = screen.getByRole("menu");
+    expect(menu).toHaveClass("z-[90]");
+    expect(menu).toHaveClass("max-h-[calc(100dvh-7rem)]");
+    expect(menu).toHaveClass("overflow-y-auto");
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
   });

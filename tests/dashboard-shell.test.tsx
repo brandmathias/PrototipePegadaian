@@ -151,6 +151,10 @@ describe("DashboardShell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /super admin demo/i }));
 
+    const menu = screen.getByRole("menu");
+    expect(menu).toHaveClass("z-[90]");
+    expect(menu).toHaveClass("max-h-[calc(100dvh-7rem)]");
+    expect(menu).toHaveClass("overflow-y-auto");
     expect(screen.getByText("Super Admin")).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/superadmin/profil");
     expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/superadmin/profil#panduan");

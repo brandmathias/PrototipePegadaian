@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import { LogoutSuccessTransition } from "@/components/auth/login-success-transition";
 
@@ -41,7 +42,9 @@ export function LogoutButton({
 
   return (
     <>
-      {isSuccess ? <LogoutSuccessTransition /> : null}
+      {isSuccess && typeof document !== "undefined"
+        ? createPortal(<LogoutSuccessTransition />, document.body)
+        : null}
       <button
         {...props}
         className={className}
