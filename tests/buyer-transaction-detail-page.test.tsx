@@ -68,6 +68,48 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });
 
+  it("renders failed auction winner payment as a dedicated 24 hour failure detail", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-vickrey-failed",
+          lotId: "pm-vickrey-failed",
+          kind: "VICKREY_WIN",
+          title: "Kalung Emas 2",
+          amount: 16000000,
+          status: "GAGAL",
+          method: "BAYAR_LANGSUNG",
+          unit: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi, Manado",
+          createdAt: "28 Mei 2026, 19.20 WIB",
+          deadline: "29 Mei 2026, 19.20 WIB",
+          deadlineAt: "2026-05-29T11:20:00.000Z",
+          reference: "CASH-FAILED",
+          applicationNumber: "PGJ-VIC-FAILED",
+          paymentLabel: "Bayar langsung di unit",
+          paymentNotes: [],
+          imageUrl: "/uploads/barang/kalung-lelang.jpg"
+        }}
+        transactionId="trx-vickrey-failed"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /pembayaran lelang gagal/i })).toBeInTheDocument();
+    expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
+    expect(screen.getByText(/tenggat 24 jam terlewati/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak ada unggah bukti atau proses review pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /ringkasan kegagalan pembayaran/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /foto barang kalung emas 2/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kembali ke transaksi/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /detail pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/workflow pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status konfirmasi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/dibatalkan/i)).not.toBeInTheDocument();
+  });
+
   it("asks buyer to finish the purchase and prints the receipt inline after admin verification", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 

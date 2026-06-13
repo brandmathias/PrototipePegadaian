@@ -1152,6 +1152,178 @@ export function AuctionLoserPage({
   return <AuctionLoserPageContent bid={bid} recommendations={recommendations} />;
 }
 
+function VickreyPaymentFailedDetail({
+  buyer,
+  transaction
+}: {
+  buyer: BuyerSessionUser;
+  transaction: BuyerTransaction;
+}) {
+  return (
+    <div className="space-y-7 bg-white md:space-y-8">
+      <section className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Link className="hover:text-primary" href="/dashboard">
+                Dashboard
+              </Link>
+              <span aria-hidden="true">›</span>
+              <Link className="hover:text-primary" href="/transaksi">
+                Transaksi
+              </Link>
+              <span aria-hidden="true">›</span>
+              <span className="font-bold uppercase tracking-[0.16em] text-foreground">Gagal</span>
+            </div>
+            <h1 className="font-headline text-4xl font-black tracking-tight text-primary md:text-6xl">
+              Pembayaran Lelang Gagal
+            </h1>
+            <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+              Batas pembayaran 24 jam untuk pemenang Lelang Tertutup telah lewat. Transaksi ini ditandai gagal
+              dan tidak lagi berada dalam antrean pembayaran aktif.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/transaksi">
+              <Button variant="ghost">Kembali ke Transaksi</Button>
+            </Link>
+          </div>
+        </div>
+
+        <Card className="overflow-hidden border border-red-100 bg-[radial-gradient(circle_at_top_left,rgba(255,223,172,0.38),transparent_34%),linear-gradient(135deg,#fffdf8_0%,#fff6f3_100%)]">
+          <CardContent className="grid gap-6 p-5 md:grid-cols-[0.78fr_1.22fr] md:p-6">
+            <div className="rounded-[1.5rem] bg-[#9f2f2f] p-5 text-white">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="size-5" />
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">
+                  Status Akhir Lelang
+                </p>
+              </div>
+              <p className="mt-4 font-headline text-3xl font-black tracking-tight">Gagal</p>
+              <p className="mt-2 text-sm leading-7 text-white/78">
+                Pemenang tidak menyelesaikan pembayaran dalam batas 24 jam.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="text-2xl">Ringkasan kegagalan pembayaran</CardTitle>
+                  <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
+                    Sistem menutup proses pembayaran Lelang Tertutup karena tenggat telah habis. Riwayat bid tetap
+                    tersimpan sebagai catatan aktivitas akun.
+                  </p>
+                </div>
+                <StatusPill status="GAGAL" />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    Nominal lelang
+                  </p>
+                  <p className="mt-2 text-lg font-black text-[#9f2f2f]">{currency.format(transaction.amount)}</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    Batas pembayaran
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{transaction.deadline}</p>
+                </div>
+                <div className="rounded-[1.1rem] border border-red-100 bg-white/70 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    Unit
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{transaction.unit}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card className="border border-border/70 bg-white shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+          <CardContent className="space-y-6 p-6">
+            <div className="flex items-start gap-4">
+              {transaction.imageUrl ? (
+                <Image
+                  alt={`Foto barang ${transaction.title}`}
+                  className="size-24 shrink-0 rounded-xl bg-[#efefec] object-cover"
+                  height={160}
+                  src={transaction.imageUrl}
+                  unoptimized
+                  width={160}
+                />
+              ) : (
+                <div className="grid size-24 shrink-0 place-items-center rounded-xl bg-[#efefec] text-primary">
+                  <ShoppingBag className="size-8" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Barang Lelang
+                </p>
+                <h2 className="mt-2 font-headline text-2xl font-black tracking-tight text-foreground">
+                  {transaction.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{transaction.id}</p>
+              </div>
+            </div>
+
+            <div className="divide-y divide-border/70">
+              <PaymentInfoRow label="Nomor pengajuan" value={transaction.applicationNumber} />
+              <PaymentInfoRow label="Pembeli" value={buyer.name} />
+              <PaymentInfoRow label="Email" value={buyer.email} />
+              <PaymentInfoRow label="Metode" value="Bayar langsung di unit" />
+              <PaymentInfoRow label="Alamat unit" value={transaction.unitAddress} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden border border-red-100 bg-white shadow-[0_18px_42px_rgba(155,44,44,0.05)]">
+          <CardContent className="space-y-5 p-6">
+            <div className="flex items-center gap-3">
+              <span className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-red-50 text-[#9f2f2f]">
+                <Clock3 className="size-5" />
+              </span>
+              <div>
+                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+                  Tenggat 24 jam terlewati
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Tidak ada unggah bukti atau proses review pembayaran untuk kasus ini.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[1.35rem] border border-red-100 bg-red-50/55 p-5">
+              <p className="text-sm font-semibold leading-7 text-[#7a2c2c]">
+                Sistem mencatat kegagalan pembayaran karena pemenang lelang tidak menyelesaikan pembayaran dalam
+                waktu 24 jam. Ikuti arahan unit bila akun mendapat pembatasan sementara.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Dibuat
+                </p>
+                <p className="mt-2 text-sm font-semibold text-foreground">{transaction.createdAt}</p>
+              </div>
+              <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  Referensi
+                </p>
+                <p className="mt-2 break-all text-sm font-semibold text-foreground">{transaction.reference}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export function TransactionDetailPage({
   buyer,
   buyerStatus,
@@ -1181,6 +1353,7 @@ export function TransactionDetailPage({
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
   const isProofInReview = transaction.status === "BUKTI_DIUNGGAH";
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
+  const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isFixedPriceCatalogHidden =
     isFixedPrice &&
     isFixedPriceBuyerCatalogHiddenStatus(transaction.status);
@@ -1197,6 +1370,10 @@ export function TransactionDetailPage({
   const settlementLockMessage = buyerStatus?.blacklist.active
     ? BUYER_SETTLEMENT_LOCKED_MESSAGE
     : null;
+
+  if (isFailedVickreyPayment) {
+    return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
+  }
 
   return (
     <div className="space-y-7 bg-white md:space-y-8">

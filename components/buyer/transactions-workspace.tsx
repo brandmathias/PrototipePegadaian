@@ -84,10 +84,15 @@ function getTransactionStatusMeta(status: BuyerTransactionStatus) {
         matchesFilter: "done" as TransactionFilter,
       };
     case "DITOLAK_BUKTI":
+      return {
+        label: "Dibatalkan",
+        className: "bg-red-50 text-red-600",
+        matchesFilter: "cancelled" as TransactionFilter,
+      };
     case "GAGAL":
     default:
       return {
-        label: "Dibatalkan",
+        label: "Gagal",
         className: "bg-red-50 text-red-600",
         matchesFilter: "cancelled" as TransactionFilter,
       };
@@ -112,7 +117,7 @@ function getTransactionDescription(transaction: BuyerTransaction) {
       return "Transaksi telah selesai. Barang telah diterima oleh Anda.";
     case "GAGAL":
     default:
-      return "Transaksi dibatalkan. Tidak ada biaya tambahan yang dikenakan kepada Anda.";
+      return "Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam. Akses lelang dapat dibatasi sesuai aturan.";
   }
 }
 
@@ -150,8 +155,8 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
     case "GAGAL":
     default:
       return {
-        amountLabel: "Total yang dibatalkan",
-        momentLabel: "Dibatalkan pada",
+        amountLabel: "Nominal lelang gagal",
+        momentLabel: "Gagal pada",
         momentValue: transaction.createdAt,
       };
   }
@@ -234,8 +239,8 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
     case "GAGAL":
     default:
       return {
-        title: "Transaksi dibatalkan",
-        description: "Tidak ada biaya yang dikenakan.",
+        title: "Pembayaran gagal",
+        description: "Batas pembayaran 24 jam telah lewat.",
         className: "bg-[#fff5f5] text-[#d84b4b]",
         icon: <CircleX className="size-5" />,
       };
@@ -751,7 +756,7 @@ export function TransactionsWorkspace({
       },
       {
         key: "cancelled" as const,
-        label: "Dibatalkan",
+        label: "Gagal",
         icon: <CircleX className="size-4" strokeWidth={1.85} />,
         tone: "red" as const,
       },
@@ -819,6 +824,11 @@ export function TransactionsWorkspace({
 
   const currentTransactionFilters = tab === "transactions" ? transactionFilterOptions : bidFilterOptions;
   const combinedTransactionActivities = useMemo(() => {
+    const visibleTransactionIds = new Set(visibleTransactions.map((transaction) => transaction.id));
+    const standaloneBids = bids.filter(
+      (bid) => !bid.linkedTransactionId || !visibleTransactionIds.has(bid.linkedTransactionId)
+    );
+
     if (transactionFilter !== "all") {
       return visibleTransactions.map((transaction) => ({
         id: transaction.id,
@@ -833,7 +843,7 @@ export function TransactionsWorkspace({
         kind: "transaction" as const,
         transaction,
       })),
-      ...bids.map((bid) => ({
+      ...standaloneBids.map((bid) => ({
         id: `${bid.lotId}-${bid.status}-${bid.bidHash ?? bid.closingAt ?? bid.closing}`,
         bid,
         kind: "bid" as const,

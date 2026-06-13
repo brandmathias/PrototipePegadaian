@@ -160,6 +160,25 @@ const transactions: BuyerTransaction[] = [
     rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
     verifiedAt: "20 Mei 2026, 10.15 WIB",
   },
+  {
+    id: "TRX-250520-FAIL",
+    lotId: "lot-fail",
+    kind: "VICKREY_WIN",
+    title: "Jam Tangan Lelang Gagal",
+    imageUrl: "/uploads/barang/jam-tangan.jpg",
+    amount: 18500000,
+    status: "GAGAL",
+    method: "BAYAR_LANGSUNG",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Ranotana No. 1",
+    createdAt: "21 Mei 2026, 12.00 WIB",
+    deadline: "22 Mei 2026, 12.00 WIB",
+    deadlineAt: "2026-05-22T04:00:00.000Z",
+    reference: "REF-FAIL",
+    applicationNumber: "PGJ-VIC-FAIL",
+    paymentLabel: "Bayar langsung di unit",
+    paymentNotes: [],
+  },
 ];
 
 const bids: BuyerBid[] = [
@@ -188,6 +207,19 @@ const bids: BuyerBid[] = [
     basePrice: 13500000,
     note: "Bid tidak menjadi pemenang sesi ini.",
   },
+  {
+    lotId: "lot-fail",
+    lot: "Jam Tangan Lelang Gagal",
+    imageUrl: "/uploads/barang/jam-tangan.jpg",
+    unit: "UPC Ranotana",
+    status: "GAGAL",
+    closing: "21 Mei 2026, 12.00 WIB",
+    closingAt: "2026-05-21T04:00:00.000Z",
+    basePrice: 17000000,
+    paymentAmount: 18500000,
+    note: "Pembayaran Lelang Tertutup gagal karena melewati batas waktu.",
+    linkedTransactionId: "TRX-250520-FAIL",
+  },
 ];
 
 describe("TransactionsPage", () => {
@@ -211,6 +243,9 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("Ipad")).toBeInTheDocument();
+    expect(screen.getAllByText("Jam Tangan Lelang Gagal")).toHaveLength(1);
+    expect(screen.getByText(/Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam/i)).toBeInTheDocument();
+    expect(screen.getByText(/Batas pembayaran 24 jam telah lewat/i)).toBeInTheDocument();
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
     expect(screen.getByAltText("Foto transaksi Gelang Emas 24K - 10 Gram")).toHaveAttribute(
       "src",
@@ -261,16 +296,23 @@ describe("TransactionsPage", () => {
     expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
     expect(screen.queryByText("Cincin Emas Berlian")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: /dibatalkan/i }));
+    await user.click(screen.getByRole("button", { name: /gagal/i }));
 
     expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
+    expect(screen.getByText("Jam Tangan Lelang Gagal")).toBeInTheDocument();
     expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getAllByText("Dibatalkan").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
-      "href",
-      "/transaksi/TRX-250520-0012"
-    );
+    expect(
+      screen
+        .getAllByRole("link", { name: /lihat detail/i })
+        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250520-0012")
+    ).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: /lihat detail/i })
+        .some((link) => link.getAttribute("href") === "/transaksi/TRX-250520-FAIL")
+    ).toBe(true);
   });
 
   it("falls back to the bid visual treatment when a product image fails to load", () => {
