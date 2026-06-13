@@ -23,7 +23,9 @@ describe("PublicShell", () => {
       </ToastProvider>
     );
 
-    expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/katalog");
+    const guestBrand = screen.getByRole("link", { name: /pegadaian lelang/i });
+    expect(guestBrand).toHaveAttribute("href", "/katalog");
+    expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
@@ -46,7 +48,9 @@ describe("PublicShell", () => {
 
     expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
     expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/dashboard");
+    const buyerBrand = screen.getByRole("link", { name: /pegadaian lelang/i });
+    expect(buyerBrand).toHaveAttribute("href", "/dashboard");
+    expect(buyerBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");

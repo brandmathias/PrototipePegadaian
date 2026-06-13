@@ -52,7 +52,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
           <Link
             aria-label="Pegadaian Lelang"
             className={cn(
-              "group flex min-w-0 items-center gap-3 font-headline text-lg font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:text-xl",
+              "group flex min-w-0 items-center gap-2 font-headline text-sm font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl",
               isLuxury ? "text-[#174e3b] hover:text-[#9b6f22]" : "text-primary hover:text-[#075f42]"
             )}
             href="/dashboard"
@@ -67,7 +67,9 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
             >
               <Gavel className="size-4" />
             </span>
-            <span className="hidden truncate sm:inline">Pegadaian Lelang</span>
+            <span className="block max-w-[8rem] truncate leading-tight sm:max-w-none">
+              Pegadaian Lelang
+            </span>
           </Link>
           <nav
             className={cn(

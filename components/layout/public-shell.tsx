@@ -64,13 +64,15 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
             <div className="flex min-w-0 items-center gap-3 lg:gap-6">
               <Link
-                className="flex min-w-0 items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
+                className="flex min-w-0 items-center gap-2 font-headline text-sm font-black tracking-tight text-primary sm:gap-3 sm:text-xl"
                 href={brandHref}
               >
                 <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
                   <Gavel className="size-4" />
                 </span>
-                <span className="hidden truncate sm:inline">Pegadaian Lelang</span>
+                <span className="block max-w-[8.75rem] truncate leading-tight sm:max-w-none">
+                  Pegadaian Lelang
+                </span>
               </Link>
               <nav
                 className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex"
