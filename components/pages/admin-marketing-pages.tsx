@@ -104,6 +104,7 @@ export type MarketingSession = {
     bidderId: string;
     bidderName: string;
     bidderImage?: string | null;
+    submittedAtLabel?: string | null;
   }>;
   revealedBidCount?: number;
   pendingRevealCount?: number;
@@ -445,7 +446,7 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
     return bids.map((bid, index) => ({
       id: bid.id,
       rank: bid.rank || index + 1,
-      bidder: getMaskedBidderLabel(bid.bidderName || bid.bidderId, index),
+      bidder: bid.bidderName?.trim() || getMaskedBidderLabel(bid.bidderId, index),
       time: bid.submittedAtLabel || "-",
       status: auction.visibility === "MENUNGGU_REVEAL"
         ? bid.isRevealed
@@ -464,12 +465,13 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
     }));
   }
 
-  const lockedCount = Math.min(Math.max(Number(auction.participants ?? 0), 0), 5);
+  const previewRows = auction.participantPreviews ?? [];
+  const lockedCount = Math.min(Math.max(Number(auction.participants ?? 0), previewRows.length, 0), 5);
   return Array.from({ length: lockedCount }, (_, index) => ({
     id: `locked-${auction.id}-${index}`,
     rank: index + 1,
-    bidder: "****************",
-    time: index === 0 ? dateLabel(auction.startsAt) : "-",
+    bidder: previewRows[index]?.bidderName?.trim() || `Peserta ${index + 1}`,
+    time: previewRows[index]?.submittedAtLabel || "-",
     status: index === 0 ? "Tertinggi" : "-",
     tone: index === 0 ? "green" : "neutral"
   }));
@@ -485,10 +487,10 @@ function BidStatusPill({ status, tone }: { status: string; tone: string }) {
 
   return (
     <span
-      className={`inline-flex max-w-full items-center justify-center rounded-full px-2.5 py-1 text-center text-[0.58rem] font-black uppercase leading-tight tracking-[0.07em] ${style}`}
+      className={`inline-flex max-w-full items-center justify-center rounded-full px-2 py-1 text-center text-[0.52rem] font-black uppercase leading-none tracking-[0.04em] whitespace-nowrap sm:text-[0.56rem] ${style}`}
     >
       {status.toLowerCase() === "tertinggi" ? <BadgeCheck className="mr-1 size-3 shrink-0" /> : null}
-      <span className="min-w-0 whitespace-normal break-words">{status}</span>
+      <span className="min-w-0 whitespace-nowrap">{status}</span>
     </span>
   );
 }
@@ -517,16 +519,16 @@ function VickreyBidLogTable({
           <div className="overflow-hidden transform-gpu transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
             <table className="w-full table-fixed text-left">
               <colgroup>
-                <col className="w-[7%]" />
-                <col className="w-[24%]" />
-                <col className="w-[29%]" />
-                <col className="w-[23%]" />
-                <col className="w-[17%]" />
+                <col className="w-[6%]" />
+                <col className="w-[25%]" />
+                <col className="w-[30%]" />
+                <col className="w-[21%]" />
+                <col className="w-[18%]" />
               </colgroup>
-              <thead className="bg-[#f8faf9] text-[0.7rem] font-black text-[#566861]">
+              <thead className="bg-[#f8faf9] text-[0.66rem] font-black text-[#566861] sm:text-[0.7rem]">
                 <tr>
                   <th className="px-3 py-3">#</th>
-                  <th className="px-2.5 py-3">ID Penawar</th>
+                  <th className="px-2.5 py-3">Nama Penawar</th>
                   <th className="px-2.5 py-3">Waktu Penawaran</th>
                   <th className="px-2.5 py-3">Nominal Penawaran</th>
                   <th className="px-2.5 py-3">Status</th>
@@ -545,13 +547,13 @@ function VickreyBidLogTable({
                     <td className="max-w-0 overflow-hidden px-2.5 py-3 font-bold text-[#14241e]">
                       <span className="block truncate">{row.bidder}</span>
                     </td>
-                    <td className="max-w-0 overflow-hidden px-2.5 py-3 text-[0.8rem] leading-5 text-[#52655d]">
-                      <span className="block whitespace-normal break-words">{row.time}</span>
+                    <td className="max-w-0 overflow-hidden px-2.5 py-3 text-[0.72rem] leading-4 text-[#52655d] sm:text-[0.78rem] sm:leading-5">
+                      <span className="block truncate whitespace-nowrap">{row.time}</span>
                     </td>
                     <td className="max-w-0 overflow-hidden px-2.5 py-3 font-black text-[#14241e]">
                       <span className="block truncate">Rp ********</span>
                     </td>
-                    <td className="max-w-0 overflow-hidden px-2.5 py-3">
+                    <td className="max-w-0 overflow-hidden px-1.5 py-3 sm:px-2">
                       <BidStatusPill status={row.status} tone={row.tone} />
                     </td>
                   </tr>

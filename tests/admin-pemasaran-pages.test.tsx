@@ -573,6 +573,18 @@ describe("admin pemasaran pages", () => {
           finalPrice: null,
           winner: null,
           visibility: "TERKUNCI",
+          participantPreviews: [
+            {
+              bidderId: "buyer-1",
+              bidderName: "Buyer Satu",
+              submittedAtLabel: "11 Jun 2026, 10.06 WIB"
+            },
+            {
+              bidderId: "buyer-2",
+              bidderName: "Buyer Dua",
+              submittedAtLabel: "11 Jun 2026, 10.11 WIB"
+            }
+          ],
           specifications: {
             jenisEmas: "Cincin",
             kadarEmas: "24K",
@@ -598,6 +610,13 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/24K/i)).toBeInTheDocument();
     expect(screen.getByText(/3,20 gram/i)).toBeInTheDocument();
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /nama penawar/i })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: /id penawar/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Buyer Satu")).toBeInTheDocument();
+    expect(screen.getByText("Buyer Dua")).toBeInTheDocument();
+    expect(screen.getByText("11 Jun 2026, 10.06 WIB")).toBeInTheDocument();
+    expect(screen.getByText("11 Jun 2026, 10.11 WIB")).toBeInTheDocument();
+    expect(screen.getByText("Tertinggi")).toHaveClass("whitespace-nowrap");
     const bidLogTable = container.querySelector("table");
     expect(bidLogTable).toHaveClass("table-fixed");
     expect(bidLogTable).not.toHaveClass("min-w-[46rem]");

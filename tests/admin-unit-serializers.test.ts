@@ -117,6 +117,18 @@ describe("admin unit serializers", () => {
           berat: "3,20 gram"
         },
         bidCount: 2,
+        participantPreviews: [
+          {
+            bidderId: "buyer-1",
+            bidderName: "Raras",
+            submittedAt: new Date("2026-04-05T00:00:00Z")
+          },
+          {
+            bidderId: "buyer-2",
+            bidderName: "Alya",
+            submittedAt: new Date("2026-04-05T01:00:00Z")
+          }
+        ],
         bids: [
           {
             bid: {
@@ -145,6 +157,14 @@ describe("admin unit serializers", () => {
     });
     expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
     expect(auction.bids).toEqual([]);
+    expect(auction.participantPreviews?.[0]).toMatchObject({
+      bidderName: "Raras",
+      submittedAtLabel: "5 Apr 2026, 07.00 WIB"
+    });
+    expect(auction.participantPreviews?.[1]).toMatchObject({
+      bidderName: "Alya",
+      submittedAtLabel: "5 Apr 2026, 08.00 WIB"
+    });
   });
 
   it("shows a waiting reveal phase after deadline without exposing bid values", () => {

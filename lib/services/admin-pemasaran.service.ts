@@ -9,6 +9,13 @@ import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 
+type ParticipantPreview = {
+  bidderId: string;
+  bidderName: string;
+  bidderImage?: string | null;
+  submittedAt?: Date | null;
+};
+
 async function getBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
     .select()
@@ -144,14 +151,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
 
 async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
   if (!pemasaranIds.length) {
-    return new Map<
-      string,
-      Array<{
-        bidderId: string;
-        bidderName: string;
-        bidderImage?: string | null;
-      }>
-    >();
+    return new Map<string, ParticipantPreview[]>();
   }
 
   const rows = await db
@@ -176,21 +176,15 @@ async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
         collection.push({
           bidderId: row.bidderId,
           bidderName: row.bidderName ?? "Peserta",
-          bidderImage: row.bidderImage ?? null
+          bidderImage: row.bidderImage ?? null,
+          submittedAt: row.createdAt
         });
         map.set(row.pemasaranId, collection);
       }
 
       return map;
     },
-    new Map<
-      string,
-      Array<{
-        bidderId: string;
-        bidderName: string;
-        bidderImage?: string | null;
-      }>
-    >()
+    new Map<string, ParticipantPreview[]>()
   );
 }
 
@@ -343,10 +337,11 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
-  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId, historyRows] = await Promise.all([
+  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId, participantPreviewsByPemasaranId, historyRows] = await Promise.all([
     getMarketingMediaByBarangIds([row.item.id]),
     getLatestTransactionsByPemasaranIds([row.marketing.id]),
     getLotStatsByIds([row.marketing.id]),
+    getParticipantPreviewsByPemasaranIds([row.marketing.id]),
     db
       .select({
         marketing: pemasaran,
@@ -413,6 +408,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       insights: statsByPemasaranId.get(row.marketing.id) ?? null,
       winnerName: row.winnerName ?? null,
       transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
+      participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? [],
       bids: bidRows
     }),
     iterationHistory
