@@ -358,6 +358,12 @@ describe("buyer vickrey pages", () => {
 
     expect(screen.getByText(/anda memenangkan lelang/i)).toBeInTheDocument();
     expect(screen.getByText(/batas waktu pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/workflow pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/bayar lelang tertutup di unit/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/maksimal 24 jam/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/jika tidak dibayar tepat waktu, transaksi akan gagal otomatis/i)).toBeInTheDocument();
+    expect(screen.getByText(/verifikasi admin/i)).toBeInTheDocument();
+    expect(screen.getByText(/selesai & nota/i)).toBeInTheDocument();
     expect(screen.getByText(/ringkasan lelang anda/i)).toBeInTheDocument();
     expect(screen.getByText("Jam")).toBeInTheDocument();
     expect(screen.getByText("Menit")).toBeInTheDocument();
@@ -368,6 +374,35 @@ describe("buyer vickrey pages", () => {
       "href",
       "/transaksi/trx-vickrey-1"
     );
+  });
+
+  it("explains failed winner payment when the 24 hour deadline is missed", () => {
+    const transaction: BuyerTransaction = {
+      id: "trx-vickrey-failed",
+      lotId: "pm-vickrey-1",
+      kind: "VICKREY_WIN",
+      title: "Cincin Emas",
+      amount: 100000000,
+      status: "GAGAL",
+      method: "BAYAR_LANGSUNG",
+      unit: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      createdAt: "4 Mei 2026, 22.07",
+      deadline: "5 Mei 2026, 22.07",
+      deadlineAt: "2026-05-05T14:07:00.000Z",
+      reference: "-",
+      applicationNumber: "PGJ-VIC-FAILED",
+      paymentLabel: "Bayar langsung di unit",
+      paymentNotes: ["Pemenang tidak menyelesaikan pembayaran dalam 24 jam."],
+      winnerContext: "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."
+    };
+
+    render(<AuctionWinnerPage transaction={transaction} transactionId={transaction.id} />);
+
+    expect(screen.getByText(/workflow pembayaran gagal/i)).toBeInTheDocument();
+    expect(screen.getByText(/melewati 24 jam/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/transaksi ditutup karena pemenang tidak melakukan pembayaran dalam waktu 24 jam/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/akun dapat terkena pembatasan sesuai aturan lelang/i)).toBeInTheDocument();
   });
 
   it("keeps winner hero particle styles deterministic for hydration", () => {

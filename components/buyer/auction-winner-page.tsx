@@ -4,12 +4,14 @@ import type { ReactNode } from "react";
 
 import { AuctionWinnerHeroStage } from "@/components/buyer/auction-winner-hero-stage";
 import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
+import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
 import {
   ArrowRightIcon,
   AwardIcon,
   BellIcon,
   BriefcaseIcon,
   CalendarIcon,
+  CheckCircleIcon,
   ClockIcon,
   FileTextIcon,
   TagIcon,
@@ -94,6 +96,85 @@ function ProductVisual({
         <BriefcaseIcon className="size-20 opacity-80" strokeWidth={1.55} />
       </div>
     </div>
+  );
+}
+
+function getWinnerWorkflowState(transaction: BuyerTransaction) {
+  if (transaction.status === "GAGAL") {
+    return {
+      completed: false,
+      currentStep: 1,
+      description:
+        "Pembayaran pemenang lelang wajib diselesaikan maksimal 24 jam. Jika melewati batas tersebut, transaksi otomatis gagal dan akun dapat terkena pembatasan sesuai aturan lelang.",
+    };
+  }
+
+  if (transaction.status === "LUNAS" || transaction.status === "SELESAI") {
+    return {
+      completed: transaction.status === "SELESAI",
+      currentStep: 2,
+      description:
+        "Pembayaran lelang sudah diverifikasi admin unit. Simpan nota dan ikuti instruksi pengambilan barang di unit terkait.",
+    };
+  }
+
+  return {
+    completed: false,
+    currentStep: 0,
+    description:
+      "Pemenang Lelang Tertutup diberi waktu maksimal 24 jam untuk menyelesaikan pembayaran langsung di unit. Jika tidak dibayar tepat waktu, transaksi akan gagal otomatis.",
+  };
+}
+
+function WinnerPaymentWorkflow({ transaction }: { transaction: BuyerTransaction }) {
+  const isFailed = transaction.status === "GAGAL";
+  const workflowState = getWinnerWorkflowState(transaction);
+  const steps: PaymentWorkflowStep[] = [
+    {
+      id: "payment",
+      label: "Melakukan Pembayaran",
+      headline: "Bayar Lelang Tertutup di Unit",
+      detail:
+        transaction.status === "GAGAL"
+          ? "Batas 24 jam sudah lewat tanpa pembayaran, sehingga proses pemenang tidak dapat dilanjutkan."
+          : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran maksimal 24 jam sejak pengumuman.`,
+      meta: "Maksimal 24 jam",
+      icon: BriefcaseIcon,
+    },
+    {
+      id: "verification",
+      label: isFailed ? "Pembayaran Gagal" : "Verifikasi Admin",
+      headline: isFailed ? "Workflow Pembayaran Gagal" : "Menunggu Verifikasi Admin Unit",
+      detail: isFailed
+        ? "Transaksi ditutup karena pemenang tidak melakukan pembayaran dalam waktu 24 jam. Riwayat lelang tetap tersimpan di akun."
+        : "Admin unit memeriksa pembayaran langsung, mencocokkan nominal pemenang, dan mengubah status transaksi setelah dana diterima.",
+      meta: isFailed ? "Melewati 24 jam" : "Validasi unit",
+      icon: ClockIcon,
+      tone: isFailed ? "danger" : "default",
+    },
+    {
+      id: "receipt",
+      label: "Selesai & Nota",
+      headline: transaction.status === "SELESAI" ? "Pembelian Selesai" : "Nota Siap Setelah Pembayaran Sah",
+      detail:
+        transaction.status === "LUNAS" || transaction.status === "SELESAI"
+          ? "Nota transaksi tersedia sebagai bukti pembayaran dan pengambilan barang di unit."
+          : "Tahap ini aktif setelah pembayaran diverifikasi. Nota akan menjadi bukti resmi untuk pengambilan barang.",
+      meta: "Bukti akhir",
+      icon: CheckCircleIcon,
+    },
+  ];
+
+  return (
+    <PaymentWorkflowRail
+      className="section-reveal"
+      completed={workflowState.completed}
+      currentStep={workflowState.currentStep}
+      description={workflowState.description}
+      steps={steps}
+      title="Workflow Pembayaran"
+      tone="buyer"
+    />
   );
 }
 
@@ -282,6 +363,8 @@ export function AuctionWinnerPageContent({
             </div>
           </aside>
         </section>
+
+        <WinnerPaymentWorkflow transaction={transaction} />
 
         <section className="rounded-[1.8rem] border border-black/[0.05] bg-white p-2 shadow-[0_24px_60px_-44px_rgba(15,23,42,0.14)]">
           <div className="rounded-[calc(1.8rem-0.5rem)] border border-[#eaeeea] bg-white">
