@@ -1251,7 +1251,6 @@ function VickreyPaymentFailedDetail({
                   className="size-24 shrink-0 rounded-xl bg-[#efefec] object-cover"
                   height={160}
                   src={transaction.imageUrl}
-                  unoptimized
                   width={160}
                 />
               ) : (
@@ -1468,7 +1467,6 @@ export function TransactionDetailPage({
                     className="size-20 shrink-0 rounded-md bg-[#efefec] object-cover"
                     height={160}
                     src={transaction.imageUrl}
-                    unoptimized
                     width={160}
                   />
                 ) : (

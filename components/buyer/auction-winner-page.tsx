@@ -82,7 +82,6 @@ function ProductVisual({
           fill
           sizes="(max-width: 1024px) 100vw, 500px"
           src={imageUrl}
-          unoptimized
         />
       </div>
     );
@@ -134,7 +133,6 @@ export function AuctionWinnerPageContent({
                         height={1254}
                         priority
                         src={WINNER_CHECK_ASSET}
-                        unoptimized
                         width={1254}
                       />
                     </div>

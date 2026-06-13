@@ -249,7 +249,7 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
     expect(screen.getByAltText("Foto transaksi Gelang Emas 24K - 10 Gram")).toHaveAttribute(
       "src",
-      expect.stringContaining("/uploads/barang/gelang.jpg")
+      expect.stringContaining(encodeURIComponent("/uploads/barang/gelang.jpg"))
     );
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
     expect(

@@ -381,7 +381,6 @@ export function AuctionLoserHeroStage({ gavelSrc }: AuctionLoserHeroStageProps) 
             priority
             sizes="(max-width: 768px) 82vw, 430px"
             src={gavelSrc}
-            unoptimized
             width={1254}
           />
         </div>

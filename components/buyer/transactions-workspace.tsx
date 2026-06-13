@@ -469,7 +469,6 @@ function TransactionImage({
           onError={() => setImageFailed(true)}
           sizes="(min-width: 1280px) 224px, (min-width: 1024px) 192px, (min-width: 640px) 45vw, 100vw"
           src={imageUrl ?? ""}
-          unoptimized
         />
       ) : (
         <div

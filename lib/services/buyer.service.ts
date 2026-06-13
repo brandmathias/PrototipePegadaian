@@ -45,6 +45,8 @@ const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
 
 type BuyerReadOptions = {
   refreshAuctionState?: boolean;
+  prefetchedBidHistory?: BuyerBid[];
+  prefetchedTransactions?: BuyerTransaction[];
 };
 
 function plusHours(hours: number) {
@@ -350,9 +352,15 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
         .limit(1)
     : [null];
   const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
-  const wishlistCount = await getBuyerWishlistCount(userId);
-  const transactions = await listBuyerTransactions(userId, { refreshAuctionState: false });
-  const bidHistory = await listBuyerBids(userId, { refreshAuctionState: false });
+  const [wishlistCount, transactions, bidHistory] = await Promise.all([
+    getBuyerWishlistCount(userId),
+    options?.prefetchedTransactions
+      ? Promise.resolve(options.prefetchedTransactions)
+      : listBuyerTransactions(userId, { refreshAuctionState: false }),
+    options?.prefetchedBidHistory
+      ? Promise.resolve(options.prefetchedBidHistory)
+      : listBuyerBids(userId, { refreshAuctionState: false })
+  ]);
   const needsAction = transactions.filter((transaction) =>
     ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG", "LUNAS"].includes(transaction.status)
   ).length;
@@ -421,11 +429,15 @@ export async function getBuyerDashboardData(userId: string): Promise<{
 }> {
   await refreshBuyerAuctionSettlementState();
 
-  const [summary, transactions, buyerBids] = await Promise.all([
-    getBuyerSummary(userId, { refreshAuctionState: false }),
+  const [transactions, buyerBids] = await Promise.all([
     listBuyerTransactions(userId, { refreshAuctionState: false }),
     listBuyerBids(userId, { refreshAuctionState: false })
   ]);
+  const summary = await getBuyerSummary(userId, {
+    refreshAuctionState: false,
+    prefetchedBidHistory: buyerBids,
+    prefetchedTransactions: transactions
+  });
 
   return {
     summary,

@@ -415,7 +415,6 @@ export function AuctionWinnerHeroStage({
             priority
             sizes="(max-width: 768px) 82vw, 420px"
             src={trophySrc}
-            unoptimized
             width={1254}
           />
         </div>

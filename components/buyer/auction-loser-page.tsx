@@ -46,7 +46,6 @@ function ProductImage({
       fill
       sizes="(max-width: 768px) 80vw, 260px"
       src={imageUrl}
-      unoptimized
     />
   );
 }
@@ -151,7 +150,6 @@ export function AuctionLoserPageContent({
                         height={1254}
                         priority
                         src={LOSER_X_ASSET}
-                        unoptimized
                         width={1254}
                       />
                     </div>
