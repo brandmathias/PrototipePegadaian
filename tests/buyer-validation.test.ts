@@ -9,10 +9,10 @@ import {
 } from "@/lib/buyer/validation";
 
 describe("buyer validation", () => {
-  it("accepts harga tetap transfer checkout before proof metadata is present", () => {
-    expect(validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toEqual({
-      paymentMethod: "transfer"
-    });
+  it("rejects harga tetap checkout before proof metadata is present", () => {
+    expect(() => validateBuyerPurchasePayload({ paymentMethod: "transfer" })).toThrow(
+      "Bukti pembayaran wajib diunggah sebelum transaksi harga tetap dicatat."
+    );
   });
 
   it("accepts harga tetap transfer payment when proof metadata is present", () => {

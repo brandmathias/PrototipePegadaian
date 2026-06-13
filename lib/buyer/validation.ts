@@ -6,7 +6,7 @@ import { currency } from "@/lib/formatters/currency";
 
 export type BuyerPurchasePayload = {
   paymentMethod: "transfer";
-  fileName?: string;
+  fileName: string;
   reference?: string;
 };
 
@@ -54,13 +54,17 @@ export function validateBuyerPurchasePayload(input: unknown): BuyerPurchasePaylo
     throw new Error("Fixed price hanya mendukung pembayaran transfer bank.");
   }
 
-  if (fileName && !/\.(jpg|jpeg|png|pdf)$/i.test(fileName)) {
+  if (!fileName) {
+    throw new Error("Bukti pembayaran wajib diunggah sebelum transaksi harga tetap dicatat.");
+  }
+
+  if (!/\.(jpg|jpeg|png|pdf)$/i.test(fileName)) {
     throw new Error("Format bukti pembayaran harus JPG, PNG, atau PDF.");
   }
 
   return {
     paymentMethod,
-    ...(fileName ? { fileName } : {}),
+    fileName,
     ...(reference ? { reference } : {})
   };
 }

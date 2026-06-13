@@ -204,8 +204,8 @@ describe("TransactionsPage", () => {
     expect(screen.getByRole("button", { name: /semua transaksi/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /riwayat lelang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /perlu tindakan/i })).toBeInTheDocument();
-    expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /bayar sekarang/i })).toHaveLength(1);
+    expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
     expect(screen.getByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i)).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
@@ -257,8 +257,8 @@ describe("TransactionsPage", () => {
 
     await user.click(screen.getByRole("button", { name: /perlu tindakan/i }));
 
-    expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
+    expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
     expect(screen.queryByText("Cincin Emas Berlian")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /dibatalkan/i }));

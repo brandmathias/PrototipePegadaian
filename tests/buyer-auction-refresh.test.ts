@@ -153,7 +153,7 @@ describe("buyer auction state refresh", () => {
     ]);
   });
 
-  it("keeps harga tetap waiting-payment rows visible so buyers can finish payment proof upload", async () => {
+  it("hides harga tetap waiting-payment rows because proof upload now creates the transaction", async () => {
     mocks.db.select.mockImplementationOnce(() =>
       mockBuyerTransactionRows([
         {
@@ -174,10 +174,6 @@ describe("buyer auction state refresh", () => {
     const rows = await listBuyerTransactions("buyer-1");
 
     expect(rows).toEqual([
-      expect.objectContaining({
-        id: "trx-draft-fixed",
-        status: "menunggu_pembayaran"
-      }),
       expect.objectContaining({
         id: "trx-review-fixed",
         status: "bukti_diunggah"

@@ -796,11 +796,15 @@ export function TransactionsWorkspace({
   );
 
   const visibleTransactions = useMemo(() => {
+    const recordedTransactions = transactions.filter(
+      (item) => !(item.kind === "FIXED_PRICE" && item.status === "MENUNGGU_PEMBAYARAN")
+    );
+
     if (transactionFilter === "all") {
-      return transactions;
+      return recordedTransactions;
     }
 
-    return transactions.filter(
+    return recordedTransactions.filter(
       (item) => getTransactionStatusMeta(item.status).matchesFilter === transactionFilter
     );
   }, [transactionFilter, transactions]);

@@ -113,7 +113,7 @@ describe("buyer serializers", () => {
     expect(transaction.deadlineAt).toBeUndefined();
   });
 
-  it("keeps fixed price waiting payment as proof upload without a countdown deadline", () => {
+  it("keeps stale fixed price waiting-payment rows deadline-free if encountered", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-waiting",
       pemasaranId: "pm-fixed",

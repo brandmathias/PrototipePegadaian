@@ -96,65 +96,15 @@ describe("createFixedPricePurchase locking rules", () => {
     vi.clearAllMocks();
   });
 
-  it("creates a harga tetap transaction in waiting payment before receiving payment proof", async () => {
-    mocks.db.select
-      .mockImplementationOnce(() =>
-        mockMarketingQuery({
-          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
-          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
-          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
-          account: { accountNumber: "0123-4567-8901-234" },
-          media: { url: "/uploads/cincin.jpg" }
-        })
-      )
-      .mockImplementationOnce(() =>
-        mockTransactionListQuery([])
-      )
-      .mockImplementationOnce(() => mockBlacklistQuery());
-
-    const insertValuesSpy = vi.fn().mockReturnValue({
-      returning: vi.fn().mockResolvedValue([
-        {
-          id: "trx-baru-1",
-          pemasaranId: "pemasaran-1",
-          userId: "buyer-baru",
-          type: "fixed_price",
-          amount: "12500000",
-          paymentMethod: "transfer",
-          status: "menunggu_pembayaran",
-          proofUrl: null,
-          referenceNumber: null,
-          paymentDeadline: null,
-          createdAt: new Date("2026-05-27T09:00:00.000Z"),
-          updatedAt: new Date("2026-05-27T09:00:00.000Z")
-        }
-      ])
-    });
-
-    mocks.db.insert.mockImplementationOnce(() => ({
-      values: insertValuesSpy
-    }));
-
-    const result = await createFixedPricePurchase("buyer-baru", "pemasaran-1", {
-      paymentMethod: "transfer"
-    });
-
-    expect(insertValuesSpy).toHaveBeenCalledTimes(1);
-    expect(insertValuesSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "menunggu_pembayaran",
-        proofUrl: null,
-        referenceNumber: null,
-        paymentDeadline: null
+  it("rejects harga tetap transaction creation before receiving payment proof", async () => {
+    await expect(
+      createFixedPricePurchase("buyer-baru", "pemasaran-1", {
+        paymentMethod: "transfer"
       })
-    );
-    expect(result).toEqual(
-      expect.objectContaining({
-        id: "trx-baru-1",
-        status: "menunggu_pembayaran",
-        userId: "buyer-baru"
-      })
-    );
+    ).rejects.toThrow("Bukti pembayaran wajib diunggah sebelum transaksi harga tetap dicatat.");
+
+    expect(mocks.db.select).not.toHaveBeenCalled();
+    expect(mocks.db.insert).not.toHaveBeenCalled();
   });
 
   it("allows another buyer to start checkout while the earlier buyer is only waiting for payment", async () => {
@@ -189,9 +139,9 @@ describe("createFixedPricePurchase locking rules", () => {
           type: "fixed_price",
           amount: "12500000",
           paymentMethod: "transfer",
-          status: "menunggu_pembayaran",
-          proofUrl: null,
-          referenceNumber: null,
+          status: "bukti_diunggah",
+          proofUrl: "/uploads/bukti/transfer-baru.jpg",
+          referenceNumber: "BRI-2026-002",
           paymentDeadline: null,
           createdAt: new Date("2026-05-27T09:05:00.000Z"),
           updatedAt: new Date("2026-05-27T09:05:00.000Z")
@@ -204,20 +154,24 @@ describe("createFixedPricePurchase locking rules", () => {
     }));
 
     const result = await createFixedPricePurchase("buyer-baru", "pemasaran-1", {
-      paymentMethod: "transfer"
+      paymentMethod: "transfer",
+      fileName: "/uploads/bukti/transfer-baru.jpg",
+      reference: "BRI-2026-002"
     });
 
     expect(insertValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: "menunggu_pembayaran",
+        status: "bukti_diunggah",
         userId: "buyer-baru",
+        proofUrl: "/uploads/bukti/transfer-baru.jpg",
+        referenceNumber: "BRI-2026-002",
         paymentDeadline: null
       })
     );
     expect(result).toEqual(
       expect.objectContaining({
         id: "trx-baru-2",
-        status: "menunggu_pembayaran",
+        status: "bukti_diunggah",
         userId: "buyer-baru"
       })
     );
@@ -247,7 +201,8 @@ describe("createFixedPricePurchase locking rules", () => {
 
     await expect(
       createFixedPricePurchase("buyer-baru", "pemasaran-1", {
-        paymentMethod: "transfer"
+        paymentMethod: "transfer",
+        fileName: "/uploads/bukti/transfer-baru.jpg"
       })
     ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
 
