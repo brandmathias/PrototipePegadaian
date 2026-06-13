@@ -663,7 +663,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         performedByType: "system",
         performedByUserId: null,
         note: shouldSuspendLogin
-          ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3 dan membutuhkan review manual.`
+          ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3 dan membutuhkan evaluasi manual.`
           : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil Lelang Tertutup.`
       });
     });

@@ -271,11 +271,11 @@ describe("superadmin pages", () => {
           spotlight: [],
           priorities: [
             {
-              id: "priority-review",
-              title: "Review buyer menunggu keputusan",
-              detail: "1 case review perlu diputus superadmin.",
-              href: "/superadmin/review-pelanggaran",
-              action: "Tinjau pelanggaran",
+              id: "priority-blacklist",
+              title: "Evaluasi pembatasan buyer",
+              detail: "1 akun blacklist perlu dievaluasi superadmin.",
+              href: "/superadmin/blacklist",
+              action: "Buka blacklist",
             },
             {
               id: "priority-follow-up",
@@ -334,7 +334,7 @@ describe("superadmin pages", () => {
     );
 
     expect(
-      screen.queryByText("Review buyer menunggu keputusan"),
+      screen.queryByText("Evaluasi pembatasan buyer"),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByText("Pemasaran perlu tindak lanjut"),
@@ -1191,62 +1191,6 @@ describe("superadmin pages", () => {
     ).toHaveLength(2);
   });
 
-  it("renders blacklist review queue with final decision reasons", () => {
-    render(
-      <SuperAdminBlacklistPage
-        entries={[]}
-        reviewCases={[
-          {
-            id: "case-1",
-            buyerName: "Raras Mahesa",
-            buyerEmail: "raras@example.com",
-            itemName: "Kalung Emas",
-            unitName: "Pegadaian CP Manado",
-            status: "TERKIRIM",
-            submittedAt: "2026-05-30T00:00:00.000Z",
-            buyerStatement: "Saya sudah membayar sebelum batas waktu.",
-            adminRecommendation: "PERTIMBANGKAN_CABUT",
-            adminRecommendationNote:
-              "Unit menerima konfirmasi pembayaran manual.",
-            level: 3,
-            lockedAccount: true,
-            hasAdminRecommendation: true,
-            priorityScore: 105,
-            attachments: [
-              {
-                id: "att-1",
-                fileUrl: "/uploads/blacklist-review/bukti.pdf",
-                fileName: "bukti.pdf",
-                mimeType: "application/pdf",
-              },
-            ],
-          },
-        ]}
-      />,
-    );
-
-    expect(
-      screen.getByText("Antrean keputusan superadmin"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Raras Mahesa")).toBeInTheDocument();
-    expect(screen.getByText("bukti.pdf")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /putuskan case/i }));
-
-    expect(
-      screen.getByRole("option", { name: "Setujui pencabutan" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("option", { name: "Bukti pembayaran valid" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText(/catatan tambahan opsional/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("dialog", { name: /putuskan review buyer/i }),
-    ).toBeInTheDocument();
-  });
-
   it("renders superadmin violation dossier detail with timeline and countdown", () => {
     render(
       <SuperadminBlacklistDetailWorkspace
@@ -1590,7 +1534,7 @@ describe("superadmin pages", () => {
       screen.getByText(/ban total 360 hari/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/mekanisme sanggahan & pengajuan review/i),
+      screen.getByText(/evaluasi manual oleh superadmin/i),
     ).toBeInTheDocument();
     expect(screen.queryByText("Aturan Aktif Sistem")).not.toBeInTheDocument();
     expect(screen.queryByText("Masuk Perlu Tindak Lanjut")).not.toBeInTheDocument();

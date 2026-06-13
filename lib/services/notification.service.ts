@@ -12,9 +12,6 @@ export type NotificationType =
   | "payment_rejected"
   | "payment_deadline"
   | "blacklist_active"
-  | "blacklist_review_submitted"
-  | "blacklist_review_approved"
-  | "blacklist_review_rejected"
   | "transaction_created"
   | "superadmin_account_created"
   | "superadmin_account_updated"
@@ -25,7 +22,6 @@ export type NotificationEntityType =
   | "transaction"
   | "pemasaran"
   | "blacklist"
-  | "blacklist_review"
   | "barang"
   | "superadmin_account"
   | "superadmin_audit";

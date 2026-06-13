@@ -61,7 +61,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
     blocksFixedPrice: true,
     blocksTransactionSettlement: true,
     requiresManualReview: true,
-    label: "Level 3: Review manual"
+    label: "Level 3: Evaluasi manual"
   };
 }
 

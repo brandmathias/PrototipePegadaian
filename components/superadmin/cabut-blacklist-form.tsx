@@ -7,7 +7,7 @@ import { useState } from "react";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { BLACKLIST_REVIEW_APPROVAL_REASONS } from "@/lib/blacklist/review";
+import { DIRECT_REVOKE_REASON_OPTIONS } from "@/lib/blacklist/revoke";
 import { useToast } from "@/components/ui/toast";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
 
@@ -19,7 +19,7 @@ type CabutBlacklistFormProps = {
 export function CabutBlacklistForm({ userId, disabled }: CabutBlacklistFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [reasonCode, setReasonCode] = useState<string>(BLACKLIST_REVIEW_APPROVAL_REASONS[0].code);
+  const [reasonCode, setReasonCode] = useState<string>(DIRECT_REVOKE_REASON_OPTIONS[0].code);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export function CabutBlacklistForm({ userId, disabled }: CabutBlacklistFormProps
           onChange={(event) => setReasonCode(event.target.value)}
           value={reasonCode}
         >
-          {BLACKLIST_REVIEW_APPROVAL_REASONS.map((reason) => (
+          {DIRECT_REVOKE_REASON_OPTIONS.map((reason) => (
             <option key={reason.code} value={reason.code}>
               {reason.label}
             </option>

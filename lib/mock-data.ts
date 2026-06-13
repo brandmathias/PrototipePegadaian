@@ -1029,7 +1029,7 @@ export const superAdminSummary = {
     { label: "Admin Aktif", value: "428", detail: "12 akun baru minggu ini" },
     { label: "Barang Dipasarkan", value: "24.591", detail: "Lintas harga tetap & Lelang Tertutup" },
     { label: "Transaksi Pending", value: "318", detail: "Butuh tindak lanjut unit" },
-    { label: "Blacklist Aktif", value: "87", detail: "11 perlu review lebih awal" }
+    { label: "Blacklist Aktif", value: "87", detail: "11 perlu evaluasi lebih awal" }
   ],
   priorities: [
     {
@@ -1040,7 +1040,7 @@ export const superAdminSummary = {
       action: "Tinjau unit"
     },
     {
-      id: "priority-blacklist-review",
+      id: "priority-blacklist-evaluation",
       title: "Blacklist perlu peninjauan",
       detail: "11 akun sudah mendekati akhir masa blokir dan menunggu keputusan.",
       href: "/superadmin/blacklist",

@@ -1,9 +1,13 @@
+import { randomUUID } from "node:crypto";
+
 import { and, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
-import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
-import { BLACKLIST_REVIEW_APPROVAL_REASONS } from "@/lib/blacklist/review";
+import {
+  getBlacklistRestrictionPolicy,
+  shouldSuspendLoginForBlacklist,
+} from "@/lib/blacklist/restrictions";
 import { db } from "@/lib/db/client";
 import {
   barang,
@@ -16,10 +20,12 @@ import {
   units,
   users
 } from "@/lib/db/schema";
-import { applyApprovedBlacklistGovernanceEffect } from "@/lib/services/blacklist-review.service";
 import { serializeBlacklistEntry } from "@/lib/superadmin/serializers";
 import { validateBlacklistRevokePayload } from "@/lib/superadmin/validation";
 import { formatAppDateTime } from "@/lib/timezone";
+
+type DbExecutor = Pick<typeof db, "insert" | "update">;
+type BlacklistRow = typeof blacklists.$inferSelect;
 
 function toNullableNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return null;
@@ -179,13 +185,12 @@ export async function revokeBlacklist(
     .limit(1);
 
   await db.transaction(async (tx) => {
-    await applyApprovedBlacklistGovernanceEffect(tx, {
+    await applyManualBlacklistRevokeEffect(tx, {
       incidentId: latestIncident?.id ?? null,
       userId,
       actorUserId,
       reasonCode: payload.reasonCode,
       note: payload.note || payload.reason,
-      action: "cabut_manual",
       activeBlacklist
     });
   });
@@ -193,6 +198,65 @@ export async function revokeBlacklist(
   return {
     success: true
   };
+}
+
+async function applyManualBlacklistRevokeEffect(
+  executor: DbExecutor,
+  input: {
+    incidentId?: string | null;
+    userId: string;
+    actorUserId: string;
+    reasonCode: string;
+    note: string;
+    activeBlacklist: BlacklistRow;
+  }
+) {
+  const now = new Date();
+
+  if (input.incidentId) {
+    await executor
+      .update(pelanggaranUser)
+      .set({
+        escalationEligible: false,
+        resolutionType: "cabut_manual",
+        resolutionReasonCode: input.reasonCode,
+        resolutionNote: input.note,
+        resolvedByUserId: input.actorUserId,
+        resolvedAt: now,
+        updatedAt: now
+      })
+      .where(eq(pelanggaranUser.id, input.incidentId));
+  }
+
+  await executor
+    .update(blacklists)
+    .set({
+      isActive: false,
+      revokedByUserId: input.actorUserId,
+      revokeReason: input.note || input.reasonCode,
+      updatedAt: now
+    })
+    .where(eq(blacklists.id, input.activeBlacklist.id));
+
+  if (shouldSuspendLoginForBlacklist(input.activeBlacklist.totalViolations)) {
+    await executor
+      .update(users)
+      .set({
+        isActive: true,
+        updatedAt: now
+      })
+      .where(eq(users.id, input.userId));
+  }
+
+  await executor.insert(blacklistActionLogs).values({
+    id: randomUUID(),
+    blacklistId: input.activeBlacklist.id,
+    targetUserId: input.userId,
+    action: "cabut_manual",
+    performedByType: "manual",
+    performedByUserId: input.actorUserId,
+    note: input.note || input.reasonCode
+  });
 }
 
 export async function getSuperadminBlacklistByUserId(userId: string) {
@@ -239,5 +303,3 @@ export async function getSuperadminBlacklistByUserId(userId: string) {
     history: history.map(serializeBlacklistHistoryEntry)
   };
 }
-
-export const DIRECT_REVOKE_REASON_OPTIONS = BLACKLIST_REVIEW_APPROVAL_REASONS;

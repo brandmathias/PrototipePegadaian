@@ -59,9 +59,9 @@ const LEVEL_RULES: Record<
   3: {
     duration: "365 hari",
     durationDays: 365,
-    label: "Level 3: Review manual",
+    label: "Level 3: Evaluasi manual",
     restriction:
-      "Tidak bisa membuat transaksi baru dan perlu review manual oleh Super Admin.",
+      "Tidak bisa membuat transaksi baru dan perlu evaluasi manual oleh Super Admin.",
     tone: "danger",
   },
 };

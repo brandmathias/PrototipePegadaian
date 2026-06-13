@@ -542,10 +542,7 @@ export function LoginPage() {
             <LoginForm />
           </Suspense>
           <div className="mt-5 rounded-[1.15rem] border border-amber-200/18 bg-amber-200/10 p-4 text-sm leading-6 text-emerald-50/72">
-            Akun sedang terkunci karena blacklist?{" "}
-            <Link className="font-bold text-amber-100 underline-offset-4 hover:underline" href="/bantuan/blacklist">
-              Buka review insiden
-            </Link>
+            Akun sedang terkunci karena blacklist? Hubungi admin unit Pegadaian terkait untuk pengecekan manual.
           </div>
         </div>
       </section>

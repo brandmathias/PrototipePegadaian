@@ -44,7 +44,6 @@ import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminBlacklistDetailWorkspace } from "@/components/admin/admin-blacklist-detail-workspace";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
-import { AdminBlacklistReviewInbox } from "@/components/admin/admin-blacklist-review-inbox";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminBlacklistExtendForm } from "@/components/admin-unit/admin-blacklist-extend-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
@@ -116,40 +115,6 @@ type AdminAuctionItem = Record<string, any> & {
 };
 type AdminTransactionItem = Record<string, any>;
 type AdminBlacklistItem = Record<string, any>;
-type AdminBlacklistReviewCase = {
-  id: string;
-  buyerName: string;
-  buyerEmail: string;
-  itemName: string;
-  unitName: string;
-  status: string;
-  submittedAt: string;
-  buyerStatement: string;
-  adminRecommendation: string | null;
-  adminRecommendationNote: string | null;
-  hasRecommendation: boolean;
-  crossUnitSignal: string;
-  incident: {
-    id: string;
-    note: string;
-    occurredAt: string;
-    auctionMode: string;
-    transactionStatus: string;
-    amount: number | null;
-    paymentDeadline: string | null;
-    itemCode: string;
-    itemCategory: string;
-    itemCondition: string;
-    itemImageUrl: string | null;
-    itemImageAlt: string | null;
-  };
-  attachments: Array<{
-    id: string;
-    fileUrl: string;
-    fileName: string;
-    mimeType: string;
-  }>;
-};
 
 function dateAfter(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000)
@@ -2032,15 +1997,13 @@ export function AdminTransactionDetailPage({
 
 export function AdminBlacklistPage({
   entries,
-  reviewCases = [],
 }: {
   entries: AdminBlacklistItem[];
-  reviewCases?: AdminBlacklistReviewCase[];
 }) {
   const activeCount = entries.filter(
     (entry) => String(entry.status).toUpperCase() === "AKTIF",
   ).length;
-  const reviewCount = entries.filter(
+  const manualFollowUpCount = entries.filter(
     (entry) =>
       String(entry.status).toUpperCase() === "AKTIF" &&
       Number(entry.violations ?? 0) >= 3,
@@ -2049,19 +2012,17 @@ export function AdminBlacklistPage({
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Fokus pada kasus gagal bayar yang perlu dipantau, termasuk bantuan review dari buyer sebelum superadmin mengambil keputusan final."
+        description="Fokus pada kasus gagal bayar yang perlu dipantau, status pembatasan aktif, dan riwayat pelanggaran pembayaran di unit."
         eyebrow="Admin Unit / Pelanggaran"
         icon={Ban}
         rightRail={
           <>
             <AdminHeroPill icon={BadgeCheck}>{activeCount} aktif</AdminHeroPill>
-            <AdminHeroPill tone="danger">{reviewCases.length || reviewCount} review</AdminHeroPill>
+            <AdminHeroPill tone="danger">{manualFollowUpCount} tindak lanjut</AdminHeroPill>
           </>
         }
         title="Pelanggaran Pengguna"
       />
-
-      <AdminBlacklistReviewInbox cases={reviewCases} />
 
       <AdminBlacklistList entries={entries} />
     </div>

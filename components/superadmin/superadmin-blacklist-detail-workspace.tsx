@@ -568,8 +568,8 @@ export function SuperadminBlacklistDetailWorkspace({
       />
 
       <nav className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#64756e]">
-        <Link className="transition hover:text-[#006747]" href="/superadmin/review-pelanggaran">
-          Review & Pelanggaran
+        <Link className="transition hover:text-[#006747]" href="/superadmin/blacklist">
+          Pelanggaran
         </Link>
         <ChevronRight className="size-3.5 text-[#94a3b8]" />
         <span>Detail Dossier</span>

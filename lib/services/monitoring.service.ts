@@ -14,7 +14,6 @@ import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/lib/db/client";
 import {
   barang,
-  blacklistReviewCases,
   blacklists,
   pemasaran,
   transaksi,
@@ -420,12 +419,6 @@ export async function getSuperAdminMonitoring() {
     })
     .from(blacklists);
 
-  const [reviewStats] = await db
-    .select({
-      pendingReviews: sql<number>`count(*) filter (where ${blacklistReviewCases.status} not in ('DISETUJUI', 'DITOLAK'))`,
-    })
-    .from(blacklistReviewCases);
-
   const [transactionStats] = await db
     .select({
       heldTransactions: sql<number>`count(*) filter (where ${transaksi.status} in (${sql.join(
@@ -684,11 +677,11 @@ export async function getSuperAdminMonitoring() {
       return {
         id: `blacklist-${item.id}`,
         unitId: item.unitId ?? "",
-        href: "/superadmin/review-pelanggaran",
+        href: "/superadmin/blacklist",
         unit: item.unit ?? "Lintas unit",
         scope: "Pembatasan",
-        status: "Perlu Review",
-        activity: `Masa pembatasan buyer ${item.buyerName} segera berakhir dan perlu keputusan lanjutan.`,
+        status: "Perlu Evaluasi",
+        activity: `Masa pembatasan buyer ${item.buyerName} segera berakhir dan perlu evaluasi lanjutan.`,
         detail: `${item.unit ?? "Lintas unit"} | ${item.totalViolations} pelanggaran tercatat`,
         countdownLabel: countdown.label,
         countdownAt: item.blockedUntil?.toISOString(),
@@ -707,14 +700,6 @@ export async function getSuperAdminMonitoring() {
   });
 
   const actionPriorities = [
-    {
-      id: "priority-review",
-      value: toNumber(reviewStats?.pendingReviews),
-      title: "Review buyer menunggu keputusan",
-      detail: `${toNumber(reviewStats?.pendingReviews)} case review perlu diputus superadmin.`,
-      href: "/superadmin/review-pelanggaran",
-      action: "Tinjau pelanggaran",
-    },
     {
       id: "priority-follow-up",
       value: toNumber(nationalStats?.followUpItems),
@@ -747,7 +732,7 @@ export async function getSuperAdminMonitoring() {
     title: `${item.unit} - ${item.scope}`,
     detail: item.activity,
     href: item.href ?? `/superadmin/unit/${item.unitId}`,
-    action: item.scope === "Pembatasan" ? "Buka review" : "Buka monitoring",
+    action: item.scope === "Pembatasan" ? "Buka blacklist" : "Buka monitoring",
     countdownLabel: item.countdownLabel,
     countdownAt: item.countdownAt,
     expiredLabel: item.expiredLabel,
@@ -788,7 +773,7 @@ export async function getSuperAdminMonitoring() {
   return {
     summary: {
       headline:
-        "Pusat keputusan nasional yang ringkas untuk review buyer, monitoring unit, dan tindak lanjut operasional.",
+        "Pusat keputusan nasional yang ringkas untuk monitoring unit, pembatasan akun, dan tindak lanjut operasional.",
       metrics: [
         {
           label: "Total Unit",

@@ -80,7 +80,6 @@ import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
-import { BlacklistReviewQueue } from "@/components/superadmin/blacklist-review-queue";
 import {
   AdminUnitForm,
   DeactivateAdminButton,
@@ -398,29 +397,6 @@ export type SuperAdminBlacklistItem = {
   expiredLabel?: string;
 };
 
-export type SuperAdminBlacklistReviewCase = {
-  id: string;
-  buyerName: string;
-  buyerEmail: string;
-  itemName: string;
-  unitName: string;
-  status: string;
-  submittedAt: string;
-  buyerStatement: string;
-  adminRecommendation: string | null;
-  adminRecommendationNote: string | null;
-  level: number;
-  lockedAccount: boolean;
-  hasAdminRecommendation: boolean;
-  priorityScore: number;
-  attachments: Array<{
-    id: string;
-    fileUrl: string;
-    fileName: string;
-    mimeType: string;
-  }>;
-};
-
 type SuperAdminRestrictionLevelFilter = "Semua" | "Level 1" | "Level 2" | "Level 3";
 
 const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
@@ -504,10 +480,6 @@ function matchesSuperadminRestrictionQuery(entry: SuperAdminBlacklistItem, query
   return [entry.name, entry.email, entry.unit, entry.reason, entry.status, String(entry.total)]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
-}
-
-function isSuperadminReviewTerminalStatus(status: string) {
-  return status === "DISETUJUI" || status === "DITOLAK";
 }
 
 function SuperAdminHeroPill({
@@ -5402,13 +5374,12 @@ export function SuperAdminPolicyPage() {
           </div>
           <div className="space-y-3">
             <h3 className="font-headline text-xl font-black uppercase tracking-[0.03em] text-[#00563b]">
-              Mekanisme Sanggahan & Pengajuan Review
+              Evaluasi Manual oleh Superadmin
             </h3>
             <p className="max-w-5xl text-sm font-semibold leading-7 text-[#42526b]">
-              Pengguna dapat mengajukan sanggahan atau review secara resmi
-              apabila terdapat kondisi khusus atau keadaan di luar kendali.
-              Ajukan review dengan bukti pendukung yang kuat, valid, dan
-              lengkap untuk dilakukan evaluasi oleh admin/superadmin.
+              Superadmin dapat mengevaluasi pembatasan level tinggi dari
+              dossier pelanggaran dan log sistem. Keputusan pencabutan manual
+              dicatat sebagai audit agar riwayat akun tetap lengkap.
             </p>
           </div>
         </div>
@@ -6265,20 +6236,15 @@ export function SuperAdminMonitoringPage({
 
 export function SuperAdminBlacklistPage({
   entries,
-  reviewCases = [],
   serverNow,
 }: {
   entries: SuperAdminBlacklistItem[];
-  reviewCases?: SuperAdminBlacklistReviewCase[];
   serverNow?: string;
 }) {
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] =
     useState<SuperAdminRestrictionLevelFilter>("Semua");
   const activeEntries = entries.filter((entry) => entry.status === "Aktif");
-  const pendingReviewCount = reviewCases.filter(
-    (item) => !isSuperadminReviewTerminalStatus(item.status),
-  ).length;
   const levelThreeCount = activeEntries.filter(
     (entry) => getSuperadminRestrictionLevel(entry) >= 3,
   ).length;
@@ -6317,23 +6283,20 @@ export function SuperAdminBlacklistPage({
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Pusat pengawasan keputusan review buyer, pembatasan aktif, dan riwayat pelanggaran pembayaran Lelang Tertutup lintas unit."
-        eyebrow="Superadmin / Review & Pelanggaran"
+        description="Pusat pengawasan pembatasan aktif dan riwayat pelanggaran pembayaran Lelang Tertutup lintas unit."
+        eyebrow="Superadmin / Pelanggaran"
         icon={Ban}
         rightRail={
           <>
             <SuperAdminHeroPill icon={BadgeCheck}>
               {activeEntries.length} aktif
             </SuperAdminHeroPill>
-            <SuperAdminHeroPill icon={ShieldAlert} tone="danger">
-              {pendingReviewCount} review
-            </SuperAdminHeroPill>
             <SuperAdminHeroPill tone="danger">
               Level 3: {levelThreeCount}
             </SuperAdminHeroPill>
           </>
         }
-        title="Review & Pelanggaran"
+        title="Pelanggaran Pengguna"
       />
 
       <div className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_18px_48px_-42px_rgba(8,69,50,0.38)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
@@ -6350,13 +6313,8 @@ export function SuperAdminBlacklistPage({
           <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
             {ledgerEntries.length} akun aktif
           </span>
-          <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
-            {reviewCases.length} histori review
-          </span>
         </div>
       </div>
-
-      <BlacklistReviewQueue cases={reviewCases} query={query} />
 
       <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
         <div className="border-b border-[#edf2ee] p-4 sm:p-5">
@@ -6505,7 +6463,7 @@ export function SuperAdminBlacklistPage({
                     <div className="flex flex-wrap justify-start gap-3 lg:justify-end">
                       <Link
                         className="text-sm font-black text-[#005f3e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#003d27] active:scale-[0.98]"
-                        href={`/superadmin/review-pelanggaran/detail/${item.userId}`}
+                        href={`/superadmin/blacklist/detail/${item.userId}`}
                       >
                         Detail
                       </Link>
@@ -6525,7 +6483,7 @@ export function SuperAdminBlacklistPage({
         </p>
         <p>
           Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru, dan level
-          3 memerlukan review manual.
+          3 memerlukan evaluasi manual.
         </p>
         <p>
           Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk

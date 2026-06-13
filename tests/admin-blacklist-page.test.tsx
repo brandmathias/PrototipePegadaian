@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -114,7 +114,7 @@ describe("AdminBlacklistPage", () => {
     );
 
     expect(screen.getByText("Pengguna 1")).toBeInTheDocument();
-    expect(screen.getByText("Pengajuan review dari buyer")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /tinjau sekarang/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Pengguna 11")).not.toBeInTheDocument();
     expect(screen.getByText("Pembatasan Unit")).toBeInTheDocument();
     expect(screen.getByText(/ledger blacklist buyer di unit ini/i)).toBeInTheDocument();
@@ -136,89 +136,6 @@ describe("AdminBlacklistPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "2" }));
 
     expect(screen.getByText("Pengguna 11")).toBeInTheDocument();
-  });
-
-  it("shows local blacklist review intake cases for admin unit", () => {
-    render(
-      <AdminBlacklistPage
-        entries={[makeBlacklistEntry(1)]}
-        reviewCases={[
-          {
-            id: "case-1",
-            buyerName: "Raras Mahesa",
-            buyerEmail: "raras@example.com",
-            itemName: "Kalung Emas",
-            unitName: "UPC Ranotana",
-            status: "TERKIRIM",
-            submittedAt: "2026-05-30T00:00:00.000Z",
-            buyerStatement:
-              "Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi keterlambatan konfirmasi transfer.",
-            adminRecommendation: null,
-            adminRecommendationNote: null,
-            hasRecommendation: false,
-            crossUnitSignal: "Riwayat lintas unit tersedia untuk superadmin",
-            incident: {
-              id: "incident-1",
-              note: "Pemenang lelang tidak menyelesaikan pembayaran dalam 24 jam.",
-              occurredAt: "2026-05-29T08:30:00.000Z",
-              auctionMode: "VICKREY_AUCTION",
-              transactionStatus: "gagal_bayar",
-              amount: 90000000,
-              paymentDeadline: "2026-05-30T08:30:00.000Z",
-              itemCode: "BRG-32807701",
-              itemCategory: "emas",
-              itemCondition: "baik",
-              itemImageUrl: "/uploads/barang/kalung-emas.jpg",
-              itemImageAlt: "Foto barang Kalung Emas",
-            },
-            attachments: [
-              {
-                id: "att-1",
-                fileUrl: "/uploads/blacklist-review/bukti-transfer.pdf",
-                fileName: "bukti-transfer.pdf",
-                mimeType: "application/pdf",
-              },
-            ],
-          },
-        ]}
-      />,
-    );
-
-    expect(screen.getByText("Raras Mahesa")).toBeInTheDocument();
-    expect(screen.getByText(/Kalung Emas/)).toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        /Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi/i,
-      ),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText("bukti-transfer.pdf")).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /tinjau sekarang/i }));
-
-    const dialog = screen.getByRole("dialog", {
-      name: /tinjau pengajuan review buyer/i,
-    });
-
-    expect(
-      within(dialog).getByText(
-        /Saya sudah mengirim pembayaran dan ingin menjelaskan kronologi/i,
-      ),
-    ).toBeInTheDocument();
-    expect(within(dialog).getByText("Pelanggaran Terkait")).toBeInTheDocument();
-    expect(
-      within(dialog).getByText(
-        /Pemenang lelang tidak menyelesaikan pembayaran dalam 24 jam/i,
-      ),
-    ).toBeInTheDocument();
-    expect(within(dialog).getByText(/Barang Lelang Terkait/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/Rp 90.000.000/i)).toBeInTheDocument();
-    expect(
-      within(dialog).getByRole("img", { name: /foto barang kalung emas/i }),
-    ).toHaveAttribute("src", "/uploads/barang/kalung-emas.jpg");
-    expect(within(dialog).getByText("bukti-transfer.pdf")).toBeInTheDocument();
-    expect(
-      within(dialog).getByRole("button", { name: /simpan rekomendasi/i }),
-    ).toBeInTheDocument();
   });
 
   it("shows violation detail with level, countdown context, and unpaid auction traces", () => {

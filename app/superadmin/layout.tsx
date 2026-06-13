@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 const nav = [
   { href: "/superadmin", label: "Dashboard Nasional", icon: "dashboard" as const },
-  { href: "/superadmin/review-pelanggaran", label: "Review & Pelanggaran", icon: "blacklist" as const },
+  { href: "/superadmin/blacklist", label: "Pelanggaran", icon: "blacklist" as const },
   { href: "/superadmin/monitoring-unit", label: "Monitoring Unit", icon: "monitoring" as const },
   { href: "/superadmin/manajemen-unit", label: "Manajemen Unit", icon: "unit" as const },
   { href: "/superadmin/manajemen-superadmin", label: "Manajemen Superadmin", icon: "superadmin" as const },
