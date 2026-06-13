@@ -88,7 +88,7 @@ export function LotMediaGallery({
               loop={!showVideoControls}
               muted
               playsInline
-              preload="metadata"
+              preload={showVideoControls ? "metadata" : "none"}
               src={activeMedia.url}
             />
           ) : (
@@ -97,9 +97,9 @@ export function LotMediaGallery({
               fill
               className="object-cover transition duration-500 ease-out"
               priority={priority}
+              quality={72}
               sizes="(min-width: 1280px) 58vw, (min-width: 768px) 72vw, 100vw"
               src={activeMedia.url}
-              unoptimized={priority}
             />
           )}
         </div>
@@ -179,7 +179,7 @@ export function LotMediaGallery({
                         className="size-full object-cover"
                         muted
                         playsInline
-                        preload="metadata"
+                        preload="none"
                         src={item.url}
                       />
                     ) : (
@@ -187,6 +187,7 @@ export function LotMediaGallery({
                         alt={`${title} foto ${index + 1}`}
                         fill
                         className="object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.025]"
+                        quality={60}
                         sizes="(min-width: 1280px) 18vw, (min-width: 640px) 45vw, 100vw"
                         src={item.url}
                       />

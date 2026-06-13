@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -750,6 +750,7 @@ export function CatalogPage({
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZE_OPTIONS[0]);
   const [pageIndex, setPageIndex] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(initialFavoriteIds);
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -839,7 +840,7 @@ export function CatalogPage({
   const visibleUnits = unitQuery.trim() || showAllUnits ? matchingUnits : matchingUnits.slice(0, 4);
 
   const filteredLots = useMemo(() => {
-    const normalizedQuery = normalize(query);
+    const normalizedQuery = normalize(deferredQuery);
     const parsedMinPrice = minPrice.trim() ? Number(minPrice) : null;
     const parsedMaxPrice = maxPrice.trim() ? Number(maxPrice) : null;
 
@@ -890,10 +891,10 @@ export function CatalogPage({
     return filtered;
   }, [
     lotsWithInsights,
+    deferredQuery,
     maxPrice,
     minPrice,
     mode,
-    query,
     selectedCategories,
     selectedConditions,
     selectedUnits,
@@ -902,7 +903,7 @@ export function CatalogPage({
 
   useEffect(() => {
     setPageIndex(0);
-  }, [filteredLots.length, mode, pageSize, query, selectedCategories, selectedConditions, selectedUnits, minPrice, maxPrice, sortBy]);
+  }, [filteredLots.length, mode, pageSize, deferredQuery, selectedCategories, selectedConditions, selectedUnits, minPrice, maxPrice, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLots.length / pageSize));
   const currentPage = Math.min(pageIndex, totalPages - 1);
@@ -974,7 +975,7 @@ export function CatalogPage({
   return (
     <div className="bg-white">
       <section
-        className="relative isolate overflow-hidden bg-[image:var(--catalog-hero-image)] bg-[length:100%_auto] bg-bottom bg-no-repeat"
+        className="relative isolate overflow-hidden bg-white bg-bottom bg-no-repeat md:bg-[image:var(--catalog-hero-image)] md:bg-[length:100%_auto]"
         style={heroStyle}
       >
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.76)_42%,rgba(255,255,255,0.50)_100%)]" />

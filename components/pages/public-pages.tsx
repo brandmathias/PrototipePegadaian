@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, type CSSProperties } from "react";
 import {
   Clock3,
   CreditCard,
@@ -467,13 +467,11 @@ export function LoginPage() {
   return (
     <main className="grid min-h-[100dvh] w-full overflow-hidden bg-[#03140d] text-white lg:grid-cols-[1.08fr_0.92fr]">
       <section
-        className="relative hidden min-h-[100dvh] overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-end xl:p-16"
+        className="relative hidden min-h-[100dvh] overflow-hidden bg-center bg-cover p-12 text-white lg:flex lg:flex-col lg:justify-end lg:bg-[image:var(--login-hero-image)] xl:p-16"
         style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(2, 15, 10, 0.04) 0%, rgba(2, 23, 13, 0.22) 42%, rgba(1, 13, 8, 0.92) 100%), linear-gradient(90deg, rgba(44, 27, 8, 0.12), rgba(0, 54, 31, 0.22)), url('/uploads/Gambar%20Wallpaper%20Login.png')",
-          backgroundPosition: "center",
-          backgroundSize: "cover"
-        }}
+          "--login-hero-image":
+            "linear-gradient(180deg, rgba(2, 15, 10, 0.04) 0%, rgba(2, 23, 13, 0.22) 42%, rgba(1, 13, 8, 0.92) 100%), linear-gradient(90deg, rgba(44, 27, 8, 0.12), rgba(0, 54, 31, 0.22)), url('/uploads/Gambar%20Wallpaper%20Login.png')"
+        } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,207,91,0.24),transparent_26%),radial-gradient(circle_at_80%_14%,rgba(5,67,40,0.38),transparent_28%)]" />
         <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">
@@ -593,13 +591,11 @@ export function RegisterPage() {
       </section>
 
       <section
-        className="relative hidden min-h-[100dvh] overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-end xl:p-16"
+        className="relative hidden min-h-[100dvh] overflow-hidden bg-center bg-cover p-12 text-white lg:flex lg:flex-col lg:justify-end lg:bg-[image:var(--register-hero-image)] xl:p-16"
         style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(2, 15, 10, 0.08) 0%, rgba(2, 23, 13, 0.18) 38%, rgba(1, 13, 8, 0.90) 100%), linear-gradient(90deg, rgba(0, 54, 31, 0.18), rgba(44, 27, 8, 0.12)), url('/uploads/Gambar%20Wallpaper%20Register.png')",
-          backgroundPosition: "center",
-          backgroundSize: "cover"
-        }}
+          "--register-hero-image":
+            "linear-gradient(180deg, rgba(2, 15, 10, 0.08) 0%, rgba(2, 23, 13, 0.18) 38%, rgba(1, 13, 8, 0.90) 100%), linear-gradient(90deg, rgba(0, 54, 31, 0.18), rgba(44, 27, 8, 0.12)), url('/uploads/Gambar%20Wallpaper%20Register.png')"
+        } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,207,91,0.22),transparent_26%),radial-gradient(circle_at_20%_14%,rgba(5,67,40,0.36),transparent_28%)]" />
         <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">

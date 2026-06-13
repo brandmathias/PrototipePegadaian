@@ -45,7 +45,10 @@ function fixedPriceCatalogAvailabilityPredicate() {
   );
 }
 
-async function getMediaByBarangId(barangIds: string[]) {
+async function getMediaByBarangId(
+  barangIds: string[],
+  options: { maxItemsPerBarang?: number } = {}
+) {
   if (!barangIds.length) {
     return new Map<string, Array<{ id: string; type: string; url: string; fileName: string | null }>>();
   }
@@ -63,8 +66,15 @@ async function getMediaByBarangId(barangIds: string[]) {
     .where(inArray(mediaBarang.barangId, barangIds))
     .orderBy(asc(mediaBarang.sortOrder), asc(mediaBarang.createdAt));
 
+  const maxItemsPerBarang = options.maxItemsPerBarang ?? Number.POSITIVE_INFINITY;
+
   return rows.reduce((map, media) => {
     const collection = map.get(media.barangId) ?? [];
+    if (collection.length >= maxItemsPerBarang) {
+      map.set(media.barangId, collection);
+      return map;
+    }
+
     collection.push({
       id: media.id,
       type: media.type,
@@ -100,7 +110,7 @@ export async function listPublicLotsWithLimit(limit?: number) {
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
 
   const [mediaByBarangId, statsByMarketingId] = await Promise.all([
-    getMediaByBarangId(limitedRows.map((row) => row.itemId)),
+    getMediaByBarangId(limitedRows.map((row) => row.itemId), { maxItemsPerBarang: 1 }),
     getLotStatsByIds(limitedRows.map((row) => row.marketingId))
   ]);
 
@@ -136,7 +146,7 @@ export async function listOngoingVickreyLotsWithLimit(limit?: number) {
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
 
   const [mediaByBarangId, statsByMarketingId] = await Promise.all([
-    getMediaByBarangId(limitedRows.map((row) => row.itemId)),
+    getMediaByBarangId(limitedRows.map((row) => row.itemId), { maxItemsPerBarang: 1 }),
     getLotStatsByIds(limitedRows.map((row) => row.marketingId))
   ]);
 

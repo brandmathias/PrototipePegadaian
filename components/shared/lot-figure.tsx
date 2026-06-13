@@ -68,13 +68,13 @@ export function LotFigure({
         {primaryMedia.type === "video" ? (
           <video
             aria-label={primaryMediaLabel}
-            autoPlay={!showVideoControls}
+            autoPlay={false}
             className="absolute inset-0 h-full w-full object-cover"
             controls={showVideoControls}
-            loop={!showVideoControls}
+            loop={false}
             muted
             playsInline
-            preload="metadata"
+            preload={showVideoControls ? "metadata" : "none"}
             src={primaryMedia.url}
           />
         ) : (
@@ -84,6 +84,7 @@ export function LotFigure({
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             decoding="async"
             loading="lazy"
+            quality={68}
             sizes="(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw"
             src={primaryMedia.url}
           />
