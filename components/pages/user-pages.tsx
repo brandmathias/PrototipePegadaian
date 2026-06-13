@@ -527,27 +527,33 @@ function TransactionTimeline({ transaction }: { transaction: BuyerTransaction })
 function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction }) {
   const isTransfer = transaction.method === "TRANSFER_BANK";
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
+  const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
+  const hasFailedWorkflow = transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment;
   const completed = transaction.status === "SELESAI";
   const currentStep =
     transaction.status === "SELESAI" || transaction.status === "LUNAS"
       ? 2
-      : transaction.status === "BUKTI_DIUNGGAH" || transaction.status === "DITOLAK_BUKTI"
+      : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow
         ? 1
         : 0;
   const rejectionReason =
     transaction.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.";
-  const paymentDetail = isTransfer
-    ? transaction.status === "DITOLAK_BUKTI"
-      ? "Pembayaran sudah dicoba, tetapi bukti transfer ditolak admin unit sehingga transaksi ini dibatalkan."
-      : isVickreyWin
-        ? "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
-        : "Transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini."
-    : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
-  const verificationDetail = isTransfer
-    ? transaction.status === "DITOLAK_BUKTI"
-      ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}. Transaksi dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
-      : "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
-    : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
+  const paymentDetail = isFailedVickreyPayment
+    ? "Batas pembayaran 24 jam sudah terlewati tanpa pembayaran langsung di unit, sehingga transaksi pemenang ditutup sebagai gagal."
+    : isTransfer
+      ? transaction.status === "DITOLAK_BUKTI"
+        ? "Pembayaran sudah dicoba, tetapi bukti transfer ditolak admin unit sehingga transaksi ini dibatalkan."
+        : isVickreyWin
+          ? "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
+          : "Transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini."
+      : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
+  const verificationDetail = isFailedVickreyPayment
+    ? "Pembayaran gagal karena pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam. Riwayat bid tetap tersimpan dan transaksi tidak lagi berada dalam antrean pembayaran aktif."
+    : isTransfer
+      ? transaction.status === "DITOLAK_BUKTI"
+        ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}. Transaksi dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
+        : "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
+      : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
   const finishDetail =
     transaction.status === "LUNAS"
       ? "Pembayaran sudah diverifikasi. Tekan Pembelian Selesai setelah nota dan pengambilan barang siap."
@@ -565,12 +571,24 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
     },
     {
       id: "verification",
-      label: transaction.status === "DITOLAK_BUKTI" ? "Verifikasi Gagal" : "Verifikasi",
-      headline: transaction.status === "DITOLAK_BUKTI" ? "Workflow Verifikasi Gagal" : "Menunggu Verifikasi Admin",
+      label: hasFailedWorkflow
+        ? isFailedVickreyPayment
+          ? "Pembayaran Gagal"
+          : "Verifikasi Gagal"
+        : "Verifikasi",
+      headline: hasFailedWorkflow
+        ? isFailedVickreyPayment
+          ? "Workflow Pembayaran Gagal"
+          : "Workflow Verifikasi Gagal"
+        : "Menunggu Verifikasi Admin",
       detail: verificationDetail,
-      meta: transaction.status === "DITOLAK_BUKTI" ? "Bukti ditolak admin unit" : "Aksi admin unit",
+      meta: hasFailedWorkflow
+        ? isFailedVickreyPayment
+          ? "Melewati 24 jam"
+          : "Bukti ditolak admin unit"
+        : "Aksi admin unit",
       icon: ShieldCheck,
-      tone: transaction.status === "DITOLAK_BUKTI" ? "danger" : "default"
+      tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
       id: "finished",
@@ -588,7 +606,9 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
       currentStep={currentStep}
       description={
         isVickreyWin
-          ? "Lelang Tertutup hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
+          ? isFailedVickreyPayment
+            ? "Pembayaran Lelang Tertutup wajib selesai maksimal 24 jam. Karena tenggat terlewati, transaksi gagal dan tidak lagi berada dalam antrean pembayaran aktif."
+            : "Lelang Tertutup hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
           : isTransfer
             ? transaction.status === "DITOLAK_BUKTI"
               ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
@@ -1240,6 +1260,8 @@ function VickreyPaymentFailedDetail({
           </CardContent>
         </Card>
       </section>
+
+      <PaymentProgressRail transaction={transaction} />
 
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="border border-border/70 bg-white shadow-[0_18px_42px_rgba(0,74,35,0.04)]">

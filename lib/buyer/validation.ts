@@ -1,4 +1,5 @@
 import {
+  validateBuyerEmail,
   normalizeBuyerNationalId,
   normalizeBuyerPhoneNumber
 } from "@/lib/auth/buyer-auth-validation";
@@ -31,6 +32,7 @@ export type BuyerPaymentProofPayload = {
 
 export type BuyerProfileUpdatePayload = {
   name: string;
+  email: string;
   phoneNumber: string;
   nationalId: string;
   image?: string | null;
@@ -130,6 +132,7 @@ export function validateBuyerPaymentProofPayload(input: unknown): BuyerPaymentPr
 export function validateBuyerProfileUpdatePayload(input: unknown): BuyerProfileUpdatePayload {
   const payload = readRecord(input);
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const email = validateBuyerEmail(String(payload.email ?? ""));
   const rawImage = "image" in payload ? payload.image : undefined;
   const image = typeof rawImage === "string" ? rawImage.trim() : rawImage === null ? null : undefined;
 
@@ -149,6 +152,7 @@ export function validateBuyerProfileUpdatePayload(input: unknown): BuyerProfileU
 
   return {
     name,
+    email,
     phoneNumber: normalizeBuyerPhoneNumber(String(payload.phoneNumber ?? "")),
     nationalId: normalizeBuyerNationalId(String(payload.nationalId ?? "")),
     ...(image !== undefined ? { image } : {})

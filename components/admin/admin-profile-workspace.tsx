@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Building2,
@@ -35,6 +36,7 @@ export type AdminProfileData = {
   passwordUpdatedAt: string;
   phone: string;
   profileEditHeading?: string;
+  profileEndpoint?: string;
   profileSaveFeedback?: string;
   roleLabel: string;
   sessionHistory: string[];
@@ -131,6 +133,7 @@ function InfoTile({
 }
 
 export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }) {
+  const router = useRouter();
   const workspaceLabel = profile.workspaceLabel ?? "Unit Kerja";
   const workspaceFieldLabel = profile.workspaceFieldLabel ?? "Unit kerja";
   const workspaceCodeLabel = profile.workspaceCodeLabel ?? "Kode Unit";
@@ -140,8 +143,10 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
   const accessHistoryLabel = profile.accessHistoryLabel ?? "Akses admin unit";
   const accessHistoryDescription = profile.accessHistoryDescription ?? "Lihat riwayat akses admin";
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+  const [isProfilePending, startProfileTransition] = useTransition();
   const [profileForm, setProfileForm] = useState({
     address: profile.unitAddress,
+    email: profile.email,
     name: profile.name,
     phone: profile.phone,
     unitName: profile.unitName
@@ -153,6 +158,31 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
   });
   const [feedback, setFeedback] = useState<string | null>(null);
   const initials = useMemo(() => getInitials(profileForm.name || profile.name), [profile.name, profileForm.name]);
+  const profileEndpoint = profile.profileEndpoint ?? "/api/admin/profil";
+
+  function saveProfile() {
+    setFeedback(null);
+    startProfileTransition(async () => {
+      const response = await fetch(profileEndpoint, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: profileForm.name,
+          email: profileForm.email,
+          phoneNumber: profileForm.phone
+        })
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setFeedback(payload.message ?? "Profil belum tersimpan. Periksa nama, email, dan nomor telepon.");
+        return;
+      }
+
+      setFeedback(profile.profileSaveFeedback ?? "Profil akun sudah diperbarui di database.");
+      router.refresh();
+    });
+  }
 
   return (
     <div className="relative -my-6 min-h-[calc(100dvh-4rem)] w-full overflow-hidden rounded-[2rem] bg-[#f5f8f5] py-6 sm:-my-8 sm:py-8 md:-my-10 md:py-10">
@@ -215,7 +245,7 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                 <div className="mt-5 grid gap-3 text-sm text-white/88 sm:grid-cols-2">
                   <span className="inline-flex min-w-0 items-center gap-2">
                     <Mail className="size-4 shrink-0 text-white/72" />
-                    <span className="truncate">{profile.email}</span>
+                    <span className="truncate">{profileForm.email}</span>
                   </span>
                   <span className="inline-flex items-center gap-2">
                     <Phone className="size-4 shrink-0 text-white/72" />
@@ -279,16 +309,22 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-email">Email kerja</label>
-                  <Input id="admin-profile-email" className="h-12 rounded-2xl bg-[#f5f7f4]" disabled value={profile.email} />
+                  <Input
+                    id="admin-profile-email"
+                    autoComplete="email"
+                    className="h-12 rounded-2xl bg-white"
+                    value={profileForm.email}
+                    onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-address">{workspaceAddressLabel}</label>
                   <Textarea id="admin-profile-address" className="min-h-28 rounded-2xl bg-white" value={profileForm.address} onChange={(event) => setProfileForm((current) => ({ ...current, address: event.target.value }))} />
                 </div>
               </div>
-              <Button className="mt-5 h-12 rounded-2xl px-5" type="button" onClick={() => setFeedback(profile.profileSaveFeedback ?? "Perubahan profil sudah disiapkan di tampilan admin unit.")}>
+              <Button className="mt-5 h-12 rounded-2xl px-5" disabled={isProfilePending} type="button" onClick={saveProfile}>
                 <PenLine className="size-4" />
-                Simpan Perubahan
+                {isProfilePending ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>
             </div>
           </section>

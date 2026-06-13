@@ -820,50 +820,77 @@ export async function getBuyerProfileStatus(userId: string) {
 
 export async function updateBuyerProfile(userId: string, input: unknown) {
   const payload = validateBuyerProfileUpdatePayload(input);
-  const [currentUser] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  await db.transaction(async (tx) => {
+    const [currentUser] = await tx.select().from(users).where(eq(users.id, userId)).limit(1);
 
-  if (!currentUser) {
-    throw new Error("Akun pembeli tidak ditemukan.");
-  }
+    if (!currentUser) {
+      throw new Error("Akun pembeli tidak ditemukan.");
+    }
 
-  await db
-    .update(users)
-    .set({
-      name: payload.name,
-      phoneNumber: payload.phoneNumber,
-      nationalId: payload.nationalId,
-      ...(payload.image !== undefined ? { image: payload.image } : {}),
-      updatedAt: new Date()
-    })
-    .where(eq(users.id, userId));
+    const [existingUserEmail] = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, payload.email), ne(users.id, userId)))
+      .limit(1);
 
-  const [existingProfile] = await db
-    .select()
-    .from(buyerProfiles)
-    .where(eq(buyerProfiles.userId, userId))
-    .limit(1);
+    if (existingUserEmail) {
+      throw new Error("Email sudah digunakan akun lain.");
+    }
 
-  if (existingProfile) {
-    await db
-      .update(buyerProfiles)
+    const [existingProfileEmail] = await tx
+      .select({ userId: buyerProfiles.userId })
+      .from(buyerProfiles)
+      .where(and(eq(buyerProfiles.email, payload.email), ne(buyerProfiles.userId, userId)))
+      .limit(1);
+
+    if (existingProfileEmail) {
+      throw new Error("Email sudah digunakan profil pembeli lain.");
+    }
+
+    const emailChanged = currentUser.email !== payload.email;
+
+    await tx
+      .update(users)
       .set({
-        fullName: payload.name,
+        name: payload.name,
+        email: payload.email,
+        emailVerified: emailChanged ? false : currentUser.emailVerified,
         phoneNumber: payload.phoneNumber,
         nationalId: payload.nationalId,
+        ...(payload.image !== undefined ? { image: payload.image } : {}),
         updatedAt: new Date()
       })
-      .where(eq(buyerProfiles.userId, userId));
-  } else {
-    await db.insert(buyerProfiles).values({
-      id: randomUUID(),
-      userId,
-      fullName: payload.name,
-      email: currentUser.email,
-      phoneNumber: payload.phoneNumber,
-      nationalId: payload.nationalId,
-      status: "active"
-    });
-  }
+      .where(eq(users.id, userId));
+
+    const [existingProfile] = await tx
+      .select()
+      .from(buyerProfiles)
+      .where(eq(buyerProfiles.userId, userId))
+      .limit(1);
+
+    if (existingProfile) {
+      await tx
+        .update(buyerProfiles)
+        .set({
+          fullName: payload.name,
+          email: payload.email,
+          phoneNumber: payload.phoneNumber,
+          nationalId: payload.nationalId,
+          updatedAt: new Date()
+        })
+        .where(eq(buyerProfiles.userId, userId));
+    } else {
+      await tx.insert(buyerProfiles).values({
+        id: randomUUID(),
+        userId,
+        fullName: payload.name,
+        email: payload.email,
+        phoneNumber: payload.phoneNumber,
+        nationalId: payload.nationalId,
+        status: "active"
+      });
+    }
+  });
 
   return getBuyerSummary(userId);
 }

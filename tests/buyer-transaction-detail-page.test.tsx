@@ -97,14 +97,20 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByRole("heading", { name: /pembayaran lelang gagal/i })).toBeInTheDocument();
-    expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/batas pembayaran 24 jam/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/tenggat 24 jam terlewati/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak ada unggah bukti atau proses review pembayaran/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /ringkasan kegagalan pembayaran/i })).toBeInTheDocument();
+    expect(screen.getByText(/^workflow pembayaran$/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /workflow pembayaran gagal/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/pembayaran gagal/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/melewati 24 jam/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: /foto barang kalung emas 2/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kembali ke transaksi/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /detail pembayaran/i })).not.toBeInTheDocument();
-    expect(screen.queryByText(/workflow pembayaran/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /status konfirmasi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/dibatalkan/i)).not.toBeInTheDocument();

@@ -1,7 +1,17 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, vi } from "vitest";
 
 import { AdminProfileWorkspace, type AdminProfileData } from "@/components/admin/admin-profile-workspace";
+
+const router = {
+  refresh: vi.fn()
+};
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => router
+}));
 
 const profile: AdminProfileData = {
   activeSessionCount: 2,
@@ -20,6 +30,17 @@ const profile: AdminProfileData = {
 };
 
 describe("AdminProfileWorkspace", () => {
+  beforeEach(() => {
+    router.refresh.mockClear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ data: { email: "admin.baru@pegadaian.co.id" } })
+      })
+    );
+  });
+
   it("renders admin unit profile hero, security access, and toggled forms", () => {
     render(<AdminProfileWorkspace profile={profile} />);
 
@@ -35,5 +56,38 @@ describe("AdminProfileWorkspace", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /ubah password/i }));
     expect(screen.getByRole("heading", { name: /ubah kata sandi/i })).toBeInTheDocument();
+  });
+
+  it("lets admin unit change email and persists it through the profile endpoint", async () => {
+    const user = userEvent.setup();
+
+    render(<AdminProfileWorkspace profile={profile} />);
+
+    await user.click(screen.getByRole("button", { name: /edit profil/i }));
+
+    const emailInput = screen.getByLabelText(/email kerja/i, { selector: "input" });
+    expect(emailInput).not.toBeDisabled();
+
+    await user.clear(emailInput);
+    await user.type(emailInput, "admin.baru@pegadaian.co.id");
+    await user.click(screen.getByRole("button", { name: /simpan perubahan/i }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/admin/profil",
+        expect.objectContaining({
+          method: "PUT",
+          body: expect.any(String)
+        })
+      );
+    });
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String(requestInit?.body))).toEqual(
+      expect.objectContaining({
+        email: "admin.baru@pegadaian.co.id"
+      })
+    );
+    expect(router.refresh).toHaveBeenCalled();
   });
 });

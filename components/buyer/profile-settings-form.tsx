@@ -106,6 +106,7 @@ export function BuyerProfileSettingsForm({
   const [avatarImage, setAvatarImage] = useState(initialImage ?? "");
   const [profile, setProfile] = useState({
     name: initialName,
+    email,
     phoneNumber: initialPhone,
     nationalId: initialNationalId,
     image: initialImage ?? null
@@ -319,7 +320,7 @@ export function BuyerProfileSettingsForm({
               <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
                 <span className="inline-flex min-w-0 items-center gap-2">
                   <Mail className="size-4 text-primary/60" />
-                  <span className="break-all">{email}</span>
+                  <span className="break-all">{profile.email}</span>
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <CalendarDays className="size-4 text-primary/60" />
@@ -408,11 +409,11 @@ export function BuyerProfileSettingsForm({
                 </label>
                 <Input
                   autoComplete="email"
-                  className="h-12 rounded-2xl bg-surface-low/70"
-                  disabled
+                  className="h-12 rounded-2xl bg-white/90"
                   id="buyer-profile-email"
                   name="email"
-                  value={email}
+                  onChange={(event) => updateProfileField("email", event.target.value)}
+                  value={profile.email}
                 />
               </div>
               <div className="space-y-2">

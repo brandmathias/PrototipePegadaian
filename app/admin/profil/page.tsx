@@ -37,12 +37,12 @@ export default async function Page() {
     <AdminProfilePage
       profile={{
         activeSessionCount,
-        email: currentUser.email,
-        image: currentUser.image,
+        email: user?.email ?? currentUser.email,
+        image: user?.image ?? currentUser.image,
         joinedAt: formatAppLongDate(user?.createdAt),
-        name: currentUser.name || "Admin Unit",
+        name: user?.name || currentUser.name || "Admin Unit",
         passwordUpdatedAt: formatAppLongDate(account?.updatedAt),
-        phone: currentUser.phoneNumber ?? "-",
+        phone: user?.phoneNumber ?? currentUser.phoneNumber ?? "",
         roleLabel: "Administrator",
         sessionHistory: sessionRows.map((session) => `${getDeviceLabel(session.userAgent)} - ${formatAppDateTime(session.updatedAt)}`),
         unitAddress: unit?.address ?? "-",
