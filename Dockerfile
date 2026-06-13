@@ -1,4 +1,6 @@
-FROM node:22-alpine AS base
+ARG NODE_IMAGE=public.ecr.aws/docker/library/node:22-alpine
+
+FROM ${NODE_IMAGE} AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -25,7 +27,7 @@ ENV CRON_SECRET=$CRON_SECRET
 ENV VICKREY_ESCROW_SECRET=$VICKREY_ESCROW_SECRET
 RUN npm run build
 
-FROM node:22-alpine AS runner
+FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
