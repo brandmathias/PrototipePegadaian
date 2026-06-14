@@ -2,11 +2,13 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+const router = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn()
+}));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn()
-  }),
+  useRouter: () => router,
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   }
@@ -89,6 +91,11 @@ const winningBid: BuyerBid = {
 } as BuyerBid;
 
 describe("buyer vickrey pages", () => {
+  beforeEach(() => {
+    router.push.mockClear();
+    router.refresh.mockClear();
+  });
+
   it("keeps the sale type pill on lot detail while removing condition, trust badges, and flow panels", () => {
     const { container } = render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
     const purchasePanel = container.querySelector("aside");
@@ -124,6 +131,17 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByText("Kategori")).not.toBeInTheDocument();
     expect(screen.queryByText("Lokasi")).not.toBeInTheDocument();
     expect(screen.queryByText("Mode")).not.toBeInTheDocument();
+  });
+
+  it("redirects guest users to login before they can like a lot detail", async () => {
+    const user = userEvent.setup();
+
+    render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
+
+    await user.click(screen.getByRole("button", { name: /sukai gelang emas/i }));
+
+    expect(router.push).toHaveBeenCalledWith("/login?next=%2Fkatalog%2Fpm-fixed-1");
+    expect(screen.getByRole("button", { name: /sukai gelang emas/i })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("turns a submitted bid on lot detail into a monitoring state instead of another bid CTA", () => {
