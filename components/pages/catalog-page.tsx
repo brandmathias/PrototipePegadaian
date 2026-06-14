@@ -750,6 +750,7 @@ export function CatalogPage({
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZE_OPTIONS[0]);
   const [pageIndex, setPageIndex] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(initialFavoriteIds);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -1008,10 +1009,43 @@ export function CatalogPage({
         </div>
       </section>
 
-      <section className="container relative z-10 -mt-14 pb-12 pt-0">
+      <section className="container relative z-10 pb-12 pt-4 md:-mt-14 md:pt-0">
         <div className="overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_30px_80px_-62px_rgba(8,69,50,0.48)]">
           <div className="grid lg:grid-cols-[18rem_1fr]">
-            <aside className="border-b border-black/8 bg-white p-5 lg:border-b-0 lg:border-r">
+            <div className="border-b border-black/8 bg-white p-4 lg:hidden">
+              <button
+                aria-controls="catalog-mobile-filter-panel"
+                aria-expanded={isMobileFilterOpen}
+                className="flex min-h-14 w-full items-center justify-between gap-3 rounded-md border border-black/8 bg-[#f7faf8] px-4 text-left transition duration-500 hover:border-[#0b6a49]/24 hover:bg-white"
+                type="button"
+                onClick={() => setIsMobileFilterOpen((current) => !current)}
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#e9f5ee] text-[#075f42]">
+                    <SlidersHorizontal className="size-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-black text-[#14211b]">Filter katalog</span>
+                    <span className="block truncate text-xs font-semibold text-black/52">
+                      {activeFilters.length > 0
+                        ? `${activeFilters.length} filter aktif`
+                        : "Mode, kategori, unit, dan harga"}
+                    </span>
+                  </span>
+                </span>
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-[#075f42] shadow-sm">
+                  {isMobileFilterOpen ? <X className="size-4" /> : <ChevronRight className="size-4" />}
+                </span>
+              </button>
+            </div>
+
+            <aside
+              className={cn(
+                "border-b border-black/8 bg-white p-5 lg:block lg:border-b-0 lg:border-r",
+                isMobileFilterOpen ? "block" : "hidden"
+              )}
+              id="catalog-mobile-filter-panel"
+            >
               <div className="mb-5 flex items-center justify-between gap-3">
                 <h2 className="font-headline text-xl font-black text-[#14211b]">Filter</h2>
                 <button

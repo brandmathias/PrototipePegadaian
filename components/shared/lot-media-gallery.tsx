@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Image as ImageIcon, PlayCircle } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronLeft, ChevronRight, Image as ImageIcon, Maximize2, PlayCircle, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { LotFigure } from "./lot-figure";
@@ -44,10 +45,39 @@ export function LotMediaGallery({
 }) {
   const initialIndex = useMemo(() => getInitialIndex(media), [media]);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   useEffect(() => {
     setActiveIndex(getInitialIndex(media));
   }, [media]);
+
+  useEffect(() => {
+    if (!isFullscreenOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsFullscreenOpen(false);
+      }
+
+      if (media.length > 1 && event.key === "ArrowLeft") {
+        setActiveIndex((current) => (current - 1 + media.length) % media.length);
+      }
+
+      if (media.length > 1 && event.key === "ArrowRight") {
+        setActiveIndex((current) => (current + 1) % media.length);
+      }
+    }
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreenOpen, media.length]);
 
   if (!media.length) {
     return (
@@ -64,6 +94,8 @@ export function LotMediaGallery({
   const activeMediaLabel = `${title} ${activeMedia.type === "video" ? "video" : "foto"} ${activeIndex + 1}`;
   const isPdp = variant === "pdp";
   const progressScale = media.length > 1 ? (activeIndex + 1) / media.length : 1;
+  const showPreviousMedia = () => setActiveIndex((current) => (current - 1 + media.length) % media.length);
+  const showNextMedia = () => setActiveIndex((current) => (current + 1) % media.length);
 
   return (
     <div className="space-y-4">
@@ -134,6 +166,17 @@ export function LotMediaGallery({
             <span>{String(media.length).padStart(2, "0")}</span>
           </div>
         ) : null}
+        <button
+          aria-label="Buka media layar penuh"
+          className={cn(
+            "absolute bottom-4 right-4 z-10 grid size-11 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_16px_36px_rgba(8,69,50,0.16)] backdrop-blur transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white",
+            variant === "dark" && "bg-white/16 text-white ring-1 ring-white/18 hover:bg-white/24"
+          )}
+          type="button"
+          onClick={() => setIsFullscreenOpen(true)}
+        >
+          <Maximize2 className="size-4" />
+        </button>
         <div className="min-h-[22rem] md:min-h-[34rem]" />
       </div>
 
@@ -221,6 +264,86 @@ export function LotMediaGallery({
           ) : null}
         </div>
       ) : null}
+
+      {isFullscreenOpen && typeof document !== "undefined"
+        ? createPortal(
+          <div
+            aria-label={`${title} preview layar penuh`}
+            aria-modal="true"
+            className="fixed inset-0 z-[180] grid place-items-center bg-[#06120d]/88 p-4 backdrop-blur-md sm:p-6"
+            data-testid="lot-media-fullscreen-dialog"
+            role="dialog"
+            onClick={() => setIsFullscreenOpen(false)}
+          >
+            <button
+              aria-label="Tutup preview media"
+              className="absolute right-4 top-4 z-20 grid size-11 place-items-center rounded-full bg-white text-[#14211b] shadow-[0_18px_46px_rgba(0,0,0,0.18)] transition duration-500 hover:-translate-y-0.5 hover:bg-[#f6f8f6]"
+              type="button"
+              onClick={() => setIsFullscreenOpen(false)}
+            >
+              <X className="size-5" />
+            </button>
+
+            {media.length > 1 ? (
+              <>
+                <button
+                  aria-label="Media sebelumnya"
+                  className="absolute left-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_18px_46px_rgba(0,0,0,0.18)] transition duration-500 hover:-translate-y-[52%] hover:bg-white sm:left-6 sm:size-12"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    showPreviousMedia();
+                  }}
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+                <button
+                  aria-label="Media berikutnya"
+                  className="absolute right-3 top-1/2 z-20 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_18px_46px_rgba(0,0,0,0.18)] transition duration-500 hover:-translate-y-[52%] hover:bg-white sm:right-6 sm:size-12"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    showNextMedia();
+                  }}
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+              </>
+            ) : null}
+
+            <div
+              className="relative flex h-[min(82dvh,calc(100dvh-7rem))] w-full max-w-6xl items-center justify-center overflow-hidden rounded-[1.35rem] bg-black/28 shadow-[0_36px_120px_rgba(0,0,0,0.36)] ring-1 ring-white/12"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {activeMedia.type === "video" ? (
+                <video
+                  aria-label={activeMediaLabel}
+                  className="max-h-full w-full object-contain"
+                  controls
+                  key={activeMedia.id}
+                  playsInline
+                  preload="metadata"
+                  src={activeMedia.url}
+                />
+              ) : (
+                <Image
+                  alt={activeMediaLabel}
+                  fill
+                  className="object-contain"
+                  quality={75}
+                  sizes="100vw"
+                  src={activeMedia.url}
+                />
+              )}
+            </div>
+
+            <p className="mt-4 max-w-[min(92vw,48rem)] truncate text-center text-sm font-semibold text-white/82">
+              {activeMediaLabel}
+            </p>
+          </div>,
+          document.body
+        )
+        : null}
     </div>
   );
 }

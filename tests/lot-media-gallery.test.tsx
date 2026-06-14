@@ -52,4 +52,30 @@ describe("LotMediaGallery", () => {
       within(screen.getByTestId("lot-media-active")).getByRole("img", { name: "Kalung Emas foto 3" })
     ).toBeInTheDocument();
   });
+
+  it("opens the active media in a fullscreen preview", () => {
+    render(
+      <LotMediaGallery
+        category="Perhiasan"
+        title="Kalung Emas"
+        media={[
+          {
+            id: "media-photo-1",
+            type: "foto",
+            url: "/uploads/barang/foto-1.jpg",
+            fileName: "foto-1.jpg"
+          }
+        ]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /buka media layar penuh/i }));
+
+    const dialog = screen.getByRole("dialog", { name: /kalung emas preview layar penuh/i });
+    expect(within(dialog).getByRole("img", { name: "Kalung Emas foto 1" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /tutup preview media/i }));
+
+    expect(screen.queryByRole("dialog", { name: /kalung emas preview layar penuh/i })).not.toBeInTheDocument();
+  });
 });
