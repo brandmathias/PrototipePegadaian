@@ -103,7 +103,6 @@ export function LotDetailPage({
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
   const specificationRows = lot.specs;
-  const fullscreenTriggerId = `lot-media-fullscreen-trigger-${lot.id}`;
   const transactionContext: DetailInfoItem[] = [
     {
       icon: ShoppingCart,
@@ -146,12 +145,10 @@ export function LotDetailPage({
               <LotMediaGallery
                 category={lot.category}
                 className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]"
-                fullscreenTriggerId={fullscreenTriggerId}
                 title={lot.name}
                 media={lot.media}
                 priority
                 showCategoryBadge={false}
-                showInlineFullscreenButton={false}
                 showVideoControls
                 variant="pdp"
               />
@@ -162,7 +159,6 @@ export function LotDetailPage({
               <button
                 aria-label="Perbesar media barang"
                 className="absolute right-5 top-5 grid size-10 place-items-center rounded-full bg-white/[0.94] text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] md:right-6 md:top-6"
-                id={fullscreenTriggerId}
                 type="button"
               >
                 <Maximize2 className="size-4" />
