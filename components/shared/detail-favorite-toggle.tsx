@@ -13,14 +13,6 @@ type DetailFavoriteToggleProps = {
   wishlistSyncEnabled?: boolean;
 };
 
-function getLoginRedirectHref(fallbackPath: string) {
-  const currentPath =
-    typeof window === "undefined" ? "" : `${window.location.pathname}${window.location.search}`;
-  const nextPath = currentPath && currentPath !== "/" ? currentPath : fallbackPath;
-
-  return `/login?next=${encodeURIComponent(nextPath)}`;
-}
-
 export function DetailFavoriteToggle({
   className,
   initialFavorited = false,
@@ -41,13 +33,12 @@ export function DetailFavoriteToggle({
       return;
     }
 
-    if (!wishlistSyncEnabled) {
-      router.push(getLoginRedirectHref(`/katalog/${lotId}`));
-      return;
-    }
-
     const previousFavorited = favorited;
     setFavorited(!previousFavorited);
+
+    if (!wishlistSyncEnabled) {
+      return;
+    }
 
     setPending(true);
 
@@ -55,12 +46,6 @@ export function DetailFavoriteToggle({
       const response = await fetch(`/api/user/wishlist/${lotId}`, {
         method: "POST"
       });
-
-      if (response.status === 401) {
-        setFavorited(previousFavorited);
-        router.push(getLoginRedirectHref(`/katalog/${lotId}`));
-        return;
-      }
 
       if (!response.ok) {
         throw new Error("Failed to sync wishlist");

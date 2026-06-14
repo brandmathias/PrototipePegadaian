@@ -212,14 +212,6 @@ function getPaginationItems(currentPage: number, totalPages: number) {
   return items;
 }
 
-function getLoginRedirectHref(fallbackPath: string) {
-  const currentPath =
-    typeof window === "undefined" ? "" : `${window.location.pathname}${window.location.search}`;
-  const nextPath = currentPath && currentPath !== "/" ? currentPath : fallbackPath;
-
-  return `/login?next=${encodeURIComponent(nextPath)}`;
-}
-
 function FilterSection({
   children,
   title
@@ -772,28 +764,19 @@ export function CatalogPage({
   }, [initialFavoriteIds]);
 
   async function handleToggleFavorite(lotId: string) {
-    if (!wishlistSyncEnabled) {
-      router.push(getLoginRedirectHref("/katalog"));
-      return;
-    }
-
     const wasFavorite = favoriteIds.includes(lotId);
     setFavoriteIds((current) =>
       current.includes(lotId) ? current.filter((item) => item !== lotId) : [...current, lotId]
     );
 
+    if (!wishlistSyncEnabled) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/user/wishlist/${lotId}`, {
         method: "POST"
       });
-
-      if (response.status === 401) {
-        setFavoriteIds((current) =>
-          wasFavorite ? Array.from(new Set([...current, lotId])) : current.filter((item) => item !== lotId)
-        );
-        router.push(getLoginRedirectHref("/katalog"));
-        return;
-      }
 
       if (!response.ok) {
         throw new Error("Wishlist gagal diperbarui.");
