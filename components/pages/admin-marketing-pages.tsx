@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPortal, flushSync } from "react-dom";
-import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, type ReactNode, type SyntheticEvent } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -726,9 +726,23 @@ function isMarketingVideoMedia(media: MarketingMedia | null | undefined) {
   return media.type === "video" || /\.(mp4|mov|webm|mkv)$/i.test(media.url);
 }
 
+function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+    return;
+  }
+
+  try {
+    video.currentTime = Math.min(0.2, video.duration / 4);
+  } catch {
+    // Some browsers block seeking before enough metadata is available.
+  }
+}
+
 function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
   const media = auction.media ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const activeMedia = media[Math.min(activeIndex, Math.max(media.length - 1, 0))] ?? null;
   const activeIsVideo = isMarketingVideoMedia(activeMedia);
 
@@ -750,6 +764,7 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
         <button
           aria-label="Buka preview penuh media barang"
           className="absolute right-5 top-5 z-[2] grid size-9 place-items-center rounded-full bg-white/92 text-[#10231b] shadow-[0_12px_28px_-18px_rgba(8,69,50,0.62)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5"
+          onClick={() => setIsFullscreenOpen(true)}
           type="button"
         >
           <Maximize2 className="size-4" />
@@ -757,7 +772,14 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
         <div className="relative aspect-[16/6.65] w-full overflow-hidden rounded-[0.95rem] bg-[#f6f2eb]">
           {activeMedia ? (
             activeIsVideo ? (
-              <video className="size-full object-cover" muted playsInline preload="metadata" src={activeMedia.url} />
+              <video
+                className="size-full object-cover"
+                muted
+                onLoadedMetadata={revealVideoPreviewFrame}
+                playsInline
+                preload="metadata"
+                src={activeMedia.url}
+              />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img alt={`Preview utama ${auction.lot}`} className="size-full object-cover" src={activeMedia.url} />
@@ -789,7 +811,14 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
                   type="button"
                 >
                   {isVideo ? (
-                    <video className="size-full rounded-[0.6rem] bg-[#0b1d15] object-cover" muted playsInline preload="metadata" src={item.url} />
+                    <video
+                      className="size-full rounded-[0.6rem] bg-[#0b1d15] object-cover"
+                      muted
+                      onLoadedMetadata={revealVideoPreviewFrame}
+                      playsInline
+                      preload="metadata"
+                      src={item.url}
+                    />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img alt={item.fileName || `Media ${index + 1}`} className="size-full rounded-[0.6rem] object-cover" src={item.url} />
@@ -808,6 +837,67 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
           </button>
         </div>
       ) : null}
+
+      {isFullscreenOpen && activeMedia
+        ? createPortal(
+            <div
+              aria-modal="true"
+              className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
+              onClick={() => setIsFullscreenOpen(false)}
+              role="dialog"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
+              <div
+                className="modal-viewport relative z-[141] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
+                  <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                      <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
+                        Media Barang
+                      </p>
+                      <h3 className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]">
+                        {activeMedia.fileName || `Media ${activeIndex + 1}`}
+                      </h3>
+                    </div>
+                    <button
+                      aria-label="Tutup preview media barang"
+                      className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
+                      onClick={() => setIsFullscreenOpen(false)}
+                      type="button"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+
+                  <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                      {activeIsVideo ? (
+                        <video
+                          aria-label="Preview penuh video barang"
+                          className="media-preview-frame w-full bg-[#0d1712] object-contain"
+                          controls
+                          key={activeMedia.id}
+                          playsInline
+                          src={activeMedia.url}
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          alt="Preview penuh media barang"
+                          className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                          src={activeMedia.url}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </section>
   );
 }

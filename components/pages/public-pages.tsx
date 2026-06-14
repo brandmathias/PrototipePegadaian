@@ -6,9 +6,7 @@ import {
   CreditCard,
   Gavel,
   Landmark,
-  Maximize2,
   MapPin,
-  RotateCcw,
   ShieldCheck,
   ShoppingBag,
   ShoppingCart,
@@ -147,6 +145,7 @@ export function LotDetailPage({
           <div className="space-y-6">
             <div className="relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)]">
               <LotMediaGallery
+                allowFullscreen
                 category={lot.category}
                 className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]"
                 title={lot.name}
@@ -156,17 +155,6 @@ export function LotDetailPage({
                 showVideoControls
                 variant="pdp"
               />
-              <div className="pointer-events-none absolute left-5 top-5 inline-flex items-center gap-2 rounded-full bg-white/[0.94] px-4 py-2 text-sm font-semibold text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] backdrop-blur md:left-6 md:top-6">
-                <RotateCcw className="size-4 text-[#075f42]" />
-                360&deg; View
-              </div>
-              <button
-                aria-label="Perbesar media barang"
-                className="absolute right-5 top-5 grid size-10 place-items-center rounded-full bg-white/[0.94] text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] md:right-6 md:top-6"
-                type="button"
-              >
-                <Maximize2 className="size-4" />
-              </button>
             </div>
           </div>
 

@@ -137,7 +137,8 @@ describe("AdminInventoryDetailPage", () => {
       />
     );
 
-    fireEvent.click(screen.getByLabelText(/buka preview penuh media barang/i));
+    expect(screen.queryByText(/360\s*view/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByLabelText(/buka preview penuh media barang/i)[1]);
 
     expect(screen.getByLabelText(/preview penuh video barang/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /tutup preview media barang/i })).toBeInTheDocument();

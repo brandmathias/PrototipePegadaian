@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BadgeCheck,
   BriefcaseBusiness,
@@ -735,6 +735,8 @@ export function CatalogPage({
   wishlistSyncEnabled = false
 }: CatalogPageProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState(initialQuery);
   const [mode, setMode] = useState<SaleMode>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -761,14 +763,17 @@ export function CatalogPage({
   }, [initialFavoriteIds]);
 
   async function handleToggleFavorite(lotId: string) {
+    if (!wishlistSyncEnabled) {
+      const currentQuery = searchParams.toString();
+      const nextPath = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
+      router.push(`/login?next=${encodeURIComponent(nextPath)}`);
+      return;
+    }
+
     const wasFavorite = favoriteIds.includes(lotId);
     setFavoriteIds((current) =>
       current.includes(lotId) ? current.filter((item) => item !== lotId) : [...current, lotId]
     );
-
-    if (!wishlistSyncEnabled) {
-      return;
-    }
 
     try {
       const response = await fetch(`/api/user/wishlist/${lotId}`, {

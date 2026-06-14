@@ -15,7 +15,6 @@ import {
   MonitorSmartphone,
   Package2,
   PackagePlus,
-  PlayCircle,
   Plus,
   UploadCloud,
   X
@@ -286,10 +285,6 @@ function AdminMediaUploadGallery({
                 />
               )}
               <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent_42%,rgba(7,28,20,0.16))]" />
-              <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-white/92 px-3 py-1.5 text-[0.64rem] font-bold text-[#0d573e] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)]">
-                {activeIsVideo ? <PlayCircle className="size-3.5" /> : <UploadCloud className="size-3.5" />}
-                {activeIsVideo ? "Video Preview" : "360 View"}
-              </span>
               <span
                 aria-hidden="true"
                 className="absolute bottom-3 left-3 grid size-9 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)]"

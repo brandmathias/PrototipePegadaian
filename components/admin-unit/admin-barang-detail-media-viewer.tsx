@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
-import { ChevronRight, Expand, Image as ImageIcon, Package2, PlayCircle, X } from "lucide-react";
+import { ChevronRight, Expand, Package2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -125,16 +125,17 @@ export function AdminBarangDetailMediaViewer({
           )}
 
           <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent_42%,rgba(7,28,20,0.18))]" />
-          <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-white/92 px-3 py-1.5 text-[0.64rem] font-bold text-[#0d573e] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)]">
-            {activeIsVideo ? <PlayCircle className="size-3.5" /> : <ImageIcon className="size-3.5" />}
-            {activeIsVideo ? "Video Preview" : "360 View"}
-          </span>
-          <span
-            aria-hidden="true"
-            className="absolute bottom-3 left-3 grid size-9 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)]"
+          <button
+            aria-label="Buka preview penuh media barang"
+            className="absolute right-3 top-3 z-[2] grid size-9 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8]"
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsFullscreenOpen(true);
+            }}
+            type="button"
           >
             <Expand className="size-4" />
-          </span>
+          </button>
 
           {media.length > 1 ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-4 flex items-center justify-center gap-3 text-[0.64rem] font-bold text-[#17633f]">

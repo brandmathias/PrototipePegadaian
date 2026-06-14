@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Image as ImageIcon, PlayCircle } from "lucide-react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
+import { createPortal } from "react-dom";
+import { ChevronRight, Expand, Image as ImageIcon, PlayCircle, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { LotFigure } from "./lot-figure";
@@ -23,6 +24,19 @@ function mediaLabel(item: LotMediaItem, index: number) {
   return `${item.type === "video" ? "Video" : "Foto"} ${index + 1}`;
 }
 
+function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+    return;
+  }
+
+  try {
+    video.currentTime = Math.min(0.2, video.duration / 4);
+  } catch {
+    // Some browsers block seeking before enough metadata is available.
+  }
+}
+
 export function LotMediaGallery({
   category,
   title,
@@ -31,7 +45,8 @@ export function LotMediaGallery({
   priority = false,
   showCategoryBadge = true,
   variant = "default",
-  showVideoControls = true
+  showVideoControls = true,
+  allowFullscreen = false
 }: {
   category: string;
   title: string;
@@ -41,9 +56,11 @@ export function LotMediaGallery({
   showCategoryBadge?: boolean;
   variant?: "default" | "dark" | "pdp";
   showVideoControls?: boolean;
+  allowFullscreen?: boolean;
 }) {
   const initialIndex = useMemo(() => getInitialIndex(media), [media]);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   useEffect(() => {
     setActiveIndex(getInitialIndex(media));
@@ -87,6 +104,7 @@ export function LotMediaGallery({
               key={activeMedia.id}
               loop={!showVideoControls}
               muted
+              onLoadedMetadata={revealVideoPreviewFrame}
               playsInline
               preload={showVideoControls ? "metadata" : "none"}
               src={activeMedia.url}
@@ -122,6 +140,16 @@ export function LotMediaGallery({
             </span>
           ) : null}
         </div>
+        {allowFullscreen ? (
+          <button
+            aria-label="Buka preview penuh media barang"
+            className="absolute right-4 top-4 z-[2] grid size-10 place-items-center rounded-full bg-white/94 text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] sm:right-5 sm:top-5 md:right-6 md:top-6"
+            onClick={() => setIsFullscreenOpen(true)}
+            type="button"
+          >
+            <Expand className="size-4" />
+          </button>
+        ) : null}
         {media.length > 1 && isPdp ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-5 flex items-center justify-center gap-4 text-[0.68rem] font-bold text-[#17633f]">
             <span>{String(activeIndex + 1).padStart(2, "0")}</span>
@@ -178,8 +206,9 @@ export function LotMediaGallery({
                         aria-label={`${title} video ${index + 1}`}
                         className="size-full object-cover"
                         muted
+                        onLoadedMetadata={revealVideoPreviewFrame}
                         playsInline
-                        preload="none"
+                        preload="metadata"
                         src={item.url}
                       />
                     ) : (
@@ -221,6 +250,67 @@ export function LotMediaGallery({
           ) : null}
         </div>
       ) : null}
+
+      {allowFullscreen && isFullscreenOpen
+        ? createPortal(
+            <div
+              aria-modal="true"
+              className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
+              onClick={() => setIsFullscreenOpen(false)}
+              role="dialog"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
+              <div
+                className="modal-viewport relative z-[141] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
+                  <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                      <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
+                        Media Barang
+                      </p>
+                      <h3 className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]">
+                        {mediaLabel(activeMedia, activeIndex)}
+                      </h3>
+                    </div>
+                    <button
+                      aria-label="Tutup preview media barang"
+                      className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
+                      onClick={() => setIsFullscreenOpen(false)}
+                      type="button"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+
+                  <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                      {activeMedia.type === "video" ? (
+                        <video
+                          aria-label={`Preview penuh ${activeMediaLabel}`}
+                          className="media-preview-frame w-full bg-[#0d1712] object-contain"
+                          controls
+                          key={activeMedia.id}
+                          playsInline
+                          src={activeMedia.url}
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          alt={`Preview penuh ${activeMediaLabel}`}
+                          className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                          src={activeMedia.url}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

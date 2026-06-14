@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { SyntheticEvent } from "react";
 import { Gem, Laptop, Car, Coins, Package } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -39,6 +40,19 @@ const categoryMap = {
   }
 } as const;
 
+function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+  if (!Number.isFinite(video.duration) || video.duration <= 0) {
+    return;
+  }
+
+  try {
+    video.currentTime = Math.min(0.2, video.duration / 4);
+  } catch {
+    // Some browsers block seeking before enough metadata is available.
+  }
+}
+
 export function LotFigure({
   category,
   className,
@@ -73,8 +87,9 @@ export function LotFigure({
             controls={showVideoControls}
             loop={false}
             muted
+            onLoadedMetadata={revealVideoPreviewFrame}
             playsInline
-            preload={showVideoControls ? "metadata" : "none"}
+            preload="metadata"
             src={primaryMedia.url}
           />
         ) : (

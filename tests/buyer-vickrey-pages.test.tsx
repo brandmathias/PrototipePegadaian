@@ -3,10 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/katalog/pm-fixed-1",
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn()
   }),
+  useSearchParams: () => new URLSearchParams(""),
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   }
@@ -61,7 +63,14 @@ const fixedPriceLot: Lot = {
   condition: "Baik",
   status: "Tersedia",
   description: "Barang harga tetap siap dibeli.",
-  media: [],
+  media: [
+    {
+      id: "fixed-media-1",
+      type: "foto",
+      url: "/uploads/barang/gelang.jpg",
+      fileName: "gelang.jpg"
+    }
+  ],
   specs: [
     { label: "Jenis Perhiasan", value: "Gelang" },
     { label: "Material", value: "Emas Kuning 24K" },
@@ -98,6 +107,8 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByText(/pembayaran aman/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/harga pasti/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/alur harga tetap/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/360\s*view/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /buka preview penuh media barang/i })).toBeInTheDocument();
   });
 
   it("shows the updated transaction context and category-specific specs in separate white cards", () => {

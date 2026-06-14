@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 
@@ -21,6 +21,8 @@ export function DetailFavoriteToggle({
   wishlistSyncEnabled = false
 }: DetailFavoriteToggleProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [favorited, setFavorited] = useState(initialFavorited);
   const [pending, setPending] = useState(false);
 
@@ -33,12 +35,15 @@ export function DetailFavoriteToggle({
       return;
     }
 
-    const previousFavorited = favorited;
-    setFavorited(!previousFavorited);
-
     if (!wishlistSyncEnabled) {
+      const currentQuery = searchParams.toString();
+      const nextPath = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
+      router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       return;
     }
+
+    const previousFavorited = favorited;
+    setFavorited(!previousFavorited);
 
     setPending(true);
 

@@ -1,19 +1,27 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { vi } from "vitest";
 
 import { CatalogPage } from "@/components/pages/catalog-page";
 import type { Lot } from "@/lib/contracts/catalog";
 
+const router = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn()
+}));
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/katalog",
-  useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn()
-  }),
+  useRouter: () => router,
   useSearchParams: () => new URLSearchParams("")
 }));
 
 describe("CatalogPage", () => {
+  beforeEach(() => {
+    router.push.mockClear();
+    router.refresh.mockClear();
+  });
+
   function makeLot(index: number, overrides: Partial<Lot> = {}): Lot {
     return {
       id: `lot-db-${index}`,
@@ -123,6 +131,14 @@ describe("CatalogPage", () => {
       "Hapus dari disukai"
     );
     expect(screen.getByText("Hapus dari disukai")).toBeInTheDocument();
+  });
+
+  it("redirects guest users to login before saving a catalog item to wishlist", () => {
+    render(<CatalogPage lots={[makeLot(1, { name: "Cincin Guest" })]} wishlistSyncEnabled={false} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sukai cincin guest/i }));
+
+    expect(router.push).toHaveBeenCalledWith("/login?next=%2Fkatalog");
   });
 
   it("renders uploaded lot media instead of the category placeholder when media exists", () => {
