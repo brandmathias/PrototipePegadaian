@@ -1,4 +1,4 @@
-import { UserDashboardPage } from "@/components/pages/user-pages.lazy";
+import { UserDashboardPage } from "@/components/pages/user-pages";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getBuyerDashboardData } from "@/lib/services/buyer.service";
 

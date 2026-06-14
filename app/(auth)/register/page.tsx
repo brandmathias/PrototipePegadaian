@@ -1,4 +1,4 @@
-import { RegisterPage } from "@/components/pages/public-auth-pages";
+import { RegisterPage } from "@/components/pages/public-pages";
 
 export default function Page() {
   return <RegisterPage />;

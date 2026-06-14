@@ -1,4 +1,4 @@
-import { TransactionDetailPage } from "@/components/pages/user-pages.lazy";
+import { TransactionDetailPage } from "@/components/pages/user-pages";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getBuyerProfileStatus, getBuyerTransactionById } from "@/lib/services/buyer.service";
 

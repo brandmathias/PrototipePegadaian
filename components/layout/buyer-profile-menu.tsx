@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -72,11 +71,9 @@ export function BuyerProfileMenu({
       >
         <span className="relative grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
           {image ? (
-            <Image
+            <img
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
-              fill
-              sizes="32px"
               src={image}
             />
           ) : null}
@@ -102,11 +99,9 @@ export function BuyerProfileMenu({
             <div className="flex items-center gap-3">
               <span className="relative grid size-11 place-items-center overflow-hidden rounded-full bg-primary text-xs font-black tracking-[-0.04em] text-white">
                 {image ? (
-                  <Image
+                  <img
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
-                    fill
-                    sizes="44px"
                     src={image}
                   />
                 ) : null}

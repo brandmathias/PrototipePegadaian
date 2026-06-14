@@ -1,4 +1,4 @@
-import { BidVerificationPage } from "@/components/pages/user-pages.lazy";
+import { BidVerificationPage } from "@/components/pages/user-pages";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getBuyerBidVerification } from "@/lib/services/buyer.service";
 
