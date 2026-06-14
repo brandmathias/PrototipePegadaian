@@ -628,8 +628,6 @@ function WishlistCard({
           initialStats={item.lot.insights}
           lotId={item.lot.id}
           mode={item.lot.mode}
-          pollIntervalMs={0}
-          refreshOnMount={false}
         />
 
         <div className="mt-3 grid content-start gap-2.5">

@@ -1,14 +1,10 @@
 import { and, asc, desc, eq, gt, inArray, isNull, lte, ne, notExists, or } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializePublicLot } from "@/lib/buyer/serializers";
 import { db } from "@/lib/db/client";
 import { barang, mediaBarang, pemasaran, transaksi, unitAccounts, units } from "@/lib/db/schema";
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
-
-export const PUBLIC_CATALOG_CACHE_TAG = "public-catalog";
-export const PUBLIC_CATALOG_REVALIDATE_SECONDS = 60;
 
 function publicLotSelection() {
   return {
@@ -94,7 +90,7 @@ export async function listPublicLots() {
   return listPublicLotsWithLimit();
 }
 
-async function listPublicLotsWithLimitUncached(limit?: number) {
+export async function listPublicLotsWithLimit(limit?: number) {
   const baseQuery = db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -125,19 +121,6 @@ async function listPublicLotsWithLimitUncached(limit?: number) {
       media: mediaByBarangId.get(row.itemId) ?? []
     })
   );
-}
-
-const getCachedPublicLots = unstable_cache(
-  async (limit?: number) => listPublicLotsWithLimitUncached(limit),
-  ["public-catalog-lots"],
-  {
-    revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
-    tags: [PUBLIC_CATALOG_CACHE_TAG]
-  }
-);
-
-export async function listPublicLotsWithLimit(limit?: number) {
-  return getCachedPublicLots(limit);
 }
 
 export async function listOngoingVickreyLotsWithLimit(limit?: number) {
@@ -176,7 +159,7 @@ export async function listOngoingVickreyLotsWithLimit(limit?: number) {
   );
 }
 
-async function getPublicLotByIdUncached(pemasaranId: string) {
+export async function getPublicLotById(pemasaranId: string) {
   const [row] = await db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -208,17 +191,4 @@ async function getPublicLotByIdUncached(pemasaranId: string) {
     insights: statsByMarketingId.get(row.marketingId),
     media: mediaByBarangId.get(row.itemId) ?? []
   });
-}
-
-const getCachedPublicLotById = unstable_cache(
-  async (pemasaranId: string) => getPublicLotByIdUncached(pemasaranId),
-  ["public-catalog-lot-detail"],
-  {
-    revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS,
-    tags: [PUBLIC_CATALOG_CACHE_TAG]
-  }
-);
-
-export async function getPublicLotById(pemasaranId: string) {
-  return getCachedPublicLotById(pemasaranId);
 }

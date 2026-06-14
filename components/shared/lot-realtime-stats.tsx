@@ -24,7 +24,6 @@ type LotRealtimeStatsProps = {
   lotId: string;
   mode: AuctionMode;
   pollIntervalMs?: number;
-  refreshOnMount?: boolean;
   separatorClassName?: string;
   showFixedStatus?: boolean;
   showSeparators?: boolean;
@@ -92,7 +91,6 @@ export function LotRealtimeStats({
   lotId,
   mode,
   pollIntervalMs = 15000,
-  refreshOnMount = true,
   separatorClassName,
   showFixedStatus = false,
   showSeparators = false,
@@ -137,21 +135,13 @@ export function LotRealtimeStats({
   useEffect(() => {
     let mounted = true;
 
-    if (refreshOnMount || trackView) {
-      void refreshStats(trackView ? "POST" : "GET")
-        .then((nextStats) => {
-          if (mounted && nextStats) {
-            setStats(nextStats);
-          }
-        })
-        .catch(() => undefined);
-    }
-
-    if (pollIntervalMs <= 0) {
-      return () => {
-        mounted = false;
-      };
-    }
+    void refreshStats(trackView ? "POST" : "GET")
+      .then((nextStats) => {
+        if (mounted && nextStats) {
+          setStats(nextStats);
+        }
+      })
+      .catch(() => undefined);
 
     const intervalId = window.setInterval(() => {
       void refreshStats("GET")
@@ -167,7 +157,7 @@ export function LotRealtimeStats({
       mounted = false;
       window.clearInterval(intervalId);
     };
-  }, [pollIntervalMs, refreshOnMount, refreshStats, trackView]);
+  }, [pollIntervalMs, refreshStats, trackView]);
 
   useEffect(() => {
     function handleRefresh(event: Event) {
