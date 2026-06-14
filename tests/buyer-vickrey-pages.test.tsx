@@ -14,14 +14,14 @@ vi.mock("next/navigation", () => ({
   }
 }));
 
-import { BidPage, LotDetailPage } from "@/components/pages/public-pages";
+import { BidPage } from "@/components/pages/public-bid-page";
+import { LotDetailPage } from "@/components/pages/public-pages";
 import { PurchasePage } from "@/components/pages/public-purchase-page";
 import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
 import { AuctionLoserPage, AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
-import { currency } from "@/lib/formatters/currency";
 
 const buyer: BuyerSessionUser = {
   id: "buyer-1",
@@ -155,31 +155,23 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
   });
 
-  it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {
-    const user = userEvent.setup();
-
+  it("links lot detail auction entry to the dedicated bid page without loading the sealed bid popup", () => {
     render(<LotDetailPage bidState={null} buyerId="buyer-1" buyerStatus={null} lot={vickreyLot} />);
 
-    expect(screen.queryByRole("link", { name: /ikut lelang/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ikut lelang/i })).toHaveAttribute(
+      "href",
+      "/katalog/pm-vickrey-1/bid"
+    );
+    expect(screen.queryByRole("dialog", { name: /syarat & ketentuan penawaran/i })).not.toBeInTheDocument();
+  });
 
-    const auctionButton = screen.getByRole("button", { name: /ikut lelang/i });
-    await user.click(auctionButton);
+  it("links guest lot detail auction entry to login before the bid page", () => {
+    render(<LotDetailPage bidState={null} buyerStatus={null} lot={vickreyLot} />);
 
-    const dialog = screen.getByRole("dialog", { name: /syarat & ketentuan penawaran/i });
-    expect(dialog).toBeInTheDocument();
-
-    const bidInput = within(dialog).getByLabelText(/nominal penawaran/i);
-    const restrictionHeading = within(dialog).getByText(/level pembatasan jika pembayaran gagal/i);
-    const bidInputLabel = within(dialog).getByText("Nominal penawaran", { selector: "label" });
-    const formattedBasePrice = currency.format(vickreyLot.price).replace(/\u00a0/g, " ");
-    expect(restrictionHeading.compareDocumentPosition(bidInputLabel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(bidInput).toHaveValue(vickreyLot.price);
-    expect(
-      within(dialog).getByText((text) => text.replace(/\u00a0/g, " ") === `Harga dasar ${formattedBasePrice}`)
-    ).toBeInTheDocument();
-    expect(
-      within(dialog).getByText((text) => text.replace(/\u00a0/g, " ") === formattedBasePrice)
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /ikut lelang/i })).toHaveAttribute(
+      "href",
+      "/login?next=%2Fkatalog%2Fpm-vickrey-1%2Fbid"
+    );
   });
 
   it.each([

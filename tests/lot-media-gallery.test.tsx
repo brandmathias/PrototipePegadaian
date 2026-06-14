@@ -108,4 +108,41 @@ describe("LotMediaGallery", () => {
 
     expect(screen.getByRole("dialog", { name: /kalung emas preview layar penuh/i })).toBeInTheDocument();
   });
+
+  it("uses compact mobile sizes for product detail thumbnails", () => {
+    render(
+      <LotMediaGallery
+        category="Perhiasan"
+        title="Kalung Emas"
+        variant="pdp"
+        media={[
+          {
+            id: "media-photo-1",
+            type: "foto",
+            url: "/uploads/barang/foto-1.jpg",
+            fileName: "foto-1.jpg"
+          },
+          {
+            id: "media-photo-2",
+            type: "foto",
+            url: "/uploads/barang/foto-2.jpg",
+            fileName: "foto-2.jpg"
+          },
+          {
+            id: "media-photo-3",
+            type: "foto",
+            url: "/uploads/barang/foto-3.jpg",
+            fileName: "foto-3.jpg"
+          }
+        ]}
+      />
+    );
+
+    const secondThumbnail = screen.getByRole("button", { name: /lihat foto 2/i }).querySelector("img");
+
+    expect(secondThumbnail).toHaveAttribute(
+      "sizes",
+      "(min-width: 1280px) 9vw, (min-width: 640px) 18vw, 30vw"
+    );
+  });
 });

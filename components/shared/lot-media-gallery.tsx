@@ -115,6 +115,9 @@ export function LotMediaGallery({
   const activeMediaLabel = `${title} ${activeMedia.type === "video" ? "video" : "foto"} ${activeIndex + 1}`;
   const isPdp = variant === "pdp";
   const progressScale = media.length > 1 ? (activeIndex + 1) / media.length : 1;
+  const thumbnailSizes = isPdp
+    ? "(min-width: 1280px) 9vw, (min-width: 640px) 18vw, 30vw"
+    : "(min-width: 1280px) 18vw, (min-width: 640px) 45vw, 33vw";
   const showPreviousMedia = () => setActiveIndex((current) => (current - 1 + media.length) % media.length);
   const showNextMedia = () => setActiveIndex((current) => (current + 1) % media.length);
 
@@ -253,8 +256,10 @@ export function LotMediaGallery({
                         alt={`${title} foto ${index + 1}`}
                         fill
                         className="object-cover transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.025]"
+                        decoding="async"
+                        loading="lazy"
                         quality={60}
-                        sizes="(min-width: 1280px) 18vw, (min-width: 640px) 45vw, 100vw"
+                        sizes={thumbnailSizes}
                         src={item.url}
                       />
                     )}
