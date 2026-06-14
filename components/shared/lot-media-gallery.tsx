@@ -29,8 +29,10 @@ export function LotMediaGallery({
   title,
   media,
   className,
+  fullscreenTriggerId,
   priority = false,
   showCategoryBadge = true,
+  showInlineFullscreenButton = true,
   variant = "default",
   showVideoControls = true
 }: {
@@ -38,8 +40,10 @@ export function LotMediaGallery({
   title: string;
   media: LotMediaItem[];
   className?: string;
+  fullscreenTriggerId?: string;
   priority?: boolean;
   showCategoryBadge?: boolean;
+  showInlineFullscreenButton?: boolean;
   variant?: "default" | "dark" | "pdp";
   showVideoControls?: boolean;
 }) {
@@ -50,6 +54,23 @@ export function LotMediaGallery({
   useEffect(() => {
     setActiveIndex(getInitialIndex(media));
   }, [media]);
+
+  useEffect(() => {
+    if (!fullscreenTriggerId) return;
+
+    const trigger = document.getElementById(fullscreenTriggerId);
+    if (!trigger) return;
+
+    function handleTriggerClick() {
+      setIsFullscreenOpen(true);
+    }
+
+    trigger.addEventListener("click", handleTriggerClick);
+
+    return () => {
+      trigger.removeEventListener("click", handleTriggerClick);
+    };
+  }, [fullscreenTriggerId]);
 
   useEffect(() => {
     if (!isFullscreenOpen) return;
@@ -166,17 +187,19 @@ export function LotMediaGallery({
             <span>{String(media.length).padStart(2, "0")}</span>
           </div>
         ) : null}
-        <button
-          aria-label="Buka media layar penuh"
-          className={cn(
-            "absolute bottom-4 right-4 z-10 grid size-11 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_16px_36px_rgba(8,69,50,0.16)] backdrop-blur transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white",
-            variant === "dark" && "bg-white/16 text-white ring-1 ring-white/18 hover:bg-white/24"
-          )}
-          type="button"
-          onClick={() => setIsFullscreenOpen(true)}
-        >
-          <Maximize2 className="size-4" />
-        </button>
+        {showInlineFullscreenButton ? (
+          <button
+            aria-label="Buka media layar penuh"
+            className={cn(
+              "absolute right-4 top-4 z-10 grid size-11 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_16px_36px_rgba(8,69,50,0.16)] backdrop-blur transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white",
+              variant === "dark" && "bg-white/16 text-white ring-1 ring-white/18 hover:bg-white/24"
+            )}
+            type="button"
+            onClick={() => setIsFullscreenOpen(true)}
+          >
+            <Maximize2 className="size-4" />
+          </button>
+        ) : null}
         <div className="min-h-[22rem] md:min-h-[34rem]" />
       </div>
 

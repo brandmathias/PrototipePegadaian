@@ -78,4 +78,34 @@ describe("LotMediaGallery", () => {
 
     expect(screen.queryByRole("dialog", { name: /kalung emas preview layar penuh/i })).not.toBeInTheDocument();
   });
+
+  it("can open fullscreen from an existing external trigger", () => {
+    render(
+      <>
+        <LotMediaGallery
+          category="Perhiasan"
+          fullscreenTriggerId="existing-fullscreen-trigger"
+          showInlineFullscreenButton={false}
+          title="Kalung Emas"
+          media={[
+            {
+              id: "media-photo-1",
+              type: "foto",
+              url: "/uploads/barang/foto-1.jpg",
+              fileName: "foto-1.jpg"
+            }
+          ]}
+        />
+        <button id="existing-fullscreen-trigger" type="button">
+          Perbesar media barang
+        </button>
+      </>
+    );
+
+    expect(screen.queryByRole("button", { name: /buka media layar penuh/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /perbesar media barang/i }));
+
+    expect(screen.getByRole("dialog", { name: /kalung emas preview layar penuh/i })).toBeInTheDocument();
+  });
 });
