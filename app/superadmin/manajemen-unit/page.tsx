@@ -1,4 +1,4 @@
-import { SuperAdminManagementPage } from "@/components/pages/superadmin-pages";
+import { SuperAdminManagementPage } from "@/components/pages/superadmin-pages.lazy";
 import { listAdminUnits } from "@/lib/services/admin-unit.service";
 import { listUnits } from "@/lib/services/unit.service";
 

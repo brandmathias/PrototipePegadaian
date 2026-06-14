@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { AdminMarketingUnifiedPage } from "@/components/pages/admin-marketing-pages";
+import { AdminMarketingUnifiedPage } from "@/components/pages/admin-marketing-pages.lazy";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { db } from "@/lib/db/client";
 import { units } from "@/lib/db/schema";

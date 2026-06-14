@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 
-import { AdminProfilePage } from "@/components/pages/admin-pages";
+import { AdminProfilePage } from "@/components/pages/admin-pages.lazy";
 import { getAdminSessionUser, getAppPathFromRequestHeaders } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { accounts, sessions, units, users } from "@/lib/db/schema";

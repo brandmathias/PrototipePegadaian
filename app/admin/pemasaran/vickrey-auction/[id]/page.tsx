@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { AdminVickreyAuctionDetailPage } from "@/components/pages/admin-marketing-pages";
+import { AdminVickreyAuctionDetailPage } from "@/components/pages/admin-marketing-pages.lazy";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
 

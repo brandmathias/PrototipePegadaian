@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  experimental: {
+    optimizePackageImports: ["lucide-react"]
+  },
   images: {
     deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536],
     formats: ["image/avif", "image/webp"],

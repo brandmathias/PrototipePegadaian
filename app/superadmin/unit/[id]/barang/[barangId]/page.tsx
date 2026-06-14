@@ -1,4 +1,4 @@
-import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-pages";
+import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-pages.lazy";
 import { getSuperAdminUnitBarangDetail } from "@/lib/services/unit.service";
 
 export default async function Page({

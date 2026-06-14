@@ -1,4 +1,4 @@
-import { AdminInventoryPage } from "@/components/pages/admin-pages";
+import { AdminInventoryPage } from "@/components/pages/admin-pages.lazy";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { listAdminBarang } from "@/lib/services/admin-barang.service";
 

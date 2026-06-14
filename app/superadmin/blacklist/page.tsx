@@ -1,4 +1,4 @@
-import { SuperAdminBlacklistPage } from "@/components/pages/superadmin-pages";
+import { SuperAdminBlacklistPage } from "@/components/pages/superadmin-pages.lazy";
 import { listBlacklists } from "@/lib/services/blacklist.service";
 
 export const dynamic = "force-dynamic";

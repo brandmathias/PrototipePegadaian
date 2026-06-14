@@ -1,4 +1,4 @@
-import { SuperAdminUnitDetailPage } from "@/components/pages/superadmin-pages";
+import { SuperAdminUnitDetailPage } from "@/components/pages/superadmin-pages.lazy";
 import { getUnitById } from "@/lib/services/unit.service";
 
 export default async function Page({

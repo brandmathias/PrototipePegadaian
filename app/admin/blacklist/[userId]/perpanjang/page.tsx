@@ -1,4 +1,4 @@
-import { AdminBlacklistExtendPage } from "@/components/pages/admin-pages";
+import { AdminBlacklistExtendPage } from "@/components/pages/admin-pages.lazy";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { getAdminBlacklistByUserId } from "@/lib/services/admin-blacklist.service";
 

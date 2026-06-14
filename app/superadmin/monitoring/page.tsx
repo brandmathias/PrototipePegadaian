@@ -1,4 +1,4 @@
-import { SuperAdminMonitoringPage } from "@/components/pages/superadmin-pages";
+import { SuperAdminMonitoringPage } from "@/components/pages/superadmin-pages.lazy";
 import { getSuperAdminMonitoring } from "@/lib/services/monitoring.service";
 
 export default async function Page() {

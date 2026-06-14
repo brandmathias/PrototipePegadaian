@@ -1,4 +1,4 @@
-import { AdminFixedPriceListPage } from "@/components/pages/admin-marketing-pages";
+import { AdminFixedPriceListPage } from "@/components/pages/admin-marketing-pages.lazy";
 import { getAdminUnitPageContext } from "@/lib/admin-unit/page-context";
 import { listAdminPemasaran } from "@/lib/services/admin-pemasaran.service";
 
