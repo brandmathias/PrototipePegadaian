@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { Gavel, Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
+import { DeferredAlertCenter } from "@/components/layout/lazy-alert-center";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
-import { AlertCenter } from "@/components/ui/alert-center";
 import { cn } from "@/lib/utils";
 
 type BuyerTopNavProps = {
@@ -116,7 +116,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
             submitLabel="Telusuri"
             wrapperClassName="hidden lg:block"
           />
-          <AlertCenter className="shrink-0" scope="buyer" />
+          <DeferredAlertCenter className="shrink-0" scope="buyer" />
           <Link
             aria-label={
               wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"

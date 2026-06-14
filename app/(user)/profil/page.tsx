@@ -1,4 +1,4 @@
-import { ProfilePage } from "@/components/pages/user-pages";
+import { ProfilePage } from "@/components/pages/user-pages.lazy";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getBuyerSummary } from "@/lib/services/buyer.service";
 

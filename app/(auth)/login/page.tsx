@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { LoginPage } from "@/components/pages/public-pages";
+import { LoginPage } from "@/components/pages/public-auth-pages";
 import { getAuthenticatedLoginRedirectPath } from "@/lib/auth/guards";
 import { getServerSession } from "@/lib/auth/session";
 

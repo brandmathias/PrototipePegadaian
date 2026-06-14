@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { AuctionWinnerPage } from "@/components/pages/user-pages";
+import { AuctionWinnerPage } from "@/components/pages/user-pages.lazy";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { isBuyerWinnerAnnouncementTransaction } from "@/lib/buyer/transaction-links";
 import { getBuyerTransactionById } from "@/lib/services/buyer.service";

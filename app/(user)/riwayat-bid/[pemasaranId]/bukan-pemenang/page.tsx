@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
-import { AuctionLoserPage } from "@/components/pages/user-pages";
+import { AuctionLoserPage } from "@/components/pages/user-pages.lazy";
 import { getBuyerTransactionHref } from "@/lib/buyer/transaction-links";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { listBuyerBids } from "@/lib/services/buyer.service";
