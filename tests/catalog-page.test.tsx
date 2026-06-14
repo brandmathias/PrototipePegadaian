@@ -22,10 +22,6 @@ describe("CatalogPage", () => {
     window.history.pushState({}, "", "/");
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   function makeLot(index: number, overrides: Partial<Lot> = {}): Lot {
     return {
       id: `lot-db-${index}`,
@@ -188,39 +184,6 @@ describe("CatalogPage", () => {
     expect(screen.getByRole("img", { name: "Emas & Perhiasan foto utama" }).getAttribute("src")).toContain(
       "%2Fuploads%2Fbarang%2Fkalung.jpg"
     );
-  });
-
-  it("renders catalog stats without registering per-card realtime listeners", () => {
-    const addEventListenerSpy = vi.spyOn(window, "addEventListener");
-
-    const { container } = render(
-      <CatalogPage
-        lots={[
-          makeLot(1, {
-            insights: {
-              likes: 5,
-              participants: 0,
-              views: 18
-            }
-          }),
-          makeLot(2, {
-            insights: {
-              likes: 9,
-              participants: 4,
-              views: 24
-            }
-          })
-        ]}
-      />
-    );
-
-    expect(screen.getByText("18x")).toBeInTheDocument();
-    expect(screen.getByText("24x")).toBeInTheDocument();
-    expect(addEventListenerSpy).not.toHaveBeenCalledWith(
-      "pegadaian:lot-stats-refresh",
-      expect.any(Function)
-    );
-    expect(container.querySelectorAll(".catalog-lot-card")).toHaveLength(2);
   });
 
   it("filters catalog items with the incoming buyer search query and visual mode controls", () => {

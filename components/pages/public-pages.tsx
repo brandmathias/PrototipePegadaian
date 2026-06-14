@@ -16,9 +16,11 @@ import {
 
 import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
+import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
 import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
+import { SectionHeading } from "@/components/shared/section-heading";
 import { Button } from "@/components/ui/button";
 import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid } from "@/lib/contracts/buyer";
@@ -298,19 +300,18 @@ export function LotDetailPage({
                       Lelang Sedang Dibatasi
                     </Button>
                   ) : (
-                    <Link
-                      className="flex-1"
-                      href={
-                        buyerId
-                          ? `/katalog/${lot.id}/bid`
-                          : `/login?next=${encodeURIComponent(`/katalog/${lot.id}/bid`)}`
-                      }
-                    >
-                      <Button className="h-10 w-full rounded-md text-sm font-black" variant="default">
-                        Ikut Lelang
-                        <Gavel className="size-4" />
-                      </Button>
-                    </Link>
+                    <div className="flex-1">
+                      <VickreyBidForm
+                        buyerId={buyerId}
+                        blacklistUntil={buyerStatus?.blacklist.until ?? null}
+                        blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
+                        isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
+                        lot={lot}
+                        triggerClassName="h-10 w-full rounded-md text-sm font-black"
+                        triggerLabel="Ikut Lelang"
+                        variant="trigger"
+                      />
+                    </div>
                   )
                 ) : isActionBlocked ? (
                   <Button
@@ -395,6 +396,47 @@ export function LotDetailPage({
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+export function BidPage({
+  lot,
+  bidState,
+  buyerId,
+  buyerStatus = null
+}: {
+  lot: Lot | null;
+  bidState: BuyerBid | null;
+  buyerId?: string | null;
+  buyerStatus?: BuyerPublicStatus;
+}) {
+  if (!lot) notFound();
+  const serverNow = new Date().toISOString();
+
+  return (
+    <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
+      <SectionHeading
+        action={
+          <Link href={`/katalog/${lot.id}`}>
+            <Button variant="secondary">Kembali ke Detail Lelang</Button>
+          </Link>
+        }
+        description="Masukkan bid tertutup dengan nominal minimal sama dengan harga dasar. Hasil lelang baru dibuka sistem setelah sesi berakhir."
+        eyebrow="Bid Tertutup"
+        title="Kirim penawaran untuk sesi Lelang Tertutup"
+      />
+      <VickreyBidForm
+        buyerId={buyerId}
+        existingBidAmount={bidState?.bidAmount}
+        existingBidStatus={bidState?.status}
+        hasExistingBid={Boolean(bidState)}
+        isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
+        blacklistUntil={buyerStatus?.blacklist.until ?? null}
+        blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
+        lot={lot}
+        serverNow={serverNow}
+      />
     </div>
   );
 }

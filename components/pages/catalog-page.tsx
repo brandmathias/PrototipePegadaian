@@ -12,11 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Cpu,
-  Eye,
   Gem,
   Gavel,
   Grid3X3,
-  Heart,
   LayoutList,
   MapPin,
   Medal,
@@ -28,7 +26,6 @@ import {
   SlidersHorizontal,
   Tag,
   Timer,
-  UsersRound,
   X
 } from "lucide-react";
 
@@ -36,6 +33,7 @@ import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 import { LotFigure } from "@/components/shared/lot-figure";
+import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
 import type { CountdownState } from "@/lib/countdown";
@@ -166,8 +164,6 @@ function getLotInsights(lot: Lot) {
     views: lot.insights?.views ?? 0
   };
 }
-
-type CatalogInsightSummary = ReturnType<typeof getLotInsights>;
 
 function getCategoryIcon(category: string) {
   const normalized = normalize(category);
@@ -505,60 +501,14 @@ function PriceRangeControl({
   );
 }
 
-function CatalogStaticStats({
-  insights,
-  mode
-}: {
-  insights: CatalogInsightSummary;
-  mode: Lot["mode"];
-}) {
-  const items = [
-    {
-      icon: Eye,
-      label: "Dilihat",
-      value: `${getCountLabel(insights.views)}x`
-    },
-    {
-      icon: Heart,
-      label: "Suka",
-      value: getCountLabel(insights.likes)
-    },
-    mode === "vickrey"
-      ? {
-          icon: UsersRound,
-          label: "Peserta",
-          value: getCountLabel(insights.followers)
-        }
-      : null
-  ].filter(Boolean) as Array<{ icon: typeof Eye; label: string; value: string }>;
-
-  return (
-    <div className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56">
-      {items.map((item) => {
-        const Icon = item.icon;
-
-        return (
-          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap" key={item.label}>
-            <Icon className="size-3.5" />
-            <span>{item.label}</span>
-            <span>{item.value}</span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 function CatalogLotCard({
   favorite,
-  insights,
   lot,
   serverNow,
   viewMode,
   onToggleFavorite
 }: {
   favorite: boolean;
-  insights: CatalogInsightSummary;
   lot: Lot;
   serverNow?: string;
   viewMode: ViewMode;
@@ -600,7 +550,7 @@ function CatalogLotCard({
   return (
     <article
       className={cn(
-        "catalog-lot-card group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
+        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
         viewMode === "list" && "lg:grid lg:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] lg:gap-0"
       )}
     >
@@ -643,7 +593,14 @@ function CatalogLotCard({
           ))}
         </div>
 
-        <CatalogStaticStats insights={insights} mode={lot.mode} />
+        <LotRealtimeStats
+          className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56"
+          initialStats={lot.insights}
+          lotId={lot.id}
+          mode={lot.mode}
+          pollIntervalMs={0}
+          refreshOnMount={false}
+        />
 
         <div className="mt-3 grid content-start gap-2.5">
           <div className={cn("grid items-start gap-2.5", showAuctionCountdown ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1")}>
@@ -866,24 +823,14 @@ export function CatalogPage({
     [initialLots]
   );
 
-  const favoriteIdSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
-  const selectedCategorySet = useMemo(() => new Set(selectedCategories), [selectedCategories]);
-  const selectedConditionSet = useMemo(() => new Set(selectedConditions), [selectedConditions]);
-  const selectedUnitSet = useMemo(() => new Set(selectedUnits), [selectedUnits]);
-
-  const modeCounts = useMemo(() => {
-    const counts = {
+  const modeCounts = useMemo(
+    () => ({
       all: initialLots.length,
-      fixed_price: 0,
-      vickrey: 0
-    };
-
-    initialLots.forEach((lot) => {
-      counts[lot.mode] += 1;
-    });
-
-    return counts;
-  }, [initialLots]);
+      fixed_price: initialLots.filter((lot) => lot.mode === "fixed_price").length,
+      vickrey: initialLots.filter((lot) => lot.mode === "vickrey").length
+    }),
+    [initialLots]
+  );
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
@@ -919,9 +866,9 @@ export function CatalogPage({
 
     const filtered = lotsWithInsights.filter(({ lot }) => {
       if (mode !== "all" && lot.mode !== mode) return false;
-      if (selectedCategorySet.size > 0 && !selectedCategorySet.has(lot.category)) return false;
-      if (selectedConditionSet.size > 0 && !selectedConditionSet.has(titleCase(lot.condition))) return false;
-      if (selectedUnitSet.size > 0 && !selectedUnitSet.has(lot.unitName)) return false;
+      if (selectedCategories.length > 0 && !selectedCategories.includes(lot.category)) return false;
+      if (selectedConditions.length > 0 && !selectedConditions.includes(titleCase(lot.condition))) return false;
+      if (selectedUnits.length > 0 && !selectedUnits.includes(lot.unitName)) return false;
       if (parsedMinPrice !== null && Number.isFinite(parsedMinPrice) && lot.price < parsedMinPrice) return false;
       if (parsedMaxPrice !== null && Number.isFinite(parsedMaxPrice) && lot.price > parsedMaxPrice) return false;
 
@@ -968,9 +915,9 @@ export function CatalogPage({
     maxPrice,
     minPrice,
     mode,
-    selectedCategorySet,
-    selectedConditionSet,
-    selectedUnitSet,
+    selectedCategories,
+    selectedConditions,
+    selectedUnits,
     sortBy
   ]);
 
@@ -1326,10 +1273,9 @@ export function CatalogPage({
                     viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
                   )}
                 >
-                  {visibleLots.map(({ insights, lot }) => (
+                  {visibleLots.map(({ lot }) => (
                     <CatalogLotCard
-                      favorite={favoriteIdSet.has(lot.id)}
-                      insights={insights}
+                      favorite={favoriteIds.includes(lot.id)}
                       key={lot.id}
                       lot={lot}
                       serverNow={serverNow}

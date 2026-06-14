@@ -2998,11 +2998,6 @@
   color: rgba(138, 240, 190, 0.72);
 }
 
-.catalog-lot-card {
-  contain-intrinsic-size: 36rem;
-  content-visibility: auto;
-}
-
 .catalog-range input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
