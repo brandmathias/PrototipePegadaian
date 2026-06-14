@@ -53,7 +53,7 @@ type SaleMode = "all" | "fixed_price" | "vickrey";
 type SortMode = "latest" | "popular" | "lowest" | "highest" | "ending";
 type ViewMode = "grid" | "list";
 
-const HERO_BACKGROUND = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
+const HERO_BACKGROUND = "/uploads/Hero%20Section%20Katalog%20Buyer.webp";
 const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 const EMPTY_FAVORITE_IDS: string[] = [];
 const idNumberFormatter = new Intl.NumberFormat("id-ID");
@@ -590,6 +590,8 @@ function CatalogLotCard({
           initialStats={lot.insights}
           lotId={lot.id}
           mode={lot.mode}
+          pollIntervalMs={0}
+          refreshOnMount={false}
         />
 
         <div className="mt-3 grid content-start gap-2.5">

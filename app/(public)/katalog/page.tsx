@@ -11,13 +11,13 @@ export default async function Page({
 }: {
   searchParams?: Promise<{ q?: string }>;
 }) {
-  const session = await getServerSession();
+  const sessionPromise = getServerSession();
+  const lotsPromise = listPublicLots();
+  const queryPromise = searchParams ?? Promise.resolve(undefined);
+
+  const [session, lots, query] = await Promise.all([sessionPromise, lotsPromise, queryPromise]);
   const isBuyer = Boolean(session?.user && isAuthRole(session.user.role) && session.user.role === "buyer");
-  const [lots, favoriteIds] = await Promise.all([
-    listPublicLots(),
-    isBuyer && session?.user ? getBuyerWishlistIds(session.user.id) : Promise.resolve([])
-  ]);
-  const query = searchParams ? await searchParams : undefined;
+  const favoriteIds = isBuyer && session?.user ? await getBuyerWishlistIds(session.user.id) : [];
 
   return (
     <CatalogPage

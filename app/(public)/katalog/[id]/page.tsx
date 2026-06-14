@@ -12,8 +12,9 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lot = await getPublicLotById(id);
-  const session = await getServerSession();
+  const lotPromise = getPublicLotById(id);
+  const sessionPromise = getServerSession();
+  const [lot, session] = await Promise.all([lotPromise, sessionPromise]);
   const isBuyer = session?.user?.role === "buyer";
   const [bidState, buyerStatus, favoriteIds] =
     isBuyer && session?.user?.id
