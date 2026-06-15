@@ -18,7 +18,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
-import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
+import { BRAND_NAME, BrandLockup, BrandMark } from "@/components/shared/brand";
 import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
@@ -76,13 +76,9 @@ function AuthBrandCluster({
   if (mode === "hero") {
     return (
       <div className="relative inline-flex flex-col gap-4">
-        <div className="pointer-events-none absolute -left-8 -right-20 top-1/2 h-20 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,240,224,0.46),rgba(247,240,224,0.18)_42%,transparent_76%)] blur-3xl" />
-        <div className="pointer-events-none absolute -left-3 top-1 h-10 w-32 bg-[linear-gradient(90deg,rgba(240,210,135,0.58),transparent)] blur-2xl" />
-        <BrandLockup
-          className="relative z-[1] max-w-full drop-shadow-[0_18px_30px_rgba(0,0,0,0.36)]"
-          markClassName="size-9 sm:size-10"
-          nameClassName="h-8 max-w-[14.5rem] brightness-[1.05] contrast-[1.06] sm:h-9 sm:max-w-[16rem]"
-        />
+        <div className="pointer-events-none absolute -left-7 top-1/2 h-20 w-20 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,240,224,0.46),rgba(247,240,224,0.18)_42%,transparent_76%)] blur-3xl" />
+        <div className="pointer-events-none absolute -left-2 top-1 h-10 w-20 bg-[linear-gradient(90deg,rgba(240,210,135,0.58),transparent)] blur-2xl" />
+        <BrandMark className="relative z-[1] size-10 drop-shadow-[0_18px_30px_rgba(0,0,0,0.36)] sm:size-11" />
         {accentLabel ? (
           <div className="relative z-[1] flex items-center gap-3 pl-1">
             <span className="h-px w-11 bg-[linear-gradient(90deg,rgba(240,210,135,0.88),rgba(240,210,135,0.18),transparent)]" />
@@ -91,7 +87,7 @@ function AuthBrandCluster({
             </span>
           </div>
         ) : (
-          <span className="relative z-[1] ml-1 h-px w-32 bg-[linear-gradient(90deg,rgba(240,210,135,0.88),rgba(240,210,135,0.26),transparent)]" />
+          <span className="relative z-[1] ml-1 h-px w-16 bg-[linear-gradient(90deg,rgba(240,210,135,0.88),rgba(240,210,135,0.26),transparent)]" />
         )}
       </div>
     );
