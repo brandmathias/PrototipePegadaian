@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { metadata } from "@/app/layout";
+import { metadata, resolvePublicSiteUrl } from "@/app/layout";
 
 describe("app metadata", () => {
   it("uses non-technical share copy and includes share images", () => {
@@ -25,5 +25,37 @@ describe("app metadata", () => {
         })
       ])
     );
+  });
+
+  it("falls back to the public domain when environment urls point to localhost", () => {
+    const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const originalSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    const originalBetterAuthUrl = process.env.BETTER_AUTH_URL;
+
+    try {
+      process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
+      process.env.NEXT_PUBLIC_SITE_URL = "http://127.0.0.1:3000";
+      process.env.BETTER_AUTH_URL = "http://0.0.0.0:3000";
+
+      expect(resolvePublicSiteUrl()).toBe("https://app.tugasprototype.cloud");
+    } finally {
+      if (originalAppUrl === undefined) {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+      } else {
+        process.env.NEXT_PUBLIC_APP_URL = originalAppUrl;
+      }
+
+      if (originalSiteUrl === undefined) {
+        delete process.env.NEXT_PUBLIC_SITE_URL;
+      } else {
+        process.env.NEXT_PUBLIC_SITE_URL = originalSiteUrl;
+      }
+
+      if (originalBetterAuthUrl === undefined) {
+        delete process.env.BETTER_AUTH_URL;
+      } else {
+        process.env.BETTER_AUTH_URL = originalBetterAuthUrl;
+      }
+    }
   });
 });
