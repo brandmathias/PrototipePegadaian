@@ -56,11 +56,11 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
       )}
     >
       <div className="container flex min-h-16 items-center justify-between gap-2 py-2.5 sm:gap-4 sm:py-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 xl:gap-6">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 lg:flex-none xl:gap-6">
           <Link
             aria-label="Pegadaian Lelang"
             className={cn(
-              "group flex min-w-0 flex-1 items-center gap-2 font-headline text-[0.95rem] font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl",
+              "group flex min-w-0 flex-1 items-center gap-2 font-headline text-[0.95rem] font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl lg:flex-none",
               isLuxury ? "text-[#174e3b] hover:text-[#9b6f22]" : "text-primary hover:text-[#075f42]"
             )}
             href="/dashboard"
