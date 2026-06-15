@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 
 import { UiProviders } from "@/components/providers/ui-providers";
-import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
+import {
+  BRAND_ICON_SRC,
+  BRAND_NAME,
+  BRAND_SHARE_IMAGE_HEIGHT,
+  BRAND_SHARE_IMAGE_SRC,
+  BRAND_SHARE_IMAGE_WIDTH,
+  BRAND_TAGLINE
+} from "@/lib/brand";
 import { resolvePublicSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
@@ -33,11 +40,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon", sizes: "512x512", type: "image/png" }
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: BRAND_ICON_SRC, sizes: "128x128", type: "image/png" }
     ],
-    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
-    shortcut: ["/icon.svg"]
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: [BRAND_ICON_SRC]
   },
   openGraph: {
     type: "website",
@@ -49,9 +56,9 @@ export const metadata: Metadata = {
       `${BRAND_TAGLINE} dalam satu pengalaman web prototipe tugas akhir.`,
     images: [
       {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
+        url: BRAND_SHARE_IMAGE_SRC,
+        width: BRAND_SHARE_IMAGE_WIDTH,
+        height: BRAND_SHARE_IMAGE_HEIGHT,
         alt: `Logo ${BRAND_NAME}`
       }
     ]
@@ -61,7 +68,7 @@ export const metadata: Metadata = {
     title: `${BRAND_NAME} | Prototipe Katalog Barang Agunan`,
     description:
       "Katalog barang agunan, wishlist, penawaran tertutup, dan simulasi transaksi digital dalam prototipe web tugas akhir.",
-    images: ["/opengraph-image"]
+    images: [BRAND_SHARE_IMAGE_SRC]
   },
   robots: {
     index: true,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { metadata } from "@/app/layout";
+import { BRAND_ICON_SRC, BRAND_SHARE_IMAGE_SRC } from "@/lib/brand";
 import { resolvePublicSiteUrl } from "@/lib/site-url";
 
 describe("app metadata", () => {
@@ -15,7 +16,7 @@ describe("app metadata", () => {
       expect.arrayContaining([
         expect.objectContaining({
           alt: expect.stringContaining("Ruang Agunan"),
-          url: "/opengraph-image"
+          url: BRAND_SHARE_IMAGE_SRC
         })
       ])
     );
@@ -23,7 +24,7 @@ describe("app metadata", () => {
     expect(icons?.icon).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          url: "/icon.svg"
+          url: BRAND_ICON_SRC
         })
       ])
     );

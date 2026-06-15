@@ -18,7 +18,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
-import { BRAND_NAME, BrandLockup, BrandMark } from "@/components/shared/brand";
+import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
@@ -462,9 +462,8 @@ export function LoginPage() {
         } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,207,91,0.24),transparent_26%),radial-gradient(circle_at_80%_14%,rgba(5,67,40,0.38),transparent_28%)]" />
-        <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">
-          <BrandMark className="size-4" tone="inverse" />
-          {BRAND_NAME}
+        <div className="absolute left-12 top-12 rounded-full border border-white/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md xl:left-16 xl:top-16">
+          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[700px] space-y-7">
@@ -504,16 +503,10 @@ export function LoginPage() {
         <div className="relative w-full max-w-[560px]">
           <div className="mb-9 space-y-6">
             <div className="flex items-center gap-3">
-              <span className="grid size-14 place-items-center rounded-3xl border border-amber-200/18 bg-amber-200/10 text-amber-100">
-                <BrandMark className="size-10" tone="inverse" />
+              <span className="inline-flex rounded-[1.4rem] border border-white/70 bg-white/95 px-3 py-2 shadow-sm">
+                <BrandLockup markClassName="size-12" nameClassName="h-8 max-w-[13rem]" />
               </span>
               <div>
-                <BrandLockup
-                  className="gap-0"
-                  markClassName="hidden"
-                  nameClassName="text-xl text-white"
-                  tone="inverse"
-                />
                 <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
                   Akun pembeli
                 </p>
@@ -550,16 +543,10 @@ export function RegisterPage() {
         <div className="relative w-full max-w-[650px]">
           <div className="mb-9 space-y-6">
             <div className="flex items-center gap-3">
-              <span className="grid size-14 place-items-center rounded-3xl border border-amber-200/18 bg-amber-200/10 text-amber-100">
-                <BrandMark className="size-10" tone="inverse" />
+              <span className="inline-flex rounded-[1.4rem] border border-white/70 bg-white/95 px-3 py-2 shadow-sm">
+                <BrandLockup markClassName="size-12" nameClassName="h-8 max-w-[13rem]" />
               </span>
               <div>
-                <BrandLockup
-                  className="gap-0"
-                  markClassName="hidden"
-                  nameClassName="text-xl text-white"
-                  tone="inverse"
-                />
                 <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
                   Registrasi pembeli
                 </p>
@@ -589,9 +576,8 @@ export function RegisterPage() {
         } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,207,91,0.22),transparent_26%),radial-gradient(circle_at_20%_14%,rgba(5,67,40,0.36),transparent_28%)]" />
-        <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">
-          <BrandMark className="size-4" tone="inverse" />
-          {BRAND_NAME}
+        <div className="absolute left-12 top-12 rounded-full border border-white/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md xl:left-16 xl:top-16">
+          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[680px] space-y-7">

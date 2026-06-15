@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 import { AdminProfileMenu } from "@/components/layout/admin-profile-menu";
-import { BRAND_NAME, BrandLockup, BrandMark } from "@/components/shared/brand";
+import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { AlertCenter } from "@/components/ui/alert-center";
 import type { AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
@@ -353,19 +353,8 @@ export function DashboardShell({
         )}
       >
         <div className="shrink-0 rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
-          <div className="flex items-center gap-3">
-            <div className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-white shadow-sm">
-              <BrandMark className="size-10" />
-            </div>
-            <div className="min-w-0">
-              <BrandLockup
-                className="gap-0"
-                markClassName="hidden"
-                nameClassName="text-[1.33rem] text-white"
-                stacked
-                tone="inverse"
-              />
-            </div>
+          <div className="inline-flex max-w-full rounded-[1.15rem] bg-white px-3 py-2 shadow-sm">
+            <BrandLockup markClassName="size-10" nameClassName="h-7 max-w-[9.25rem]" />
           </div>
 
           <div className="group relative mt-4 min-h-[6.05rem] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[linear-gradient(150deg,rgba(255,255,255,0.075),rgba(255,255,255,0.028)_58%,rgba(96,226,164,0.1))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_45px_-36px_rgba(0,0,0,0.85)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">

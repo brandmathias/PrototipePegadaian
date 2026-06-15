@@ -1,3 +1,12 @@
 export const BRAND_NAME = "Ruang Agunan";
 export const BRAND_SHORT_NAME = "Ruang Agunan";
 export const BRAND_TAGLINE = "Katalog, wishlist, dan simulasi transaksi barang agunan";
+export const BRAND_ICON_SRC = "/brand/ruang-agunan-icon.png";
+export const BRAND_NAME_IMAGE_SRC = "/brand/ruang-agunan-name.png";
+export const BRAND_SHARE_IMAGE_SRC = "/brand/ruang-agunan-share.png";
+export const BRAND_ICON_WIDTH = 128;
+export const BRAND_ICON_HEIGHT = 128;
+export const BRAND_NAME_IMAGE_WIDTH = 512;
+export const BRAND_NAME_IMAGE_HEIGHT = 121;
+export const BRAND_SHARE_IMAGE_WIDTH = 512;
+export const BRAND_SHARE_IMAGE_HEIGHT = 512;
