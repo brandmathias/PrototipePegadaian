@@ -75,11 +75,16 @@ function AuthBrandCluster({
 }) {
   if (mode === "hero") {
     return (
-      <div className="inline-flex rounded-full border border-white/12 bg-[rgba(8,21,15,0.58)] p-1.5 shadow-[0_18px_40px_-28px_rgba(0,0,0,0.72)]">
-        <div className="inline-flex items-center gap-3 rounded-full bg-[linear-gradient(180deg,rgba(252,248,239,0.98),rgba(242,234,216,0.94))] px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
-          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
-          <span className="h-4 w-px bg-[#d2c29d]" />
-          <span className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#0b4a33]">
+      <div className="relative inline-flex flex-col gap-2.5">
+        <div className="pointer-events-none absolute -left-2 right-10 top-1/2 h-10 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,240,224,0.32),transparent_70%)] blur-2xl" />
+        <BrandLockup
+          className="relative z-[1] max-w-full drop-shadow-[0_10px_18px_rgba(0,0,0,0.28)]"
+          markClassName="size-5"
+          nameClassName="h-4 max-w-[7.25rem] brightness-[1.03] contrast-[1.04]"
+        />
+        <div className="relative z-[1] flex items-center gap-3 pl-1">
+          <span className="h-px w-9 bg-[linear-gradient(90deg,rgba(240,210,135,0.82),rgba(240,210,135,0.18),transparent)]" />
+          <span className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#f0d287]/95">
             {accentLabel}
           </span>
         </div>
@@ -88,11 +93,17 @@ function AuthBrandCluster({
   }
 
   return (
-    <div className="inline-flex max-w-full rounded-[1.85rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))] p-1.5 shadow-[0_24px_50px_-34px_rgba(0,0,0,0.58)]">
-      <div className="inline-flex min-w-0 items-center gap-3 rounded-[1.45rem] bg-[linear-gradient(180deg,rgba(252,248,239,0.98),rgba(241,233,216,0.95))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
-        <BrandLockup markClassName="size-11" nameClassName="h-7 max-w-[11.75rem]" />
-        <span className="hidden h-5 w-px bg-[#d2c29d] sm:block" />
-        <span className="text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-white/76 sm:text-[#0d4f38]">
+    <div className="relative inline-flex max-w-full flex-col gap-3">
+      <div className="pointer-events-none absolute -left-3 top-1 h-14 w-14 rounded-full bg-[#f0d287]/16 blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-6 top-2 h-10 rounded-full bg-[linear-gradient(90deg,rgba(247,241,227,0.18),rgba(247,241,227,0.08),transparent_78%)] blur-xl" />
+      <BrandLockup
+        className="relative z-[1] max-w-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.22)]"
+        markClassName="size-11"
+        nameClassName="h-7 max-w-[11.75rem] brightness-[1.03] contrast-[1.04]"
+      />
+      <div className="relative z-[1] flex items-center gap-3 pl-1">
+        <span className="h-px w-10 bg-[linear-gradient(90deg,rgba(240,210,135,0.9),rgba(240,210,135,0.18),transparent)]" />
+        <span className="text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-[#f0d287]/90">
           {accentLabel}
         </span>
       </div>
