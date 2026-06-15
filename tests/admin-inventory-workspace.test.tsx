@@ -389,7 +389,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(report).toHaveTextContent("Ipad Terbaru Dengan Nama Panjang");
     expect(report).not.toHaveTextContent("Tablet Apple iPad Pro 11-inch dengan catatan audit panjang yang harus tetap terlihat.");
     expect(report).toHaveTextContent("Barang dipublikasikan ke katalog dengan catatan proses yang cukup panjang.");
-    expect(report).toHaveTextContent("Dokumen ini dihasilkan otomatis dari sistem Pegadaian Lelang");
+    expect(report).toHaveTextContent("Dokumen ini dihasilkan otomatis dari sistem Ruang Agunan");
     expect(report).toHaveTextContent("Admin Unit");
     expect(report).not.toHaveTextContent("Aktor Internal");
 

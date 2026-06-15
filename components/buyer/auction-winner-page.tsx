@@ -151,7 +151,7 @@ export function AuctionWinnerPageContent({
                     <p className="mt-4 max-w-[34rem] text-base leading-8 text-white/[0.82]">
                       Penawaran terbaik Anda berhasil menjadi pemenang. Terima kasih telah
                       mengikuti lelang di
-                      <span className="font-semibold text-[#b9e7ce]"> Pegadaian Lelang</span>.
+                      <span className="font-semibold text-[#b9e7ce]"> Ruang Agunan</span>.
                     </p>
                   </div>
                 </div>

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { ArrowLeft, Gavel } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
+import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { cn } from "@/lib/utils";
 
 type AuthShellProps = {
@@ -30,13 +31,14 @@ export function AuthShell({ children }: AuthShellProps) {
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <Link
-              className="flex min-w-0 items-center gap-3 font-headline text-xl font-black tracking-tight text-primary"
+              aria-label={BRAND_NAME}
+              className="flex min-w-0 items-center text-primary transition hover:text-[#075f42]"
               href="/"
             >
-              <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
-                <Gavel className="size-4" />
-              </span>
-              <span className="hidden truncate sm:inline">Pegadaian Lelang</span>
+              <BrandLockup
+                markClassName="size-10"
+                nameClassName="hidden text-[1.42rem] sm:inline"
+              />
             </Link>
             <span className="hidden text-sm text-muted-foreground md:block">
               Akses aman untuk pembeli
@@ -93,7 +95,7 @@ export function AuthShell({ children }: AuthShellProps) {
 
                 <div className="grid gap-4">
                   {[
-                    "Jelajahi lot harga tetap dan sesi lelang dari berbagai unit Pegadaian.",
+                    "Jelajahi lot harga tetap dan sesi lelang dari berbagai unit terkait.",
                     "Pantau pembayaran, status verifikasi, dan dokumen transaksi di satu akun.",
                     "Pindah antara masuk dan daftar dengan alur yang lebih jelas dan ringan."
                   ].map((item) => (

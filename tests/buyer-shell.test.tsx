@@ -41,7 +41,7 @@ describe("BuyerShell", () => {
       </BuyerShell>
     );
 
-    expect(screen.getByRole("link", { name: /pegadaian lelang/i })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: /ruang agunan/i })).toHaveAttribute("href", "/dashboard");
     expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
     expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");

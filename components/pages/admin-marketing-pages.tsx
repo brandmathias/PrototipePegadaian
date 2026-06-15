@@ -2518,7 +2518,7 @@ export function AdminFixedPriceDetailPage({
       <div className="flex flex-col gap-3 rounded-xl border border-[#dce9df] bg-[#f8fcf9] px-4 py-3 text-[0.78rem] font-semibold text-[#52675e] shadow-[0_16px_40px_-34px_rgba(8,69,50,0.32)] sm:flex-row sm:items-center sm:justify-between">
         <span className="inline-flex items-center gap-2">
           <ShieldCheck className="size-4 text-[#006747]" />
-          Pastikan informasi produk akurat dan sesuai kebijakan Pegadaian sebelum perubahan ditayangkan.
+          Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
         </span>
         <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
       </div>
@@ -3912,7 +3912,7 @@ function VickreyPaymentVerificationModal({
                 <p className="mt-2 font-semibold">
                   Pastikan dana telah diterima secara tunai dan sesuai dengan jumlah yang tertera. Verifikasi dilakukan
                   secara cermat untuk menjaga keamanan transaksi, mencegah kecurangan, dan memastikan kepatuhan
-                  terhadap ketentuan Pegadaian.
+                  terhadap ketentuan platform.
                 </p>
               </div>
             </div>
@@ -4486,7 +4486,7 @@ function FixedPriceReceiptInlinePrint({
         buyerName={auction.buyerName || auction.winner || "-"}
         buyerPhone={auction.buyerPhone ?? undefined}
         extraMeta={[{ label: "Jenis transaksi", value: "Harga Tetap" }]}
-        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={auction.lot}
@@ -4531,7 +4531,7 @@ function VickreyReceiptPrintSheet({
         buyerName={auction.buyerName || auction.winner || "-"}
         buyerPhone={auction.buyerPhone ?? undefined}
         extraMeta={[{ label: "Jenis transaksi", value: "Lelang" }]}
-        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={auction.lot}

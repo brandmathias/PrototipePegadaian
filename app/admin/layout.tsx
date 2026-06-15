@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
+import { BRAND_NAME } from "@/components/shared/brand";
 import { getAdminSessionUser, getAppPathFromRequestHeaders } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { units } from "@/lib/db/schema";
@@ -60,7 +61,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <DashboardShell
       currentUser={currentUser}
-      headerBrandLabel={isDashboardRoute ? null : "Pegadaian Lelang"}
+      headerBrandLabel={isDashboardRoute ? null : BRAND_NAME}
       headerSubtitle="Pusat Kendali Operasional Unit"
       headerTitle={unit?.name ?? "Admin Unit"}
       hideHeaderIdentity={false}

@@ -673,7 +673,7 @@ function getReceiptMarketingTypeLabel(transaction: BuyerTransaction) {
 
 function getReceiptFooterText(transaction: BuyerTransaction) {
   if (transaction.kind === "VICKREY_WIN") {
-    return "Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.";
+    return "Dokumen ini diterbitkan oleh admin unit Ruang Agunan.";
   }
 
   return undefined;
@@ -977,7 +977,7 @@ export function UserDashboardPage({
                 {summary.blacklist.active ? (
                   <div className="mt-5 space-y-3 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
                     <p>Hindari pelanggaran berikutnya agar level pembatasan tidak meningkat.</p>
-                    <p>Jika membutuhkan bantuan, hubungi admin unit Pegadaian terkait untuk pengecekan manual.</p>
+                    <p>Jika membutuhkan bantuan, hubungi admin unit terkait untuk pengecekan manual.</p>
                   </div>
                 ) : null}
               </div>
@@ -1069,7 +1069,7 @@ export function UserDashboardPage({
               </div>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Ringkasan hal yang perlu Anda ingat saat mengikuti harga tetap, Lelang Tertutup, dan pembayaran di Pegadaian Lelang.
+              Ringkasan hal yang perlu Anda ingat saat mengikuti harga tetap, Lelang Tertutup, dan pembayaran di Ruang Agunan.
             </p>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1.12fr_0.94fr_0.94fr]">
@@ -1930,7 +1930,7 @@ export function TransactionDetailPage({
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/70 pb-6">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Pegadaian Lelang
+                      Ruang Agunan
                     </p>
                     <h3 className="mt-2 text-2xl font-extrabold text-primary">
                       Bukti penyelesaian transaksi

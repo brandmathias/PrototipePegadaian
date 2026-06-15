@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Search, ShieldCheck, ShoppingBag } from "lucide-react";
 
 import { LotCard } from "@/components/shared/lot-card";
+import { BRAND_NAME } from "@/components/shared/brand";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { StatCard } from "@/components/shared/stat-card";
 import { buttonVariants } from "@/components/ui/button";
@@ -31,7 +32,7 @@ export function HomePage({
           <div className="space-y-8">
             <div className="space-y-4">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
-                Katalog Resmi Pegadaian Lelang
+                Katalog Digital {BRAND_NAME}
               </p>
               <h1 className="max-w-3xl font-headline text-5xl font-black tracking-tight md:text-7xl">
                 Jelajahi barang jaminan, beli langsung, atau ikut lelang dengan alur yang jelas.
@@ -142,7 +143,7 @@ export function HomePage({
             {
               title: "1. Jelajahi katalog",
               detail:
-                "Lihat kategori, harga, mode transaksi, dan unit Pegadaian tanpa harus masuk lebih dulu."
+                "Lihat kategori, harga, mode transaksi, dan unit terkait tanpa harus masuk lebih dulu."
             },
             {
               title: "2. Pilih beli langsung atau ikut lelang",
@@ -222,7 +223,7 @@ export function HomePage({
           />
           <StatCard
             label="Kepercayaan"
-            value="Unit Pegadaian aktif"
+            value="Unit terkait aktif"
             detail="Identitas unit, lokasi, dan status lot dibuat jelas sejak tahap eksplorasi."
             accent="danger"
           />

@@ -306,7 +306,7 @@ function UnitEditForm({
           id="unit-name-edit"
           label="Nama unit"
           onChange={(event) => setName(event.target.value)}
-          placeholder="Nama unit Pegadaian"
+          placeholder="Nama unit terkait"
           required
           value={name}
         />
@@ -650,7 +650,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                     id="account-holder"
                     label="Nama Pemilik Rekening"
                     onChange={(event) => setAccountHolderName(event.target.value)}
-                    placeholder="PT Pegadaian Area"
+                    placeholder="PT Area Unit"
                     required
                     value={accountHolderName}
                   />

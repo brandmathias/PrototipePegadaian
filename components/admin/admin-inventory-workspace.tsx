@@ -444,7 +444,7 @@ function HistoryPrintDocument({
             </span>
             <div className="min-w-0">
               <p className="whitespace-normal break-words text-[0.58rem] font-black uppercase leading-4 tracking-[0.32em] text-white/82">
-                Pegadaian Lelang
+                Ruang Agunan
               </p>
               <h1 className="mt-2 whitespace-normal break-words font-headline text-[1.58rem] font-black leading-tight tracking-[-0.02em]">
                 Laporan Riwayat Barang
@@ -615,7 +615,7 @@ function HistoryPrintDocument({
 
       <footer className="mt-4 grid gap-5 border-t border-[#d7e8dd] pt-4 text-[0.68rem] font-semibold text-[#52655d] lg:grid-cols-[minmax(0,1fr)_14rem]">
         <p className="whitespace-normal break-words leading-5">
-          Dokumen ini dihasilkan otomatis dari sistem Pegadaian Lelang berdasarkan catatan riwayat barang yang
+          Dokumen ini dihasilkan otomatis dari sistem Ruang Agunan berdasarkan catatan riwayat barang yang
           tersimpan pada unit aktif.
         </p>
         <div className="text-right">

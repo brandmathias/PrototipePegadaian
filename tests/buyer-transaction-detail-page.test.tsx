@@ -242,7 +242,7 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!).not.toHaveTextContent("Lelang Tertutup");
     expect(receiptPrintRoot!).toHaveTextContent("Langsung di unit");
     expect(receiptPrintRoot!).toHaveTextContent("Pembayaran hasil lelang sudah diverifikasi admin unit");
-    expect(receiptPrintRoot!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.");
+    expect(receiptPrintRoot!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Ruang Agunan.");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/cincin-lelang.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();

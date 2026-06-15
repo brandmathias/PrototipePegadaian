@@ -238,7 +238,7 @@ describe("buyer vickrey pages", () => {
     expect(dialog.querySelector(".overflow-y-auto")).toBeNull();
     expect(dialog.parentElement).toHaveClass("z-[160]", "items-start", "overflow-y-auto");
     expect(dialog.parentElement).not.toHaveClass("items-center");
-    expect(screen.getByText(/pegadaian lelang/i).parentElement?.parentElement).toHaveClass("gap-3");
+    expect(screen.getByText(/ruang agunan/i).parentElement?.parentElement).toHaveClass("gap-3");
     expect(
       within(dialog).getByText(/baca dan cermati syarat dan ketentuan di bawah ini/i)
     ).toBeInTheDocument();

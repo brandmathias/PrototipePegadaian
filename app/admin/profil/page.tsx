@@ -47,7 +47,7 @@ export default async function Page() {
         sessionHistory: sessionRows.map((session) => `${getDeviceLabel(session.userAgent)} - ${formatAppDateTime(session.updatedAt)}`),
         unitAddress: unit?.address ?? "-",
         unitCode: unit?.code ?? currentUser.unitId ?? "-",
-        unitName: unit?.name ?? "Unit Pegadaian",
+        unitName: unit?.name ?? "Unit Terkait",
         updatedAt: formatAppLongDate(user?.updatedAt)
       }}
     />

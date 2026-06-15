@@ -160,14 +160,14 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   if (row.type === "vickrey" && row.paymentMethod === "langsung") {
     return [
       "Anda memenangkan Lelang Tertutup dan pembayaran hanya dapat diselesaikan langsung di unit.",
-      "Datang ke unit Pegadaian sesuai alamat yang tertera dan tunjukkan nomor pengajuan.",
+      "Datang ke unit terkait sesuai alamat yang tertera dan tunjukkan nomor pengajuan.",
       "Admin unit akan memverifikasi pembayaran langsung setelah dana diterima."
     ];
   }
 
   if (row.paymentMethod === "langsung") {
     return [
-      "Datang ke unit Pegadaian sesuai alamat yang tertera.",
+      "Datang ke unit terkait sesuai alamat yang tertera.",
       "Tunjukkan nomor pengajuan kepada petugas.",
       "Admin unit akan mengonfirmasi pembayaran setelah transaksi offline selesai."
     ];

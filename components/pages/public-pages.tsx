@@ -5,7 +5,6 @@ import {
   Clock3,
   CreditCard,
   Gavel,
-  Landmark,
   MapPin,
   ShieldCheck,
   ShoppingBag,
@@ -19,6 +18,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PurchaseWorkflow } from "@/components/buyer/purchase-workflow";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
+import { BRAND_NAME, BrandLockup, BrandMark } from "@/components/shared/brand";
 import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
@@ -332,8 +332,8 @@ export function LotDetailPage({
               Informasi Transaksi
             </h2>
             <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
-              Perhiasan ini merupakan bagian dari inventori resmi Pegadaian. Pembayaran dan pembaruan harga
-              mengikuti ketentuan transaksi yang berlaku.
+              Barang ini merupakan bagian dari inventori unit terkait. Pembayaran dan pembaruan
+              harga mengikuti ketentuan transaksi yang berlaku.
             </p>
 
             <div className="mt-7 grid gap-5 sm:grid-cols-3">
@@ -362,7 +362,7 @@ export function LotDetailPage({
             <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#d8aa3f]">Informasi Lengkap</p>
             <h2 className="mt-3 font-serif text-[2rem] font-semibold tracking-[-0.01em] text-[#0f4735]">Spesifikasi Produk</h2>
             <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
-              Detail berikut mengikuti data barang pada sistem Pegadaian Lelang.
+              Detail berikut mengikuti data barang pada sistem {BRAND_NAME}.
               Susunannya dibuat tanpa garis tabel agar tetap ringan dan mudah dipindai.
             </p>
 
@@ -463,8 +463,8 @@ export function LoginPage() {
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,207,91,0.24),transparent_26%),radial-gradient(circle_at_80%_14%,rgba(5,67,40,0.38),transparent_28%)]" />
         <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">
-          <Landmark className="size-3.5 text-amber-200" />
-          Pegadaian Lelang
+          <BrandMark className="size-4" tone="inverse" />
+          {BRAND_NAME}
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[700px] space-y-7">
@@ -505,12 +505,15 @@ export function LoginPage() {
           <div className="mb-9 space-y-6">
             <div className="flex items-center gap-3">
               <span className="grid size-14 place-items-center rounded-3xl border border-amber-200/18 bg-amber-200/10 text-amber-100">
-                <Landmark className="size-6" />
+                <BrandMark className="size-10" tone="inverse" />
               </span>
               <div>
-                <p className="font-headline text-xl font-black leading-none tracking-tight">
-                  Pegadaian Lelang
-                </p>
+                <BrandLockup
+                  className="gap-0"
+                  markClassName="hidden"
+                  nameClassName="text-xl text-white"
+                  tone="inverse"
+                />
                 <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
                   Akun pembeli
                 </p>
@@ -530,7 +533,7 @@ export function LoginPage() {
             <LoginForm />
           </Suspense>
           <div className="mt-5 rounded-[1.15rem] border border-amber-200/18 bg-amber-200/10 p-4 text-sm leading-6 text-emerald-50/72">
-            Akun sedang terkunci karena blacklist? Hubungi admin unit Pegadaian terkait untuk pengecekan manual.
+            Akun sedang terkunci karena blacklist? Hubungi admin unit terkait untuk pengecekan manual.
           </div>
         </div>
       </section>
@@ -548,12 +551,15 @@ export function RegisterPage() {
           <div className="mb-9 space-y-6">
             <div className="flex items-center gap-3">
               <span className="grid size-14 place-items-center rounded-3xl border border-amber-200/18 bg-amber-200/10 text-amber-100">
-                <Landmark className="size-6" />
+                <BrandMark className="size-10" tone="inverse" />
               </span>
               <div>
-                <p className="font-headline text-xl font-black leading-none tracking-tight">
-                  Pegadaian Lelang
-                </p>
+                <BrandLockup
+                  className="gap-0"
+                  markClassName="hidden"
+                  nameClassName="text-xl text-white"
+                  tone="inverse"
+                />
                 <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
                   Registrasi pembeli
                 </p>
@@ -584,8 +590,8 @@ export function RegisterPage() {
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,207,91,0.22),transparent_26%),radial-gradient(circle_at_20%_14%,rgba(5,67,40,0.36),transparent_28%)]" />
         <div className="absolute left-12 top-12 flex items-center gap-2 rounded-full border border-white/12 bg-black/18 px-4 py-2 text-[0.66rem] font-black uppercase tracking-[0.26em] text-white/86 backdrop-blur-md xl:left-16 xl:top-16">
-          <Landmark className="size-3.5 text-amber-200" />
-          Pegadaian Lelang
+          <BrandMark className="size-4" tone="inverse" />
+          {BRAND_NAME}
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[680px] space-y-7">

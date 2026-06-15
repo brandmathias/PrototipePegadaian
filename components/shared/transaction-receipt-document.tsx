@@ -113,7 +113,7 @@ export function TransactionReceiptDocument({
             </div>
             <div className="min-w-0">
               <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-white/72">
-                Pegadaian Lelang
+                Ruang Agunan
               </p>
               <h1 className="mt-1 max-w-3xl text-[1.45rem] font-black leading-tight tracking-tight text-white md:text-[1.75rem] print:text-[1.48rem] print:leading-tight print:text-white">
                 {title}
@@ -350,7 +350,7 @@ export function TransactionReceiptDocument({
         </div>
 
         <div className="border-t border-[#dbe4da] px-1 pt-2 text-[0.68rem] leading-5 text-[#6a7b6d]">
-          {footerText || "Dokumen ini dibuat oleh sistem Pegadaian Lelang."}
+          {footerText || "Dokumen ini dibuat oleh sistem Ruang Agunan."}
         </div>
       </div>
     </article>

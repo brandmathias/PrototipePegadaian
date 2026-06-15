@@ -551,7 +551,7 @@ export function AdminMarketingForm({
                     </div>
                   </div>
                   <p className="text-[0.68rem] italic leading-[1.15rem] text-slate-500">
-                    *Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Pegadaian Lelang.
+                    *Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
                   </p>
                 </div>
               </div>

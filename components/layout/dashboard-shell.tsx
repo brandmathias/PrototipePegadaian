@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { AdminProfileMenu } from "@/components/layout/admin-profile-menu";
+import { BRAND_NAME, BrandLockup, BrandMark } from "@/components/shared/brand";
 import { AlertCenter } from "@/components/ui/alert-center";
 import type { AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
@@ -92,7 +93,7 @@ export function DashboardShell({
   headerTitle,
   headerSubtitle,
   hideHeaderIdentity = false,
-  headerBrandLabel = "Pegadaian Lelang",
+  headerBrandLabel = BRAND_NAME,
   searchPlaceholder = "Cari transaksi atau barang...",
   searchShortcutHint,
   nav,
@@ -353,15 +354,17 @@ export function DashboardShell({
       >
         <div className="shrink-0 rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
           <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-[1rem] bg-white text-[#07563f] shadow-sm">
-              <ShieldCheck aria-hidden="true" className="size-5.5" />
+            <div className="grid size-12 shrink-0 place-items-center rounded-[1rem] bg-white shadow-sm">
+              <BrandMark className="size-10" />
             </div>
             <div className="min-w-0">
-              <p className="font-headline text-[1.28rem] font-black uppercase leading-[0.92] tracking-[0.07em] text-white">
-                Pegadaian
-                <br />
-                Lelang
-              </p>
+              <BrandLockup
+                className="gap-0"
+                markClassName="hidden"
+                nameClassName="text-[1.33rem] text-white"
+                stacked
+                tone="inverse"
+              />
             </div>
           </div>
 

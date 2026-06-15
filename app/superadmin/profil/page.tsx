@@ -50,7 +50,7 @@ export default async function Page() {
         profileSaveFeedback: "Profil superadmin sudah diperbarui di database.",
         roleLabel: "Super Admin",
         sessionHistory: sessionRows.map((session) => `${getDeviceLabel(session.userAgent)} - ${formatAppDateTime(session.updatedAt)}`),
-        unitAddress: "Kontrol nasional lintas unit Pegadaian Lelang.",
+        unitAddress: "Kontrol nasional lintas unit Ruang Agunan.",
         unitCode: "SUPERADMIN",
         unitName: "Superadmin Nasional",
         updatedAt: formatAppLongDate(user?.updatedAt),

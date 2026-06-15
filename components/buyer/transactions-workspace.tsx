@@ -109,9 +109,9 @@ function getTransactionDescription(transaction: BuyerTransaction) {
       return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_VERIFIKASI":
-      return "Pembayaran telah kami terima. Transaksi sedang diverifikasi oleh tim Pegadaian.";
+      return "Pembayaran telah kami terima. Transaksi sedang diverifikasi oleh tim admin unit.";
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
-      return "Pembayaran langsung sedang menunggu konfirmasi dari admin unit Pegadaian.";
+      return "Pembayaran langsung sedang menunggu konfirmasi dari admin unit terkait.";
     case "LUNAS":
     case "SELESAI":
       return "Transaksi telah selesai. Barang telah diterima oleh Anda.";
@@ -225,7 +225,7 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
     case "SELESAI":
       return {
         title: "Transaksi selesai",
-        description: "Terima kasih telah bertransaksi di Pegadaian Lelang.",
+        description: "Terima kasih telah bertransaksi di Ruang Agunan.",
         className: "bg-[#f2fbf4] text-[#2e8a57]",
         icon: <CheckCircle2 className="size-5" />,
       };

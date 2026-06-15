@@ -1,39 +1,10 @@
 import type { Metadata } from "next";
 
 import { UiProviders } from "@/components/providers/ui-providers";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
+import { resolvePublicSiteUrl } from "@/lib/site-url";
 
 import "./globals.css";
-
-const FALLBACK_SITE_URL = "https://app.tugasprototype.cloud";
-const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
-
-export function resolvePublicSiteUrl() {
-  const candidates = [
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.APP_URL,
-    process.env.BETTER_AUTH_URL,
-    FALLBACK_SITE_URL
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-
-    try {
-      const parsedUrl = new URL(candidate);
-
-      if (LOCAL_HOSTNAMES.has(parsedUrl.hostname)) {
-        continue;
-      }
-
-      return parsedUrl.origin;
-    } catch {
-      continue;
-    }
-  }
-
-  return FALLBACK_SITE_URL;
-}
 
 const siteUrl = resolvePublicSiteUrl();
 const metadataBase = new URL(siteUrl);
@@ -41,13 +12,14 @@ const metadataBase = new URL(siteUrl);
 export const metadata: Metadata = {
   metadataBase,
   title: {
-    default: "Prototipe Platform Lelang Barang | Tugas Akhir",
-    template: "%s | Prototipe Platform Lelang Barang"
+    default: `${BRAND_NAME} | Prototipe Katalog Barang Agunan`,
+    template: `%s | ${BRAND_NAME}`
   },
-  applicationName: "Tugas Prototype Cloud",
+  applicationName: BRAND_NAME,
   description:
-    "Prototipe platform lelang barang untuk tugas akhir dengan katalog harga tetap, alur penawaran tertutup, wishlist, dan pengalaman transaksi digital yang mudah dipahami.",
+    "Ruang Agunan adalah prototipe tugas akhir untuk katalog barang agunan, pembelian harga tetap, wishlist, penawaran tertutup, dan simulasi transaksi digital.",
   keywords: [
+    "Ruang Agunan",
     "prototipe lelang barang",
     "tugas akhir",
     "katalog harga tetap",
@@ -71,24 +43,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     url: siteUrl,
-    siteName: "Tugas Prototype Cloud",
-    title: "Prototipe Platform Lelang Barang untuk Katalog, Wishlist, dan Simulasi Transaksi",
+    siteName: BRAND_NAME,
+    title: `${BRAND_NAME} | Prototipe Katalog, Wishlist, dan Simulasi Transaksi`,
     description:
-      "Jelajahi prototipe tugas akhir untuk katalog barang, pembelian harga tetap, penawaran tertutup, dan alur transaksi digital dalam satu pengalaman web.",
+      `${BRAND_TAGLINE} dalam satu pengalaman web prototipe tugas akhir.`,
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Pratinjau Prototipe Platform Lelang Barang Tugas Akhir"
+        alt: `Logo ${BRAND_NAME}`
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Prototipe Platform Lelang Barang | Tugas Akhir",
+    title: `${BRAND_NAME} | Prototipe Katalog Barang Agunan`,
     description:
-      "Katalog barang, wishlist, penawaran tertutup, dan simulasi transaksi digital dalam prototipe web tugas akhir.",
+      "Katalog barang agunan, wishlist, penawaran tertutup, dan simulasi transaksi digital dalam prototipe web tugas akhir.",
     images: ["/opengraph-image"]
   },
   robots: {

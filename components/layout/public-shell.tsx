@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { Gavel, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
+import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import type { AuthRole } from "@/lib/auth/guards";
@@ -70,15 +71,14 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
             <div className="flex min-w-0 items-center gap-3 lg:gap-6">
               <Link
-                className="flex min-w-0 items-center gap-2 font-headline text-sm font-black tracking-tight text-primary sm:gap-3 sm:text-xl"
+                aria-label={BRAND_NAME}
+                className="flex min-w-0 items-center text-primary transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#075f42]"
                 href={brandHref}
               >
-                <span className="shrink-0 rounded-2xl bg-primary p-2 text-white">
-                  <Gavel className="size-4" />
-                </span>
-                <span className="block max-w-[8.75rem] truncate leading-tight sm:max-w-none">
-                  Pegadaian Lelang
-                </span>
+                <BrandLockup
+                  markClassName="size-9 sm:size-10"
+                  nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
+                />
               </Link>
               <nav
                 className="hidden items-center gap-2 rounded-full border border-border/70 bg-surface-low/80 p-1 md:flex"
@@ -179,11 +179,11 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           <div className="container grid gap-10 sm:grid-cols-2 md:grid-cols-4">
             <div className="space-y-4">
               <h3 className="font-headline text-xl font-bold text-primary">
-                Pegadaian Lelang
+                {BRAND_NAME}
               </h3>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Platform resmi untuk katalog barang jaminan, pembelian harga tetap, dan lelang
-                tertutup lintas unit Pegadaian.
+                Prototipe katalog barang agunan untuk pembelian harga tetap, wishlist, dan
+                simulasi penawaran tertutup dalam satu alur web.
               </p>
             </div>
             <div className="space-y-3 text-sm text-muted-foreground">
@@ -193,16 +193,16 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
               <p>Status transaksi</p>
             </div>
             <div className="space-y-3 text-sm text-muted-foreground">
-              <p className="font-bold uppercase tracking-[0.2em] text-secondary">Perusahaan</p>
+              <p className="font-bold uppercase tracking-[0.2em] text-secondary">Platform</p>
               <p>Tentang sistem</p>
-              <p>Unit Pegadaian</p>
+              <p>Unit terkait</p>
               <p>Pusat bantuan</p>
             </div>
             <div className="space-y-3 text-sm text-muted-foreground">
               <p className="font-bold uppercase tracking-[0.2em] text-secondary">Kontak</p>
-              <p>Call Center 1500567</p>
-              <p>customer.care@pegadaian.co.id</p>
-              <p>Jl. Kramat Raya No.162, Jakarta Pusat</p>
+              <p>Pusat Bantuan Prototipe</p>
+              <p>support@tugasprototype.cloud</p>
+              <p>Lingkungan pengujian akademik</p>
             </div>
           </div>
         </footer>

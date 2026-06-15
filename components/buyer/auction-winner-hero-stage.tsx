@@ -409,7 +409,7 @@ export function AuctionWinnerHeroStage({
 
         <div className="absolute left-1/2 top-[54%] z-[18] w-[78%] -translate-x-1/2 -translate-y-1/2 md:w-[80%]">
           <Image
-            alt="Piala pemenang lelang Pegadaian"
+            alt="Piala pemenang lelang"
             className="winner-trophy-float relative h-auto w-full drop-shadow-[0_34px_46px_rgba(0,0,0,0.42)]"
             height={1254}
             priority

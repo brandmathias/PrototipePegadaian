@@ -23,7 +23,7 @@ describe("PublicShell", () => {
       </ToastProvider>
     );
 
-    const guestBrand = screen.getByRole("link", { name: /pegadaian lelang/i });
+    const guestBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(guestBrand).toHaveAttribute("href", "/katalog");
     expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("PublicShell", () => {
 
     expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
     expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
-    const buyerBrand = screen.getByRole("link", { name: /pegadaian lelang/i });
+    const buyerBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(buyerBrand).toHaveAttribute("href", "/dashboard");
     expect(buyerBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");

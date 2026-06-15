@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { metadata, resolvePublicSiteUrl } from "@/app/layout";
+import { metadata } from "@/app/layout";
+import { resolvePublicSiteUrl } from "@/lib/site-url";
 
 describe("app metadata", () => {
   it("uses non-technical share copy and includes share images", () => {
@@ -13,11 +14,12 @@ describe("app metadata", () => {
     expect(metadata.openGraph?.images).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          alt: expect.stringContaining("Prototipe"),
+          alt: expect.stringContaining("Ruang Agunan"),
           url: "/opengraph-image"
         })
       ])
     );
+    expect(metadata.openGraph?.siteName).toBe("Ruang Agunan");
     expect(icons?.icon).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

@@ -1000,7 +1000,7 @@ export function CatalogPage({
               Pilih cara pembelian yang tepat untuk Anda
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-[#2f4038]">
-              Dua cara aman dan transparan untuk mendapatkan barang berkualitas dengan proses terpercaya dari Pegadaian.
+              Dua cara aman dan transparan untuk mendapatkan barang berkualitas melalui alur prototipe yang mudah dipahami.
             </p>
           </div>
 

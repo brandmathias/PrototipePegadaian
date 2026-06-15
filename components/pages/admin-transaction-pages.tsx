@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -407,7 +407,7 @@ function AdminTransactionInlineReceiptPrint({
         buyerName={transaction.buyer}
         buyerPhone={transaction.buyerPhone}
         extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
-        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
         imageUrl={transaction.imageUrl}
         itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}
         itemTitle={transaction.lot}
@@ -1167,7 +1167,7 @@ export function AdminTransactionReceiptPage({
         buyerName={transaction.buyer}
         buyerPhone={transaction.buyerPhone}
         extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
-        footerText="Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang."
+        footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
         imageUrl={transaction.imageUrl}
         itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}
         itemTitle={transaction.lot}

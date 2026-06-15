@@ -121,7 +121,7 @@ describe("transaction receipt page", () => {
     expect(receipt!).not.toHaveTextContent("Lelang Tertutup");
     expect(receipt!).toHaveTextContent("Langsung di unit");
     expect(receipt!).toHaveTextContent("Pembayaran hasil lelang sudah diverifikasi admin unit");
-    expect(receipt!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Pegadaian Lelang.");
+    expect(receipt!).toHaveTextContent("Dokumen ini diterbitkan oleh admin unit Ruang Agunan.");
     expect(receipt!.querySelector('img[src*="/uploads/barang/cincin-lelang.jpg"]')).not.toBeNull();
   });
 });

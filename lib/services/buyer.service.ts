@@ -454,7 +454,7 @@ export async function getBuyerProfileSummary(userId: string, options?: BuyerRead
   );
 
   return {
-    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Pegadaian",
+    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Ruang Agunan",
     email: profile?.email ?? buyerUser?.email ?? "-",
     image: buyerUser?.image ?? null,
     wishlistCount,
@@ -534,7 +534,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
   );
 
   return {
-    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Pegadaian",
+    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Ruang Agunan",
     unit: "Pembeli terverifikasi",
     accountId: `USR-${userId.slice(0, 8).toUpperCase()}`,
     email: profile?.email ?? buyerUser?.email ?? "-",

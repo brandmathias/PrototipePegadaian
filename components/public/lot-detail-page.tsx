@@ -13,6 +13,7 @@ import {
 import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
+import { BRAND_NAME } from "@/components/shared/brand";
 import { DetailFavoriteToggle } from "@/components/shared/detail-favorite-toggle";
 import { LotMediaGallery } from "@/components/shared/lot-media-gallery";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
@@ -326,8 +327,8 @@ export function LotDetailPage({
               Informasi Transaksi
             </h2>
             <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
-              Perhiasan ini merupakan bagian dari inventori resmi Pegadaian. Pembayaran dan pembaruan harga
-              mengikuti ketentuan transaksi yang berlaku.
+              Barang ini merupakan bagian dari inventori unit terkait. Pembayaran dan pembaruan
+              harga mengikuti ketentuan transaksi yang berlaku.
             </p>
 
             <div className="mt-7 grid gap-5 sm:grid-cols-3">
@@ -356,7 +357,7 @@ export function LotDetailPage({
             <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[#d8aa3f]">Informasi Lengkap</p>
             <h2 className="mt-3 font-serif text-[2rem] font-semibold tracking-[-0.01em] text-[#0f4735]">Spesifikasi Produk</h2>
             <p className="mt-3 max-w-2xl text-[13px] leading-7 text-[#617068]">
-              Detail berikut mengikuti data barang pada sistem Pegadaian Lelang.
+              Detail berikut mengikuti data barang pada sistem {BRAND_NAME}.
               Susunannya dibuat tanpa garis tabel agar tetap ringan dan mudah dipindai.
             </p>
 

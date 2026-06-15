@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Gavel, Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
+import { Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
+import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import { AlertCenter } from "@/components/ui/alert-center";
 import { cn } from "@/lib/utils";
@@ -58,26 +59,21 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
       <div className="container flex min-h-16 items-center justify-between gap-2 py-2.5 sm:gap-4 sm:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 lg:flex-none xl:gap-6">
           <Link
-            aria-label="Pegadaian Lelang"
+            aria-label={BRAND_NAME}
             className={cn(
-              "group flex min-w-0 flex-1 items-center gap-2 font-headline text-[0.95rem] font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl lg:flex-none",
+              "group flex min-w-0 flex-1 items-center transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex-none",
               isLuxury ? "text-[#174e3b] hover:text-[#9b6f22]" : "text-primary hover:text-[#075f42]"
             )}
             href="/dashboard"
           >
-            <span
-              className={cn(
-                "grid size-8 shrink-0 place-items-center rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-500 group-hover:-translate-y-0.5 sm:size-9",
-                isLuxury
-                  ? "bg-[#d4af37] text-[#2c220d] group-hover:bg-[#e4bd48]"
-                  : "bg-primary text-white group-hover:bg-[#075f42]"
+            <BrandLockup
+              markClassName={cn(
+                "size-9 transition duration-500 group-hover:-translate-y-0.5 sm:size-10",
+                isLuxury && "drop-shadow-[0_12px_24px_rgba(184,129,16,0.16)]"
               )}
-            >
-              <Gavel className="size-4" />
-            </span>
-            <span className="block max-w-[11rem] truncate leading-tight min-[390px]:max-w-[12.5rem] sm:max-w-none">
-              Pegadaian Lelang
-            </span>
+              nameClassName="max-w-[10rem] text-[1.05rem] min-[390px]:max-w-[11.25rem] sm:max-w-none sm:text-[1.42rem]"
+              tone={isLuxury ? "gold" : "default"}
+            />
           </Link>
           <nav
             className={cn(

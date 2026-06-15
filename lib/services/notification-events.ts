@@ -137,7 +137,7 @@ export async function notifyBlacklistActivated(
   return createNotificationOnce({
     userId: input.userId,
     title: "Akun Anda dikenakan pembatasan",
-    message: `Pelanggaran saat ini: ${input.totalViolations}x. Pembatasan aktif sampai ${input.blockedUntilLabel}. Hubungi unit Pegadaian jika membutuhkan bantuan.`,
+    message: `Pelanggaran saat ini: ${input.totalViolations}x. Pembatasan aktif sampai ${input.blockedUntilLabel}. Hubungi unit terkait jika membutuhkan bantuan.`,
     type: "blacklist_active",
     entityType: input.transactionId ? "transaction" : "blacklist",
     entityId: input.transactionId ?? `blacklist-${input.userId}`,

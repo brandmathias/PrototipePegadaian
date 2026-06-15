@@ -293,7 +293,7 @@ export function VickreyBidForm({
                 </span>
                 <div>
                   <p className="text-[0.6rem] font-bold uppercase tracking-[0.22em] text-primary-foreground/72">
-                    Pegadaian Lelang
+                    Ruang Agunan
                   </p>
                   <h3
                     className="mt-0.5 font-headline text-[1.12rem] font-extrabold leading-tight tracking-tight sm:text-[1.28rem]"

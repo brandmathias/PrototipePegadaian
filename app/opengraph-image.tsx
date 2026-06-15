@@ -1,340 +1,159 @@
-/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
-import type { ReactNode } from "react";
 
-const FALLBACK_SITE_URL = "https://app.tugasprototype.cloud";
-const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
-const HERO_IMAGE_PATH = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 
-function resolvePublicSiteUrl() {
-  const candidates = [
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.APP_URL,
-    process.env.BETTER_AUTH_URL,
-    FALLBACK_SITE_URL
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-
-    try {
-      const parsedUrl = new URL(candidate);
-
-      if (LOCAL_HOSTNAMES.has(parsedUrl.hostname)) {
-        continue;
-      }
-
-      return parsedUrl.origin;
-    } catch {
-      continue;
-    }
-  }
-
-  return FALLBACK_SITE_URL;
-}
-
-function CheckIcon({ color }: { color: string }) {
-  return (
-    <svg fill="none" height="18" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2.4" />
-      <path d="M8.6 12.2L10.8 14.4L15.7 9.5" stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
-    </svg>
-  );
-}
-
-function BriefcaseIcon() {
-  return (
-    <svg fill="none" height="42" viewBox="0 0 24 24" width="42" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 7V5.8C9 4.8 9.8 4 10.8 4H13.2C14.2 4 15 4.8 15 5.8V7" stroke="#006b4b" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-      <path d="M5.5 8.5H18.5V18C18.5 19.1 17.6 20 16.5 20H7.5C6.4 20 5.5 19.1 5.5 18V8.5Z" stroke="#006b4b" strokeLinejoin="round" strokeWidth="1.8" />
-      <path d="M5.7 12.2C7.6 13.3 9.8 13.9 12 13.9C14.2 13.9 16.4 13.3 18.3 12.2" stroke="#006b4b" strokeLinecap="round" strokeWidth="1.8" />
-      <path d="M12 12.6V15" stroke="#006b4b" strokeLinecap="round" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-function GavelIcon() {
-  return (
-    <svg fill="none" height="42" viewBox="0 0 24 24" width="42" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14.5 12.5L6.5 20.5C5.7 21.3 4.3 21.3 3.5 20.5C2.7 19.7 2.7 18.3 3.5 17.5L11.5 9.5" stroke="#9f6f00" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" />
-      <path d="M16 16L22 10" stroke="#9f6f00" strokeLinecap="round" strokeWidth="1.9" />
-      <path d="M8 8L14 2" stroke="#9f6f00" strokeLinecap="round" strokeWidth="1.9" />
-      <path d="M9 7L17 15" stroke="#9f6f00" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" />
-      <path d="M21 11L13 3" stroke="#9f6f00" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" />
-    </svg>
-  );
-}
-
-function FeatureRow({ children, color }: { children: string; color: string }) {
-  return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        gap: "10px"
-      }}
-    >
-      <CheckIcon color={color} />
-      <div
-        style={{
-          color: "#42554d",
-          fontSize: "17px",
-          fontWeight: 700,
-          lineHeight: 1.2
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ModeCard({
-  accent,
-  children,
-  description,
-  icon,
-  tint,
-  title
-}: {
-  accent: string;
-  children: ReactNode;
-  description: string;
-  icon: ReactNode;
-  tint: string;
-  title: string;
-}) {
-  return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.74)",
-        border: "1px solid rgba(8,69,50,0.12)",
-        borderRadius: "24px",
-        boxShadow: "0 24px 60px rgba(8,69,50,0.10)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-        minHeight: "320px",
-        padding: "28px",
-        position: "relative",
-        width: "296px"
-      }}
-    >
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          gap: "14px"
-        }}
-      >
-        <div
-          style={{
-            alignItems: "center",
-            background: tint,
-            borderRadius: "999px",
-            display: "flex",
-            height: "70px",
-            justifyContent: "center",
-            width: "70px"
-          }}
-        >
-          {icon}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px"
-          }}
-        >
-          <div
-            style={{
-              color: "#005b3f",
-              fontSize: "26px",
-              fontWeight: 800,
-              lineHeight: 1
-            }}
-          >
-            {title}
-          </div>
-          <div
-            style={{
-              color: "#1f2d28",
-              fontSize: "15px",
-              lineHeight: 1.35
-            }}
-          >
-            {description}
-          </div>
-        </div>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "18px"
-        }}
-      >
-        {children}
-      </div>
-      <div
-        style={{
-          alignItems: "center",
-          background: accent,
-          borderRadius: "999px",
-          display: "flex",
-          height: "24px",
-          justifyContent: "center",
-          position: "absolute",
-          right: "18px",
-          top: "18px",
-          width: "24px"
-        }}
-      >
-        <svg fill="none" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8.5 12.2L10.8 14.5L15.8 9.5" stroke="#ffffff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-export const alt = "Pratinjau Prototipe Platform Lelang Barang Tugas Akhir";
+export const alt = `Logo ${BRAND_NAME}`;
 export const contentType = "image/png";
 export const size = {
   width: 1200,
   height: 630
 };
 
-export default function OpenGraphImage() {
-  const heroImageUrl = `${resolvePublicSiteUrl()}${HERO_IMAGE_PATH}`;
+function RuangAgunanMark({ size = 244 }: { size?: number }) {
+  return (
+    <svg fill="none" height={size} viewBox="0 0 128 128" width={size} xmlns="http://www.w3.org/2000/svg">
+      <path d="M63.6 8.2L69.2 24.9L85.9 30.5L69.2 36.1L63.6 52.8L58 36.1L41.3 30.5L58 24.9L63.6 8.2Z" fill="#d49a21" />
+      <path d="M22 47H49.4L57.1 37.2H70.8L78.6 47H106" stroke="#006747" strokeLinecap="round" strokeLinejoin="round" strokeWidth="8" />
+      <path d="M51.2 47H76.8V59.2H68.9V97.8H59.1V59.2H51.2V47Z" fill="#006747" />
+      <path d="M41.7 51.4L23.7 86.9M41.7 51.4L59.7 86.9M86.3 51.4L68.3 86.9M86.3 51.4L104.3 86.9" stroke="#006747" strokeLinecap="round" strokeWidth="4.6" />
+      <path d="M18 87.2H64C62.1 97.5 53.6 104.8 41 104.8C28.4 104.8 19.9 97.5 18 87.2Z" fill="#006747" />
+      <path d="M64 87.2H110C108.1 97.5 99.6 104.8 87 104.8C74.4 104.8 65.9 97.5 64 87.2Z" fill="#006747" />
+      <path d="M19.8 87.2H62.2M65.8 87.2H108.2" stroke="#d49a21" strokeLinecap="round" strokeWidth="4.6" />
+      <path d="M43.4 34.9H84.6" stroke="#006747" strokeLinecap="round" strokeWidth="6.6" />
+      <path d="M47.5 114.2H80.5" stroke="#006747" strokeLinecap="round" strokeWidth="8" />
+      <path d="M35.7 121H92.3" stroke="#006747" strokeLinecap="round" strokeWidth="6.6" />
+      <path d="M50.5 112H77.5" stroke="#d49a21" strokeLinecap="round" strokeWidth="3.8" />
+      <path d="M46.1 64.5L59.5 51.1L77.3 68.9L63.9 82.3L46.1 64.5Z" fill="#d49a21" stroke="#fff9ea" strokeLinejoin="round" strokeWidth="2.8" />
+      <path d="M37 74.4L45.7 65.7L60.1 80.1L51.4 88.8L37 74.4Z" fill="#006747" stroke="#fff9ea" strokeLinejoin="round" strokeWidth="2.6" />
+      <path d="M34.7 76.5L27.9 83.3" stroke="#006747" strokeLinecap="round" strokeWidth="5.4" />
+      <path d="M80.3 65.5L86.9 58.9" stroke="#d49a21" strokeLinecap="round" strokeWidth="5.4" />
+      <circle cx="22" cy="47" fill="#d49a21" r="5.5" stroke="#fff9ea" strokeWidth="2.4" />
+      <circle cx="106" cy="47" fill="#d49a21" r="5.5" stroke="#fff9ea" strokeWidth="2.4" />
+    </svg>
+  );
+}
 
+export default function OpenGraphImage() {
   return new ImageResponse(
     (
       <div
         style={{
-          background: "#ffffff",
-          color: "#005b3f",
+          alignItems: "center",
+          backgroundColor: "#ffffff",
+          backgroundImage:
+            "radial-gradient(circle at 13% 18%, rgba(212,154,33,0.16), transparent 28%), radial-gradient(circle at 88% 78%, rgba(0,103,71,0.13), transparent 30%)",
+          color: "#06402b",
           display: "flex",
           height: "100%",
+          justifyContent: "center",
           overflow: "hidden",
           position: "relative",
           width: "100%"
         }}
       >
-        <img
-          alt=""
-          height={630}
-          src={heroImageUrl}
-          style={{
-            height: "100%",
-            inset: 0,
-            objectFit: "cover",
-            opacity: 0.96,
-            position: "absolute",
-            width: "100%"
-          }}
-          width={1200}
-        />
         <div
           style={{
-            background: "linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.82) 48%, rgba(255,255,255,0.68) 100%)",
-            inset: 0,
-            position: "absolute"
-          }}
-        />
-        <div
-          style={{
-            alignItems: "center",
+            border: "1px solid rgba(0,103,71,0.10)",
+            borderRadius: "44px",
             display: "flex",
-            gap: "28px",
-            height: "100%",
-            padding: "68px 50px 60px",
-            position: "relative",
-            width: "100%"
+            flexDirection: "column",
+            gap: "26px",
+            height: "510px",
+            justifyContent: "center",
+            padding: "58px 72px",
+            width: "1040px"
           }}
         >
           <div
             style={{
+              alignItems: "center",
               display: "flex",
-              flexDirection: "column",
-              gap: "24px",
-              width: "414px"
+              gap: "48px"
             }}
           >
             <div
               style={{
-                color: "#b78300",
-                fontSize: "18px",
-                fontWeight: 800,
-                letterSpacing: "0.38em",
-                textTransform: "uppercase"
+                alignItems: "center",
+                background: "#fffaf0",
+                border: "1px solid rgba(212,154,33,0.26)",
+                borderRadius: "42px",
+                display: "flex",
+                height: "284px",
+                justifyContent: "center",
+                width: "284px"
               }}
             >
-              Katalog Premium
+              <RuangAgunanMark />
             </div>
             <div
               style={{
-                color: "#00623f",
                 display: "flex",
                 flexDirection: "column",
-                fontSize: "52px",
-                fontWeight: 800,
-                letterSpacing: "0",
-                lineHeight: 1.04
+                gap: "20px"
               }}
             >
-              <div>Pilih cara pembelian</div>
-              <div>yang tepat</div>
-              <div>untuk Anda</div>
-            </div>
-            <div
-              style={{
-                color: "#4b5c55",
-                display: "flex",
-                flexDirection: "column",
-                fontSize: "23px",
-                lineHeight: 1.5
-              }}
-            >
-              <div>Dua cara aman dan transparan</div>
-              <div>untuk mendapatkan barang berkualitas</div>
-              <div>dalam prototipe digital.</div>
+              <div
+                style={{
+                  color: "#d49a21",
+                  display: "flex",
+                  fontSize: "20px",
+                  fontWeight: 800,
+                  letterSpacing: "0.34em",
+                  textTransform: "uppercase"
+                }}
+              >
+                Prototipe Tugas Akhir
+              </div>
+              <div
+                style={{
+                  color: "#06402b",
+                  display: "flex",
+                  flexDirection: "column",
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "104px",
+                  fontWeight: 700,
+                  letterSpacing: "-0.055em",
+                  lineHeight: 0.9
+                }}
+              >
+                <div>Ruang</div>
+                <div>Agunan</div>
+              </div>
+              <div
+                style={{
+                  color: "#4e6358",
+                  display: "flex",
+                  flexDirection: "column",
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  lineHeight: 1.32
+                }}
+              >
+                <div>{BRAND_TAGLINE}</div>
+              </div>
             </div>
           </div>
 
           <div
             style={{
+              background: "linear-gradient(90deg, transparent, rgba(212,154,33,0.48), transparent)",
               display: "flex",
-              gap: "18px"
+              height: "2px",
+              width: "100%"
+            }}
+          />
+          <div
+            style={{
+              alignItems: "center",
+              color: "#617568",
+              display: "flex",
+              fontSize: "21px",
+              fontWeight: 700,
+              justifyContent: "space-between"
             }}
           >
-            <ModeCard
-              accent="#007a55"
-              description="Beli sekarang dengan harga pasti."
-              icon={<BriefcaseIcon />}
-              tint="#dff3ea"
-              title="Harga Tetap"
-            >
-              <FeatureRow color="#007a55">Pembayaran instan</FeatureRow>
-              <FeatureRow color="#007a55">Harga pasti dan transparan</FeatureRow>
-              <FeatureRow color="#007a55">Proses cepat dan aman</FeatureRow>
-              <FeatureRow color="#007a55">Pembayaran aman terjamin</FeatureRow>
-            </ModeCard>
-
-            <ModeCard
-              accent="#b78300"
-              description="Penawaran tertutup, pemenang ditetapkan secara adil."
-              icon={<GavelIcon />}
-              tint="#fff0c7"
-              title="Lelang Tertutup"
-            >
-              <FeatureRow color="#b78300">Penawaran tertutup</FeatureRow>
-              <FeatureRow color="#b78300">Pemenang dengan harga terbaik</FeatureRow>
-              <FeatureRow color="#b78300">Aturan jelas dan transparan</FeatureRow>
-              <FeatureRow color="#b78300">Peluang menang lebih besar</FeatureRow>
-            </ModeCard>
+            <span>{BRAND_NAME}</span>
+            <span>app.tugasprototype.cloud</span>
           </div>
         </div>
       </div>

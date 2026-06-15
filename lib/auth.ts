@@ -13,7 +13,7 @@ import {
 import { ensureBuyerRegistrationIdentityIsAvailable } from "@/lib/auth/buyer-registration-guard";
 
 export const auth = betterAuth({
-  appName: "Pegadaian Lelang",
+  appName: "Ruang Agunan",
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {

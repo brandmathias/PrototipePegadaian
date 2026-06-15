@@ -1169,7 +1169,7 @@ export function SuperAdminDashboardPage({
         <p className="sr-only">Superadmin Nasional</p>
         <div className="relative h-[16.5rem] overflow-hidden bg-[#f8fbfc] sm:h-[17.75rem] lg:h-[18.5rem]">
           <Image
-            alt="Gedung Pegadaian untuk Dashboard Nasional Superadmin"
+            alt="Gedung kantor untuk Dashboard Nasional Superadmin"
             className="pointer-events-none object-cover object-center"
             fill
             priority
@@ -1769,7 +1769,7 @@ export function SuperAdminUnitsPage({
     <div className="space-y-8 md:space-y-10">
       <SectionHeading
         eyebrow="Kelola Unit"
-        title="Direktori unit Pegadaian"
+        title="Direktori unit terkait"
         description="Kelola data unit, cek status kesiapan operasional, dan pastikan setiap unit memiliki rekening aktif serta admin yang terhubung."
       />
 
@@ -2131,10 +2131,10 @@ function getUnitTypeLabel(name: string) {
     return "Unit Pelayanan Cabang";
   }
   if (/cp/i.test(name)) {
-    return "Cabang Pegadaian";
+    return "Cabang unit";
   }
 
-  return "Unit Pegadaian";
+  return "Unit terkait";
 }
 
 function getUnitDetailVisiblePages(currentPage: number, totalPages: number) {
@@ -3596,7 +3596,7 @@ function SuperAdminVickreyReceiptInlinePrint({
           { label: "Jenis transaksi", value: "Lelang" },
           { label: "Kode aset", value: receiptContext.itemCode },
         ]}
-        footerText="Dokumen ini diterbitkan sebagai salinan monitoring superadmin Pegadaian Lelang."
+        footerText="Dokumen ini diterbitkan sebagai salinan monitoring superadmin Ruang Agunan."
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={receiptContext.itemTitle}
