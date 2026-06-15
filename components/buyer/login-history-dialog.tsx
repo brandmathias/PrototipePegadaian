@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { CalendarDays, ChevronRight, Clock3, MonitorCheck, X } from "lucide-react";
 
 type LoginHistoryDialogProps = {
@@ -73,54 +74,51 @@ export function LoginHistoryDialog({
         </div>
       </button>
 
-      {open ? (
+      {open && typeof document !== "undefined" ? createPortal(
         <div
           aria-labelledby={titleId}
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-[#102018]/45 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
+          className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#102018]/45 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
           onClick={() => setOpen(false)}
           role="dialog"
         >
           <div
-            className="modal-viewport my-auto flex w-full max-w-xl flex-col overflow-hidden rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
+            className="modal-viewport relative z-[141] my-auto w-full max-w-xl rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
+            data-testid="login-history-dialog-panel"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(242,250,244,0.9)_58%,rgba(255,248,223,0.84))]">
+            <div className="relative overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(242,250,244,0.9)_58%,rgba(255,248,223,0.84))]">
               <div className="absolute -right-16 -top-20 size-52 rounded-full bg-[#d8ad38]/20 blur-3xl" />
               <div className="absolute -left-20 bottom-10 size-48 rounded-full bg-primary/10 blur-3xl" />
 
-              <div className="relative shrink-0 border-b border-primary/10 px-5 py-5 md:px-6">
+              <div className="relative border-b border-primary/10 px-5 py-5 md:px-6">
                 <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/45">
-                    Keamanan Akun
-                  </p>
-                  <h3
-                    className="mt-1 font-headline text-2xl font-black tracking-[-0.035em] text-[#13211c]"
-                    id={titleId}
+                  <div className="min-w-0">
+                    <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/45">
+                      Keamanan Akun
+                    </p>
+                    <h3
+                      className="mt-1 font-headline text-2xl font-black tracking-[-0.035em] text-[#13211c]"
+                      id={titleId}
+                    >
+                      Riwayat Sesi Login
+                    </h3>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                      Pantau waktu akses terbaru agar aktivitas akun tetap mudah diawasi.
+                    </p>
+                  </div>
+                  <button
+                    aria-label="Tutup riwayat login"
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/10 bg-white/80 text-primary transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary hover:text-white active:scale-[0.96]"
+                    onClick={() => setOpen(false)}
+                    type="button"
                   >
-                    Riwayat Sesi Login
-                  </h3>
-                  <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                    Pantau waktu akses terbaru agar aktivitas akun tetap mudah diawasi.
-                  </p>
-                </div>
-                <button
-                  aria-label="Tutup riwayat login"
-                  className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/10 bg-white/80 text-primary transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary hover:text-white active:scale-[0.96]"
-                  onClick={() => setOpen(false)}
-                  type="button"
-                >
-                  <X className="size-4" />
-                </button>
+                    <X className="size-4" />
+                  </button>
                 </div>
               </div>
 
-              <div
-                className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 md:p-6"
-                data-testid="login-history-dialog-scroll"
-              >
-                <div className="space-y-4">
+              <div className="relative space-y-4 p-5 md:p-6">
                 <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-primary/10 bg-white/72 p-4">
                   <div className="flex items-center gap-3">
                     <span className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -166,11 +164,11 @@ export function LoginHistoryDialog({
                     </div>
                   )}
                 </div>
-                </div>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </>
   );

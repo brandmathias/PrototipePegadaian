@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 
 describe("LoginHistoryDialog", () => {
-  it("keeps the dialog header visible while the content area owns scrolling", () => {
+  it("renders through the same viewport-safe portal pattern as other popups", () => {
     render(
       <LoginHistoryDialog
         activeSessionCount={2}
@@ -22,14 +22,16 @@ describe("LoginHistoryDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /sesi login/i }));
 
     const dialog = screen.getByRole("dialog", { name: /riwayat sesi login/i });
-    expect(dialog.firstElementChild).toHaveClass("modal-viewport");
-    expect(dialog.firstElementChild).toHaveClass("flex-col");
+    const panel = screen.getByTestId("login-history-dialog-panel");
 
+    expect(dialog.parentElement).toBe(document.body);
+    expect(dialog).toHaveClass("fixed");
+    expect(dialog).toHaveClass("inset-0");
+    expect(dialog).toHaveClass("z-[140]");
+    expect(dialog).toHaveClass("overflow-y-auto");
+    expect(panel).toHaveClass("modal-viewport");
+    expect(panel).toHaveClass("z-[141]");
     expect(screen.getByText("Riwayat Sesi Login")).toBeInTheDocument();
     expect(screen.getByText("Sesi aktif saat ini")).toBeInTheDocument();
-
-    const contentScroller = screen.getByTestId("login-history-dialog-scroll");
-    expect(contentScroller).toHaveClass("overflow-y-auto");
-    expect(contentScroller).toHaveClass("overscroll-contain");
   });
 });
