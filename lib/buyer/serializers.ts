@@ -1,5 +1,6 @@
 import { getCountdownState } from "@/lib/countdown";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
 import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot, LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
@@ -190,12 +191,17 @@ function getPaymentNotes(row: BuyerTransactionShape) {
 export function serializePublicLot(row: PublicLotShape): Lot {
   const isVickrey = row.marketingMode === "vickrey";
   const price = toNumber(isVickrey ? row.marketingBasePrice : row.marketingPrice);
+  const categoryLabel = resolveAdminUnitCategoryLabel({
+    category: row.category,
+    itemName: row.itemName,
+    specifications: row.specifications
+  });
 
   return {
     id: row.marketingId,
     code: row.itemCode,
     name: row.itemName,
-    category: row.category,
+    category: categoryLabel,
     mode: isVickrey ? "vickrey" : "fixed_price",
     price,
     location: row.unitAddress,
@@ -226,7 +232,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
         url: item.url,
         fileName: item.fileName || row.itemName
       })) ?? [],
-    specs: getBarangSpecificationRows(row.category, row.specifications)
+    specs: getBarangSpecificationRows(row.category, row.specifications, row.itemName)
   };
 }
 

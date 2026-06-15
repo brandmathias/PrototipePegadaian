@@ -82,14 +82,15 @@ export function LoginHistoryDialog({
           role="dialog"
         >
           <div
-            className="modal-viewport my-auto w-full max-w-xl rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
+            className="modal-viewport my-auto flex w-full max-w-xl flex-col overflow-hidden rounded-[2.25rem] border border-white/55 bg-[#f8f4ea] p-2 shadow-[0_44px_120px_-48px_rgba(3,35,24,0.72)]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="relative overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(242,250,244,0.9)_58%,rgba(255,248,223,0.84))]">
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-primary/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(242,250,244,0.9)_58%,rgba(255,248,223,0.84))]">
               <div className="absolute -right-16 -top-20 size-52 rounded-full bg-[#d8ad38]/20 blur-3xl" />
               <div className="absolute -left-20 bottom-10 size-48 rounded-full bg-primary/10 blur-3xl" />
 
-              <div className="relative flex items-start justify-between gap-4 border-b border-primary/10 px-5 py-5 md:px-6">
+              <div className="relative shrink-0 border-b border-primary/10 px-5 py-5 md:px-6">
+                <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-primary/45">
                     Keamanan Akun
@@ -112,9 +113,14 @@ export function LoginHistoryDialog({
                 >
                   <X className="size-4" />
                 </button>
+                </div>
               </div>
 
-              <div className="relative space-y-4 p-5 md:p-6">
+              <div
+                className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 md:p-6"
+                data-testid="login-history-dialog-scroll"
+              >
+                <div className="space-y-4">
                 <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-primary/10 bg-white/72 p-4">
                   <div className="flex items-center gap-3">
                     <span className="grid size-10 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -132,7 +138,7 @@ export function LoginHistoryDialog({
 
                 <div className="rounded-[1.5rem] border border-primary/10 bg-white/82 p-2">
                   {visibleEntries.length > 0 ? (
-                    <div className="max-h-96 divide-y divide-primary/10 overflow-y-auto overscroll-contain">
+                    <div className="divide-y divide-primary/10">
                       {visibleEntries.map((entry, index) => (
                         <div
                           className="flex items-center justify-between gap-4 px-3 py-3.5"
@@ -159,6 +165,7 @@ export function LoginHistoryDialog({
                       </p>
                     </div>
                   )}
+                </div>
                 </div>
               </div>
             </div>

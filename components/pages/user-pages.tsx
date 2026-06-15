@@ -1078,10 +1078,10 @@ export function UserDashboardPage({
 
               return (
                 <div
-                  className="group rounded-[1.45rem] border border-primary/10 bg-white/90 p-5 shadow-[0_18px_48px_-38px_rgba(8,69,50,0.38)] ring-1 ring-white/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/20 hover:bg-white/95"
+                  className="rounded-[1.45rem] border border-primary/10 bg-white/90 p-5 shadow-[0_18px_48px_-38px_rgba(8,69,50,0.38)] ring-1 ring-white/60"
                   key={item.title}
                 >
-                  <span className="grid size-11 place-items-center rounded-[1rem] bg-primary/10 text-primary transition duration-500 group-hover:scale-105 group-hover:bg-primary group-hover:text-white">
+                  <span className="grid size-11 place-items-center rounded-[1rem] bg-primary/10 text-primary">
                     <Icon className="size-5" />
                   </span>
                   <h3 className="mt-4 font-semibold text-foreground">{item.title}</h3>

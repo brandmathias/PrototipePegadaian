@@ -11,17 +11,16 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Cpu,
   Gem,
   Gavel,
   Grid3X3,
   LayoutList,
   MapPin,
   Medal,
-  PackagePlus,
+  MonitorSmartphone,
+  Package2,
   RotateCcw,
   Search,
-  Shapes,
   ShoppingBag,
   SlidersHorizontal,
   Tag,
@@ -36,6 +35,7 @@ import { LotFigure } from "@/components/shared/lot-figure";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
+import { ADMIN_UNIT_CATEGORY_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
 import type { CountdownState } from "@/lib/countdown";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDateTime } from "@/lib/timezone";
@@ -166,14 +166,16 @@ function getLotInsights(lot: Lot) {
 }
 
 function getCategoryIcon(category: string) {
-  const normalized = normalize(category);
+  const normalized = normalize(category).replace(/\s+/g, "_") as AdminUnitCategoryIconKey;
+  const iconMap = {
+    perhiasan: Gem,
+    logam_mulia: Medal,
+    elektronik: MonitorSmartphone,
+    kendaraan: CarFront,
+    lainnya: Package2
+  } satisfies Record<AdminUnitCategoryIconKey, typeof Gem>;
 
-  if (normalized.includes("emas")) return Gem;
-  if (normalized.includes("perhiasan")) return Shapes;
-  if (normalized.includes("logam")) return Medal;
-  if (normalized.includes("elektronik")) return Cpu;
-  if (normalized.includes("kendaraan")) return CarFront;
-  return PackagePlus;
+  return iconMap[normalized] ?? Package2;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -820,7 +822,12 @@ export function CatalogPage({
   const categories = useMemo(() => {
     const map = new Map<string, number>();
     initialLots.forEach((lot) => map.set(lot.category, (map.get(lot.category) ?? 0) + 1));
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "id"));
+    const rank = new Map<string, number>(ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index]));
+    return [...map.entries()].sort((a, b) => {
+      const leftRank = rank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
+      const rightRank = rank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
+      return leftRank - rightRank || a[0].localeCompare(b[0], "id");
+    });
   }, [initialLots]);
 
   const conditions = useMemo(() => {

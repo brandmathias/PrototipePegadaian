@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { SyntheticEvent } from "react";
-import { Gem, Laptop, Car, Coins, Package } from "lucide-react";
+import { CarFront, Gem, Medal, MonitorSmartphone, Package2 } from "lucide-react";
 
+import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
 import { cn } from "@/lib/utils";
 
 type LotFigureProps = {
@@ -23,19 +24,19 @@ const categoryMap = {
     tone: "from-[#0a5d2d] via-[#0d6b35] to-[#735c00]"
   },
   Elektronik: {
-    icon: Laptop,
+    icon: MonitorSmartphone,
     tone: "from-[#143b2a] via-[#006432] to-[#224f6d]"
   },
   Kendaraan: {
-    icon: Car,
+    icon: CarFront,
     tone: "from-[#1f3326] via-[#004a23] to-[#4e5d1d]"
   },
   "Logam Mulia": {
-    icon: Coins,
+    icon: Medal,
     tone: "from-[#735c00] via-[#9c7a00] to-[#004a23]"
   },
   Lainnya: {
-    icon: Package,
+    icon: Package2,
     tone: "from-[#244236] via-[#355f4f] to-[#735c00]"
   }
 } as const;
@@ -61,10 +62,13 @@ export function LotFigure({
   showVideoControls = false,
   variant = "default"
 }: LotFigureProps) {
-  const config = categoryMap[category as keyof typeof categoryMap] ?? categoryMap.Lainnya;
+  const categoryLabel = resolveAdminUnitCategoryLabel({ category });
+  const config = categoryMap[categoryLabel as keyof typeof categoryMap] ?? categoryMap.Lainnya;
   const Icon = config.icon;
   const primaryMedia = media.find((item) => item.type === "foto") ?? media[0];
-  const primaryMediaLabel = primaryMedia ? `${category} ${primaryMedia.type === "video" ? "video" : "foto"} utama` : category;
+  const primaryMediaLabel = primaryMedia
+    ? `${categoryLabel} ${primaryMedia.type === "video" ? "video" : "foto"} utama`
+    : categoryLabel;
   const mediaToneClass =
     primaryMedia?.type === "video"
       ? "bg-[#050505]"
@@ -109,7 +113,7 @@ export function LotFigure({
           <div className="flex items-start justify-between gap-3">
             {showCategoryBadge ? (
               <span className="w-fit rounded-full bg-black/36 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/90">
-                {category}
+                {categoryLabel}
               </span>
             ) : null}
           </div>
@@ -143,7 +147,7 @@ export function LotFigure({
       <div className="relative flex h-full min-h-40 flex-col justify-between">
         {showCategoryBadge ? (
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/70">
-            {category}
+            {categoryLabel}
           </span>
         ) : (
           <span aria-hidden="true" />

@@ -1,3 +1,5 @@
+import { resolveAdminUnitCategory } from "@/lib/catalog/categories";
+
 export type BarangSpecificationRecord = Record<string, string>;
 
 export type BarangSpecificationField = {
@@ -55,13 +57,33 @@ const specificationFields: Record<string, BarangSpecificationField[]> = {
   ]
 };
 
-export function normalizeSpecificationCategory(category: string) {
-  const normalized = String(category ?? "").trim().toLowerCase();
-  return specificationFields[normalized] ? normalized : "lainnya";
+const specificationAliases: Partial<Record<string, Record<string, string[]>>> = {
+  perhiasan: {
+    jenisEmas: ["jenisEmas", "jenisLogam"],
+    kadarEmas: ["kadarEmas", "kadar"],
+    sertifikat: ["sertifikat", "brand", "nomorSertifikat"]
+  },
+  logam_mulia: {
+    jenisLogam: ["jenisLogam", "jenisEmas", "bentuk"],
+    brand: ["brand", "sertifikat"],
+    kadar: ["kadar", "kadarEmas"],
+    berat: ["berat"],
+    nomorSertifikat: ["nomorSertifikat", "sertifikat"]
+  }
+};
+
+export function normalizeSpecificationCategory(category: string, specifications?: unknown, itemName?: string) {
+  const resolved = resolveAdminUnitCategory({
+    category,
+    itemName,
+    specifications
+  });
+
+  return specificationFields[resolved] ? resolved : "lainnya";
 }
 
-export function getBarangSpecificationFields(category: string) {
-  return specificationFields[normalizeSpecificationCategory(category)];
+export function getBarangSpecificationFields(category: string, specifications?: unknown, itemName?: string) {
+  return specificationFields[normalizeSpecificationCategory(category, specifications, itemName)];
 }
 
 export function normalizeBarangSpecifications(category: string, input: unknown): BarangSpecificationRecord {
@@ -69,10 +91,17 @@ export function normalizeBarangSpecifications(category: string, input: unknown):
     return {};
   }
 
+  const normalizedCategory = normalizeSpecificationCategory(category, input);
   const source = input as Record<string, unknown>;
+  const aliases = specificationAliases[normalizedCategory] ?? {};
 
-  return getBarangSpecificationFields(category).reduce<BarangSpecificationRecord>((result, field) => {
-    const value = String(source[field.key] ?? "").trim();
+  return getBarangSpecificationFields(normalizedCategory, input).reduce<BarangSpecificationRecord>((result, field) => {
+    const candidateKeys = aliases[field.key] ?? [field.key];
+    const matchedValue = candidateKeys
+      .map((key) => String(source[key] ?? "").trim())
+      .find((value) => value.length > 0);
+
+    const value = matchedValue ?? "";
     if (value) {
       result[field.key] = value;
     }
@@ -80,10 +109,11 @@ export function normalizeBarangSpecifications(category: string, input: unknown):
   }, {});
 }
 
-export function getBarangSpecificationRows(category: string, specifications: unknown) {
-  const normalized = normalizeBarangSpecifications(category, specifications);
+export function getBarangSpecificationRows(category: string, specifications: unknown, itemName?: string) {
+  const normalizedCategory = normalizeSpecificationCategory(category, specifications, itemName);
+  const normalized = normalizeBarangSpecifications(normalizedCategory, specifications);
 
-  return getBarangSpecificationFields(category)
+  return getBarangSpecificationFields(normalizedCategory, specifications, itemName)
     .map((field) => ({
       label: field.label,
       value: normalized[field.key] ?? ""

@@ -27,7 +27,7 @@ describe("CatalogPage", () => {
       id: `lot-db-${index}`,
       code: `BRG-${String(index).padStart(4, "0")}`,
       name: `Barang Katalog ${index}`,
-      category: index % 2 === 0 ? "Elektronik" : "Emas & Perhiasan",
+      category: index % 2 === 0 ? "Elektronik" : "Perhiasan",
       mode: index % 2 === 0 ? "vickrey" : "fixed_price",
       price: 5_000_000 + index * 1_000_000,
       location: index % 2 === 0 ? "UPC Bandung" : "UPC Jakarta Pusat",
@@ -58,7 +58,7 @@ describe("CatalogPage", () => {
       <CatalogPage
         serverNow={new Date("2026-05-29T12:15:00+08:00").toISOString()}
         lots={[
-          makeLot(1, { name: "Cincin Emas Berlian", category: "Emas & Perhiasan" }),
+          makeLot(1, { name: "Cincin Emas Berlian", category: "Perhiasan" }),
           makeLot(2, {
             name: "Laptop ASUS VivoBook 14",
             category: "Elektronik",
@@ -75,7 +75,7 @@ describe("CatalogPage", () => {
     expect(screen.getAllByText("Lelang Tertutup")[0]).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /semua mode/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /emas & perhiasan/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /perhiasan/i })).toBeInTheDocument();
     expect(screen.getAllByText(/dilihat/i)[0]).toBeInTheDocument();
     expect(screen.getAllByText(/suka/i)[0]).toBeInTheDocument();
     expect(screen.getByText("Harga")).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe("CatalogPage", () => {
             id: "lot-db-fixed",
             code: "LOT-FIXED",
             name: "Cincin Harga Tetap",
-            category: "Emas & Perhiasan",
+            category: "Perhiasan",
             mode: "fixed_price",
             price: 12500000,
             location: "Manado",
@@ -108,7 +108,7 @@ describe("CatalogPage", () => {
             description: "Data harga tetap dari database.",
             endsAt: new Date("2026-05-05T10:00:00+08:00").toISOString(),
             media: [],
-            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
           }
         ]}
       />
@@ -149,7 +149,7 @@ describe("CatalogPage", () => {
             id: "lot-media",
             code: "LOT-MEDIA",
             name: "Kalung Dengan Foto",
-            category: "Emas & Perhiasan",
+            category: "Perhiasan",
             mode: "fixed_price",
             price: 12500000,
             location: "Manado",
@@ -166,13 +166,13 @@ describe("CatalogPage", () => {
                 fileName: "kalung.jpg"
               }
             ],
-            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
           }
         ]}
       />
     );
 
-    expect(screen.getByRole("img", { name: "Emas & Perhiasan foto utama" }).getAttribute("src")).toContain(
+    expect(screen.getByRole("img", { name: "Perhiasan foto utama" }).getAttribute("src")).toContain(
       "%2Fuploads%2Fbarang%2Fkalung.jpg"
     );
   });
@@ -186,7 +186,7 @@ describe("CatalogPage", () => {
             id: "lot-1",
             code: "LOT-1",
             name: "Kalung Emas",
-            category: "Emas & Perhiasan",
+            category: "Perhiasan",
             mode: "fixed_price",
             price: 100000000,
             location: "Ranotana",
@@ -196,7 +196,7 @@ describe("CatalogPage", () => {
             status: "Tersedia",
             description: "Barang emas premium.",
             media: [],
-            specs: [{ label: "Kategori", value: "Emas & Perhiasan" }]
+            specs: [{ label: "Kategori", value: "Perhiasan" }]
           },
           {
             id: "lot-2",
@@ -253,7 +253,7 @@ describe("CatalogPage", () => {
                   ? "Logam Mulia"
                   : index % 2 === 0
                     ? "Elektronik"
-                    : "Emas & Perhiasan"
+                    : "Perhiasan"
           })
         )}
       />
@@ -294,7 +294,7 @@ describe("CatalogPage", () => {
           makeLot(2, {
             name: "Cincin Emas 2",
             mode: "fixed_price",
-            category: "Emas",
+            category: "Perhiasan",
             condition: "Baik",
             specs: [{ label: "Jenis", value: "Cincin" }],
           }),

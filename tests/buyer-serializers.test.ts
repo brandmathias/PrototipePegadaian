@@ -33,6 +33,7 @@ describe("buyer serializers", () => {
       participants: 3,
       views: 42
     });
+    expect(lot.category).toBe("Perhiasan");
   });
 
   it("uses structured category specifications for public lot details without repeating generic metadata", () => {
@@ -64,6 +65,7 @@ describe("buyer serializers", () => {
     });
 
     expect(lot.updatedAt).toBe("2026-05-22T03:30:00.000Z");
+    expect(lot.category).toBe("Perhiasan");
     expect(lot.specs).toEqual([
       { label: "Jenis Emas", value: "Cincin" },
       { label: "Kadar Emas", value: "99,9%" },
@@ -76,6 +78,39 @@ describe("buyer serializers", () => {
     expect(lot.specs.map((item) => item.label)).not.toEqual(
       expect.arrayContaining(["Kategori", "Kondisi", "Unit Pegadaian", "Lokasi", "Mode", "Status"])
     );
+  });
+
+  it("maps legacy emas batangan content into the admin unit logam mulia category", () => {
+    const lot = serializePublicLot({
+      marketingId: "pm-logam-mulia",
+      marketingMode: "fixed_price",
+      marketingPrice: "25000000",
+      marketingBasePrice: null,
+      itemId: "barang-lm",
+      itemCode: "BRG-LM",
+      itemName: "Emas Batangan Antam 10 Gram",
+      category: "Emas",
+      condition: "baik",
+      description: "Logam mulia dengan sertifikat resmi.",
+      unitName: "UPC Wanea",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      updatedAt: new Date("2026-05-22T03:30:00Z"),
+      account: null,
+      media: [],
+      specifications: {
+        jenisEmas: "Batangan",
+        sertifikat: "Antam",
+        berat: "10 gram"
+      }
+    });
+
+    expect(lot.category).toBe("Logam Mulia");
+    expect(lot.specs.map((item) => item.label)).toEqual([
+      "Jenis Logam",
+      "Brand",
+      "Berat",
+      "Nomor Sertifikat"
+    ]);
   });
 
   it("splits legacy proof values into payment proof and reference", () => {

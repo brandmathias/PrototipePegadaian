@@ -20,7 +20,7 @@ function makeWishlistItem(overrides: Partial<BuyerWishlistItem> = {}): BuyerWish
       id: "lot-fixed-1",
       code: "BRG-55154818",
       name: "Cincin Emas 2",
-      category: "Emas & Perhiasan",
+      category: "Perhiasan",
       mode: "fixed_price",
       price: 10000000,
       location: "Manado",
@@ -38,7 +38,7 @@ function makeWishlistItem(overrides: Partial<BuyerWishlistItem> = {}): BuyerWish
         }
       ],
       specs: [
-        { label: "Kategori", value: "Emas & Perhiasan" },
+        { label: "Kategori", value: "Perhiasan" },
         { label: "Kondisi", value: "Baik" }
       ]
     },
