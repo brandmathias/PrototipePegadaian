@@ -66,6 +66,40 @@ type DetailInfoItem = {
   value: string;
 };
 
+function AuthBrandCluster({
+  accentLabel,
+  mode = "panel"
+}: {
+  accentLabel: string;
+  mode?: "hero" | "panel";
+}) {
+  if (mode === "hero") {
+    return (
+      <div className="inline-flex rounded-full border border-white/12 bg-[rgba(8,21,15,0.58)] p-1.5 shadow-[0_18px_40px_-28px_rgba(0,0,0,0.72)]">
+        <div className="inline-flex items-center gap-3 rounded-full bg-[linear-gradient(180deg,rgba(252,248,239,0.98),rgba(242,234,216,0.94))] px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
+          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
+          <span className="h-4 w-px bg-[#d2c29d]" />
+          <span className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#0b4a33]">
+            {accentLabel}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex max-w-full rounded-[1.85rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))] p-1.5 shadow-[0_24px_50px_-34px_rgba(0,0,0,0.58)]">
+      <div className="inline-flex min-w-0 items-center gap-3 rounded-[1.45rem] bg-[linear-gradient(180deg,rgba(252,248,239,0.98),rgba(241,233,216,0.95))] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+        <BrandLockup markClassName="size-11" nameClassName="h-7 max-w-[11.75rem]" />
+        <span className="hidden h-5 w-px bg-[#d2c29d] sm:block" />
+        <span className="text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-white/76 sm:text-[#0d4f38]">
+          {accentLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function getPriceChangeCopy(isVickrey: boolean) {
   if (isVickrey) {
     return "Harga akhir menyesuaikan hasil lelang dan verifikasi transaksi.";
@@ -462,8 +496,8 @@ export function LoginPage() {
         } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,207,91,0.24),transparent_26%),radial-gradient(circle_at_80%_14%,rgba(5,67,40,0.38),transparent_28%)]" />
-        <div className="absolute left-12 top-12 rounded-full border border-white/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md xl:left-16 xl:top-16">
-          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
+        <div className="absolute left-12 top-12 xl:left-16 xl:top-16">
+          <AuthBrandCluster accentLabel="Akun Pembeli" mode="hero" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[700px] space-y-7">
@@ -502,16 +536,7 @@ export function LoginPage() {
 
         <div className="relative w-full max-w-[560px]">
           <div className="mb-9 space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex rounded-[1.4rem] border border-white/70 bg-white/95 px-3 py-2 shadow-sm">
-                <BrandLockup markClassName="size-12" nameClassName="h-8 max-w-[13rem]" />
-              </span>
-              <div>
-                <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
-                  Akun pembeli
-                </p>
-              </div>
-            </div>
+            <AuthBrandCluster accentLabel="Akun Pembeli" />
             <div>
               <h2 className="font-headline text-4xl font-black tracking-tight xl:text-5xl">
                 Masuk ke akun Anda
@@ -542,16 +567,7 @@ export function RegisterPage() {
         <div className="absolute bottom-0 left-0 h-56 w-full bg-[radial-gradient(circle_at_0%_100%,rgba(13,143,83,0.28),transparent_52%)]" />
         <div className="relative w-full max-w-[650px]">
           <div className="mb-9 space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex rounded-[1.4rem] border border-white/70 bg-white/95 px-3 py-2 shadow-sm">
-                <BrandLockup markClassName="size-12" nameClassName="h-8 max-w-[13rem]" />
-              </span>
-              <div>
-                <p className="mt-2 text-[0.68rem] font-bold uppercase tracking-[0.2em] text-emerald-100/58">
-                  Registrasi pembeli
-                </p>
-              </div>
-            </div>
+            <AuthBrandCluster accentLabel="Registrasi Pembeli" />
             <div>
               <h1 className="font-headline text-4xl font-black tracking-tight xl:text-5xl">
                 Buat akun pembeli baru
@@ -576,8 +592,8 @@ export function RegisterPage() {
         } as CSSProperties}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,207,91,0.22),transparent_26%),radial-gradient(circle_at_20%_14%,rgba(5,67,40,0.36),transparent_28%)]" />
-        <div className="absolute left-12 top-12 rounded-full border border-white/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md xl:left-16 xl:top-16">
-          <BrandLockup markClassName="size-5" nameClassName="h-4 max-w-[7.25rem]" />
+        <div className="absolute left-12 top-12 xl:left-16 xl:top-16">
+          <AuthBrandCluster accentLabel="Registrasi Pembeli" mode="hero" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[680px] space-y-7">
