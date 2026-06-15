@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -48,6 +49,10 @@ function getProfileInitials(name: string) {
   return `${words[0][0]}${words[1][0]}`.toUpperCase();
 }
 
+function shouldSkipImageOptimization(src: string) {
+  return src.startsWith("data:") || src.startsWith("blob:");
+}
+
 async function resizeProfileImage(file: File) {
   if (!file.type.startsWith("image/")) {
     throw new Error("Pilih file gambar PNG, JPG, atau WebP.");
@@ -66,7 +71,7 @@ async function resizeProfileImage(file: File) {
       element.onerror = () => reject(new Error("Foto profil tidak dapat dibaca."));
       element.src = objectUrl;
     });
-    const maxSide = 640;
+    const maxSide = 320;
     const ratio = Math.min(1, maxSide / Math.max(image.naturalWidth, image.naturalHeight));
     const width = Math.max(1, Math.round(image.naturalWidth * ratio));
     const height = Math.max(1, Math.round(image.naturalHeight * ratio));
@@ -80,7 +85,7 @@ async function resizeProfileImage(file: File) {
     }
 
     context.drawImage(image, 0, 0, width, height);
-    return canvas.toDataURL("image/jpeg", 0.84);
+    return canvas.toDataURL("image/jpeg", 0.72);
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -291,10 +296,13 @@ export function BuyerProfileSettingsForm({
                 type="button"
               >
                 {avatarImage ? (
-                  <img
+                  <Image
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="object-cover"
+                    fill
+                    sizes="(max-width: 768px) 7rem, 8rem"
                     src={avatarImage}
+                    unoptimized={shouldSkipImageOptimization(avatarImage)}
                   />
                 ) : (
                   <span>{initials}</span>

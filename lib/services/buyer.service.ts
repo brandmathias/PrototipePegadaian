@@ -49,6 +49,40 @@ type BuyerReadOptions = {
   prefetchedTransactions?: BuyerTransaction[];
 };
 
+export type BuyerProfileSummary = {
+  name: string;
+  email: string;
+  image: string | null;
+  wishlistCount: number;
+  phone: string;
+  nationalId: string;
+  memberSince: string;
+  security: {
+    passwordUpdatedAt: string;
+    activeSessionCount: number;
+    sessionHistory: string[];
+  };
+  blacklist: {
+    active: boolean;
+    incidentId?: string | null;
+    until: string;
+    reason: string;
+    violations: number;
+  };
+};
+
+export type BuyerShellSummary = {
+  image: string | null;
+  memberSince: string;
+  wishlistCount: number;
+  blacklist: {
+    active: boolean;
+    until: string;
+    reason: string;
+    violations: number;
+  };
+};
+
 function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
 }
@@ -141,6 +175,35 @@ async function getActiveBlacklist(userId: string) {
     .limit(1);
 
   return row ?? null;
+}
+
+async function getBuyerBlacklistInfo(userId: string) {
+  const blacklist = await getActiveBlacklist(userId);
+  const [latestBlacklistIncident] = blacklist
+    ? await db
+        .select({ id: pelanggaranUser.id })
+        .from(pelanggaranUser)
+        .where(and(eq(pelanggaranUser.userId, userId), eq(pelanggaranUser.escalationEligible, true)))
+        .orderBy(desc(pelanggaranUser.createdAt))
+        .limit(1)
+    : [null];
+  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+
+  return {
+    blacklist,
+    blacklistPolicy,
+    summary: {
+      active: Boolean(blacklist),
+      incidentId: latestBlacklistIncident?.id ?? null,
+      violations: blacklist?.totalViolations ?? 0,
+      until: formatAppDate(blacklist?.blockedUntil),
+      reason: blacklist
+        ? blacklistPolicy.blocksFixedPrice
+          ? "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
+          : "Akun masih dibatasi untuk mengikuti Lelang Tertutup dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
+        : "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
+    }
+  };
 }
 
 async function ensureCanSettleBuyerTransaction(userId: string) {
@@ -297,6 +360,116 @@ export async function getBuyerBidVerification(userId: string, pemasaranId: strin
   };
 }
 
+export async function getBuyerShellSummary(userId: string, options?: BuyerReadOptions): Promise<BuyerShellSummary> {
+  await refreshBuyerAuctionSettlementState(options);
+
+  const [[profile], [buyerUser], wishlistCount] = await Promise.all([
+    db
+      .select({
+        createdAt: buyerProfiles.createdAt
+      })
+      .from(buyerProfiles)
+      .where(eq(buyerProfiles.userId, userId))
+      .limit(1),
+    db
+      .select({
+        image: users.image,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1),
+    getBuyerWishlistCount(userId)
+  ]);
+  const { summary: blacklistSummary } = await getBuyerBlacklistInfo(userId);
+
+  return {
+    image: buyerUser?.image ?? null,
+    memberSince: formatAppLongDate(profile?.createdAt ?? buyerUser?.createdAt),
+    wishlistCount,
+    blacklist: blacklistSummary
+  };
+}
+
+export async function getBuyerProfileSummary(userId: string, options?: BuyerReadOptions): Promise<BuyerProfileSummary> {
+  await refreshBuyerAuctionSettlementState(options);
+
+  const now = new Date();
+  const [[profile], [buyerUser], [latestCredentialAccount], recentSessions, activeSessions, wishlistCount] = await Promise.all([
+    db
+      .select({
+        fullName: buyerProfiles.fullName,
+        email: buyerProfiles.email,
+        phoneNumber: buyerProfiles.phoneNumber,
+        nationalId: buyerProfiles.nationalId,
+        status: buyerProfiles.status,
+        createdAt: buyerProfiles.createdAt
+      })
+      .from(buyerProfiles)
+      .where(eq(buyerProfiles.userId, userId))
+      .limit(1),
+    db
+      .select({
+        image: users.image,
+        name: users.name,
+        email: users.email,
+        phoneNumber: users.phoneNumber,
+        nationalId: users.nationalId,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1),
+    db
+      .select({
+        updatedAt: accounts.updatedAt
+      })
+      .from(accounts)
+      .where(eq(accounts.userId, userId))
+      .orderBy(desc(accounts.updatedAt))
+      .limit(1),
+    db
+      .select({
+        id: sessions.id,
+        createdAt: sessions.createdAt,
+        updatedAt: sessions.updatedAt,
+        expiresAt: sessions.expiresAt
+      })
+      .from(sessions)
+      .where(eq(sessions.userId, userId))
+      .orderBy(desc(sessions.updatedAt), desc(sessions.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: sessions.id
+      })
+      .from(sessions)
+      .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, now))),
+    getBuyerWishlistCount(userId)
+  ]);
+  const { summary: blacklistSummary } = await getBuyerBlacklistInfo(userId);
+  const nationalId = profile?.nationalId ?? buyerUser?.nationalId ?? "";
+  const sessionHistory = recentSessions.map((sessionRow) =>
+    formatAppDateTime(sessionRow.updatedAt ?? sessionRow.createdAt)
+  );
+
+  return {
+    name: profile?.fullName ?? buyerUser?.name ?? "Pembeli Pegadaian",
+    email: profile?.email ?? buyerUser?.email ?? "-",
+    image: buyerUser?.image ?? null,
+    wishlistCount,
+    phone: profile?.phoneNumber ?? buyerUser?.phoneNumber ?? "-",
+    nationalId,
+    memberSince: formatAppLongDate(profile?.createdAt ?? buyerUser?.createdAt),
+    security: {
+      passwordUpdatedAt: formatAppLongDate(latestCredentialAccount?.updatedAt),
+      activeSessionCount: activeSessions.length,
+      sessionHistory
+    },
+    blacklist: blacklistSummary
+  };
+}
+
 export async function getBuyerSummary(userId: string, options?: BuyerReadOptions) {
   await refreshBuyerAuctionSettlementState(options);
 
@@ -342,16 +515,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
       .from(sessions)
       .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, now)))
   ]);
-  const blacklist = await getActiveBlacklist(userId);
-  const [latestBlacklistIncident] = blacklist
-    ? await db
-        .select({ id: pelanggaranUser.id })
-        .from(pelanggaranUser)
-        .where(and(eq(pelanggaranUser.userId, userId), eq(pelanggaranUser.escalationEligible, true)))
-        .orderBy(desc(pelanggaranUser.createdAt))
-        .limit(1)
-    : [null];
-  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+  const { summary: blacklistSummary } = await getBuyerBlacklistInfo(userId);
   const [wishlistCount, transactions, bidHistory] = await Promise.all([
     getBuyerWishlistCount(userId),
     options?.prefetchedTransactions
@@ -387,17 +551,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
       activeSessionCount: activeSessions.length,
       sessionHistory
     },
-    blacklist: {
-      active: Boolean(blacklist),
-      incidentId: latestBlacklistIncident?.id ?? null,
-      violations: blacklist?.totalViolations ?? 0,
-      until: formatAppDate(blacklist?.blockedUntil),
-      reason: blacklist
-        ? blacklistPolicy.blocksFixedPrice
-          ? "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
-          : "Akun masih dibatasi untuk mengikuti Lelang Tertutup dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
-        : "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
-    },
+    blacklist: blacklistSummary,
     metrics: [
       {
         label: "Transaksi aktif",
@@ -892,7 +1046,7 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
     }
   });
 
-  return getBuyerSummary(userId);
+  return getBuyerProfileSummary(userId, { refreshAuctionState: false });
 }
 
 function isFixedPriceLockedByOtherBuyerStatus(status: string) {

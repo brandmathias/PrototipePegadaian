@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { Gavel, LogOut } from "lucide-react";
 
@@ -38,10 +38,14 @@ function getViewerLabel(role: AuthRole) {
 
 export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isBuyer = viewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
   const navItems = guestNav;
   const brandHref = viewer?.homeHref ?? "/katalog";
+  const search = searchParams.toString();
+  const currentPath = search ? `${pathname}?${search}` : pathname;
+  const catalogSearchValue = pathname.startsWith("/katalog") ? searchParams.get("q") ?? "" : "";
 
   return (
     <div
@@ -52,6 +56,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
     >
       {isBuyer && viewer ? (
         <BuyerTopNav
+          currentPath={currentPath}
           image={viewer.image}
           name={viewer.name}
           variant="light"
@@ -102,6 +107,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
 
             <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
               <CatalogSearchInput
+                defaultValue={catalogSearchValue}
                 inputClassName="hidden w-72 lg:block xl:w-80"
                 placeholder="Cari lot atau unit..."
                 wrapperClassName="hidden lg:block"

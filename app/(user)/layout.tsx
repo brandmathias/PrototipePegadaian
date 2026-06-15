@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
 import { getAppPathFromRequestHeaders, requireBuyerSession } from "@/lib/auth/session";
-import { getBuyerSummary } from "@/lib/services/buyer.service";
+import { getBuyerShellSummary } from "@/lib/services/buyer.service";
 
 export const dynamic = "force-dynamic";
 
 export default async function UserLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
   const session = await requireBuyerSession(currentPath);
-  const summary = await getBuyerSummary(session.user.id);
+  const summary = await getBuyerShellSummary(session.user.id);
 
   return (
     <BuyerShell

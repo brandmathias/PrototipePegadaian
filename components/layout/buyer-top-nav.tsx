@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Gavel, Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
@@ -10,6 +7,7 @@ import { AlertCenter } from "@/components/ui/alert-center";
 import { cn } from "@/lib/utils";
 
 type BuyerTopNavProps = {
+  currentPath?: string;
   image?: string | null;
   name: string;
   variant?: "light" | "luxury";
@@ -34,9 +32,19 @@ const buyerNav = [
   }
 ];
 
-export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
-  const pathname = usePathname();
+function getCatalogSearchValue(pathname: string) {
+  if (!pathname.startsWith("/katalog")) {
+    return "";
+  }
+
+  const [, query = ""] = pathname.split("?", 2);
+  return new URLSearchParams(query).get("q") ?? "";
+}
+
+export function BuyerTopNav({ currentPath = "", image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
+  const pathname = currentPath;
   const isLuxury = variant === "luxury";
+  const catalogSearchValue = getCatalogSearchValue(pathname);
 
   return (
     <header
@@ -107,6 +115,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
         </div>
         <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
           <CatalogSearchInput
+            defaultValue={catalogSearchValue}
             inputClassName={cn(
               "hidden w-72 lg:block xl:w-80",
               isLuxury &&
@@ -144,6 +153,7 @@ export function BuyerTopNav({ image, name, variant = "light", wishlistCount = 0 
       </div>
       <div className="container grid gap-3 pb-3 lg:hidden">
         <CatalogSearchInput
+          defaultValue={catalogSearchValue}
           inputClassName={cn(
             "h-11 w-full text-sm",
             isLuxury &&

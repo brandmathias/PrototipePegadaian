@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +25,10 @@ function getInitials(name: string) {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
 
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+function shouldSkipImageOptimization(src: string) {
+  return src.startsWith("data:") || src.startsWith("blob:");
 }
 
 export function BuyerProfileMenu({
@@ -71,10 +76,13 @@ export function BuyerProfileMenu({
       >
         <span className="relative grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
           {image ? (
-            <img
+            <Image
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              className="object-cover"
+              fill
+              sizes="2rem"
               src={image}
+              unoptimized={shouldSkipImageOptimization(image)}
             />
           ) : null}
           <span className={cn(image ? "opacity-0" : "opacity-100")}>{getInitials(name)}</span>
@@ -99,10 +107,13 @@ export function BuyerProfileMenu({
             <div className="flex items-center gap-3">
               <span className="relative grid size-11 place-items-center overflow-hidden rounded-full bg-primary text-xs font-black tracking-[-0.04em] text-white">
                 {image ? (
-                  <img
+                  <Image
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="object-cover"
+                    fill
+                    sizes="2.75rem"
                     src={image}
+                    unoptimized={shouldSkipImageOptimization(image)}
                   />
                 ) : null}
                 <span className={cn(image ? "opacity-0" : "opacity-100")}>{getInitials(name)}</span>

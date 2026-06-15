@@ -36,7 +36,7 @@ vi.mock("@/lib/services/wishlist.service", () => ({
   getBuyerWishlistCount: mocks.getBuyerWishlistCount
 }));
 
-import { getBuyerSummary, listBuyerTransactions } from "@/lib/services/buyer.service";
+import { getBuyerProfileSummary, getBuyerSummary, listBuyerTransactions } from "@/lib/services/buyer.service";
 
 function mockBuyerTransactionRows(rows: Array<Record<string, unknown>>) {
   return {
@@ -224,5 +224,69 @@ describe("buyer auction state refresh", () => {
         violations: 1
       })
     );
+  });
+
+  it("reads the profile page summary without loading transaction or bid history", async () => {
+    mocks.getBuyerWishlistCount.mockResolvedValue(3);
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockLimitRows([
+          {
+            createdAt: new Date("2026-05-01T00:00:00.000Z"),
+            email: "profile@example.com",
+            fullName: "Buyer Profil",
+            nationalId: "7171000000000002",
+            phoneNumber: "081111111111",
+            status: "active"
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockLimitRows([
+          {
+            createdAt: new Date("2026-04-20T00:00:00.000Z"),
+            email: "buyer@example.com",
+            image: "data:image/jpeg;base64,avatar",
+            name: "Buyer Fallback",
+            nationalId: "7171000000000001",
+            phoneNumber: "080000000000"
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockOrderedLimitRows([
+          {
+            updatedAt: new Date("2026-05-10T00:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockOrderedLimitRows([
+          {
+            createdAt: new Date("2026-05-11T00:00:00.000Z"),
+            expiresAt: new Date("2026-06-11T00:00:00.000Z"),
+            id: "session-1",
+            updatedAt: new Date("2026-05-11T08:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockWhereRows([{ id: "session-1" }]))
+      .mockImplementationOnce(() => mockLimitRows([]));
+
+    const summary = await getBuyerProfileSummary("buyer-1");
+
+    expect(mocks.db.select).toHaveBeenCalledTimes(6);
+    expect(mocks.serializeBuyerTransaction).not.toHaveBeenCalled();
+    expect(summary).toEqual(
+      expect.objectContaining({
+        email: "profile@example.com",
+        image: "data:image/jpeg;base64,avatar",
+        name: "Buyer Profil",
+        nationalId: "7171000000000002",
+        phone: "081111111111",
+        wishlistCount: 3
+      })
+    );
+    expect(summary.blacklist.active).toBe(false);
   });
 });

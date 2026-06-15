@@ -40,7 +40,12 @@ export function BuyerShell({
         "app-responsive-shell buyer-experience-root min-h-dvh bg-white"
       )}
     >
-      <BuyerTopNav image={summary.image} name={buyer.name} wishlistCount={summary.wishlistCount} />
+      <BuyerTopNav
+        currentPath={currentPath}
+        image={summary.image}
+        name={buyer.name}
+        wishlistCount={summary.wishlistCount}
+      />
 
       <main
         className={cn(
