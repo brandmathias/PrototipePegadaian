@@ -353,11 +353,16 @@ export function DashboardShell({
         )}
       >
         <div className="shrink-0 rounded-[1.55rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.035))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_18px_40px_-34px_rgba(0,0,0,0.7)]">
-          <BrandLockup
-            className="max-w-full"
-            markClassName="size-10"
-            nameClassName="h-7 max-w-[9.25rem]"
-          />
+          <div className="relative isolate">
+            <div className="pointer-events-none absolute -left-2 top-1/2 h-14 w-14 -translate-y-1/2 rounded-full bg-[#f0d287]/18 blur-xl" />
+            <div className="pointer-events-none absolute inset-y-1 left-10 right-2 rounded-full bg-[linear-gradient(90deg,rgba(247,241,227,0.16),rgba(247,241,227,0.08),transparent_80%)] blur-lg" />
+            <BrandLockup
+              className="relative z-[1] max-w-full drop-shadow-[0_10px_18px_rgba(0,0,0,0.24)]"
+              markClassName="size-10"
+              nameClassName="h-7 max-w-[9.25rem]"
+            />
+            <div className="mt-3 h-px w-full bg-[linear-gradient(90deg,rgba(240,210,135,0.62),rgba(255,255,255,0.22),transparent_72%)]" />
+          </div>
 
           <div className="group relative mt-4 min-h-[6.05rem] overflow-hidden rounded-[1.25rem] border border-white/12 bg-[linear-gradient(150deg,rgba(255,255,255,0.075),rgba(255,255,255,0.028)_58%,rgba(96,226,164,0.1))] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_20px_45px_-36px_rgba(0,0,0,0.85)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
             <div className="pointer-events-none absolute inset-y-0 right-0 w-36 bg-[radial-gradient(circle_at_bottom_right,rgba(137,255,207,0.22),transparent_62%)]" />
