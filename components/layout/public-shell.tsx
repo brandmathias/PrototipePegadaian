@@ -46,6 +46,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const search = searchParams.toString();
   const currentPath = search ? `${pathname}?${search}` : pathname;
   const catalogSearchValue = pathname.startsWith("/katalog") ? searchParams.get("q") ?? "" : "";
+  const showFooter = !pathname.startsWith("/katalog");
 
   return (
     <div
@@ -171,39 +172,41 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
 
       <main className={cn("min-w-0", isBuyerCatalogSurface && "buyer-motion-main")}>{children}</main>
 
-      <footer
-        className="mt-20 border-t border-black/5 bg-white py-12"
-      >
-        <div className="container grid gap-10 sm:grid-cols-2 md:grid-cols-4">
-          <div className="space-y-4">
-            <h3 className="font-headline text-xl font-bold text-primary">
-              Pegadaian Lelang
-            </h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Platform resmi untuk katalog barang jaminan, pembelian harga tetap, dan lelang
-              tertutup lintas unit Pegadaian.
-            </p>
+      {showFooter ? (
+        <footer
+          className="mt-20 border-t border-black/5 bg-white py-12"
+        >
+          <div className="container grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+            <div className="space-y-4">
+              <h3 className="font-headline text-xl font-bold text-primary">
+                Pegadaian Lelang
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Platform resmi untuk katalog barang jaminan, pembelian harga tetap, dan lelang
+                tertutup lintas unit Pegadaian.
+              </p>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="font-bold uppercase tracking-[0.2em] text-secondary">Layanan</p>
+              <p>Cara ikut lelang</p>
+              <p>Simulasi pembayaran</p>
+              <p>Status transaksi</p>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="font-bold uppercase tracking-[0.2em] text-secondary">Perusahaan</p>
+              <p>Tentang sistem</p>
+              <p>Unit Pegadaian</p>
+              <p>Pusat bantuan</p>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <p className="font-bold uppercase tracking-[0.2em] text-secondary">Kontak</p>
+              <p>Call Center 1500567</p>
+              <p>customer.care@pegadaian.co.id</p>
+              <p>Jl. Kramat Raya No.162, Jakarta Pusat</p>
+            </div>
           </div>
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <p className="font-bold uppercase tracking-[0.2em] text-secondary">Layanan</p>
-            <p>Cara ikut lelang</p>
-            <p>Simulasi pembayaran</p>
-            <p>Status transaksi</p>
-          </div>
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <p className="font-bold uppercase tracking-[0.2em] text-secondary">Perusahaan</p>
-            <p>Tentang sistem</p>
-            <p>Unit Pegadaian</p>
-            <p>Pusat bantuan</p>
-          </div>
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <p className="font-bold uppercase tracking-[0.2em] text-secondary">Kontak</p>
-            <p>Call Center 1500567</p>
-            <p>customer.care@pegadaian.co.id</p>
-            <p>Jl. Kramat Raya No.162, Jakarta Pusat</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      ) : null}
     </div>
   );
 }
