@@ -70,43 +70,54 @@ function AuthBrandCluster({
   accentLabel,
   mode = "panel"
 }: {
-  accentLabel: string;
+  accentLabel?: string;
   mode?: "hero" | "panel";
 }) {
   if (mode === "hero") {
     return (
-      <div className="relative inline-flex flex-col gap-2.5">
-        <div className="pointer-events-none absolute -left-2 right-10 top-1/2 h-10 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,240,224,0.32),transparent_70%)] blur-2xl" />
+      <div className="relative inline-flex flex-col gap-4">
+        <div className="pointer-events-none absolute -left-8 -right-20 top-1/2 h-20 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(247,240,224,0.46),rgba(247,240,224,0.18)_42%,transparent_76%)] blur-3xl" />
+        <div className="pointer-events-none absolute -left-3 top-1 h-10 w-32 bg-[linear-gradient(90deg,rgba(240,210,135,0.58),transparent)] blur-2xl" />
         <BrandLockup
-          className="relative z-[1] max-w-full drop-shadow-[0_10px_18px_rgba(0,0,0,0.28)]"
-          markClassName="size-5"
-          nameClassName="h-4 max-w-[7.25rem] brightness-[1.03] contrast-[1.04]"
+          className="relative z-[1] max-w-full drop-shadow-[0_18px_30px_rgba(0,0,0,0.36)]"
+          markClassName="size-9 sm:size-10"
+          nameClassName="h-8 max-w-[14.5rem] brightness-[1.05] contrast-[1.06] sm:h-9 sm:max-w-[16rem]"
         />
-        <div className="relative z-[1] flex items-center gap-3 pl-1">
-          <span className="h-px w-9 bg-[linear-gradient(90deg,rgba(240,210,135,0.82),rgba(240,210,135,0.18),transparent)]" />
-          <span className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#f0d287]/95">
-            {accentLabel}
-          </span>
-        </div>
+        {accentLabel ? (
+          <div className="relative z-[1] flex items-center gap-3 pl-1">
+            <span className="h-px w-11 bg-[linear-gradient(90deg,rgba(240,210,135,0.88),rgba(240,210,135,0.18),transparent)]" />
+            <span className="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#f0d287]/95">
+              {accentLabel}
+            </span>
+          </div>
+        ) : (
+          <span className="relative z-[1] ml-1 h-px w-32 bg-[linear-gradient(90deg,rgba(240,210,135,0.88),rgba(240,210,135,0.26),transparent)]" />
+        )}
       </div>
     );
   }
 
   return (
-    <div className="relative inline-flex max-w-full flex-col gap-3">
-      <div className="pointer-events-none absolute -left-3 top-1 h-14 w-14 rounded-full bg-[#f0d287]/16 blur-2xl" />
-      <div className="pointer-events-none absolute inset-x-6 top-2 h-10 rounded-full bg-[linear-gradient(90deg,rgba(247,241,227,0.18),rgba(247,241,227,0.08),transparent_78%)] blur-xl" />
+    <div className="relative inline-flex max-w-full flex-col gap-5">
+      <div className="pointer-events-none absolute -left-7 -top-3 h-24 w-24 rounded-full bg-[#f0d287]/24 blur-3xl" />
+      <div className="pointer-events-none absolute -left-5 -top-4 h-24 w-[24rem] rounded-full bg-[radial-gradient(circle_at_24%_50%,rgba(249,243,230,0.34),rgba(249,243,230,0.18)_36%,transparent_72%)] blur-2xl" />
+      <div className="pointer-events-none absolute inset-x-3 top-0 h-16 rounded-full bg-[linear-gradient(90deg,rgba(247,241,227,0.32),rgba(247,241,227,0.12),transparent_78%)] blur-2xl" />
+      <div className="pointer-events-none absolute -left-1 top-4 h-16 w-[20rem] bg-[linear-gradient(90deg,rgba(240,210,135,0.22),rgba(240,210,135,0.08),transparent_78%)] blur-xl" />
       <BrandLockup
-        className="relative z-[1] max-w-full drop-shadow-[0_12px_24px_rgba(0,0,0,0.22)]"
-        markClassName="size-11"
-        nameClassName="h-7 max-w-[11.75rem] brightness-[1.03] contrast-[1.04]"
+        className="relative z-[1] max-w-full drop-shadow-[0_20px_32px_rgba(0,0,0,0.24)]"
+        markClassName="size-[3.75rem]"
+        nameClassName="h-[3.1rem] max-w-[19.5rem] brightness-[1.08] contrast-[1.08]"
       />
-      <div className="relative z-[1] flex items-center gap-3 pl-1">
-        <span className="h-px w-10 bg-[linear-gradient(90deg,rgba(240,210,135,0.9),rgba(240,210,135,0.18),transparent)]" />
-        <span className="text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-[#f0d287]/90">
-          {accentLabel}
-        </span>
-      </div>
+      {accentLabel ? (
+        <div className="relative z-[1] flex items-center gap-3 pl-1">
+          <span className="h-px w-12 bg-[linear-gradient(90deg,rgba(240,210,135,0.92),rgba(240,210,135,0.18),transparent)]" />
+          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.28em] text-[#f0d287]/90">
+            {accentLabel}
+          </span>
+        </div>
+      ) : (
+        <span className="relative z-[1] ml-1 h-px w-36 bg-[linear-gradient(90deg,rgba(240,210,135,0.92),rgba(240,210,135,0.24),transparent)]" />
+      )}
     </div>
   );
 }
@@ -508,7 +519,7 @@ export function LoginPage() {
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,207,91,0.24),transparent_26%),radial-gradient(circle_at_80%_14%,rgba(5,67,40,0.38),transparent_28%)]" />
         <div className="absolute left-12 top-12 xl:left-16 xl:top-16">
-          <AuthBrandCluster accentLabel="Akun Pembeli" mode="hero" />
+          <AuthBrandCluster mode="hero" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[700px] space-y-7">
@@ -547,7 +558,7 @@ export function LoginPage() {
 
         <div className="relative w-full max-w-[560px]">
           <div className="mb-9 space-y-6">
-            <AuthBrandCluster accentLabel="Akun Pembeli" />
+            <AuthBrandCluster />
             <div>
               <h2 className="font-headline text-4xl font-black tracking-tight xl:text-5xl">
                 Masuk ke akun Anda
