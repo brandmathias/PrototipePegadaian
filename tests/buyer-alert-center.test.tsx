@@ -152,6 +152,20 @@ describe("buyer alert center", () => {
     expect(within(dialog).queryByText(/barang baru tersimpan/i)).not.toBeInTheDocument();
   });
 
+  it("uses the mobile-safe fixed sheet layout for the buyer alert panel", async () => {
+    const user = userEvent.setup();
+    renderAlertCenter();
+
+    await user.click(await screen.findByRole("button", { name: /buka pusat alert/i }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveClass("fixed");
+    expect(dialog).toHaveClass("inset-x-3");
+    expect(dialog).toHaveClass("modal-viewport");
+    expect(dialog.querySelector(".overflow-y-auto")).toHaveClass("overscroll-contain");
+    expect(screen.getByRole("button", { name: /tutup pusat alert/i })).toHaveClass("fixed", "inset-0");
+  });
+
   it("renders non-winner notifications with the dedicated buyer result action", async () => {
     vi.stubGlobal(
       "fetch",

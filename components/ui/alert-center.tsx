@@ -319,33 +319,40 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label="Buka pusat alert"
-        className="interactive-tap relative inline-flex size-12 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-emerald-200/14 dark:bg-[#102019] dark:text-emerald-100 dark:shadow-[0_18px_36px_-28px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:bg-[#14271f]"
+        className="interactive-tap relative inline-flex size-10 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] dark:border-emerald-200/14 dark:bg-[#102019] dark:text-emerald-100 dark:shadow-[0_18px_36px_-28px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:bg-[#14271f] sm:size-12 sm:rounded-2xl"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
         <Bell aria-hidden="true" className="size-5" />
         {unreadCount > 0 ? (
-          <span className="absolute right-2 top-2 inline-flex min-w-5 items-center justify-center rounded-full bg-[#0f7a57] px-1.5 py-0.5 text-[0.68rem] font-bold leading-none text-white shadow-sm">
+          <span className="absolute right-1.5 top-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-[#0f7a57] px-1.5 py-0.5 text-[0.68rem] font-bold leading-none text-white shadow-sm sm:right-2 sm:top-2">
             {Math.min(unreadCount, 9)}{unreadCount > 9 ? "+" : ""}
           </span>
         ) : null}
         {unreadCount > 0 ? (
-          <span className="status-pulse absolute right-1.5 top-1.5 size-3 rounded-full bg-[#0f7a57]/35" />
+          <span className="status-pulse absolute right-1 top-1 size-3 rounded-full bg-[#0f7a57]/35 sm:right-1.5 sm:top-1.5" />
         ) : null}
       </button>
 
       {isOpen ? (
-        <div
-          className="feedback-pop absolute right-0 top-[calc(100%+0.85rem)] z-[90] w-[min(28rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-[1.35rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:rounded-[1.6rem]"
-          role="dialog"
-        >
+        <>
+          <button
+            aria-label="Tutup pusat alert"
+            className="fixed inset-0 z-[85] bg-[#0c2319]/10 backdrop-blur-[2px] sm:hidden"
+            onClick={() => setIsOpen(false)}
+            type="button"
+          />
+          <div
+            className="feedback-pop modal-viewport fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[90] overflow-hidden rounded-[1.25rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:absolute sm:right-0 sm:left-auto sm:top-[calc(100%+0.85rem)] sm:w-[min(28rem,calc(100vw-1.5rem))] sm:max-w-[calc(100vw-1.5rem)] sm:rounded-[1.6rem]"
+            role="dialog"
+          >
           <div className="border-b border-black/6 px-5 py-4 dark:border-white/8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                   {copy.label}
                 </p>
-                <h3 className="mt-2 font-headline text-[1.45rem] font-black text-[#085a41] dark:text-emerald-100">
+                <h3 className="mt-2 font-headline text-[1.2rem] font-black leading-tight text-[#085a41] dark:text-emerald-100 sm:text-[1.45rem]">
                   {copy.title}
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-black/58 dark:text-slate-300/72">
@@ -363,7 +370,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             </div>
           </div>
 
-          <div className="max-h-[min(26rem,calc(100dvh-12rem))] overflow-y-auto px-3 py-3">
+          <div className="max-h-[calc(100dvh-env(safe-area-inset-top)-7rem)] overflow-y-auto overscroll-contain px-3 py-3 sm:max-h-[min(26rem,calc(100dvh-12rem))]">
             {displayedNotifications.length ? (
               <div className="space-y-2">
                 {displayedNotifications.map((notification, index) => {
@@ -415,7 +422,8 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
     </div>
   );

@@ -55,19 +55,19 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
           : "border-black/5 bg-white/[0.92]"
       )}
     >
-      <div className="container flex min-h-16 items-center justify-between gap-2 py-3 sm:gap-4">
-        <div className="flex min-w-0 items-center gap-4 xl:gap-6">
+      <div className="container flex min-h-16 items-center justify-between gap-2 py-2.5 sm:gap-4 sm:py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 xl:gap-6">
           <Link
             aria-label="Pegadaian Lelang"
             className={cn(
-              "group flex min-w-0 items-center gap-2 font-headline text-sm font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl",
+              "group flex min-w-0 flex-1 items-center gap-2 font-headline text-[0.95rem] font-black tracking-tight transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:gap-3 sm:text-xl",
               isLuxury ? "text-[#174e3b] hover:text-[#9b6f22]" : "text-primary hover:text-[#075f42]"
             )}
             href="/dashboard"
           >
             <span
               className={cn(
-                "grid size-9 place-items-center rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-500 group-hover:-translate-y-0.5",
+                "grid size-8 shrink-0 place-items-center rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition duration-500 group-hover:-translate-y-0.5 sm:size-9",
                 isLuxury
                   ? "bg-[#d4af37] text-[#2c220d] group-hover:bg-[#e4bd48]"
                   : "bg-primary text-white group-hover:bg-[#075f42]"
@@ -75,7 +75,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             >
               <Gavel className="size-4" />
             </span>
-            <span className="block max-w-[8rem] truncate leading-tight sm:max-w-none">
+            <span className="block max-w-[11rem] truncate leading-tight min-[390px]:max-w-[12.5rem] sm:max-w-none">
               Pegadaian Lelang
             </span>
           </Link>
@@ -113,7 +113,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             })}
           </nav>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
+        <div className="flex min-w-0 shrink-0 items-center justify-end gap-1.5 sm:gap-3">
           <CatalogSearchInput
             defaultValue={catalogSearchValue}
             inputClassName={cn(
@@ -131,7 +131,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"
             }
             className={cn(
-              "interactive-tap relative inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12",
+              "interactive-tap relative inline-flex size-10 shrink-0 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12 sm:rounded-2xl",
               isLuxury &&
                 "border-[#eadfcb] bg-white/[0.82] text-[#8a661e] shadow-[0_14px_32px_rgba(74,54,24,0.08)] hover:bg-[#fff8ec] hover:text-[#17633f] focus-visible:ring-[#d4af37]/35",
               pathname === "/wishlist" &&
@@ -148,7 +148,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               </span>
             ) : null}
           </Link>
-          <BuyerProfileMenu image={image} name={name} profileHref="/profil" />
+          <BuyerProfileMenu className="max-w-[3.25rem] min-[390px]:max-w-[3.75rem] sm:max-w-none" image={image} name={name} profileHref="/profil" />
         </div>
       </div>
       <div className="container grid gap-3 pb-3 lg:hidden">

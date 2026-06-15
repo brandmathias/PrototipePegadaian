@@ -129,6 +129,13 @@ describe("WishlistPage", () => {
     );
   });
 
+  it("keeps the mode badge on wishlist media without duplicating the category overlay", () => {
+    render(<WishlistPage activeItems={[makeWishlistItem()]} unavailableItems={[]} />);
+
+    expect(screen.getAllByText("Harga Tetap").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Perhiasan")).toHaveLength(1);
+  });
+
   it("removes a liked item from the wishlist when the heart button is clicked", async () => {
     render(<WishlistPage activeItems={[makeWishlistItem()]} unavailableItems={[]} />);
 

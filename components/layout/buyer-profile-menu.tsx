@@ -68,13 +68,13 @@ export function BuyerProfileMenu({
         aria-expanded={isOpen}
         aria-haspopup="menu"
         className={cn(
-          "group inline-flex items-center gap-2 rounded-full border border-primary/10 bg-white px-2.5 py-2 text-sm font-bold text-primary shadow-[0_12px_30px_-24px_rgba(8,69,50,0.5)] ring-1 ring-white transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/20 hover:bg-[#f7fbf7] active:translate-y-0",
+          "group inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary/10 bg-white px-1.5 py-1.5 text-sm font-bold text-primary shadow-[0_12px_30px_-24px_rgba(8,69,50,0.5)] ring-1 ring-white transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/20 hover:bg-[#f7fbf7] active:translate-y-0 sm:gap-2 sm:px-2.5 sm:py-2",
           isOpen ? "border-primary/25 bg-[#f4faf5]" : ""
         )}
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <span className="relative grid size-8 place-items-center overflow-hidden rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+        <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary text-[0.68rem] font-black tracking-[-0.03em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] sm:size-8">
           {image ? (
             <Image
               alt=""
@@ -91,7 +91,7 @@ export function BuyerProfileMenu({
         <ChevronDown
           aria-hidden="true"
           className={cn(
-            "size-3.5 text-primary/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-primary",
+            "hidden size-3.5 shrink-0 text-primary/60 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-primary sm:block",
             isOpen ? "rotate-180" : ""
           )}
           strokeWidth={2.1}
