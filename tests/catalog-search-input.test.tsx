@@ -19,14 +19,20 @@ describe("CatalogSearchInput", () => {
     router.push.mockClear();
   });
 
-  it("redirects buyer search submissions to the catalog query page", async () => {
+  it("uses a native GET form for buyer catalog search submissions", async () => {
     const user = userEvent.setup();
 
     render(<CatalogSearchInput />);
 
-    await user.type(screen.getByRole("searchbox", { name: /cari katalog buyer/i }), "kalung emas");
-    await user.click(screen.getByRole("button", { name: /cari/i }));
+    const searchbox = screen.getByRole("searchbox", { name: /cari katalog buyer/i });
+    await user.type(searchbox, "kalung emas");
 
-    expect(router.push).toHaveBeenCalledWith("/katalog?q=kalung+emas");
+    const form = searchbox.closest("form");
+
+    expect(form).not.toBeNull();
+    expect(form).toHaveAttribute("action", "/katalog");
+    expect(form).toHaveAttribute("method", "get");
+    expect(new FormData(form as HTMLFormElement).get("q")).toBe("kalung emas");
+    expect(router.push).not.toHaveBeenCalled();
   });
 });

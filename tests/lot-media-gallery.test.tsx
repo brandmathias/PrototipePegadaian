@@ -78,4 +78,51 @@ describe("LotMediaGallery", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByAltText(/preview penuh kalung emas foto 1/i)).toBeInTheDocument();
   });
+
+  it("prioritizes the PDP hero image while keeping video thumbnails previewable", () => {
+    render(
+      <LotMediaGallery
+        category="Perhiasan"
+        media={[
+          {
+            id: "media-photo-1",
+            type: "foto",
+            url: "/uploads/barang/foto-1.jpg",
+            fileName: "foto-1.jpg"
+          },
+          {
+            id: "media-video-1",
+            type: "video",
+            url: "/uploads/barang/video-1.mp4",
+            fileName: "video-1.mp4"
+          },
+          {
+            id: "media-photo-2",
+            type: "foto",
+            url: "/uploads/barang/foto-2.jpg",
+            fileName: "foto-2.jpg"
+          }
+        ]}
+        priority
+        title="Kalung Emas"
+        variant="pdp"
+      />
+    );
+
+    const activeImage = within(screen.getByTestId("lot-media-active")).getByRole("img", {
+      name: "Kalung Emas foto 1"
+    });
+    expect(activeImage).toHaveAttribute("fetchpriority", "high");
+    expect(activeImage).toHaveAttribute("loading", "eager");
+
+    const firstThumbnail = within(screen.getByRole("button", { name: /lihat foto 1/i })).getByRole("img", {
+      name: "Kalung Emas foto 1"
+    });
+    expect(firstThumbnail).toHaveAttribute("sizes", "(min-width: 1280px) 9vw, (min-width: 640px) 18vw, 33vw");
+
+    const videoThumbnail = within(screen.getByRole("button", { name: /lihat video 2/i })).getByLabelText(
+      "Kalung Emas video 2"
+    );
+    expect(videoThumbnail).toHaveAttribute("preload", "metadata");
+  });
 });

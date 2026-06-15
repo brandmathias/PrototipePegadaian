@@ -137,6 +137,16 @@ export async function getBuyerWishlistIds(userId: string) {
   return rows.map((row) => row.pemasaranId);
 }
 
+export async function isBuyerWishlistItem(userId: string, pemasaranId: string) {
+  const [row] = await db
+    .select({ id: buyerWishlist.id })
+    .from(buyerWishlist)
+    .where(and(eq(buyerWishlist.userId, userId), eq(buyerWishlist.pemasaranId, pemasaranId)))
+    .limit(1);
+
+  return Boolean(row);
+}
+
 export async function getBuyerWishlistCount(userId: string) {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })

@@ -14,7 +14,7 @@ vi.mock("@/lib/db/client", () => ({
   db: mocks.db
 }));
 
-import { getBuyerWishlistCount, toggleBuyerWishlist } from "@/lib/services/wishlist.service";
+import { getBuyerWishlistCount, isBuyerWishlistItem, toggleBuyerWishlist } from "@/lib/services/wishlist.service";
 
 function mockSelectRows(rows: unknown[]) {
   const limit = vi.fn().mockResolvedValue(rows);
@@ -68,5 +68,13 @@ describe("wishlist service", () => {
     mockSelectRows([{ count: 4 }]);
 
     await expect(getBuyerWishlistCount("buyer-1")).resolves.toBe(4);
+  });
+
+  it("checks one detail item without loading the full wishlist", async () => {
+    mockSelectRows([{ id: "wish-1" }]);
+
+    await expect(isBuyerWishlistItem("buyer-1", "pm-1")).resolves.toBe(true);
+
+    expect(mocks.db.select).toHaveBeenCalledWith({ id: expect.anything() });
   });
 });

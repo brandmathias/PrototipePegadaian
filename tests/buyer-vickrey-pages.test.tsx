@@ -14,7 +14,8 @@ vi.mock("next/navigation", () => ({
   }
 }));
 
-import { BidPage, LotDetailPage, PurchasePage } from "@/components/pages/public-pages";
+import { LotDetailPage } from "@/components/public/lot-detail-page";
+import { BidPage, PurchasePage } from "@/components/pages/public-pages";
 import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
 import { AuctionLoserPage, AuctionWinnerPage, BidHistoryPage, BidVerificationPage, TransactionDetailPage } from "@/components/pages/user-pages";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
