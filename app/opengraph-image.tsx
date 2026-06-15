@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
 
 const FALLBACK_SITE_URL = "https://app.tugasprototype.cloud";
@@ -160,17 +161,17 @@ export default function OpenGraphImage() {
           >
             <div
               style={{
+                display: "flex",
+                flexDirection: "column",
                 fontSize: "72px",
                 fontWeight: 800,
-                letterSpacing: "-0.03em",
+                letterSpacing: "0",
                 lineHeight: 0.98
               }}
             >
-              Jelajahi katalog
-              <br />
-              dengan preview yang
-              <br />
-              lebih kuat saat dibagikan.
+              <div>Jelajahi katalog</div>
+              <div>dengan preview yang</div>
+              <div>lebih kuat saat dibagikan.</div>
             </div>
             <div
               style={{
