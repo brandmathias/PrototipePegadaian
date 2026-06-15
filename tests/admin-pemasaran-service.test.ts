@@ -25,7 +25,43 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminPemasaran: mocks.serializeAdminPemasaran
 }));
 
-import { publishAdminBarang } from "@/lib/services/admin-pemasaran.service";
+import { publishAdminBarang, sortAdminMarketingRowsByRecency } from "@/lib/services/admin-pemasaran.service";
+
+describe("sortAdminMarketingRowsByRecency", () => {
+  it("places an updated marketing session before older untouched sessions", () => {
+    const rows = sortAdminMarketingRowsByRecency([
+      {
+        id: "newly-created",
+        marketing: {
+          id: "newly-created",
+          iteration: 1,
+          createdAt: new Date("2026-06-14T10:00:00.000Z"),
+          updatedAt: new Date("2026-06-14T10:00:00.000Z")
+        }
+      },
+      {
+        id: "repriced-fixed",
+        marketing: {
+          id: "repriced-fixed",
+          iteration: 1,
+          createdAt: new Date("2026-06-12T10:00:00.000Z"),
+          updatedAt: new Date("2026-06-15T11:00:00.000Z")
+        }
+      },
+      {
+        id: "old-session",
+        marketing: {
+          id: "old-session",
+          iteration: 2,
+          createdAt: new Date("2026-06-10T10:00:00.000Z"),
+          updatedAt: new Date("2026-06-10T10:00:00.000Z")
+        }
+      }
+    ]);
+
+    expect(rows.map((row) => row.id)).toEqual(["repriced-fixed", "newly-created", "old-session"]);
+  });
+});
 
 describe("publishAdminBarang", () => {
   beforeEach(() => {
@@ -121,7 +157,8 @@ describe("publishAdminBarang", () => {
         durationDays: 0,
         durationSeconds: 135,
         status: "aktif",
-        createdByUserId: "user-1"
+        createdByUserId: "user-1",
+        updatedAt: now
       })
     );
     expect(updateWhereSpy).toHaveBeenCalledTimes(1);

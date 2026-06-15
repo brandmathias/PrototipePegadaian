@@ -80,6 +80,7 @@ describe("admin unit serializers", () => {
     expect(fixedPrice.media).toHaveLength(2);
     expect(fixedPrice.primaryMedia?.url).toBe("/uploads/kalung.jpg");
     expect(fixedPrice.price).toBe(12500000);
+    expect(fixedPrice.updatedAt).toBe("2026-05-01T00:00:00.000Z");
     expect(fixedPrice.transactionStatus).toBe("BUKTI_DIUNGGAH");
     expect(fixedPrice.bids).toBeUndefined();
     expect(fixedPrice.visibility).toBeUndefined();

@@ -16,6 +16,35 @@ type ParticipantPreview = {
   submittedAt?: Date | null;
 };
 
+type MarketingRecencyRow = {
+  marketing: {
+    updatedAt?: Date | null;
+    createdAt?: Date | null;
+    startsAt?: Date | null;
+    iteration?: number | null;
+  };
+};
+
+function getMarketingRecencyTimestamp(row: MarketingRecencyRow) {
+  const value = row.marketing.updatedAt ?? row.marketing.createdAt ?? row.marketing.startsAt;
+  const time = value instanceof Date ? value.getTime() : Number.NaN;
+
+  return Number.isFinite(time) ? time : 0;
+}
+
+export function sortAdminMarketingRowsByRecency<T extends MarketingRecencyRow>(rows: T[]) {
+  return [...rows].sort((left, right) => {
+    const timeDiff = getMarketingRecencyTimestamp(right) - getMarketingRecencyTimestamp(left);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+
+    const leftIteration = Number.isFinite(left.marketing.iteration) ? Number(left.marketing.iteration) : 0;
+    const rightIteration = Number.isFinite(right.marketing.iteration) ? Number(right.marketing.iteration) : 0;
+    return rightIteration - leftIteration;
+  });
+}
+
 async function getBarangForUnit(barangId: string, unitId: string) {
   const [row] = await db
     .select()
@@ -235,7 +264,8 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
         revealEndsAt,
         iteration: Number(nextIteration ?? 1),
         status: "aktif",
-        createdByUserId: userId
+        createdByUserId: userId,
+        updatedAt: now
       })
       .returning();
 
@@ -282,16 +312,22 @@ export async function listAdminPemasaran(unitId: string) {
     .leftJoin(users, eq(users.id, pemasaran.winnerId))
     .where(eq(barang.unitId, unitId))
     .groupBy(pemasaran.id, barang.id, units.id, users.name)
-    .orderBy(desc(pemasaran.createdAt));
+    .orderBy(
+      desc(sql<Date>`greatest(${pemasaran.updatedAt}, ${pemasaran.createdAt})`),
+      desc(pemasaran.createdAt),
+      desc(pemasaran.iteration)
+    );
+
+  const sortedRows = sortAdminMarketingRowsByRecency(rows);
 
   const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId, statsByPemasaranId] = await Promise.all([
-    getMarketingMediaByBarangIds(rows.map((row) => row.item.id)),
-    getLatestTransactionsByPemasaranIds(rows.map((row) => row.marketing.id)),
-    getParticipantPreviewsByPemasaranIds(rows.map((row) => row.marketing.id)),
-    getLotStatsByIds(rows.map((row) => row.marketing.id))
+    getMarketingMediaByBarangIds(sortedRows.map((row) => row.item.id)),
+    getLatestTransactionsByPemasaranIds(sortedRows.map((row) => row.marketing.id)),
+    getParticipantPreviewsByPemasaranIds(sortedRows.map((row) => row.marketing.id)),
+    getLotStatsByIds(sortedRows.map((row) => row.marketing.id))
   ]);
 
-  return rows.map((row) =>
+  return sortedRows.map((row) =>
     serializeAdminPemasaran(row.marketing, {
       lotName: row.item.name,
       lotCode: row.item.code,
@@ -353,7 +389,11 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       .leftJoin(users, eq(users.id, pemasaran.winnerId))
       .where(eq(pemasaran.barangId, row.item.id))
       .groupBy(pemasaran.id, users.name)
-      .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
+      .orderBy(
+        desc(sql<Date>`greatest(${pemasaran.updatedAt}, ${pemasaran.createdAt})`),
+        desc(pemasaran.createdAt),
+        desc(pemasaran.iteration)
+      )
   ]);
 
   const historyTransactionByPemasaranId = await getLatestTransactionsByPemasaranIds(

@@ -90,6 +90,7 @@ export type MarketingSession = {
   mode: string;
   iteration?: number;
   createdAt?: string;
+  updatedAt?: string;
   totalIterations?: number;
   iterationHistory?: MarketingSession[];
   media?: MarketingMedia[];
@@ -1595,7 +1596,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
 }
 
 function getMarketingSessionTimestamp(auction: MarketingSession) {
-  const value = auction.createdAt ?? auction.startsAt ?? auction.endingAt ?? auction.soldAt;
+  const value = auction.updatedAt ?? auction.createdAt ?? auction.startsAt ?? auction.endingAt ?? auction.soldAt;
   const time = value ? new Date(value).getTime() : Number.NaN;
 
   return Number.isFinite(time) ? time : 0;
@@ -1606,12 +1607,12 @@ function getMarketingIterationNumber(auction: MarketingSession) {
 }
 
 function compareMarketingRecency(left: MarketingSession, right: MarketingSession) {
-  const iterationDiff = getMarketingIterationNumber(right) - getMarketingIterationNumber(left);
-  if (iterationDiff !== 0) {
-    return iterationDiff;
+  const timestampDiff = getMarketingSessionTimestamp(right) - getMarketingSessionTimestamp(left);
+  if (timestampDiff !== 0) {
+    return timestampDiff;
   }
 
-  return getMarketingSessionTimestamp(right) - getMarketingSessionTimestamp(left);
+  return getMarketingIterationNumber(right) - getMarketingIterationNumber(left);
 }
 
 function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {

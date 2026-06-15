@@ -281,6 +281,7 @@ export function serializeAdminPemasaran(
     primaryMedia,
     startsAt: row.startsAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
     ending: toDateLabel(row.endsAt),
     endingAt: row.endsAt?.toISOString(),
     revealDeadline: row.revealEndsAt ? toDateTimeLabel(row.revealEndsAt) : null,
