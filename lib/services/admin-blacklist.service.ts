@@ -20,8 +20,9 @@ import { formatAppDateTime } from "@/lib/timezone";
 function serializeBlacklist(row: {
   blacklist: typeof blacklists.$inferSelect;
   user: typeof users.$inferSelect;
-}) {
-  const policy = getBlacklistRestrictionPolicy(row.blacklist.totalViolations);
+}, effectiveTotalViolations = row.blacklist.totalViolations) {
+  const totalViolations = Math.max(Number(row.blacklist.totalViolations ?? 0), Number(effectiveTotalViolations ?? 0));
+  const policy = getBlacklistRestrictionPolicy(totalViolations);
   const now = new Date();
   const activeByDate =
     !row.blacklist.blockedUntil ||
@@ -34,7 +35,7 @@ function serializeBlacklist(row: {
     name: row.user.name,
     email: row.user.email,
     phone: row.user.phoneNumber ?? "-",
-    violations: row.blacklist.totalViolations,
+    violations: totalViolations,
     until: row.blacklist.blockedUntil?.toISOString().slice(0, 10) ?? "-",
     blockedUntilAt: row.blacklist.blockedUntil?.toISOString() ?? null,
     status: isCurrentlyActive ? "AKTIF" : "TIDAK_AKTIF",
@@ -92,6 +93,7 @@ async function listUnpaidAuctionTraces(unitId: string, userId?: string) {
   return rows.map((row) => ({
     id: row.violation.id,
     userId: row.violation.userId,
+    escalationEligible: row.violation.escalationEligible,
     lotCode: row.auction.id,
     lotLabel: row.item.code,
     itemCode: row.item.code,
@@ -137,8 +139,9 @@ export async function listAdminBlacklist(unitId: string) {
   );
 
   return rows.map((row) => {
-    const serialized = serializeBlacklist(row);
     const userTraces = tracesByUser[row.user.id] ?? [];
+    const effectiveTotalViolations = userTraces.filter((trace) => trace.escalationEligible !== false).length;
+    const serialized = serializeBlacklist(row, effectiveTotalViolations);
     const latestTrace = userTraces[0] ?? null;
 
     return {
@@ -184,7 +187,8 @@ export async function getAdminBlacklistByUserId(
     .orderBy(desc(blacklistActionLogs.createdAt));
 
   const traces = await listUnpaidAuctionTraces(unitId, userId);
-  const serialized = serializeBlacklist(row);
+  const effectiveTotalViolations = traces.filter((trace) => trace.escalationEligible !== false).length;
+  const serialized = serializeBlacklist(row, effectiveTotalViolations);
   const latestTrace = traces[0] ?? null;
 
   return {

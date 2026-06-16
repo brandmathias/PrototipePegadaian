@@ -1271,6 +1271,63 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText(/Rp 4.500.000/i).length).toBeGreaterThan(0);
   });
 
+  it("derives superadmin violation levels from accumulated traces when stored totals are stale", () => {
+    render(
+      <SuperadminBlacklistDetailWorkspace
+        entry={{
+          activeAuctionRestriction: "Pembatasan akun masih aktif secara nasional.",
+          blockedUntilAt: "2026-07-12T12:33:00.000Z",
+          email: "buyer.demo13b@email.com",
+          history: [],
+          lastIncident: "2026-06-12",
+          lastIncidentAt: "2026-06-12T12:33:00.000Z",
+          level: 2,
+          name: "Buyer Demo 13 B",
+          reason: "Pemenang tidak membayar dalam 1x24 jam.",
+          status: "AKTIF",
+          unit: "UPC Ranotana",
+          unpaidAuctionCount: 3,
+          unpaidAuctionTraces: [
+            {
+              amount: 110000000,
+              id: "violation-current",
+              itemName: "Mobil",
+              occurredAt: "2026-06-12T12:33:00.000Z",
+              occurredAtLabel: "12 Juni 2026, 12.33 WIB",
+              transactionId: "trx-current",
+            },
+            {
+              amount: 20000000,
+              id: "violation-old-1",
+              itemName: "Iphone",
+              occurredAt: "2026-05-29T21:36:00.000Z",
+              occurredAtLabel: "29 Mei 2026, 21.36 WIB",
+              transactionId: "trx-old-1",
+            },
+            {
+              amount: 110000000,
+              id: "violation-old-2",
+              itemName: "Mobil",
+              occurredAt: "2026-05-29T21:36:00.000Z",
+              occurredAtLabel: "29 Mei 2026, 21.36 WIB",
+              transactionId: "trx-old-2",
+            },
+          ],
+          until: "2026-07-12",
+          userId: "buyer-13b",
+          violations: 2,
+        }}
+        serverNow="2026-06-16T11:29:00.000Z"
+      />,
+    );
+
+    expect(screen.getAllByText(/Status: Level 3 \(365 Hari\)/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pelanggaran Level 3/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pelanggaran Level 2/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Pelanggaran Level 1/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Pembatasan 365 hari/i)).toBeInTheDocument();
+  });
+
   it("routes unit creation to a full page and keeps row actions focused on unit detail", () => {
     render(
       <SuperAdminManagementPage

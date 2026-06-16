@@ -97,12 +97,25 @@ function getInitials(name: string) {
     .join("");
 }
 
-function getLevel(entry: SuperadminBlacklistDetailEntry) {
-  return Math.min(Math.max(Number(entry.level ?? entry.violations ?? 0), 0), 3);
+function clampLevel(value: number) {
+  return Math.min(Math.max(value, 0), 3);
 }
 
-function getHistoricalLevel(entry: SuperadminBlacklistDetailEntry, index: number) {
-  return Math.min(Math.max(Number(entry.violations ?? 1) - index, 1), 3);
+function getEffectiveViolationTotal(entry: SuperadminBlacklistDetailEntry, itemCount = 0) {
+  return Math.max(
+    Number(entry.level ?? 0),
+    Number(entry.violations ?? 0),
+    Number(entry.unpaidAuctionCount ?? 0),
+    itemCount
+  );
+}
+
+function getLevel(entry: SuperadminBlacklistDetailEntry) {
+  return clampLevel(getEffectiveViolationTotal(entry));
+}
+
+function getHistoricalLevel(entry: SuperadminBlacklistDetailEntry, index: number, itemCount = 0) {
+  return Math.min(Math.max(getEffectiveViolationTotal(entry, itemCount) - index, 1), 3);
 }
 
 function getLevelTone(level: number, completed = false) {
@@ -190,7 +203,7 @@ function getViolationItems(entry: SuperadminBlacklistDetailEntry): ViolationItem
       date: trace.occurredAtLabel ?? trace.paymentDeadlineLabel ?? entry.lastIncident ?? "-",
       id: String(trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`),
       isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
-      level: getHistoricalLevel(entry, index),
+      level: getHistoricalLevel(entry, index, traces.length),
       note:
         trace.note ??
         entry.reason ??
@@ -206,7 +219,7 @@ function getViolationItems(entry: SuperadminBlacklistDetailEntry): ViolationItem
       date: item.date ?? entry.lastIncident ?? "-",
       id: String(`${item.date ?? "history"}-${item.action ?? index}`),
       isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
-      level: getHistoricalLevel(entry, index),
+      level: getHistoricalLevel(entry, index, history.length),
       note: item.note ?? entry.reason ?? "-",
       title: item.actionLabel ?? item.action ?? `Pelanggaran ${index + 1}`,
       trace: null
@@ -440,7 +453,12 @@ function CountdownPanel({
   serverNow: string;
 }) {
   const level = selected?.level ?? getLevel(entry);
-  const deadline = entry.blockedUntilAt ?? getDeadline(selected)?.toISOString() ?? null;
+  const storedDeadline = parseDate(entry.blockedUntilAt);
+  const derivedDeadline = getDeadline(selected);
+  const deadline =
+    storedDeadline && derivedDeadline
+      ? new Date(Math.max(storedDeadline.getTime(), derivedDeadline.getTime())).toISOString()
+      : (storedDeadline ?? derivedDeadline)?.toISOString() ?? null;
   const [now, setNow] = useState(() => getSyncedNow(serverNow));
   const ticker = getTickerState(deadline, now);
   const tone = getLevelTone(level, String(entry.status ?? "").toUpperCase() !== "AKTIF");

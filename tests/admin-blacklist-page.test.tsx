@@ -179,4 +179,43 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText("Rp 85.000.000")).toBeInTheDocument();
     expect(screen.getAllByText(/Harga Tetap/i).length).toBeGreaterThan(0);
   });
+
+  it("derives admin violation levels from accumulated traces when stored totals are stale", () => {
+    const staleEntry = {
+      ...makeBlacklistEntry(2),
+      level: 2,
+      unpaidAuctionCount: 3,
+      unpaidAuctionTraces: [
+        ...makeBlacklistEntry(2).unpaidAuctionTraces,
+        {
+          amount: 45000000,
+          auctionMode: "VICKREY_AUCTION",
+          basePrice: 40000000,
+          id: "violation-extra",
+          itemName: "Jam Tangan",
+          occurredAt: "2026-03-20T10:00:00.000Z",
+          occurredAtLabel: "20 Maret 2026, 10.00 WIB",
+          lotCode: "LOT-EXTRA",
+          lotLabel: "BRG-EXTRA",
+          note: "Pelanggaran pembayaran sebelumnya.",
+          paymentDeadlineLabel: "21 Maret 2026, 10.00 WIB",
+          transactionId: "trx-extra",
+          transactionStatus: "gagal_bayar",
+        },
+      ],
+      violations: 2,
+    };
+
+    render(
+      <AdminBlacklistDetailPage
+        entry={staleEntry}
+        userId="user-2"
+      />,
+    );
+
+    expect(screen.getAllByText(/Level 3/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Level 2/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Level 1/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/365 hari/i)).toBeInTheDocument();
+  });
 });

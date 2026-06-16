@@ -38,8 +38,9 @@ function serializeSuperadminBlacklist(row: {
   blacklist: typeof blacklists.$inferSelect;
   unit: typeof units.$inferSelect | null;
   user: typeof users.$inferSelect;
-}) {
-  const policy = getBlacklistRestrictionPolicy(row.blacklist.totalViolations);
+}, effectiveTotalViolations = row.blacklist.totalViolations) {
+  const totalViolations = Math.max(Number(row.blacklist.totalViolations ?? 0), Number(effectiveTotalViolations ?? 0));
+  const policy = getBlacklistRestrictionPolicy(totalViolations);
   const now = new Date();
   const activeByDate =
     !row.blacklist.blockedUntil ||
@@ -52,7 +53,7 @@ function serializeSuperadminBlacklist(row: {
     name: row.user.name,
     email: row.user.email,
     phone: row.user.phoneNumber ?? "-",
-    violations: row.blacklist.totalViolations,
+    violations: totalViolations,
     until: row.blacklist.blockedUntil?.toISOString().slice(0, 10) ?? "-",
     blockedUntilAt: row.blacklist.blockedUntil?.toISOString() ?? null,
     status: isCurrentlyActive ? "AKTIF" : "TIDAK_AKTIF",
@@ -98,6 +99,7 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
   return rows.map((row) => ({
     id: row.violation.id,
     userId: row.violation.userId,
+    escalationEligible: row.violation.escalationEligible,
     unitName: row.unit?.name ?? "-",
     lotCode: row.auction.id,
     lotLabel: row.item.code,
@@ -291,7 +293,8 @@ export async function getSuperadminBlacklistByUserId(userId: string) {
     .orderBy(desc(blacklistActionLogs.createdAt));
 
   const traces = await listSuperadminUnpaidAuctionTraces(userId);
-  const serialized = serializeSuperadminBlacklist(row);
+  const effectiveTotalViolations = traces.filter((trace) => trace.escalationEligible !== false).length;
+  const serialized = serializeSuperadminBlacklist(row, effectiveTotalViolations);
   const latestTrace = traces[0] ?? null;
 
   return {

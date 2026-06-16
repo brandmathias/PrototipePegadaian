@@ -68,12 +68,25 @@ const LEVEL_RULES: Record<
 
 const DAY_MS = 86_400_000;
 
-function getCurrentLevel(entry: AdminBlacklistItem) {
-  return Math.min(Math.max(Number(entry.level ?? entry.violations ?? 0), 0), 3);
+function clampLevel(value: number) {
+  return Math.min(Math.max(value, 0), 3);
 }
 
-function getHistoricalLevel(entry: AdminBlacklistItem, index: number) {
-  return Math.min(Math.max(Number(entry.violations ?? 1) - index, 1), 3);
+function getEffectiveViolationTotal(entry: AdminBlacklistItem, itemCount = 0) {
+  return Math.max(
+    Number(entry.level ?? 0),
+    Number(entry.violations ?? 0),
+    Number(entry.unpaidAuctionCount ?? 0),
+    itemCount
+  );
+}
+
+function getCurrentLevel(entry: AdminBlacklistItem) {
+  return clampLevel(getEffectiveViolationTotal(entry));
+}
+
+function getHistoricalLevel(entry: AdminBlacklistItem, index: number, itemCount = 0) {
+  return Math.min(Math.max(getEffectiveViolationTotal(entry, itemCount) - index, 1), 3);
 }
 
 function getLevelRule(level: number) {
@@ -156,7 +169,7 @@ function getViolationItems(entry: AdminBlacklistItem): ViolationItem[] {
       id: String(
         trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`,
       ),
-      level: getHistoricalLevel(entry, index),
+      level: getHistoricalLevel(entry, index, traces.length),
       note:
         trace.note ??
         entry.reason ??
@@ -175,7 +188,7 @@ function getViolationItems(entry: AdminBlacklistItem): ViolationItem[] {
     return history.map((item: Record<string, any>, index: number) => ({
       date: item.date ?? entry.lastIncident ?? "-",
       id: String(`${item.date ?? "history"}-${item.action ?? index}`),
-      level: getHistoricalLevel(entry, index),
+      level: getHistoricalLevel(entry, index, history.length),
       note: item.note ?? entry.reason ?? "-",
       title: item.actionLabel ?? item.action ?? `Pelanggaran ${index + 1}`,
       trace: null,
