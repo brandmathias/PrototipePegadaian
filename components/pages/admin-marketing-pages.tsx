@@ -427,27 +427,19 @@ function VickreyAssetNotice({ auction }: { auction: MarketingSession }) {
   );
 }
 
-function getMaskedBidderLabel(name: string | undefined, index: number) {
-  if (!name) {
-    return `USR-${String(index + 1).padStart(3, "0")}****`;
-  }
-
-  const trimmed = name.trim();
-  if (trimmed.length <= 3) {
-    return `${trimmed[0] ?? "U"}***`;
-  }
-
-  return `${trimmed.slice(0, 2)}***${trimmed.slice(-1)}`;
+function getMaskedBidderLabel() {
+  return "************";
 }
 
 function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
   const bids = Array.isArray(auction.bids) ? auction.bids : [];
+  const maskBidderNames = auction.visibility !== "HASIL_DIBUKA";
 
   if (showBidRows && bids.length) {
     return bids.map((bid, index) => ({
       id: bid.id,
       rank: bid.rank || index + 1,
-      bidder: bid.bidderName?.trim() || getMaskedBidderLabel(bid.bidderId, index),
+      bidder: maskBidderNames ? getMaskedBidderLabel() : bid.bidderName?.trim() || `Peserta ${index + 1}`,
       time: bid.submittedAtLabel || "-",
       status: auction.visibility === "MENUNGGU_REVEAL"
         ? bid.isRevealed
@@ -471,7 +463,7 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
   return Array.from({ length: lockedCount }, (_, index) => ({
     id: `locked-${auction.id}-${index}`,
     rank: index + 1,
-    bidder: previewRows[index]?.bidderName?.trim() || `Peserta ${index + 1}`,
+    bidder: maskBidderNames ? getMaskedBidderLabel() : previewRows[index]?.bidderName?.trim() || `Peserta ${index + 1}`,
     time: previewRows[index]?.submittedAtLabel || "-",
     status: index === 0 ? "Tertinggi" : "-",
     tone: index === 0 ? "green" : "neutral"

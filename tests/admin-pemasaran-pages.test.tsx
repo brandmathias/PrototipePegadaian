@@ -612,8 +612,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /nama penawar/i })).toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: /id penawar/i })).not.toBeInTheDocument();
-    expect(screen.getByText("Buyer Satu")).toBeInTheDocument();
-    expect(screen.getByText("Buyer Dua")).toBeInTheDocument();
+    expect(screen.queryByText("Buyer Satu")).not.toBeInTheDocument();
+    expect(screen.queryByText("Buyer Dua")).not.toBeInTheDocument();
+    expect(screen.getAllByText("************").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("11 Jun 2026, 10.06 WIB")).toBeInTheDocument();
     expect(screen.getByText("11 Jun 2026, 10.11 WIB")).toBeInTheDocument();
     expect(screen.getByText("Tertinggi")).toHaveClass("whitespace-nowrap");
@@ -804,6 +805,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/menunggu buyer reveal nominal/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/sudah reveal/i)).toBeInTheDocument();
     expect(screen.getByText(/belum reveal/i)).toBeInTheDocument();
+    expect(screen.queryByText("Buyer A")).not.toBeInTheDocument();
+    expect(screen.queryByText("Buyer B")).not.toBeInTheDocument();
+    expect(screen.getAllByText("************").length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText(/pemenang \(b1\)/i)).not.toBeInTheDocument();
   });
 
