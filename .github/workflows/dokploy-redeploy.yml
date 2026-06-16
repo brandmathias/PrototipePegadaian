@@ -24,12 +24,47 @@ jobs:
         env:
           DOKPLOY_DEPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}
         run: |
-          curl \
-            --fail \
-            --show-error \
-            --silent \
-            --retry 3 \
-            --retry-all-errors \
-            --max-time 30 \
-            -X POST \
-            "$DOKPLOY_DEPLOY_WEBHOOK_URL"
+          set -euo pipefail
+
+          event_name="$GITHUB_EVENT_NAME"
+          payload_file="$GITHUB_EVENT_PATH"
+
+          if [ "$GITHUB_EVENT_NAME" != "push" ]; then
+            event_name="push"
+            payload_file="$(mktemp)"
+            printf '{"ref":"refs/heads/%s","after":"%s","repository":{"full_name":"%s"},"head_commit":{"id":"%s","message":"Manual Dokploy redeploy"}}' \
+              "$GITHUB_REF_NAME" \
+              "$GITHUB_SHA" \
+              "$GITHUB_REPOSITORY" \
+              "$GITHUB_SHA" > "$payload_file"
+          fi
+
+          response_file="$(mktemp)"
+          status_code="$(
+            curl \
+              --show-error \
+              --silent \
+              --retry 3 \
+              --retry-all-errors \
+              --max-time 30 \
+              --request POST \
+              --header "Content-Type: application/json" \
+              --header "X-GitHub-Event: $event_name" \
+              --data-binary "@$payload_file" \
+              --output "$response_file" \
+              --write-out "%{http_code}" \
+              "$DOKPLOY_DEPLOY_WEBHOOK_URL"
+          )"
+
+          echo "Dokploy response HTTP status: $status_code"
+          cat "$response_file"
+
+          if [ "$status_code" -lt 200 ] || [ "$status_code" -ge 300 ]; then
+            echo "Dokploy webhook returned a non-success HTTP status."
+            exit 1
+          fi
+
+          if grep -qi "Branch Not Match" "$response_file"; then
+            echo "Dokploy rejected the deployment because the pushed branch does not match the branch configured in Dokploy."
+            exit 1
+          fi
