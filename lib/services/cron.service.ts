@@ -126,6 +126,18 @@ export function canSettleVickreySession(
 
 export { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
 
+export function resolveAccumulatedBlacklistViolations(input: {
+  eligibleViolationCount: number | null | undefined;
+  previousTotalViolations?: number | null;
+  currentIncidentCount?: number | null;
+}) {
+  const eligibleViolationCount = Math.max(0, Math.floor(Number(input.eligibleViolationCount ?? 0)));
+  const previousTotalViolations = Math.max(0, Math.floor(Number(input.previousTotalViolations ?? 0)));
+  const currentIncidentCount = Math.max(1, Math.floor(Number(input.currentIncidentCount ?? 1)));
+
+  return Math.max(eligibleViolationCount, previousTotalViolations + currentIncidentCount, currentIncidentCount);
+}
+
 export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
   const revealedBids = input.bids.filter(
     (bid): bid is BidOutcomeInput["bids"][number] & { nominal: string | number } => bid.nominal != null
@@ -585,7 +597,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         updatedAt: now
       });
 
-      const [existingBlacklist] = await tx
+      const matchingBlacklists = await tx
         .select()
         .from(blacklists)
         .where(
@@ -593,14 +605,31 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
             ? or(eq(blacklists.userId, row.transaction.userId), eq(blacklists.nationalId, row.buyerNationalId))
             : eq(blacklists.userId, row.transaction.userId)
         )
-        .limit(1);
+        .orderBy(desc(blacklists.isActive), desc(blacklists.totalViolations), desc(blacklists.updatedAt))
+        .limit(20);
+      const existingBlacklist = matchingBlacklists[0];
+      const previousTotalViolations = matchingBlacklists.reduce(
+        (highest, blacklist) => Math.max(highest, Number(blacklist.totalViolations ?? 0)),
+        0
+      );
 
       const [eligibleViolations] = await tx
         .select({ count: sql<number>`count(*)::int` })
         .from(pelanggaranUser)
-        .where(and(eq(pelanggaranUser.userId, row.transaction.userId), eq(pelanggaranUser.escalationEligible, true)));
+        .innerJoin(users, eq(users.id, pelanggaranUser.userId))
+        .where(
+          and(
+            eq(pelanggaranUser.escalationEligible, true),
+            row.buyerNationalId
+              ? or(eq(pelanggaranUser.userId, row.transaction.userId), eq(users.nationalId, row.buyerNationalId))
+              : eq(pelanggaranUser.userId, row.transaction.userId)
+          )
+        );
 
-      const totalViolations = Math.max(Number(eligibleViolations?.count ?? 0), 1);
+      const totalViolations = resolveAccumulatedBlacklistViolations({
+        eligibleViolationCount: eligibleViolations?.count,
+        previousTotalViolations
+      });
       const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
       const restriction = getBlacklistRestrictionPolicy(totalViolations);
       const shouldSuspendLogin = shouldSuspendLoginForBlacklist(totalViolations);
@@ -611,6 +640,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           .update(blacklists)
           .set({
             unitId: row.item.unitId,
+            userId: row.transaction.userId,
             nationalId: row.buyerNationalId ?? existingBlacklist.nationalId,
             totalViolations,
             isActive: true,

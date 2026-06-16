@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => {
   };
   const tx = {
     insert: vi.fn(),
+    select: vi.fn(),
     update: vi.fn(),
     delete: vi.fn()
   };
@@ -58,6 +59,50 @@ function mockNoUpdatedTransaction() {
   };
 }
 
+function mockUpdatedTransaction() {
+  return {
+    set: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "trx-1" }])
+      })
+    })
+  };
+}
+
+function mockVoidUpdate(onSet?: (value: Record<string, unknown>) => void) {
+  return {
+    set: vi.fn((value) => {
+      onSet?.(value);
+
+      return {
+        where: vi.fn().mockResolvedValue(undefined)
+      };
+    })
+  };
+}
+
+function mockExistingBlacklist(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue(rows)
+        })
+      })
+    })
+  };
+}
+
+function mockEligibleViolationCount(count: number) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([{ count }])
+      })
+    })
+  };
+}
+
 describe("overdue Lelang Tertutup payment settlement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -95,5 +140,71 @@ describe("overdue Lelang Tertutup payment settlement", () => {
     });
     expect(mocks.tx.insert).not.toHaveBeenCalled();
     expect(mocks.notifyBlacklistActivated).not.toHaveBeenCalled();
+  });
+
+  it("continues blacklist level from an expired historical restriction", async () => {
+    const updatePayloads: Array<Record<string, unknown>> = [];
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockOverdueRows([
+        {
+          buyerNationalId: "7371121305260002",
+          item: {
+            id: "barang-1",
+            status: "dipasarkan",
+            unitId: "unit-1"
+          },
+          marketing: {
+            id: "pemasaran-1"
+          },
+          transaction: {
+            id: "trx-1",
+            pemasaranId: "pemasaran-1",
+            userId: "buyer-current"
+          }
+        }
+      ])
+    );
+
+    mocks.tx.update
+      .mockImplementationOnce(() => mockUpdatedTransaction())
+      .mockImplementation(() => mockVoidUpdate((value) => updatePayloads.push(value)));
+    mocks.tx.insert.mockReturnValue({
+      values: vi.fn().mockResolvedValue(undefined)
+    });
+    mocks.tx.select
+      .mockImplementationOnce(() =>
+        mockExistingBlacklist([
+          {
+            id: "blacklist-old",
+            nationalId: "7371121305260002",
+            totalViolations: 1,
+            userId: "buyer-old"
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockEligibleViolationCount(1));
+
+    const summary = await processOverdueVickreyPayments(new Date("2026-05-29T14:36:04.000Z"));
+
+    expect(summary).toEqual({
+      processed: 1,
+      blacklisted: 1
+    });
+    expect(updatePayloads).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          isActive: true,
+          totalViolations: 2,
+          userId: "buyer-current"
+        })
+      ])
+    );
+    expect(mocks.notifyBlacklistActivated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        totalViolations: 2,
+        userId: "buyer-current"
+      })
+    );
   });
 });

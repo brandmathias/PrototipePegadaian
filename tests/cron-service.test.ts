@@ -169,4 +169,27 @@ describe("cron service", () => {
     expect(cronService.getBlacklistDurationDays(4)).toBe(365);
     expect(cronService.getBlacklistDurationDays(9)).toBe(365);
   });
+
+  it("continues blacklist escalation from historical totals after a restriction expires", async () => {
+    expect(
+      cronService.resolveAccumulatedBlacklistViolations({
+        eligibleViolationCount: 1,
+        previousTotalViolations: 1
+      })
+    ).toBe(2);
+
+    expect(
+      cronService.resolveAccumulatedBlacklistViolations({
+        eligibleViolationCount: 1,
+        previousTotalViolations: 2
+      })
+    ).toBe(3);
+
+    expect(
+      cronService.resolveAccumulatedBlacklistViolations({
+        eligibleViolationCount: 3,
+        previousTotalViolations: 1
+      })
+    ).toBe(3);
+  });
 });
