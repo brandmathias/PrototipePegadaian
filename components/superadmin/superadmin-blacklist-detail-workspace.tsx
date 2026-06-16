@@ -189,6 +189,14 @@ function getDeadline(item: ViolationItem | undefined) {
   return new Date(occurredAt.getTime() + durationDays * DAY_MS);
 }
 
+function getViolationStartDate(item: ViolationItem | undefined) {
+  return parseDate(item?.trace?.occurredAt ?? item?.trace?.createdAt ?? item?.date);
+}
+
+function getCurrentViolationItem(items: ViolationItem[]) {
+  return items.find((item) => item.isCurrent) ?? items[0];
+}
+
 function getPaymentDeadlineFromWinTime(trace: Record<string, any> | null | undefined) {
   const wonAt = parseDate(trace?.occurredAt ?? trace?.createdAt);
 
@@ -444,21 +452,20 @@ function TimelineItemCard({
 }
 
 function CountdownPanel({
+  currentViolation,
   entry,
-  selected,
   serverNow
 }: {
+  currentViolation: ViolationItem | undefined;
   entry: SuperadminBlacklistDetailEntry;
-  selected: ViolationItem | undefined;
   serverNow: string;
 }) {
-  const level = selected?.level ?? getLevel(entry);
+  const level = currentViolation?.level ?? getLevel(entry);
   const storedDeadline = parseDate(entry.blockedUntilAt);
-  const derivedDeadline = getDeadline(selected);
-  const deadline =
-    storedDeadline && derivedDeadline
-      ? new Date(Math.max(storedDeadline.getTime(), derivedDeadline.getTime())).toISOString()
-      : (storedDeadline ?? derivedDeadline)?.toISOString() ?? null;
+  const derivedDeadline = getDeadline(currentViolation);
+  const deadline = (derivedDeadline ?? storedDeadline)?.toISOString() ?? null;
+  const startDate =
+    getViolationStartDate(currentViolation) ?? parseDate(entry.lastIncidentAt ?? entry.lastIncident);
   const [now, setNow] = useState(() => getSyncedNow(serverNow));
   const ticker = getTickerState(deadline, now);
   const tone = getLevelTone(level, String(entry.status ?? "").toUpperCase() !== "AKTIF");
@@ -494,7 +501,7 @@ function CountdownPanel({
       </h2>
       <p className="mt-3 flex items-center gap-2 text-sm font-black text-[#42526b]">
         <CalendarClock className="size-4" />
-        {formatDisplayDate(parseDate(entry.lastIncidentAt ?? entry.lastIncident))} - {formatDisplayDate(parseDate(deadline))}
+        {formatDisplayDate(startDate)} - {formatDisplayDate(parseDate(deadline))}
       </p>
       <div className="mt-5 grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-1.5">
         {[
@@ -560,6 +567,7 @@ export function SuperadminBlacklistDetailWorkspace({
   const items = useMemo(() => getViolationItems(entry), [entry]);
   const [expandedId, setExpandedId] = useState(items[0]?.id ?? "");
   const selected = items.find((item) => item.id === expandedId) ?? items[0];
+  const currentViolation = getCurrentViolationItem(items);
   const selectedTrace = selected?.trace ?? entry.latestUnpaidAuction ?? null;
   const level = getLevel(entry);
   const levelTone = getLevelTone(level, String(entry.status ?? "").toUpperCase() !== "AKTIF");
@@ -639,7 +647,7 @@ export function SuperadminBlacklistDetailWorkspace({
         </div>
 
         <aside className="space-y-5">
-          <CountdownPanel entry={entry} selected={selected} serverNow={serverNow} />
+          <CountdownPanel currentViolation={currentViolation} entry={entry} serverNow={serverNow} />
           <SystemLogPanel entry={entry} />
           <section className="rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm font-semibold leading-6 text-[#52625b] shadow-[0_20px_54px_-48px_rgba(8,69,50,0.34)]">
             <p className="font-headline text-base font-black text-[#15231d]">
