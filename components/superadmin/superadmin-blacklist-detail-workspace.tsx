@@ -119,6 +119,14 @@ function getHistoricalLevel(entry: SuperadminBlacklistDetailEntry, index: number
   return Math.min(Math.max(getEffectiveViolationTotal(entry, itemCount) - index, 1), 3);
 }
 
+function getTraceRestrictionLevel(trace: Record<string, any>, fallback: number) {
+  const explicitLevel = Number(trace.restrictionLevel ?? trace.violationLevel ?? trace.level);
+
+  return Number.isFinite(explicitLevel) && explicitLevel > 0
+    ? clampLevel(explicitLevel)
+    : fallback;
+}
+
 function getLevelTone(level: number, completed = false) {
   if (completed) {
     return {
@@ -212,18 +220,22 @@ function getViolationItems(entry: SuperadminBlacklistDetailEntry): ViolationItem
       .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime());
 
     if (milestones.length > 0) {
-      return milestones.map(({ level, trace }, index) => ({
-        date: trace.occurredAtLabel ?? trace.paymentDeadlineLabel ?? entry.lastIncident ?? "-",
-        id: String(trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`),
-        isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
-        level,
-        note:
-          trace.note ??
-          entry.reason ??
-          "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
-        title: `Kasus #${level}: ${trace.itemName ?? trace.lotLabel ?? trace.lotCode ?? `Pelanggaran ${level}`}`,
-        trace
-      }));
+      return milestones.map(({ level, trace }, index) => {
+        const restrictionLevel = getTraceRestrictionLevel(trace, level);
+
+        return {
+          date: trace.occurredAtLabel ?? trace.paymentDeadlineLabel ?? entry.lastIncident ?? "-",
+          id: String(trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`),
+          isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
+          level: restrictionLevel,
+          note:
+            trace.note ??
+            entry.reason ??
+            "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
+          title: `Kasus #${restrictionLevel}: ${trace.itemName ?? trace.lotLabel ?? trace.lotCode ?? `Pelanggaran ${restrictionLevel}`}`,
+          trace
+        };
+      });
     }
   }
 
@@ -570,6 +582,69 @@ function SystemLogPanel({ entry, level }: { entry: SuperadminBlacklistDetailEntr
   );
 }
 
+function getCrossUnitViolationSummary(entry: SuperadminBlacklistDetailEntry) {
+  const summary = entry.crossUnitViolationSummary;
+  if (!summary || summary.hasExternalViolations === false) return null;
+
+  const externalViolationCount = Math.max(0, Number(summary.externalViolationCount ?? 0));
+  if (externalViolationCount <= 0) return null;
+
+  return {
+    currentUnitViolationCount: Math.max(0, Number(summary.currentUnitViolationCount ?? 0)),
+    effectiveViolationTotal: Math.max(
+      0,
+      Number(summary.effectiveViolationTotal ?? entry.violations ?? entry.level ?? 0),
+    ),
+    externalUnitCount: Math.max(0, Number(summary.externalUnitCount ?? 0)),
+    externalViolationCount,
+  };
+}
+
+function CrossUnitContextCard({
+  level,
+  summary,
+}: {
+  level: number;
+  summary: NonNullable<ReturnType<typeof getCrossUnitViolationSummary>>;
+}) {
+  return (
+    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
+      <div className="flex items-start gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#f7f6f1] text-[#0a6a49] ring-1 ring-[#dfe8e3]">
+          <Lock className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
+            Konteks Lintas Unit
+          </p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#42526b]">
+            Level {level} mempertimbangkan {summary.externalViolationCount} pelanggaran terdahulu di luar unit ini.
+            Detail barang, nominal, unit, dan timeline lintas unit disembunyikan untuk admin unit.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        <DossierTile
+          icon={<Gavel className="size-4" />}
+          label="Unit Ini"
+          value={`${summary.currentUnitViolationCount} kasus`}
+        />
+        <DossierTile
+          icon={<ShieldAlert className="size-4" />}
+          label="Luar Unit"
+          value={`${summary.externalViolationCount} catatan`}
+        />
+        <DossierTile
+          icon={<Lock className="size-4" />}
+          label="Level Efektif"
+          value={`Level ${Math.min(Math.max(summary.effectiveViolationTotal, 0), 3)}`}
+        />
+      </div>
+    </section>
+  );
+}
+
 export function SuperadminBlacklistDetailWorkspace({
   entry,
   scope = "superadmin",
@@ -589,6 +664,7 @@ export function SuperadminBlacklistDetailWorkspace({
   const isAdminUnit = scope === "admin-unit";
   const listHref = isAdminUnit ? "/admin/blacklist" : "/superadmin/blacklist";
   const unitFallback = isAdminUnit ? (entry.unitName ?? entry.unit ?? "Unit ini") : (entry.unitName ?? entry.unit ?? "-");
+  const crossUnitSummary = isAdminUnit ? getCrossUnitViolationSummary(entry) : null;
 
   return (
     <div className="space-y-6">
@@ -682,6 +758,9 @@ export function SuperadminBlacklistDetailWorkspace({
                 : "Data ini bersumber dari riwayat pelanggaran pembayaran dan status blacklist aktif pengguna."}
             </p>
           </section>
+          {crossUnitSummary ? (
+            <CrossUnitContextCard level={level} summary={crossUnitSummary} />
+          ) : null}
         </aside>
       </div>
     </div>

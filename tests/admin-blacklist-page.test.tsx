@@ -224,4 +224,45 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getAllByText(/30 hari/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/365 hari/i)).not.toBeInTheDocument();
   });
+
+  it("shows safe cross-unit context without exposing other unit violation details", () => {
+    render(
+      <AdminBlacklistDetailPage
+        entry={{
+          ...makeBlacklistEntry(2),
+          crossUnitViolationSummary: {
+            currentUnitViolationCount: 1,
+            effectiveViolationTotal: 2,
+            externalUnitCount: 1,
+            externalViolationCount: 1,
+            hasExternalViolations: true,
+          },
+          latestUnpaidAuction: {
+            ...makeBlacklistEntry(2).latestUnpaidAuction,
+            restrictionLevel: 2,
+          },
+          unpaidAuctionCount: 1,
+          unpaidAuctionTraces: [
+            {
+              ...makeBlacklistEntry(2).unpaidAuctionTraces[0],
+              restrictionLevel: 2,
+            },
+          ],
+          violations: 2,
+        }}
+        userId="user-2"
+      />,
+    );
+
+    expect(screen.getByText("Konteks Lintas Unit")).toBeInTheDocument();
+    expect(
+      screen.getByText(/1 pelanggaran terdahulu di luar unit ini/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/detail barang, nominal, unit, dan timeline lintas unit disembunyikan/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Pelanggaran Level 2/i })).toBeInTheDocument();
+    expect(screen.queryByText("UPC Unit Lain")).not.toBeInTheDocument();
+    expect(screen.queryByText("Barang Unit Lain")).not.toBeInTheDocument();
+  });
 });
