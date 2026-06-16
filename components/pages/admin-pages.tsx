@@ -44,7 +44,6 @@ import {
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
-import { AdminBlacklistDetailWorkspace } from "@/components/admin/admin-blacklist-detail-workspace";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminBlacklistExtendForm } from "@/components/admin-unit/admin-blacklist-extend-form";
@@ -60,6 +59,7 @@ import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventor
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { SuperadminBlacklistDetailWorkspace } from "@/components/superadmin/superadmin-blacklist-detail-workspace";
 import {
   AdminInventoryHistoryWorkspace,
   AdminInventoryWorkspace,
@@ -2031,201 +2031,21 @@ export function AdminBlacklistPage({
   );
 }
 
-function isBlacklistRestrictionActive(entry: AdminBlacklistItem) {
-  return String(entry.status ?? "").toUpperCase() === "AKTIF";
-}
-
-function getBlacklistInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
-function getBlacklistLevel(entry: AdminBlacklistItem) {
-  return Number(
-    entry.level ?? Math.min(Math.max(Number(entry.violations ?? 0), 0), 3),
-  );
-}
-
-function getBlacklistLevelTone(level: number) {
-  if (level >= 3) return "danger";
-  if (level === 2) return "warning";
-  if (level === 1) return "success";
-
-  return "neutral";
-}
-
-function getBlacklistCountdownTarget(entry: AdminBlacklistItem) {
-  if (!isBlacklistRestrictionActive(entry)) return null;
-  if (entry.blockedUntilAt) return String(entry.blockedUntilAt);
-  if (!entry.until || entry.until === "-") return null;
-
-  return `${entry.until}T23:59:59.000Z`;
-}
-
-function humanizeAdminValue(value?: string | null) {
-  if (!value) return "-";
-
-  return value
-    .toLowerCase()
-    .split(/[_\s-]+/)
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(" ");
-}
-
-function BlacklistLevelBadge({ level }: { level: number }) {
-  const tone = getBlacklistLevelTone(level);
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em]",
-        tone === "danger" && "bg-rose-50 text-rose-700",
-        tone === "warning" && "bg-amber-50 text-amber-700",
-        tone === "success" && "bg-[#e9f6ef] text-[#0a6a49]",
-        tone === "neutral" && "bg-[#f0f0ee] text-black/58",
-      )}
-    >
-      Level {level}
-    </span>
-  );
-}
-
-function BlacklistDetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: ReactNode;
-}) {
-  return (
-    <div className="grid grid-cols-[2.55rem_minmax(0,1fr)] gap-3 rounded-[1.2rem] bg-[#f7f6f1] p-3.5 ring-1 ring-black/5">
-      <span className="grid size-10 place-items-center rounded-2xl bg-white text-[#0a6a49] shadow-[0_14px_30px_-26px_rgba(8,69,50,0.48)]">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <p className="text-[0.66rem] font-black uppercase tracking-[0.16em] text-black/38">
-          {label}
-        </p>
-        <div className="mt-1 text-sm font-bold leading-6 text-[#122018] sm:text-base">
-          {value}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BlacklistTraceCard({ trace }: { trace: Record<string, any> }) {
-  return (
-    <article className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_18px_44px_-40px_rgba(8,69,50,0.5)]">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#0a6a49]/62">
-            {trace.lotLabel ?? trace.lotCode ?? "-"}
-          </p>
-          <h4 className="mt-1 font-headline text-lg font-black tracking-[-0.02em] text-[#122018]">
-            {trace.itemName ?? "Barang lelang"}
-          </h4>
-          <p className="mt-1 text-sm font-semibold text-black/46">
-            {humanizeAdminValue(trace.itemCategory)}
-          </p>
-        </div>
-        <span className="rounded-full bg-[#f0f0ee] px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/58">
-          {humanizeAdminValue(trace.transactionStatus)}
-        </span>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div>
-          <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-black/38">
-            Nominal menang
-          </p>
-          <p className="mt-1 text-sm font-black text-[#122018]">
-            {currency.format(Number(trace.amount ?? 0))}
-          </p>
-        </div>
-        <div>
-          <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-black/38">
-            Batas bayar
-          </p>
-          <p className="mt-1 text-sm font-black text-[#122018]">
-            {trace.paymentDeadlineLabel ?? "-"}
-          </p>
-        </div>
-      </div>
-
-      <p className="mt-4 rounded-[1.1rem] bg-[#f7f6f1] px-3 py-2 text-sm font-semibold leading-6 text-black/58">
-        {trace.note ??
-          "Pemenang lelang tidak menyelesaikan pembayaran sampai batas waktu."}
-      </p>
-    </article>
-  );
-}
-
 export function AdminBlacklistDetailPage({
   userId: _userId,
   entry,
+  serverNow,
 }: {
   userId?: string;
   entry: AdminBlacklistItem;
+  serverNow?: string;
 }) {
-  const level = getBlacklistLevel(entry);
-
   return (
-    <div className="space-y-6">
-      <section className="rounded-[1.5rem] border border-[#d8e8dd] bg-white p-5 shadow-[0_18px_54px_-48px_rgba(8,69,50,0.34)] sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="page-heading-eyebrow">
-              Admin Unit / Detail Blacklist
-            </p>
-            <h2 className="mt-3 font-headline text-3xl font-black tracking-[-0.03em] text-[#122018] sm:text-4xl">
-              Detail Kasus Nasabah
-            </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-black/58">
-              Ringkasan akun, level pelanggaran, dan barang lelang yang belum
-              diselesaikan pembayarannya.
-            </p>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-3 rounded-[1.25rem] bg-[#f8f7f3] p-3 ring-1 ring-[#d8e8dd] sm:min-w-[24rem]">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#e9f6ef] text-sm font-black text-[#0a6a49]">
-                {getBlacklistInitials(entry.name || "User")}
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate font-headline text-xl font-black tracking-[-0.03em] text-[#122018]">
-                  {entry.name}
-                </h3>
-                <p className="truncate text-sm font-semibold text-black/52">
-                  {entry.email ?? entry.userId}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <BlacklistLevelBadge level={level} />
-              <AdminStatusBadge
-                className="text-[0.75rem]"
-                status={entry.status}
-              />
-              <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em] text-black/54 ring-1 ring-[#d8e8dd]">
-                {isBlacklistRestrictionActive(entry)
-                  ? "Pembatasan aktif"
-                  : "Pembatasan selesai"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <AdminBlacklistDetailWorkspace entry={entry} />
-    </div>
+    <SuperadminBlacklistDetailWorkspace
+      entry={entry}
+      scope="admin-unit"
+      serverNow={serverNow ?? new Date().toISOString()}
+    />
   );
 }
 

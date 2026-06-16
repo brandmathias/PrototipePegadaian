@@ -28,6 +28,7 @@ import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
 type SuperadminBlacklistDetailEntry = Record<string, any>;
+type BlacklistDetailScope = "superadmin" | "admin-unit";
 type ViolationItem = {
   date: string;
   id: string;
@@ -323,7 +324,13 @@ function DossierTile({
   );
 }
 
-function TriggerCaseCard({ trace }: { trace: Record<string, any> | null }) {
+function TriggerCaseCard({
+  trace,
+  unitFallback = "-"
+}: {
+  trace: Record<string, any> | null;
+  unitFallback?: string;
+}) {
   const itemName = trace?.itemName ?? "Barang lelang";
   const imageUrl = trace?.imageUrl ?? trace?.primaryImage?.url ?? null;
 
@@ -360,7 +367,7 @@ function TriggerCaseCard({ trace }: { trace: Record<string, any> | null }) {
           </div>
           <div className="mt-3 flex w-max max-w-full items-center gap-2 rounded-lg border border-[#dfe8e3] bg-white px-3 py-2 text-xs font-black text-[#42526b]">
             <MapPin className="size-4 text-[#64756e]" />
-            <span className="truncate">{trace?.unitName ?? "-"}</span>
+            <span className="truncate">{trace?.unitName ?? unitFallback}</span>
           </div>
         </div>
         <div className="text-left sm:text-right">
@@ -565,9 +572,11 @@ function SystemLogPanel({ entry, level }: { entry: SuperadminBlacklistDetailEntr
 
 export function SuperadminBlacklistDetailWorkspace({
   entry,
+  scope = "superadmin",
   serverNow
 }: {
   entry: SuperadminBlacklistDetailEntry;
+  scope?: BlacklistDetailScope;
   serverNow: string;
 }) {
   const items = useMemo(() => getViolationItems(entry), [entry]);
@@ -577,12 +586,19 @@ export function SuperadminBlacklistDetailWorkspace({
   const selectedTrace = selected?.trace ?? entry.latestUnpaidAuction ?? null;
   const level = currentViolation?.level ?? getLevel(entry);
   const levelTone = getLevelTone(level, String(entry.status ?? "").toUpperCase() !== "AKTIF");
+  const isAdminUnit = scope === "admin-unit";
+  const listHref = isAdminUnit ? "/admin/blacklist" : "/superadmin/blacklist";
+  const unitFallback = isAdminUnit ? (entry.unitName ?? entry.unit ?? "Unit ini") : (entry.unitName ?? entry.unit ?? "-");
 
   return (
     <div className="space-y-6">
       <AdminPageHero
-        description="Dossier nasional untuk membaca pemicu pelanggaran, status pembatasan, dan kronologi gagal bayar buyer lintas unit."
-        eyebrow="Superadmin / Detail Pelanggaran"
+        description={
+          isAdminUnit
+            ? "Dossier unit untuk membaca pemicu pelanggaran, status pembatasan, dan kronologi gagal bayar buyer pada barang lelang unit ini."
+            : "Dossier nasional untuk membaca pemicu pelanggaran, status pembatasan, dan kronologi gagal bayar buyer lintas unit."
+        }
+        eyebrow={isAdminUnit ? "Admin Unit / Detail Pelanggaran" : "Superadmin / Detail Pelanggaran"}
         icon={Ban}
         rightRail={
           <>
@@ -600,7 +616,7 @@ export function SuperadminBlacklistDetailWorkspace({
       />
 
       <nav className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-[#64756e]">
-        <Link className="transition hover:text-[#006747]" href="/superadmin/blacklist">
+        <Link className="transition hover:text-[#006747]" href={listHref}>
           Pelanggaran
         </Link>
         <ChevronRight className="size-3.5 text-[#94a3b8]" />
@@ -633,7 +649,7 @@ export function SuperadminBlacklistDetailWorkspace({
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.8fr)_minmax(21rem,0.95fr)]">
         <div className="space-y-5">
-          <TriggerCaseCard trace={selectedTrace} />
+          <TriggerCaseCard trace={selectedTrace} unitFallback={unitFallback} />
 
           <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
             <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
@@ -660,7 +676,10 @@ export function SuperadminBlacklistDetailWorkspace({
               Ketetapan Level
             </p>
             <p className="mt-2">
-              {getRestrictionCopy(level)}. Data ini bersumber dari riwayat pelanggaran pembayaran dan status blacklist aktif pengguna.
+              {getRestrictionCopy(level)}.{" "}
+              {isAdminUnit
+                ? "Data ini bersumber dari riwayat pelanggaran pembayaran buyer pada barang lelang unit ini dan status blacklist aktif pengguna."
+                : "Data ini bersumber dari riwayat pelanggaran pembayaran dan status blacklist aktif pengguna."}
             </p>
           </section>
         </aside>

@@ -14,12 +14,14 @@ import {
   pelanggaranUser,
   pemasaran,
   transaksi,
+  units,
   users,
 } from "@/lib/db/schema";
 import { formatAppDateTime } from "@/lib/timezone";
 
 function serializeBlacklist(row: {
   blacklist: typeof blacklists.$inferSelect;
+  unit?: typeof units.$inferSelect | null;
   user: typeof users.$inferSelect;
 }, effectiveTotalViolations = row.blacklist.totalViolations, effectiveBlockedUntil = row.blacklist.blockedUntil) {
   const totalViolations = Math.max(0, Number(effectiveTotalViolations ?? row.blacklist.totalViolations ?? 0));
@@ -54,6 +56,7 @@ function serializeBlacklist(row: {
       ? "User tidak dapat mengikuti Lelang Tertutup selama masa blokir aktif."
       : "Pembatasan Lelang Tertutup sudah tidak aktif.",
     unit: row.blacklist.unitId ?? "-",
+    unitName: row.unit?.name ?? row.blacklist.unitId ?? "-",
   };
 }
 
@@ -72,11 +75,13 @@ async function listUnpaidAuctionTraces(unitId: string, userId?: string) {
       auction: pemasaran,
       item: barang,
       media: mediaBarang,
+      unit: units,
     })
     .from(pelanggaranUser)
     .innerJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .innerJoin(pemasaran, eq(pemasaran.id, pelanggaranUser.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, pelanggaranUser.unitId))
     .leftJoin(
       mediaBarang,
       and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)),
@@ -95,6 +100,7 @@ async function listUnpaidAuctionTraces(unitId: string, userId?: string) {
     id: row.violation.id,
     userId: row.violation.userId,
     escalationEligible: row.violation.escalationEligible,
+    unitName: row.unit.name,
     lotCode: row.auction.id,
     lotLabel: row.item.code,
     itemCode: row.item.code,
@@ -125,9 +131,10 @@ async function listUnpaidAuctionTraces(unitId: string, userId?: string) {
 
 export async function listAdminBlacklist(unitId: string) {
   const rows = await db
-    .select({ blacklist: blacklists, user: users })
+    .select({ blacklist: blacklists, unit: units, user: users })
     .from(blacklists)
     .innerJoin(users, eq(users.id, blacklists.userId))
+    .leftJoin(units, eq(units.id, blacklists.unitId))
     .where(eq(blacklists.unitId, unitId))
     .orderBy(desc(blacklists.updatedAt));
   const traces = await listUnpaidAuctionTraces(unitId);
@@ -169,9 +176,10 @@ export async function getAdminBlacklistByUserId(
 ) {
   const performers = alias(users, "blacklist_log_performer");
   const [row] = await db
-    .select({ blacklist: blacklists, user: users })
+    .select({ blacklist: blacklists, unit: units, user: users })
     .from(blacklists)
     .innerJoin(users, eq(users.id, blacklists.userId))
+    .leftJoin(units, eq(units.id, blacklists.unitId))
     .where(and(eq(blacklists.unitId, unitId), eq(blacklists.userId, userId)))
     .limit(1);
 

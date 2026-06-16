@@ -146,41 +146,46 @@ describe("AdminBlacklistPage", () => {
       />,
     );
 
-    expect(screen.getByText("Detail Kasus Nasabah")).toBeInTheDocument();
-    expect(screen.getByText("Riwayat Pelanggaran")).toBeInTheDocument();
-    expect(
-      screen.getByText("Barang Tidak Dibayar"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Detail Pelanggaran Pengguna")).toBeInTheDocument();
+    expect(screen.queryByText("Detail Kasus Nasabah")).not.toBeInTheDocument();
+    expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
+    expect(screen.getByText("Riwayat Pelanggaran (Timeline)")).toBeInTheDocument();
+    expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
+    expect(screen.getByText("Log Keputusan Sistem")).toBeInTheDocument();
+    expect(screen.getByText("Ketetapan Level")).toBeInTheDocument();
+    expect(screen.getByText(/Dossier unit/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/barang lelang unit ini/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Dossier nasional/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/lintas unit/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Pelanggaran$/i })).toHaveAttribute("href", "/admin/blacklist");
     expect(screen.getAllByText(/Level 2/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("BRG-44262662").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Motor Racing 2").length).toBeGreaterThan(0);
     expect(
       screen.getByRole("img", { name: /foto barang motor racing 2/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Harga Dasar")).toBeInTheDocument();
-    expect(screen.getByText("Rp 150.000.000")).toBeInTheDocument();
-    expect(screen.getByText("Nilai Taksiran")).toBeInTheDocument();
-    expect(screen.getByText("Rp 220.000.000")).toBeInTheDocument();
-    expect(screen.getByText(/30 hari/i)).toBeInTheDocument();
-    expect(screen.getByText(/Lelang Tertutup/i)).toBeInTheDocument();
+    expect(screen.getByText("Nilai Tagihan")).toBeInTheDocument();
+    expect(screen.getAllByText("Rp 200.000.000").length).toBeGreaterThan(0);
+    expect(screen.getByText("Nama Barang")).toBeInTheDocument();
+    expect(screen.getByText("Batas Waktu Bayar")).toBeInTheDocument();
+    expect(screen.getByText("Winning Bid")).toBeInTheDocument();
+    expect(screen.getAllByText(/30 hari/i).length).toBeGreaterThan(0);
     expect(
-      screen.getAllByText(/Pemenang lelang tidak menyelesaikan pembayaran/i)
+      screen.getAllByText(/Pemenang lelang tidak melakukan pembayaran/i)
         .length,
     ).toBeGreaterThan(0);
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: /pilih riwayat pelanggaran level 1 kalung emas 2/i,
+        name: /Pelanggaran Level 1/i,
       }),
     );
 
-    expect(screen.getByText(/7 hari/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Level 1/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Kalung Emas 2").length).toBeGreaterThan(0);
-    expect(screen.getByText("Rp 85.000.000")).toBeInTheDocument();
-    expect(screen.getAllByText(/Harga Tetap/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rp 90.000.000").length).toBeGreaterThan(0);
   });
 
-  it("derives admin violation levels from accumulated traces when stored totals are stale", () => {
+  it("derives admin violation levels from sequential unit traces when stored totals are stale", () => {
     const staleEntry = {
       ...makeBlacklistEntry(2),
       level: 2,
@@ -213,9 +218,10 @@ describe("AdminBlacklistPage", () => {
       />,
     );
 
-    expect(screen.getAllByText(/Level 3/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Level 3/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/Level 2/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Level 1/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/365 hari/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/30 hari/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/365 hari/i)).not.toBeInTheDocument();
   });
 });

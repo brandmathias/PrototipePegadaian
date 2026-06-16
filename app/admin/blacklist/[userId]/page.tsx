@@ -11,5 +11,5 @@ export default async function Page({
   const { unitId } = await getAdminUnitPageContext();
   const entry = await getAdminBlacklistByUserId(unitId, userId);
 
-  return <AdminBlacklistDetailPage entry={entry} userId={userId} />;
+  return <AdminBlacklistDetailPage entry={entry} serverNow={new Date().toISOString()} userId={userId} />;
 }
