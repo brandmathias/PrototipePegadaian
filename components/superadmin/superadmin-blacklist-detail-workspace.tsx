@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
+import { deriveBlacklistEscalationMilestones } from "@/lib/blacklist/escalation";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -105,7 +106,6 @@ function getEffectiveViolationTotal(entry: SuperadminBlacklistDetailEntry, itemC
   return Math.max(
     Number(entry.level ?? 0),
     Number(entry.violations ?? 0),
-    Number(entry.unpaidAuctionCount ?? 0),
     itemCount
   );
 }
@@ -207,18 +207,23 @@ function getViolationItems(entry: SuperadminBlacklistDetailEntry): ViolationItem
   const traces = Array.isArray(entry.unpaidAuctionTraces) ? entry.unpaidAuctionTraces : [];
 
   if (traces.length > 0) {
-    return traces.map((trace: Record<string, any>, index: number) => ({
-      date: trace.occurredAtLabel ?? trace.paymentDeadlineLabel ?? entry.lastIncident ?? "-",
-      id: String(trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`),
-      isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
-      level: getHistoricalLevel(entry, index, traces.length),
-      note:
-        trace.note ??
-        entry.reason ??
-        "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
-      title: trace.itemName ?? trace.lotLabel ?? trace.lotCode ?? `Pelanggaran ${index + 1}`,
-      trace
-    }));
+    const milestones = deriveBlacklistEscalationMilestones(traces)
+      .sort((left, right) => right.occurredAt.getTime() - left.occurredAt.getTime());
+
+    if (milestones.length > 0) {
+      return milestones.map(({ level, trace }, index) => ({
+        date: trace.occurredAtLabel ?? trace.paymentDeadlineLabel ?? entry.lastIncident ?? "-",
+        id: String(trace.id ?? trace.transactionId ?? `${trace.lotCode}-${index}`),
+        isCurrent: index === 0 && String(entry.status ?? "").toUpperCase() === "AKTIF",
+        level,
+        note:
+          trace.note ??
+          entry.reason ??
+          "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
+        title: `Kasus #${level}: ${trace.itemName ?? trace.lotLabel ?? trace.lotCode ?? `Pelanggaran ${level}`}`,
+        trace
+      }));
+    }
   }
 
   const history = Array.isArray(entry.history) ? entry.history : [];
@@ -406,11 +411,12 @@ function TimelineItemCard({
             <span className={cn("block text-base font-black", tone.text)}>
               Pelanggaran Level {item.level}
             </span>
-            {!item.isCurrent ? (
-              <span className="mt-1 block text-xs font-black text-[#0a6a49]">
-                Masa hukuman selesai
-              </span>
-            ) : null}
+            <span className="mt-1 block text-xs font-black text-[#0a6a49]">
+              {item.title}
+            </span>
+            <span className="mt-1 block text-xs font-black text-[#0a6a49]">
+              {item.isCurrent ? "Masa hukuman aktif" : "Masa hukuman selesai"}
+            </span>
           </span>
           <span className="flex shrink-0 items-center gap-3 text-xs font-black text-[#42526b]">
             {item.date}
@@ -530,7 +536,7 @@ function CountdownPanel({
   );
 }
 
-function SystemLogPanel({ entry }: { entry: SuperadminBlacklistDetailEntry }) {
+function SystemLogPanel({ entry, level }: { entry: SuperadminBlacklistDetailEntry; level: number }) {
   const latestHistory = Array.isArray(entry.history) ? entry.history[0] : null;
 
   return (
@@ -544,7 +550,7 @@ function SystemLogPanel({ entry }: { entry: SuperadminBlacklistDetailEntry }) {
         </span>
         <div>
           <p className="text-sm font-semibold leading-7 text-[#1f2a37]">
-            Pembatasan Level {getLevel(entry)} diterapkan karena pemenang tidak membayar dalam 1x24 jam.
+            Pembatasan Level {level} diterapkan karena pemenang tidak membayar dalam 1x24 jam.
           </p>
           {latestHistory ? (
             <p className="mt-3 text-xs font-bold leading-5 text-[#64756e]">
@@ -569,7 +575,7 @@ export function SuperadminBlacklistDetailWorkspace({
   const selected = items.find((item) => item.id === expandedId) ?? items[0];
   const currentViolation = getCurrentViolationItem(items);
   const selectedTrace = selected?.trace ?? entry.latestUnpaidAuction ?? null;
-  const level = getLevel(entry);
+  const level = currentViolation?.level ?? getLevel(entry);
   const levelTone = getLevelTone(level, String(entry.status ?? "").toUpperCase() !== "AKTIF");
 
   return (
@@ -648,7 +654,7 @@ export function SuperadminBlacklistDetailWorkspace({
 
         <aside className="space-y-5">
           <CountdownPanel currentViolation={currentViolation} entry={entry} serverNow={serverNow} />
-          <SystemLogPanel entry={entry} />
+          <SystemLogPanel entry={entry} level={level} />
           <section className="rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm font-semibold leading-6 text-[#52625b] shadow-[0_20px_54px_-48px_rgba(8,69,50,0.34)]">
             <p className="font-headline text-base font-black text-[#15231d]">
               Ketetapan Level

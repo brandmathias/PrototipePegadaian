@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
+import { deriveBlacklistEscalationMilestones, getSequentialBlacklistViolationTotal } from "@/lib/blacklist/escalation";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { validateBlacklistExtendPayload } from "@/lib/admin-unit/validation";
@@ -20,13 +21,13 @@ import { formatAppDateTime } from "@/lib/timezone";
 function serializeBlacklist(row: {
   blacklist: typeof blacklists.$inferSelect;
   user: typeof users.$inferSelect;
-}, effectiveTotalViolations = row.blacklist.totalViolations) {
-  const totalViolations = Math.max(Number(row.blacklist.totalViolations ?? 0), Number(effectiveTotalViolations ?? 0));
+}, effectiveTotalViolations = row.blacklist.totalViolations, effectiveBlockedUntil = row.blacklist.blockedUntil) {
+  const totalViolations = Math.max(0, Number(effectiveTotalViolations ?? row.blacklist.totalViolations ?? 0));
   const policy = getBlacklistRestrictionPolicy(totalViolations);
   const now = new Date();
   const activeByDate =
-    !row.blacklist.blockedUntil ||
-    row.blacklist.blockedUntil.getTime() > now.getTime();
+    !effectiveBlockedUntil ||
+    effectiveBlockedUntil.getTime() > now.getTime();
   const isCurrentlyActive =
     row.blacklist.isActive && (policy.requiresManualReview || activeByDate);
 
@@ -36,8 +37,8 @@ function serializeBlacklist(row: {
     email: row.user.email,
     phone: row.user.phoneNumber ?? "-",
     violations: totalViolations,
-    until: row.blacklist.blockedUntil?.toISOString().slice(0, 10) ?? "-",
-    blockedUntilAt: row.blacklist.blockedUntil?.toISOString() ?? null,
+    until: effectiveBlockedUntil?.toISOString().slice(0, 10) ?? "-",
+    blockedUntilAt: effectiveBlockedUntil?.toISOString() ?? null,
     status: isCurrentlyActive ? "AKTIF" : "TIDAK_AKTIF",
     reason: row.blacklist.revokeReason ?? "Pelanggaran pembayaran lelang.",
     lastIncident: row.blacklist.updatedAt.toISOString().slice(0, 10),
@@ -140,8 +141,16 @@ export async function listAdminBlacklist(unitId: string) {
 
   return rows.map((row) => {
     const userTraces = tracesByUser[row.user.id] ?? [];
-    const effectiveTotalViolations = userTraces.filter((trace) => trace.escalationEligible !== false).length;
-    const serialized = serializeBlacklist(row, effectiveTotalViolations);
+    const milestones = deriveBlacklistEscalationMilestones(userTraces);
+    const effectiveTotalViolations =
+      milestones.length > 0
+        ? getSequentialBlacklistViolationTotal(userTraces)
+        : row.blacklist.totalViolations;
+    const effectiveBlockedUntil =
+      row.blacklist.isActive && milestones.length > 0
+        ? milestones[milestones.length - 1].blockedUntil
+        : row.blacklist.blockedUntil;
+    const serialized = serializeBlacklist(row, effectiveTotalViolations, effectiveBlockedUntil);
     const latestTrace = userTraces[0] ?? null;
 
     return {
@@ -187,8 +196,16 @@ export async function getAdminBlacklistByUserId(
     .orderBy(desc(blacklistActionLogs.createdAt));
 
   const traces = await listUnpaidAuctionTraces(unitId, userId);
-  const effectiveTotalViolations = traces.filter((trace) => trace.escalationEligible !== false).length;
-  const serialized = serializeBlacklist(row, effectiveTotalViolations);
+  const milestones = deriveBlacklistEscalationMilestones(traces);
+  const effectiveTotalViolations =
+    milestones.length > 0
+      ? getSequentialBlacklistViolationTotal(traces)
+      : row.blacklist.totalViolations;
+  const effectiveBlockedUntil =
+    row.blacklist.isActive && milestones.length > 0
+      ? milestones[milestones.length - 1].blockedUntil
+      : row.blacklist.blockedUntil;
+  const serialized = serializeBlacklist(row, effectiveTotalViolations, effectiveBlockedUntil);
   const latestTrace = traces[0] ?? null;
 
   return {

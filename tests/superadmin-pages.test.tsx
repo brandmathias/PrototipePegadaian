@@ -1321,17 +1321,21 @@ describe("superadmin pages", () => {
       />,
     );
 
-    expect(screen.getAllByText(/Status: Level 3 \(365 Hari\)/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: /Pelanggaran Level 3/i })).toHaveLength(1);
+    expect(screen.getAllByText(/Status: Level 2 \(30 Hari\)/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Pelanggaran Level 3/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Pelanggaran Level 2/i })).toHaveLength(1);
     expect(screen.getAllByRole("button", { name: /Pelanggaran Level 1/i })).toHaveLength(1);
-    expect(screen.getByText(/Pembatasan 365 hari/i)).toBeInTheDocument();
-    expect(screen.getByText(/12 Juni 2026 - 12 Juni 2027/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Kasus #2: Mobil/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Kasus #1: Iphone/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Masa hukuman aktif/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Masa hukuman selesai/i)).toHaveLength(1);
+    expect(screen.getByText(/Transaksi baru dibatasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/12 Juni 2026 - 12 Juli 2026/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Pelanggaran Level 2/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Pelanggaran Level 1/i }));
 
-    expect(screen.getByText(/12 Juni 2026 - 12 Juni 2027/i)).toBeInTheDocument();
-    expect(screen.queryByText(/12 Juni 2026 - 12 Juli 2026/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/12 Juni 2026 - 12 Juli 2026/i)).toBeInTheDocument();
+    expect(screen.queryByText(/12 Juni 2026 - 12 Juni 2027/i)).not.toBeInTheDocument();
   });
 
   it("routes unit creation to a full page and keeps row actions focused on unit detail", () => {

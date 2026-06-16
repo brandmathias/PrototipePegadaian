@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -127,15 +127,37 @@ export function canSettleVickreySession(
 export { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
 
 export function resolveAccumulatedBlacklistViolations(input: {
-  eligibleViolationCount: number | null | undefined;
+  eligibleViolationCount?: number | null;
   previousTotalViolations?: number | null;
   currentIncidentCount?: number | null;
 }) {
-  const eligibleViolationCount = Math.max(0, Math.floor(Number(input.eligibleViolationCount ?? 0)));
   const previousTotalViolations = Math.max(0, Math.floor(Number(input.previousTotalViolations ?? 0)));
   const currentIncidentCount = Math.max(1, Math.floor(Number(input.currentIncidentCount ?? 1)));
 
-  return Math.max(eligibleViolationCount, previousTotalViolations + currentIncidentCount, currentIncidentCount);
+  return Math.min(previousTotalViolations + currentIncidentCount, 3);
+}
+
+function isBlacklistRestrictionWindowActive(
+  blacklist:
+    | {
+        blockedUntil?: Date | null;
+        isActive?: boolean | null;
+        totalViolations?: number | null;
+      }
+    | null
+    | undefined,
+  now: Date
+) {
+  if (!blacklist?.isActive) {
+    return false;
+  }
+
+  const restriction = getBlacklistRestrictionPolicy(blacklist.totalViolations ?? 0);
+  if (restriction.requiresManualReview) {
+    return true;
+  }
+
+  return !blacklist.blockedUntil || blacklist.blockedUntil.getTime() > now.getTime();
 }
 
 export function resolveVickreyOutcome(input: BidOutcomeInput): VickreyOutcome {
@@ -530,6 +552,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
 
   for (const row of overdueTransactions) {
     let applied = false;
+    let blacklistApplied = false;
     let blacklistNotification:
       | {
           userId: string;
@@ -585,18 +608,6 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
       });
 
-      const violationId = randomUUID();
-      await tx.insert(pelanggaranUser).values({
-        id: violationId,
-        userId: row.transaction.userId,
-        pemasaranId: row.transaction.pemasaranId,
-        transaksiId: row.transaction.id,
-        unitId: row.item.unitId,
-        note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.",
-        escalationEligible: true,
-        updatedAt: now
-      });
-
       const matchingBlacklists = await tx
         .select()
         .from(blacklists)
@@ -612,22 +623,27 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         (highest, blacklist) => Math.max(highest, Number(blacklist.totalViolations ?? 0)),
         0
       );
+      const escalationEligible = !isBlacklistRestrictionWindowActive(existingBlacklist, now);
 
-      const [eligibleViolations] = await tx
-        .select({ count: sql<number>`count(*)::int` })
-        .from(pelanggaranUser)
-        .innerJoin(users, eq(users.id, pelanggaranUser.userId))
-        .where(
-          and(
-            eq(pelanggaranUser.escalationEligible, true),
-            row.buyerNationalId
-              ? or(eq(pelanggaranUser.userId, row.transaction.userId), eq(users.nationalId, row.buyerNationalId))
-              : eq(pelanggaranUser.userId, row.transaction.userId)
-          )
-        );
+      const violationId = randomUUID();
+      await tx.insert(pelanggaranUser).values({
+        id: violationId,
+        userId: row.transaction.userId,
+        pemasaranId: row.transaction.pemasaranId,
+        transaksiId: row.transaction.id,
+        unitId: row.item.unitId,
+        note: escalationEligible
+          ? "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam."
+          : "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam saat pembatasan sebelumnya masih aktif.",
+        escalationEligible,
+        updatedAt: now
+      });
+
+      if (!escalationEligible) {
+        return;
+      }
 
       const totalViolations = resolveAccumulatedBlacklistViolations({
-        eligibleViolationCount: eligibleViolations?.count,
         previousTotalViolations
       });
       const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
@@ -666,6 +682,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           updatedAt: now
         });
       }
+      blacklistApplied = true;
       blacklistNotification = {
         userId: row.transaction.userId,
         transactionId: row.transaction.id,
@@ -702,7 +719,9 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
       continue;
     }
 
-    summary.blacklisted += 1;
+    if (blacklistApplied) {
+      summary.blacklisted += 1;
+    }
     if (blacklistNotification) {
       await notifyBlacklistActivated(blacklistNotification);
     }
