@@ -33,6 +33,8 @@ type VickreyBidFormProps = {
   existingBidStatus?: string;
   hasExistingBid?: boolean;
   isBlacklisted?: boolean;
+  isBidLockedByOtherAuction?: boolean;
+  bidLockLotName?: string | null;
   blacklistUntil?: Date | null;
   blacklistViolations?: number;
   serverNow?: string;
@@ -92,6 +94,8 @@ export function VickreyBidForm({
   existingBidStatus,
   hasExistingBid: hasExistingBidProp = false,
   isBlacklisted = false,
+  isBidLockedByOtherAuction = false,
+  bidLockLotName = null,
   blacklistUntil,
   blacklistViolations = 0,
   serverNow,
@@ -114,8 +118,8 @@ export function VickreyBidForm({
 
   const numericBid = Number(bidAmount || 0);
   const invalidBid = Number.isNaN(numericBid) || numericBid < lot.price;
-  const blocked = isBlacklisted;
-  const bidLocked = hasExistingBid;
+  const blocked = isBlacklisted || isBidLockedByOtherAuction;
+  const bidLocked = hasExistingBid || isBidLockedByOtherAuction;
 
   function resetTermsModalScroll() {
     const overlay = termsModalOverlayRef.current;
@@ -162,6 +166,12 @@ export function VickreyBidForm({
 
   const helperText = useMemo(() => {
     if (blocked) {
+      if (isBidLockedByOtherAuction && !isBlacklisted) {
+        return bidLockLotName
+          ? `Anda masih memiliki bid aktif pada lelang lain (${bidLockLotName}). Tunggu hasil lelang tersebut sebelum mengikuti lelang baru.`
+          : "Anda masih memiliki bid aktif pada lelang lain. Tunggu hasil lelang tersebut sebelum mengikuti lelang baru.";
+      }
+
       const untilLabel = blacklistUntil ? formatAppDate(blacklistUntil) : "batas waktu belum tersedia";
       return `Akun sedang dibatasi sampai ${untilLabel}. Selama masa blacklist aktif, Anda tidak dapat ikut Lelang Tertutup.`;
     }
@@ -179,7 +189,18 @@ export function VickreyBidForm({
     }
 
     return "Penawaran bersifat tertutup dan baru dibuka sistem setelah sesi lelang berakhir.";
-  }, [blacklistUntil, blocked, existingBidAmount, existingBidStatus, hasExistingBid, invalidBid, lot.price]);
+  }, [
+    bidLockLotName,
+    blacklistUntil,
+    blocked,
+    existingBidAmount,
+    existingBidStatus,
+    hasExistingBid,
+    invalidBid,
+    isBidLockedByOtherAuction,
+    isBlacklisted,
+    lot.price
+  ]);
 
   function openTermsModal() {
     setTermsModalChecked(false);
@@ -480,6 +501,8 @@ export function VickreyBidForm({
         >
           {!isHydrated ? (
             "Menyiapkan\u2026"
+          ) : isBidLockedByOtherAuction ? (
+            "Bid lelang lain aktif"
           ) : bidLocked ? (
             "Bid sudah terkunci"
           ) : isPending ? (
@@ -638,6 +661,8 @@ export function VickreyBidForm({
               >
                 {!isHydrated ? (
                   "Menyiapkan\u2026"
+                ) : isBidLockedByOtherAuction ? (
+                  "Bid lelang lain aktif"
                 ) : bidLocked ? (
                   "Bid sudah terkunci"
                 ) : isPending ? (

@@ -42,6 +42,19 @@ const REUSABLE_BUYER_TRANSACTION_STATUSES = [
 
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
   "Akun Anda sedang dalam masa pembatasan. Transaksi yang sedang berjalan belum dapat diselesaikan sampai masa blacklist berakhir.";
+export const ACTIVE_VICKREY_BID_LOCK_MESSAGE =
+  "Anda masih memiliki bid aktif pada lelang lain. Tunggu hasil lelang tersebut sebelum mengikuti lelang baru.";
+
+const RELEASED_VICKREY_LOCK_TRANSACTION_STATUSES = new Set(["gagal", "lunas", "selesai"]);
+
+type VickreyBidLockRow = {
+  lotName?: string | null;
+  marketingStatus?: string | null;
+  pemasaranId?: string | null;
+  transactionStatus?: string | null;
+  userId?: string | null;
+  winnerId?: string | null;
+};
 
 type BuyerReadOptions = {
   refreshAuctionState?: boolean;
@@ -85,6 +98,29 @@ export type BuyerShellSummary = {
 
 function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
+}
+
+function normalizeStatus(value: string | null | undefined) {
+  return String(value ?? "").toLowerCase();
+}
+
+export function isActiveVickreyBidLockRow(row: VickreyBidLockRow, userId: string) {
+  const marketingStatus = normalizeStatus(row.marketingStatus);
+  const transactionStatus = normalizeStatus(row.transactionStatus);
+
+  if (marketingStatus === "aktif") {
+    return true;
+  }
+
+  if (marketingStatus === "gagal") {
+    return false;
+  }
+
+  if (row.winnerId !== userId) {
+    return false;
+  }
+
+  return !RELEASED_VICKREY_LOCK_TRANSACTION_STATUSES.has(transactionStatus);
 }
 
 function primaryBarangPhotoUrl() {
@@ -204,6 +240,41 @@ async function getBuyerBlacklistInfo(userId: string) {
         : "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
     }
   };
+}
+
+async function getActiveVickreyBidLock(userId: string, currentPemasaranId?: string | null) {
+  const rows = await db
+    .select({
+      lotName: barang.name,
+      marketingStatus: pemasaran.status,
+      pemasaranId: pemasaran.id,
+      transactionStatus: transaksi.status,
+      userId: bids.userId,
+      winnerId: pemasaran.winnerId
+    })
+    .from(bids)
+    .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .leftJoin(transaksi, and(eq(transaksi.pemasaranId, pemasaran.id), eq(transaksi.userId, userId), eq(transaksi.type, "vickrey")))
+    .where(
+      currentPemasaranId
+        ? and(eq(bids.userId, userId), eq(pemasaran.mode, "vickrey"), ne(pemasaran.id, currentPemasaranId))
+        : and(eq(bids.userId, userId), eq(pemasaran.mode, "vickrey"))
+    )
+    .orderBy(desc(bids.createdAt));
+  const activeLock = rows.find((row) => isActiveVickreyBidLockRow(row, userId));
+
+  return activeLock
+    ? {
+        active: true,
+        lotId: activeLock.pemasaranId,
+        lotName: activeLock.lotName
+      }
+    : {
+        active: false,
+        lotId: null,
+        lotName: null
+      };
 }
 
 async function ensureCanSettleBuyerTransaction(userId: string) {
@@ -702,6 +773,21 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     );
   }
 
+  const [existingBid] = await db
+    .select()
+    .from(bids)
+    .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)))
+    .limit(1);
+
+  if (existingBid) {
+    throw new Error("Anda sudah mengirim bid untuk sesi ini.");
+  }
+
+  const activeBidLock = await getActiveVickreyBidLock(userId, pemasaranId);
+  if (activeBidLock.active) {
+    throw new Error(ACTIVE_VICKREY_BID_LOCK_MESSAGE);
+  }
+
   const basePrice = Number(row.marketing.basePrice ?? 0);
   const payload = validateBuyerBidEscrowPayload(input, basePrice);
   const verification = verifyBidIntegrityHash({
@@ -714,16 +800,6 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
 
   if (!verification.isMatch) {
     throw new Error("Hash bid tidak cocok dengan nominal dan salt.");
-  }
-
-  const [existingBid] = await db
-    .select()
-    .from(bids)
-    .where(and(eq(bids.pemasaranId, pemasaranId), eq(bids.userId, userId)))
-    .limit(1);
-
-  if (existingBid) {
-    throw new Error("Anda sudah mengirim bid untuk sesi ini.");
   }
 
   const [created] = await db
@@ -959,6 +1035,7 @@ export async function getBuyerProfileStatus(userId: string) {
 
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   const blacklist = await getActiveBlacklist(userId);
+  const vickreyBidLock = await getActiveVickreyBidLock(userId);
 
   return {
     isLoggedIn: Boolean(user),
@@ -968,7 +1045,8 @@ export async function getBuyerProfileStatus(userId: string) {
           until: blacklist.blockedUntil,
           totalViolations: blacklist.totalViolations
         }
-      : { active: false, until: null, totalViolations: 0 }
+      : { active: false, until: null, totalViolations: 0 },
+    vickreyBidLock
   };
 }
 

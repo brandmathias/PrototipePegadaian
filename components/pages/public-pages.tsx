@@ -37,6 +37,11 @@ type BuyerPublicStatus = {
     until: Date | null;
     totalViolations: number;
   };
+  vickreyBidLock?: {
+    active: boolean;
+    lotId: string | null;
+    lotName: string | null;
+  };
 } | null;
 
 function getBlacklistLabel(status: BuyerPublicStatus) {
@@ -118,6 +123,16 @@ function AuthBrandCluster({
   );
 }
 
+function getVickreyBidLockLabel(status: BuyerPublicStatus) {
+  if (!status?.vickreyBidLock?.active) {
+    return null;
+  }
+
+  return status.vickreyBidLock.lotName
+    ? `Anda masih memiliki bid aktif pada lelang lain (${status.vickreyBidLock.lotName}). Tunggu hasil lelang tersebut sebelum mengikuti lelang baru.`
+    : "Anda masih memiliki bid aktif pada lelang lain. Tunggu hasil lelang tersebut sebelum mengikuti lelang baru.";
+}
+
 function getPriceChangeCopy(isVickrey: boolean) {
   if (isVickrey) {
     return "Harga akhir menyesuaikan hasil lelang dan verifikasi transaksi.";
@@ -153,6 +168,10 @@ export function LotDetailPage({
   const isActionBlocked =
     hasActiveRestriction &&
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
+  const hasOtherVickreyBidLock =
+    isVickrey &&
+    Boolean(buyerStatus?.vickreyBidLock?.active) &&
+    buyerStatus?.vickreyBidLock?.lotId !== lot.id;
   const modeLabel = isVickrey ? "Lelang Tertutup" : "Harga Tetap";
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
@@ -320,6 +339,12 @@ export function LotDetailPage({
                 </div>
               ) : null}
 
+              {!isActionBlocked && hasOtherVickreyBidLock && getVickreyBidLockLabel(buyerStatus) ? (
+                <div className="relative rounded-[1.35rem] bg-[#fff7ed] p-5 text-sm leading-relaxed text-[#9a3412]">
+                  {getVickreyBidLockLabel(buyerStatus)}
+                </div>
+              ) : null}
+
               <div className="relative flex gap-3">
                 {isVickrey ? (
                   bidState ? (
@@ -339,12 +364,21 @@ export function LotDetailPage({
                     >
                       Lelang Sedang Dibatasi
                     </Button>
+                  ) : hasOtherVickreyBidLock ? (
+                    <Button
+                      className="h-11 flex-1 rounded-md bg-[#d9d1c2] px-6 text-base font-black text-[#726958]"
+                      disabled
+                    >
+                      Bid Lelang Lain Aktif
+                    </Button>
                   ) : (
                     <div className="flex-1">
                       <VickreyBidForm
                         buyerId={buyerId}
+                        bidLockLotName={buyerStatus?.vickreyBidLock?.lotName ?? null}
                         blacklistUntil={buyerStatus?.blacklist.until ?? null}
                         blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
+                        isBidLockedByOtherAuction={hasOtherVickreyBidLock}
                         isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
                         lot={lot}
                         triggerClassName="h-10 w-full rounded-md text-sm font-black"
@@ -469,6 +503,8 @@ export function BidPage({
 }) {
   if (!lot) notFound();
   const serverNow = new Date().toISOString();
+  const hasOtherVickreyBidLock =
+    Boolean(buyerStatus?.vickreyBidLock?.active) && buyerStatus?.vickreyBidLock?.lotId !== lot.id;
 
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
@@ -487,7 +523,9 @@ export function BidPage({
         existingBidAmount={bidState?.bidAmount}
         existingBidStatus={bidState?.status}
         hasExistingBid={Boolean(bidState)}
+        bidLockLotName={buyerStatus?.vickreyBidLock?.lotName ?? null}
         isBlacklisted={Boolean(buyerStatus?.blacklist.active)}
+        isBidLockedByOtherAuction={hasOtherVickreyBidLock}
         blacklistUntil={buyerStatus?.blacklist.until ?? null}
         blacklistViolations={buyerStatus?.blacklist.totalViolations ?? 0}
         lot={lot}

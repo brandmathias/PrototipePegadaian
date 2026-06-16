@@ -198,6 +198,32 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });
 
+  it("blocks the lot detail auction CTA while buyer has an active bid on another auction", () => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerId="buyer-1"
+        buyerStatus={{
+          blacklist: {
+            active: false,
+            totalViolations: 0,
+            until: null
+          },
+          vickreyBidLock: {
+            active: true,
+            lotId: "pm-other",
+            lotName: "Kalung Emas"
+          }
+        }}
+        lot={vickreyLot}
+      />
+    );
+
+    expect(screen.getByText(/anda masih memiliki bid aktif pada lelang lain/i)).toBeInTheDocument();
+    expect(screen.getByText(/kalung emas/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /bid lelang lain aktif/i })).toBeDisabled();
+  });
+
   it("locks the bid form when buyer already submitted a sealed bid", () => {
     render(<BidPage bidState={winningBid} buyerStatus={null} lot={vickreyLot} />);
 
