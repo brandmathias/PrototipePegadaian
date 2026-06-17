@@ -80,6 +80,16 @@ function mockOrderedLimitRows(rows: Array<Record<string, unknown>>) {
   };
 }
 
+function mockOrderedRows(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockResolvedValue(rows)
+      })
+    })
+  };
+}
+
 function mockWhereRows(rows: Array<Record<string, unknown>>) {
   return {
     from: vi.fn().mockReturnValue({
@@ -111,6 +121,7 @@ function mockBuyerBidRows(rows: Array<Record<string, unknown>>) {
 describe("buyer auction state refresh", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.select.mockReset();
     mocks.getBuyerWishlistCount.mockResolvedValue(0);
     mocks.processExpiredVickreyAuctions.mockResolvedValue({
       completed: 0,
@@ -208,6 +219,15 @@ describe("buyer auction state refresh", () => {
           }
         ])
       )
+      .mockImplementationOnce(() =>
+        mockOrderedRows([
+          {
+            createdAt: new Date("2026-05-29T00:00:00.000Z"),
+            escalationEligible: true,
+            id: "incident-1"
+          }
+        ])
+      )
       .mockImplementationOnce(() => mockOrderedLimitRows([{ id: "incident-1" }]))
       .mockImplementationOnce(() => mockBuyerTransactionRows([]))
       .mockImplementationOnce(() => mockBuyerBidRows([]));
@@ -219,7 +239,7 @@ describe("buyer auction state refresh", () => {
     );
     expect(summary.blacklist).toEqual(
       expect.objectContaining({
-        active: true,
+        active: false,
         incidentId: "incident-1",
         violations: 1
       })

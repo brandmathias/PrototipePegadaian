@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, ne, sql } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { filterCountedBuyerViolationHistory } from "@/lib/buyer/violation-history";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
+import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import {
   validateBuyerBidEscrowPayload,
@@ -232,20 +233,57 @@ async function getActiveBlacklist(userId: string) {
   const [row] = await db
     .select()
     .from(blacklists)
-    .where(
-      and(
-        eq(blacklists.userId, userId),
-        eq(blacklists.isActive, true),
-        or(isNull(blacklists.blockedUntil), gt(blacklists.blockedUntil, new Date()))
-      )
-    )
+    .where(and(eq(blacklists.userId, userId), eq(blacklists.isActive, true)))
     .limit(1);
 
   return row ?? null;
 }
 
-async function getBuyerBlacklistInfo(userId: string) {
+async function listBuyerViolationEscalationFacts(userId: string) {
+  const rows = await db
+    .select({
+      createdAt: pelanggaranUser.createdAt,
+      escalationEligible: pelanggaranUser.escalationEligible,
+      id: pelanggaranUser.id,
+    })
+    .from(pelanggaranUser)
+    .where(eq(pelanggaranUser.userId, userId))
+    .orderBy(desc(pelanggaranUser.createdAt));
+
+  return rows.map((row) => ({
+    createdAt: row.createdAt,
+    escalationEligible: row.escalationEligible,
+    id: row.id,
+    occurredAt: row.createdAt.toISOString(),
+  }));
+}
+
+async function getEffectiveBuyerBlacklistState(userId: string) {
   const blacklist = await getActiveBlacklist(userId);
+  const traces = blacklist ? await listBuyerViolationEscalationFacts(userId) : [];
+  const effectiveState = deriveEffectiveBlacklistState({
+    storedBlockedUntil: blacklist?.blockedUntil ?? null,
+    storedTotalViolations: blacklist?.totalViolations ?? 0,
+    traces,
+  });
+  const policy = getBlacklistRestrictionPolicy(effectiveState.totalViolations);
+  const activeByDate =
+    !effectiveState.blockedUntil ||
+    effectiveState.blockedUntil.getTime() > new Date().getTime();
+  const active = Boolean(blacklist) && (policy.requiresManualReview || activeByDate);
+
+  return {
+    active,
+    blacklist,
+    blockedUntil: effectiveState.blockedUntil,
+    policy,
+    totalViolations: blacklist ? effectiveState.totalViolations : 0,
+  };
+}
+
+async function getBuyerBlacklistInfo(userId: string) {
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
+  const { blacklist } = blacklistState;
   const [latestBlacklistIncident] = blacklist
     ? await db
         .select({ id: pelanggaranUser.id })
@@ -254,17 +292,17 @@ async function getBuyerBlacklistInfo(userId: string) {
         .orderBy(desc(pelanggaranUser.createdAt))
         .limit(1)
     : [null];
-  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+  const blacklistPolicy = blacklistState.policy;
 
   return {
     blacklist,
     blacklistPolicy,
     summary: {
-      active: Boolean(blacklist),
+      active: blacklistState.active,
       incidentId: latestBlacklistIncident?.id ?? null,
-      violations: blacklist?.totalViolations ?? 0,
-      until: formatAppDate(blacklist?.blockedUntil),
-      reason: blacklist
+      violations: blacklistState.totalViolations,
+      until: formatAppDate(blacklistState.blockedUntil),
+      reason: blacklistState.active
         ? blacklistPolicy.blocksFixedPrice
           ? "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
           : "Akun masih dibatasi untuk mengikuti Lelang Tertutup dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir."
@@ -352,10 +390,10 @@ async function getActiveVickreyBidLock(userId: string, currentPemasaranId?: stri
 }
 
 async function ensureCanSettleBuyerTransaction(userId: string) {
-  const blacklist = await getActiveBlacklist(userId);
-  const restriction = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
+  const restriction = blacklistState.policy;
 
-  if (blacklist && restriction.blocksTransactionSettlement) {
+  if (blacklistState.active && restriction.blocksTransactionSettlement) {
     throw new Error(BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE);
   }
 }
@@ -618,15 +656,15 @@ export async function getBuyerProfileSummary(userId: string, options?: BuyerRead
 export async function getBuyerViolationPageData(userId: string): Promise<BuyerViolationPageData> {
   await refreshBuyerAuctionSettlementState();
 
-  const [summary, violations, blacklist] = await Promise.all([
+  const [summary, violations, blacklistState] = await Promise.all([
     getBuyerProfileSummary(userId, { refreshAuctionState: false }),
     listBuyerViolationHistory(userId),
-    getActiveBlacklist(userId)
+    getEffectiveBuyerBlacklistState(userId)
   ]);
 
   return {
     summary,
-    blacklistUntilAt: blacklist?.blockedUntil?.toISOString() ?? null,
+    blacklistUntilAt: blacklistState.active ? blacklistState.blockedUntil?.toISOString() ?? null : null,
     violations
   };
 }
@@ -796,10 +834,10 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     );
   }
 
-  const blacklist = await getActiveBlacklist(userId);
-  const blacklistPolicy = getBlacklistRestrictionPolicy(blacklist?.totalViolations ?? 0);
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
+  const blacklistPolicy = blacklistState.policy;
 
-  if (blacklist && blacklistPolicy.blocksFixedPrice) {
+  if (blacklistState.active && blacklistPolicy.blocksFixedPrice) {
     throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi harga tetap baru.");
   }
 
@@ -853,9 +891,9 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
     throw new Error("Sesi lelang sudah berakhir.");
   }
 
-  const blacklist = await getActiveBlacklist(userId);
-  if (blacklist) {
-    const restriction = getBlacklistRestrictionPolicy(blacklist.totalViolations);
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
+  if (blacklistState.active) {
+    const restriction = blacklistState.policy;
     throw new Error(
       restriction.requiresManualReview
         ? "Akun Anda sedang dalam pembatasan level 3 dan perlu review admin sebelum ikut Lelang Tertutup."
@@ -1124,16 +1162,16 @@ export async function getBuyerProfileStatus(userId: string) {
   await refreshBuyerAuctionSettlementState();
 
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  const blacklist = await getActiveBlacklist(userId);
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
   const vickreyBidLock = await getActiveVickreyBidLock(userId);
 
   return {
     isLoggedIn: Boolean(user),
-    blacklist: blacklist
+    blacklist: blacklistState.active
       ? {
           active: true,
-          until: blacklist.blockedUntil,
-          totalViolations: blacklist.totalViolations
+          until: blacklistState.blockedUntil,
+          totalViolations: blacklistState.totalViolations
         }
       : { active: false, until: null, totalViolations: 0 },
     vickreyBidLock

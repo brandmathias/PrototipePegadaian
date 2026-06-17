@@ -1,4 +1,5 @@
 import { getCountdownState } from "@/lib/countdown";
+import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 
 type SerializedUnitAccount = {
   id: string;
@@ -95,9 +96,16 @@ export function serializeBlacklistEntry(input: {
   revokeReason: string | null;
   now?: Date;
 }) {
-  const countdown = input.isActive
+  const now = input.now ?? new Date();
+  const policy = getBlacklistRestrictionPolicy(input.totalViolations);
+  const activeByDate =
+    !input.blockedUntil ||
+    input.blockedUntil.getTime() > now.getTime();
+  const isCurrentlyActive =
+    input.isActive && (policy.requiresManualReview || activeByDate);
+  const countdown = isCurrentlyActive
     ? getCountdownState(input.blockedUntil, {
-        now: input.now?.getTime(),
+        now: now.getTime(),
         expiredLabel: "Masa blokir selesai"
       })
     : null;
@@ -113,7 +121,7 @@ export function serializeBlacklistEntry(input: {
       ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(input.blockedUntil)
       : "Sampai ditinjau ulang",
     reason: input.revokeReason ?? "Pelanggaran pembayaran atau penyelesaian lelang.",
-    status: input.isActive ? "Aktif" : "Nonaktif",
+    status: isCurrentlyActive ? "Aktif" : "Nonaktif",
     countdownLabel: countdown?.label,
     countdownAt: input.blockedUntil?.toISOString(),
     expiredLabel: countdown ? "Masa blokir selesai" : undefined

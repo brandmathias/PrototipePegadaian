@@ -87,4 +87,26 @@ describe("superadmin serializers", () => {
       expiredLabel: "Masa blokir selesai"
     });
   });
+
+  it("marks non-manual-review blacklist entries inactive when the effective deadline has passed", () => {
+    expect(
+      serializeBlacklistEntry({
+        id: "blk-stale",
+        userId: "buyer-stale",
+        name: "Buyer Stale",
+        email: "buyer-stale@example.com",
+        unitName: "UPC Ranotana",
+        isActive: true,
+        totalViolations: 2,
+        blockedUntil: new Date("2026-06-13T16:42:23.866Z"),
+        revokeReason: null,
+        now: new Date("2026-06-18T00:00:00.000Z")
+      })
+    ).toMatchObject({
+      status: "Nonaktif",
+      total: 2,
+      countdownAt: "2026-06-13T16:42:23.866Z",
+      countdownLabel: undefined
+    });
+  });
 });

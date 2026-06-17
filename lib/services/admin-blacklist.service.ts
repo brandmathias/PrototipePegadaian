@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { deriveBlacklistEscalationMilestones, getSequentialBlacklistViolationTotal } from "@/lib/blacklist/escalation";
+import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { validateBlacklistExtendPayload } from "@/lib/admin-unit/validation";
@@ -112,18 +112,13 @@ function buildViolationScopeContext<T extends Record<string, any>>({
   unitId: string;
   userFacts: Awaited<ReturnType<typeof listViolationEscalationFacts>>;
 }) {
-  const globalMilestones = deriveBlacklistEscalationMilestones(userFacts);
-  const globalTotal = globalMilestones.length > 0
-    ? Math.max(
-        getSequentialBlacklistViolationTotal(userFacts),
-        Math.max(0, Number(storedTotalViolations ?? 0)),
-      )
-    : Math.max(0, Number(storedTotalViolations ?? 0));
-  const latestGlobalMilestone = globalMilestones[globalMilestones.length - 1];
-  const effectiveBlockedUntil =
-    latestGlobalMilestone && globalTotal === globalMilestones.length
-      ? latestGlobalMilestone.blockedUntil
-      : storedBlockedUntil;
+  const effectiveState = deriveEffectiveBlacklistState({
+    storedBlockedUntil,
+    storedTotalViolations,
+    traces: userFacts,
+  });
+  const globalMilestones = effectiveState.milestones;
+  const globalTotal = effectiveState.totalViolations;
   const levelByTraceId = new Map(
     globalMilestones.map((milestone) => [milestone.trace.id, milestone.level]),
   );
@@ -131,33 +126,33 @@ function buildViolationScopeContext<T extends Record<string, any>>({
     ...trace,
     restrictionLevel: levelByTraceId.get(String(trace.id)) ?? trace.restrictionLevel,
   }));
+  const visibleLocalTraces =
+    globalMilestones.length > 0
+      ? annotatedLocalTraces.filter((trace) => levelByTraceId.has(String(trace.id)))
+      : annotatedLocalTraces;
   const currentUnitMilestoneCount = globalMilestones.filter(
     (milestone) => milestone.trace.unitId === unitId,
   ).length;
   const externalMilestoneCount = globalMilestones.filter(
     (milestone) => milestone.trace.unitId !== unitId,
   ).length;
-  const externalViolationCount = Math.max(
-    externalMilestoneCount,
-    globalTotal - currentUnitMilestoneCount,
-    0,
-  );
+  const externalViolationCount = Math.max(externalMilestoneCount, 0);
   const externalUnitCount = new Set(
-    userFacts
-      .filter((trace) => trace.unitId !== unitId)
-      .map((trace) => trace.unitId),
+    globalMilestones
+      .filter((milestone) => milestone.trace.unitId !== unitId)
+      .map((milestone) => milestone.trace.unitId),
   ).size;
 
   return {
-    annotatedLocalTraces,
+    annotatedLocalTraces: visibleLocalTraces,
     crossUnitViolationSummary: {
-      currentUnitViolationCount: localTraces.length,
+      currentUnitViolationCount: currentUnitMilestoneCount,
       effectiveViolationTotal: globalTotal,
       externalUnitCount,
       externalViolationCount,
       hasExternalViolations: externalViolationCount > 0,
     },
-    effectiveBlockedUntil,
+    effectiveBlockedUntil: effectiveState.blockedUntil,
     effectiveTotalViolations: globalTotal,
   };
 }
