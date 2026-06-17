@@ -3,6 +3,7 @@ import { hashPassword } from "@better-auth/utils/password";
 
 import { db } from "@/lib/db/client";
 import { account, sessions, units, users } from "@/lib/db/schema";
+import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import { validateAdminUnitPayload } from "@/lib/superadmin/validation";
 
 function formatLastLogin(value: Date | string | null) {
@@ -36,25 +37,28 @@ export async function listAdminUnits() {
       isActive: users.isActive,
       unitId: users.unitId,
       unitName: units.name,
+      unitCode: units.code,
       lastLogin: sql<Date | null>`max(${sessions.createdAt})`
     })
     .from(users)
     .leftJoin(units, eq(units.id, users.unitId))
     .leftJoin(sessions, eq(sessions.userId, users.id))
     .where(eq(users.role, "admin_unit"))
-    .groupBy(users.id, units.name)
+    .groupBy(users.id, units.name, units.code)
     .orderBy(desc(users.createdAt));
 
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    unitId: row.unitId,
-    unit: row.unitName ?? "Belum ditetapkan",
-    email: row.email,
-    phone: row.phoneNumber ?? "-",
-    status: toAdminStatus(row.isActive),
-    lastLogin: formatLastLogin(row.lastLogin)
-  }));
+  return rows
+    .filter((row) => !isHiddenOperationalUnit({ id: row.unitId, code: row.unitCode }))
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      unitId: row.unitId,
+      unit: row.unitName ?? "Belum ditetapkan",
+      email: row.email,
+      phone: row.phoneNumber ?? "-",
+      status: toAdminStatus(row.isActive),
+      lastLogin: formatLastLogin(row.lastLogin)
+    }));
 }
 
 export async function getAdminUnitById(adminId: string) {
@@ -66,7 +70,8 @@ export async function getAdminUnitById(adminId: string) {
       phoneNumber: users.phoneNumber,
       isActive: users.isActive,
       unitId: users.unitId,
-      unitName: units.name
+      unitName: units.name,
+      unitCode: units.code
     })
     .from(users)
     .leftJoin(units, eq(units.id, users.unitId))
@@ -74,6 +79,10 @@ export async function getAdminUnitById(adminId: string) {
     .limit(1);
 
   if (!row) {
+    throw new Error("Admin unit belum ditemukan.");
+  }
+
+  if (isHiddenOperationalUnit({ id: row.unitId, code: row.unitCode })) {
     throw new Error("Admin unit belum ditemukan.");
   }
 
@@ -99,6 +108,10 @@ export async function createAdminUnit(input: {
 
   const [unit] = await db.select().from(units).where(eq(units.id, payload.unitId)).limit(1);
   if (!unit) {
+    throw new Error("Unit belum ditemukan.");
+  }
+
+  if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
 
@@ -162,6 +175,10 @@ export async function updateAdminUnit(
 
   const [unit] = await db.select().from(units).where(eq(units.id, unitId)).limit(1);
   if (!unit) {
+    throw new Error("Unit belum ditemukan.");
+  }
+
+  if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
 

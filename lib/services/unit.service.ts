@@ -6,6 +6,7 @@ import { db } from "@/lib/db/client";
 import { account, barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 import { getAdminBarangById, listAdminBarangHistory } from "@/lib/services/admin-barang.service";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
+import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
 import {
   validateAdminUnitPayload,
@@ -165,7 +166,9 @@ export function getUnitItemOperationalState(input: {
 }
 
 export async function listUnits() {
-  const unitRows = await db.select().from(units).orderBy(units.name);
+  const unitRows = (await db.select().from(units).orderBy(units.name)).filter(
+    (unit) => !isHiddenOperationalUnit(unit),
+  );
 
   if (unitRows.length === 0) {
     return [];
@@ -229,6 +232,10 @@ export async function getUnitById(unitId: string) {
   const [unit] = await db.select().from(units).where(eq(units.id, unitId)).limit(1);
 
   if (!unit) {
+    throw new Error("Unit belum ditemukan.");
+  }
+
+  if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
 
@@ -374,6 +381,10 @@ export async function getSuperAdminUnitBarangDetail(unitId: string, barangId: st
   const [unit] = await db.select().from(units).where(eq(units.id, unitId)).limit(1);
 
   if (!unit) {
+    throw new Error("Unit belum ditemukan.");
+  }
+
+  if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
 

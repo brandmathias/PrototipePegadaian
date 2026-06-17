@@ -22,6 +22,7 @@ import {
   users,
 } from "@/lib/db/schema";
 import { getCountdownState } from "@/lib/countdown";
+import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import {
   buildGovernanceSnapshot,
   formatCompactRupiah,
@@ -386,24 +387,36 @@ export async function getSuperAdminMonitoring() {
   });
   const now = new Date();
 
-  const [unitStats] = await db
-    .select({
-      totalUnits: sql<number>`count(*)`,
-      activeUnits: sql<number>`count(*) filter (where ${units.isActive} = true)`,
-    })
-    .from(units);
+  const unitRows = (await buildSuperAdminUnitRowsQuery()).filter(
+    (unit) => !isHiddenOperationalUnit({ id: unit.id, code: unit.unitCode }),
+  );
+  const visibleUnitIds = unitRows.map((unit) => unit.id);
+  const totalUnitCount = unitRows.length;
+  const activeUnitCount = unitRows.filter((unit) => unit.status !== "Nonaktif").length;
 
-  const [adminStats] = await db
-    .select({
-      totalAdmins: sql<number>`count(*) filter (where ${users.role} = 'admin_unit' and ${users.isActive} = true)`,
-    })
-    .from(users);
+  const adminStats =
+    visibleUnitIds.length > 0
+      ? (
+          await db
+            .select({
+              totalAdmins: sql<number>`count(*) filter (where ${users.role} = 'admin_unit' and ${users.isActive} = true)`,
+            })
+            .from(users)
+            .where(inArray(users.unitId, visibleUnitIds))
+        )[0]
+      : { totalAdmins: 0 };
 
-  const [accountStats] = await db
-    .select({
-      activeAccounts: sql<number>`count(*) filter (where ${unitAccounts.isActive} = true)`,
-    })
-    .from(unitAccounts);
+  const accountStats =
+    visibleUnitIds.length > 0
+      ? (
+          await db
+            .select({
+              activeAccounts: sql<number>`count(*) filter (where ${unitAccounts.isActive} = true)`,
+            })
+            .from(unitAccounts)
+            .where(inArray(unitAccounts.unitId, visibleUnitIds))
+        )[0]
+      : { activeAccounts: 0 };
 
   const [blacklistStats] = await db
     .select({
@@ -501,8 +514,6 @@ export async function getSuperAdminMonitoring() {
     })
     .from(barang);
 
-  const unitRows = await buildSuperAdminUnitRowsQuery();
-
   const validatedTransactionRows = await db
     .select({
       amount: transaksi.amount,
@@ -539,7 +550,11 @@ export async function getSuperAdminMonitoring() {
       ),
     );
 
-  const monitoringItems = unitsNeedAttention.map((unit) => ({
+  const visibleUnitsNeedAttention = unitsNeedAttention.filter(
+    (unit) => !isHiddenOperationalUnit(unit),
+  );
+
+  const monitoringItems = visibleUnitsNeedAttention.map((unit) => ({
     id: `attention-${unit.id}`,
     unitId: unit.id,
     href: `/superadmin/manajemen-unit`,
@@ -624,8 +639,18 @@ export async function getSuperAdminMonitoring() {
     .orderBy(asc(blacklists.blockedUntil))
     .limit(3);
 
+  const visibleActiveTransactionMonitoring = activeTransactionMonitoring.filter(
+    (item) => !isHiddenOperationalUnit({ id: item.unitId }),
+  );
+  const visibleActiveAuctionMonitoring = activeAuctionMonitoring.filter(
+    (item) => !isHiddenOperationalUnit({ id: item.unitId }),
+  );
+  const visibleActiveBlacklistMonitoring = activeBlacklistMonitoring.filter(
+    (item) => !isHiddenOperationalUnit({ id: item.unitId }),
+  );
+
   const timeSensitiveMonitoring = [
-    ...activeTransactionMonitoring.map((item) => {
+    ...visibleActiveTransactionMonitoring.map((item) => {
       const countdown = getCountdownState(item.paymentDeadline, {
         expiredLabel: "SLA pembayaran terlewati",
       });
@@ -650,7 +675,7 @@ export async function getSuperAdminMonitoring() {
         expiredLabel: "SLA pembayaran terlewati",
       };
     }),
-    ...activeAuctionMonitoring.map((item) => {
+    ...visibleActiveAuctionMonitoring.map((item) => {
       const countdown = getCountdownState(item.endsAt, {
         expiredLabel: "Sesi lelang berakhir",
       });
@@ -669,7 +694,7 @@ export async function getSuperAdminMonitoring() {
         expiredLabel: "Sesi lelang berakhir",
       };
     }),
-    ...activeBlacklistMonitoring.map((item) => {
+    ...visibleActiveBlacklistMonitoring.map((item) => {
       const countdown = getCountdownState(item.blockedUntil, {
         expiredLabel: "Masa pembatasan selesai",
       });
@@ -777,12 +802,12 @@ export async function getSuperAdminMonitoring() {
       metrics: [
         {
           label: "Total Unit",
-          value: String(toNumber(unitStats?.totalUnits)),
-          detail: `${toNumber(unitStats?.activeUnits)} unit aktif nasional`,
+          value: String(totalUnitCount),
+          detail: `${activeUnitCount} unit aktif nasional`,
         },
         {
           label: "Unit Aktif",
-          value: String(toNumber(unitStats?.activeUnits)),
+          value: String(activeUnitCount),
           detail: "Unit yang dapat dipakai operasional",
         },
         {
