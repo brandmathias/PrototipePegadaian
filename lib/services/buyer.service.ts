@@ -4,8 +4,8 @@ import { and, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
+import { filterCountedBuyerViolationHistory } from "@/lib/buyer/violation-history";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
-import { deriveBlacklistEscalationMilestones } from "@/lib/blacklist/escalation";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import {
   validateBuyerBidEscrowPayload,
@@ -292,16 +292,7 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
     .where(eq(pelanggaranUser.userId, userId))
     .orderBy(desc(pelanggaranUser.createdAt));
 
-  const milestones = deriveBlacklistEscalationMilestones(
-    rows.map((row) => ({
-      id: row.violation.id,
-      createdAt: row.violation.createdAt,
-      escalationEligible: row.violation.escalationEligible
-    }))
-  );
-  const levelByViolationId = new Map(milestones.map((item) => [item.trace.id, item.level]));
-
-  return rows.map((row) => ({
+  const history = rows.map((row) => ({
     id: row.violation.id,
     amount: toNumber(row.transaction.amount),
     auctionMode: row.auction.mode,
@@ -319,8 +310,10 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
     status: row.transaction.status,
     transactionId: row.transaction.id,
     unitName: row.unit?.name ?? "-",
-    violationLevel: levelByViolationId.get(row.violation.id) ?? 0
+    violationLevel: 0
   }));
+
+  return filterCountedBuyerViolationHistory(history);
 }
 
 async function getActiveVickreyBidLock(userId: string, currentPemasaranId?: string | null) {

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 
 import { BuyerViolationPage } from "@/components/buyer/buyer-violation-page";
 import type { BuyerViolationPageData } from "@/lib/services/buyer.service";
@@ -77,7 +77,10 @@ describe("BuyerViolationPage", () => {
     expect(screen.getByText(/pengajuan bid lelang baru/i)).toBeInTheDocument();
     expect(screen.getByText(/pembelian harga tetap baru/i)).toBeInTheDocument();
     expect(screen.getByText(/unduh bukti transaksi lama/i)).toBeInTheDocument();
-    expect(screen.getByText(/kalung emas 2/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/kalung emas 2/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/BRG-55291335/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/BRG-34145928/i)).not.toBeInTheDocument();
     expect(screen.getByText(/rp 16.000.000/i)).toBeInTheDocument();
     expect(screen.getAllByText(/upc ranotana/i).length).toBeGreaterThan(0);
   });
@@ -106,5 +109,32 @@ describe("BuyerViolationPage", () => {
 
     expect(screen.getAllByText(/akun dalam kondisi baik/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/tidak ada riwayat pelanggaran pembayaran/i)).toBeInTheDocument();
+  });
+
+  it("keeps the restriction countdown moving after the page renders", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-17T06:02:00.000Z"));
+
+    try {
+      render(
+        <BuyerViolationPage
+          data={{
+            ...activeLevelTwoData,
+            blacklistUntilAt: "2026-06-17T06:02:03.000Z"
+          }}
+          serverNow="2026-06-17T06:02:00.000Z"
+        />
+      );
+
+      expect(screen.getByText("03")).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText("02")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

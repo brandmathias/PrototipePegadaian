@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -8,7 +10,6 @@ import {
   ChevronDown,
   CircleHelp,
   Clock3,
-  Coins,
   Eye,
   FileDown,
   Gavel,
@@ -38,7 +39,7 @@ function formatCurrency(value: number) {
   return `Rp ${numberFormatter.format(value)}`;
 }
 
-function getCountdownParts(untilAt: string | null, serverNow: string) {
+function getCountdownParts(untilAt: string | null, now: number) {
   if (!untilAt) {
     return [
       { label: "Hari", value: "00" },
@@ -49,7 +50,6 @@ function getCountdownParts(untilAt: string | null, serverNow: string) {
   }
 
   const until = new Date(untilAt).getTime();
-  const now = new Date(serverNow).getTime();
   const distance = Number.isFinite(until) && Number.isFinite(now) ? Math.max(0, until - now) : 0;
   const totalSeconds = Math.floor(distance / 1000);
   const days = Math.floor(totalSeconds / 86_400);
@@ -100,12 +100,76 @@ function FeatureRow({
 
 function TimelineItem({
   entry,
-  active
+  active,
+  expanded,
+  onToggle
 }: {
   entry: BuyerViolationHistoryEntry;
   active: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
   const levelLabel = entry.violationLevel > 0 ? `Level ${entry.violationLevel} Pembatasan` : "Pelanggaran Tercatat";
+
+  if (!expanded) {
+    return (
+      <article className="relative rounded-[1.35rem] border border-black/10 bg-white p-3 shadow-[0_18px_48px_-42px_rgba(10,31,25,0.42)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-emerald-200">
+        <button
+          aria-expanded={expanded}
+          aria-label={`Buka detail pelanggaran ${entry.itemName}`}
+          className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-[#43536a] transition hover:bg-[#f3f4ef] hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+          onClick={onToggle}
+          type="button"
+        >
+          <ChevronDown className="size-5" />
+        </button>
+
+        <div className="grid gap-3 pr-10 sm:grid-cols-[9rem_minmax(0,1fr)] xl:grid-cols-[11rem_minmax(0,1fr)_minmax(18rem,0.68fr)] xl:items-center">
+          <div className="relative h-24 overflow-hidden rounded-[1rem] bg-[#f3f4ef] sm:h-28">
+            {entry.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={`Foto ${entry.itemName}`}
+                className="h-full w-full object-cover"
+                src={entry.imageUrl}
+              />
+            ) : (
+              <span className="grid h-full place-items-center text-[#8b968e]">
+                <ImageIcon className="size-8" />
+              </span>
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-[0.7rem] font-black uppercase text-orange-600">{entry.itemName}</p>
+            <h3 className="mt-1 font-headline text-lg font-black text-[#101923] md:text-xl">{levelLabel}</h3>
+            <p className="mt-1 text-sm leading-6 text-[#506079]">{entry.note}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800">
+                <Building2 className="size-3.5" />
+                {entry.unitName}
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-700">
+                <Gavel className="size-3.5" />
+                {getAuctionModeLabel(entry.auctionMode)}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
+              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Nilai Transaksi</p>
+              <p className="mt-1 text-sm font-black text-[#101923]">{formatCurrency(entry.amount)}</p>
+            </div>
+            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
+              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Tanggal Terjadi</p>
+              <p className="mt-1 text-sm font-black text-[#101923]">{entry.occurredAtLabel}</p>
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -114,7 +178,17 @@ function TimelineItem({
         active ? "border-orange-300 ring-1 ring-orange-200" : "border-black/10"
       )}
     >
-      <div className="grid gap-4 lg:grid-cols-[13.5rem_minmax(0,1fr)_minmax(16rem,0.85fr)] lg:items-center">
+      <button
+        aria-expanded={expanded}
+        aria-label={`Tutup detail pelanggaran ${entry.itemName}`}
+        className="absolute right-4 top-4 z-[1] grid size-8 place-items-center rounded-full text-[#43536a] transition hover:bg-[#f3f4ef] hover:text-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+        onClick={onToggle}
+        type="button"
+      >
+        <ChevronDown className="size-5 rotate-180 transition-transform" />
+      </button>
+
+      <div className="grid gap-4 pr-10 lg:grid-cols-[13.5rem_minmax(0,1fr)_minmax(17.5rem,0.82fr)] lg:items-center">
         <div className="relative h-36 overflow-hidden rounded-[1.05rem] bg-[#f3f4ef]">
           {entry.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -137,7 +211,7 @@ function TimelineItem({
 
         <div className="min-w-0 space-y-3">
           <div>
-            <p className="text-[0.7rem] font-black uppercase text-orange-600">{entry.itemCode}</p>
+            <p className="text-[0.7rem] font-black uppercase text-orange-600">{entry.itemName}</p>
             <h2 className="mt-1 font-headline text-xl font-black text-[#101923]">{levelLabel}</h2>
             <p className="mt-1 text-sm leading-6 text-[#506079]">{entry.note}</p>
           </div>
@@ -153,8 +227,8 @@ function TimelineItem({
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
-              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Nama Barang</p>
-              <p className="mt-1 text-sm font-black text-[#101923]">{entry.itemName}</p>
+              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Unit Pelaksana</p>
+              <p className="mt-1 text-sm font-black text-[#101923]">{entry.unitName}</p>
             </div>
             <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
               <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Nilai Transaksi</p>
@@ -188,7 +262,23 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
   const { summary, blacklistUntilAt, violations } = data;
   const policy = getBlacklistRestrictionPolicy(summary.blacklist.violations);
   const hasRestriction = summary.blacklist.active;
-  const countdown = getCountdownParts(blacklistUntilAt, serverNow);
+  const [expandedViolationId, setExpandedViolationId] = useState<string | null>(
+    () => violations[0]?.id ?? null
+  );
+  const syncedNow = useMemo(() => {
+    const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
+    const clientStartMs = Date.now();
+
+    return () => {
+      if (Number.isNaN(serverNowMs)) {
+        return Date.now();
+      }
+
+      return serverNowMs + Math.max(0, Date.now() - clientStartMs);
+    };
+  }, [serverNow]);
+  const [now, setNow] = useState(() => syncedNow());
+  const countdown = getCountdownParts(blacklistUntilAt, now);
   const restrictionTitle = hasRestriction
     ? "Sedang Dibatasi Sementara"
     : "Akun Dalam Kondisi Baik";
@@ -258,6 +348,21 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
       description: "Gunakan informasi bantuan untuk memahami alasan pembatasan dan proses pemulihan."
     }
   ];
+
+  useEffect(() => {
+    const update = () => setNow(syncedNow());
+
+    update();
+    const intervalId = window.setInterval(update, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [syncedNow]);
+
+  useEffect(() => {
+    if (!violations.some((entry) => entry.id === expandedViolationId)) {
+      setExpandedViolationId(violations[0]?.id ?? null);
+    }
+  }, [expandedViolationId, violations]);
 
   return (
     <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 bg-[#f7f8f4] py-5 md:-my-10 md:py-6">
@@ -385,15 +490,15 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="font-headline text-2xl font-black text-[#101923]">
-                Riwayat Aktivitas & Akumulasi Sanksi
+                Riwayat Pelanggaran
               </h2>
               <p className="mt-1 text-sm leading-6 text-[#506079]">
-                Berikut adalah riwayat pelanggaran dan sanksi pembayaran yang pernah Anda terima.
+                Berikut adalah pelanggaran pembayaran yang dihitung sebagai akumulasi level sanksi akun.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-4 py-2 text-xs font-black uppercase text-orange-700">
               <Ban className="size-4" />
-              {violations.length} Kasus
+              {violations.length} Kasus Dihitung
             </span>
           </div>
 
@@ -415,7 +520,14 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
                       <CheckCircle2 className="size-3.5 text-white" />
                     )}
                   </span>
-                  <TimelineItem active={index === 0 && hasRestriction} entry={entry} />
+                  <TimelineItem
+                    active={index === 0 && hasRestriction}
+                    entry={entry}
+                    expanded={expandedViolationId === entry.id}
+                    onToggle={() =>
+                      setExpandedViolationId((current) => (current === entry.id ? null : entry.id))
+                    }
+                  />
                 </div>
               ))}
             </div>
@@ -451,8 +563,9 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
               <div>
                 <p className="text-xs font-black uppercase text-[#6b7586]">Ketentuan Sistem</p>
                 <p className="mt-1 text-sm leading-6 text-[#34435a]">
-                  Level pembatasan mengikuti akumulasi pelanggaran pembayaran 1x24 jam dan otomatis
-                  dihitung dari riwayat transaksi akun.
+                  Level pembatasan mengikuti milestone pelanggaran pembayaran 1x24 jam. Pelanggaran
+                  tambahan dalam masa pembatasan yang sama tetap tercatat sistem, tetapi tidak menaikkan
+                  level sanksi.
                 </p>
               </div>
               <ChevronDown className="size-5 shrink-0 text-[#6b7586]" />
