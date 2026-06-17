@@ -5,6 +5,7 @@ import { and, desc, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
+import { deriveBlacklistEscalationMilestones } from "@/lib/blacklist/escalation";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import {
   validateBuyerBidEscrowPayload,
@@ -96,12 +97,42 @@ export type BuyerShellSummary = {
   };
 };
 
+export type BuyerViolationHistoryEntry = {
+  id: string;
+  amount: number;
+  auctionMode: string;
+  escalationEligible: boolean;
+  imageUrl: string | null;
+  itemCode: string;
+  itemName: string;
+  note: string;
+  occurredAt: string;
+  occurredAtLabel: string;
+  paymentDeadline: string | null;
+  paymentDeadlineLabel: string;
+  status: string;
+  transactionId: string;
+  unitName: string;
+  violationLevel: number;
+};
+
+export type BuyerViolationPageData = {
+  summary: BuyerProfileSummary;
+  blacklistUntilAt: string | null;
+  violations: BuyerViolationHistoryEntry[];
+};
+
 function plusHours(hours: number) {
   return new Date(Date.now() + hours * 3_600_000);
 }
 
 function normalizeStatus(value: string | null | undefined) {
   return String(value ?? "").toLowerCase();
+}
+
+function toNumber(value: unknown) {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
 }
 
 export function isActiveVickreyBidLockRow(row: VickreyBidLockRow, userId: string) {
@@ -240,6 +271,56 @@ async function getBuyerBlacklistInfo(userId: string) {
         : "Tidak ada pembatasan aktif. Akun dapat mengikuti harga tetap dan lelang."
     }
   };
+}
+
+async function listBuyerViolationHistory(userId: string): Promise<BuyerViolationHistoryEntry[]> {
+  const rows = await db
+    .select({
+      violation: pelanggaranUser,
+      transaction: transaksi,
+      auction: pemasaran,
+      item: barang,
+      media: mediaBarang,
+      unit: units
+    })
+    .from(pelanggaranUser)
+    .innerJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
+    .innerJoin(pemasaran, eq(pemasaran.id, pelanggaranUser.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .leftJoin(units, eq(units.id, pelanggaranUser.unitId))
+    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
+    .where(eq(pelanggaranUser.userId, userId))
+    .orderBy(desc(pelanggaranUser.createdAt));
+
+  const milestones = deriveBlacklistEscalationMilestones(
+    rows.map((row) => ({
+      id: row.violation.id,
+      createdAt: row.violation.createdAt,
+      escalationEligible: row.violation.escalationEligible
+    }))
+  );
+  const levelByViolationId = new Map(milestones.map((item) => [item.trace.id, item.level]));
+
+  return rows.map((row) => ({
+    id: row.violation.id,
+    amount: toNumber(row.transaction.amount),
+    auctionMode: row.auction.mode,
+    escalationEligible: row.violation.escalationEligible,
+    imageUrl: row.media?.url ?? null,
+    itemCode: row.item.code,
+    itemName: row.item.name,
+    note: row.violation.note,
+    occurredAt: row.violation.createdAt.toISOString(),
+    occurredAtLabel: formatAppDateTime(row.violation.createdAt),
+    paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
+    paymentDeadlineLabel: row.transaction.paymentDeadline
+      ? formatAppDateTime(row.transaction.paymentDeadline)
+      : "-",
+    status: row.transaction.status,
+    transactionId: row.transaction.id,
+    unitName: row.unit?.name ?? "-",
+    violationLevel: levelByViolationId.get(row.violation.id) ?? 0
+  }));
 }
 
 async function getActiveVickreyBidLock(userId: string, currentPemasaranId?: string | null) {
@@ -538,6 +619,22 @@ export async function getBuyerProfileSummary(userId: string, options?: BuyerRead
       sessionHistory
     },
     blacklist: blacklistSummary
+  };
+}
+
+export async function getBuyerViolationPageData(userId: string): Promise<BuyerViolationPageData> {
+  await refreshBuyerAuctionSettlementState();
+
+  const [summary, violations, blacklist] = await Promise.all([
+    getBuyerProfileSummary(userId, { refreshAuctionState: false }),
+    listBuyerViolationHistory(userId),
+    getActiveBlacklist(userId)
+  ]);
+
+  return {
+    summary,
+    blacklistUntilAt: blacklist?.blockedUntil?.toISOString() ?? null,
+    violations
   };
 }
 

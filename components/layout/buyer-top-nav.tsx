@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Grid2X2, Heart, Home, ReceiptText } from "lucide-react";
+import { Grid2X2, Headphones, Heart, Home, ReceiptText, ShieldAlert } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
@@ -30,6 +30,16 @@ const buyerNav = [
     href: "/transaksi",
     icon: ReceiptText,
     label: "Transaksi"
+  },
+  {
+    href: "/pelanggaran",
+    icon: ShieldAlert,
+    label: "Pelanggaran"
+  },
+  {
+    href: "/bantuan",
+    icon: Headphones,
+    label: "Pusat Bantuan"
   }
 ];
 
@@ -90,7 +100,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               return (
                 <Link
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] xl:px-4",
                     isLuxury
                       ? active
                         ? "bg-white text-[#9b6f22] shadow-[0_16px_34px_-28px_rgba(74,54,24,0.42)]"
@@ -162,7 +172,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
         <nav
           aria-label="Navigasi mobile pembeli"
           className={cn(
-            "grid grid-cols-3 gap-2 rounded-2xl border p-1",
+            "grid grid-cols-2 gap-2 rounded-2xl border p-1 min-[520px]:grid-cols-5",
             isLuxury ? "border-[#eadfcb] bg-[#f7f1e6]" : "border-black/10 bg-[#f4f3ef]"
           )}
         >
