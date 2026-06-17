@@ -449,6 +449,16 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
       return;
     }
 
+    if (admins.some((admin) => admin.email === adminEmail.trim().toLowerCase())) {
+      setError("Email admin unit sudah ada pada daftar setup ini.");
+      return;
+    }
+
+    if (adminPhoneNumber.trim() && admins.some((admin) => admin.phoneNumber === adminPhoneNumber.trim())) {
+      setError("Nomor telepon admin unit sudah ada pada daftar setup ini.");
+      return;
+    }
+
     setAdmins((current) => [
       ...current,
       {
@@ -484,6 +494,20 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
           code,
           name,
           address,
+          accounts: secondaryAccounts.map((account) => ({
+            bankName: account.bankName,
+            accountNumber: account.accountNumber,
+            accountHolderName: account.accountHolderName,
+            isActive: false,
+          })),
+          admins: admins.map((admin) => ({
+            name: admin.name,
+            email: admin.email,
+            phoneNumber: admin.phoneNumber,
+            temporaryPassword: admin.temporaryPassword,
+            isActive: true,
+            // NIK admin hanya metadata tampilan setup, tidak dikirim ke user.nationalId agar buyer tetap bisa registrasi dengan NIK yang sama.
+          })),
           primaryAccount: {
             bankName: primaryAccount.bankName,
             accountNumber: primaryAccount.accountNumber,
@@ -491,33 +515,6 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
           },
         }),
       });
-
-      for (const account of secondaryAccounts) {
-        await fetchSuperAdminJson(`/api/superadmin/unit/${createdUnit.id}/rekening`, {
-          method: "POST",
-          body: JSON.stringify({
-            bankName: account.bankName,
-            accountNumber: account.accountNumber,
-            accountHolderName: account.accountHolderName,
-            isActive: false,
-          }),
-        });
-      }
-
-      for (const admin of admins) {
-        await fetchSuperAdminJson("/api/superadmin/admin", {
-          method: "POST",
-          body: JSON.stringify({
-            name: admin.name,
-            email: admin.email,
-            phoneNumber: admin.phoneNumber,
-            unitId: createdUnit.id,
-            temporaryPassword: admin.temporaryPassword,
-            isActive: true,
-            // NIK admin hanya metadata tampilan setup, tidak dikirim ke user.nationalId agar buyer tetap bisa registrasi dengan NIK yang sama.
-          }),
-        });
-      }
 
       setMessage("Unit pelaksana berhasil diaktivasi.");
       toast({
@@ -823,68 +820,70 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                 <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-4 py-3 text-[0.66rem] font-black uppercase tracking-[0.18em] text-black/40">
                   Daftar Admin Unit Terdaftar ({admins.length})
                 </div>
-                <div className="hidden grid-cols-[1.1fr_1.05fr_0.9fr_1fr_4rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
-                  <span>Admin</span>
-                  <span>Email</span>
-                  <span>NIK Info</span>
-                  <span>Password Sementara</span>
-                  <span className="text-right">Aksi</span>
-                </div>
                 {admins.length === 0 ? (
                   <div className="px-4 py-7 text-center text-[0.78rem] font-semibold text-black/42">
                     Admin penanggung jawab yang ditambahkan akan tampil di sini.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[#edf2ee]">
-                    {admins.map((admin) => (
-                      <div
-                        className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.05fr_0.9fr_1fr_4rem] md:items-center md:gap-3"
-                        key={admin.id}
-                      >
-                        <div className="flex min-w-0 items-center gap-2.5">
-                          <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.68rem] font-black text-[#006747]">
-                            {getInitials(admin.name)}
-                          </span>
-                          <span className="truncate font-black text-[#13211c]">{admin.name}</span>
-                        </div>
-                        <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/50 md:block md:rounded-none md:bg-transparent md:p-0">
-                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Email</span>
-                          <span className="min-w-0 truncate text-right md:text-left">{admin.email}</span>
-                        </p>
-                        <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/46 md:block md:rounded-none md:bg-transparent md:p-0">
-                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">NIK</span>
-                          <span className="min-w-0 truncate text-right md:text-left">{maskNationalId(admin.nationalId)}</span>
-                        </p>
-                        <div className="flex min-w-0 items-center justify-between gap-2 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 md:justify-start md:rounded-none md:bg-transparent md:p-0">
-                          <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Password</span>
-                          <span className="min-w-0 truncate font-mono font-bold tracking-[0.18em] text-black/46">
-                            {admin.showPassword ? admin.temporaryPassword : "********"}
-                          </span>
-                          <button
-                            aria-label={`${admin.showPassword ? "Sembunyikan" : "Tampilkan"} password ${admin.name}`}
-                            className="grid size-8 shrink-0 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] hover:text-[#006747]"
-                            onClick={() =>
-                              setAdmins((current) =>
-                                current.map((item) =>
-                                  item.id === admin.id ? { ...item, showPassword: !item.showPassword } : item
+                  <div className="overflow-x-auto">
+                    <div className="hidden min-w-[52rem] grid-cols-[minmax(10rem,1fr)_minmax(14rem,1.2fr)_minmax(10rem,0.9fr)_minmax(11rem,0.9fr)_3rem] gap-4 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
+                      <span>Admin</span>
+                      <span>Email</span>
+                      <span>NIK Info</span>
+                      <span>Password Sementara</span>
+                      <span className="text-right">Aksi</span>
+                    </div>
+                    <div className="divide-y divide-[#edf2ee] md:min-w-[52rem]">
+                      {admins.map((admin) => (
+                        <div
+                          className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[minmax(10rem,1fr)_minmax(14rem,1.2fr)_minmax(10rem,0.9fr)_minmax(11rem,0.9fr)_3rem] md:items-center md:gap-4"
+                          key={admin.id}
+                        >
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.68rem] font-black text-[#006747]">
+                              {getInitials(admin.name)}
+                            </span>
+                            <span className="min-w-0 truncate font-black text-[#13211c]">{admin.name}</span>
+                          </div>
+                          <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/50 md:block md:rounded-none md:bg-transparent md:p-0">
+                            <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Email</span>
+                            <span className="block min-w-0 truncate text-right md:text-left">{admin.email}</span>
+                          </p>
+                          <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/46 md:block md:rounded-none md:bg-transparent md:p-0">
+                            <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">NIK</span>
+                            <span className="block min-w-0 truncate text-right md:text-left">{maskNationalId(admin.nationalId)}</span>
+                          </p>
+                          <div className="flex min-w-0 items-center justify-between gap-2 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 md:justify-start md:rounded-none md:bg-transparent md:p-0">
+                            <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Password</span>
+                            <span className="block min-w-0 truncate font-mono font-bold tracking-[0.18em] text-black/46">
+                              {admin.showPassword ? admin.temporaryPassword : "********"}
+                            </span>
+                            <button
+                              aria-label={`${admin.showPassword ? "Sembunyikan" : "Tampilkan"} password ${admin.name}`}
+                              className="grid size-8 shrink-0 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#edf7ef] hover:text-[#006747]"
+                              onClick={() =>
+                                setAdmins((current) =>
+                                  current.map((item) =>
+                                    item.id === admin.id ? { ...item, showPassword: !item.showPassword } : item
+                                  )
                                 )
-                              )
-                            }
+                              }
+                              type="button"
+                            >
+                              {admin.showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                          </div>
+                          <button
+                            aria-label={`Hapus admin ${admin.name}`}
+                            className="ml-auto grid size-10 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 md:size-8"
+                            onClick={() => setAdmins((current) => current.filter((item) => item.id !== admin.id))}
                             type="button"
                           >
-                            {admin.showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            <Trash2 className="size-4" />
                           </button>
                         </div>
-                        <button
-                          aria-label={`Hapus admin ${admin.name}`}
-                          className="ml-auto grid size-10 place-items-center rounded-xl text-rose-500 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-rose-50 md:size-8"
-                          onClick={() => setAdmins((current) => current.filter((item) => item.id !== admin.id))}
-                          type="button"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
+                      ))}
                       </div>
-                    ))}
                   </div>
                 )}
               </div>

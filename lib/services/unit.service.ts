@@ -1,12 +1,33 @@
+import { hashPassword } from "@better-auth/utils/password";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/lib/db/client";
-import { barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
+import { account, barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 import { getAdminBarangById, listAdminBarangHistory } from "@/lib/services/admin-barang.service";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
-import { validateManagedUnitCreatePayload, validateUnitPayload } from "@/lib/superadmin/validation";
+import {
+  validateAdminUnitPayload,
+  validateManagedUnitCreatePayload,
+  validateUnitAccountPayload,
+  validateUnitPayload,
+} from "@/lib/superadmin/validation";
+
+type ManagedUnitAdminInput = {
+  email?: string;
+  name?: string;
+  phoneNumber?: string;
+  temporaryPassword?: string;
+};
+
+type ManagedUnitAccountInput = {
+  accountHolderName?: string;
+  accountNumber?: string;
+  bankName?: string;
+  branchName?: string;
+  isActive?: boolean;
+};
 
 function getUnitStatus(unit: { isActive: boolean }, activeAccountCount: number, adminCount: number) {
   if (!unit.isActive) {
@@ -455,7 +476,75 @@ export async function getSuperAdminUnitBarangDetail(unitId: string, barangId: st
   };
 }
 
+function assertUniqueValues(values: string[], message: string) {
+  const seen = new Set<string>();
+
+  for (const value of values) {
+    if (!value) continue;
+
+    if (seen.has(value)) {
+      throw new Error(message);
+    }
+
+    seen.add(value);
+  }
+}
+
+function validateManagedUnitAdmins(admins: ManagedUnitAdminInput[] | undefined) {
+  const payloads = (admins ?? []).map((admin) =>
+    validateAdminUnitPayload({
+      ...admin,
+      unitId: "pending-unit",
+    }),
+  );
+
+  if (payloads.length === 0) {
+    throw new Error("Minimal 1 admin unit wajib ditambahkan saat membuat unit.");
+  }
+
+  assertUniqueValues(
+    payloads.map((admin) => admin.email),
+    "Email admin unit tidak boleh duplikat dalam setup ini.",
+  );
+  assertUniqueValues(
+    payloads.map((admin) => admin.phoneNumber).filter(Boolean),
+    "Nomor telepon admin unit tidak boleh duplikat dalam setup ini.",
+  );
+
+  return payloads;
+}
+
+function validateSecondaryUnitAccounts(accounts: ManagedUnitAccountInput[] | undefined) {
+  return (accounts ?? []).map((item) =>
+    validateUnitAccountPayload({
+      ...item,
+      isActive: false,
+    }),
+  );
+}
+
+async function ensureAdminIdentityAvailable(admins: ReturnType<typeof validateManagedUnitAdmins>) {
+  const emails = admins.map((admin) => admin.email);
+  const phones = admins.map((admin) => admin.phoneNumber).filter(Boolean);
+
+  if (emails.length > 0) {
+    const [existingEmail] = await db.select({ id: users.id }).from(users).where(inArray(users.email, emails)).limit(1);
+    if (existingEmail) {
+      throw new Error("Email admin sudah dipakai.");
+    }
+  }
+
+  if (phones.length > 0) {
+    const [existingPhone] = await db.select({ id: users.id }).from(users).where(inArray(users.phoneNumber, phones)).limit(1);
+    if (existingPhone) {
+      throw new Error("Nomor telepon admin sudah dipakai.");
+    }
+  }
+}
+
 export async function createUnit(input: {
+  admins?: ManagedUnitAdminInput[];
+  accounts?: ManagedUnitAccountInput[];
   code?: string;
   name?: string;
   address?: string;
@@ -467,11 +556,15 @@ export async function createUnit(input: {
   };
 }) {
   const payload = validateManagedUnitCreatePayload(input);
+  const secondaryAccounts = validateSecondaryUnitAccounts(input.accounts);
+  const adminPayloads = validateManagedUnitAdmins(input.admins);
 
   const [existing] = await db.select().from(units).where(eq(units.code, payload.code)).limit(1);
   if (existing) {
     throw new Error("Kode unit sudah dipakai.");
   }
+
+  await ensureAdminIdentityAvailable(adminPayloads);
 
   const created = await db.transaction(async (tx) => {
     const unitId = crypto.randomUUID();
@@ -494,6 +587,41 @@ export async function createUnit(input: {
       branchName: payload.primaryAccount.branchName,
       isActive: true
     });
+
+    for (const secondaryAccount of secondaryAccounts) {
+      await tx.insert(unitAccounts).values({
+        id: crypto.randomUUID(),
+        unitId,
+        bankName: secondaryAccount.bankName,
+        accountNumber: secondaryAccount.accountNumber,
+        accountHolderName: secondaryAccount.accountHolderName,
+        branchName: secondaryAccount.branchName,
+        isActive: false
+      });
+    }
+
+    for (const admin of adminPayloads) {
+      const userId = crypto.randomUUID();
+      const passwordHash = await hashPassword(admin.temporaryPassword);
+
+      await tx.insert(users).values({
+        id: userId,
+        name: admin.name,
+        email: admin.email,
+        role: "admin_unit",
+        phoneNumber: admin.phoneNumber || null,
+        unitId,
+        isActive: true
+      });
+
+      await tx.insert(account).values({
+        id: crypto.randomUUID(),
+        accountId: userId,
+        providerId: "credential",
+        userId,
+        password: passwordHash
+      });
+    }
 
     return createdUnit;
   });

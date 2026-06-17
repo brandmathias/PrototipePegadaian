@@ -1409,19 +1409,6 @@ describe("superadmin pages", () => {
         );
       }
 
-      if (url === "/api/superadmin/admin") {
-        return new Response(
-          JSON.stringify({
-            data: {
-              id: "admin-created",
-              name: "Andi Setiawan",
-              email: "andi.setiawan@pegadaian.co.id",
-            },
-          }),
-          { status: 201 },
-        );
-      }
-
       return new Response(JSON.stringify({ data: [] }), { status: 201 });
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -1495,25 +1482,21 @@ describe("superadmin pages", () => {
       "/api/superadmin/unit",
       expect.objectContaining({ method: "POST" }),
     );
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(fetchMock).not.toHaveBeenCalledWith(
       "/api/superadmin/admin",
-      expect.objectContaining({ method: "POST" }),
+      expect.anything(),
     );
 
-    const adminRequest = fetchMock.mock.calls.find(([path]) => String(path) === "/api/superadmin/admin")?.[1] as
-      | RequestInit
-      | undefined;
     const unitRequest = fetchMock.mock.calls.find(([path]) => String(path) === "/api/superadmin/unit")?.[1] as
       | RequestInit
       | undefined;
     const unitBody = JSON.parse(String(unitRequest?.body ?? "{}"));
-    const adminBody = JSON.parse(String(adminRequest?.body ?? "{}"));
+    const adminBody = unitBody.admins[0];
 
     expect(unitBody.primaryAccount).not.toHaveProperty("branchName");
     expect(adminBody).toMatchObject({
       name: "Andi Setiawan",
       email: "andi.setiawan@pegadaian.co.id",
-      unitId: "unit-created",
       temporaryPassword: "SandiRahasia1",
     });
     expect(adminBody).not.toHaveProperty("nationalId");
@@ -1528,7 +1511,7 @@ describe("superadmin pages", () => {
         code: `CP-MND-${String(number).padStart(2, "0")}`,
         name: `Pegadaian CP Unit ${String(number).padStart(2, "0")}`,
         address: `Jl. Sam Ratulangi No. ${number}`,
-        status: "Aktif",
+        status: number === 1 ? "Nonaktif" : number === 2 ? "Perlu Review" : "Aktif",
         adminCount: number % 3 === 0 ? 2 : 1,
         accountCount: 1,
         activeAccount: {
@@ -1562,6 +1545,8 @@ describe("superadmin pages", () => {
 
     expect(screen.getByText("Pegadaian CP Unit 01")).toBeInTheDocument();
     expect(screen.getByText("Pegadaian CP Unit 10")).toBeInTheDocument();
+    expect(screen.queryByText("Nonaktif")).not.toBeInTheDocument();
+    expect(screen.queryByText("Perlu Review")).not.toBeInTheDocument();
     expect(screen.queryByText("Pegadaian CP Unit 11")).not.toBeInTheDocument();
     expect(screen.getByText(/Menampilkan/).textContent).toContain("1 sampai 10 dari 82 unit");
     expect(screen.queryByText("...")).not.toBeInTheDocument();

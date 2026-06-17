@@ -4,7 +4,10 @@ import { requireSuperAdminApiSession } from "@/lib/auth/session";
 import { createUnit, listUnits } from "@/lib/services/unit.service";
 
 function toErrorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : "Permintaan unit gagal diproses.";
+  const rawMessage = error instanceof Error ? error.message : "Permintaan unit gagal diproses.";
+  const message = rawMessage.includes("Failed query") || rawMessage.includes("duplicate key")
+    ? "Setup unit belum bisa disimpan. Periksa kode unit, email admin, atau nomor telepon admin yang sudah dipakai."
+    : rawMessage;
   const status = message.includes("sudah") ? 409 : 400;
 
   return NextResponse.json({ message }, { status });

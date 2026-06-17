@@ -107,6 +107,13 @@ export async function createAdminUnit(input: {
     throw new Error("Email admin sudah dipakai.");
   }
 
+  if (payload.phoneNumber) {
+    const [existingPhone] = await db.select().from(users).where(eq(users.phoneNumber, payload.phoneNumber)).limit(1);
+    if (existingPhone) {
+      throw new Error("Nomor telepon admin sudah dipakai.");
+    }
+  }
+
   const userId = crypto.randomUUID();
   const accountId = crypto.randomUUID();
   const passwordHash = await hashPassword(payload.temporaryPassword);

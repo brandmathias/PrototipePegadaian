@@ -4,7 +4,10 @@ import { requireSuperAdminApiSession } from "@/lib/auth/session";
 import { createAdminUnit, listAdminUnits } from "@/lib/services/admin-unit.service";
 
 function toErrorResponse(error: unknown) {
-  const message = error instanceof Error ? error.message : "Permintaan admin unit gagal diproses.";
+  const rawMessage = error instanceof Error ? error.message : "Permintaan admin unit gagal diproses.";
+  const message = rawMessage.includes("Failed query") || rawMessage.includes("duplicate key")
+    ? "Email atau nomor telepon admin sudah dipakai."
+    : rawMessage;
   const status = message.includes("sudah") ? 409 : message.includes("belum ditemukan") ? 404 : 400;
 
   return NextResponse.json({ message }, { status });

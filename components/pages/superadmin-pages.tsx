@@ -4927,7 +4927,7 @@ export function SuperAdminManagementPage({
   const pageStart = filteredUnits.length === 0 ? 0 : currentPage * pageSize + 1;
   const pageEnd = Math.min(filteredUnits.length, (currentPage + 1) * pageSize);
   const activeAdmins = admins.filter((admin) => admin.status === "Aktif");
-  const activeUnitCount = units.filter((unit) => unit.status !== "Nonaktif").length;
+  const activeUnitCount = units.length;
   const activeAccountCount = units.filter((unit) => unit.activeAccount).length;
 
   useEffect(() => {
@@ -5014,7 +5014,6 @@ export function SuperAdminManagementPage({
                             >
                               {unit.name}
                             </Link>
-                            <StatusBadge value={unit.status} />
                           </div>
                           <p className="mt-1 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
                             {unit.code}
