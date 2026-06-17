@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import {
   ChevronDown,
   ChevronUp,
   Handshake,
-  Headphones,
   HelpCircle,
   Search
 } from "lucide-react";
@@ -17,6 +17,26 @@ const faqItems = [
     question: "Kenapa fitur penawaran (bidding) saya terkunci dan bagaimana memulihkannya?",
     answer:
       "Fitur penawaran dapat terkunci karena dua kondisi: masih ada bid aktif pada Lelang Tertutup lain, atau akun sedang berada dalam masa pembatasan akibat pelanggaran pembayaran. Jika penyebabnya bid aktif, tunggu hasil lelang tersebut; setelah kalah, Anda dapat mengikuti lelang lain. Jika Anda menang, selesaikan pembayaran sampai diverifikasi admin unit. Jika penyebabnya pembatasan akun, fitur akan aktif otomatis setelah hitung mundur di halaman Pelanggaran selesai."
+  },
+  {
+    question: "Bagaimana mekanisme Lelang Tertutup dari awal sampai akhir?",
+    answer:
+      "Pilih barang berlabel Lelang Tertutup, baca detail barang, media, harga dasar, unit pelaksana, dan batas akhir lelang. Kirim nominal bid minimal sama dengan harga dasar. Selama lelang berjalan, bid disimpan tertutup dan tidak terlihat oleh peserta lain. Setelah deadline, sistem membuka escrow untuk menghitung hasil: bid tertinggi menjadi pemenang, sedangkan harga akhir mengikuti penawaran tertinggi kedua; jika hanya ada satu penawar, pembayaran mengikuti harga dasar. Pemenang wajib menyelesaikan pembayaran langsung di unit maksimal 24 jam, lalu admin unit memverifikasi pembayaran sebelum proses serah terima barang selesai."
+  },
+  {
+    question: "Mengapa nama penawar dan nominal penawaran disensor selama lelang?",
+    answer:
+      "Lelang Tertutup memang menjaga kerahasiaan peserta dan nominal bid selama sesi masih berjalan. Tampilan live hanya menunjukkan aktivitas seperlunya agar peserta tidak terdorong mengikuti nominal orang lain. Detail pemenang, nominal final, dan arsip audit baru digunakan setelah lelang berakhir sesuai akses halaman masing-masing."
+  },
+  {
+    question: "Apakah saya boleh mengikuti lebih dari satu Lelang Tertutup sekaligus?",
+    answer:
+      "Tidak untuk bid aktif. Sistem membatasi satu bid aktif agar tidak terjadi bentrok kewajiban pembayaran. Jika Anda kalah pada lelang tersebut, kunci dilepas dan Anda dapat mengikuti lelang lain. Jika Anda menang, kunci tetap berjalan sampai pembayaran diselesaikan dan diverifikasi admin unit. Jika pemenang tidak membayar dalam 24 jam, transaksi dapat gagal dan akun menerima pelanggaran."
+  },
+  {
+    question: "Bagaimana alur pembelian barang Harga Tetap?",
+    answer:
+      "Pilih barang berlabel Harga Tetap, lanjutkan ke pembayaran, transfer sesuai nominal ke rekening unit yang tertera, lalu unggah bukti pembayaran dan nomor referensi jika tersedia. Transaksi dicatat setelah bukti terkirim dan menunggu verifikasi admin unit. Setelah admin memverifikasi pembayaran, status transaksi berubah menjadi lunas atau siap dilanjutkan ke proses serah terima sesuai arahan unit."
   },
   {
     question: "Apakah saya tetap bisa mengambil fisik barang yang sudah saya lunasi?",
@@ -37,6 +57,11 @@ const faqItems = [
     question: "Bagaimana cara mengetahui level sanksi pada akun saya?",
     answer:
       "Buka menu Pelanggaran. Halaman tersebut menampilkan level pembatasan aktif, waktu pemulihan, fitur yang sedang dibatasi, fitur yang tetap tersedia, serta riwayat pelanggaran pembayaran yang dihitung sebagai akumulasi level sanksi."
+  },
+  {
+    question: "Apa saja disclaimer penting sebelum mengikuti lelang atau membeli Harga Tetap?",
+    answer:
+      "Pastikan detail barang, foto, deskripsi, unit pelaksana, harga dasar atau harga tetap, rekening tujuan, dan batas waktu pembayaran sudah sesuai sebelum mengirim bid atau bukti bayar. Penawaran Lelang Tertutup bersifat final setelah dikirim. Pembayaran harus dilakukan ke rekening unit yang ditampilkan sistem. Simpan bukti pembayaran untuk verifikasi. Jika ada perbedaan status, hubungi admin unit terkait dengan nomor transaksi dan bukti pendukung."
   }
 ];
 
@@ -75,7 +100,15 @@ export function BuyerHelpCenterPage() {
           <HelpOrnament />
           <div className="relative z-[1] grid gap-6 md:grid-cols-[10rem_minmax(0,1fr)] md:items-center lg:grid-cols-[13rem_minmax(0,1fr)]">
             <div className="mx-auto grid size-28 place-items-center rounded-full border border-emerald-900/10 bg-emerald-50/60 text-primary shadow-[inset_0_1px_8px_rgba(0,74,35,0.08)] md:size-32">
-              <Headphones className="size-14 stroke-[1.6] drop-shadow-[0_14px_22px_rgba(0,74,35,0.18)] md:size-16" />
+              <Image
+                alt="Ilustrasi pusat bantuan Ruang Agunan"
+                className="size-24 object-contain drop-shadow-[0_18px_24px_rgba(0,74,35,0.18)] md:size-28"
+                height={512}
+                priority
+                sizes="(min-width: 768px) 7rem, 6rem"
+                src="/brand/buyer-help-headset.png"
+                width={512}
+              />
             </div>
 
             <div className="max-w-5xl space-y-4">
@@ -112,17 +145,24 @@ export function BuyerHelpCenterPage() {
               return (
                 <article
                   className={cn(
-                    "overflow-hidden rounded-xl border bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    "relative overflow-hidden rounded-xl border bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                     expanded
-                      ? "border-amber-100 shadow-[0_20px_52px_-46px_rgba(0,0,0,0.42)]"
+                      ? "border-primary/20 shadow-[0_20px_52px_-46px_rgba(0,74,35,0.42)]"
                       : "border-black/5 shadow-[0_12px_32px_-30px_rgba(15,23,42,0.32)]"
                   )}
                   key={item.question}
                 >
+                  {expanded ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-0 left-0 w-2 bg-primary"
+                      data-help-rail="active"
+                    />
+                  ) : null}
                   <button
                     aria-expanded={expanded}
                     className={cn(
-                      "flex w-full items-center justify-between gap-4 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      "relative z-[1] flex w-full items-center justify-between gap-4 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                       expanded ? "px-5 pb-3 pt-4 md:px-7 md:pt-5" : "px-5 py-3 md:px-7"
                     )}
                     onClick={() => setOpenIndex(expanded ? -1 : item.index)}
@@ -149,12 +189,9 @@ export function BuyerHelpCenterPage() {
                   </button>
 
                   {expanded ? (
-                    <div className="grid grid-cols-[0.42rem_minmax(0,1fr)]">
-                      <div className="bg-primary" />
-                      <p className="max-w-5xl px-5 pb-6 pt-1 text-sm font-medium leading-7 text-[#24365f] md:px-7 md:pl-10 md:text-base">
-                        {item.answer}
-                      </p>
-                    </div>
+                    <p className="relative z-[1] max-w-5xl px-5 pb-6 pt-1 text-sm font-medium leading-7 text-[#24365f] md:px-7 md:pl-14 md:text-base">
+                      {item.answer}
+                    </p>
                   ) : null}
                 </article>
               );
