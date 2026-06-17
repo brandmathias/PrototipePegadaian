@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import {
   ChevronDown,
-  ChevronUp,
   Handshake,
   HelpCircle,
   Search
@@ -22,11 +21,6 @@ const faqItems = [
     question: "Bagaimana mekanisme Lelang Tertutup dari awal sampai akhir?",
     answer:
       "Pilih barang berlabel Lelang Tertutup, baca detail barang, media, harga dasar, unit pelaksana, dan batas akhir lelang. Kirim nominal bid minimal sama dengan harga dasar. Selama lelang berjalan, bid disimpan tertutup dan tidak terlihat oleh peserta lain. Setelah deadline, sistem membuka escrow untuk menghitung hasil: bid tertinggi menjadi pemenang, sedangkan harga akhir mengikuti penawaran tertinggi kedua; jika hanya ada satu penawar, pembayaran mengikuti harga dasar. Pemenang wajib menyelesaikan pembayaran langsung di unit maksimal 24 jam, lalu admin unit memverifikasi pembayaran sebelum proses serah terima barang selesai."
-  },
-  {
-    question: "Mengapa nama penawar dan nominal penawaran disensor selama lelang?",
-    answer:
-      "Lelang Tertutup memang menjaga kerahasiaan peserta dan nominal bid selama sesi masih berjalan. Tampilan live hanya menunjukkan aktivitas seperlunya agar peserta tidak terdorong mengikuti nominal orang lain. Detail pemenang, nominal final, dan arsip audit baru digunakan setelah lelang berakhir sesuai akses halaman masing-masing."
   },
   {
     question: "Apakah saya boleh mengikuti lebih dari satu Lelang Tertutup sekaligus?",
@@ -145,11 +139,12 @@ export function BuyerHelpCenterPage() {
               return (
                 <article
                   className={cn(
-                    "relative overflow-hidden rounded-xl border bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    "relative overflow-hidden rounded-xl border bg-white transition-[border-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
                     expanded
-                      ? "border-primary/20 shadow-[0_20px_52px_-46px_rgba(0,74,35,0.42)]"
+                      ? "border-[#d6eadf] border-t-amber-400 shadow-[0_20px_52px_-46px_rgba(0,74,35,0.42)]"
                       : "border-black/5 shadow-[0_12px_32px_-30px_rgba(15,23,42,0.32)]"
                   )}
+                  data-help-card={expanded ? "active" : "idle"}
                   key={item.question}
                 >
                   {expanded ? (
@@ -184,15 +179,33 @@ export function BuyerHelpCenterPage() {
                       </span>
                     </span>
                     <span className="grid size-8 shrink-0 place-items-center text-amber-500">
-                      {expanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
+                      <ChevronDown
+                        className={cn(
+                          "size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                          expanded ? "rotate-180" : "rotate-0"
+                        )}
+                      />
                     </span>
                   </button>
 
-                  {expanded ? (
-                    <p className="relative z-[1] max-w-5xl px-5 pb-6 pt-1 text-sm font-medium leading-7 text-[#24365f] md:px-7 md:pl-14 md:text-base">
-                      {item.answer}
-                    </p>
-                  ) : null}
+                  <div
+                    aria-hidden={!expanded}
+                    className={cn(
+                      "relative z-[1] grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                      expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                    )}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <p
+                        className={cn(
+                          "max-w-5xl px-5 pb-6 pt-1 text-sm font-medium leading-7 text-[#24365f] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:px-7 md:pl-14 md:text-base",
+                          expanded ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
+                        )}
+                      >
+                        {item.answer}
+                      </p>
+                    </div>
+                  </div>
                 </article>
               );
             })

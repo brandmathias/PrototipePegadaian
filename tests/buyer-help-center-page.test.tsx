@@ -13,6 +13,7 @@ describe("BuyerHelpCenterPage", () => {
       screen.getByPlaceholderText("Cari solusi, panduan lelang, atau aturan pembatasan...")
     ).toBeInTheDocument();
     expect(container.querySelector('[data-help-rail="active"]')).toHaveClass("bg-primary");
+    expect(container.querySelector('[data-help-card="active"]')).toHaveClass("border-t-amber-400");
     expect(
       screen.getByRole("button", {
         name: /kenapa fitur penawaran \(bidding\) saya terkunci dan bagaimana memulihkannya/i
@@ -49,6 +50,16 @@ describe("BuyerHelpCenterPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /disclaimer penting/i }));
     expect(screen.getByText(/Pembayaran harus dilakukan ke rekening unit yang ditampilkan sistem/i)).toBeInTheDocument();
+  });
+
+  it("keeps technical bidder censorship details out of buyer help content", () => {
+    render(<BuyerHelpCenterPage />);
+
+    expect(
+      screen.queryByRole("button", {
+        name: /mengapa nama penawar dan nominal penawaran disensor selama lelang/i
+      })
+    ).not.toBeInTheDocument();
   });
 
   it("filters FAQ content through the search field and shows an empty state", () => {
