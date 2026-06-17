@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { BuyerViolationPage } from "@/components/buyer/buyer-violation-page";
 import type { BuyerViolationPageData } from "@/lib/services/buyer.service";
@@ -138,5 +138,17 @@ describe("BuyerViolationPage", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("lets the latest expanded violation collapse from its own dropdown control", () => {
+    render(<BuyerViolationPage data={activeLevelTwoData} serverNow="2026-06-17T06:02:00.000Z" />);
+
+    expect(screen.getByRole("button", { name: /tutup detail pelanggaran kalung emas 2/i })).toBeInTheDocument();
+    expect(screen.getByText(/batas waktu bayar/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /tutup detail pelanggaran kalung emas 2/i }));
+
+    expect(screen.getByRole("button", { name: /buka detail pelanggaran kalung emas 2/i })).toBeInTheDocument();
+    expect(screen.queryByText(/batas waktu bayar/i)).not.toBeInTheDocument();
   });
 });

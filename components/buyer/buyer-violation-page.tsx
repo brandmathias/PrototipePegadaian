@@ -371,6 +371,10 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
   }, [syncedNow]);
 
   useEffect(() => {
+    if (expandedViolationId === null) {
+      return;
+    }
+
     if (!violations.some((entry) => entry.id === expandedViolationId)) {
       setExpandedViolationId(violations[0]?.id ?? null);
     }
