@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { BuyerHelpCenterPage } from "@/components/buyer/help-center-page";
 
 export default function Page() {
-  redirect("/pelanggaran#bantuan-pembatasan");
+  return <BuyerHelpCenterPage />;
 }
