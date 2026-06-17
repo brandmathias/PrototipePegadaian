@@ -149,6 +149,12 @@ describe("BuyerViolationPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /tutup detail pelanggaran kalung emas 2/i }));
 
     expect(screen.getByRole("button", { name: /buka detail pelanggaran kalung emas 2/i })).toBeInTheDocument();
+    expect(screen.getByText(/^Kalung Emas 2$/i).closest("article")).toHaveClass("border-orange-300");
+    expect(screen.getByText(/masa sanksi aktif/i).closest("span")).toHaveClass(
+      "border-orange-100",
+      "bg-orange-50",
+      "text-orange-700"
+    );
     expect(screen.queryByText(/batas waktu bayar/i)).not.toBeInTheDocument();
   });
 });

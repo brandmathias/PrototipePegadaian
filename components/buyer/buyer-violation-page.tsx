@@ -110,11 +110,21 @@ function TimelineItem({
 
   if (!expanded) {
     return (
-      <article className="relative rounded-[1.1rem] border border-black/10 bg-white px-3 py-3 shadow-[0_14px_36px_-32px_rgba(10,31,25,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-emerald-200">
+      <article
+        className={cn(
+          "relative rounded-[1.1rem] border bg-white px-3 py-3 shadow-[0_14px_36px_-32px_rgba(10,31,25,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          active ? "border-orange-300 hover:border-orange-300" : "border-black/10 hover:border-emerald-200"
+        )}
+      >
         <button
           aria-expanded={expanded}
           aria-label={`Buka detail pelanggaran ${entry.itemName}`}
-          className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-[#24324a] transition hover:bg-slate-50 hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+          className={cn(
+            "absolute right-4 top-4 grid size-8 place-items-center rounded-full text-[#24324a] transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
+            active
+              ? "hover:text-orange-700 focus-visible:outline-orange-500"
+              : "hover:text-emerald-800 focus-visible:outline-emerald-600"
+          )}
           onClick={onToggle}
           type="button"
         >
@@ -168,8 +178,15 @@ function TimelineItem({
           </div>
 
           <div>
-            <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800">
-              <CheckCircle2 className="size-4" />
+            <span
+              className={cn(
+                "inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-black",
+                active
+                  ? "border-orange-100 bg-orange-50 text-orange-700"
+                  : "border-emerald-100 bg-emerald-50 text-emerald-800"
+              )}
+            >
+              {active ? <ShieldAlert className="size-4" /> : <CheckCircle2 className="size-4" />}
               {active ? "Masa sanksi aktif" : "Masa sanksi selesai"}
             </span>
           </div>
