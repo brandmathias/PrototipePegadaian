@@ -172,6 +172,49 @@ describe("buyer transaction detail page", () => {
     printSpy.mockRestore();
   });
 
+  it("prints immediately on mobile so the browser keeps the tap gesture", () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+    });
+
+    try {
+      render(
+        <TransactionDetailPage
+          buyer={buyer}
+          transaction={{
+            ...transaction,
+            status: "LUNAS",
+            paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+            verifiedAt: "4 Mei 2026 22.11 WIB",
+            receiptNumber: "INV/TRXFIXED"
+          }}
+          transactionId={transaction.id}
+        />
+      );
+
+      fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+
+      expect(printSpy).toHaveBeenCalledTimes(1);
+
+      const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-fixed-1-status");
+
+      expect(receiptPrintRoot).not.toBeNull();
+      expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
+      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      printSpy.mockRestore();
+    }
+  });
+
   it("prints the paid auction winner receipt with the same official lelang layout as admin unit", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 

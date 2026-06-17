@@ -13,6 +13,21 @@ type TransactionReceiptInlinePrintProps = {
   rootId: string;
 };
 
+function shouldPrintImmediatelyOnMobile() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const maxTouchPoints = navigator.maxTouchPoints ?? 0;
+
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent) ||
+    (platform === "MacIntel" && maxTouchPoints > 1)
+  );
+}
+
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
   if (typeof document !== "undefined" && "fonts" in document) {
     await document.fonts.ready;
@@ -84,6 +99,12 @@ export function TransactionReceiptInlinePrint({
 
   const handlePrint = useCallback(async () => {
     flushSync(() => setIsPrintReady(true));
+
+    if (shouldPrintImmediatelyOnMobile()) {
+      window.print();
+      return;
+    }
+
     await new Promise((resolve) => window.requestAnimationFrame(() => resolve(undefined)));
 
     const root = document.getElementById(rootId);
