@@ -2,17 +2,15 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  AlertTriangle,
-  Ban,
   Building2,
   CalendarClock,
   CheckCircle2,
   ChevronDown,
   CircleHelp,
   Clock3,
+  Coins,
   Eye,
   FileDown,
-  Gavel,
   History,
   ImageIcon,
   LockKeyhole,
@@ -65,10 +63,6 @@ function getCountdownParts(untilAt: string | null, now: number) {
   ];
 }
 
-function getAuctionModeLabel(mode: string) {
-  return mode === "vickrey" ? "Lelang Tertutup" : "Harga Tetap";
-}
-
 function FeatureRow({
   icon,
   title,
@@ -109,23 +103,26 @@ function TimelineItem({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const levelLabel = entry.violationLevel > 0 ? `Level ${entry.violationLevel} Pembatasan` : "Pelanggaran Tercatat";
+  const entryPolicy = entry.violationLevel > 0 ? getBlacklistRestrictionPolicy(entry.violationLevel) : null;
+  const levelLabel = entryPolicy
+    ? `Level ${entry.violationLevel} Pembatasan (${entryPolicy.durationDays} Hari)`
+    : "Pelanggaran Tercatat";
 
   if (!expanded) {
     return (
-      <article className="relative rounded-[1.35rem] border border-black/10 bg-white p-3 shadow-[0_18px_48px_-42px_rgba(10,31,25,0.42)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-emerald-200">
+      <article className="relative rounded-[1.1rem] border border-black/10 bg-white px-3 py-3 shadow-[0_14px_36px_-32px_rgba(10,31,25,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-emerald-200">
         <button
           aria-expanded={expanded}
           aria-label={`Buka detail pelanggaran ${entry.itemName}`}
-          className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-[#43536a] transition hover:bg-[#f3f4ef] hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+          className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-[#24324a] transition hover:bg-slate-50 hover:text-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
           onClick={onToggle}
           type="button"
         >
           <ChevronDown className="size-5" />
         </button>
 
-        <div className="grid gap-3 pr-10 sm:grid-cols-[9rem_minmax(0,1fr)] xl:grid-cols-[11rem_minmax(0,1fr)_minmax(18rem,0.68fr)] xl:items-center">
-          <div className="relative h-24 overflow-hidden rounded-[1rem] bg-[#f3f4ef] sm:h-28">
+        <div className="grid gap-4 pr-10 md:grid-cols-[13rem_minmax(0,1fr)] md:items-center xl:grid-cols-[13rem_minmax(0,1.05fr)_minmax(11rem,0.55fr)_minmax(11rem,0.55fr)_minmax(12rem,0.62fr)_auto]">
+          <div className="relative h-24 overflow-hidden rounded-[0.85rem] bg-slate-100 md:h-20">
             {entry.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -141,30 +138,40 @@ function TimelineItem({
           </div>
 
           <div className="min-w-0">
-            <p className="text-[0.7rem] font-black uppercase text-orange-600">{entry.itemName}</p>
-            <h3 className="mt-1 font-headline text-lg font-black text-[#101923] md:text-xl">{levelLabel}</h3>
+            <p className="text-xs font-black text-[#101923]">{entry.itemName}</p>
+            <h3 className="mt-1 font-headline text-lg font-black text-[#101923]">{levelLabel}</h3>
             <p className="mt-1 text-sm leading-6 text-[#506079]">{entry.note}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800">
-                <Building2 className="size-3.5" />
-                {entry.unitName}
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-700">
-                <Gavel className="size-3.5" />
-                {getAuctionModeLabel(entry.auctionMode)}
-              </span>
+          </div>
+
+          <div className="flex items-center gap-3 border-black/10 md:border-l md:pl-5">
+            <Building2 className="size-5 shrink-0 text-[#33405a]" />
+            <div>
+              <p className="text-[0.68rem] font-medium text-[#728096]">Unit Pelaksana</p>
+              <p className="mt-0.5 text-sm font-bold text-[#101923]">{entry.unitName}</p>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
-              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Nilai Transaksi</p>
-              <p className="mt-1 text-sm font-black text-[#101923]">{formatCurrency(entry.amount)}</p>
+          <div className="flex items-center gap-3 border-black/10 md:border-l md:pl-5">
+            <Coins className="size-5 shrink-0 text-[#33405a]" />
+            <div>
+              <p className="text-[0.68rem] font-medium text-[#728096]">Nilai Transaksi</p>
+              <p className="mt-0.5 text-sm font-bold text-[#101923]">{formatCurrency(entry.amount)}</p>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
-              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Tanggal Terjadi</p>
-              <p className="mt-1 text-sm font-black text-[#101923]">{entry.occurredAtLabel}</p>
+          </div>
+
+          <div className="flex items-center gap-3 border-black/10 md:border-l md:pl-5">
+            <CalendarClock className="size-5 shrink-0 text-[#33405a]" />
+            <div>
+              <p className="text-[0.68rem] font-medium text-[#728096]">Tanggal Terjadi</p>
+              <p className="mt-0.5 text-sm font-bold text-[#101923]">{entry.occurredAtLabel}</p>
             </div>
+          </div>
+
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-800">
+              <CheckCircle2 className="size-4" />
+              {active ? "Masa sanksi aktif" : "Masa sanksi selesai"}
+            </span>
           </div>
         </div>
       </article>
@@ -174,22 +181,22 @@ function TimelineItem({
   return (
     <article
       className={cn(
-        "relative rounded-[1.35rem] border bg-white p-3.5 shadow-[0_20px_55px_-45px_rgba(10,31,25,0.45)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        active ? "border-orange-300 ring-1 ring-orange-200" : "border-black/10"
+        "relative rounded-[1.1rem] border bg-white px-3 py-3 shadow-[0_18px_44px_-36px_rgba(10,31,25,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        active ? "border-orange-300" : "border-black/10"
       )}
     >
       <button
         aria-expanded={expanded}
         aria-label={`Tutup detail pelanggaran ${entry.itemName}`}
-        className="absolute right-4 top-4 z-[1] grid size-8 place-items-center rounded-full text-[#43536a] transition hover:bg-[#f3f4ef] hover:text-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+        className="absolute right-4 top-4 z-[1] grid size-8 place-items-center rounded-full text-[#24324a] transition hover:bg-slate-50 hover:text-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
         onClick={onToggle}
         type="button"
       >
         <ChevronDown className="size-5 rotate-180 transition-transform" />
       </button>
 
-      <div className="grid gap-4 pr-10 lg:grid-cols-[13.5rem_minmax(0,1fr)_minmax(17.5rem,0.82fr)] lg:items-center">
-        <div className="relative h-36 overflow-hidden rounded-[1.05rem] bg-[#f3f4ef]">
+      <div className="grid gap-4 pr-10 lg:grid-cols-[13rem_minmax(0,1fr)_1px_minmax(25rem,0.95fr)] lg:items-center">
+        <div className="relative h-32 overflow-hidden rounded-[0.85rem] bg-slate-100">
           {entry.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -202,55 +209,60 @@ function TimelineItem({
               <ImageIcon className="size-9" />
             </span>
           )}
-          {active ? (
-            <span className="absolute left-3 top-3 rounded-full bg-orange-500 px-2.5 py-1 text-[0.68rem] font-black text-white">
-              AKTIF
-            </span>
-          ) : null}
         </div>
 
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-0">
           <div>
-            <p className="text-[0.7rem] font-black uppercase text-orange-600">{entry.itemName}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-black text-[#101923]">{entry.itemName}</p>
+              {active ? (
+                <span className="rounded-md border border-orange-200 bg-orange-50 px-2 py-0.5 text-[0.66rem] font-black text-orange-600">
+                  AKTIF
+                </span>
+              ) : null}
+            </div>
             <h2 className="mt-1 font-headline text-xl font-black text-[#101923]">{levelLabel}</h2>
             <p className="mt-1 text-sm leading-6 text-[#506079]">{entry.note}</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-800">
-              <Building2 className="size-3.5" />
-              {entry.unitName}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-700">
-              <Gavel className="size-3.5" />
-              {getAuctionModeLabel(entry.auctionMode)}
-            </span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
-              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Unit Pelaksana</p>
-              <p className="mt-1 text-sm font-black text-[#101923]">{entry.unitName}</p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,0.9fr)]">
+            <div className="flex items-center gap-3">
+              <Building2 className="size-5 shrink-0 text-[#33405a]" />
+              <div>
+                <p className="text-[0.68rem] font-medium text-[#728096]">Unit Pelaksana</p>
+                <p className="mt-0.5 text-sm font-bold text-[#101923]">{entry.unitName}</p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] px-4 py-3">
-              <p className="text-[0.67rem] font-black uppercase text-[#6b7586]">Nilai Transaksi</p>
-              <p className="mt-1 text-sm font-black text-[#101923]">{formatCurrency(entry.amount)}</p>
+            <div className="flex items-center gap-3 border-black/10 sm:border-l sm:pl-5">
+              <Coins className="size-5 shrink-0 text-[#33405a]" />
+              <div>
+                <p className="text-[0.68rem] font-medium text-[#728096]">Nilai Transaksi</p>
+                <p className="mt-0.5 text-sm font-bold text-[#101923]">{formatCurrency(entry.amount)}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="rounded-2xl border border-black/10 bg-white px-4 py-3">
-            <div className="flex items-center gap-2 text-[#46536a]">
-              <Clock3 className="size-4" />
-              <p className="text-[0.67rem] font-black uppercase">Waktu Menang Lelang</p>
+        <div className="hidden h-24 w-px bg-black/10 lg:block" />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-[0.85rem] border border-black/10 bg-white px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Clock3 className="size-9 shrink-0 text-[#46536a]" />
+              <div>
+                <p className="text-[0.65rem] font-black uppercase text-[#6b7586]">Waktu Menang Lelang</p>
+                <p className="mt-1 text-sm font-black leading-6 text-[#101923]">{entry.occurredAtLabel}</p>
+              </div>
             </div>
-            <p className="mt-2 text-sm font-black leading-6 text-[#101923]">{entry.occurredAtLabel}</p>
           </div>
-          <div className="rounded-2xl border border-red-100 bg-red-50/60 px-4 py-3">
-            <div className="flex items-center gap-2 text-red-700">
-              <CalendarClock className="size-4" />
-              <p className="text-[0.67rem] font-black uppercase">Batas Waktu Bayar</p>
+          <div className="rounded-[0.85rem] border border-red-100 bg-white px-4 py-3">
+            <div className="flex items-center gap-3">
+              <CalendarClock className="size-9 shrink-0 text-red-600" />
+              <div>
+                <p className="text-[0.65rem] font-black uppercase text-[#6b7586]">Batas Waktu Bayar</p>
+                <p className="mt-1 text-sm font-black leading-6 text-red-600">{entry.paymentDeadlineLabel}</p>
+              </div>
             </div>
-            <p className="mt-2 text-sm font-black leading-6 text-red-700">{entry.paymentDeadlineLabel}</p>
           </div>
         </div>
       </div>
@@ -365,7 +377,7 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
   }, [expandedViolationId, violations]);
 
   return (
-    <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 bg-[#f7f8f4] py-5 md:-my-10 md:py-6">
+    <div className="relative left-1/2 -my-8 min-h-[calc(100dvh-4rem)] w-screen -translate-x-1/2 bg-white py-5 md:-my-10 md:py-6">
       <div className="container space-y-4 md:space-y-5">
         <section className="relative overflow-hidden rounded-[1.75rem] border border-black/5 bg-white shadow-[0_28px_80px_-58px_rgba(10,31,25,0.46)]">
           <div
@@ -486,8 +498,8 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
           </div>
         </section>
 
-        <section className="rounded-[1.75rem] border border-black/5 bg-white p-5 shadow-[0_24px_74px_-56px_rgba(10,31,25,0.46)] md:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <section className="rounded-[1.45rem] border border-black/5 bg-white p-5 shadow-[0_20px_64px_-54px_rgba(10,31,25,0.34)] md:p-6">
+          <div>
             <div>
               <h2 className="font-headline text-2xl font-black text-[#101923]">
                 Riwayat Pelanggaran
@@ -496,28 +508,26 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
                 Berikut adalah pelanggaran pembayaran yang dihitung sebagai akumulasi level sanksi akun.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-4 py-2 text-xs font-black uppercase text-orange-700">
-              <Ban className="size-4" />
-              {violations.length} Kasus Dihitung
-            </span>
           </div>
 
           {violations.length > 0 ? (
-            <div className="relative mt-5 space-y-4 pl-9">
-              <div aria-hidden="true" className="absolute bottom-4 left-3 top-4 w-px bg-[#dde4dc]" />
+            <div className="relative mt-5 space-y-3 pl-8">
+              <div aria-hidden="true" className="absolute bottom-5 left-3 top-5 w-px bg-[#dfe6dc]" />
               {violations.map((entry, index) => (
                 <div className="relative" key={entry.id}>
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "absolute -left-9 top-5 grid size-7 place-items-center rounded-full border-4 border-white shadow-sm",
-                      index === 0 && hasRestriction ? "bg-orange-500" : "bg-emerald-700"
+                      "absolute -left-8 grid place-items-center rounded-full border-[3px] border-white shadow-[0_0_0_1px_rgba(18,31,45,0.08)]",
+                      index === 0 && hasRestriction
+                        ? "top-4 size-6 bg-orange-500"
+                        : "top-1/2 size-6 -translate-y-1/2 bg-emerald-700"
                     )}
                   >
                     {index === 0 && hasRestriction ? (
-                      <AlertTriangle className="size-3.5 text-white" />
+                      null
                     ) : (
-                      <CheckCircle2 className="size-3.5 text-white" />
+                      <CheckCircle2 className="size-4 text-white" />
                     )}
                   </span>
                   <TimelineItem
@@ -558,7 +568,7 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
               </p>
             </div>
           </div>
-          <div className="rounded-[1.2rem] border border-black/10 bg-[#fbfaf7] px-4 py-3">
+          <div className="rounded-[1.2rem] border border-black/10 bg-white px-4 py-3">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase text-[#6b7586]">Ketentuan Sistem</p>

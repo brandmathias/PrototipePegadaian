@@ -79,6 +79,8 @@ describe("BuyerViolationPage", () => {
     expect(screen.getByText(/unduh bukti transaksi lama/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
     expect(screen.getAllByText(/kalung emas 2/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/level 2 pembatasan \(30 hari\)/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/kasus dihitung/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/BRG-55291335/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/BRG-34145928/i)).not.toBeInTheDocument();
     expect(screen.getByText(/rp 16.000.000/i)).toBeInTheDocument();
