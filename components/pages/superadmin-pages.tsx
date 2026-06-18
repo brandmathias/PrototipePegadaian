@@ -2372,11 +2372,10 @@ function SuperAdminUnitDetailAccountLedger({
         <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-4 py-3 text-[0.66rem] font-black uppercase tracking-[0.18em] text-black/40">
           Daftar Rekening Terdaftar ({accounts.length})
         </div>
-        <div className="hidden grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
+        <div className="hidden grid-cols-[1fr_1fr_1.15fr_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
           <span>Bank</span>
           <span>Nomor Rekening</span>
           <span>Nama Pemilik</span>
-          <span className="text-right">Status</span>
           <span className="text-right">Aksi</span>
         </div>
         {accounts.length === 0 ? (
@@ -2389,7 +2388,7 @@ function SuperAdminUnitDetailAccountLedger({
           <div className="divide-y divide-[#edf2ee]">
             {accounts.map((account) => (
               <div
-                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.15fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.15fr_5.75rem] md:items-center md:gap-3"
                 key={account.id}
               >
                 <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
@@ -2404,15 +2403,6 @@ function SuperAdminUnitDetailAccountLedger({
                   <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Pemilik</span>
                   <span className="min-w-0 truncate text-right md:text-left">{account.accountHolder}</span>
                 </p>
-                <div className="flex justify-start md:justify-end">
-                  {account.status === "AKTIF" ? (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-emerald-700">
-                      Utama
-                    </span>
-                  ) : (
-                    <StatusBadge value={account.status} />
-                  )}
-                </div>
                 <div className="flex justify-start gap-1.5 md:justify-end">
                   <button
                     aria-label={`Lihat detail rekening ${account.bankName}`}
@@ -2444,11 +2434,6 @@ function SuperAdminUnitDetailAccountLedger({
         <SuperAdminUnitDetailPopupRow icon={CreditCard} label="Nomor Rekening" value={previewAccount?.accountNumber ?? "-"} />
         <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Pemilik" value={previewAccount?.accountHolder ?? "-"} />
         <SuperAdminUnitDetailPopupRow icon={Building2} label="Cabang" value={previewAccount?.branch || "-"} />
-        <SuperAdminUnitDetailPopupRow
-          icon={CheckCircle2}
-          label="Status"
-          value={previewAccount ? <StatusBadge value={previewAccount.status} /> : "-"}
-        />
       </SuperAdminUnitDetailPopup>
     </>
   );
@@ -2467,11 +2452,10 @@ function SuperAdminUnitDetailAdminLedger({
         <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-4 py-3 text-[0.66rem] font-black uppercase tracking-[0.18em] text-black/40">
           Daftar Admin Unit Terdaftar ({admins.length})
         </div>
-        <div className="hidden grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
+        <div className="hidden grid-cols-[1.1fr_1.15fr_0.9fr_5.75rem] gap-3 border-b border-[#edf2ee] px-4 py-2 text-[0.64rem] font-black uppercase tracking-[0.14em] text-black/38 md:grid">
           <span>Admin</span>
           <span>Email</span>
           <span>Telepon</span>
-          <span className="text-right">Status</span>
           <span className="text-right">Aksi</span>
         </div>
         {admins.length === 0 ? (
@@ -2484,7 +2468,7 @@ function SuperAdminUnitDetailAdminLedger({
           <div className="divide-y divide-[#edf2ee]">
             {admins.map((admin) => (
               <div
-                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.15fr_0.9fr_5.25rem_5.75rem] md:items-center md:gap-3"
+                className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1.1fr_1.15fr_0.9fr_5.75rem] md:items-center md:gap-3"
                 key={admin.id}
               >
                 <div className="flex min-w-0 items-center gap-2.5">
@@ -2507,9 +2491,6 @@ function SuperAdminUnitDetailAdminLedger({
                   <span className="truncate">{admin.phone || "-"}</span>
                   </span>
                 </p>
-                <div className="flex justify-start md:justify-end">
-                  <StatusBadge value={admin.status} />
-                </div>
                 <div className="flex justify-start gap-1.5 md:justify-end">
                   <button
                     aria-label={`Lihat detail admin ${admin.name}`}
@@ -2523,7 +2504,6 @@ function SuperAdminUnitDetailAdminLedger({
                     adminId={admin.id}
                     adminName={admin.name}
                     compact
-                    disabled={admin.status.toLowerCase() !== "aktif"}
                   />
                 </div>
               </div>
@@ -2545,11 +2525,6 @@ function SuperAdminUnitDetailAdminLedger({
         <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Admin" value={previewAdmin?.name ?? "-"} />
         <SuperAdminUnitDetailPopupRow icon={Mail} label="Email" value={previewAdmin?.email ?? "-"} />
         <SuperAdminUnitDetailPopupRow icon={Phone} label="Nomor Telepon" value={previewAdmin?.phone || "-"} />
-        <SuperAdminUnitDetailPopupRow
-          icon={CheckCircle2}
-          label="Status"
-          value={previewAdmin ? <StatusBadge value={previewAdmin.status} /> : "-"}
-        />
       </SuperAdminUnitDetailPopup>
     </>
   );
@@ -2602,10 +2577,6 @@ export function SuperAdminUnitDetailPage({
               <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-[#fbfcfa] px-2.5 py-1 text-[#475569]">
                 <Building2 className="size-3.5 text-[#006747]" />
                 {unitLabel}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-emerald-700">
-                <CheckCircle2 className="size-3.5" />
-                {unit.isActive ? "Unit aktif" : "Unit nonaktif"}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-white px-2.5 py-1 text-[#475569]">
                 <Info className="size-3.5 text-[#006747]" />
@@ -5087,11 +5058,11 @@ export function SuperAdminManagementPage({
                   </label>
                   <AdminSelect
                     ariaLabel="Baris per halaman unit"
-                    className="min-w-[7.4rem]"
+                    className="min-w-[4.8rem]"
                     id="management-unit-page-size"
                     options={managementUnitPageSizeOptions.map((size) => ({
                       value: size,
-                      label: `${size} data`,
+                      label: String(size),
                     }))}
                     size="compact"
                     value={pageSize}
@@ -5388,7 +5359,6 @@ export function SuperAdminPolicyPage() {
 }
 
 const monitoringItemsPerPage = 10;
-const monitoringStatusFilterAll = "Semua Status";
 const monitoringChartSeries = [
   {
     key: "collateralItems",
@@ -5410,7 +5380,6 @@ const monitoringChartSeries = [
   },
 ] as const;
 
-type MonitoringUnitTone = "active" | "attention" | "inactive" | "neutral";
 type MonitoringChartSeriesKey = (typeof monitoringChartSeries)[number]["key"];
 const monitoringChartToneClasses: Record<
   MonitoringChartSeriesKey,
@@ -5445,20 +5414,6 @@ function getCompactUnitName(name: string) {
   return name.replace(/^Pegadaian\s+/i, "");
 }
 
-function getMonitoringUnitTone(status: string): MonitoringUnitTone {
-  const normalized = status.toLowerCase();
-
-  if (normalized.includes("nonaktif")) return "inactive";
-  if (normalized.includes("tindak") || normalized.includes("review")) {
-    return "attention";
-  }
-  if (normalized.includes("aktif") || normalized.includes("normal")) {
-    return "active";
-  }
-
-  return "neutral";
-}
-
 function getMonitoringPeriodLabel(serverNow?: string) {
   const date = serverNow ? new Date(serverNow) : new Date();
 
@@ -5480,37 +5435,24 @@ export function SuperAdminMonitoringPage({
   data: SuperAdminMonitoringData;
   serverNow?: string;
 }) {
-  const unitRows = data.unitRows ?? [];
+  const unitRows = useMemo(() => data.unitRows ?? [], [data.unitRows]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState(monitoringStatusFilterAll);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeMetricIndex, setActiveMetricIndex] = useState<number | null>(null);
   const [activeChartTooltip, setActiveChartTooltip] =
     useState<MonitoringChartTooltip | null>(null);
   const chartPlotRef = useRef<HTMLDivElement | null>(null);
   const periodLabel = getMonitoringPeriodLabel(serverNow);
-  const statusOptions = useMemo(
-    () => [
-      monitoringStatusFilterAll,
-      ...Array.from(new Set(unitRows.map((row) => row.status).filter(Boolean))),
-    ],
-    [unitRows],
-  );
   const filteredUnitRows = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return unitRows.filter((row) => {
-      const matchesSearch =
+    return unitRows.filter(
+      (row) =>
         !normalizedQuery ||
         row.unitName.toLowerCase().includes(normalizedQuery) ||
-        row.unitCode.toLowerCase().includes(normalizedQuery);
-      const matchesStatus =
-        statusFilter === monitoringStatusFilterAll ||
-        row.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchQuery, statusFilter, unitRows]);
+        row.unitCode.toLowerCase().includes(normalizedQuery),
+    );
+  }, [searchQuery, unitRows]);
   const totalPages = Math.max(
     1,
     Math.ceil(filteredUnitRows.length / monitoringItemsPerPage),
@@ -5544,9 +5486,7 @@ export function SuperAdminMonitoringPage({
     ),
   );
   const chartMinWidth = Math.max(920, filteredUnitRows.length * 128);
-  const activeUnitCount = unitRows.filter(
-    (row) => getMonitoringUnitTone(row.status) === "active",
-  ).length;
+  const activeUnitCount = unitRows.length;
   const followUpUnitCount = unitRows.filter(
     (row) => Number(row.followUpItems) > 0,
   ).length;
@@ -5692,7 +5632,7 @@ export function SuperAdminMonitoringPage({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery]);
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
@@ -5805,23 +5745,9 @@ export function SuperAdminMonitoringPage({
             </span>
             <CardTitle>Grafik Barang pada Tiap Unit</CardTitle>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954]">
-              <CalendarDays className="size-4 text-primary" />
-              Periode: {periodLabel}
-            </div>
-            <select
-              aria-label="Filter status unit"
-              className="h-10 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954] shadow-none outline-none transition-colors focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-            >
-              {statusOptions.map((status) => (
-                <option key={status} value={status}>
-                  Status: {status}
-                </option>
-              ))}
-            </select>
+          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954]">
+            <CalendarDays className="size-4 text-primary" />
+            Periode: {periodLabel}
           </div>
         </CardHeader>
         <CardContent className="relative space-y-4 pt-5">
@@ -6037,14 +5963,14 @@ export function SuperAdminMonitoringPage({
           {filteredUnitRows.length === 0 ? (
             <EmptyState
               className="p-8"
-              description="Tidak ada unit yang cocok dengan pencarian atau filter status."
+              description="Tidak ada unit yang cocok dengan pencarian."
               icon={SearchX}
               title="Unit tidak ditemukan"
             />
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[980px] text-left text-sm">
+                <table className="w-full min-w-[860px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-border/70 bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
                       <th className="px-6 py-3.5" scope="col">
@@ -6062,98 +5988,63 @@ export function SuperAdminMonitoringPage({
                       <th className="px-4 py-3.5 text-center" scope="col">
                         Perlu Tindak Lanjut
                       </th>
-                      <th className="px-4 py-3.5 text-center" scope="col">
-                        Status Unit
-                      </th>
                       <th className="px-6 py-3.5 text-right" scope="col">
                         Aksi
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 bg-white">
-                    {paginatedUnitRows.map((row) => {
-                      const tone = getMonitoringUnitTone(row.status);
-
-                      return (
-                        <tr
-                          className="transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f7fbf8]"
-                          key={row.id}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <span
-                                className={cn(
-                                  "relative grid size-10 shrink-0 place-items-center rounded-xl ring-1",
-                                  tone === "active" &&
-                                    "bg-emerald-50 text-[#007a4d] ring-emerald-100",
-                                  tone === "attention" &&
-                                    "bg-rose-50 text-rose-600 ring-rose-100",
-                                  tone === "inactive" &&
-                                    "bg-slate-100 text-slate-500 ring-slate-200",
-                                  tone === "neutral" &&
-                                    "bg-slate-50 text-slate-500 ring-slate-200",
-                                )}
-                              >
-                                <Building2 className="size-5" strokeWidth={1.9} />
-                                <span
-                                  className={cn(
-                                    "absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-white",
-                                    tone === "active" && "bg-[#007a4d]",
-                                    tone === "attention" && "bg-rose-500",
-                                    tone === "inactive" && "bg-slate-400",
-                                    tone === "neutral" && "bg-slate-400",
-                                  )}
-                                />
-                              </span>
-                              <div className="min-w-0">
-                                <p
-                                  className={cn(
-                                    "font-bold text-[#13211c]",
-                                    tone === "attention" && "text-rose-700",
-                                  )}
-                                >
-                                  {row.unitName}
-                                </p>
-                                <p className="mt-0.5 text-xs font-bold text-[#435476]">
-                                  ({row.unitCode})
-                                </p>
-                              </div>
+                    {paginatedUnitRows.map((row) => (
+                      <tr
+                        className="transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f7fbf8]"
+                        key={row.id}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <span className="relative grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-[#007a4d] ring-1 ring-emerald-100">
+                              <Building2 className="size-5" strokeWidth={1.9} />
+                              <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#007a4d] ring-2 ring-white" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-bold text-[#13211c]">
+                                {row.unitName}
+                              </p>
+                              <p className="mt-0.5 text-xs font-bold text-[#435476]">
+                                ({row.unitCode})
+                              </p>
                             </div>
-                          </td>
-                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
-                            {formatDashboardCount(row.collateralItems)}
-                          </td>
-                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
-                            {formatDashboardCount(row.marketedItems)}
-                          </td>
-                          <td className="px-4 py-4 text-center font-bold text-[#13211c]">
-                            {formatDashboardCount(row.soldItems)}
-                          </td>
-                          <td
-                            className={cn(
-                              "px-4 py-4 text-center font-black",
-                              row.followUpItems > 0
-                                ? "text-rose-600"
-                                : "text-slate-300",
-                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                          {formatDashboardCount(row.collateralItems)}
+                        </td>
+                        <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                          {formatDashboardCount(row.marketedItems)}
+                        </td>
+                        <td className="px-4 py-4 text-center font-bold text-[#13211c]">
+                          {formatDashboardCount(row.soldItems)}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-4 py-4 text-center font-black",
+                            row.followUpItems > 0
+                              ? "text-rose-600"
+                              : "text-slate-300",
+                          )}
+                        >
+                          {formatDashboardCount(row.followUpItems)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Link
+                            className="interactive-tap inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface-lowest px-4 text-sm font-semibold text-primary transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-out hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            href={`/superadmin/unit/${row.id}`}
                           >
-                            {formatDashboardCount(row.followUpItems)}
-                          </td>
-                          <td className="px-4 py-4 text-center">
-                            <StatusBadge value={row.status} />
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <Link
-                              className="interactive-tap inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface-lowest px-4 text-sm font-semibold text-primary transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-out hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              href={`/superadmin/unit/${row.id}`}
-                            >
-                              <Eye className="size-4" />
-                              Detail
-                            </Link>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            <Eye className="size-4" />
+                            Detail
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

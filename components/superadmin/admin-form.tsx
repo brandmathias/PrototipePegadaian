@@ -330,16 +330,16 @@ export function DeactivateAdminButton({ adminId, adminName, compact = false, dis
         method: "DELETE"
       });
       toast({
-        title: "Akun admin berhasil dinonaktifkan.",
-        description: "Akun ini tidak lagi bisa login sampai diaktifkan kembali oleh superadmin.",
+        title: "Akun admin berhasil dihapus dari unit.",
+        description: "Akun ini tidak lagi tampil pada daftar admin unit dan akses loginnya sudah diputus.",
         variant: "success"
       });
       router.refresh();
       setOpen(false);
     } catch (caughtError) {
       toast({
-        title: "Akun admin belum bisa dinonaktifkan.",
-        description: caughtError instanceof Error ? caughtError.message : "Terjadi kendala saat memperbarui status akun.",
+        title: "Akun admin belum bisa dihapus.",
+        description: caughtError instanceof Error ? caughtError.message : "Terjadi kendala saat menghapus akses admin.",
         variant: "error"
       });
     } finally {
@@ -365,18 +365,18 @@ export function DeactivateAdminButton({ adminId, adminName, compact = false, dis
         ) : compact ? (
           <Trash2 className="size-4" />
         ) : (
-          "Nonaktifkan Akun"
+          "Hapus Akun"
         )}
       </Button>
       <ConfirmDialog
         cancelLabel="Batal"
-        confirmLabel={compact ? "Ya, hapus" : "Ya, nonaktifkan"}
-        description="Akun ini akan langsung kehilangan akses login. Session aktif yang masih tersisa juga akan diputus."
+        confirmLabel="Ya, hapus"
+        description="Akun ini akan langsung hilang dari daftar admin unit. Session aktif yang masih tersisa juga akan diputus."
         loading={loading}
         onConfirm={handleClick}
         onOpenChange={setOpen}
         open={open}
-        title={compact ? "Hapus admin dari unit ini?" : "Nonaktifkan akun admin ini?"}
+        title="Hapus admin dari unit ini?"
         variant="destructive"
       />
     </>

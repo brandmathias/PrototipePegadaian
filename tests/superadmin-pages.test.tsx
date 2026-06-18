@@ -1,5 +1,12 @@
 import React from "react";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -13,6 +20,12 @@ import {
   SuperAdminUnitBarangDetailPage,
 } from "@/components/pages/superadmin-pages";
 import { SuperadminBlacklistDetailWorkspace } from "@/components/superadmin/superadmin-blacklist-detail-workspace";
+import { UnitForm } from "@/components/superadmin/unit-form";
+
+const navigationMocks = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn(),
+}));
 
 const dashboardMonthFixture = [
   "Jan",
@@ -87,13 +100,14 @@ function makeDashboardTrendRange(label: string, points: ReturnType<typeof makeDa
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: navigationMocks.push,
+    refresh: navigationMocks.refresh,
   }),
 }));
 
 describe("superadmin pages", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-29T10:00:00+08:00"));
   });
@@ -595,8 +609,8 @@ describe("superadmin pages", () => {
       screen.getByRole("img", { name: "Grafik barang pada tiap unit" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("combobox", { name: "Filter status unit" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("combobox", { name: "Filter status unit" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("textbox", { name: "Cari unit atau kode cabang" }),
     ).toBeInTheDocument();
@@ -606,6 +620,9 @@ describe("superadmin pages", () => {
     expect(
       screen.getByRole("columnheader", { name: "Perlu Tindak Lanjut" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Status Unit" }),
+    ).not.toBeInTheDocument();
     const metricCard = screen.getByLabelText("Ringkasan Barang Jaminan");
     fireEvent.mouseEnter(metricCard);
     expect(screen.getByRole("tooltip")).toHaveTextContent("Unit tercatat");
@@ -778,6 +795,47 @@ describe("superadmin pages", () => {
     expect(within(adminDialog).getByText("Admin Ranotana")).toBeInTheDocument();
     expect(within(adminDialog).getByText("admin.ranotana@pegadaian.co.id")).toBeInTheDocument();
     expect(within(adminDialog).getByText("081245678901")).toBeInTheDocument();
+  });
+
+  it("returns to management after saving unit profile changes", async () => {
+    vi.useRealTimers();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            id: "unit-1",
+            code: "CP-MND-13",
+            name: "UPC Ranotana",
+            address: "Jl. Sam Ratulangi",
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <UnitForm
+        initialValue={{
+          code: "CP-MND-13",
+          name: "UPC Ranotana",
+          address: "Jl. Sam Ratulangi",
+          isActive: true,
+        }}
+        mode="update"
+        showTitle={false}
+        unitId="unit-1"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /perbarui unit/i }));
+
+    await waitFor(() => {
+      expect(navigationMocks.push).toHaveBeenCalledWith(
+        "/superadmin/manajemen-unit",
+      );
+    });
+    expect(navigationMocks.refresh).toHaveBeenCalled();
   });
 
   it("keeps superadmin item status helper synchronized with due date", async () => {
@@ -1552,14 +1610,14 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("...")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "9" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /10 data/i }));
+    fireEvent.click(screen.getByRole("button", { name: "10" }));
     const listbox = screen.getByRole("listbox");
 
-    expect(within(listbox).getByRole("option", { name: "10 data" })).toBeInTheDocument();
-    expect(within(listbox).getByRole("option", { name: "20 data" })).toBeInTheDocument();
-    expect(within(listbox).getByRole("option", { name: "50 data" })).toBeInTheDocument();
+    expect(within(listbox).getByRole("option", { name: "10" })).toBeInTheDocument();
+    expect(within(listbox).getByRole("option", { name: "20" })).toBeInTheDocument();
+    expect(within(listbox).getByRole("option", { name: "50" })).toBeInTheDocument();
 
-    fireEvent.click(within(listbox).getByRole("option", { name: "20 data" }));
+    fireEvent.click(within(listbox).getByRole("option", { name: "20" }));
 
     expect(screen.getByText("Pegadaian CP Unit 20")).toBeInTheDocument();
     expect(screen.queryByText("Pegadaian CP Unit 21")).not.toBeInTheDocument();

@@ -6,6 +6,7 @@ import { db } from "@/lib/db/client";
 import { account, barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 import { getAdminBarangById, listAdminBarangHistory } from "@/lib/services/admin-barang.service";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
+import { releaseInactiveAdminIdentityConflicts } from "@/lib/services/admin-unit.service";
 import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
 import {
@@ -191,7 +192,7 @@ export async function listUnits() {
       count: sql<number>`count(*)`
     })
     .from(unitAccounts)
-    .where(inArray(unitAccounts.unitId, unitIds))
+    .where(and(inArray(unitAccounts.unitId, unitIds), eq(unitAccounts.isActive, true)))
     .groupBy(unitAccounts.unitId);
 
   const activeAccounts = await db
@@ -249,7 +250,7 @@ export async function getUnitById(unitId: string) {
   const accounts = await db
     .select()
     .from(unitAccounts)
-    .where(eq(unitAccounts.unitId, unitId))
+    .where(and(eq(unitAccounts.unitId, unitId), eq(unitAccounts.isActive, true)))
     .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
 
   const admins = await db
@@ -261,7 +262,7 @@ export async function getUnitById(unitId: string) {
       status: users.isActive
     })
     .from(users)
-    .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId)))
+    .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId), eq(users.isActive, true)))
     .orderBy(users.name);
 
   const itemRows = await db
@@ -537,6 +538,13 @@ function validateSecondaryUnitAccounts(accounts: ManagedUnitAccountInput[] | und
 async function ensureAdminIdentityAvailable(admins: ReturnType<typeof validateManagedUnitAdmins>) {
   const emails = admins.map((admin) => admin.email);
   const phones = admins.map((admin) => admin.phoneNumber).filter(Boolean);
+
+  for (const admin of admins) {
+    await releaseInactiveAdminIdentityConflicts(
+      admin.email,
+      admin.phoneNumber,
+    );
+  }
 
   if (emails.length > 0) {
     const [existingEmail] = await db.select({ id: users.id }).from(users).where(inArray(users.email, emails)).limit(1);

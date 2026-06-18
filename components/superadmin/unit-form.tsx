@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { AdminSelect } from "@/components/admin/admin-select";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -213,19 +214,18 @@ function UnitFormSelect({
       <FieldLabel htmlFor={id} required={required}>
         {label}
       </FieldLabel>
-      <select
-        className="h-10 w-full rounded-[0.9rem] border border-[#dce6df] bg-[#fbfcfb] px-3 text-[0.78rem] font-bold text-[#13211c] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-[#0a6a49]/24 focus:ring-2 focus:ring-[#0a6a49]/16"
+      <AdminSelect
+        ariaLabel={label}
+        className="[&_.admin-select-trigger]:h-10 [&_.admin-select-trigger]:rounded-[0.9rem] [&_.admin-select-trigger]:border-[#dce6df] [&_.admin-select-trigger]:bg-[#fbfcfb] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.78rem] [&_.admin-select-trigger]:font-bold [&_.admin-select-trigger]:text-[#13211c] [&_.admin-select-trigger]:shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#0a6a49]/35 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.42),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-option]:text-[0.82rem]"
         id={id}
-        onChange={(event) => onChange(event.target.value)}
+        options={[
+          { value: "", label: "Pilih bank" },
+          ...bankOptions.map((bank) => ({ value: bank, label: bank })),
+        ]}
+        size="compact"
+        onValueChange={onChange}
         value={value}
-      >
-        <option value="">Pilih bank</option>
-        {bankOptions.map((bank) => (
-          <option key={bank} value={bank}>
-            {bank}
-          </option>
-        ))}
-      </select>
+      />
     </div>
   );
 }
@@ -245,7 +245,6 @@ function UnitEditForm({
   const [code, setCode] = useState(initialValue?.code ?? "");
   const [name, setName] = useState(initialValue?.name ?? "");
   const [address, setAddress] = useState(initialValue?.address ?? "");
-  const [isActive, setIsActive] = useState(initialValue?.isActive ?? true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -263,16 +262,17 @@ function UnitEditForm({
           code,
           name,
           address,
-          isActive,
+          isActive: true,
         }),
       });
 
       setMessage("Data unit berhasil diperbarui.");
       toast({
         title: "Data unit berhasil diperbarui.",
-        description: "Perubahan unit langsung tersimpan dan halaman akan diperbarui otomatis.",
+        description: "Perubahan unit langsung tersimpan dan Anda dikembalikan ke daftar manajemen unit.",
         variant: "success",
       });
+      router.push("/superadmin/manajemen-unit");
       router.refresh();
     } catch (caughtError) {
       const errorMessage = caughtError instanceof Error ? caughtError.message : "Data unit gagal diperbarui.";
@@ -325,12 +325,8 @@ function UnitEditForm({
         <FieldHelp>Alamat lengkap sesuai dokumen resmi unit.</FieldHelp>
       </div>
       <div className="space-y-4 lg:col-span-12">
-        <label className="flex items-center gap-3 text-sm text-foreground">
-          <input checked={isActive} onChange={(event) => setIsActive(event.target.checked)} type="checkbox" />
-          Unit aktif dan dapat dipakai operasional
-        </label>
         {error ? <InlineFeedback className="feedback-pop" description={error} title="Periksa lagi data unit." variant="error" /> : null}
-        {!error && message ? <InlineFeedback className="feedback-pop" description="Status operasional unit sudah diperbarui." title={message} variant="success" /> : null}
+        {!error && message ? <InlineFeedback className="feedback-pop" description="Data profil unit sudah diperbarui." title={message} variant="success" /> : null}
         {showSubmitButton ? (
           <Button disabled={loading} type="submit">
             {loading ? (

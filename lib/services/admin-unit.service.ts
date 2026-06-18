@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, or, sql } from "drizzle-orm";
 import { hashPassword } from "@better-auth/utils/password";
 
 import { db } from "@/lib/db/client";
@@ -27,6 +27,50 @@ function toAdminStatus(isActive: boolean) {
   return isActive ? "Aktif" : "Nonaktif";
 }
 
+function getArchivedAdminEmail(adminId: string) {
+  return `deleted-${adminId}@admin-unit.local`;
+}
+
+export async function releaseInactiveAdminIdentityConflicts(
+  email: string,
+  phoneNumber?: string,
+) {
+  const identityConflict = phoneNumber
+    ? or(eq(users.email, email), eq(users.phoneNumber, phoneNumber))
+    : eq(users.email, email);
+
+  const staleAdmins = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(
+      and(
+        eq(users.role, "admin_unit"),
+        eq(users.isActive, false),
+        identityConflict
+      )
+    );
+
+  if (staleAdmins.length === 0) {
+    return;
+  }
+
+  await db.transaction(async (tx) => {
+    for (const staleAdmin of staleAdmins) {
+      await tx.delete(account).where(eq(account.userId, staleAdmin.id));
+      await tx.delete(sessions).where(eq(sessions.userId, staleAdmin.id));
+      await tx
+        .update(users)
+        .set({
+          email: getArchivedAdminEmail(staleAdmin.id),
+          phoneNumber: null,
+          unitId: null,
+          updatedAt: new Date()
+        })
+        .where(and(eq(users.id, staleAdmin.id), eq(users.role, "admin_unit")));
+    }
+  });
+}
+
 export async function listAdminUnits() {
   const rows = await db
     .select({
@@ -43,7 +87,7 @@ export async function listAdminUnits() {
     .from(users)
     .leftJoin(units, eq(units.id, users.unitId))
     .leftJoin(sessions, eq(sessions.userId, users.id))
-    .where(eq(users.role, "admin_unit"))
+    .where(and(eq(users.role, "admin_unit"), eq(users.isActive, true)))
     .groupBy(users.id, units.name, units.code)
     .orderBy(desc(users.createdAt));
 
@@ -75,7 +119,7 @@ export async function getAdminUnitById(adminId: string) {
     })
     .from(users)
     .leftJoin(units, eq(units.id, users.unitId))
-    .where(and(eq(users.id, adminId), eq(users.role, "admin_unit")))
+    .where(and(eq(users.id, adminId), eq(users.role, "admin_unit"), eq(users.isActive, true)))
     .limit(1);
 
   if (!row) {
@@ -114,6 +158,8 @@ export async function createAdminUnit(input: {
   if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
+
+  await releaseInactiveAdminIdentityConflicts(payload.email, payload.phoneNumber);
 
   const [existingUser] = await db.select().from(users).where(eq(users.email, payload.email)).limit(1);
   if (existingUser) {
@@ -226,28 +272,30 @@ export async function updateAdminUnit(
 }
 
 export async function deactivateAdminUnit(adminId: string) {
-  const [updated] = await db.transaction(async (tx) => {
-    const [result] = await tx
-      .update(users)
-      .set({
-        isActive: false,
-        updatedAt: new Date()
-      })
-      .where(and(eq(users.id, adminId), eq(users.role, "admin_unit")))
-      .returning();
+  const [target] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.id, adminId), eq(users.role, "admin_unit")))
+    .limit(1);
 
-    if (!result) {
-      return [];
-    }
-
-    await tx.delete(sessions).where(eq(sessions.userId, adminId));
-
-    return [result];
-  });
-
-  if (!updated) {
+  if (!target) {
     throw new Error("Admin unit belum ditemukan.");
   }
 
-  return getAdminUnitById(adminId);
+  await db.transaction(async (tx) => {
+    await tx.delete(account).where(eq(account.userId, adminId));
+    await tx.delete(sessions).where(eq(sessions.userId, adminId));
+    await tx
+      .update(users)
+      .set({
+        email: getArchivedAdminEmail(adminId),
+        phoneNumber: null,
+        unitId: null,
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(and(eq(users.id, adminId), eq(users.role, "admin_unit")));
+  });
+
+  return { deleted: true, id: adminId };
 }
