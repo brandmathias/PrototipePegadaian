@@ -2,6 +2,10 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
+import {
+  adminNavigation,
+  superadminNavigation,
+} from "@/components/layout/role-navigation";
 
 const navigationMock = vi.hoisted(() => ({
   pathname: "/admin"
@@ -19,16 +23,7 @@ vi.mock("@/components/ui/alert-center", () => ({
   AlertCenter: () => <button type="button">Notifikasi</button>
 }));
 
-const nav: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: "dashboard" },
-  {
-    href: "/admin/barang",
-    label: "Kelola Barang",
-    icon: "barang"
-  },
-  { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" },
-  { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" }
-];
+const nav = adminNavigation;
 
 const groupedNav: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: "dashboard" },
@@ -85,6 +80,51 @@ describe("DashboardShell", () => {
 
     expect(screen.getByRole("link", { name: /riwayat barang/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /daftar barang/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["/admin", "Dashboard"],
+    ["/admin/barang/barang-1", "Kelola Barang"],
+    ["/admin/barang/riwayat", "Riwayat Barang"],
+    ["/admin/pemasaran/vickrey-auction/lelang-1", "Pemasaran"],
+    ["/admin/lelang/lelang-1", "Pemasaran"],
+    ["/admin/transaksi/riwayat", "Pemasaran"],
+    ["/admin/transaksi/transaksi-1/nota", "Pemasaran"],
+    ["/admin/blacklist/buyer-1", "Pelanggaran"],
+  ])("marks exactly one admin sidebar item for route %s", (pathname, expectedLabel) => {
+    navigationMock.pathname = pathname;
+
+    renderShell();
+
+    const activeLinks = screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("aria-current") === "page");
+
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toHaveAccessibleName(expectedLabel);
+  });
+
+  it.each([
+    ["/superadmin", "Dashboard Nasional"],
+    ["/superadmin/blacklist/detail/buyer-1", "Pelanggaran"],
+    ["/superadmin/monitoring-unit", "Monitoring Unit"],
+    ["/superadmin/monitoring", "Monitoring Unit"],
+    ["/superadmin/unit/unit-1", "Monitoring Unit"],
+    ["/superadmin/manajemen-unit/unit-1", "Manajemen Unit"],
+    ["/superadmin/admin", "Manajemen Unit"],
+    ["/superadmin/manajemen-superadmin/admin-1", "Manajemen Superadmin"],
+    ["/superadmin/kebijakan-pelanggaran", "Kebijakan Pelanggaran"],
+  ])("marks exactly one superadmin sidebar item for route %s", (pathname, expectedLabel) => {
+    navigationMock.pathname = pathname;
+
+    renderShell(superadminNavigation);
+
+    const activeLinks = screen
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("aria-current") === "page");
+
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toHaveAccessibleName(expectedLabel);
   });
 
   it("uses a white admin shell background on every admin route", () => {

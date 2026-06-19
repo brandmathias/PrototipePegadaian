@@ -3,17 +3,27 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
 
+const navigationMock = vi.hoisted(() => ({
+  pathname: "/transaksi",
+  search: "",
+}));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/transaksi",
+  usePathname: () => navigationMock.pathname,
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
     refresh: vi.fn()
   }),
-  useSearchParams: () => new URLSearchParams("")
+  useSearchParams: () => new URLSearchParams(navigationMock.search)
 }));
 
 describe("BuyerShell", () => {
+  beforeEach(() => {
+    navigationMock.pathname = "/transaksi";
+    navigationMock.search = "";
+  });
+
   it("renders buyer summary details from provided database-backed summary", () => {
     const { container } = render(
       <BuyerShell
@@ -70,4 +80,81 @@ describe("BuyerShell", () => {
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
   });
+
+  it.each([
+    {
+      currentPath: "/transaksi",
+      expected: "Beranda",
+      pathname: "/dashboard",
+      stale: "Transaksi",
+    },
+    {
+      currentPath: "/dashboard",
+      expected: "Katalog",
+      pathname: "/katalog/barang-1",
+      stale: "Beranda",
+    },
+    {
+      currentPath: "/dashboard",
+      expected: "Transaksi",
+      pathname: "/transaksi/transaksi-1",
+      stale: "Beranda",
+    },
+    {
+      currentPath: "/transaksi",
+      expected: "Pelanggaran",
+      pathname: "/pelanggaran",
+      stale: "Transaksi",
+    },
+    {
+      currentPath: "/dashboard",
+      expected: "Pusat Bantuan",
+      pathname: "/bantuan",
+      stale: "Beranda",
+    },
+    {
+      currentPath: "/dashboard",
+      expected: "Transaksi",
+      pathname: "/riwayat-bid/lelang-1/verifikasi",
+      stale: "Beranda",
+    },
+  ])(
+    "uses the live buyer route $pathname instead of stale server path $currentPath",
+    ({ currentPath, expected, pathname, stale }) => {
+      navigationMock.pathname = pathname;
+
+      render(
+        <BuyerShell
+          buyer={{
+            id: "buyer-001",
+            name: "Raras Maheswari",
+            email: "raras@example.com",
+            role: "buyer",
+            phoneNumber: null,
+          }}
+          currentPath={currentPath}
+          description="Ringkasan akun pembeli."
+          summary={{
+            memberSince: "29 April 2026",
+            wishlistCount: 0,
+            blacklist: {
+              active: false,
+              until: "-",
+            },
+          }}
+          title="Akun Pembeli"
+        >
+          <div>Konten akun</div>
+        </BuyerShell>,
+      );
+
+      expect(screen.getByRole("link", { name: expected })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      expect(screen.getByRole("link", { name: stale })).not.toHaveAttribute(
+        "aria-current",
+      );
+    },
+  );
 });

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
+import { adminNavigation } from "@/components/layout/role-navigation";
 import { BRAND_NAME } from "@/components/shared/brand";
 import { getAdminSessionUser, getAppPathFromRequestHeaders } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
@@ -10,22 +11,6 @@ import { getAdminLayoutMetrics } from "@/lib/services/admin-layout.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
-
-const baseNav: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: "dashboard" },
-  {
-    href: "/admin/barang",
-    label: "Kelola Barang",
-    icon: "barang"
-  },
-  {
-    href: "/admin/pemasaran",
-    label: "Pemasaran",
-    icon: "marketing"
-  },
-  { href: "/admin/blacklist", label: "Pelanggaran", icon: "blacklist" },
-  { href: "/admin/barang/riwayat", label: "Riwayat Barang", icon: "rekening" }
-];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
@@ -40,7 +25,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         inventoryMetrics: { dueSoon: 0, readyForMarketing: 0, total: 0 },
         marketingActionCount: 0
       };
-  const nav = baseNav.map((item) => {
+  const nav = adminNavigation.map((item) => {
     if (item.href === "/admin/barang") {
       return {
         ...item,

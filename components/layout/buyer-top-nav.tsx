@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Grid2X2, Headphones, Heart, Home, ReceiptText, ShieldAlert } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
@@ -29,7 +32,8 @@ const buyerNav = [
   {
     href: "/transaksi",
     icon: ReceiptText,
-    label: "Transaksi"
+    label: "Transaksi",
+    activePrefixes: ["/riwayat-bid"],
   },
   {
     href: "/pelanggaran",
@@ -43,19 +47,34 @@ const buyerNav = [
   }
 ];
 
-function getCatalogSearchValue(pathname: string) {
+function isBuyerNavigationActive(
+  pathname: string,
+  item: (typeof buyerNav)[number],
+) {
+  const paths = [
+    item.href,
+    ...("activePrefixes" in item ? (item.activePrefixes ?? []) : []),
+  ];
+
+  return paths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
+
+function getCatalogSearchValue(pathname: string, searchParams: URLSearchParams) {
   if (!pathname.startsWith("/katalog")) {
     return "";
   }
 
-  const [, query = ""] = pathname.split("?", 2);
-  return new URLSearchParams(query).get("q") ?? "";
+  return searchParams.get("q") ?? "";
 }
 
 export function BuyerTopNav({ currentPath = "", image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
-  const pathname = currentPath;
+  const livePathname = usePathname();
+  const searchParams = useSearchParams();
+  const pathname = livePathname || currentPath.split(/[?#]/, 1)[0] || "/dashboard";
   const isLuxury = variant === "luxury";
-  const catalogSearchValue = getCatalogSearchValue(pathname);
+  const catalogSearchValue = getCatalogSearchValue(pathname, searchParams);
 
   return (
     <header
@@ -92,13 +111,12 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             )}
           >
             {buyerNav.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+              const active = isBuyerNavigationActive(pathname, item);
               const Icon = item.icon;
 
               return (
                 <Link
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] xl:px-4",
                     isLuxury
@@ -177,13 +195,12 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
           )}
         >
           {buyerNav.map((item) => {
-            const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+            const active = isBuyerNavigationActive(pathname, item);
             const Icon = item.icon;
 
             return (
               <Link
+                aria-current={active ? "page" : undefined}
                 aria-label={`Buka ${item.label}`}
                 className={cn(
                   "interactive-tap inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",

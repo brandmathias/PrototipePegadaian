@@ -257,6 +257,7 @@ export function DashboardShell({
             )}
           >
             <Link
+              aria-current={pathname === item.href ? "page" : undefined}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-[0.9rem] px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               href={item.href}
               onClick={() => setIsMenuOpen(false)}
@@ -284,6 +285,7 @@ export function DashboardShell({
             <div className="space-y-1">
               {item.children.map((child) => (
                 <Link
+                  aria-current={isNavItemActive(child) ? "page" : undefined}
                   className={cn(
                     "group inline-flex w-full items-center gap-3 rounded-[0.95rem] px-3.5 py-1.5 text-[0.82rem] font-medium text-white/62 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/8 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.86rem]",
                     isNavItemActive(child) &&
@@ -314,6 +316,7 @@ export function DashboardShell({
 
     return (
       <Link
+        aria-current={isActive ? "page" : undefined}
         className={cn(
           "group inline-flex items-center gap-3 rounded-[1rem] px-3.5 py-2 text-[0.9rem] font-semibold text-white/70 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white/[0.07] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:text-[0.94rem]",
           isActive &&
