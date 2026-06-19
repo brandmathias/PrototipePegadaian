@@ -297,6 +297,7 @@ async function getBuyerBlacklistInfo(userId: string) {
   return {
     blacklist,
     blacklistPolicy,
+    blacklistUntilAt: blacklistState.active ? blacklistState.blockedUntil?.toISOString() ?? null : null,
     summary: {
       active: blacklistState.active,
       incidentId: latestBlacklistIncident?.id ?? null,
@@ -714,7 +715,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
       .from(sessions)
       .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, now)))
   ]);
-  const { summary: blacklistSummary } = await getBuyerBlacklistInfo(userId);
+  const { blacklistUntilAt, summary: blacklistSummary } = await getBuyerBlacklistInfo(userId);
   const [wishlistCount, transactions, bidHistory] = await Promise.all([
     getBuyerWishlistCount(userId),
     options?.prefetchedTransactions
@@ -745,6 +746,7 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
     address: "Belum dilengkapi",
     memberSince: formatAppLongDate(profile?.createdAt ?? buyerUser?.createdAt),
     verificationStatus: profile?.status === "active" ? "Terverifikasi" : "Perlu verifikasi",
+    blacklistUntilAt,
     security: {
       passwordUpdatedAt: formatAppLongDate(latestCredentialAccount?.updatedAt),
       activeSessionCount: activeSessions.length,
@@ -776,9 +778,10 @@ export async function getBuyerSummary(userId: string, options?: BuyerReadOptions
 }
 
 export async function getBuyerDashboardData(userId: string): Promise<{
-  summary: Awaited<ReturnType<typeof getBuyerSummary>>;
+  summary: Omit<Awaited<ReturnType<typeof getBuyerSummary>>, "blacklistUntilAt">;
   transactions: BuyerTransaction[];
   bids: BuyerBid[];
+  blacklistUntilAt: string | null;
   violations: BuyerViolationHistoryEntry[];
 }> {
   await refreshBuyerAuctionSettlementState();
@@ -788,16 +791,18 @@ export async function getBuyerDashboardData(userId: string): Promise<{
     listBuyerBids(userId, { refreshAuctionState: false }),
     listBuyerViolationHistory(userId)
   ]);
-  const summary = await getBuyerSummary(userId, {
+  const summaryWithDeadline = await getBuyerSummary(userId, {
     refreshAuctionState: false,
     prefetchedBidHistory: buyerBids,
     prefetchedTransactions: transactions
   });
+  const { blacklistUntilAt, ...summary } = summaryWithDeadline;
 
   return {
     summary,
     transactions,
     bids: buyerBids,
+    blacklistUntilAt,
     violations
   };
 }

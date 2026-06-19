@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -224,6 +224,58 @@ describe("buyer dashboard page", () => {
     expect(historyPanel).not.toBeNull();
     expect(within(historyPanel as HTMLElement).getByText(String(level), { selector: "span" })).toBeInTheDocument();
     expect(within(historyPanel as HTMLElement).getByText(`Level ${level}`)).toHaveClass(expectedTone);
+  });
+
+  it("keeps the restricted-access countdown synchronized and moving", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-17T06:02:00.000Z"));
+
+    try {
+      render(
+        <UserDashboardPage
+          buyer={buyer}
+          data={{
+            summary: {
+              ...summary,
+              blacklist: {
+                active: true,
+                until: "17 Juni 2026",
+                reason: "Akun sedang dibatasi sesuai kebijakan pelanggaran pembayaran.",
+                violations: 2
+              }
+            },
+            transactions: [],
+            bids: [],
+            blacklistUntilAt: "2026-06-17T06:02:03.000Z",
+            violations: []
+          }}
+          serverNow="2026-06-17T06:02:00.000Z"
+        />
+      );
+
+      const restrictionPanel = screen
+        .getByRole("heading", { name: /hak akses: terbatas sementara \(level 2\)/i })
+        .closest("[data-restriction-panel='true']");
+
+      expect(restrictionPanel).not.toBeNull();
+      expect(within(restrictionPanel as HTMLElement).getByText("Hari")).toBeInTheDocument();
+      expect(within(restrictionPanel as HTMLElement).getByText("Jam")).toBeInTheDocument();
+      expect(within(restrictionPanel as HTMLElement).getByText("Menit")).toBeInTheDocument();
+      expect(within(restrictionPanel as HTMLElement).getByText("Detik")).toBeInTheDocument();
+      expect(within(restrictionPanel as HTMLElement).getByTestId("restriction-countdown-seconds")).toHaveTextContent(
+        "03"
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(within(restrictionPanel as HTMLElement).getByTestId("restriction-countdown-seconds")).toHaveTextContent(
+        "02"
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("does not treat rejected harga tetap proof as an urgent payment action", () => {

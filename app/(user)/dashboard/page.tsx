@@ -6,5 +6,5 @@ export default async function Page() {
   const buyer = await getBuyerSessionUser("/dashboard");
   const data = await getBuyerDashboardData(buyer.id);
 
-  return <UserDashboardPage buyer={buyer} data={data} />;
+  return <UserDashboardPage buyer={buyer} data={data} serverNow={new Date().toISOString()} />;
 }

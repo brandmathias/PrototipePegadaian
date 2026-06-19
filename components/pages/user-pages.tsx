@@ -37,6 +37,7 @@ import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
+import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countdown-tiles";
 import { TransactionsWorkspace } from "@/components/buyer/transactions-workspace";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -770,17 +771,20 @@ function BuyerTransactionInlineReceiptPrint({
 
 export function UserDashboardPage({
   buyer,
-  data
+  data,
+  serverNow
 }: {
   buyer: BuyerSessionUser;
   data: {
     summary: BuyerSummary;
     transactions: BuyerTransaction[];
     bids: BuyerBid[];
+    blacklistUntilAt?: string | null;
     violations?: BuyerDashboardViolation[];
   };
+  serverNow?: string;
 }) {
-  const { summary, transactions, bids, violations = [] } = data;
+  const { summary, transactions, bids, blacklistUntilAt = null, violations = [] } = data;
   const activeTransactions = transactions.filter(isDashboardActiveTransaction);
   const paymentWaitingTransactions = transactions.filter(isDashboardPaymentWaiting);
   const activeBidCount = bids.filter(isDashboardActiveBid).length;
@@ -801,7 +805,6 @@ export function UserDashboardPage({
   const restrictionTone =
     restrictionLevel >= 3
       ? {
-          accent: "bg-[#b91c1c]",
           border: "border-red-200",
           icon: "bg-red-50 text-[#b91c1c]",
           soft: "bg-red-50/55",
@@ -809,7 +812,6 @@ export function UserDashboardPage({
         }
       : restrictionLevel === 2
         ? {
-            accent: "bg-[#dc4c18]",
             border: "border-orange-200",
             icon: "bg-orange-50 text-[#dc4c18]",
             soft: "bg-orange-50/55",
@@ -817,14 +819,12 @@ export function UserDashboardPage({
           }
         : restrictionLevel === 1
           ? {
-              accent: "bg-[#c97900]",
               border: "border-amber-200",
               icon: "bg-amber-50 text-[#a86200]",
               soft: "bg-amber-50/55",
               text: "text-[#8a5200]"
             }
           : {
-              accent: "bg-[#007a4d]",
               border: "border-emerald-200",
               icon: "bg-emerald-50 text-[#007a4d]",
               soft: "bg-emerald-50/55",
@@ -1019,41 +1019,55 @@ export function UserDashboardPage({
             </div>
 
             <div
+              data-restriction-panel="true"
               className={cn(
-                "relative mt-7 overflow-hidden rounded-xl border p-4 pl-6 md:p-5 md:pl-7",
+                "mt-7 overflow-hidden rounded-xl border p-4 transition-colors duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] md:p-5",
                 restrictionTone.border,
                 restrictionTone.soft
               )}
             >
-              <span aria-hidden="true" className={cn("absolute inset-y-0 left-0 w-1.5", restrictionTone.accent)} />
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_9.25rem] md:items-center">
-                <div className="flex gap-4">
-                  <span className={cn("grid size-12 shrink-0 place-items-center rounded-full", restrictionTone.icon)}>
+              <div
+                className={cn(
+                  "grid gap-4",
+                  summary.blacklist.active
+                    ? "sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center lg:grid-cols-[auto_minmax(0,1fr)_minmax(13.5rem,15rem)]"
+                    : "sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center"
+                )}
+              >
+                <span
+                  className={cn(
+                    "grid size-14 shrink-0 place-items-center rounded-full bg-white ring-1 ring-black/[0.06]",
+                    restrictionTone.icon
+                  )}
+                >
+                  {summary.blacklist.active ? (
+                    <ShieldAlert className="size-7" strokeWidth={1.8} />
+                  ) : (
+                    <ShieldCheck className="size-7" strokeWidth={1.8} />
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <h3 className={cn("font-headline text-base font-black", restrictionTone.text)}>
                     {summary.blacklist.active ? (
-                      <ShieldAlert className="size-6" strokeWidth={1.9} />
+                      <>Hak Akses: Terbatas Sementara (Level {restrictionLevel})</>
                     ) : (
-                      <ShieldCheck className="size-6" strokeWidth={1.9} />
+                      "Hak Akses: Aktif"
                     )}
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className={cn("font-headline text-base font-black", restrictionTone.text)}>
-                      {summary.blacklist.active
-                        ? `Hak Akses: Terbatas Sementara (Level ${restrictionLevel})`
-                        : "Hak Akses: Aktif"}
-                    </h3>
-                    <p className="mt-2 max-w-[60ch] text-sm leading-6 text-[#4f5f73]">
-                      {summary.blacklist.reason}
-                    </p>
-                  </div>
-                </div>
-                <div className="rounded-lg bg-white px-4 py-3 text-left ring-1 ring-black/[0.07] md:text-center">
-                  <p className="text-[0.68rem] font-bold uppercase text-[#6b7586]">
-                    {summary.blacklist.active ? "Berlaku hingga" : "Status akun"}
-                  </p>
-                  <p className="mt-1 text-sm font-black text-[#101923]">
-                    {summary.blacklist.active ? summary.blacklist.until : "Tidak dibatasi"}
+                  </h3>
+                  <p className="mt-2 max-w-[62ch] text-sm leading-6 text-[#4f5f73]">
+                    {summary.blacklist.active
+                      ? `Akun Anda sedang dibatasi pada fitur tertentu sesuai kebijakan yang berlaku. Akses dipulihkan otomatis pada ${summary.blacklist.until}.`
+                      : summary.blacklist.reason}
                   </p>
                 </div>
+                {summary.blacklist.active ? (
+                  <RestrictionCountdownTiles
+                    className="sm:col-span-2 lg:col-span-1"
+                    level={restrictionLevel}
+                    serverNow={serverNow}
+                    targetAt={blacklistUntilAt}
+                  />
+                ) : null}
               </div>
             </div>
           </div>
