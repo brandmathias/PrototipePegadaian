@@ -657,7 +657,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByText(/risk heat indicator/i)).not.toBeInTheDocument();
   }, 10000);
 
-  it("renders superadmin unit detail as an edit setup page without inventory canvas", () => {
+  it("renders superadmin unit detail as an edit setup page with inventory canvas", () => {
     const unitItems = Array.from({ length: 12 }, (_, index) => {
       const itemNumber = index + 1;
 
@@ -754,8 +754,8 @@ describe("superadmin pages", () => {
     expect(screen.getByDisplayValue("Jl. Sam Ratulangi")).toBeInTheDocument();
     expect(screen.getByText("Daftar Rekening Terdaftar (1)")).toBeInTheDocument();
     expect(screen.getAllByText("Bank Mandiri").length).toBeGreaterThan(0);
-    expect(screen.queryByText(/^1 rekening$/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/^1 admin$/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/^1 rekening$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^1 admin aktif$/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lihat detail rekening bank mandiri/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /hapus rekening bank mandiri/i })).toBeInTheDocument();
     expect(screen.getByText("Daftar Admin Unit Terdaftar (1)")).toBeInTheDocument();
@@ -777,10 +777,14 @@ describe("superadmin pages", () => {
       "href",
       "/superadmin/manajemen-unit",
     );
-    expect(screen.queryByText("Inventori Barang Unit")).not.toBeInTheDocument();
-    expect(screen.queryByText("Guci Antik 01")).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Kategori Barang" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Menampilkan 1-10 dari 12 barang/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Inventori Barang Unit")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Kategori Barang" })).toBeInTheDocument();
+    expect(screen.getByText(/Menampilkan 1-10 dari 12 barang/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+      "href",
+      "/superadmin/unit/unit-1/barang/barang-1",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /lihat detail rekening bank mandiri/i }));
     const accountDialog = screen.getByRole("dialog", { name: "Detail Rekening Unit" });
@@ -942,7 +946,7 @@ describe("superadmin pages", () => {
     ).toBe("Menunggu Pembayaran");
   }, 10000);
 
-  it("keeps inventory rows hidden on superadmin unit detail even when item data exists", () => {
+  it("keeps unit inventory visible and paginated on superadmin unit detail", () => {
     const unitItems = Array.from({ length: 12 }, (_, index) => {
       const itemNumber = index + 1;
 
@@ -1002,14 +1006,17 @@ describe("superadmin pages", () => {
 
     expect(screen.getByText("UPC Ranotana (CP-MND-13)")).toBeInTheDocument();
     expect(screen.getByText("Profil & Lokasi Unit")).toBeInTheDocument();
-    expect(screen.queryByText("Inventori Barang Unit")).not.toBeInTheDocument();
-    expect(screen.queryByText("Guci Antik 01")).not.toBeInTheDocument();
+    expect(screen.getByText("Inventori Barang Unit")).toBeInTheDocument();
+    expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
     expect(screen.queryByText("Guci Antik 12")).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Kategori Barang" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Mode Pemasaran" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Jumlah barang per halaman" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Menampilkan 1-10 dari 12 barang/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Detail" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Kategori Barang" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Mode Pemasaran" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Jumlah barang per halaman" })).toBeInTheDocument();
+    expect(screen.getByText(/Menampilkan 1-10 dari 12 barang/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+      "href",
+      "/superadmin/unit/unit-1/barang/barang-1",
+    );
   });
 
   it("renders superadmin item detail as a full read-only marketing-aware page", () => {

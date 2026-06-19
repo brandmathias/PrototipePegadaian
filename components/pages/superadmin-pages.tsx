@@ -1973,11 +1973,11 @@ function getSuperAdminSpecificationIcon(category: unknown, label: string) {
 function getUnitDetailMarketingModeValue(value: string) {
   const normalized = normalizeUnitDetailOptionValue(value);
 
-  if (normalized.includes("fixed")) {
+  if (normalized.includes("fixed") || normalized.includes("harga_tetap") || normalized === "tetap") {
     return "fixed_price";
   }
 
-  if (normalized.includes("vickrey")) {
+  if (normalized.includes("vickrey") || normalized.includes("lelang") || normalized.includes("tertutup")) {
     return "vickrey";
   }
 
@@ -2536,6 +2536,472 @@ function SuperAdminUnitDetailAdminLedger({
   );
 }
 
+function SuperAdminUnitInventorySection({
+  items,
+  unit,
+}: {
+  items: SuperAdminUnitBarangItem[];
+  unit: SuperAdminUnitDetail;
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState(unitDetailFilterAll);
+  const [statusFilter, setStatusFilter] = useState(unitDetailFilterAll);
+  const [modeFilter, setModeFilter] = useState(unitDetailFilterAll);
+  const [pageSize, setPageSize] = useState<(typeof unitDetailPageSizeOptions)[number]>(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const categoryOptions = useMemo(() => {
+    const categoryMap = new Map<string, string>();
+
+    items.forEach((item) => {
+      const value = normalizeUnitDetailOptionValue(item.category);
+      if (value && !categoryMap.has(value)) {
+        categoryMap.set(value, formatUnitDetailCategory(item.category));
+      }
+    });
+
+    return [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
+        left.label.localeCompare(right.label, "id-ID"),
+      ),
+    ];
+  }, [items]);
+  const statusOptions = useMemo(
+    () => [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...Array.from(new Set(items.map((item) => item.operationalStatus).filter(Boolean)))
+        .sort()
+        .map((status) => ({ label: status, value: status })),
+    ],
+    [items],
+  );
+  const modeOptions = useMemo(
+    () => [
+      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      ...unitDetailModeOptions,
+    ],
+    [],
+  );
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return items.filter((item) => {
+      const matchesSearch =
+        !normalizedQuery ||
+        item.name.toLowerCase().includes(normalizedQuery) ||
+        item.code.toLowerCase().includes(normalizedQuery);
+      const matchesCategory =
+        categoryFilter === unitDetailFilterAll ||
+        normalizeUnitDetailOptionValue(item.category) === categoryFilter;
+      const matchesStatus =
+        statusFilter === unitDetailFilterAll || item.operationalStatus === statusFilter;
+      const matchesMode =
+        modeFilter === unitDetailFilterAll ||
+        getUnitDetailMarketingModeValue(item.marketingModeLabel) === modeFilter;
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesMode;
+    });
+  }, [categoryFilter, items, modeFilter, searchQuery, statusFilter]);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const visiblePages = getUnitDetailVisiblePages(currentPage, totalPages);
+  const currentPageStart =
+    filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const currentPageEnd = Math.min(currentPage * pageSize, filteredItems.length);
+  const collateralCount = items.filter(
+    (item) => item.operationalStatus === "Barang Jaminan",
+  ).length;
+  const readyCount = items.filter(
+    (item) => item.operationalStatus === "Siap Dipasarkan",
+  ).length;
+  const marketedCount = items.filter(
+    (item) => item.operationalStatus === "Sedang Dipasarkan",
+  ).length;
+  const soldCount = items.filter((item) => item.operationalStatus === "Terjual").length;
+  const followUpCount = items.filter(
+    (item) => item.operationalStatus === "Ada Tindak Lanjut",
+  ).length;
+  const unitDetailMetrics = [
+    {
+      label: "Barang Jaminan",
+      value: collateralCount,
+      icon: Clock3,
+      iconClass: "bg-amber-50 text-amber-600 ring-amber-100",
+      filter: "Barang Jaminan",
+    },
+    {
+      label: "Siap Dipasarkan",
+      value: readyCount,
+      icon: Package,
+      iconClass: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+      filter: "Siap Dipasarkan",
+    },
+    {
+      label: "Sedang Dipasarkan",
+      value: marketedCount,
+      icon: Megaphone,
+      iconClass: "bg-blue-50 text-blue-700 ring-blue-100",
+      filter: "Sedang Dipasarkan",
+    },
+    {
+      label: "Terjual",
+      value: soldCount,
+      icon: BadgeCheck,
+      iconClass: "bg-slate-100 text-slate-700 ring-slate-200",
+      filter: "Terjual",
+    },
+    {
+      label: "Perlu Tindak Lanjut",
+      value: followUpCount,
+      icon: AlertTriangle,
+      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
+      filter: "Ada Tindak Lanjut",
+    },
+  ];
+  const resetFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter(unitDetailFilterAll);
+    setStatusFilter(unitDetailFilterAll);
+    setModeFilter(unitDetailFilterAll);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, modeFilter, pageSize, searchQuery, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  return (
+    <section className="overflow-hidden rounded-[1.45rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-74px_rgba(8,69,50,0.34)]">
+      <div className="border-b border-[#edf2ee] bg-[linear-gradient(135deg,#fbfcfa_0%,#f4faf6_100%)] px-4 py-5 sm:px-5 lg:px-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-[1rem] border border-[#cde7da] bg-[#ecfff3] text-[#006747]">
+              <Package2 className="size-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#006747]">
+                Monitoring Unit
+              </p>
+              <h3 className="mt-1 font-headline text-[1.38rem] font-black tracking-[-0.04em] text-[#13211c]">
+                Inventori Barang Unit
+              </h3>
+              <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-black/52">
+                Daftar lengkap barang pada {unit.name}, termasuk status operasional, mode pemasaran, nilai barang, dan akses detail setiap barang.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[0.72rem] font-bold text-[#52615d]">
+            <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
+              {formatDashboardCount(items.length)} barang tercatat
+            </span>
+            <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
+              {formatDashboardCount(unit.adminCount)} admin aktif
+            </span>
+            <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
+              {formatDashboardCount(unit.accountCount)} rekening
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-5 lg:p-6">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {unitDetailMetrics.map((metric) => {
+            const Icon = metric.icon;
+
+            return (
+              <button
+                aria-label={`Ringkasan ${metric.label}`}
+                className="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe8e2] bg-white p-4 text-left shadow-[0_20px_48px_-44px_rgba(8,69,50,0.44)] outline-none transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:shadow-[0_22px_58px_-44px_rgba(8,69,50,0.55)] focus-visible:ring-2 focus-visible:ring-primary/20"
+                key={metric.label}
+                onClick={() => setStatusFilter(metric.filter)}
+                type="button"
+              >
+                <span className="flex min-w-0 items-center gap-4">
+                  <span
+                    className={cn(
+                      "grid size-12 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
+                      metric.iconClass,
+                    )}
+                  >
+                    <Icon className="size-5" strokeWidth={1.9} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-headline text-3xl font-black leading-none tracking-[-0.04em] text-[#13211c]">
+                      {formatDashboardCount(metric.value)}
+                    </span>
+                    <span className="mt-1 block text-xs font-semibold text-[#536279]">
+                      {metric.label}
+                    </span>
+                  </span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-[#9aa8a0] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5" />
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 rounded-xl border border-[#edf2ee] bg-[#fbfcfb] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#536279]" />
+              <input
+                aria-label="Cari nama barang atau ID barang"
+                className="h-11 w-full rounded-xl border border-[#d8e4de] bg-white pl-11 pr-4 text-sm font-semibold text-[#273954] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-[#8a97a8] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Cari nama barang atau ID barang..."
+                value={searchQuery}
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[12rem_13rem_12.5rem_auto]">
+              {[
+                {
+                  label: "Kategori Barang",
+                  value: categoryFilter,
+                  onChange: setCategoryFilter,
+                  options: categoryOptions,
+                },
+                {
+                  label: "Status Operasional",
+                  value: statusFilter,
+                  onChange: setStatusFilter,
+                  options: statusOptions,
+                },
+                {
+                  label: "Mode Pemasaran",
+                  value: modeFilter,
+                  onChange: setModeFilter,
+                  options: modeOptions,
+                },
+              ].map((filter) => (
+                <UnitDetailSelect
+                  ariaLabel={filter.label}
+                  key={filter.label}
+                  label={filter.label}
+                  onChange={filter.onChange}
+                  options={filter.options}
+                  value={filter.value}
+                  widthClass="w-full"
+                />
+              ))}
+
+              <button
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-[#536279] transition-[transform,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:text-[#00563b] active:scale-[0.98]"
+                onClick={resetFilters}
+                type="button"
+              >
+                <RefreshCw className="size-4" />
+                Reset Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-5 overflow-hidden rounded-xl border border-[#dfe8e2]">
+          {filteredItems.length === 0 ? (
+            <EmptyState
+              className="p-8"
+              description="Tidak ada barang yang sesuai dengan pencarian atau filter saat ini."
+              icon={SearchX}
+              title="Barang tidak ditemukan"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1080px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#dfe8e2] bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
+                    <th className="w-16 px-5 py-3.5" scope="col">
+                      No
+                    </th>
+                    <th className="w-24 px-4 py-3.5" scope="col">
+                      Gambar
+                    </th>
+                    <th className="px-4 py-3.5" scope="col">
+                      Nama Barang & ID Barang
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Kategori
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Mode Pemasaran
+                    </th>
+                    <th className="px-4 py-3.5 text-right" scope="col">
+                      Nilai Barang
+                    </th>
+                    <th className="px-4 py-3.5 text-center" scope="col">
+                      Status Operasional
+                    </th>
+                    <th className="px-5 py-3.5 text-center" scope="col">
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#edf2ee] bg-white">
+                  {paginatedItems.map((item, index) => (
+                    <tr
+                      className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
+                      key={item.id}
+                    >
+                      <td className="px-5 py-3.5 font-semibold text-[#273954]">
+                        {formatDashboardCount(currentPageStart + index)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
+                          {item.imageUrl ? (
+                            <img
+                              alt={item.name}
+                              className="size-full object-cover"
+                              src={item.imageUrl}
+                            />
+                          ) : (
+                            <Package className="size-5 text-[#7b9186]" strokeWidth={1.8} />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <p className="font-bold leading-tight text-[#13211c]">
+                          {item.name}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-[#536279]">
+                          ({item.code})
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                        {formatUnitDetailCategory(item.category)}
+                      </td>
+                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                        {getUnitDetailMarketingModeLabel(item.marketingModeLabel)}
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#273954]">
+                        {formatFullCurrency(item.value)}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
+                            getUnitDetailStatusToneClass(item.operationalTone),
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "size-1.5 rounded-full",
+                              getUnitDetailStatusDotClass(item.operationalTone),
+                            )}
+                          />
+                          {item.operationalStatus}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            className="inline-flex h-9 items-center justify-center rounded-lg border border-[#d8e4de] bg-white px-3 text-xs font-bold text-[#007a4d] transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#afd4bd] hover:bg-[#f8fbf9] active:scale-[0.98]"
+                            href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
+                          >
+                            Detail
+                          </Link>
+                          <button
+                            aria-label={`Menu ${item.name}`}
+                            className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
+                            type="button"
+                          >
+                            <MoreVertical className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 text-sm font-semibold text-[#536279] lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <p>
+              Menampilkan {formatDashboardCount(currentPageStart)}-{formatDashboardCount(currentPageEnd)} dari{" "}
+              {formatDashboardCount(filteredItems.length)} barang
+            </p>
+            <label className="inline-flex items-center gap-2 text-xs font-bold text-[#536279]">
+              Tampilkan
+              <UnitDetailSelect
+                ariaLabel="Jumlah barang per halaman"
+                label={String(pageSize)}
+                onChange={(value) =>
+                  setPageSize(Number(value) as (typeof unitDetailPageSizeOptions)[number])
+                }
+                options={unitDetailPageSizeOptions.map((option) => ({
+                  label: String(option),
+                  value: String(option),
+                }))}
+                showActiveState={false}
+                value={String(pageSize)}
+                widthClass="w-[6.25rem]"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              aria-label="Halaman sebelumnya"
+              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              type="button"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            {visiblePages.map((page, index) => {
+              const previousPage = visiblePages[index - 1];
+              const shouldShowGap = previousPage !== undefined && page - previousPage > 1;
+
+              return (
+                <span className="inline-flex items-center gap-1.5" key={page}>
+                  {shouldShowGap ? (
+                    <span className="grid size-9 place-items-center text-[#8a97a8]">
+                      ...
+                    </span>
+                  ) : null}
+                  <button
+                    aria-current={currentPage === page ? "page" : undefined}
+                    className={cn(
+                      "grid size-9 place-items-center rounded-lg border text-sm font-black tabular-nums shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.98]",
+                      currentPage === page
+                        ? "border-[#007a4d] bg-[#007a4d] text-white shadow-[0_18px_34px_-24px_rgba(0,122,77,0.64)]"
+                        : "border-[#d8e4de] bg-white text-[#273954] hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b]",
+                    )}
+                    onClick={() => setCurrentPage(page)}
+                    type="button"
+                  >
+                    {page}
+                  </button>
+                </span>
+              );
+            })}
+            <button
+              aria-label="Halaman berikutnya"
+              className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              type="button"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function SuperAdminUnitDetailPage({
   unit,
 }: {
@@ -2649,6 +3115,8 @@ export function SuperAdminUnitDetailPage({
           </SuperAdminUnitDetailSetupSection>
         </CardContent>
       </Card>
+
+      <SuperAdminUnitInventorySection items={unit.items ?? []} unit={unit} />
 
       <div className="safe-sticky-actions sticky z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-3 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

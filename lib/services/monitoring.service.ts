@@ -64,6 +64,10 @@ function toNumber(value: unknown) {
   return Number(value ?? 0);
 }
 
+export function getSuperAdminUnitDetailHref(unitId: string) {
+  return `/superadmin/unit/${unitId}`;
+}
+
 type ValidatedTransactionTrendRow = {
   amount: string | number;
   transactionType: string | null;
@@ -557,7 +561,7 @@ export async function getSuperAdminMonitoring() {
   const monitoringItems = visibleUnitsNeedAttention.map((unit) => ({
     id: `attention-${unit.id}`,
     unitId: unit.id,
-    href: `/superadmin/manajemen-unit`,
+    href: getSuperAdminUnitDetailHref(unit.id),
     unit: unit.name,
     scope: "Unit",
     status: unit.isActive ? "Perlu Tindak Lanjut" : "Perlu Review",
