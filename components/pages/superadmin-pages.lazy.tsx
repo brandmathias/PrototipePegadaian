@@ -51,6 +51,16 @@ const LazySuperAdminUnitDetailPage = dynamic<SuperAdminProps<"SuperAdminUnitDeta
   { loading: SuperAdminFallback, ssr: false }
 );
 
+const LazySuperAdminManagementUnitDetailPage = dynamic<
+  SuperAdminProps<"SuperAdminManagementUnitDetailPage">
+>(
+  () =>
+    import("@/components/pages/superadmin-pages").then(
+      (module) => module.SuperAdminManagementUnitDetailPage,
+    ),
+  { loading: SuperAdminFallback, ssr: false },
+);
+
 const LazySuperAdminUnitBarangDetailPage = dynamic<SuperAdminProps<"SuperAdminUnitBarangDetailPage">>(
   () => import("@/components/pages/superadmin-pages").then((module) => module.SuperAdminUnitBarangDetailPage),
   { loading: SuperAdminFallback, ssr: false }
@@ -101,6 +111,12 @@ export function SuperAdminUnitsPage(props: SuperAdminProps<"SuperAdminUnitsPage"
 
 export function SuperAdminUnitDetailPage(props: SuperAdminProps<"SuperAdminUnitDetailPage">) {
   return <LazySuperAdminUnitDetailPage {...props} />;
+}
+
+export function SuperAdminManagementUnitDetailPage(
+  props: SuperAdminProps<"SuperAdminManagementUnitDetailPage">,
+) {
+  return <LazySuperAdminManagementUnitDetailPage {...props} />;
 }
 
 export function SuperAdminUnitBarangDetailPage(props: SuperAdminProps<"SuperAdminUnitBarangDetailPage">) {

@@ -13,6 +13,7 @@ import {
   SuperAdminBlacklistPage,
   SuperAdminCreateUnitPage,
   SuperAdminDashboardPage,
+  SuperAdminManagementUnitDetailPage,
   SuperAdminManagementPage,
   SuperAdminPolicyPage,
   SuperAdminMonitoringPage,
@@ -769,6 +770,61 @@ describe("superadmin pages", () => {
     );
   });
 
+  it("renders a separate management detail page with editable unit information", () => {
+    render(
+      <SuperAdminManagementUnitDetailPage
+        unit={{
+          id: "unit-1",
+          code: "CP-MND-13",
+          name: "UPC Ranotana",
+          address: "Jl. Sam Ratulangi",
+          status: "Aktif",
+          isActive: true,
+          adminCount: 1,
+          accountCount: 1,
+          activeAccount: {
+            id: "rek-1",
+            bankName: "Bank Mandiri",
+            accountNumber: "1230098765432",
+            accountHolder: "PT Pegadaian UPC Ranotana",
+            branch: "Manado",
+            status: "AKTIF",
+          },
+          accounts: [
+            {
+              id: "rek-1",
+              bankName: "Bank Mandiri",
+              accountNumber: "1230098765432",
+              accountHolder: "PT Pegadaian UPC Ranotana",
+              branch: "Manado",
+              status: "AKTIF",
+            },
+          ],
+          admins: [
+            {
+              id: "admin-1",
+              name: "Admin Ranotana",
+              email: "admin.ranotana@pegadaian.co.id",
+              phone: "081245678901",
+              status: "Aktif",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Detail & Edit Unit Pelaksana" })).toBeInTheDocument();
+    expect(screen.getByText("Profil & Lokasi Unit")).toBeInTheDocument();
+    expect(screen.getByText("Rekening Operasional Cabang")).toBeInTheDocument();
+    expect(screen.getByText("Otoritas Admin Penanggung Jawab")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("CP-MND-13")).toBeInTheDocument();
+    expect(screen.queryByText("Daftar Barang Unit")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^kembali$/i })).toHaveAttribute(
+      "href",
+      "/superadmin/manajemen-unit",
+    );
+  });
+
   it("returns to management after saving unit profile changes", async () => {
     vi.useRealTimers();
     const fetchMock = vi.fn().mockResolvedValue(
@@ -1419,7 +1475,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByRole("link", { name: /direktori admin/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
       "href",
-      "/superadmin/unit/unit-1",
+      "/superadmin/manajemen-unit/unit-1",
     );
     expect(screen.queryByRole("link", { name: /^rekening$/i })).not.toBeInTheDocument();
   });
