@@ -94,7 +94,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             {buyerNav.map((item) => {
               const active =
                 pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+                (item.href !== "/" && pathname.startsWith(`${item.href}/`));
               const Icon = item.icon;
 
               return (
@@ -179,7 +179,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
           {buyerNav.map((item) => {
             const active =
               pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
+              (item.href !== "/" && pathname.startsWith(`${item.href}/`));
             const Icon = item.icon;
 
             return (

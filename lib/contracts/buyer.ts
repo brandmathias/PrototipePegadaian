@@ -45,6 +45,7 @@ export type BuyerTransaction = {
   rejectionReason?: string;
   winnerContext?: string;
   verifiedAt?: string;
+  completedAt?: string;
   receiptNumber?: string;
   handoverProof?: BuyerHandoverProof;
 };

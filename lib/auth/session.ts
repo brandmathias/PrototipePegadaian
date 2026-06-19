@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,6 +14,8 @@ import {
   type AuthRole,
   type BuyerSessionUser
 } from "@/lib/auth/guards";
+import { db } from "@/lib/db/client";
+import { users } from "@/lib/db/schema";
 
 export async function getServerSession() {
   return auth.api.getSession({
@@ -46,6 +50,47 @@ function toSessionUser(session: NonNullable<Awaited<ReturnType<typeof getServerS
     unitId: "unitId" in session.user && typeof session.user.unitId === "string" ? session.user.unitId : null,
     isActive: "isActive" in session.user && typeof session.user.isActive === "boolean" ? session.user.isActive : true
   } satisfies AppSessionUser;
+}
+
+const getFreshUserById = cache(async (userId: string) => {
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      image: users.image,
+      role: users.role,
+      phoneNumber: users.phoneNumber,
+      unitId: users.unitId,
+      isActive: users.isActive
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return user ?? null;
+});
+
+async function toFreshSessionUser(
+  session: NonNullable<Awaited<ReturnType<typeof getServerSession>>>
+): Promise<AppSessionUser> {
+  const sessionUser = toSessionUser(session);
+  const freshUser = await getFreshUserById(sessionUser.id);
+
+  if (!freshUser || !isAuthRole(freshUser.role)) {
+    return sessionUser;
+  }
+
+  return {
+    ...sessionUser,
+    name: freshUser.name,
+    email: freshUser.email,
+    image: freshUser.image,
+    role: freshUser.role,
+    phoneNumber: freshUser.phoneNumber,
+    unitId: freshUser.unitId,
+    isActive: freshUser.isActive
+  };
 }
 
 export async function requireRoleSession(role: AuthRole, nextPath?: string) {
@@ -85,17 +130,44 @@ export async function requireSuperAdminSession(nextPath?: string) {
 
 export async function getBuyerSessionUser(nextPath?: string): Promise<BuyerSessionUser> {
   const session = await requireBuyerSession(nextPath);
-  return toSessionUser(session) as BuyerSessionUser;
+  const user = await toFreshSessionUser(session);
+
+  if (user.isActive === false) {
+    redirect("/login");
+  }
+  if (user.role !== "buyer") {
+    redirect(getRoleHomePath(user.role));
+  }
+
+  return user as BuyerSessionUser;
 }
 
 export async function getAdminSessionUser(nextPath?: string) {
   const session = await requireAdminSession(nextPath);
-  return toSessionUser(session);
+  const user = await toFreshSessionUser(session);
+
+  if (user.isActive === false) {
+    redirect("/login");
+  }
+  if (user.role !== "admin_unit") {
+    redirect(getRoleHomePath(user.role));
+  }
+
+  return user;
 }
 
 export async function getSuperAdminSessionUser(nextPath?: string) {
   const session = await requireSuperAdminSession(nextPath);
-  return toSessionUser(session);
+  const user = await toFreshSessionUser(session);
+
+  if (user.isActive === false) {
+    redirect("/login");
+  }
+  if (user.role !== "super_admin") {
+    redirect(getRoleHomePath(user.role));
+  }
+
+  return user;
 }
 
 export async function requireSuperAdminApiSession() {

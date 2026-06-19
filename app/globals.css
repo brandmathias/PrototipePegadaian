@@ -3070,6 +3070,74 @@
   outline: none;
 }
 
+@keyframes transaction-progress-current {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(215, 173, 47, 0.08);
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(215, 173, 47, 0.16);
+    transform: translate3d(0, -1px, 0);
+  }
+}
+
+@keyframes transaction-progress-done {
+  from {
+    opacity: 0.72;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.transaction-progress-node {
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease,
+    transform 220ms ease;
+}
+
+.transaction-progress-node-current {
+  animation: transaction-progress-current 2.4s ease-in-out infinite;
+}
+
+.transaction-progress-node-done {
+  animation: transaction-progress-done 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.transaction-progress-node-failed {
+  box-shadow: 0 12px 28px -20px rgba(185, 28, 28, 0.58);
+}
+
+.transaction-progress-line {
+  transition: border-color 220ms ease;
+}
+
+@keyframes wishlist-unavailable-overlay {
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.wishlist-unavailable-card {
+  filter: saturate(0.7);
+}
+
+.wishlist-unavailable-overlay {
+  animation: wishlist-unavailable-overlay 3.4s ease-in-out infinite;
+}
+
 @keyframes admin-select-menu-in {
   from {
     opacity: 0;

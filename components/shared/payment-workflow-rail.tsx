@@ -9,6 +9,7 @@ export type PaymentWorkflowStep = {
   headline?: string;
   detail: string;
   meta?: string;
+  occurredAt?: string;
   icon: ComponentType<{ className?: string }>;
   tone?: "default" | "danger";
 };
@@ -40,7 +41,7 @@ export function PaymentWorkflowRail({
     steps.length <= 1 ? 100 : completed ? 100 : (boundedStep / (steps.length - 1)) * 100;
   const accentClass = tone === "admin" ? "text-[#0a6a49]" : "text-primary";
   const hasDangerActiveStep = activeStep?.tone === "danger" && !completed;
-  const activeBadge = completed ? "Workflow selesai" : "Posisi sekarang";
+  const activeBadge = completed ? "Alur selesai" : "Posisi sekarang";
   const progressWidth = steps.length <= 1 ? "100%" : `${progress}%`;
 
   return (
@@ -188,6 +189,9 @@ function WorkflowNode({
             {step.meta}
           </p>
         ) : null}
+        <p className="mt-1 min-h-5 font-mono text-[0.68rem] font-semibold leading-5 text-black/48">
+          {step.occurredAt || "Belum terjadi"}
+        </p>
         <p className={detailClassName}>{step.detail}</p>
       </div>
 

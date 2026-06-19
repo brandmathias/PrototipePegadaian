@@ -56,7 +56,9 @@ import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/ad
 import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
+import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-upload-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
+import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -118,8 +120,13 @@ export type MarketingSession = {
   buyerNationalId?: string | null;
   paymentMethod?: string | null;
   proofUrl?: string | null;
+  handoverProofUrl?: string | null;
+  handoverProofUploadedAt?: string | null;
+  handoverProofUploadedBy?: string | null;
   reference?: string | null;
   soldAt?: string | null;
+  completedAt?: string | null;
+  transactionCreatedAt?: string | null;
   paymentDeadline?: string | null;
   insights?: LotInsights | null;
   basePrice?: number | null;
@@ -415,7 +422,7 @@ function VickreyAssetNotice({ auction }: { auction: MarketingSession }) {
         </div>
         <div className="rounded-2xl border border-[#dce8e2] bg-white/72 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] lg:border-l lg:border-y-0 lg:border-r-0 lg:bg-transparent lg:pl-5 lg:shadow-none">
           <p className="text-[0.72rem] font-semibold text-[#64756e]">Nilai Taksiran</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-black text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.appraisalValue ?? auction.basePrice ?? 0)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-black tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.appraisalValue ?? auction.basePrice ?? 0)}`}>
             {currency.format(auction.appraisalValue ?? auction.basePrice ?? 0)}
           </p>
         </div>
@@ -2335,6 +2342,37 @@ export function AdminVickreyAuctionListPage({
   );
 }
 
+function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
+  const fulfilled = auction.transactionStatus === "SELESAI";
+  const verified = auction.transactionStatus === "LUNAS" || fulfilled;
+  const submitted = hasFixedPricePaymentSubmission(auction) || verified;
+  const steps = [
+    {
+      label: "Pembayaran",
+      status: submitted ? "Selesai" : auction.transactionId ? "Berjalan" : "Belum terjadi",
+      occurredAt: submitted ? dateLabel(auction.transactionCreatedAt) : null,
+      icon: WalletCards,
+      tone: submitted ? ("done" as const) : auction.transactionId ? ("current" as const) : ("pending" as const)
+    },
+    {
+      label: "Verifikasi",
+      status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
+      occurredAt: verified ? dateLabel(auction.soldAt) : null,
+      icon: ShieldCheck,
+      tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const)
+    },
+    {
+      label: "Selesai",
+      status: fulfilled ? "Selesai" : verified ? "Menunggu buyer" : "Belum terjadi",
+      occurredAt: fulfilled ? dateLabel(auction.completedAt) : null,
+      icon: CheckCircle2,
+      tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const)
+    }
+  ];
+
+  return <CompactTransactionProgress steps={steps} title="Progress Penyelesaian" />;
+}
+
 export function AdminFixedPriceDetailPage({
   auction
 }: {
@@ -2435,6 +2473,25 @@ export function AdminFixedPriceDetailPage({
               </div>
             </div>
           </section>
+
+          {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
+
+          {auction.transactionId ? (
+            <HandoverProofUploadForm
+              canUpload={auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI"}
+              itemTitle={auction.lot}
+              location={auction.unitName ?? auction.unitAddress ?? undefined}
+              proof={{
+                fileUrl: auction.handoverProofUrl,
+                uploadedAt: auction.handoverProofUploadedAt
+                  ? dateLabel(auction.handoverProofUploadedAt)
+                  : null,
+                uploadedBy: auction.handoverProofUploadedBy,
+                location: auction.unitName ?? auction.unitAddress
+              }}
+              transactionId={auction.transactionId}
+            />
+          ) : null}
 
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
@@ -2809,7 +2866,7 @@ function VickreyPaymentPanel({ auction }: { auction: MarketingSession }) {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Harga akhir Lelang Tertutup
               </p>
-              <p className={`mt-1 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-extrabold text-primary [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.finalPrice ?? auction.basePrice ?? 0)}`}>
+              <p className={`mt-1 max-w-full whitespace-nowrap font-headline font-extrabold tracking-[-0.03em] text-primary [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.finalPrice ?? auction.basePrice ?? 0)}`}>
                 {currency.format(auction.finalPrice ?? auction.basePrice ?? 0)}
               </p>
             </div>
@@ -3184,9 +3241,9 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
       </div>
 
       <div className={`mt-4 grid gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+        <div className="min-w-0 rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {formatOptionalCurrency(highestBid)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -3194,9 +3251,9 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+        <div className="min-w-0 rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -3206,7 +3263,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
 
         <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#e9f8ef] px-3 py-1 text-[0.68rem] font-black uppercase text-[#006747]">
+          <span className="mt-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2.5 py-1 text-[0.6rem] font-black uppercase text-[#006747] 2xl:text-[0.64rem]">
             {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3.5" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
@@ -3275,17 +3332,15 @@ function VickreyWinnerRankingTable({ auction }: { auction: MarketingSession }) {
       <div>
         <table className="w-full table-fixed text-left text-[0.72rem]">
           <colgroup>
-            <col className="w-[6%]" />
-            <col className="w-[19%]" />
-            <col className="w-[17%]" />
-            <col className="w-[19%]" />
-            <col className="w-[18%]" />
-            <col className="w-[21%]" />
+            <col className="w-[7%]" />
+            <col className="w-[25%]" />
+            <col className="w-[22%]" />
+            <col className="w-[24%]" />
+            <col className="w-[22%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
               <th className="px-2 py-2.5 text-center">#</th>
-              <th className="px-2 py-2.5">Member ID</th>
               <th className="px-2 py-2.5">Nama Peserta</th>
               <th className="px-2 py-2.5">Waktu Penawaran</th>
               <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
@@ -3326,7 +3381,6 @@ function VickreyWinnerRankingTable({ auction }: { auction: MarketingSession }) {
               return (
                 <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#f4fbf7]`} key={bid.id}>
                   <td className="px-2 py-2.5 text-center font-mono text-[#006747]">{bid.rank}</td>
-                  <td className="break-all px-2 py-2.5 font-mono text-[0.64rem] leading-4">{bid.bidderId}</td>
                   <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">{bid.bidderName}</td>
                   <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
                     {bid.submittedAtLabel}
@@ -3417,90 +3471,28 @@ function VickreyWinnerAssetPanel({ auction }: { auction: MarketingSession }) {
   );
 }
 
-function getPaymentStepIndex(status?: string | null) {
-  if (status === "SELESAI") {
-    return 3;
-  }
-
-  if (status === "LUNAS") {
-    return 2;
-  }
-
-  if (status === "BUKTI_DIUNGGAH" || status === "MENUNGGU_KONFIRMASI_LANGSUNG") {
-    return 2;
-  }
-
-  return 1;
-}
-
 function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession }) {
-  const activeStep = getPaymentStepIndex(auction.transactionStatus);
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
   const steps = fulfilled
     ? [
-        { label: "Pembayaran", icon: CheckCircle2 },
-        { label: "Verifikasi", icon: CheckCircle2 },
-        { label: "Selesai", icon: CheckCircle2 }
+        { label: "Pembayaran", status: "Selesai", occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Verifikasi", status: "Selesai", occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
+        { label: "Selesai", status: "Selesai", occurredAt: dateLabel(auction.completedAt), icon: CheckCircle2, tone: "done" as const }
       ]
     : verified
       ? [
-          { label: "Pembayaran", icon: CheckCircle2 },
-          { label: "Verifikasi", icon: ShieldCheck },
-          { label: "Selesai Buyer", icon: CheckCircle2 }
+          { label: "Pembayaran", status: "Selesai", occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+          { label: "Verifikasi", status: "Selesai", occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
+          { label: "Selesai", status: "Menunggu buyer", icon: CheckCircle2, tone: "current" as const }
         ]
     : [
-        { label: "Menunggu Pembayaran", icon: WalletCards },
-        { label: "Verifikasi", icon: FileText },
-        { label: "Selesai", icon: CheckCircle2 }
+        { label: "Pembayaran", status: "Berjalan", occurredAt: dateLabel(auction.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
+        { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
+        { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const }
       ];
 
-  return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-        {verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
-      </p>
-      <div className="relative mt-5 flex items-start justify-between px-2 text-center">
-        <span className={`absolute left-[14%] right-[14%] top-6 h-px border-t border-dashed ${fulfilled ? "border-[#1a8f63]" : "border-[#8bd5f7]"}`} />
-        {steps.map((step, index) => {
-          const position = index + 1;
-          const Icon = step.icon;
-          const active = fulfilled || position <= activeStep;
-          const iconTone = fulfilled
-            ? active
-              ? "border-[#006747] bg-[#006747] text-white"
-              : "border-[#dfe6e2] text-[#111b46]"
-            : active
-              ? "border-[#006747] bg-white text-[#006747]"
-              : "border-[#dfe6e2] bg-white text-[#111b46]";
-
-          return (
-            <div className="relative z-[1] grid flex-1 justify-items-center gap-2" key={step.label}>
-              <span
-                aria-label={fulfilled ? `Tahap ${step.label} selesai` : `Tahap ${position}: ${step.label}`}
-                className={`grid size-12 place-items-center rounded-full border shadow-[0_14px_28px_-24px_rgba(8,69,50,0.35)] ${iconTone}`}
-                role="img"
-              >
-                <Icon className="size-5" />
-              </span>
-              {fulfilled ? (
-                <p className="text-[0.62rem] font-bold leading-4 text-[#6b7b73]">Selesai</p>
-              ) : (
-                <span
-                  className={`grid size-4 place-items-center rounded-full text-[0.58rem] font-black ${
-                    active ? "bg-[#006747] text-white" : "bg-[#eef2f0] text-[#40558b]"
-                  }`}
-                >
-                  {position}
-                </span>
-              )}
-              <p className="max-w-[6.6rem] text-[0.66rem] font-black leading-4 text-[#006747]">{step.label}</p>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <CompactTransactionProgress steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
 }
 
 function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
@@ -3522,14 +3514,14 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
-            <span className="font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
             <div className="flex items-end justify-between gap-4">
               <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
                 Total Pelunasan Kasir
               </span>
-              <span className="font-mono text-[1.05rem] font-black leading-none text-[#006747]">
+              <span className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getCompactCurrencyTextClass(paymentPrice)}`}>
                 {currency.format(paymentPrice)}
               </span>
             </div>
@@ -3552,7 +3544,7 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
-            <span className="font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
             <div className="flex items-end justify-between gap-4">
@@ -3634,7 +3626,7 @@ function getVickreyVerificationAction(auction: MarketingSession) {
       pendingTitle: "Memverifikasi pembayaran",
       pendingDescription: "Sistem sedang menutup transaksi transfer dan memperbarui status barang.",
       successTitle: "Pembayaran disetujui",
-      successDescription: "Pembayaran sudah tervalidasi. Buyer dapat membuka nota dan menandai pembelian selesai.",
+      successDescription: "Pembayaran sudah terverifikasi. Buyer dapat membuka nota dan menandai pembelian selesai.",
       note: "Periksa bukti transfer, nominal, referensi, dan nama buyer sebelum pembayaran disetujui.",
       icon: ReceiptText
     };
@@ -3667,7 +3659,7 @@ function getFixedPriceVerificationAction(auction: MarketingSession) {
     pendingTitle: "Memverifikasi pembayaran harga tetap",
     pendingDescription: "Sistem sedang memverifikasi pembayaran harga tetap dan membuka nota transaksi.",
     successTitle: "Pembayaran harga tetap disetujui",
-    successDescription: "Pembayaran buyer sudah tervalidasi. Tahap selesai tetap menunggu buyer menekan Pembelian Selesai.",
+    successDescription: "Pembayaran buyer sudah terverifikasi. Tahap selesai tetap menunggu buyer menekan Pembelian Selesai.",
     note: "Periksa bukti transfer, nominal harga jual, dan identitas buyer sebelum pembayaran disetujui.",
     icon: ReceiptText
   };
@@ -4659,19 +4651,11 @@ function VickreyWinnerActionFooter({
   }
 
   return (
-    <div className="grid gap-3 print:hidden sm:grid-cols-[minmax(0,1fr)_16rem]">
+    <div className="grid gap-3 print:hidden">
       <VickreyPaymentVerificationButton
         auction={auction}
         className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50"
       />
-      <button
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#a7d9c7] bg-white px-5 text-[0.86rem] font-black text-[#006747] shadow-[0_18px_34px_-28px_rgba(0,103,71,0.42)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f5fbf7] active:scale-[0.99]"
-        onClick={() => window.print()}
-        type="button"
-      >
-        <Printer className="size-4" />
-        Cetak Ringkasan Lelang
-      </button>
     </div>
   );
 }
@@ -4890,17 +4874,15 @@ function VickreyFailureRankingTable({ auction }: { auction: MarketingSession }) 
       </div>
       <table className="w-full table-fixed text-left text-[0.72rem]">
         <colgroup>
-          <col className="w-[6%]" />
-          <col className="w-[19%]" />
-          <col className="w-[17%]" />
-          <col className="w-[19%]" />
-          <col className="w-[18%]" />
-          <col className="w-[21%]" />
+          <col className="w-[7%]" />
+          <col className="w-[25%]" />
+          <col className="w-[22%]" />
+          <col className="w-[24%]" />
+          <col className="w-[22%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
             <th className="px-2 py-2.5 text-center">#</th>
-            <th className="px-2 py-2.5">Member ID</th>
             <th className="px-2 py-2.5">Nama Peserta</th>
             <th className="px-2 py-2.5">Waktu Penawaran</th>
             <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
@@ -4921,7 +4903,6 @@ function VickreyFailureRankingTable({ auction }: { auction: MarketingSession }) 
               return (
                 <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#fef2f2]`} key={bid.id}>
                   <td className="px-2 py-2.5 text-center font-mono text-[#991b1b]">{bid.rank}</td>
-                  <td className="break-all px-2 py-2.5 font-mono text-[0.64rem] leading-4">{bid.bidderId}</td>
                   <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
                     {bid.bidderName}
                   </td>
@@ -4942,7 +4923,7 @@ function VickreyFailureRankingTable({ auction }: { auction: MarketingSession }) 
             })
           ) : (
             <tr>
-              <td className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]" colSpan={6}>
+              <td className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]" colSpan={5}>
                 Belum ada peserta yang mengirim penawaran.
               </td>
             </tr>
@@ -5009,60 +4990,17 @@ function VickreyFailureProgressPanel({ auction }: { auction: MarketingSession })
   const unpaid = getVickreyFailureKind(auction) === "unpaid";
   const steps = unpaid
     ? [
-        { label: "Pemenang Diumumkan", meta: "Selesai", icon: Trophy, tone: "done" },
-        { label: "Gagal Bayar", meta: "Terjadi", icon: X, tone: "failed" },
-        { label: "Selesai", meta: "Belum Tercapai", icon: CheckCircle2, tone: "pending" }
+        { label: "Pemenang Diumumkan", status: "Selesai", occurredAt: dateLabel(auction.endingAt), icon: Trophy, tone: "done" as const },
+        { label: "Gagal Bayar", status: "Terjadi", occurredAt: dateLabel(auction.paymentDeadline), icon: X, tone: "failed" as const },
+        { label: "Selesai", status: "Belum tercapai", icon: CheckCircle2, tone: "pending" as const }
       ]
     : [
-        { label: "Sesi Ditutup", meta: "Selesai", icon: CheckCircle2, tone: "done" },
-        { label: "Tanpa Bid", meta: "Terjadi", icon: X, tone: "failed" },
-        { label: "Lelang Ulang", meta: "Belum Dijadwalkan", icon: RefreshCcw, tone: "pending" }
+        { label: "Sesi Ditutup", status: "Selesai", occurredAt: dateLabel(auction.endingAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Tanpa Bid", status: "Terjadi", occurredAt: dateLabel(auction.endingAt), icon: X, tone: "failed" as const },
+        { label: "Lelang Ulang", status: "Belum dijadwalkan", icon: RefreshCcw, tone: "pending" as const }
       ];
 
-  return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-        Progress Penyelesaian
-      </p>
-      <div className="relative mt-5 flex items-start justify-between px-2 text-center">
-        <span className="absolute left-[14%] right-[14%] top-6 h-px border-t border-dashed border-[#fecaca]" />
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-          const iconTone =
-            step.tone === "done"
-              ? "border-[#006747] bg-[#006747] text-white"
-              : step.tone === "failed"
-                ? "border-[#b91c1c] bg-[#b91c1c] text-white"
-                : "border-[#dfe6e2] bg-white text-[#40558b]";
-
-          return (
-            <div className="relative z-[1] grid flex-1 justify-items-center gap-2" key={step.label}>
-              <span className={`grid size-12 place-items-center rounded-full border shadow-[0_14px_28px_-24px_rgba(8,69,50,0.35)] ${iconTone}`}>
-                <Icon className="size-5" />
-              </span>
-              <span
-                className={`grid size-4 place-items-center rounded-full text-[0.58rem] font-black ${
-                  step.tone === "failed"
-                    ? "bg-[#b91c1c] text-white"
-                    : step.tone === "done"
-                      ? "bg-[#006747] text-white"
-                      : "bg-[#eef2f0] text-[#40558b]"
-                }`}
-              >
-                {index + 1}
-              </span>
-              <div className="max-w-[7rem]">
-                <p className={`text-[0.66rem] font-black leading-4 ${step.tone === "failed" ? "text-[#991b1b]" : "text-[#006747]"}`}>
-                  {step.label}
-                </p>
-                <p className="mt-1 text-[0.58rem] font-bold leading-3 text-[#6b7b73]">{step.meta}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
+  return <CompactTransactionProgress steps={steps} title="Progress Penyelesaian" />;
 }
 
 function VickreyFailureActionFooter({
@@ -5200,6 +5138,22 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           <div className="space-y-4 lg:sticky lg:top-4">
             <VickreyWinnerAssetPanel auction={auction} />
             <VickreyPaymentProgressPanel auction={auction} />
+            {auction.transactionId ? (
+              <HandoverProofUploadForm
+                canUpload={isVickreyPaymentVerified(auction)}
+                itemTitle={auction.lot}
+                location={auction.unitName ?? auction.unitAddress ?? undefined}
+                proof={{
+                  fileUrl: auction.handoverProofUrl,
+                  uploadedAt: auction.handoverProofUploadedAt
+                    ? dateLabel(auction.handoverProofUploadedAt)
+                    : null,
+                  uploadedBy: auction.handoverProofUploadedBy,
+                  location: auction.unitName ?? auction.unitAddress
+                }}
+                transactionId={auction.transactionId}
+              />
+            ) : null}
             <VickreyPaymentTotalPanel auction={auction} />
             <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
           </div>

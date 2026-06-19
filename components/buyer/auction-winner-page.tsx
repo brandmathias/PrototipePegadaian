@@ -194,7 +194,7 @@ export function AuctionWinnerPageContent({
                     <p className="text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#7b857d]">
                       Harga Akhir (Harga Menang)
                     </p>
-                    <p className="mt-3 break-words font-headline text-[clamp(2rem,10vw,3rem)] font-black leading-none tracking-[-0.04em] text-[#0f4735] md:text-[3.55rem] md:tracking-[-0.07em]">
+                    <p className="mt-3 whitespace-nowrap font-headline text-[1.95rem] font-black leading-none tracking-[-0.055em] text-[#0f4735] sm:text-[2.45rem] md:text-[3rem] xl:text-[2.65rem] 2xl:text-[3.15rem]">
                       {currency.format(transaction.amount)}
                     </p>
                   </div>
@@ -270,7 +270,7 @@ export function AuctionWinnerPageContent({
                   <p className="text-sm font-medium text-[#5f6f68]">
                     Total yang Harus Dibayarkan
                   </p>
-                  <p className="mt-3 break-words font-headline text-[clamp(2rem,10vw,3rem)] font-black leading-none tracking-[-0.04em] text-[#0f4735] md:tracking-[-0.06em]">
+                  <p className="mt-3 whitespace-nowrap font-headline text-[1.8rem] font-black leading-none tracking-[-0.055em] text-[#0f4735] sm:text-[2.25rem] xl:text-[1.85rem] 2xl:text-[2.2rem]">
                     {currency.format(transaction.amount)}
                   </p>
                 </div>

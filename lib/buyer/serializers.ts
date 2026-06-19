@@ -55,6 +55,7 @@ type BuyerTransactionShape = {
   handoverProofUploadedAt?: Date | null;
   handoverProofUploadedBy?: string | null;
   createdAt: Date;
+  updatedAt?: Date;
   lotName: string;
   lotId: string;
   imageUrl?: string | null;
@@ -291,6 +292,10 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
+    completedAt:
+      row.status === "selesai"
+        ? toDateTimeLabel(row.updatedAt ?? row.verifiedAt ?? row.createdAt)
+        : undefined,
     receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined,
     handoverProof: row.handoverProofUrl
       ? {

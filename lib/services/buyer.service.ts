@@ -197,6 +197,7 @@ function transactionSelection() {
       limit 1
     )`,
     createdAt: transaksi.createdAt,
+    updatedAt: transaksi.updatedAt,
     lotName: barang.name,
     lotId: barang.id,
     imageUrl: primaryBarangPhotoUrl(),

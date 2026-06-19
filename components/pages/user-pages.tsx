@@ -586,6 +586,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
       headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Lelang Tertutup di Unit" : "Bayar di Loket Unit",
       detail: paymentDetail,
       meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Lelang Tertutup bayar di loket" : "Bayar di loket",
+      occurredAt: transaction.createdAt,
       icon: Landmark
     },
     {
@@ -597,8 +598,8 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
         : "Verifikasi",
       headline: hasFailedWorkflow
         ? isFailedVickreyPayment
-          ? "Workflow Pembayaran Gagal"
-          : "Workflow Verifikasi Gagal"
+          ? "Alur Pembayaran Gagal"
+          : "Alur Verifikasi Gagal"
         : "Menunggu Verifikasi Admin",
       detail: verificationDetail,
       meta: hasFailedWorkflow
@@ -606,15 +607,17 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
           ? "Melewati 24 jam"
           : "Bukti ditolak admin unit"
         : "Aksi admin unit",
+      occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
       icon: ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
       id: "finished",
-      label: "Selesai & Nota",
-      headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai & Nota",
+      label: "Selesai",
+      headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai",
       detail: finishDetail,
       meta: "Aksi akhir buyer",
+      occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }
   ];
@@ -635,7 +638,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
             : "Fixed price bayar langsung diverifikasi admin setelah pembayaran diterima di unit."
       }
       steps={steps}
-      title="Workflow Pembayaran"
+      title="Alur Pembayaran"
       tone="buyer"
     />
   );
@@ -1341,18 +1344,6 @@ function VickreyPaymentFailedDetail({
               Detail Transaksi Lelang Gagal
             </h1>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <div>
-              <Button
-                className="h-12 rounded-lg border-border bg-white px-5 text-foreground shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
-                type="button"
-                variant="secondary"
-              >
-                <Printer className="size-5" />
-                Cetak Ringkasan
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1540,14 +1531,6 @@ function VickreyPaymentSuccessDetail({
             Detail Transaksi Lelang Berhasil
           </h1>
         </div>
-        <Button
-          className="h-12 self-start rounded-lg border-border bg-white px-5 text-foreground shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:self-auto"
-          type="button"
-          variant="secondary"
-        >
-          <Printer className="size-5" />
-          Cetak Ringkasan
-        </Button>
       </div>
 
       <PaymentProgressRail transaction={transaction} />
@@ -1635,23 +1618,18 @@ function VickreyPaymentSuccessDetail({
                 }
               />
               <AuctionPaymentAuditRow
-                label="Status Validasi"
+                label="Status Pembayaran"
                 value={
                   <span
-                    className={cn(
-                      "flex items-start gap-3 rounded-lg border px-4 py-3",
-                      settlementLockMessage
-                        ? "border-amber-200 bg-amber-50 text-[#7a4f00]"
-                        : "border-primary/20 bg-primary/[0.05] text-primary"
-                    )}
+                    className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/[0.05] px-4 py-3 text-primary"
                   >
                     <CheckCircle2 className="mt-0.5 size-5 shrink-0" />
                     <span>
-                      <span className="block font-bold">
-                        {settlementLockMessage ? "Validasi Tertahan" : "Pembayaran Tervalidasi"}
-                      </span>
+                      <span className="block font-bold">Pembayaran Terverifikasi</span>
                       <span className="mt-1 block text-sm font-medium">
-                        {settlementLockMessage ?? "Tidak ada restriksi aktif"}
+                        {settlementLockMessage
+                          ? "Pembayaran sudah sah. Pembatasan akun hanya menunda aksi penyelesaian transaksi."
+                          : "Pembayaran sah dan tidak memiliki kendala verifikasi."}
                       </span>
                     </span>
                   </span>

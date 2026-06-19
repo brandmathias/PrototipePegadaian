@@ -69,10 +69,10 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
 function serializeTransactionJoin(row: Awaited<ReturnType<typeof getTransactionForUnit>>) {
   return serializeAdminTransaction({
     ...row.transaction,
-    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
-    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
-    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
-    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerName: row.buyer.name,
+    buyerEmail: row.buyer.email,
+    buyerPhone: row.buyer.phoneNumber,
+    buyerNationalId: row.buyer.nationalId,
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
@@ -112,10 +112,10 @@ export async function listAdminTransactions(unitId: string) {
   return rows.map((row) =>
     serializeAdminTransaction({
       ...row.transaction,
-      buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
-      buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
-      buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
-      buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+      buyerName: row.buyer.name,
+      buyerEmail: row.buyer.email,
+      buyerPhone: row.buyer.phoneNumber,
+      buyerNationalId: row.buyer.nationalId,
       buyerAddress: null,
       lotName: row.item.name,
       lotId: row.item.id,
@@ -167,10 +167,10 @@ export async function uploadAdminTransactionHandoverProof(
 
   return serializeAdminTransaction({
     ...updated,
-    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
-    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
-    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
-    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerName: row.buyer.name,
+    buyerEmail: row.buyer.email,
+    buyerPhone: row.buyer.phoneNumber,
+    buyerNationalId: row.buyer.nationalId,
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
@@ -248,10 +248,10 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
 
   return serializeAdminTransaction({
     ...updated,
-    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
-    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
-    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
-    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerName: row.buyer.name,
+    buyerEmail: row.buyer.email,
+    buyerPhone: row.buyer.phoneNumber,
+    buyerNationalId: row.buyer.nationalId,
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,
@@ -307,10 +307,10 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
 
   return serializeAdminTransaction({
     ...updated,
-    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
-    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
-    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
-    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerName: row.buyer.name,
+    buyerEmail: row.buyer.email,
+    buyerPhone: row.buyer.phoneNumber,
+    buyerNationalId: row.buyer.nationalId,
     buyerAddress: null,
     lotName: row.item.name,
     lotId: row.item.id,

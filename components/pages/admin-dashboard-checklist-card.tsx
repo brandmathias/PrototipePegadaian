@@ -16,13 +16,12 @@ type DashboardChecklistCardProps = {
 };
 
 type StoredDashboardChecklist = {
-  resetAt: number;
+  dateKey: string;
   taskTitles: string[];
   checked: boolean[];
 };
 
 const CHECKLIST_STORAGE_KEY = "pegadaian:admin-dashboard-checklist:v1";
-const CHECKLIST_RESET_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const checklistDateFormatter = new Intl.DateTimeFormat("id-ID", {
   weekday: "long",
@@ -39,6 +38,13 @@ const checklistTimeFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "Asia/Makassar"
 });
 
+const checklistDateKeyFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "Asia/Makassar",
+  year: "numeric"
+});
+
 function formatChecklistDate(value: Date) {
   const label = checklistDateFormatter.format(value);
   return label.charAt(0).toUpperCase() + label.slice(1);
@@ -46,6 +52,15 @@ function formatChecklistDate(value: Date) {
 
 function formatChecklistTime(value: Date) {
   return checklistTimeFormatter.format(value);
+}
+
+function getChecklistDateKey(value: Date) {
+  const parts = checklistDateKeyFormatter.formatToParts(value);
+  const year = parts.find((part) => part.type === "year")?.value ?? "0000";
+  const month = parts.find((part) => part.type === "month")?.value ?? "00";
+  const day = parts.find((part) => part.type === "day")?.value ?? "00";
+
+  return `${year}-${month}-${day}`;
 }
 
 function getChecklistTaskTitles(tasks: DashboardChecklistTask[]) {
@@ -58,64 +73,63 @@ function matchesChecklistTasks(stored: StoredDashboardChecklist, tasks: Dashboar
   return stored.taskTitles.length === taskTitles.length && stored.taskTitles.every((title, index) => title === taskTitles[index]);
 }
 
-function createStoredChecklist(tasks: DashboardChecklistTask[], resetAt = Date.now() + CHECKLIST_RESET_INTERVAL_MS): StoredDashboardChecklist {
+function createStoredChecklist(tasks: DashboardChecklistTask[], dateKey: string): StoredDashboardChecklist {
   return {
-    resetAt,
+    dateKey,
     taskTitles: getChecklistTaskTitles(tasks),
     checked: tasks.map((task) => task.checked)
   };
 }
 
-function writeStoredChecklist(tasks: DashboardChecklistTask[], resetAt: number) {
+function writeStoredChecklist(tasks: DashboardChecklistTask[], dateKey: string) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(createStoredChecklist(tasks, resetAt)));
+  window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(createStoredChecklist(tasks, dateKey)));
 }
 
 function loadStoredChecklist(tasks: DashboardChecklistTask[]) {
-  const resetAt = Date.now() + CHECKLIST_RESET_INTERVAL_MS;
+  const dateKey = getChecklistDateKey(new Date());
 
   if (typeof window === "undefined") {
-    return { tasks, resetAt };
+    return { tasks, dateKey };
   }
 
   const rawValue = window.localStorage.getItem(CHECKLIST_STORAGE_KEY);
   if (!rawValue) {
-    writeStoredChecklist(tasks, resetAt);
-    return { tasks, resetAt };
+    writeStoredChecklist(tasks, dateKey);
+    return { tasks, dateKey };
   }
 
   try {
     const stored = JSON.parse(rawValue) as StoredDashboardChecklist;
     if (
-      typeof stored.resetAt !== "number" ||
-      stored.resetAt <= Date.now() ||
+      stored.dateKey !== dateKey ||
       !Array.isArray(stored.checked) ||
       !matchesChecklistTasks(stored, tasks)
     ) {
-      writeStoredChecklist(tasks, resetAt);
-      return { tasks, resetAt };
+      writeStoredChecklist(tasks, dateKey);
+      return { tasks, dateKey };
     }
 
     return {
-      resetAt: stored.resetAt,
+      dateKey,
       tasks: tasks.map((task, index) => ({
         ...task,
         checked: Boolean(stored.checked[index])
       }))
     };
   } catch {
-    writeStoredChecklist(tasks, resetAt);
-    return { tasks, resetAt };
+    writeStoredChecklist(tasks, dateKey);
+    return { tasks, dateKey };
   }
 }
 
 export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklistCardProps) {
   const [interactiveTasks, setInteractiveTasks] = useState(tasks);
   const [now, setNow] = useState(() => new Date(nowIso));
-  const [resetAt, setResetAt] = useState<number | null>(null);
+  const [dateKey, setDateKey] = useState(() => getChecklistDateKey(new Date(nowIso)));
   const taskSignature = useMemo(() => getChecklistTaskTitles(tasks).join("\u001f"), [tasks]);
 
   useEffect(() => {
@@ -125,8 +139,8 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
   useEffect(() => {
     const restored = loadStoredChecklist(tasks);
     setInteractiveTasks(restored.tasks);
-    setResetAt(restored.resetAt);
-  }, [taskSignature]);
+    setDateKey(restored.dateKey);
+  }, [taskSignature, tasks]);
 
   useEffect(() => {
     const timerId = window.setInterval(() => {
@@ -139,22 +153,15 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
   }, []);
 
   useEffect(() => {
-    if (!resetAt) {
+    const currentDateKey = getChecklistDateKey(now);
+    if (currentDateKey === dateKey) {
       return;
     }
 
-    const resetDelay = Math.max(resetAt - Date.now(), 0);
-    const resetTimerId = window.setTimeout(() => {
-      const nextResetAt = Date.now() + CHECKLIST_RESET_INTERVAL_MS;
-      setInteractiveTasks(tasks);
-      setResetAt(nextResetAt);
-      writeStoredChecklist(tasks, nextResetAt);
-    }, resetDelay);
-
-    return () => {
-      window.clearTimeout(resetTimerId);
-    };
-  }, [resetAt, taskSignature]);
+    setInteractiveTasks(tasks);
+    setDateKey(currentDateKey);
+    writeStoredChecklist(tasks, currentDateKey);
+  }, [dateKey, now, taskSignature, tasks]);
 
   const completedCount = useMemo(
     () => interactiveTasks.filter((task) => task.checked).length,
@@ -162,14 +169,14 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
   );
 
   const toggleTask = (index: number) => {
-    const nextResetAt = resetAt && resetAt > Date.now() ? resetAt : Date.now() + CHECKLIST_RESET_INTERVAL_MS;
-    setResetAt(nextResetAt);
+    const currentDateKey = getChecklistDateKey(new Date());
+    setDateKey(currentDateKey);
     setInteractiveTasks((currentTasks) => {
       const nextTasks = currentTasks.map((task, taskIndex) =>
         taskIndex === index ? { ...task, checked: !task.checked } : task
       );
 
-      writeStoredChecklist(nextTasks, nextResetAt);
+      writeStoredChecklist(nextTasks, currentDateKey);
       return nextTasks;
     });
   };

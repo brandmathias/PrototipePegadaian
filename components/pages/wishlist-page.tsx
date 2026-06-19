@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   CarFront,
   CheckCircle2,
+  CircleOff,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -547,9 +548,10 @@ function WishlistCard({
   onToggleFavorite: () => void;
 }) {
   const isFixedPrice = item.lot.mode === "fixed_price";
+  const unavailable = !item.isAvailable;
   const actionLabel = isFixedPrice ? "Beli Sekarang" : "Ikut Lelang";
   const mode = modeCopy[item.lot.mode];
-  const showAuctionCountdown = item.lot.mode === "vickrey" && (item.lot.countdown || item.lot.endsAt);
+  const showAuctionCountdown = !unavailable && item.lot.mode === "vickrey" && (item.lot.countdown || item.lot.endsAt);
   const CategoryIcon = getCategoryIcon(item.lot.category);
   const detailTags =
     item.lot.mode === "vickrey"
@@ -583,20 +585,32 @@ function WishlistCard({
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
+        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        unavailable
+          ? "wishlist-unavailable-card border-[#d9d6ce] bg-[#f7f6f2]"
+          : "hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
         viewMode === "list" && "lg:grid lg:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] lg:gap-0",
       )}
     >
-      <div className="relative">
+      <div className={cn("relative", unavailable && "bg-[#ebe9e2]")}>
         <LotFigure
           category={item.lot.category}
           className={cn(
-            "rounded-none",
+            "rounded-none transition duration-500",
+            unavailable && "grayscale opacity-55",
             viewMode === "list" ? "h-full min-h-[13.5rem] lg:aspect-auto" : "aspect-[1.78]",
           )}
           media={item.lot.media}
           showCategoryBadge={false}
         />
+        {unavailable ? (
+          <div className="wishlist-unavailable-overlay absolute inset-0 grid place-items-center bg-[#17231d]/18">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/92 px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#59645e] shadow-[0_16px_32px_-24px_rgba(15,23,42,0.46)]">
+              <CircleOff className="size-4" />
+              Tidak Tersedia
+            </span>
+          </div>
+        ) : null}
         <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/94 px-2.5 py-1 text-[0.68rem] font-black text-[#075f42] shadow-sm">
           <span className={cn("grid size-5 place-items-center rounded-[0.35rem]", mode.tone)}>
             {mode.icon}
@@ -626,12 +640,19 @@ function WishlistCard({
           ))}
         </div>
 
-        <LotRealtimeStats
-          className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56"
-          initialStats={item.lot.insights}
-          lotId={item.lot.id}
-          mode={item.lot.mode}
-        />
+        {unavailable ? (
+          <div className="mt-2 flex min-h-[3rem] items-start gap-2 rounded-md border border-[#ddd8ca] bg-white/72 px-3 py-2 text-[0.72rem] font-semibold leading-5 text-[#665f51]">
+            <CircleOff className="mt-0.5 size-4 shrink-0 text-[#9a7b32]" />
+            <span>{item.unavailableReason || "Barang sudah tidak tersedia untuk dibeli atau diikuti lelang."}</span>
+          </div>
+        ) : (
+          <LotRealtimeStats
+            className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56"
+            initialStats={item.lot.insights}
+            lotId={item.lot.id}
+            mode={item.lot.mode}
+          />
+        )}
 
         <div className="mt-3 grid content-start gap-2.5">
           <div className={cn("grid items-start gap-2.5", showAuctionCountdown ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1")}>
@@ -675,20 +696,68 @@ function WishlistCard({
             ))}
           </div>
 
-          <Link
-            aria-label={`${actionLabel} ${item.lot.name}`}
-            className={cn(
-              buttonVariants({ variant: isFixedPrice ? "accent" : "default" }),
-              "min-h-11 w-full rounded-md text-sm font-black",
-            )}
-            href={`/katalog/${item.lot.id}`}
-          >
-            {actionLabel}
-            {isFixedPrice ? <ShoppingBag className="size-4" /> : <Gavel className="size-4" />}
-          </Link>
+          {unavailable ? (
+            <div className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-sm font-black text-[#77736b]">
+              <CircleOff className="size-4" />
+              Aksi Tidak Tersedia
+            </div>
+          ) : (
+            <Link
+              aria-label={`${actionLabel} ${item.lot.name}`}
+              className={cn(
+                buttonVariants({ variant: isFixedPrice ? "accent" : "default" }),
+                "min-h-11 w-full rounded-md text-sm font-black",
+              )}
+              href={`/katalog/${item.lot.id}`}
+            >
+              {actionLabel}
+              {isFixedPrice ? <ShoppingBag className="size-4" /> : <Gavel className="size-4" />}
+            </Link>
+          )}
         </div>
       </div>
     </article>
+  );
+}
+
+function UnavailableWishlistSection({
+  items,
+  onRemove
+}: {
+  items: BuyerWishlistItem[];
+  onRemove: (lotId: string) => void;
+}) {
+  if (!items.length) {
+    return null;
+  }
+
+  return (
+    <section className="overflow-hidden rounded-md border border-[#ded9cc] bg-[#f5f3ed] shadow-[0_24px_64px_-54px_rgba(63,55,35,0.44)]">
+      <div className="flex flex-col gap-2 border-b border-[#ded9cc] bg-[#ece9e0] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#8a6c28]">Arsip Wishlist</p>
+          <h2 className="mt-1 font-headline text-2xl font-black text-[#343a36]">Sudah tidak tersedia</h2>
+          <p className="mt-1 text-sm leading-6 text-[#6a6f6b]">
+            Aksi pembelian dan lelang dinonaktifkan, tetapi barang tetap ditampilkan agar riwayat pilihan Anda jelas.
+          </p>
+        </div>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#d6cfbd] bg-white/75 px-3 py-1.5 text-xs font-black text-[#75663f]">
+          <CircleOff className="size-4" />
+          {getCountLabel(items.length)} barang
+        </span>
+      </div>
+      <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => (
+          <WishlistCard
+            favorite
+            item={item}
+            key={item.lot.id}
+            viewMode="grid"
+            onToggleFavorite={() => onRemove(item.lot.id)}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -931,7 +1000,7 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
   const currentPage = Math.min(pageIndex, totalPages - 1);
   const visibleItems = filteredItems.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
 
-  if (currentActiveItems.length === 0) {
+  if (totalCount === 0) {
     return (
       <section className="relative overflow-hidden rounded-md border border-[#eadfca] bg-[#fff9ee] p-8 text-center shadow-[0_28px_80px_-62px_rgba(84,63,20,0.42)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(217,153,0,0.12),transparent_28%),radial-gradient(circle_at_84%_12%,rgba(7,95,66,0.10),transparent_24%)]" />
@@ -946,6 +1015,18 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
           Jelajahi Katalog
         </Link>
       </section>
+    );
+  }
+
+  if (currentActiveItems.length === 0) {
+    return (
+      <div className="space-y-5">
+        <WishlistHero activeCount={0} totalCount={totalCount} />
+        <UnavailableWishlistSection
+          items={currentUnavailableItems}
+          onRemove={(lotId) => void handleRemoveFavorite(lotId)}
+        />
+      </div>
     );
   }
 
@@ -1058,6 +1139,10 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
           onPageSizeChange={setPageSize}
         />
       </section>
+      <UnavailableWishlistSection
+        items={currentUnavailableItems}
+        onRemove={(lotId) => void handleRemoveFavorite(lotId)}
+      />
     </div>
   );
 }

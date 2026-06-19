@@ -123,6 +123,8 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         reference?: string | null;
         soldAt?: Date | null;
         paymentDeadline?: Date | null;
+        completedAt?: Date | null;
+        transactionCreatedAt?: Date | null;
       }
     >();
   }
@@ -140,11 +142,12 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       reference: transaksi.referenceNumber,
       paymentDeadline: transaksi.paymentDeadline,
       soldAt: transaksi.verifiedAt,
+      completedAt: transaksi.updatedAt,
       buyerName: users.name,
       buyerEmail: users.email,
       buyerPhone: users.phoneNumber,
       buyerNationalId: users.nationalId,
-      createdAt: transaksi.createdAt
+      transactionCreatedAt: transaksi.createdAt
     })
     .from(transaksi)
     .innerJoin(users, eq(users.id, transaksi.userId))
@@ -168,7 +171,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         handoverProofUploadedBy: row.handoverProofUploadedBy,
         reference: row.reference,
         soldAt: row.soldAt,
-        paymentDeadline: row.paymentDeadline
+        paymentDeadline: row.paymentDeadline,
+        completedAt: row.completedAt,
+        transactionCreatedAt: row.transactionCreatedAt
       });
     }
     return map;
@@ -189,6 +194,8 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       reference?: string | null;
       soldAt?: Date | null;
       paymentDeadline?: Date | null;
+      completedAt?: Date | null;
+      transactionCreatedAt?: Date | null;
     }
   >());
 }

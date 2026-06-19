@@ -33,6 +33,8 @@ type AdminPemasaranTransaction = {
   reference?: string | null;
   soldAt?: Date | string | null;
   paymentDeadline?: Date | string | null;
+  completedAt?: Date | string | null;
+  transactionCreatedAt?: Date | string | null;
 };
 
 function toDateLabel(value: Date | null | undefined) {
@@ -308,6 +310,8 @@ export function serializeAdminPemasaran(
     reference: extra.transaction?.reference ?? null,
     soldAt: toIsoOrNull(extra.transaction?.soldAt),
     paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
+    completedAt: toIsoOrNull(extra.transaction?.completedAt),
+    transactionCreatedAt: toIsoOrNull(extra.transaction?.transactionCreatedAt),
     insights: extra.insights ?? null,
     basePrice: row.mode === "fixed_price" ? null : toNumber(row.basePrice ?? row.price),
     finalPrice: row.mode === "fixed_price" ? null : visibility === "HASIL_DIBUKA" ? toNumber(row.finalPrice) || null : null,
@@ -374,6 +378,7 @@ export function serializeAdminTransaction(
     accountName: row.accountName ?? "-",
     createdAt: toDateTimeLabel(row.createdAt),
     verifiedAt: toDateTimeLabel(row.verifiedAt),
+    completedAt: row.status === "selesai" ? toDateTimeLabel(row.updatedAt) : undefined,
     receiptNumber: printableReceipt ? `PEG-${row.createdAt.getFullYear()}${String(row.createdAt.getMonth() + 1).padStart(2, "0")}${String(row.createdAt.getDate()).padStart(2, "0")}-${row.id.slice(0, 3).toUpperCase()}` : undefined,
     printableReceipt
   };

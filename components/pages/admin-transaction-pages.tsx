@@ -465,6 +465,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: isTransfer ? "Bukti Transfer Buyer" : "Pembayaran di Loket",
       detail: paymentDetail,
       meta: isTransfer ? "Sumber: upload buyer" : "Sumber: loket unit",
+      occurredAt: transaction.createdAt,
       icon: WalletCards
     },
     {
@@ -473,6 +474,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: "Admin Perlu Verifikasi",
       detail: verificationDetail,
       meta: "Tindakan admin",
+      occurredAt: transaction.verifiedAt,
       icon: FileCheck2
     },
     {
@@ -481,6 +483,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: completed ? "Transaksi Selesai" : "Menunggu Buyer Selesai",
       detail: finishDetail,
       meta: "Penutupan transaksi",
+      occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }
   ];
@@ -509,7 +512,7 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
   if (transaction.status === "SELESAI") {
     return {
       title: "Selesai & diarsipkan",
-      detail: "Workflow selesai",
+      detail: "Alur selesai",
       shellClass: "border-[#bfe8cf] bg-[#f0fbf4] text-[#075b3f] dark:border-emerald-300/16 dark:bg-emerald-300/[0.08] dark:text-emerald-200",
       iconClass: "bg-[#0a6a49] text-white dark:bg-emerald-300/18 dark:text-emerald-100",
       pulseClass: "bg-[#20b96b]/24",
@@ -900,7 +903,7 @@ function TransactionActionPanel({
             pendingDescription="Sistem sedang menutup transaksi transfer dan memperbarui status barang."
             pendingTitle="Memverifikasi pembayaran"
             refresh
-            successDescription="Pembayaran sudah tervalidasi. Buyer dapat membuka nota dan menandai pembelian selesai."
+            successDescription="Pembayaran sudah terverifikasi. Buyer dapat membuka nota dan menandai pembelian selesai."
             successTitle="Pembayaran disetujui"
           >
             <CheckCircle2 className="size-4" />

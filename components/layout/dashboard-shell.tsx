@@ -48,6 +48,7 @@ export type NavItem = {
   icon?: NavIconName;
   badge?: number | string;
   badgeTone?: "default" | "warning" | "danger";
+  activePrefixes?: string[];
   children?: NavItem[];
 };
 
@@ -151,15 +152,24 @@ export function DashboardShell({
     }
   };
 
-  const isHrefActive = (href: string): boolean =>
-    href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const isPathMatch = (href: string): boolean =>
+    pathname === href || pathname.startsWith(`${href}/`);
+
+  const isHrefActive = (item: Pick<NavItem, "href" | "activePrefixes">): boolean => {
+    const isDashboardRoot = item.href === "/admin" || item.href === "/superadmin" || item.href === "/dashboard";
+
+    return (
+      (isDashboardRoot ? pathname === item.href : isPathMatch(item.href)) ||
+      Boolean(item.activePrefixes?.some((prefix) => isPathMatch(prefix)))
+    );
+  };
 
   const hasMoreSpecificTopLevelMatch = (item: NavItem): boolean =>
     nav.some(
       (otherItem) =>
         otherItem.href !== item.href &&
         otherItem.href.startsWith(`${item.href}/`) &&
-        isHrefActive(otherItem.href)
+        isHrefActive(otherItem)
     );
 
   const isNavItemActive = (item: NavItem): boolean => {
@@ -175,7 +185,7 @@ export function DashboardShell({
       );
     }
 
-    return isHrefActive(item.href);
+    return isHrefActive(item);
   };
 
   const renderBadge = (item: Pick<NavItem, "badge" | "badgeTone">) => {
