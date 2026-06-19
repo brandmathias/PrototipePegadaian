@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, LoaderCircle, UploadCloud } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import { HandoverProofCard, type HandoverProofViewModel } from "@/components/shared/handover-proof-card";
 import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 type HandoverProofUploadFormProps = {
   canUpload: boolean;
@@ -28,6 +29,7 @@ export function HandoverProofUploadForm({
   const router = useRouter();
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -42,6 +44,20 @@ export function HandoverProofUploadForm({
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [file]);
 
   function handleSubmit() {
     if (disabled || !file) {
@@ -91,80 +107,35 @@ export function HandoverProofUploadForm({
     });
   }
 
+  const controls = (
+    <div className="mt-4 flex flex-col items-center gap-3 text-center">
+      <label
+        aria-disabled={!canUpload || isPending}
+        className={cn(
+          "inline-flex h-11 cursor-pointer items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 font-body text-sm font-semibold text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.03] active:scale-[0.98]",
+          (!canUpload || isPending) &&
+            "pointer-events-none cursor-not-allowed border-[#d7ded5] bg-[#eef3ed] text-[#718077] hover:translate-y-0"
+        )}
+        htmlFor={inputId}
+      >
+        Pilih File
+      </label>
+      <span className="block font-body text-[0.78rem] uppercase tracking-[0.08em] text-[#6e716c]">
+        JPG, PNG, atau WebP (Maks. 5MB)
+      </span>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       <HandoverProofCard
         audience="admin"
+        controls={controls}
         itemTitle={itemTitle}
+        previewBadgeLabel={file ? "Preview Aktif" : undefined}
+        previewUrl={previewUrl}
         proof={proof ? { ...proof, location: proof.location ?? location } : { location }}
       />
-
-      <div className="rounded-[1.35rem] border border-dashed border-[#c8d9cf] bg-[#f8fbf9] p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-[1rem] bg-[#e8f5ee] text-[#0a6a49]">
-              <Camera className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-black text-[#13211c]">
-                {proof?.fileUrl ? "Ganti foto bukti serah-terima" : "Unggah foto bukti serah-terima"}
-              </p>
-              <p className="mt-1 text-xs leading-5 text-[#52665c]">
-                Format foto JPG, PNG, atau WebP. Maksimal 5 MB.
-              </p>
-              {file ? (
-                <p className="mt-2 truncate rounded-lg border border-[#dce9df] bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49]">
-                  {file.name}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex shrink-0 flex-col gap-2 sm:min-w-[16rem]">
-            <label
-              className="inline-flex h-11 cursor-pointer items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 text-sm font-semibold text-[#0a6a49] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/35 hover:bg-[#0a6a49]/[0.03] active:scale-[0.98]"
-              htmlFor={inputId}
-            >
-              Pilih Foto
-            </label>
-            <Button
-              className="h-11 rounded-[0.95rem]"
-              disabled={disabled}
-              onClick={handleSubmit}
-              type="button"
-            >
-              {isPending ? (
-                <>
-                  <LoaderCircle className="button-spinner size-4" />
-                  Mengunggah...
-                </>
-              ) : (
-                <>
-                  <UploadCloud className="size-4" />
-                  Unggah Bukti Serah-Terima
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {!canUpload ? (
-          <InlineFeedback
-            className="mt-4"
-            description="Bukti serah-terima baru dapat diunggah setelah pembayaran transaksi diverifikasi."
-            title="Menunggu pembayaran terverifikasi"
-            variant="info"
-          />
-        ) : null}
-        {feedback ? (
-          <InlineFeedback
-            className="mt-4 feedback-lift"
-            description={feedback.description}
-            title={feedback.title}
-            variant={feedback.variant}
-          />
-        ) : null}
-      </div>
 
       <Input
         accept=".jpg,.jpeg,.png,.webp"
@@ -177,6 +148,40 @@ export function HandoverProofUploadForm({
         }}
         type="file"
       />
+
+      <Button
+        className="h-14 w-full rounded-md font-body text-base font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+        disabled={disabled}
+        onClick={handleSubmit}
+        type="button"
+      >
+        {!isHydrated ? (
+          "Menyiapkan..."
+        ) : isPending ? (
+          <>
+            <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+            Mengunggah...
+          </>
+        ) : (
+          "Unggah Bukti Serah-Terima"
+        )}
+      </Button>
+
+      {!canUpload ? (
+        <InlineFeedback
+          description="Bukti serah-terima baru dapat diunggah setelah pembayaran transaksi diverifikasi."
+          title="Menunggu pembayaran terverifikasi"
+          variant="info"
+        />
+      ) : null}
+      {feedback ? (
+        <InlineFeedback
+          className="feedback-lift"
+          description={feedback.description}
+          title={feedback.title}
+          variant={feedback.variant}
+        />
+      ) : null}
     </div>
   );
 }
