@@ -27,6 +27,9 @@ type AdminPemasaranTransaction = {
   paymentMethod?: string | null;
   status?: string | null;
   proofUrl?: string | null;
+  handoverProofUrl?: string | null;
+  handoverProofUploadedAt?: Date | string | null;
+  handoverProofUploadedBy?: string | null;
   reference?: string | null;
   soldAt?: Date | string | null;
   paymentDeadline?: Date | string | null;
@@ -299,6 +302,9 @@ export function serializeAdminPemasaran(
     buyerNationalId: extra.transaction?.buyerNationalId ?? null,
     paymentMethod: formatPaymentMethod(extra.transaction?.paymentMethod),
     proofUrl: extra.transaction?.proofUrl ?? null,
+    handoverProofUrl: extra.transaction?.handoverProofUrl ?? null,
+    handoverProofUploadedAt: toIsoOrNull(extra.transaction?.handoverProofUploadedAt),
+    handoverProofUploadedBy: extra.transaction?.handoverProofUploadedBy ?? null,
     reference: extra.transaction?.reference ?? null,
     soldAt: toIsoOrNull(extra.transaction?.soldAt),
     paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
@@ -333,6 +339,7 @@ export function serializeAdminTransaction(
     bankName?: string | null;
     accountNumber?: string | null;
     accountName?: string | null;
+    handoverProofUploadedByName?: string | null;
   }
 ) {
   const proof = splitLegacyProofValue(row.proofUrl);
@@ -357,6 +364,9 @@ export function serializeAdminTransaction(
     deadline: toDateLabel(row.paymentDeadline),
     deadlineAt: row.paymentDeadline?.toISOString(),
     proofFile: proof.proofUrl,
+    handoverProofFile: row.handoverProofUrl ?? "",
+    handoverProofUploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
+    handoverProofUploadedBy: row.handoverProofUploadedByName ?? "Admin Unit",
     rejectionReason: row.rejectionReason,
     pemasaranMode: row.type === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup",
     bankName: row.bankName ?? "-",

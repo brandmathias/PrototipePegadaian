@@ -1,9 +1,14 @@
 import { randomUUID } from "node:crypto";
 
 import { and, desc, eq, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
-import { validateTransactionRejectPayload, validateTransactionVerificationPayload } from "@/lib/admin-unit/validation";
+import {
+  validateTransactionHandoverProofPayload,
+  validateTransactionRejectPayload,
+  validateTransactionVerificationPayload
+} from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import {
   barang,
@@ -17,6 +22,8 @@ import {
   users
 } from "@/lib/db/schema";
 import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
+
+const handoverUploader = alias(users, "transaction_handover_uploader");
 
 function primaryBarangPhotoUrl() {
   return sql<string | null>`(
@@ -38,6 +45,7 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
+      handoverUploader,
       account: unitAccounts
     })
     .from(transaksi)
@@ -46,6 +54,7 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
+    .leftJoin(handoverUploader, eq(handoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)))
     .limit(1);
@@ -72,7 +81,8 @@ function serializeTransactionJoin(row: Awaited<ReturnType<typeof getTransactionF
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null
+    accountName: row.account?.accountHolderName ?? null,
+    handoverProofUploadedByName: row.handoverUploader?.name ?? null
   });
 }
 
@@ -85,6 +95,7 @@ export async function listAdminTransactions(unitId: string) {
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
+      handoverUploader,
       account: unitAccounts
     })
     .from(transaksi)
@@ -93,6 +104,7 @@ export async function listAdminTransactions(unitId: string) {
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
+    .leftJoin(handoverUploader, eq(handoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(eq(barang.unitId, unitId))
     .orderBy(desc(transaksi.createdAt));
@@ -112,13 +124,64 @@ export async function listAdminTransactions(unitId: string) {
       unitAddress: row.unit.address,
       bankName: row.account?.bankName ?? null,
       accountNumber: row.account?.accountNumber ?? null,
-      accountName: row.account?.accountHolderName ?? null
+      accountName: row.account?.accountHolderName ?? null,
+      handoverProofUploadedByName: row.handoverUploader?.name ?? null
     })
   );
 }
 
 export async function getAdminTransactionById(unitId: string, transactionId: string) {
   return serializeTransactionJoin(await getTransactionForUnit(unitId, transactionId));
+}
+
+export async function uploadAdminTransactionHandoverProof(
+  unitId: string,
+  adminId: string,
+  transactionId: string,
+  input: { fileName?: unknown }
+) {
+  const row = await getTransactionForUnit(unitId, transactionId);
+  const payload = validateTransactionHandoverProofPayload(input);
+
+  if (!["lunas", "selesai"].includes(row.transaction.status)) {
+    throw new Error("Bukti serah-terima baru dapat diunggah setelah pembayaran diverifikasi.");
+  }
+
+  const uploadedAt = new Date();
+  const updatePayload = {
+    handoverProofUrl: payload.fileName,
+    handoverProofUploadedAt: uploadedAt,
+    handoverProofUploadedByUserId: adminId,
+    updatedAt: uploadedAt
+  };
+
+  const [updated] = await db
+    .update(transaksi)
+    .set(updatePayload)
+    .where(eq(transaksi.id, transactionId))
+    .returning();
+
+  if (!updated) {
+    throw new Error("Transaksi tidak ditemukan.");
+  }
+
+  return serializeAdminTransaction({
+    ...updated,
+    buyerName: row.buyerProfile?.fullName ?? row.buyer.name,
+    buyerEmail: row.buyerProfile?.email ?? row.buyer.email,
+    buyerPhone: row.buyerProfile?.phoneNumber ?? row.buyer.phoneNumber,
+    buyerNationalId: row.buyerProfile?.nationalId ?? row.buyer.nationalId,
+    buyerAddress: null,
+    lotName: row.item.name,
+    lotId: row.item.id,
+    imageUrl: row.imageUrl ?? null,
+    unitName: row.unit.name,
+    unitAddress: row.unit.address,
+    bankName: row.account?.bankName ?? null,
+    accountNumber: row.account?.accountNumber ?? null,
+    accountName: row.account?.accountHolderName ?? null,
+    handoverProofUploadedByName: row.handoverUploader?.name ?? null
+  });
 }
 
 async function ensureTransactionMutable(status: string) {
@@ -197,7 +260,8 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null
+    accountName: row.account?.accountHolderName ?? null,
+    handoverProofUploadedByName: row.handoverUploader?.name ?? null
   });
 }
 
@@ -255,6 +319,7 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
     unitAddress: row.unit.address,
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null
+    accountName: row.account?.accountHolderName ?? null,
+    handoverProofUploadedByName: row.handoverUploader?.name ?? null
   });
 }

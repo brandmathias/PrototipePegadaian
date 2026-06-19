@@ -7,6 +7,13 @@ vi.mock("@/components/admin-unit/admin-unit-action-button", () => ({
   AdminUnitActionButton: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+    push: vi.fn()
+  })
+}));
+
 import {
   AdminTransactionDetailWorkspacePage,
   AdminTransactionHistoryPage,
@@ -45,6 +52,9 @@ const transactions = [
     deadline: "2 Mei 2026 16.00",
     deadlineAt: "2026-05-02T08:00:00.000Z",
     proofFile: "",
+    handoverProofFile: "",
+    handoverProofUploadedAt: "-",
+    handoverProofUploadedBy: "-",
     pemasaranMode: "Harga Tetap",
     buyerEmail: "sinta@example.com",
     buyerPhone: "+62 812 3333 4444",
@@ -199,6 +209,21 @@ describe("admin transaction pages", () => {
       "href",
       "/uploads/bukti-kalung.jpg"
     );
+    expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
+  });
+
+  it("shows handover proof upload controls for verified admin transactions", () => {
+    render(
+      <AdminTransactionDetailWorkspacePage
+        backHref="/admin/transaksi/riwayat"
+        backLabel="Kembali ke riwayat"
+        transaction={transactions[1]}
+      />
+    );
+
+    expect(screen.getByText(/menunggu admin unit mengunggah bukti serah-terima barang/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/file bukti serah-terima barang/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
   });
 
   it("prints the harga tetap receipt inline without opening a dedicated receipt tab", async () => {

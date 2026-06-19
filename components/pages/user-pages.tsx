@@ -41,6 +41,7 @@ import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countd
 import { TransactionsWorkspace } from "@/components/buyer/transactions-workspace";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
+import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { TransactionReceiptActions } from "@/components/shared/transaction-receipt-actions";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
@@ -1520,6 +1521,9 @@ function VickreyPaymentSuccessDetail({
     transaction.applicationNumber || transaction.receiptNumber || transaction.reference || transaction.id
   }`;
   const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
+  const handoverLockMessage = transaction.handoverProof
+    ? null
+    : "Menunggu admin unit mengunggah bukti serah-terima barang.";
 
   return (
     <div className="flex flex-col gap-4 bg-white md:gap-5">
@@ -1660,7 +1664,10 @@ function VickreyPaymentSuccessDetail({
                 settlementLockMessage ? (
                   <BuyerSettlementLockNotice message={settlementLockMessage} />
                 ) : (
-                  <CompletePurchaseButton transactionId={transaction.id} />
+                  <CompletePurchaseButton
+                    disabledReason={handoverLockMessage}
+                    transactionId={transaction.id}
+                  />
                 )
               ) : (
                 <Button className="w-full" disabled type="button">
@@ -1679,6 +1686,12 @@ function VickreyPaymentSuccessDetail({
           </CardContent>
         </Card>
       </div>
+
+      <HandoverProofCard
+        audience="buyer"
+        itemTitle={transaction.title}
+        proof={transaction.handoverProof ?? { location: transaction.unit }}
+      />
     </div>
   );
 }
@@ -1730,6 +1743,9 @@ export function TransactionDetailPage({
   const settlementLockMessage = buyerStatus?.blacklist.active
     ? BUYER_SETTLEMENT_LOCKED_MESSAGE
     : null;
+  const handoverLockMessage = transaction.handoverProof
+    ? null
+    : "Menunggu admin unit mengunggah bukti serah-terima barang.";
 
   if (isFailedVickreyPayment) {
     return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
@@ -1987,7 +2003,10 @@ export function TransactionDetailPage({
                   {settlementLockMessage ? (
                     <BuyerSettlementLockNotice message={settlementLockMessage} />
                   ) : (
-                    <CompletePurchaseButton transactionId={transaction.id} />
+                    <CompletePurchaseButton
+                      disabledReason={handoverLockMessage}
+                      transactionId={transaction.id}
+                    />
                   )}
                 </div>
               ) : null}
@@ -2039,6 +2058,14 @@ export function TransactionDetailPage({
           )}
         </div>
       </div>
+
+      {showReceipt ? (
+        <HandoverProofCard
+          audience="buyer"
+          itemTitle={transaction.title}
+          proof={transaction.handoverProof ?? { location: transaction.unit }}
+        />
+      ) : null}
 
       {showReceipt && transaction.kind !== "VICKREY_WIN" ? (
         <Card className="overflow-hidden border border-border/70 bg-white">

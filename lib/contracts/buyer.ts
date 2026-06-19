@@ -12,6 +12,13 @@ export type BuyerTransactionStatus =
 
 export type BuyerPaymentMethod = "TRANSFER_BANK" | "BAYAR_LANGSUNG";
 
+export type BuyerHandoverProof = {
+  fileUrl: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  location: string;
+};
+
 export type BuyerTransaction = {
   id: string;
   lotId: string;
@@ -39,6 +46,7 @@ export type BuyerTransaction = {
   winnerContext?: string;
   verifiedAt?: string;
   receiptNumber?: string;
+  handoverProof?: BuyerHandoverProof;
 };
 
 export type BuyerBidStatus =

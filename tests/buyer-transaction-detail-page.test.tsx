@@ -141,6 +141,12 @@ describe("buyer transaction detail page", () => {
           ...transaction,
           status: "LUNAS",
           paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
+            uploadedAt: "4 Mei 2026 22.30 WIB",
+            uploadedBy: "Admin UPC Ranotana",
+            location: "UPC Ranotana"
+          },
           verifiedAt: "4 Mei 2026 22.11 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
@@ -149,6 +155,8 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/menunggu konfirmasi selesai dari buyer/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /bukti serah-terima barang kalung emas 18k/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
     expect(screen.queryByText(/transfer-lunas.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
@@ -170,6 +178,26 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/kalung-emas.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
+  });
+
+  it("keeps the finish action visible but disabled until admin uploads handover proof", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "LUNAS",
+          paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/menunggu admin unit mengunggah bukti serah-terima barang/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
   it("prints immediately on mobile so the browser keeps the tap gesture", () => {
@@ -237,6 +265,12 @@ describe("buyer transaction detail page", () => {
           paymentLabel: "Bayar langsung di unit",
           paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
           imageUrl: "/uploads/barang/cincin-lelang.jpg",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-vickrey-paid.jpg",
+            uploadedAt: "3 Jun 2026, 08.15 WIB",
+            uploadedBy: "Admin UPC Ranotana",
+            location: "UPC Ranotana"
+          },
           verifiedAt: "3 Jun 2026, 07.39 WIB",
           receiptNumber: "CASH-OCE8A1"
         }}
@@ -266,6 +300,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/trx-suk-pgj-vic-trxvick/i)).toBeInTheDocument();
     expect(screen.getByText(/pembayaran tervalidasi/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak ada restriksi aktif/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang cincin emas berlian/i })).toBeInTheDocument();
 

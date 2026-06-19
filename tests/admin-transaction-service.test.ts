@@ -34,7 +34,11 @@ vi.mock("@/lib/services/notification-events", () => ({
   notifyPaymentVerified: mocks.notifyPaymentVerified
 }));
 
-import { rejectAdminTransactionProof, verifyAdminTransaction } from "@/lib/services/admin-transaction.service";
+import {
+  rejectAdminTransactionProof,
+  uploadAdminTransactionHandoverProof,
+  verifyAdminTransaction
+} from "@/lib/services/admin-transaction.service";
 
 function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
   const date = new Date("2026-06-03T09:01:10.537Z");
@@ -54,6 +58,9 @@ function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
       paymentDeadline: new Date("2026-06-04T00:07:15.379Z"),
       verifiedByUserId: null,
       verifiedAt: null,
+      handoverProofUrl: null,
+      handoverProofUploadedAt: null,
+      handoverProofUploadedByUserId: null,
       createdAt: date,
       updatedAt: date
     },
@@ -195,5 +202,42 @@ describe("admin transaction service", () => {
         note: expect.stringMatching(/harga tetap ditolak/i)
       })
     );
+  });
+
+  it("stores admin-uploaded handover proof without changing the transaction status", async () => {
+    const uploadedAt = new Date("2026-06-03T11:15:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(uploadedAt);
+    mocks.query.limit.mockResolvedValue([makeTransactionJoin("lunas", "fixed_price")]);
+
+    const updatedTransaction = {
+      ...makeTransactionJoin("lunas", "fixed_price").transaction,
+      handoverProofUrl: "/uploads/serah-terima/trx-fixed-rejected.jpg",
+      handoverProofUploadedAt: uploadedAt,
+      handoverProofUploadedByUserId: "admin-1"
+    };
+    const setSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([updatedTransaction])
+      })
+    });
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: setSpy
+    }));
+
+    await uploadAdminTransactionHandoverProof("unit-1", "admin-1", "trx-fixed-rejected", {
+      fileName: "/uploads/serah-terima/trx-fixed-rejected.jpg"
+    });
+
+    const [setPayload] = setSpy.mock.calls[0] as [Record<string, unknown>];
+
+    expect(setPayload).toEqual(
+      expect.objectContaining({
+        handoverProofUrl: "/uploads/serah-terima/trx-fixed-rejected.jpg",
+        handoverProofUploadedAt: uploadedAt,
+        handoverProofUploadedByUserId: "admin-1"
+      })
+    );
+    expect(setPayload).not.toHaveProperty("status");
   });
 });

@@ -280,6 +280,16 @@ export function validateTransactionRejectPayload(input: { reason?: unknown }) {
   };
 }
 
+export function validateTransactionHandoverProofPayload(input: { fileName?: unknown }) {
+  const fileName = requiredText(input.fileName, "Foto bukti serah-terima wajib diunggah.");
+
+  if (!/\.(jpg|jpeg|png|webp)$/i.test(fileName)) {
+    throw new Error("Format bukti serah-terima harus JPG, PNG, atau WebP.");
+  }
+
+  return { fileName };
+}
+
 export function validateBlacklistExtendPayload(input: { blockedUntil?: unknown; reason?: unknown }) {
   return {
     blockedUntil: normalizeDate(input.blockedUntil, "Tanggal selesai blokir belum valid."),

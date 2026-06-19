@@ -188,6 +188,14 @@ function transactionSelection() {
     referenceNumber: transaksi.referenceNumber,
     paymentDeadline: transaksi.paymentDeadline,
     verifiedAt: transaksi.verifiedAt,
+    handoverProofUrl: transaksi.handoverProofUrl,
+    handoverProofUploadedAt: transaksi.handoverProofUploadedAt,
+    handoverProofUploadedBy: sql<string | null>`(
+      select u.name
+      from "user" u
+      where u.id = ${transaksi.handoverProofUploadedByUserId}
+      limit 1
+    )`,
     createdAt: transaksi.createdAt,
     lotName: barang.name,
     lotId: barang.id,
@@ -1128,6 +1136,10 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
 
   if (row.status !== "lunas") {
     throw new Error("Transaksi baru bisa diselesaikan setelah admin memverifikasi pembayaran.");
+  }
+
+  if (!row.handoverProofUrl) {
+    throw new Error("Pembelian baru bisa diselesaikan setelah admin unit mengunggah bukti serah-terima barang.");
   }
 
   const updated = await db.transaction(async (tx) => {

@@ -2,13 +2,19 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { CheckCircle2, LoaderCircle, LockKeyhole } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { useToast } from "@/components/ui/toast";
 
-export function CompletePurchaseButton({ transactionId }: { transactionId: string }) {
+export function CompletePurchaseButton({
+  disabledReason,
+  transactionId
+}: {
+  disabledReason?: string | null;
+  transactionId: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [isHydrated, setIsHydrated] = useState(false);
@@ -24,6 +30,10 @@ export function CompletePurchaseButton({ transactionId }: { transactionId: strin
   }, []);
 
   function handleComplete() {
+    if (disabledReason) {
+      return;
+    }
+
     setFeedback(null);
     startTransition(async () => {
       const response = await fetch(`/api/user/transaksi/${transactionId}/selesai`, {
@@ -64,8 +74,13 @@ export function CompletePurchaseButton({ transactionId }: { transactionId: strin
 
   return (
     <div className="space-y-3">
-      <Button className="w-full" disabled={!isHydrated || isPending} onClick={handleComplete}>
-        {isPending ? (
+      <Button className="w-full" disabled={!isHydrated || isPending || Boolean(disabledReason)} onClick={handleComplete}>
+        {disabledReason ? (
+          <>
+            <LockKeyhole className="size-4" />
+            Pembelian Selesai
+          </>
+        ) : isPending ? (
           <>
             <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
             Menyelesaikan...
@@ -77,6 +92,13 @@ export function CompletePurchaseButton({ transactionId }: { transactionId: strin
           </>
         )}
       </Button>
+      {disabledReason ? (
+        <InlineFeedback
+          description={disabledReason}
+          title="Menunggu bukti serah-terima"
+          variant="info"
+        />
+      ) : null}
       {feedback ? (
         <InlineFeedback
           className="feedback-lift"

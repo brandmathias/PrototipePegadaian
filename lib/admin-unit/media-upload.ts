@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ADMIN_BARANG_MEDIA_LIMIT } from "@/lib/admin-unit/validation";
+import { getPublicUploadUrl, getUploadDirectory } from "@/lib/uploads/storage";
 
 function safeFileName(fileName: string) {
   const ext = path.extname(fileName).toLowerCase();
@@ -25,7 +26,7 @@ export async function saveAdminBarangMediaFiles(files: File[]) {
     throw new Error("Media hanya boleh berupa foto atau video.");
   }
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "barang");
+  const uploadDir = getUploadDirectory("barang");
   await mkdir(uploadDir, { recursive: true });
 
   return Promise.all(
@@ -37,7 +38,7 @@ export async function saveAdminBarangMediaFiles(files: File[]) {
 
       return {
         type: file.type.startsWith("video/") ? "video" : "foto",
-        url: `/uploads/barang/${storedName}`,
+        url: getPublicUploadUrl("barang", storedName),
         fileName: file.name,
         sizeBytes: file.size,
         sortOrder: index

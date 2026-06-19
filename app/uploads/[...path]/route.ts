@@ -1,54 +1,13 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
-import path from "node:path";
 import { Readable } from "node:stream";
+
+import { getUploadMimeType, resolvePublicUploadPath } from "@/lib/uploads/storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type Context = { params: Promise<{ path?: string[] }> };
-
-const UPLOADS_ROOT = path.resolve(process.cwd(), "public", "uploads");
-const MIME_TYPES: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".svg": "image/svg+xml",
-  ".pdf": "application/pdf",
-  ".mp4": "video/mp4",
-  ".mov": "video/quicktime",
-  ".webm": "video/webm",
-  ".mkv": "video/x-matroska"
-};
-
-function getMimeType(filePath: string) {
-  return MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
-}
-
-function resolveUploadPath(segments: string[] | undefined) {
-  if (!segments?.length) {
-    return null;
-  }
-
-  let decodedSegments: string[];
-  try {
-    decodedSegments = segments.map((segment) => decodeURIComponent(segment));
-  } catch {
-    return null;
-  }
-
-  const filePath = path.resolve(UPLOADS_ROOT, ...decodedSegments);
-  const isInsideUploads = filePath === UPLOADS_ROOT || filePath.startsWith(`${UPLOADS_ROOT}${path.sep}`);
-  const isAllowedFileType = path.extname(filePath).toLowerCase() in MIME_TYPES;
-
-  if (!isInsideUploads || !isAllowedFileType) {
-    return null;
-  }
-
-  return filePath;
-}
 
 function toWebStream(filePath: string, start?: number, end?: number) {
   return Readable.toWeb(createReadStream(filePath, { start, end })) as ReadableStream;
@@ -91,7 +50,7 @@ function parseByteRange(rangeHeader: string | null, size: number) {
 
 async function getUploadResponse(request: Request, context: Context, includeBody: boolean) {
   const { path: uploadPath } = await context.params;
-  const filePath = resolveUploadPath(uploadPath);
+  const filePath = resolvePublicUploadPath(uploadPath);
 
   if (!filePath) {
     return new Response("Not found", { status: 404 });
@@ -108,7 +67,7 @@ async function getUploadResponse(request: Request, context: Context, includeBody
     return new Response("Not found", { status: 404 });
   }
 
-  const contentType = getMimeType(filePath);
+  const contentType = getUploadMimeType(filePath);
   const range = parseByteRange(request.headers.get("range"), fileStats.size);
   const baseHeaders = {
     "Accept-Ranges": "bytes",

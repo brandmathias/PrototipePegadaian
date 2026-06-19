@@ -237,6 +237,41 @@ describe("buyer serializers", () => {
     expect(transaction.imageUrl).toBe("/uploads/barang/kalung-emas.jpg");
   });
 
+  it("exposes handover proof metadata separately from payment proof", () => {
+    const transaction = serializeBuyerTransaction({
+      id: "trx-fixed-handover",
+      pemasaranId: "pm-fixed",
+      type: "fixed_price",
+      amount: "100000000",
+      paymentMethod: "transfer",
+      status: "lunas",
+      proofUrl: "/uploads/bukti/transfer.jpg",
+      rejectionReason: null,
+      referenceNumber: "BRI-2026-991",
+      paymentDeadline: new Date("2026-05-05T02:30:00Z"),
+      verifiedAt: new Date("2026-05-04T14:11:00Z"),
+      createdAt: new Date("2026-05-04T14:07:00Z"),
+      handoverProofUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
+      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
+      handoverProofUploadedBy: "Admin UPC Ranotana",
+      lotName: "Kalung Emas",
+      lotId: "barang-2",
+      imageUrl: "/uploads/barang/kalung-emas.jpg",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      account: null
+    } as any);
+
+    expect(transaction.paymentProof).toBe("/uploads/bukti/transfer.jpg");
+    expect(transaction.handoverProof).toEqual({
+      fileUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
+      uploadedAt: "4 Mei 2026, 22.30 WIB",
+      uploadedBy: "Admin UPC Ranotana",
+      location: "UPC Ranotana"
+    });
+    expect(transaction.paymentNotes.join(" ")).toMatch(/bukti serah-terima/i);
+  });
+
   it("exposes vickrey winner payment context from the related transaction", () => {
     const bid = serializeBuyerBid({
       pemasaranId: "pm-vickrey-1",

@@ -51,6 +51,9 @@ type BuyerTransactionShape = {
   referenceNumber: string | null;
   paymentDeadline: Date | null;
   verifiedAt: Date | null;
+  handoverProofUrl?: string | null;
+  handoverProofUploadedAt?: Date | null;
+  handoverProofUploadedBy?: string | null;
   createdAt: Date;
   lotName: string;
   lotId: string;
@@ -136,7 +139,9 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   if (row.status === "lunas") {
     return [
       "Pembayaran sudah diverifikasi admin unit.",
-      "Tekan Pembelian Selesai setelah barang dan nota sudah Anda terima.",
+      row.handoverProofUrl
+        ? "Bukti serah-terima barang sudah tersedia. Tekan Pembelian Selesai setelah barang dan nota sudah Anda terima."
+        : "Menunggu admin unit mengunggah bukti serah-terima barang sebelum Pembelian Selesai dapat dikonfirmasi.",
       "Nota digital tersedia selama transaksi menunggu penyelesaian buyer."
     ];
   }
@@ -286,7 +291,15 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
-    receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined
+    receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined,
+    handoverProof: row.handoverProofUrl
+      ? {
+          fileUrl: row.handoverProofUrl,
+          uploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
+          uploadedBy: row.handoverProofUploadedBy ?? "Admin Unit",
+          location: row.unitName
+        }
+      : undefined
   };
 }
 

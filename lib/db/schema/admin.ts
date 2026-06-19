@@ -173,6 +173,9 @@ export const transaksi = pgTable(
     paymentDeadline: timestamp("payment_deadline", { withTimezone: true }),
     verifiedByUserId: text("verified_by_user_id").references(() => users.id, { onDelete: "set null" }),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    handoverProofUrl: text("handover_proof_url"),
+    handoverProofUploadedAt: timestamp("handover_proof_uploaded_at", { withTimezone: true }),
+    handoverProofUploadedByUserId: text("handover_proof_uploaded_by_user_id").references(() => users.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },

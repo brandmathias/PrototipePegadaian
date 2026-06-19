@@ -19,6 +19,7 @@ import {
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
+import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-upload-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
@@ -794,6 +795,21 @@ export function VerificationWorkspace({
           <div className="space-y-4">
             <WorkspacePanel icon={<ReceiptText className="size-4" />} label="Bukti Pembayaran">
               <ProofPreview transaction={transaction} />
+            </WorkspacePanel>
+
+            <WorkspacePanel icon={<FileCheck2 className="size-4" />} label="Bukti Serah Terima">
+              <HandoverProofUploadForm
+                canUpload={transaction.status === "LUNAS" || transaction.status === "SELESAI"}
+                itemTitle={transaction.lot}
+                location={transaction.unit}
+                proof={{
+                  fileUrl: transaction.handoverProofFile,
+                  uploadedAt: transaction.handoverProofUploadedAt,
+                  uploadedBy: transaction.handoverProofUploadedBy,
+                  location: transaction.unit
+                }}
+                transactionId={transaction.id}
+              />
             </WorkspacePanel>
 
             <WorkspacePanel icon={<Printer className="size-4" />} label="Tindakan Admin">

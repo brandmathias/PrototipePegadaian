@@ -92,6 +92,7 @@ import {
 import {
   UnitForm,
 } from "@/components/superadmin/unit-form";
+import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -200,6 +201,8 @@ export type SuperAdminUnitBarangMarketingSession = {
   category?: string;
   condition?: string;
   description?: string;
+  unitName?: string | null;
+  unitAddress?: string | null;
   status: string;
   mode: string;
   iteration?: number;
@@ -225,6 +228,9 @@ export type SuperAdminUnitBarangMarketingSession = {
   buyerNationalId?: string | null;
   paymentMethod?: string | null;
   proofUrl?: string | null;
+  handoverProofUrl?: string | null;
+  handoverProofUploadedAt?: string | null;
+  handoverProofUploadedBy?: string | null;
   reference?: string | null;
   soldAt?: string | null;
   paymentDeadline?: string | null;
@@ -2950,6 +2956,32 @@ function SuperAdminReadOnlyAuditFooter({
   );
 }
 
+function SuperAdminHandoverProofAuditCard({
+  itemTitle,
+  session,
+  unitName,
+}: {
+  itemTitle?: string;
+  session: SuperAdminUnitBarangMarketingSession;
+  unitName?: string | null;
+}) {
+  return (
+    <HandoverProofCard
+      audience="superadmin"
+      compact
+      itemTitle={itemTitle ?? session.lot}
+      proof={{
+        fileUrl: session.handoverProofUrl,
+        uploadedAt: session.handoverProofUploadedAt
+          ? formatSuperAdminDateTime(session.handoverProofUploadedAt)
+          : null,
+        uploadedBy: session.handoverProofUploadedBy,
+        location: unitName ?? session.unitName
+      }}
+    />
+  );
+}
+
 function SuperAdminMarketingArchiveStatusCard({
   eyebrow,
   title,
@@ -4158,6 +4190,11 @@ function SuperAdminFixedPriceWorkspace({
             title={hasBuyer ? formatSuperAdminDisplayLabel(session.transactionStatus) : "Belum ada pembeli"}
             tone={isFailed ? "red" : "emerald"}
           />
+          <SuperAdminHandoverProofAuditCard
+            itemTitle={session.lot}
+            session={session}
+            unitName={session.unitName}
+          />
           <SuperAdminReadOnlyAuditFooter
             icon={ShieldCheck}
             note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."
@@ -4218,6 +4255,11 @@ function SuperAdminVickreyWorkspace({
         </div>
         <div className="space-y-4 2xl:sticky 2xl:top-4">
           <SuperAdminVickreyProgressPanel session={session} />
+          <SuperAdminHandoverProofAuditCard
+            itemTitle={receiptContext.itemTitle}
+            session={session}
+            unitName={receiptContext.unitName}
+          />
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
         </div>

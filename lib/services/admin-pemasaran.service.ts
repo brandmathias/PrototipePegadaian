@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
@@ -8,6 +9,7 @@ import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
+const transactionHandoverUploader = alias(users, "marketing_transaction_handover_uploader");
 
 type ParticipantPreview = {
   bidderId: string;
@@ -115,6 +117,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         paymentMethod?: string | null;
         status?: string | null;
         proofUrl?: string | null;
+        handoverProofUrl?: string | null;
+        handoverProofUploadedAt?: Date | null;
+        handoverProofUploadedBy?: string | null;
         reference?: string | null;
         soldAt?: Date | null;
         paymentDeadline?: Date | null;
@@ -129,6 +134,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       status: transaksi.status,
       paymentMethod: transaksi.paymentMethod,
       proofUrl: transaksi.proofUrl,
+      handoverProofUrl: transaksi.handoverProofUrl,
+      handoverProofUploadedAt: transaksi.handoverProofUploadedAt,
+      handoverProofUploadedBy: transactionHandoverUploader.name,
       reference: transaksi.referenceNumber,
       paymentDeadline: transaksi.paymentDeadline,
       soldAt: transaksi.verifiedAt,
@@ -140,6 +148,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
     })
     .from(transaksi)
     .innerJoin(users, eq(users.id, transaksi.userId))
+    .leftJoin(transactionHandoverUploader, eq(transactionHandoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .where(inArray(transaksi.pemasaranId, pemasaranIds))
     .orderBy(desc(transaksi.createdAt));
 
@@ -154,6 +163,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         paymentMethod: row.paymentMethod,
         status: row.status,
         proofUrl: row.proofUrl,
+        handoverProofUrl: row.handoverProofUrl,
+        handoverProofUploadedAt: row.handoverProofUploadedAt,
+        handoverProofUploadedBy: row.handoverProofUploadedBy,
         reference: row.reference,
         soldAt: row.soldAt,
         paymentDeadline: row.paymentDeadline
@@ -171,6 +183,9 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       paymentMethod?: string | null;
       status?: string | null;
       proofUrl?: string | null;
+      handoverProofUrl?: string | null;
+      handoverProofUploadedAt?: Date | null;
+      handoverProofUploadedBy?: string | null;
       reference?: string | null;
       soldAt?: Date | null;
       paymentDeadline?: Date | null;
