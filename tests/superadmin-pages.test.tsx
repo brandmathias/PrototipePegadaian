@@ -657,7 +657,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByText(/risk heat indicator/i)).not.toBeInTheDocument();
   }, 10000);
 
-  it("renders superadmin unit detail as an edit setup page with inventory canvas", () => {
+  it("renders superadmin unit detail as monitoring inventory without management forms", () => {
     const unitItems = Array.from({ length: 12 }, (_, index) => {
       const itemNumber = index + 1;
 
@@ -743,41 +743,23 @@ describe("superadmin pages", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Detail & Edit Unit Pelaksana" })).toBeInTheDocument();
-    expect(screen.getByText("UPC Ranotana (CP-MND-13)")).toBeInTheDocument();
-    expect(screen.getByText("Unit Pelayanan Cabang")).toBeInTheDocument();
-    expect(screen.getByText("Profil & Lokasi Unit")).toBeInTheDocument();
-    expect(screen.getByText("Rekening Operasional Cabang")).toBeInTheDocument();
-    expect(screen.getByText("Otoritas Admin Penanggung Jawab")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("CP-MND-13")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("UPC Ranotana")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Jl. Sam Ratulangi")).toBeInTheDocument();
-    expect(screen.getByText("Daftar Rekening Terdaftar (1)")).toBeInTheDocument();
-    expect(screen.getAllByText("Bank Mandiri").length).toBeGreaterThan(0);
-    expect(screen.getByText(/^1 rekening$/i)).toBeInTheDocument();
-    expect(screen.getByText(/^1 admin aktif$/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /lihat detail rekening bank mandiri/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /hapus rekening bank mandiri/i })).toBeInTheDocument();
-    expect(screen.getByText("Daftar Admin Unit Terdaftar (1)")).toBeInTheDocument();
-    expect(screen.getByText("Admin Ranotana")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /lihat detail admin admin ranotana/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /hapus admin admin ranotana/i })).toBeInTheDocument();
-    expect(screen.queryByLabelText(/cabang bank/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /tambah rekening/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /tambah admin/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /simpan rekening/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /simpan admin unit/i })).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/unit penugasan/i)).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/nik admin/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /simpan perubahan/i })).toHaveAttribute(
-      "form",
-      "superadmin-unit-profile-unit-1",
-    );
-    expect(screen.getByRole("link", { name: /^kembali$/i })).toHaveAttribute(
+    expect(screen.getByRole("heading", { name: "Detail Inventori Unit" })).toBeInTheDocument();
+    expect(screen.getByText("Superadmin / Monitoring Unit / Detail Unit")).toBeInTheDocument();
+    expect(screen.getByText("CP-MND-13")).toBeInTheDocument();
+    expect(screen.getByText("Aktif")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /kembali ke monitoring unit/i })).toHaveAttribute(
       "href",
-      "/superadmin/manajemen-unit",
+      "/superadmin/monitoring-unit",
     );
-    expect(screen.getByText("Inventori Barang Unit")).toBeInTheDocument();
+    expect(screen.queryByText("Detail & Edit Unit Pelaksana")).not.toBeInTheDocument();
+    expect(screen.queryByText("Profil & Lokasi Unit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Rekening Operasional Cabang")).not.toBeInTheDocument();
+    expect(screen.queryByText("Otoritas Admin Penanggung Jawab")).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue("CP-MND-13")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /tambah rekening/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /tambah admin/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /simpan perubahan/i })).not.toBeInTheDocument();
+    expect(screen.getByText("Daftar Barang Unit")).toBeInTheDocument();
     expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Kategori Barang" })).toBeInTheDocument();
     expect(screen.getByText(/Menampilkan 1-10 dari 12 barang/i)).toBeInTheDocument();
@@ -785,20 +767,6 @@ describe("superadmin pages", () => {
       "href",
       "/superadmin/unit/unit-1/barang/barang-1",
     );
-
-    fireEvent.click(screen.getByRole("button", { name: /lihat detail rekening bank mandiri/i }));
-    const accountDialog = screen.getByRole("dialog", { name: "Detail Rekening Unit" });
-    expect(within(accountDialog).getByText("Bank Mandiri")).toBeInTheDocument();
-    expect(within(accountDialog).getByText("1230098765432")).toBeInTheDocument();
-    expect(within(accountDialog).getByText("PT Pegadaian UPC Ranotana")).toBeInTheDocument();
-    expect(within(accountDialog).getByText("Manado")).toBeInTheDocument();
-    fireEvent.click(within(accountDialog).getByRole("button", { name: /tutup panel detail/i }));
-
-    fireEvent.click(screen.getByRole("button", { name: /lihat detail admin admin ranotana/i }));
-    const adminDialog = screen.getByRole("dialog", { name: "Detail Admin Unit" });
-    expect(within(adminDialog).getByText("Admin Ranotana")).toBeInTheDocument();
-    expect(within(adminDialog).getByText("admin.ranotana@pegadaian.co.id")).toBeInTheDocument();
-    expect(within(adminDialog).getByText("081245678901")).toBeInTheDocument();
   });
 
   it("returns to management after saving unit profile changes", async () => {
@@ -1004,9 +972,9 @@ describe("superadmin pages", () => {
       />,
     );
 
-    expect(screen.getByText("UPC Ranotana (CP-MND-13)")).toBeInTheDocument();
-    expect(screen.getByText("Profil & Lokasi Unit")).toBeInTheDocument();
-    expect(screen.getByText("Inventori Barang Unit")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Detail Inventori Unit" })).toBeInTheDocument();
+    expect(screen.queryByText("Profil & Lokasi Unit")).not.toBeInTheDocument();
+    expect(screen.getByText("Daftar Barang Unit")).toBeInTheDocument();
     expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
     expect(screen.queryByText("Guci Antik 12")).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Kategori Barang" })).toBeInTheDocument();

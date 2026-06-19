@@ -2132,17 +2132,6 @@ function getUnitDetailStatusDotClass(tone: SuperAdminUnitBarangItem["operational
   return "bg-emerald-500";
 }
 
-function getUnitTypeLabel(name: string) {
-  if (/upc/i.test(name)) {
-    return "Unit Pelayanan Cabang";
-  }
-  if (/cp/i.test(name)) {
-    return "Cabang unit";
-  }
-
-  return "Unit terkait";
-}
-
 function getUnitDetailVisiblePages(currentPage: number, totalPages: number) {
   return Array.from({ length: totalPages }, (_, index) => index + 1).filter(
     (page) =>
@@ -2687,10 +2676,10 @@ function SuperAdminUnitInventorySection({
             </span>
             <div className="min-w-0">
               <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#006747]">
-                Monitoring Unit
+                Detail Inventori
               </p>
               <h3 className="mt-1 font-headline text-[1.38rem] font-black tracking-[-0.04em] text-[#13211c]">
-                Inventori Barang Unit
+                Daftar Barang Unit
               </h3>
               <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-black/52">
                 Daftar lengkap barang pada {unit.name}, termasuk status operasional, mode pemasaran, nilai barang, dan akses detail setiap barang.
@@ -2700,12 +2689,6 @@ function SuperAdminUnitInventorySection({
           <div className="flex flex-wrap gap-2 text-[0.72rem] font-bold text-[#52615d]">
             <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
               {formatDashboardCount(items.length)} barang tercatat
-            </span>
-            <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
-              {formatDashboardCount(unit.adminCount)} admin aktif
-            </span>
-            <span className="rounded-full bg-white px-3 py-1 ring-1 ring-[#dfeae4]">
-              {formatDashboardCount(unit.accountCount)} rekening
             </span>
           </div>
         </div>
@@ -3015,135 +2998,30 @@ export function SuperAdminUnitDetailPage({
     );
   }
 
-  const unitLabel = `${unit.name} (${unit.code})`;
-  const unitTypeLabel = getUnitTypeLabel(`${unit.name} ${unit.code}`);
-  const unitOption = [{ id: unit.id, name: unit.name, code: unit.code }];
-  const profileFormId = `superadmin-unit-profile-${unit.id}`;
-
   return (
     <div className="space-y-5 md:space-y-6">
       <Link
         className="inline-flex items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#0a6a49] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#064b35]"
-        href="/superadmin/manajemen-unit"
+        href="/superadmin/monitoring-unit"
       >
         <ArrowLeft className="size-3.5" />
-        Kembali ke Daftar Unit Pelaksana
+        Kembali ke Monitoring Unit
       </Link>
 
       <AdminPageHero
-        description="Perbarui profil unit, tambah rekening operasional, dan tambah admin penanggung jawab dari data unit yang sudah tersimpan."
-        eyebrow="Superadmin / Detail Unit"
-        icon={Building2}
-        title="Detail & Edit Unit Pelaksana"
+        description={`Pantau seluruh barang pada ${unit.name} di ${unit.address}, termasuk status operasional, mode pemasaran, nilai barang, dan detail setiap barang.`}
+        eyebrow="Superadmin / Monitoring Unit / Detail Unit"
+        icon={ShieldCheck}
+        rightRail={
+          <>
+            <SuperAdminHeroPill icon={Building2}>{unit.code}</SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={BadgeCheck}>{unit.status}</SuperAdminHeroPill>
+          </>
+        }
+        title="Detail Inventori Unit"
       />
 
-      <Card className="overflow-hidden rounded-[1.45rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-74px_rgba(8,69,50,0.34)]">
-        <CardContent className="p-0">
-          <SuperAdminUnitDetailSetupSection
-            description="Informasi unit sudah terisi dari database dan bisa diedit tanpa membuat unit baru."
-            icon={Building2}
-            step="01"
-            title="Profil & Lokasi Unit"
-          >
-            <div className="mb-4 flex flex-wrap items-center gap-2 text-[0.72rem] font-bold text-black/48">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-[#fbfcfa] px-2.5 py-1 text-[#475569]">
-                <Building2 className="size-3.5 text-[#006747]" />
-                {unitLabel}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#e5eee9] bg-white px-2.5 py-1 text-[#475569]">
-                <Info className="size-3.5 text-[#006747]" />
-                {unitTypeLabel}
-              </span>
-            </div>
-            <UnitForm
-              formId={profileFormId}
-              initialValue={{
-                address: unit.address,
-                code: unit.code,
-                isActive: unit.isActive,
-                name: unit.name,
-              }}
-              mode="update"
-              showSubmitButton={false}
-              showTitle={false}
-              submitLabel="Simpan Perubahan"
-              unitId={unit.id}
-            />
-          </SuperAdminUnitDetailSetupSection>
-
-          <SuperAdminUnitDetailSetupSection
-            description="Tambah rekening operasional baru dari halaman detail dan pantau rekening yang sudah tersimpan."
-            icon={Landmark}
-            step="02"
-            title="Rekening Operasional Cabang"
-          >
-            <div className="grid gap-5 xl:grid-cols-12 xl:gap-7">
-              <div className="xl:col-span-5">
-                <RekeningForm
-                  showActiveToggle={false}
-                  showTitle={false}
-                  submitLabel="Tambah Rekening"
-                  unitId={unit.id}
-                />
-              </div>
-              <div className="xl:col-span-7">
-                <SuperAdminUnitDetailAccountLedger accounts={unit.accounts} unitId={unit.id} />
-              </div>
-            </div>
-          </SuperAdminUnitDetailSetupSection>
-
-          <SuperAdminUnitDetailSetupSection
-            description="Admin unit bisa ditambahkan langsung untuk unit ini tanpa kembali ke direktori admin."
-            icon={UserCog}
-            step="03"
-            title="Otoritas Admin Penanggung Jawab"
-          >
-            <div className="grid gap-5 xl:grid-cols-12 xl:gap-7">
-              <div className="xl:col-span-5">
-                <AdminUnitForm
-                  showNationalIdField
-                  showTitle={false}
-                  showUnitField={false}
-                  submitLabel="Tambah Admin"
-                  units={unitOption}
-                />
-              </div>
-              <div className="xl:col-span-7">
-                <SuperAdminUnitDetailAdminLedger admins={unit.admins} />
-              </div>
-            </div>
-          </SuperAdminUnitDetailSetupSection>
-        </CardContent>
-      </Card>
-
       <SuperAdminUnitInventorySection items={unit.items ?? []} unit={unit} />
-
-      <div className="safe-sticky-actions sticky z-20 rounded-[1.25rem] border border-[#dfe8e3] bg-white/96 px-3 py-3 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center gap-2 text-[0.72rem] font-bold text-black/48">
-            <Info className="size-4 shrink-0 text-[#64756e]" />
-            <span className="min-w-0">
-              Perubahan profil unit disimpan melalui tombol ini. Rekening dan admin baru memakai tombol tambah pada section masing-masing.
-            </span>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Link
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-[0.95rem] border border-[#dfe8e3] bg-white px-5 text-center text-[0.78rem] font-black text-[#475569] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfcfa] active:scale-[0.98] sm:w-auto"
-              href="/superadmin/manajemen-unit"
-            >
-              Kembali
-            </Link>
-            <Button
-              className="min-h-11 w-full rounded-[0.95rem] px-5 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
-              form={profileFormId}
-              type="submit"
-            >
-              <CheckCircle2 className="size-4" />
-              Simpan Perubahan
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
