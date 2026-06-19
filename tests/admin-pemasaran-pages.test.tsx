@@ -972,10 +972,8 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/progress pembayaran lelang/i)).toBeInTheDocument();
-    const paymentStepIcon = container.querySelector(".lucide-wallet-cards")?.parentElement;
-    const verificationStepIcon = container.querySelector(".lucide-file-text")?.parentElement;
-    expect(paymentStepIcon?.className).toContain("text-[#006747]");
-    expect(verificationStepIcon?.className).toContain("text-[#006747]");
+    expect(screen.getByLabelText(/pembayaran: berjalan/i)).toHaveClass("border-[#d7ad2f]", "text-[#006747]");
+    expect(screen.getByLabelText(/verifikasi: belum terjadi/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
     expect(screen.getByRole("heading", { name: /verifikasi transaksi pemenang lelang/i })).toBeInTheDocument();
@@ -993,7 +991,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
-  it("renders the ended vickrey winner workspace with printable summary actions", () => {
+  it("renders the ended vickrey winner workspace with payment verification actions", () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     const { container } = render(
@@ -1071,8 +1069,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /konfirmasi pembayaran langsung/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /cetak ringkasan lelang/i }));
-    expect(printSpy).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: /cetak ringkasan lelang/i })).not.toBeInTheDocument();
     printSpy.mockRestore();
   });
 
@@ -1147,14 +1144,20 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/pemenang terverifikasi/i)).toBeInTheDocument();
     expect(screen.getAllByText(/pembayaran terverifikasi/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/menunggu buyer selesai/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/ranking peserta lelang \(admin view\)/i)).toBeInTheDocument();
+    const rankingTitle = screen.getByText(/ranking peserta lelang \(admin view\)/i);
+    expect(rankingTitle).toBeInTheDocument();
+    const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
+    expect(handoverPanel).toHaveClass("lg:col-span-2");
+    expect(rankingTitle.compareDocumentPosition(handoverPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
     expect(screen.getByText(/^Pemenang$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/harga bayar/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/detail aset lelang$/i)).toBeInTheDocument();
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/tahap 1: pembayaran/i)).toHaveClass("border-[#006747]");
-    expect(screen.getByLabelText(/tahap 2: verifikasi/i)).toHaveClass("border-[#006747]");
-    expect(screen.getByLabelText(/tahap 3: selesai buyer/i)).toHaveClass("border-[#dfe6e2]");
+    expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("border-[#006747]");
+    expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
+    expect(screen.getByLabelText(/selesai: menunggu buyer/i)).toHaveClass("border-[#d7ad2f]");
     expect(screen.getByText(/nota & konfirmasi buyer/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
@@ -1250,11 +1253,11 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/lunas & diserahkan/i)).toBeInTheDocument();
     expect(screen.getByText(/detail aset lelang \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
-    expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
+    expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/tahap pembayaran selesai/i)).toHaveClass("bg-[#006747]");
-    expect(screen.getByLabelText(/tahap verifikasi selesai/i)).toHaveClass("bg-[#006747]");
-    expect(screen.getByLabelText(/tahap selesai selesai/i)).toHaveClass("bg-[#006747]");
+    expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("bg-[#006747]");
+    expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("bg-[#006747]");
+    expect(screen.getByLabelText(/^selesai: selesai$/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });

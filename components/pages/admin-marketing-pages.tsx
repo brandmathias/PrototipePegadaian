@@ -5138,7 +5138,12 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           <div className="space-y-4 lg:sticky lg:top-4">
             <VickreyWinnerAssetPanel auction={auction} />
             <VickreyPaymentProgressPanel auction={auction} />
-            {auction.transactionId ? (
+            <VickreyPaymentTotalPanel auction={auction} />
+            <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
+          </div>
+
+          {auction.transactionId ? (
+            <div aria-label="Area upload bukti serah-terima pemenang" className="lg:col-span-2">
               <HandoverProofUploadForm
                 canUpload={isVickreyPaymentVerified(auction)}
                 itemTitle={auction.lot}
@@ -5153,10 +5158,8 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
                 }}
                 transactionId={auction.transactionId}
               />
-            ) : null}
-            <VickreyPaymentTotalPanel auction={auction} />
-            <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
       {isPrintSheetReady ? <VickreyReceiptPrintSheet auction={auction} rootId={receiptPrintRootId} /> : null}
