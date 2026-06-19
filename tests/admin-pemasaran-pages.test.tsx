@@ -1147,7 +1147,8 @@ describe("admin pemasaran pages", () => {
     const rankingTitle = screen.getByText(/ranking peserta lelang \(admin view\)/i);
     expect(rankingTitle).toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
-    expect(handoverPanel).toHaveClass("lg:col-span-2");
+    expect(handoverPanel).toHaveClass("w-full");
+    expect(handoverPanel).not.toHaveClass("lg:col-span-2");
     expect(rankingTitle.compareDocumentPosition(handoverPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
@@ -1159,6 +1160,10 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/selesai: menunggu buyer/i)).toHaveClass("border-[#d7ad2f]");
     expect(screen.getByText(/nota & konfirmasi buyer/i)).toBeInTheDocument();
+    expect(handoverPanel.compareDocumentPosition(screen.getByText(/nota & konfirmasi buyer/i)) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(screen.getByText(/progress penyelesaian/i).closest("section")?.parentElement).not.toHaveClass("lg:sticky");
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
     const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid");

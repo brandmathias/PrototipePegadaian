@@ -5135,31 +5135,36 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
             </div>
           </div>
 
-          <div className="space-y-4 lg:sticky lg:top-4">
+          <div className="space-y-4">
             <VickreyWinnerAssetPanel auction={auction} />
             <VickreyPaymentProgressPanel auction={auction} />
+          </div>
+        </div>
+
+        {auction.transactionId ? (
+          <div aria-label="Area upload bukti serah-terima pemenang" className="w-full">
+            <HandoverProofUploadForm
+              canUpload={isVickreyPaymentVerified(auction)}
+              itemTitle={auction.lot}
+              location={auction.unitName ?? auction.unitAddress ?? undefined}
+              proof={{
+                fileUrl: auction.handoverProofUrl,
+                uploadedAt: auction.handoverProofUploadedAt
+                  ? dateLabel(auction.handoverProofUploadedAt)
+                  : null,
+                uploadedBy: auction.handoverProofUploadedBy,
+                location: auction.unitName ?? auction.unitAddress
+              }}
+              transactionId={auction.transactionId}
+            />
+          </div>
+        ) : null}
+
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+          <div className="space-y-4 lg:col-start-2">
             <VickreyPaymentTotalPanel auction={auction} />
             <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
           </div>
-
-          {auction.transactionId ? (
-            <div aria-label="Area upload bukti serah-terima pemenang" className="lg:col-span-2">
-              <HandoverProofUploadForm
-                canUpload={isVickreyPaymentVerified(auction)}
-                itemTitle={auction.lot}
-                location={auction.unitName ?? auction.unitAddress ?? undefined}
-                proof={{
-                  fileUrl: auction.handoverProofUrl,
-                  uploadedAt: auction.handoverProofUploadedAt
-                    ? dateLabel(auction.handoverProofUploadedAt)
-                    : null,
-                  uploadedBy: auction.handoverProofUploadedBy,
-                  location: auction.unitName ?? auction.unitAddress
-                }}
-                transactionId={auction.transactionId}
-              />
-            </div>
-          ) : null}
         </div>
       </div>
       {isPrintSheetReady ? <VickreyReceiptPrintSheet auction={auction} rootId={receiptPrintRootId} /> : null}
