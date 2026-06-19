@@ -54,8 +54,10 @@ describe("handover proof UI", () => {
     const formatHint = screen.getByText(/^JPG, PNG, atau WebP \(Maks\. 5MB\)$/i);
     const uploadButton = screen.getByRole("button", { name: /unggah bukti serah-terima/i });
 
-    expect(layoutShell).toHaveClass("xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]");
-    expect(previewShell).toHaveClass("min-h-[18rem]", "rounded-xl", "border-2", "border-dashed");
+    expect(layoutShell).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]");
+    expect(layoutShell).not.toHaveClass("xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]");
+    expect(previewShell).toHaveClass("min-h-[20rem]", "rounded-[1.1rem]", "border", "bg-[#f6faf7]");
+    expect(previewShell).not.toHaveClass("border-dashed");
     expect(previewShell).not.toHaveClass("min-h-[26rem]");
     expect(chooseFileLabel).not.toBeNull();
     expect(previewShell.compareDocumentPosition(chooseFileLabel!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
@@ -107,13 +109,13 @@ describe("handover proof UI", () => {
     );
 
     expect(screen.getByLabelText(/panel bukti serah-terima barang/i)).toHaveClass(
-      "xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]",
+      "grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]",
     );
     expect(screen.getByLabelText(/area preview bukti serah-terima barang/i)).toHaveClass(
-      "min-h-[18rem]",
-      "rounded-xl",
-      "border-2",
-      "border-dashed",
+      "min-h-[20rem]",
+      "rounded-[1.1rem]",
+      "border",
+      "bg-[#f6faf7]",
     );
     expect(screen.getByRole("button", { name: /buka fullscreen bukti serah-terima barang/i })).toBeInTheDocument();
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();

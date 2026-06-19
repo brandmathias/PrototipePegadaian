@@ -4616,6 +4616,12 @@ function SuperAdminFixedPriceWorkspace({
               {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
             </div>
           </section>
+
+          <SuperAdminHandoverProofAuditCard
+            itemTitle={session.lot}
+            session={session}
+            unitName={session.unitName}
+          />
         </div>
 
         <div className="space-y-4">
@@ -4628,11 +4634,6 @@ function SuperAdminFixedPriceWorkspace({
           {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
         </div>
       </div>
-      <SuperAdminHandoverProofAuditCard
-        itemTitle={session.lot}
-        session={session}
-        unitName={session.unitName}
-      />
       <SuperAdminReadOnlyAuditFooter
         icon={ShieldCheck}
         note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."
@@ -4688,6 +4689,11 @@ function SuperAdminVickreyWorkspace({
           <SuperAdminVickreyWinnerProfilePanel session={session} />
           <SuperAdminVickreyMechanismPanel session={session} />
           <SuperAdminVickreyRankingTable session={session} />
+          <SuperAdminHandoverProofAuditCard
+            itemTitle={receiptContext.itemTitle}
+            session={session}
+            unitName={receiptContext.unitName}
+          />
         </div>
         <div className="space-y-4 2xl:sticky 2xl:top-4">
           <SuperAdminVickreyProgressPanel session={session} />
@@ -4695,11 +4701,6 @@ function SuperAdminVickreyWorkspace({
           <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
         </div>
       </div>
-      <SuperAdminHandoverProofAuditCard
-        itemTitle={receiptContext.itemTitle}
-        session={session}
-        unitName={receiptContext.unitName}
-      />
       <SuperAdminReadOnlyAuditFooter
         icon={ShieldCheck}
         note={
