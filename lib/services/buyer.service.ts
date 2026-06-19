@@ -779,12 +779,14 @@ export async function getBuyerDashboardData(userId: string): Promise<{
   summary: Awaited<ReturnType<typeof getBuyerSummary>>;
   transactions: BuyerTransaction[];
   bids: BuyerBid[];
+  violations: BuyerViolationHistoryEntry[];
 }> {
   await refreshBuyerAuctionSettlementState();
 
-  const [transactions, buyerBids] = await Promise.all([
+  const [transactions, buyerBids, violations] = await Promise.all([
     listBuyerTransactions(userId, { refreshAuctionState: false }),
-    listBuyerBids(userId, { refreshAuctionState: false })
+    listBuyerBids(userId, { refreshAuctionState: false }),
+    listBuyerViolationHistory(userId)
   ]);
   const summary = await getBuyerSummary(userId, {
     refreshAuctionState: false,
@@ -795,7 +797,8 @@ export async function getBuyerDashboardData(userId: string): Promise<{
   return {
     summary,
     transactions,
-    bids: buyerBids
+    bids: buyerBids,
+    violations
   };
 }
 

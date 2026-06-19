@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -130,13 +130,17 @@ describe("buyer dashboard page", () => {
 
     expect(screen.getByRole("heading", { name: /halo, raras maheswari/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /ilustrasi beranda pembeli/i })).toBeInTheDocument();
-    expect(screen.getByText(/akun terverifikasi/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/akun terverifikasi/i).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText(/member sejak 4 mei 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/raras@example\.com/i)).toBeInTheDocument();
     expect(screen.queryByText(/pembayaran menunggu/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /bayar sekarang/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /^status akun$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /indeks kesehatan akun/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat detail riwayat/i })).toHaveAttribute(
+      "href",
+      "/pelanggaran"
+    );
     expect(screen.getByRole("heading", { name: /catatan penting/i })).toBeInTheDocument();
     expect(screen.getByText(/ringkasan hal yang perlu anda ingat/i)).toBeInTheDocument();
     expect(screen.queryByText(/menunggu bayar:/i)).not.toBeInTheDocument();
@@ -166,8 +170,60 @@ describe("buyer dashboard page", () => {
 
     expect(screen.queryByText(/pembayaran menunggu/i)).not.toBeInTheDocument();
     expect(screen.getByText(/belum ada aktivitas yang perlu ditindaklanjuti/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak ada pelanggaran aktif/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak ada pelanggaran tercatat/i)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [1, "bg-[#c97900]"],
+    [2, "bg-[#dc4c18]"],
+    [3, "bg-[#b91c1c]"]
+  ])("renders real violation details with the matching level %s tone", (level, expectedTone) => {
+    render(
+      <UserDashboardPage
+        buyer={buyer}
+        data={{
+          summary: {
+            ...summary,
+            blacklist: {
+              active: true,
+              until: level === 1 ? "11 Juni 2026" : level === 2 ? "12 Juli 2026" : "12 Juni 2027",
+              reason: "Akun sedang dibatasi sesuai kebijakan pelanggaran pembayaran.",
+              violations: level
+            }
+          },
+          transactions: [],
+          bids: [],
+          violations: [
+            {
+              id: `violation-${level}`,
+              imageUrl: "/uploads/barang/kalung-emas.jpg",
+              itemName: "Kalung Emas 2",
+              note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.",
+              occurredAtLabel: "12 Juni 2026, 13.33 WITA",
+              unitName: "UPC Ranotana",
+              violationLevel: level
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: new RegExp(`hak akses: terbatas sementara \\(level ${level}\\)`, "i")
+      })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /foto kalung emas 2/i })).toBeInTheDocument();
+    expect(screen.getByText("Kalung Emas 2")).toBeInTheDocument();
+    expect(screen.getByText("12 Juni 2026")).toBeInTheDocument();
+    expect(screen.getByText("13.33 WITA")).toBeInTheDocument();
+    expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
+
+    const historyPanel = screen.getByRole("heading", { name: /riwayat pelanggaran/i }).closest("article");
+    expect(historyPanel).not.toBeNull();
+    expect(within(historyPanel as HTMLElement).getByText(String(level), { selector: "span" })).toBeInTheDocument();
+    expect(within(historyPanel as HTMLElement).getByText(`Level ${level}`)).toHaveClass(expectedTone);
   });
 
   it("does not treat rejected harga tetap proof as an urgent payment action", () => {
@@ -201,7 +257,7 @@ describe("buyer dashboard page", () => {
     );
 
     expect(screen.getByText(/pemenang lelang tertutup/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /^lihat detail$/i })).toHaveAttribute(
       "href",
       "/transaksi/trx-vickrey-1/pemenang"
     );

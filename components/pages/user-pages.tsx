@@ -4,12 +4,16 @@ import type { ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
+  CalendarClock,
+  CalendarDays,
   CheckCircle2,
+  ClipboardCheck,
   Clock3,
   ExternalLink,
   FileCheck2,
   Gavel,
   IdCard,
+  ImageIcon,
   Landmark,
   LockKeyhole,
   Mail,
@@ -17,6 +21,7 @@ import {
   Phone,
   Printer,
   ReceiptText,
+  ShieldAlert,
   ShieldCheck,
   ShoppingBag,
   UploadCloud,
@@ -91,6 +96,16 @@ type BuyerProfileStatus = {
     until: Date | null;
     totalViolations: number;
   };
+};
+
+type BuyerDashboardViolation = {
+  id: string;
+  imageUrl: string | null;
+  itemName: string;
+  note: string;
+  occurredAtLabel: string;
+  unitName: string;
+  violationLevel: number;
 };
 
 const BUYER_SETTLEMENT_LOCKED_MESSAGE =
@@ -758,9 +773,14 @@ export function UserDashboardPage({
   data
 }: {
   buyer: BuyerSessionUser;
-  data: { summary: BuyerSummary; transactions: BuyerTransaction[]; bids: BuyerBid[] };
+  data: {
+    summary: BuyerSummary;
+    transactions: BuyerTransaction[];
+    bids: BuyerBid[];
+    violations?: BuyerDashboardViolation[];
+  };
 }) {
-  const { summary, transactions, bids } = data;
+  const { summary, transactions, bids, violations = [] } = data;
   const activeTransactions = transactions.filter(isDashboardActiveTransaction);
   const paymentWaitingTransactions = transactions.filter(isDashboardPaymentWaiting);
   const activeBidCount = bids.filter(isDashboardActiveBid).length;
@@ -771,21 +791,77 @@ export function UserDashboardPage({
   const urgentCopy = urgentTransaction ? getUrgentDashboardCopy(urgentTransaction) : null;
   const violationCount = summary.blacklist.violations ?? 0;
   const restrictionLevel = summary.blacklist.active ? Math.min(Math.max(violationCount, 1), 3) : 0;
-  const restrictionLabel =
-    restrictionLevel === 1
-      ? "Level 1 - Peringatan"
+  const latestViolation = violations[0] ?? null;
+  const latestViolationLevel = latestViolation?.violationLevel
+    ? Math.min(Math.max(latestViolation.violationLevel, 1), 3)
+    : restrictionLevel;
+  const [latestViolationDate, latestViolationTime = ""] = latestViolation?.occurredAtLabel
+    .split(",")
+    .map((value) => value.trim()) ?? ["", ""];
+  const restrictionTone =
+    restrictionLevel >= 3
+      ? {
+          accent: "bg-[#b91c1c]",
+          border: "border-red-200",
+          icon: "bg-red-50 text-[#b91c1c]",
+          soft: "bg-red-50/55",
+          text: "text-[#991b1b]"
+        }
       : restrictionLevel === 2
-        ? "Level 2 - Pembatasan"
-        : restrictionLevel >= 3
-          ? "Level 3 - Review admin"
-          : "Normal";
-  const restrictionRules = summary.blacklist.active
-    ? [
-        "Akses Lelang Tertutup dibatasi selama masa pembatasan.",
-        ...(restrictionLevel >= 2 ? ["Pembelian Harga Tetap baru ikut dibatasi sementara."] : []),
-        ...(restrictionLevel >= 3 ? ["Akun perlu peninjauan admin sebelum dipulihkan."] : [])
-      ]
-    : ["Akun dapat mengikuti harga tetap, Lelang Tertutup, transaksi, dan nota sesuai aturan layanan."];
+        ? {
+            accent: "bg-[#dc4c18]",
+            border: "border-orange-200",
+            icon: "bg-orange-50 text-[#dc4c18]",
+            soft: "bg-orange-50/55",
+            text: "text-[#b9380b]"
+          }
+        : restrictionLevel === 1
+          ? {
+              accent: "bg-[#c97900]",
+              border: "border-amber-200",
+              icon: "bg-amber-50 text-[#a86200]",
+              soft: "bg-amber-50/55",
+              text: "text-[#8a5200]"
+            }
+          : {
+              accent: "bg-[#007a4d]",
+              border: "border-emerald-200",
+              icon: "bg-emerald-50 text-[#007a4d]",
+              soft: "bg-emerald-50/55",
+              text: "text-[#00633e]"
+            };
+  const historyTone =
+    latestViolationLevel >= 3
+      ? {
+          accent: "bg-[#b91c1c]",
+          badge: "bg-[#b91c1c] text-white",
+          border: "border-red-200",
+          icon: "bg-red-50 text-[#b91c1c]",
+          ring: "border-[#b91c1c] text-[#b91c1c]"
+        }
+      : latestViolationLevel === 2
+        ? {
+            accent: "bg-[#dc4c18]",
+            badge: "bg-[#dc4c18] text-white",
+            border: "border-orange-200",
+            icon: "bg-orange-50 text-[#dc4c18]",
+            ring: "border-[#dc4c18] text-[#dc4c18]"
+          }
+        : latestViolationLevel === 1
+          ? {
+              accent: "bg-[#c97900]",
+              badge: "bg-[#c97900] text-white",
+              border: "border-amber-200",
+              icon: "bg-amber-50 text-[#a86200]",
+              ring: "border-[#c97900] text-[#a86200]"
+            }
+          : {
+              accent: "bg-[#007a4d]",
+              badge: "bg-emerald-50 text-[#00633e]",
+              border: "border-emerald-200",
+              icon: "bg-emerald-50 text-[#007a4d]",
+              ring: "border-[#007a4d] text-[#00633e]"
+            };
   const importantNotes = [
     {
       icon: Clock3,
@@ -907,141 +983,196 @@ export function UserDashboardPage({
         </section>
       ) : null}
 
-      <section className="grid gap-5 xl:grid-cols-[1.03fr_0.97fr]">
-        <Card className="overflow-hidden border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
-          <CardHeader className="flex flex-row items-center gap-3 pb-4">
-            <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
-              <ShieldCheck className="size-5" />
-            </span>
-            <CardTitle>Status Akun</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-5 rounded-[1.5rem] border border-primary/15 bg-[linear-gradient(135deg,#ffffff_0%,#f6fbf7_100%)] p-5 lg:grid-cols-[0.92fr_1.08fr]">
-              <div className="space-y-5">
-                <div className="flex gap-4">
-                  <span className="grid size-14 shrink-0 place-items-center rounded-[1.1rem] bg-primary/10 text-primary">
-                    <ShieldCheck className="size-7" />
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                      Verifikasi Akun
-                    </p>
-                    <p className="mt-2 text-xl font-black text-primary">{summary.verificationStatus}</p>
-                    <p className="mt-1 break-all text-sm text-muted-foreground">{buyer.email}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Member sejak {summary.memberSince}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 border-t border-border/70 pt-5">
-                  <span
-                    className={cn(
-                      "grid size-14 shrink-0 place-items-center rounded-[1.1rem]",
-                      summary.blacklist.active ? "bg-amber-100 text-amber-800" : "bg-primary/10 text-primary"
-                    )}
-                  >
-                    {summary.blacklist.active ? <AlertTriangle className="size-7" /> : <CheckCircle2 className="size-7" />}
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                      Status Restriksi
-                    </p>
-                    <p
-                      className={cn(
-                        "mt-2 text-lg font-black",
-                        summary.blacklist.active ? "text-amber-800" : "text-primary"
-                      )}
-                    >
-                      {summary.blacklist.active ? restrictionLabel : "Tidak ada pembatasan"}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {summary.blacklist.active
-                        ? `${summary.blacklist.reason} Berlaku sampai ${summary.blacklist.until}.`
-                        : summary.blacklist.reason}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-[1.25rem] bg-white/80 p-5 ring-1 ring-border/70">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                  Pembatasan Aktif
-                </p>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-                  {restrictionRules.map((rule) => (
-                    <li className="flex gap-3" key={rule}>
-                      <CheckCircle2 className="mt-1 size-4 shrink-0 text-primary" />
-                      <span>{rule}</span>
-                    </li>
-                  ))}
-                </ul>
-                {summary.blacklist.active ? (
-                  <div className="mt-5 space-y-3 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-                    <p>Hindari pelanggaran berikutnya agar level pembatasan tidak meningkat.</p>
-                    <p>Jika membutuhkan bantuan, hubungi admin unit terkait untuk pengecekan manual.</p>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden border border-border/70 bg-white shadow-[0_22px_55px_-44px_rgba(8,69,50,0.45)]">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-4">
-            <div className="flex items-center gap-3">
-              <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
-                <FileCheck2 className="size-5" />
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
+        <article className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-[0_8px_12px_-10px_rgba(8,69,50,0.28)]">
+          <div className="flex h-full flex-col p-5 md:p-7">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <span className="grid size-20 shrink-0 place-items-center rounded-full bg-emerald-50 text-[#007a4d] ring-1 ring-emerald-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                <ShieldCheck className="size-10" strokeWidth={1.8} />
               </span>
-              <CardTitle>Riwayat Pelanggaran</CardTitle>
+              <div className="min-w-0">
+                <h2 className="font-headline text-xl font-black text-[#00633e] md:text-2xl">
+                  Indeks Kesehatan Akun
+                </h2>
+                <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-bold text-[#00633e]">
+                  <CheckCircle2 className="size-4" />
+                  Akun {summary.verificationStatus}
+                </span>
+              </div>
             </div>
-            <Link className="text-sm font-semibold text-primary hover:underline" href="/profil">
-              Lihat semua
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-[1.5rem] border border-border/70 bg-white p-5">
-              <p className="text-sm text-muted-foreground">Total Pelanggaran</p>
-              <p
+
+            <div className="my-6 h-px bg-black/[0.07]" />
+
+            <div className="flex items-start gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-emerald-50 text-[#007a4d] ring-1 ring-emerald-100">
+                <Mail className="size-5" strokeWidth={1.9} />
+              </span>
+              <div className="min-w-0">
+                <p className="break-all text-base font-black text-[#101923] md:text-lg">
+                  {buyer.email}
+                </p>
+                <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#506079]">
+                  <CalendarDays className="size-4 shrink-0 text-[#007a4d]" />
+                  Member sejak {summary.memberSince}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "relative mt-7 overflow-hidden rounded-xl border p-4 pl-6 md:p-5 md:pl-7",
+                restrictionTone.border,
+                restrictionTone.soft
+              )}
+            >
+              <span aria-hidden="true" className={cn("absolute inset-y-0 left-0 w-1.5", restrictionTone.accent)} />
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_9.25rem] md:items-center">
+                <div className="flex gap-4">
+                  <span className={cn("grid size-12 shrink-0 place-items-center rounded-full", restrictionTone.icon)}>
+                    {summary.blacklist.active ? (
+                      <ShieldAlert className="size-6" strokeWidth={1.9} />
+                    ) : (
+                      <ShieldCheck className="size-6" strokeWidth={1.9} />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className={cn("font-headline text-base font-black", restrictionTone.text)}>
+                      {summary.blacklist.active
+                        ? `Hak Akses: Terbatas Sementara (Level ${restrictionLevel})`
+                        : "Hak Akses: Aktif"}
+                    </h3>
+                    <p className="mt-2 max-w-[60ch] text-sm leading-6 text-[#4f5f73]">
+                      {summary.blacklist.reason}
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white px-4 py-3 text-left ring-1 ring-black/[0.07] md:text-center">
+                  <p className="text-[0.68rem] font-bold uppercase text-[#6b7586]">
+                    {summary.blacklist.active ? "Berlaku hingga" : "Status akun"}
+                  </p>
+                  <p className="mt-1 text-sm font-black text-[#101923]">
+                    {summary.blacklist.active ? summary.blacklist.until : "Tidak dibatasi"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] shadow-[0_8px_12px_-10px_rgba(8,69,50,0.28)]">
+          <div className="flex h-full flex-col p-5 md:p-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <span className={cn("grid size-14 shrink-0 place-items-center rounded-xl", historyTone.icon)}>
+                  <ClipboardCheck className="size-7" strokeWidth={1.8} />
+                </span>
+                <h2 className="font-headline text-xl font-black text-[#00633e] md:text-2xl">
+                  Riwayat Pelanggaran
+                </h2>
+              </div>
+              <Link
+                className="group inline-flex items-center gap-2 self-start text-sm font-bold text-[#00633e] transition duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:text-[#004a23] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:self-auto"
+                href="/pelanggaran"
+              >
+                Lihat detail riwayat
+                <ExternalLink className="size-4 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </div>
+
+            <div className="my-6 h-px bg-black/[0.07]" />
+
+            <div className="flex flex-col gap-5 rounded-xl bg-[#fafbfa] p-5 ring-1 ring-black/[0.06] sm:flex-row sm:items-center md:p-6">
+              <span
                 className={cn(
-                  "mt-2 font-headline text-3xl font-black",
-                  violationCount > 0 ? "text-red-700" : "text-primary"
+                  "grid size-24 shrink-0 place-items-center rounded-full border-[3px] bg-white font-headline text-4xl font-black",
+                  historyTone.ring
                 )}
               >
-                {violationCount} kali
-              </p>
-
-              <div className="mt-5 divide-y divide-border/70">
-                {summary.blacklist.active ? (
-                  <div className="flex items-start justify-between gap-4 py-4">
-                    <div className="flex gap-3">
-                      <span className="mt-1 size-2.5 rounded-full bg-red-600" />
-                      <div>
-                        <p className="font-semibold text-foreground">{summary.blacklist.reason}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{restrictionLabel}</p>
-                      </div>
-                    </div>
-                    <p className="shrink-0 text-right text-sm text-muted-foreground">{summary.blacklist.until}</p>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-3 py-4">
-                    <span className="mt-1 size-2.5 rounded-full bg-primary" />
-                    <div>
-                      <p className="font-semibold text-foreground">Tidak ada pelanggaran aktif</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Akun berada dalam status baik dan tidak sedang dibatasi.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                {violationCount}
+              </span>
+              <div>
+                <p className="font-headline text-base font-black text-[#101923]">
+                  Total Kasus Terhitung
+                </p>
+                <p className="mt-2 max-w-[48ch] text-sm leading-6 text-[#506079]">
+                  Pelanggaran pembayaran yang memenuhi aturan akumulasi level dan tercatat pada akun Anda.
+                </p>
               </div>
-
-              {violationCount > 0 ? (
-                <div className="mt-5 rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-                  Jika melakukan pelanggaran lagi, akun dapat masuk ke level pembatasan berikutnya.
-                </div>
-              ) : null}
             </div>
-          </CardContent>
-        </Card>
+
+            {latestViolation ? (
+              <div
+                className={cn(
+                  "relative mt-5 overflow-hidden rounded-xl border bg-white p-4 pl-6",
+                  historyTone.border
+                )}
+              >
+                <span aria-hidden="true" className={cn("absolute inset-y-0 left-0 w-1.5", historyTone.accent)} />
+                <div className="grid gap-4 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:items-center lg:grid-cols-[5.5rem_minmax(0,1fr)_auto]">
+                  <div className="relative h-20 overflow-hidden rounded-lg bg-slate-100 ring-1 ring-black/[0.06]">
+                    {latestViolation.imageUrl ? (
+                      <Image
+                        alt={`Foto ${latestViolation.itemName}`}
+                        className="object-cover"
+                        fill
+                        sizes="88px"
+                        src={latestViolation.imageUrl}
+                      />
+                    ) : (
+                      <span className="grid h-full place-items-center text-[#8b968e]">
+                        <ImageIcon className="size-8" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-headline text-base font-black text-[#101923] md:text-lg">
+                      {latestViolation.itemName}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-[#506079]">
+                      {latestViolation.note}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[#506079]">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays className="size-4 text-[#435476]" />
+                        {latestViolationDate}
+                      </span>
+                      {latestViolationTime ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <CalendarClock className="size-4 text-[#435476]" />
+                          {latestViolationTime}
+                        </span>
+                      ) : null}
+                      <span className="inline-flex items-center gap-1.5">
+                        <Landmark className="size-4 text-[#435476]" />
+                        {latestViolation.unitName}
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex min-h-10 items-center justify-center rounded-lg px-4 text-sm font-black sm:col-start-2 sm:justify-self-start lg:col-start-auto lg:justify-self-end",
+                      historyTone.badge
+                    )}
+                  >
+                    Level {latestViolationLevel}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 flex flex-1 items-center gap-4 rounded-xl bg-emerald-50/60 p-5 ring-1 ring-emerald-100">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-[#007a4d] ring-1 ring-emerald-100">
+                  <CheckCircle2 className="size-5" />
+                </span>
+                <div>
+                  <p className="font-headline text-base font-black text-[#101923]">Tidak ada pelanggaran tercatat</p>
+                  <p className="mt-1 text-sm leading-6 text-[#506079]">
+                    Akun berada dalam kondisi baik dan seluruh fitur tersedia sesuai ketentuan.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </article>
       </section>
 
       <section className="relative overflow-hidden rounded-[1.9rem] border border-primary/10 bg-[#faf9ef] p-5 shadow-[0_24px_70px_-48px_rgba(8,69,50,0.42)] md:p-6">
