@@ -93,9 +93,15 @@ export function HandoverProofCard({
           className
         )}
       >
-        <div className="space-y-4">
-          <div className="rounded-[1.35rem] border border-[#dfe8e3] bg-[#fbfcfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div
+          aria-label="Panel bukti serah-terima barang"
+          className={cn(
+            "grid gap-4 xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)] xl:items-stretch",
+            compact && "xl:grid-cols-[minmax(15rem,0.66fr)_minmax(0,1.34fr)]"
+          )}
+        >
+          <div className="flex h-full flex-col rounded-[1.35rem] border border-[#dfe8e3] bg-[#fbfcfa] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+            <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
               <div className="flex min-w-0 items-start gap-3.5">
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-slate-100 bg-slate-50 text-[#0a6a49]">
                   <Camera className="size-4" strokeWidth={1.8} />
@@ -113,7 +119,7 @@ export function HandoverProofCard({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 text-[10px] font-medium leading-normal text-slate-500 xl:max-w-xs">
+              <div className="flex items-start gap-2 text-[10px] font-medium leading-normal text-slate-500 2xl:max-w-[14rem]">
                 <Info className="mt-0.5 size-3.5 shrink-0 text-slate-300" />
                 <p>
                   {fileUrl
@@ -123,7 +129,7 @@ export function HandoverProofCard({
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
               {[
                 { icon: CalendarDays, label: "Waktu Penyerahan", value: uploadedAt },
                 { icon: MapPin, label: "Lokasi Loket Unit", value: location },
@@ -152,11 +158,11 @@ export function HandoverProofCard({
           <div
             aria-label="Area preview bukti serah-terima barang"
             className={cn(
-              "min-h-[26rem] rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6] p-4 sm:p-5",
+              "min-h-[18rem] rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6] p-3 sm:p-4",
               compact && "w-full"
             )}
           >
-            <div className="flex min-h-[26rem] flex-col">
+            <div className="flex min-h-[18rem] flex-col">
               {fileUrl ? (
                 <button
                   aria-label="Buka fullscreen bukti serah-terima barang"
@@ -168,7 +174,7 @@ export function HandoverProofCard({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       alt={imageAlt}
-                      className="h-full min-h-[18rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      className="h-full min-h-[13rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       src={fileUrl}
                     />
                   ) : (
@@ -190,11 +196,11 @@ export function HandoverProofCard({
                   </span>
                 </button>
               ) : (
-                <div className="flex flex-1 flex-col items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fbfbf8,#f3f4ef)] px-5 py-10 text-center">
-                  <span className="grid size-24 place-items-center rounded-[1.5rem] bg-[#ececea] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] transition duration-500">
-                    <UploadCloud className="size-7" />
+                <div className="flex flex-1 flex-col items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fbfbf8,#f3f4ef)] px-5 py-8 text-center">
+                  <span className="grid size-20 place-items-center rounded-[1.35rem] bg-[#ececea] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] transition duration-500">
+                    <UploadCloud className="size-6" />
                   </span>
-                  <span className="mt-6 block font-body text-[1.05rem] font-semibold text-[#1a1c1c]">
+                  <span className="mt-5 block font-body text-[1.02rem] font-semibold text-[#1a1c1c]">
                     Belum ada bukti serah-terima
                   </span>
                   <span className="mt-2 block max-w-[18rem] font-body text-sm leading-6 text-[#6e716c]">

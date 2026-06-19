@@ -800,26 +800,26 @@ export function VerificationWorkspace({
               <ProofPreview transaction={transaction} />
             </WorkspacePanel>
 
-            <WorkspacePanel icon={<FileCheck2 className="size-4" />} label="Bukti Serah Terima">
-              <HandoverProofUploadForm
-                canUpload={transaction.status === "LUNAS" || transaction.status === "SELESAI"}
-                itemTitle={transaction.lot}
-                location={transaction.unit}
-                proof={{
-                  fileUrl: transaction.handoverProofFile,
-                  uploadedAt: transaction.handoverProofUploadedAt,
-                  uploadedBy: transaction.handoverProofUploadedBy,
-                  location: transaction.unit
-                }}
-                transactionId={transaction.id}
-              />
-            </WorkspacePanel>
-
             <WorkspacePanel icon={<Printer className="size-4" />} label="Tindakan Admin">
               <TransactionActionPanel transaction={transaction} />
             </WorkspacePanel>
           </div>
         </div>
+
+        <WorkspacePanel icon={<FileCheck2 className="size-4" />} label="Bukti Serah Terima">
+          <HandoverProofUploadForm
+            canUpload={transaction.status === "LUNAS" || transaction.status === "SELESAI"}
+            itemTitle={transaction.lot}
+            location={transaction.unit}
+            proof={{
+              fileUrl: transaction.handoverProofFile,
+              uploadedAt: transaction.handoverProofUploadedAt,
+              uploadedBy: transaction.handoverProofUploadedBy,
+              location: transaction.unit
+            }}
+            transactionId={transaction.id}
+          />
+        </WorkspacePanel>
       </CardContent>
     </Card>
   );

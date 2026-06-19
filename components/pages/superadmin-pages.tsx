@@ -3472,7 +3472,6 @@ function SuperAdminHandoverProofAuditCard({
   return (
     <HandoverProofCard
       audience="superadmin"
-      compact
       itemTitle={itemTitle ?? session.lot}
       proof={{
         fileUrl: session.handoverProofUrl,
@@ -4627,17 +4626,17 @@ function SuperAdminFixedPriceWorkspace({
             tone={isFailed ? "red" : "emerald"}
           />
           {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
-          <SuperAdminHandoverProofAuditCard
-            itemTitle={session.lot}
-            session={session}
-            unitName={session.unitName}
-          />
-          <SuperAdminReadOnlyAuditFooter
-            icon={ShieldCheck}
-            note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."
-          />
         </div>
       </div>
+      <SuperAdminHandoverProofAuditCard
+        itemTitle={session.lot}
+        session={session}
+        unitName={session.unitName}
+      />
+      <SuperAdminReadOnlyAuditFooter
+        icon={ShieldCheck}
+        note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."
+      />
     </div>
   );
 }
@@ -4692,15 +4691,15 @@ function SuperAdminVickreyWorkspace({
         </div>
         <div className="space-y-4 2xl:sticky 2xl:top-4">
           <SuperAdminVickreyProgressPanel session={session} />
-          <SuperAdminHandoverProofAuditCard
-            itemTitle={receiptContext.itemTitle}
-            session={session}
-            unitName={receiptContext.unitName}
-          />
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
         </div>
       </div>
+      <SuperAdminHandoverProofAuditCard
+        itemTitle={receiptContext.itemTitle}
+        session={session}
+        unitName={receiptContext.unitName}
+      />
       <SuperAdminReadOnlyAuditFooter
         icon={ShieldCheck}
         note={

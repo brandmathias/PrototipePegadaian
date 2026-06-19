@@ -48,11 +48,15 @@ describe("handover proof UI", () => {
   it("places admin handover controls in the same order and button style as payment proof upload", () => {
     renderUploadForm();
 
+    const layoutShell = screen.getByLabelText(/panel bukti serah-terima barang/i);
     const previewShell = screen.getByLabelText(/area preview bukti serah-terima barang/i);
     const chooseFileLabel = screen.getByText(/^pilih file$/i).closest("label");
     const formatHint = screen.getByText(/^JPG, PNG, atau WebP \(Maks\. 5MB\)$/i);
     const uploadButton = screen.getByRole("button", { name: /unggah bukti serah-terima/i });
 
+    expect(layoutShell).toHaveClass("xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]");
+    expect(previewShell).toHaveClass("min-h-[18rem]", "rounded-xl", "border-2", "border-dashed");
+    expect(previewShell).not.toHaveClass("min-h-[26rem]");
     expect(chooseFileLabel).not.toBeNull();
     expect(previewShell.compareDocumentPosition(chooseFileLabel!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
@@ -88,11 +92,10 @@ describe("handover proof UI", () => {
     expect(revokeObjectUrlMock).toHaveBeenCalledWith("blob:handover-preview");
   });
 
-  it("keeps the superadmin handover proof card read-only while using the large preview shell", () => {
+  it("keeps the superadmin handover proof card read-only while using the wide preview shell", () => {
     render(
       <HandoverProofCard
         audience="superadmin"
-        compact
         itemTitle="Cincin Emas Ranotana"
         proof={{
           fileUrl: "/uploads/serah-terima/cincin-ranotana.jpg",
@@ -103,8 +106,11 @@ describe("handover proof UI", () => {
       />,
     );
 
+    expect(screen.getByLabelText(/panel bukti serah-terima barang/i)).toHaveClass(
+      "xl:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]",
+    );
     expect(screen.getByLabelText(/area preview bukti serah-terima barang/i)).toHaveClass(
-      "min-h-[26rem]",
+      "min-h-[18rem]",
       "rounded-xl",
       "border-2",
       "border-dashed",
