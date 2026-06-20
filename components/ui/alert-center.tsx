@@ -11,15 +11,13 @@ import {
   CheckCircle2,
   Clock3,
   Info,
-  KeyRound,
-  ShieldCheck,
   Trophy
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/toast";
 import {
+  useAdminUnitNotifications,
   useBuyerNotifications,
   useSuperAdminNotifications,
   type PersistedNotification
@@ -40,19 +38,11 @@ function formatTimeLabel(timestamp: number | string) {
 }
 
 function getPersistedVariant(type: string) {
-  if (type === "payment_rejected" || type === "blacklist_active") {
+  if (type === "payment_rejected" || type === "blacklist_active" || type === "superadmin_policy_alert") {
     return "error" as const;
   }
 
-  if (type === "payment_deadline" || type === "vickrey_loss") {
-    return "info" as const;
-  }
-
-  if (type === "superadmin_account_guardrail") {
-    return "error" as const;
-  }
-
-  if (type === "superadmin_account_updated" || type === "superadmin_account_reset") {
+  if (type === "payment_deadline" || type === "vickrey_loss" || type === "admin_vickrey_result") {
     return "info" as const;
   }
 
@@ -84,15 +74,15 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
     return Ban;
   }
 
-  if (type === "superadmin_account_created" || type === "superadmin_account_updated") {
-    return ShieldCheck;
+  if (type === "admin_payment_proof_uploaded") {
+    return BadgeCheck;
   }
 
-  if (type === "superadmin_account_reset") {
-    return KeyRound;
+  if (type === "admin_vickrey_result") {
+    return GavelIcon;
   }
 
-  if (type === "superadmin_account_guardrail") {
+  if (type === "superadmin_policy_alert") {
     return AlertTriangle;
   }
 
@@ -110,27 +100,18 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
 export function AlertCenter({ scope, className }: AlertCenterProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
-  const { notifications, markAllAsRead, markAsRead } = useToast();
   const buyerNotifications = useBuyerNotifications(scope === "buyer");
+  const adminUnitNotifications = useAdminUnitNotifications(scope === "admin-unit");
   const superAdminNotifications = useSuperAdminNotifications(scope === "superadmin");
-
-  const scopedNotifications = React.useMemo(
-    () =>
-      notifications.filter(
-        (notification) =>
-          notification.scope === scope || notification.scope === "global"
-      ),
-    [notifications, scope]
-  );
 
   const persistedNotifications = React.useMemo(
     () => {
       const sourceNotifications =
         scope === "buyer"
           ? buyerNotifications.notifications
-          : scope === "superadmin"
-            ? superAdminNotifications.notifications
-            : [];
+          : scope === "admin-unit"
+            ? adminUnitNotifications.notifications
+            : superAdminNotifications.notifications;
 
       return sourceNotifications.map((notification) => ({
             id: notification.id,
@@ -145,27 +126,16 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             raw: notification
           }));
     },
-    [buyerNotifications.notifications, scope, superAdminNotifications.notifications]
-  );
-  const localNotifications = React.useMemo(
-    () =>
-      scopedNotifications.map((notification) => ({
-        id: notification.id,
-        title: notification.title,
-        description: notification.description,
-        variant: notification.variant,
-        createdAt: notification.createdAt,
-        read: notification.read,
-        href: undefined,
-        type: `local_${notification.variant}`,
-        source: "local" as const,
-        raw: null as PersistedNotification | null
-      })),
-    [scopedNotifications]
+    [
+      adminUnitNotifications.notifications,
+      buyerNotifications.notifications,
+      scope,
+      superAdminNotifications.notifications
+    ]
   );
   const displayedNotifications = React.useMemo(
     () =>
-      [...persistedNotifications, ...localNotifications]
+      persistedNotifications
         .sort((left, right) => {
           const leftTime = typeof left.createdAt === "number" ? left.createdAt : new Date(left.createdAt).getTime();
           const rightTime = typeof right.createdAt === "number" ? right.createdAt : new Date(right.createdAt).getTime();
@@ -173,7 +143,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
           return rightTime - leftTime;
         })
         .slice(0, 12),
-    [localNotifications, persistedNotifications]
+    [persistedNotifications]
   );
   const unreadCount = React.useMemo(
     () => displayedNotifications.filter((notification) => !notification.read).length,
@@ -193,10 +163,10 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     if (scope === "superadmin") {
       return {
         label: "Pusat Alert Superadmin",
-        title: "Alert akses penting",
-        description: "Aksi sensitif Manajemen Superadmin yang tersimpan untuk kontrol Owner.",
-        emptyTitle: "Belum ada alert superadmin.",
-        emptyDescription: "Pembuatan akun, perubahan level, reset password, dan guardrail akan muncul di sini."
+        title: "Alert kebijakan nasional",
+        description: "Risiko operasional lintas unit seperti pembatasan buyer dan pelanggaran pembayaran tersimpan di sini.",
+        emptyTitle: "Belum ada alert operasional.",
+        emptyDescription: "Pembuatan akun dan reset password tetap menjadi toast aksi, bukan notifikasi lonceng."
       };
     }
 
@@ -236,29 +206,30 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
   }, [isOpen]);
 
   const handleMarkAllAsRead = React.useCallback(() => {
-    markAllAsRead(scope);
     if (scope === "buyer") {
       void buyerNotifications.markAllAsRead();
+    }
+    if (scope === "admin-unit") {
+      void adminUnitNotifications.markAllAsRead();
     }
     if (scope === "superadmin") {
       void superAdminNotifications.markAllAsRead();
     }
-  }, [buyerNotifications, markAllAsRead, scope, superAdminNotifications]);
+  }, [adminUnitNotifications, buyerNotifications, scope, superAdminNotifications]);
 
   const handleMarkAsRead = React.useCallback(
     (notification: (typeof displayedNotifications)[number]) => {
-      if (notification.source === "server") {
-        if (scope === "buyer") {
-          void buyerNotifications.markAsRead(notification.id);
-        }
-        if (scope === "superadmin") {
-          void superAdminNotifications.markAsRead(notification.id);
-        }
-      } else {
-        markAsRead(notification.id);
+      if (scope === "buyer") {
+        void buyerNotifications.markAsRead(notification.id);
+      }
+      if (scope === "admin-unit") {
+        void adminUnitNotifications.markAsRead(notification.id);
+      }
+      if (scope === "superadmin") {
+        void superAdminNotifications.markAsRead(notification.id);
       }
     },
-    [buyerNotifications, markAsRead, scope, superAdminNotifications]
+    [adminUnitNotifications, buyerNotifications, scope, superAdminNotifications]
   );
 
   const renderNotificationContent = React.useCallback(

@@ -4,7 +4,6 @@ import type { CSSProperties } from "react";
 import {
   AlertTriangle,
   FileWarning,
-  ShieldCheck,
   ShoppingCart,
   Tag,
   TrendingUp,
@@ -283,7 +282,7 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
       {card.pill ? (
         <span
           className={cx(
-            "absolute right-5 top-5 z-[1] shrink-0 rounded-full px-3 py-2 text-[0.72rem] font-black leading-none sm:right-6 sm:top-6 sm:px-3.5 sm:text-[0.76rem]",
+            "absolute right-5 top-5 z-[1] shrink-0 rounded-full px-2.5 py-1.5 text-[0.66rem] font-black leading-none sm:right-6 sm:top-6 sm:px-3 sm:text-[0.7rem]",
             isCritical
               ? "bg-[#fff0f2] text-[#ef2d2d] dark:bg-rose-300/10 dark:text-rose-200"
               : isTeal
@@ -296,12 +295,12 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
       ) : null}
       <div className="relative grid h-full grid-cols-[5.15rem_minmax(0,1fr)] items-start gap-5 pr-0 sm:pr-16">
         <DashboardGlyph icon={Icon} tone={isCritical ? "red" : isTeal ? "teal" : "green"} />
-        <div className={cx("min-w-0 pt-2", isCritical && "pr-[7.2rem] sm:pr-[7.55rem]")}>
+        <div className={cx("min-w-0 pt-2", isCritical && "pr-[4.85rem] sm:pr-[5.35rem]")}>
           <h2
             className={cx(
               "pr-16 text-[0.98rem] font-black leading-tight tracking-[-0.02em] text-[#111a16] dark:text-slate-100 sm:pr-0 sm:text-[1.05rem]",
               isCritical
-                ? "max-w-[9.95rem] whitespace-nowrap pr-0 text-[0.75rem] tracking-[-0.04em] sm:max-w-[10.6rem] sm:text-[0.81rem]"
+                ? "max-w-none whitespace-nowrap pr-0 text-[1.05rem] tracking-[-0.035em] sm:text-[1.05rem]"
                 : "max-w-[13rem]"
             )}
           >
@@ -357,15 +356,6 @@ function AdminDashboardHero({
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <span className="inline-flex items-center gap-2 rounded-2xl border border-[#bfe7c4] bg-white/78 px-4 py-2 text-[0.76rem] font-black uppercase tracking-[0.16em] text-[#0b6847] shadow-sm dark:border-emerald-300/14 dark:bg-white/[0.055] dark:text-emerald-100">
-                <ShieldCheck aria-hidden="true" className="size-4" strokeWidth={1.7} />
-                Unit Aktif
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-2xl border border-[#ead8a2] bg-[#fffaf0]/82 px-4 py-2 text-[0.76rem] font-black uppercase tracking-[0.16em] text-[#8a650f] shadow-sm dark:border-amber-300/16 dark:bg-amber-300/8 dark:text-amber-100">
-                Rekening Unit Aktif
-              </span>
-            </div>
           </div>
 
           <div className="relative flex min-h-[12.5rem] items-end justify-center lg:min-h-[15rem] lg:justify-end">

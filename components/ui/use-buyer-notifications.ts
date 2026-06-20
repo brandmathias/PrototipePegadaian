@@ -34,6 +34,12 @@ const BUYER_NOTIFICATION_ENDPOINTS: PersistedNotificationEndpoints = {
   readAll: "/api/user/notifikasi/read-all"
 };
 
+const ADMIN_UNIT_NOTIFICATION_ENDPOINTS: PersistedNotificationEndpoints = {
+  list: "/api/admin/notifikasi?limit=12",
+  read: (id) => `/api/admin/notifikasi/${id}`,
+  readAll: "/api/admin/notifikasi/read-all"
+};
+
 const SUPERADMIN_NOTIFICATION_ENDPOINTS: PersistedNotificationEndpoints = {
   list: "/api/superadmin/notifikasi?limit=12",
   read: (id) => `/api/superadmin/notifikasi/${id}`,
@@ -129,6 +135,10 @@ function usePersistedNotifications(enabled: boolean, endpoints: PersistedNotific
 
 export function useBuyerNotifications(enabled: boolean) {
   return usePersistedNotifications(enabled, BUYER_NOTIFICATION_ENDPOINTS);
+}
+
+export function useAdminUnitNotifications(enabled: boolean) {
+  return usePersistedNotifications(enabled, ADMIN_UNIT_NOTIFICATION_ENDPOINTS);
 }
 
 export function useSuperAdminNotifications(enabled: boolean) {

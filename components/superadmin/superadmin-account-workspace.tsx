@@ -606,8 +606,7 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
         title: "Akun superadmin berhasil dibuat.",
         description: `${form.name} sudah bisa login memakai password sementara.`,
         variant: "success",
-        scope: "superadmin",
-        persist: true
+        scope: "superadmin"
       });
       setForm({
         name: "",
@@ -625,8 +624,7 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
         title: "Akun superadmin belum dibuat.",
         description: message,
         variant: "error",
-        scope: "superadmin",
-        persist: true
+        scope: "superadmin"
       });
     } finally {
       setFormLoading(false);
@@ -875,8 +873,7 @@ export function SuperAdminAccountDetailWorkspace({
           title: pendingAction.nextIsActive ? "Akun superadmin diaktifkan." : "Akun superadmin dinonaktifkan.",
           description: `${pendingAction.account.name} sudah diperbarui.`,
           variant: "success",
-          scope: "superadmin",
-          persist: true
+          scope: "superadmin"
         });
       } else {
         await applyAccountPatch({ level: pendingAction.nextLevel });
@@ -884,8 +881,7 @@ export function SuperAdminAccountDetailWorkspace({
           title: "Level superadmin diperbarui.",
           description: `${pendingAction.account.name} sekarang menjadi ${pendingAction.nextLevel === "owner" ? "Owner" : "Operator"}.`,
           variant: "success",
-          scope: "superadmin",
-          persist: true
+          scope: "superadmin"
         });
       }
       setPendingAction(null);
@@ -894,8 +890,7 @@ export function SuperAdminAccountDetailWorkspace({
         title: "Aksi superadmin ditolak.",
         description: caughtError instanceof Error ? caughtError.message : "Perubahan belum bisa diproses.",
         variant: "error",
-        scope: "superadmin",
-        persist: true
+        scope: "superadmin"
       });
     } finally {
       setActionLoading(false);
@@ -911,8 +906,7 @@ export function SuperAdminAccountDetailWorkspace({
       title: "Password sementara diperbarui.",
       description: `Password ${target.name} sudah direset dan session aktif diputus.`,
       variant: "success",
-      scope: "superadmin",
-      persist: true
+      scope: "superadmin"
     });
     router.refresh();
   }

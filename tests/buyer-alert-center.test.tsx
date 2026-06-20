@@ -58,6 +58,14 @@ function renderSuperAdminAlertCenter() {
   );
 }
 
+function renderAdminUnitAlertCenter() {
+  return render(
+    <ToastProvider>
+      <AlertCenter scope="admin-unit" />
+    </ToastProvider>
+  );
+}
+
 describe("buyer alert center", () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -227,7 +235,75 @@ describe("buyer alert center", () => {
     expect(screen.getByText(/anda belum memenangkan sesi ini/i)).toBeInTheDocument();
   });
 
-  it("loads persistent superadmin access alerts from the superadmin endpoint", async () => {
+  it("loads persistent admin unit operational notifications from the admin endpoint", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+
+        if (url.includes("/api/admin/notifikasi/read-all")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { updated: 1 } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        if (init?.method === "PATCH") {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { id: "notif-admin-1", isRead: true } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: [
+                {
+                  id: "notif-admin-1",
+                  title: "Bukti pembayaran Kalung Emas masuk",
+                  message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit.",
+                  type: "admin_payment_proof_uploaded",
+                  actionHref: "/admin/transaksi/trx-1",
+                  isRead: false,
+                  createdAt: "2026-06-09T02:00:00.000Z"
+                }
+              ]
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            }
+          )
+        );
+      })
+    );
+
+    const user = userEvent.setup();
+    renderAdminUnitAlertCenter();
+
+    expect(await screen.findByText("1")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
+
+    const link = await screen.findByRole("link", { name: /bukti pembayaran kalung emas masuk/i });
+    expect(link).toHaveAttribute("href", "/admin/transaksi/trx-1");
+    expect(screen.getByText(/menunggu verifikasi unit/i)).toBeInTheDocument();
+
+    await user.click(link);
+
+    await waitFor(() => {
+      expect(screen.queryByText("1")).not.toBeInTheDocument();
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/admin/notifikasi/notif-admin-1", {
+      method: "PATCH"
+    });
+  });
+
+  it("loads persistent superadmin policy alerts, not account-management toasts", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -257,10 +333,10 @@ describe("buyer alert center", () => {
               data: [
                 {
                   id: "notif-super-1",
-                  title: "Akun superadmin dibuat",
-                  message: "Operator Nasional ditambahkan sebagai Operator.",
-                  type: "superadmin_account_created",
-                  actionHref: "/superadmin/manajemen-superadmin",
+                  title: "Pembatasan buyer aktif",
+                  message: "Sistem mencatat pelanggaran pembayaran dan mengaktifkan pembatasan buyer.",
+                  type: "superadmin_policy_alert",
+                  actionHref: "/superadmin/blacklist/detail/buyer-1",
                   isRead: false,
                   createdAt: "2026-06-09T02:00:00.000Z"
                 }
@@ -281,9 +357,10 @@ describe("buyer alert center", () => {
     expect(await screen.findByText("1")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
 
-    const link = await screen.findByRole("link", { name: /akun superadmin dibuat/i });
-    expect(link).toHaveAttribute("href", "/superadmin/manajemen-superadmin");
-    expect(screen.getByText(/operator nasional ditambahkan/i)).toBeInTheDocument();
+    const link = await screen.findByRole("link", { name: /pembatasan buyer aktif/i });
+    expect(link).toHaveAttribute("href", "/superadmin/blacklist/detail/buyer-1");
+    expect(within(link).getByText(/pelanggaran pembayaran/i)).toBeInTheDocument();
+    expect(screen.queryByText(/akun superadmin dibuat/i)).not.toBeInTheDocument();
 
     await user.click(link);
 

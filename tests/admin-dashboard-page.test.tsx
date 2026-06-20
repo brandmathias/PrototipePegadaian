@@ -116,8 +116,8 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/selamat datang kembali/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /halo, admin unit/i })).toBeInTheDocument();
     expect(screen.getByText(/kami siap membantu anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional upc ranotana/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/unit aktif/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/rekening unit aktif/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^unit aktif$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/rekening unit aktif/i)).not.toBeInTheDocument();
     expect(screen.getByAltText(/ilustrasi operasional dashboard admin unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang terjual/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang ditebus/i })).toBeInTheDocument();
@@ -132,6 +132,16 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("button", { name: /hari ini/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
+  });
+
+  it("keeps the action-needed card title in one tidy line beside the status pill", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toHaveClass(
+      "whitespace-nowrap",
+      "text-[1.05rem]"
+    );
+    expect(screen.getByText(/^Urgent$/i)).toHaveClass("shrink-0", "text-[0.66rem]");
   });
 
   it("renders the daily checklist and amber alert action", () => {
@@ -158,11 +168,11 @@ describe("AdminDashboardPage", () => {
 
   it("automatically resets the daily checklist when the 24 hour cycle expires", () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-06-03T09:58:00.000Z"));
+    vi.setSystemTime(new Date("2026-06-03T15:59:59.000Z"));
     window.localStorage.setItem(
       "pegadaian:admin-dashboard-checklist:v1",
       JSON.stringify({
-        resetAt: Date.now() + 1000,
+        dateKey: "2026-06-03",
         taskTitles: dashboardChecklistTitles,
         checked: [true, true, true, false, false]
       })

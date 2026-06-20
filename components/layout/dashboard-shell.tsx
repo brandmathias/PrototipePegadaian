@@ -407,7 +407,7 @@ export function DashboardShell({
           </nav>
         </div>
 
-        {sidebarMetrics?.length ? (
+        {sidebarMetrics?.length && currentUser?.role !== "admin_unit" ? (
           <div className="mt-2.5 shrink-0 rounded-[1.2rem] border border-white/10 bg-white/[0.045] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
             <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/46">Ringkasan Unit</p>
             <div className="mt-2 space-y-1.5">

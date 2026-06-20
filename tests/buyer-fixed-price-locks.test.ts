@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => {
 
   return {
     db,
+    listActiveAdminUnitNotificationRecipientIds: vi.fn().mockResolvedValue(["admin-unit-1"]),
+    notifyAdminUnitPaymentProofUploaded: vi.fn(),
     serializeBuyerTransaction: vi.fn((row) => row)
   };
 });
@@ -25,6 +27,11 @@ vi.mock("@/lib/buyer/serializers", () => ({
 vi.mock("@/lib/services/cron.service", () => ({
   processExpiredVickreyAuctions: vi.fn(),
   processOverdueVickreyPayments: vi.fn()
+}));
+
+vi.mock("@/lib/services/notification-events", () => ({
+  listActiveAdminUnitNotificationRecipientIds: mocks.listActiveAdminUnitNotificationRecipientIds,
+  notifyAdminUnitPaymentProofUploaded: mocks.notifyAdminUnitPaymentProofUploaded
 }));
 
 import { createFixedPricePurchase, uploadBuyerPaymentProof } from "@/lib/services/buyer.service";

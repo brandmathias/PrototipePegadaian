@@ -1201,10 +1201,6 @@ export function SuperAdminDashboardPage({
                 mengendalikan keputusan lintas cabang dari satu pusat kendali
                 yang ringkas.
               </p>
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#cfe2d8] bg-white/78 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.22em] text-[#07593f] shadow-[0_18px_38px_-34px_rgba(15,23,42,0.38)]">
-                <ShieldCheck aria-hidden="true" className="size-4" strokeWidth={2} />
-                Akses Superadmin
-              </div>
             </div>
           </div>
         </div>
@@ -5510,16 +5506,10 @@ export function SuperAdminManagementPage({
                       </div>
 
                       <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
-                        <Link className="w-full sm:w-auto" href={`/superadmin/manajemen-unit/${unit.id}`}>
-                          <Button
-                            className="min-h-9 w-full rounded-[0.95rem] px-3 text-[0.74rem] sm:w-auto"
-                            size="sm"
-                            variant="secondary"
-                          >
-                            Lihat detail
-                            <ChevronRight className="size-3.5" />
-                          </Button>
-                        </Link>
+                        <DetailActionLink
+                          className="w-full sm:w-auto"
+                          href={`/superadmin/manajemen-unit/${unit.id}`}
+                        />
                       </div>
                     </article>
                   ))}

@@ -920,18 +920,6 @@ export function UserDashboardPage({
             Kami siap membantu Anda menemukan aset terbaik, memantau pembayaran, dan membuka nota
             transaksi dari satu ruang pembeli yang lebih ringkas.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Badge className="gap-2 rounded-2xl border border-primary/20 bg-white/85 px-4 py-2 text-primary shadow-sm" variant="default">
-              <ShieldCheck className="size-4" />
-              Akun Terverifikasi
-            </Badge>
-            {summary.blacklist.active ? (
-              <Badge className="gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800" variant="accent">
-                <AlertTriangle className="size-4" />
-                Akun Dibatasi
-              </Badge>
-            ) : null}
-          </div>
         </div>
       </section>
 

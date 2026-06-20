@@ -9,10 +9,13 @@ vi.mock("@/lib/services/notification.service", () => ({
 }));
 
 import {
+  notifyAdminUnitPaymentProofUploaded,
+  notifyAdminUnitVickreyResult,
   notifyBlacklistActivated,
   notifyPaymentDeadlineSoon,
   notifyPaymentRejected,
   notifyPaymentVerified,
+  notifySuperAdminPolicyAlert,
   notifyVickreyLoss,
   notifyVickreyWinner
 } from "@/lib/services/notification-events";
@@ -132,6 +135,70 @@ describe("notification event helpers", () => {
       expect.objectContaining({
         type: "blacklist_active",
         actionHref: "/transaksi?tab=bids"
+      })
+    );
+  });
+
+  it("creates admin unit operational notifications for payment proof and auction results", async () => {
+    await notifyAdminUnitPaymentProofUploaded({
+      adminUserIds: ["admin-1", "admin-2"],
+      transactionId: "trx-fixed-1",
+      lotName: "Kalung Emas"
+    });
+    await notifyAdminUnitVickreyResult({
+      adminUserIds: ["admin-1"],
+      pemasaranId: "pm-vickrey-1",
+      lotName: "Motor Racing",
+      result: "winner_selected"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "admin-1",
+        type: "admin_payment_proof_uploaded",
+        entityType: "transaction",
+        entityId: "trx-fixed-1",
+        actionHref: "/admin/transaksi/trx-fixed-1",
+        title: "Bukti pembayaran Kalung Emas masuk"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "admin-2",
+        type: "admin_payment_proof_uploaded"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "admin-1",
+        type: "admin_vickrey_result",
+        entityType: "pemasaran",
+        entityId: "pm-vickrey-1",
+        actionHref: "/admin/pemasaran/vickrey-auction/pm-vickrey-1",
+        title: "Lelang Motor Racing berakhir"
+      })
+    );
+  });
+
+  it("creates superadmin policy alerts for operational risk, not account CRUD", async () => {
+    await notifySuperAdminPolicyAlert({
+      superAdminUserIds: ["owner-1"],
+      buyerId: "buyer-1",
+      transactionId: "trx-1",
+      lotName: "Motor Racing",
+      totalViolations: 3,
+      blockedUntilLabel: "20 Juni 2027"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "superadmin_policy_alert",
+        entityType: "blacklist",
+        entityId: "trx-1",
+        actionHref: "/superadmin/blacklist/detail/buyer-1",
+        title: "Pembatasan buyer aktif",
+        message: expect.stringMatching(/Motor Racing/i)
       })
     );
   });

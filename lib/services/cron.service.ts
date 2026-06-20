@@ -24,8 +24,12 @@ import {
   shouldSuspendLoginForBlacklist
 } from "@/lib/blacklist/restrictions";
 import {
+  listActiveAdminUnitNotificationRecipientIds,
+  listActiveSuperAdminNotificationRecipientIds,
+  notifyAdminUnitVickreyResult,
   notifyBlacklistActivated,
   notifyPaymentDeadlineSoon,
+  notifySuperAdminPolicyAlert,
   notifyVickreyLoss,
   notifyVickreyWinner
 } from "@/lib/services/notification-events";
@@ -84,6 +88,13 @@ type PaymentDeadlineSummary = {
 type BlacklistExpirySummary = {
   processed: number;
   expired: number;
+};
+
+type BlacklistNotificationPayload = {
+  userId: string;
+  transactionId: string;
+  totalViolations: number;
+  blockedUntilLabel: string;
 };
 
 const UNPAID_VICKREY_STATUSES = [
@@ -470,6 +481,13 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
 
     if (settledStatus === "selesai") {
       summary.completed += 1;
+      const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(session.item.unitId);
+      await notifyAdminUnitVickreyResult({
+        adminUserIds,
+        pemasaranId: session.marketing.id,
+        lotName: session.item.name,
+        result: "winner_selected"
+      });
       if (winnerNotification) {
         await notifyVickreyWinner(winnerNotification);
       }
@@ -478,6 +496,13 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
       }
     } else if (settledStatus === "gagal") {
       summary.failed += 1;
+      const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(session.item.unitId);
+      await notifyAdminUnitVickreyResult({
+        adminUserIds,
+        pemasaranId: session.marketing.id,
+        lotName: session.item.name,
+        result: "no_winner"
+      });
     } else {
       summary.pendingReveal += 1;
     }
@@ -553,14 +578,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
   for (const row of overdueTransactions) {
     let applied = false;
     let blacklistApplied = false;
-    let blacklistNotification:
-      | {
-          userId: string;
-          transactionId: string;
-          totalViolations: number;
-          blockedUntilLabel: string;
-        }
-      | null = null;
+    let blacklistNotification: BlacklistNotificationPayload | null = null;
 
     await db.transaction(async (tx) => {
       const [updatedTransaction] = await tx
@@ -722,8 +740,29 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
     if (blacklistApplied) {
       summary.blacklisted += 1;
     }
-    if (blacklistNotification) {
-      await notifyBlacklistActivated(blacklistNotification);
+    const notificationPayload = blacklistNotification as BlacklistNotificationPayload | null;
+    if (notificationPayload) {
+      await notifyBlacklistActivated(notificationPayload);
+      const [adminUserIds, superAdminUserIds] = await Promise.all([
+        listActiveAdminUnitNotificationRecipientIds(row.item.unitId),
+        listActiveSuperAdminNotificationRecipientIds()
+      ]);
+      await Promise.all([
+        notifyAdminUnitVickreyResult({
+          adminUserIds,
+          pemasaranId: row.marketing.id,
+          lotName: row.item.name,
+          result: "payment_overdue"
+        }),
+        notifySuperAdminPolicyAlert({
+          superAdminUserIds,
+          buyerId: row.transaction.userId,
+          transactionId: row.transaction.id,
+          lotName: row.item.name,
+          totalViolations: notificationPayload.totalViolations,
+          blockedUntilLabel: notificationPayload.blockedUntilLabel
+        })
+      ]);
     }
   }
 

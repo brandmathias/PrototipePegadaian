@@ -11,6 +11,52 @@ type TransactionEventInput = {
   lotName: string;
 };
 
+function uniqueIds(userIds: string[]) {
+  return Array.from(new Set(userIds.filter(Boolean)));
+}
+
+async function createForUsers(
+  userIds: string[],
+  input: Omit<Parameters<typeof createNotificationOnce>[0], "userId">
+) {
+  return Promise.all(
+    uniqueIds(userIds).map((userId) =>
+      createNotificationOnce({
+        ...input,
+        userId
+      })
+    )
+  );
+}
+
+export async function listActiveAdminUnitNotificationRecipientIds(unitId: string) {
+  const [{ and, eq }, { db }, { users }] = await Promise.all([
+    import("drizzle-orm"),
+    import("@/lib/db/client"),
+    import("@/lib/db/schema")
+  ]);
+  const rows = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId), eq(users.isActive, true)));
+
+  return rows.map((row) => row.id);
+}
+
+export async function listActiveSuperAdminNotificationRecipientIds() {
+  const [{ and, eq }, { db }, { users }] = await Promise.all([
+    import("drizzle-orm"),
+    import("@/lib/db/client"),
+    import("@/lib/db/schema")
+  ]);
+  const rows = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.role, "super_admin"), eq(users.isActive, true)));
+
+  return rows.map((row) => row.id);
+}
+
 export async function notifyVickreyWinner(
   input: TransactionEventInput & {
     finalPrice: string | number;
@@ -145,6 +191,72 @@ export async function notifyBlacklistActivated(
       ? `/transaksi/${input.transactionId}`
       : getBuyerTransactionsHref({ tab: "bids" }),
     metadata: {
+      totalViolations: input.totalViolations,
+      blockedUntilLabel: input.blockedUntilLabel
+    }
+  });
+}
+
+export async function notifyAdminUnitPaymentProofUploaded(input: {
+  adminUserIds: string[];
+  transactionId: string;
+  lotName: string;
+}) {
+  return createForUsers(input.adminUserIds, {
+    title: `Bukti pembayaran ${input.lotName} masuk`,
+    message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit.",
+    type: "admin_payment_proof_uploaded",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: `/admin/transaksi/${input.transactionId}`
+  });
+}
+
+export async function notifyAdminUnitVickreyResult(input: {
+  adminUserIds: string[];
+  pemasaranId: string;
+  lotName: string;
+  result: "winner_selected" | "no_winner" | "payment_overdue";
+}) {
+  const message =
+    input.result === "winner_selected"
+      ? "Sesi lelang tertutup sudah berakhir dan sistem telah menentukan pemenang. Tinjau transaksi pemenang untuk tindak lanjut pembayaran."
+      : input.result === "payment_overdue"
+        ? "Batas pembayaran pemenang sudah terlewati. Sistem menandai transaksi gagal dan mencatat pelanggaran."
+        : "Sesi lelang tertutup berakhir tanpa pemenang. Tinjau sesi untuk menentukan langkah pemasaran berikutnya.";
+
+  return createForUsers(input.adminUserIds, {
+    title: `Lelang ${input.lotName} berakhir`,
+    message,
+    type: input.result === "payment_overdue" ? "admin_payment_overdue" : "admin_vickrey_result",
+    entityType: "pemasaran",
+    entityId: input.pemasaranId,
+    actionHref: `/admin/pemasaran/vickrey-auction/${input.pemasaranId}`,
+    metadata: {
+      result: input.result
+    }
+  });
+}
+
+export async function notifySuperAdminPolicyAlert(input: {
+  superAdminUserIds: string[];
+  buyerId: string;
+  transactionId?: string | null;
+  lotName: string;
+  totalViolations: number;
+  blockedUntilLabel: string;
+}) {
+  const entityId = input.transactionId ?? `blacklist-${input.buyerId}`;
+
+  return createForUsers(input.superAdminUserIds, {
+    title: "Pembatasan buyer aktif",
+    message: `Sistem mencatat pelanggaran pembayaran pada ${input.lotName}. Total pelanggaran: ${input.totalViolations}x, pembatasan aktif sampai ${input.blockedUntilLabel}.`,
+    type: "superadmin_policy_alert",
+    entityType: "blacklist",
+    entityId,
+    actionHref: `/superadmin/blacklist/detail/${input.buyerId}`,
+    metadata: {
+      buyerId: input.buyerId,
       totalViolations: input.totalViolations,
       blockedUntilLabel: input.blockedUntilLabel
     }

@@ -129,8 +129,12 @@ describe("buyer dashboard page", () => {
     );
 
     expect(screen.getByRole("heading", { name: /halo, raras maheswari/i })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /ilustrasi beranda pembeli/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/akun terverifikasi/i).length).toBeGreaterThanOrEqual(2);
+    const heroImage = screen.getByRole("img", { name: /ilustrasi beranda pembeli/i });
+    const heroSection = heroImage.closest("section");
+    expect(heroImage).toBeInTheDocument();
+    expect(heroSection).toBeTruthy();
+    expect(within(heroSection as HTMLElement).queryByText(/akun terverifikasi/i)).not.toBeInTheDocument();
+    expect(within(heroSection as HTMLElement).queryByText(/akun dibatasi/i)).not.toBeInTheDocument();
     expect(screen.getByText(/member sejak 4 mei 2026/i)).toBeInTheDocument();
     expect(screen.getByText(/raras@example\.com/i)).toBeInTheDocument();
     expect(screen.queryByText(/pembayaran menunggu/i)).not.toBeInTheDocument();

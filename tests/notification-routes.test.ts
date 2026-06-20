@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  requireAdminApiSession: vi.fn(),
   requireBuyerApiSession: vi.fn(),
   ensureVickreyLossNotifications: vi.fn(),
   listUserNotifications: vi.fn(),
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth/session", () => ({
+  requireAdminApiSession: mocks.requireAdminApiSession,
   requireBuyerApiSession: mocks.requireBuyerApiSession
 }));
 
@@ -34,9 +36,20 @@ const buyerAccess = {
   }
 };
 
+const adminAccess = {
+  ok: true as const,
+  userId: "admin-1",
+  session: {
+    user: {
+      id: "admin-1"
+    }
+  }
+};
+
 describe("buyer notification routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.requireAdminApiSession.mockResolvedValue(adminAccess);
     mocks.requireBuyerApiSession.mockResolvedValue(buyerAccess);
     mocks.ensureVickreyLossNotifications.mockResolvedValue(undefined);
   });
@@ -132,6 +145,97 @@ describe("buyer notification routes", () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({
       message: "Silakan masuk sebagai pembeli terlebih dahulu."
+    });
+    expect(mocks.listUserNotifications).not.toHaveBeenCalled();
+  });
+});
+
+describe("admin unit notification routes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdminApiSession.mockResolvedValue(adminAccess);
+    mocks.requireBuyerApiSession.mockResolvedValue(buyerAccess);
+    mocks.ensureVickreyLossNotifications.mockResolvedValue(undefined);
+  });
+
+  it("lists admin unit notifications without buyer-only reconciliation", async () => {
+    mocks.listUserNotifications.mockResolvedValueOnce([
+      {
+        id: "notif-admin-1",
+        title: "Bukti pembayaran masuk",
+        isRead: false
+      }
+    ]);
+
+    const { GET } = await import("@/app/api/admin/notifikasi/route");
+    const response = await GET(new Request("http://localhost:3000/api/admin/notifikasi?unread=true&limit=8"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: [
+        {
+          id: "notif-admin-1",
+          title: "Bukti pembayaran masuk",
+          isRead: false
+        }
+      ]
+    });
+    expect(mocks.listUserNotifications).toHaveBeenCalledWith("admin-1", {
+      unreadOnly: true,
+      limit: 8
+    });
+    expect(mocks.ensureVickreyLossNotifications).not.toHaveBeenCalled();
+  });
+
+  it("marks one admin unit notification read", async () => {
+    mocks.markNotificationRead.mockResolvedValueOnce({
+      id: "notif-admin-1",
+      isRead: true
+    });
+
+    const { PATCH } = await import("@/app/api/admin/notifikasi/[id]/route");
+    const response = await PATCH(new Request("http://localhost:3000/api/admin/notifikasi/notif-admin-1"), {
+      params: Promise.resolve({ id: "notif-admin-1" })
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        id: "notif-admin-1",
+        isRead: true
+      }
+    });
+    expect(mocks.markNotificationRead).toHaveBeenCalledWith("admin-1", "notif-admin-1");
+  });
+
+  it("marks all admin unit notifications read", async () => {
+    mocks.markAllNotificationsRead.mockResolvedValueOnce(2);
+
+    const { POST } = await import("@/app/api/admin/notifikasi/read-all/route");
+    const response = await POST();
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        updated: 2
+      }
+    });
+    expect(mocks.markAllNotificationsRead).toHaveBeenCalledWith("admin-1");
+  });
+
+  it("rejects unauthenticated admin notification access", async () => {
+    mocks.requireAdminApiSession.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      message: "Silakan masuk sebagai admin unit terlebih dahulu."
+    });
+
+    const { GET } = await import("@/app/api/admin/notifikasi/route");
+    const response = await GET(new Request("http://localhost:3000/api/admin/notifikasi"));
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      message: "Silakan masuk sebagai admin unit terlebih dahulu."
     });
     expect(mocks.listUserNotifications).not.toHaveBeenCalled();
   });

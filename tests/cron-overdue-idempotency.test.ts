@@ -12,10 +12,18 @@ const mocks = vi.hoisted(() => {
     delete: vi.fn()
   };
   const notifyBlacklistActivated = vi.fn();
+  const listActiveAdminUnitNotificationRecipientIds = vi.fn().mockResolvedValue(["admin-unit-1"]);
+  const listActiveSuperAdminNotificationRecipientIds = vi.fn().mockResolvedValue(["superadmin-1"]);
+  const notifyAdminUnitVickreyResult = vi.fn();
+  const notifySuperAdminPolicyAlert = vi.fn();
 
   return {
     db,
+    listActiveAdminUnitNotificationRecipientIds,
+    listActiveSuperAdminNotificationRecipientIds,
+    notifyAdminUnitVickreyResult,
     notifyBlacklistActivated,
+    notifySuperAdminPolicyAlert,
     tx
   };
 });
@@ -25,8 +33,12 @@ vi.mock("@/lib/db/client", () => ({
 }));
 
 vi.mock("@/lib/services/notification-events", () => ({
+  listActiveAdminUnitNotificationRecipientIds: mocks.listActiveAdminUnitNotificationRecipientIds,
+  listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds,
+  notifyAdminUnitVickreyResult: mocks.notifyAdminUnitVickreyResult,
   notifyBlacklistActivated: mocks.notifyBlacklistActivated,
   notifyPaymentDeadlineSoon: vi.fn(),
+  notifySuperAdminPolicyAlert: mocks.notifySuperAdminPolicyAlert,
   notifyVickreyLoss: vi.fn(),
   notifyVickreyWinner: vi.fn()
 }));

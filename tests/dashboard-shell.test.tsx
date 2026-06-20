@@ -169,6 +169,31 @@ describe("DashboardShell", () => {
     expect(screen.queryByRole("button", { name: /aktifkan mode terang/i })).not.toBeInTheDocument();
   });
 
+  it("keeps the admin unit sidebar free from the old unit summary card", () => {
+    navigationMock.pathname = "/admin";
+
+    render(
+      <DashboardShell
+        currentUser={{ name: "Admin Unit", role: "admin_unit" }}
+        nav={nav}
+        showHeaderSearch={false}
+        sidebarMetrics={[
+          { label: "Total Barang", value: 9 },
+          { label: "Siap Dipasarkan", value: 9 }
+        ]}
+        sidebarUpdatedAt="20 Jun 2026, 14.19 WIB"
+        subtitle="Pusat kendali operasional unit"
+        title="UPC Ranotana"
+      >
+        <div>Konten admin</div>
+      </DashboardShell>
+    );
+
+    expect(screen.queryByText(/ringkasan unit/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/total barang/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/data per/i)).not.toBeInTheDocument();
+  });
+
   it("uses the same profile dropdown for superadmin accounts", () => {
     navigationMock.pathname = "/superadmin";
 

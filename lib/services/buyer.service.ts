@@ -32,6 +32,10 @@ import {
   users
 } from "@/lib/db/schema";
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
+import {
+  listActiveAdminUnitNotificationRecipientIds,
+  notifyAdminUnitPaymentProofUploaded
+} from "@/lib/services/notification-events";
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
@@ -200,6 +204,7 @@ function transactionSelection() {
     updatedAt: transaksi.updatedAt,
     lotName: barang.name,
     lotId: barang.id,
+    unitId: barang.unitId,
     imageUrl: primaryBarangPhotoUrl(),
     unitName: units.name,
     unitAddress: units.address,
@@ -883,6 +888,13 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     })
     .returning();
 
+  const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.item.unitId);
+  await notifyAdminUnitPaymentProofUploaded({
+    adminUserIds,
+    transactionId: created.id,
+    lotName: row.item.name
+  });
+
   return serializeBuyerTransaction({
     ...created,
     lotName: row.item.name,
@@ -1109,6 +1121,13 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     })
     .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
     .returning();
+
+  const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.unitId);
+  await notifyAdminUnitPaymentProofUploaded({
+    adminUserIds,
+    transactionId: updated.id,
+    lotName: row.lotName
+  });
 
   return serializeBuyerTransaction({
     ...updated,

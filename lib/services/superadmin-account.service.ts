@@ -4,7 +4,7 @@ import { hashPassword } from "@better-auth/utils/password";
 import { and, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
-import { account, notifications, sessions, superadminAccountAuditLogs, users } from "@/lib/db/schema";
+import { account, sessions, superadminAccountAuditLogs, users } from "@/lib/db/schema";
 import {
   normalizeSuperAdminLevel,
   type SuperAdminLevel,
@@ -151,51 +151,6 @@ async function writeAudit(
   return created;
 }
 
-async function notifyActiveOwners(
-  executor: DbExecutor,
-  input: {
-    auditId: string;
-    type:
-      | "superadmin_account_created"
-      | "superadmin_account_updated"
-      | "superadmin_account_reset"
-      | "superadmin_account_guardrail";
-    title: string;
-    message: string;
-    targetUserId?: string | null;
-    metadata?: Record<string, unknown>;
-  }
-) {
-  const ownerRows = await executor
-    .select({
-      id: users.id
-    })
-    .from(users)
-    .where(activeOwnerWhere());
-
-  if (ownerRows.length === 0) {
-    return;
-  }
-
-  await executor.insert(notifications).values(
-    ownerRows.map((owner) => ({
-      id: randomUUID(),
-      userId: owner.id,
-      title: input.title,
-      message: input.message,
-      type: input.type,
-      entityType: "superadmin_audit",
-      entityId: input.auditId,
-      actionHref: "/superadmin/manajemen-superadmin",
-      isRead: false,
-      metadata: {
-        ...(input.metadata ?? {}),
-        targetUserId: input.targetUserId ?? null
-      }
-    }))
-  );
-}
-
 async function recordRejectedOwnerAction(
   executor: DbExecutor,
   input: {
@@ -205,20 +160,11 @@ async function recordRejectedOwnerAction(
     metadata?: Record<string, unknown>;
   }
 ) {
-  const audit = await writeAudit(executor, {
+  await writeAudit(executor, {
     action: "rejected",
     actorUserId: input.actorUserId,
     targetUserId: input.targetUserId ?? null,
     note: input.reason,
-    metadata: input.metadata
-  });
-
-  await notifyActiveOwners(executor, {
-    auditId: audit.id,
-    type: "superadmin_account_guardrail",
-    title: "Aksi superadmin ditolak",
-    message: input.reason,
-    targetUserId: input.targetUserId ?? null,
     metadata: input.metadata
   });
 }
@@ -463,7 +409,7 @@ export async function createSuperAdminAccount(actorUserId: string, input: {
       password: passwordHash
     });
 
-    const audit = await writeAudit(tx, {
+    await writeAudit(tx, {
       action: "create",
       actorUserId,
       targetUserId: userId,
@@ -471,17 +417,6 @@ export async function createSuperAdminAccount(actorUserId: string, input: {
       metadata: {
         level: payload.level,
         email: payload.email
-      }
-    });
-
-    await notifyActiveOwners(tx, {
-      auditId: audit.id,
-      type: "superadmin_account_created",
-      title: "Akun superadmin dibuat",
-      message: `${payload.name} ditambahkan sebagai ${toLevelLabel(payload.level)}.`,
-      targetUserId: userId,
-      metadata: {
-        level: payload.level
       }
     });
   });
@@ -555,7 +490,7 @@ export async function updateSuperAdminAccount(actorUserId: string, targetUserId:
           : action === "change_level"
             ? `${actor.name} mengubah level ${updated.name} menjadi ${toLevelLabel(nextLevel)}.`
             : `${actor.name} memperbarui profil ${updated.name}.`;
-    const audit = await writeAudit(tx, {
+    await writeAudit(tx, {
       action,
       actorUserId,
       targetUserId,
@@ -564,19 +499,6 @@ export async function updateSuperAdminAccount(actorUserId: string, targetUserId:
         previousLevel: currentLevel,
         nextLevel,
         previousStatus: target.isActive,
-        nextStatus: nextIsActive
-      }
-    });
-
-    await notifyActiveOwners(tx, {
-      auditId: audit.id,
-      type: "superadmin_account_updated",
-      title: "Akses superadmin diperbarui",
-      message: note,
-      targetUserId,
-      metadata: {
-        action,
-        nextLevel,
         nextStatus: nextIsActive
       }
     });
@@ -617,22 +539,11 @@ export async function resetSuperAdminPassword(actorUserId: string, targetUserId:
 
     await tx.delete(sessions).where(eq(sessions.userId, targetUserId));
 
-    const audit = await writeAudit(tx, {
+    await writeAudit(tx, {
       action: "reset_password",
       actorUserId,
       targetUserId,
       note: `${actor.name} mereset password sementara untuk ${target.name}.`,
-      metadata: {
-        targetEmail: target.email
-      }
-    });
-
-    await notifyActiveOwners(tx, {
-      auditId: audit.id,
-      type: "superadmin_account_reset",
-      title: "Password superadmin direset",
-      message: `${target.name} menerima password sementara baru.`,
-      targetUserId,
       metadata: {
         targetEmail: target.email
       }

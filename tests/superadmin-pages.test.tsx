@@ -141,6 +141,7 @@ describe("superadmin pages", () => {
     );
 
     expect(screen.getByText("Dashboard Nasional")).toBeInTheDocument();
+    expect(screen.queryByText(/akses superadmin/i)).not.toBeInTheDocument();
     expect(screen.getByText("Unit Aktif Nasional")).toBeInTheDocument();
     expect(screen.getAllByText("2").length).toBeGreaterThan(0);
   });
@@ -1479,9 +1480,18 @@ describe("superadmin pages", () => {
 
     expect(screen.queryByRole("button", { name: /tambah admin/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /direktori admin/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveAttribute(
+    const detailLink = screen.getByRole("link", { name: /lihat detail/i });
+
+    expect(detailLink).toHaveAttribute(
       "href",
       "/superadmin/manajemen-unit/unit-1",
+    );
+    expect(detailLink).toHaveClass(
+      "border-[#d8e4de]",
+      "text-[#075b3f]",
+      "hover:border-[#006747]",
+      "hover:bg-[#006747]",
+      "hover:text-white",
     );
     expect(screen.queryByRole("link", { name: /^rekening$/i })).not.toBeInTheDocument();
   });
