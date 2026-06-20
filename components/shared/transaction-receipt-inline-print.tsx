@@ -24,9 +24,37 @@ function disableReceiptPrintMode() {
   document.body.classList.remove(RECEIPT_PRINTING_BODY_CLASS);
 }
 
+export function shouldUseIsolatedReceiptPrintFrame() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+  return (
+    /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(userAgent) ||
+    (platform === "MacIntel" && maxTouchPoints > 1)
+  );
+}
+
+function isJsdomRuntime() {
+  const isTestEnvironment =
+    typeof process !== "undefined" && process.env.NODE_ENV === "test";
+
+  return isTestEnvironment || (typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent || ""));
+}
+
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
-  if (typeof document !== "undefined" && "fonts" in document) {
-    await document.fonts.ready;
+  const ownerDocument = root.ownerDocument || document;
+  const ownerWindow = ownerDocument.defaultView || window;
+
+  if ("fonts" in ownerDocument) {
+    await Promise.race([
+      ownerDocument.fonts.ready.catch(() => undefined),
+      new Promise((resolve) => ownerWindow.setTimeout(resolve, 320))
+    ]);
   }
 
   const images = Array.from(root.querySelectorAll("img"));
@@ -38,7 +66,7 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
           let fallback: number | undefined;
           const finish = async () => {
             if (fallback) {
-              window.clearTimeout(fallback);
+              ownerWindow.clearTimeout(fallback);
             }
             if (image.naturalWidth > 0 && "decode" in image) {
               try {
@@ -55,7 +83,7 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
             return;
           }
 
-          fallback = window.setTimeout(() => resolve(), 800);
+          fallback = ownerWindow.setTimeout(() => void finish(), 360);
 
           image.addEventListener("load", () => void finish(), { once: true });
           image.addEventListener("error", finish, { once: true });
@@ -63,7 +91,109 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
     )
   );
 
-  await new Promise((resolve) => window.setTimeout(resolve, 80));
+  await new Promise((resolve) => ownerWindow.setTimeout(resolve, 40));
+}
+
+function syncReceiptPrintFrameHead(sourceDocument: Document, targetDocument: Document) {
+  targetDocument.head.replaceChildren();
+
+  const base = targetDocument.createElement("base");
+  base.href = sourceDocument.location?.origin ? `${sourceDocument.location.origin}/` : window.location.href;
+  targetDocument.head.appendChild(base);
+
+  sourceDocument.head.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+    targetDocument.head.appendChild(node.cloneNode(true));
+  });
+}
+
+export async function printReceiptElementInIsolatedFrame(root: HTMLElement) {
+  const sourceDocument = root.ownerDocument || document;
+  const sourceWindow = sourceDocument.defaultView || window;
+  const frame = sourceDocument.createElement("iframe");
+
+  frame.setAttribute("aria-hidden", "true");
+  frame.setAttribute("data-receipt-print-frame", "true");
+  frame.setAttribute("data-receipt-root-id", root.id);
+  frame.title = "Nota siap cetak";
+  frame.style.position = "fixed";
+  frame.style.left = "-10000px";
+  frame.style.top = "0";
+  frame.style.width = "1px";
+  frame.style.height = "1px";
+  frame.style.border = "0";
+  frame.style.opacity = "0";
+  frame.style.pointerEvents = "none";
+
+  sourceDocument.body.appendChild(frame);
+
+  const targetDocument = frame.contentDocument;
+  const targetWindow = frame.contentWindow;
+
+  if (!targetDocument || !targetWindow) {
+    window.print();
+    frame.remove();
+    return;
+  }
+
+  targetDocument.open();
+  targetDocument.write("<!doctype html><html><head></head><body></body></html>");
+  targetDocument.close();
+  targetDocument.body.className = RECEIPT_PRINTING_BODY_CLASS;
+
+  syncReceiptPrintFrameHead(sourceDocument, targetDocument);
+
+  const printStyle = targetDocument.createElement("style");
+  printStyle.textContent = `
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    html,
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      min-height: 297mm !important;
+      background: #ffffff !important;
+    }
+
+    #${root.id} {
+      display: block !important;
+      position: static !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      max-width: 210mm !important;
+      min-height: 297mm !important;
+      pointer-events: auto !important;
+    }
+  `;
+  targetDocument.head.appendChild(printStyle);
+
+  const clonedRoot = root.cloneNode(true) as HTMLElement;
+  clonedRoot.removeAttribute("hidden");
+  clonedRoot.removeAttribute("aria-hidden");
+  Array.from(clonedRoot.children).forEach((child) => {
+    if (child.tagName === "STYLE") {
+      child.remove();
+    }
+  });
+  targetDocument.body.appendChild(clonedRoot);
+
+  await waitForTransactionReceiptPrintAssets(clonedRoot);
+
+  frame.setAttribute("data-receipt-print-invoked", "true");
+
+  if (!isJsdomRuntime()) {
+    targetWindow.print();
+  }
+
+  const cleanup = () => frame.remove();
+  targetWindow.addEventListener("afterprint", cleanup, { once: true });
+  sourceWindow.setTimeout(cleanup, 60_000);
 }
 
 export function TransactionReceiptInlinePrint({
@@ -111,6 +241,12 @@ export function TransactionReceiptInlinePrint({
 
     if (root) {
       await waitForTransactionReceiptPrintAssets(root);
+    }
+
+    if (root && shouldUseIsolatedReceiptPrintFrame()) {
+      await printReceiptElementInIsolatedFrame(root);
+      clearPrintSheet();
+      return;
     }
 
     window.print();

@@ -61,7 +61,11 @@ import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
-import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
+import {
+  printReceiptElementInIsolatedFrame,
+  shouldUseIsolatedReceiptPrintFrame,
+  TransactionReceiptInlinePrint
+} from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -4588,8 +4592,14 @@ function VickreyReceiptPrintSheet({
 }
 
 async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
-  if (typeof document !== "undefined" && "fonts" in document) {
-    await document.fonts.ready;
+  const ownerDocument = root.ownerDocument || document;
+  const ownerWindow = ownerDocument.defaultView || window;
+
+  if ("fonts" in ownerDocument) {
+    await Promise.race([
+      ownerDocument.fonts.ready.catch(() => undefined),
+      new Promise((resolve) => ownerWindow.setTimeout(resolve, 320))
+    ]);
   }
 
   const images = Array.from(root.querySelectorAll("img"));
@@ -4601,7 +4611,7 @@ async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
           let fallback: number | undefined;
           const finish = async () => {
             if (fallback) {
-              window.clearTimeout(fallback);
+              ownerWindow.clearTimeout(fallback);
             }
             if (image.naturalWidth > 0 && "decode" in image) {
               try {
@@ -4618,7 +4628,7 @@ async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
             return;
           }
 
-          fallback = window.setTimeout(() => resolve(), 800);
+          fallback = ownerWindow.setTimeout(() => void finish(), 360);
 
           image.addEventListener("load", () => void finish(), { once: true });
           image.addEventListener("error", finish, { once: true });
@@ -4626,7 +4636,7 @@ async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
     )
   );
 
-  await new Promise((resolve) => window.setTimeout(resolve, 80));
+  await new Promise((resolve) => ownerWindow.setTimeout(resolve, 40));
 }
 
 function VickreyReceiptPrintButton({
@@ -5171,6 +5181,12 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
 
     if (root) {
       await waitForVickreyReceiptPrintAssets(root);
+    }
+
+    if (root && shouldUseIsolatedReceiptPrintFrame()) {
+      await printReceiptElementInIsolatedFrame(root);
+      setIsPrintSheetReady(false);
+      return;
     }
 
     window.print();

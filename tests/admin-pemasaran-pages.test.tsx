@@ -541,12 +541,23 @@ describe("admin pemasaran pages", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      const printFrame = await waitFor(() => {
+        const frame = document.querySelector(
+          'iframe[data-receipt-print-frame="true"][data-receipt-root-id="fixed-price-receipt-print-root-trx-fixed-paid"]'
+        ) as HTMLIFrameElement | null;
+        expect(frame).not.toBeNull();
+        expect(frame?.getAttribute("data-receipt-print-invoked")).toBe("true");
+        return frame!;
+      });
+
       expect(openSpy).not.toHaveBeenCalled();
-      const receiptPrintRoot = document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid");
-      expect(receiptPrintRoot).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+      expect(printSpy).not.toHaveBeenCalled();
+      const isolatedReceipt = printFrame.contentDocument?.getElementById("fixed-price-receipt-print-root-trx-fixed-paid");
+      expect(isolatedReceipt).not.toBeNull();
+      expect(isolatedReceipt?.textContent).toContain("Nota Pengambilan Barang");
+      expect(isolatedReceipt?.textContent).not.toContain("Verifikasi Pelunasan Dana Harga Tetap");
+      expect(isolatedReceipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(isolatedReceipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
@@ -1310,12 +1321,23 @@ describe("admin pemasaran pages", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      const printFrame = await waitFor(() => {
+        const frame = document.querySelector(
+          'iframe[data-receipt-print-frame="true"][data-receipt-root-id="vickrey-receipt-print-root-trx-vickrey-paid"]'
+        ) as HTMLIFrameElement | null;
+        expect(frame).not.toBeNull();
+        expect(frame?.getAttribute("data-receipt-print-invoked")).toBe("true");
+        return frame!;
+      });
+
       expect(openSpy).not.toHaveBeenCalled();
-      const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid");
-      expect(receiptPrintRoot).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+      expect(printSpy).not.toHaveBeenCalled();
+      const isolatedReceipt = printFrame.contentDocument?.getElementById("vickrey-receipt-print-root-trx-vickrey-paid");
+      expect(isolatedReceipt).not.toBeNull();
+      expect(isolatedReceipt?.textContent).toContain("Nota Pengambilan Barang");
+      expect(isolatedReceipt?.textContent).not.toContain("Ranking Peserta Lelang");
+      expect(isolatedReceipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(isolatedReceipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

@@ -275,12 +275,23 @@ describe("admin transaction pages", () => {
 
       await userEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      const printFrame = await waitFor(() => {
+        const frame = document.querySelector(
+          'iframe[data-receipt-print-frame="true"][data-receipt-root-id="transaction-receipt-print-root-trx-history"]'
+        ) as HTMLIFrameElement | null;
+        expect(frame).not.toBeNull();
+        expect(frame?.getAttribute("data-receipt-print-invoked")).toBe("true");
+        return frame!;
+      });
+
       expect(openSpy).not.toHaveBeenCalled();
-      const receiptPrintRoot = document.getElementById("transaction-receipt-print-root-trx-history");
-      expect(receiptPrintRoot).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
-      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+      expect(printSpy).not.toHaveBeenCalled();
+      const isolatedReceipt = printFrame.contentDocument?.getElementById("transaction-receipt-print-root-trx-history");
+      expect(isolatedReceipt).not.toBeNull();
+      expect(isolatedReceipt?.textContent).toContain("Nota Pengambilan Barang");
+      expect(isolatedReceipt?.textContent).not.toContain("Admin Unit / Detail Transaksi");
+      expect(isolatedReceipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(isolatedReceipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
