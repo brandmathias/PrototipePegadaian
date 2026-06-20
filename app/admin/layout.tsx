@@ -12,10 +12,21 @@ import { formatAppDateTime } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
+function isAdminReceiptRoute(path: string) {
+  const pathname = path.split(/[?#]/, 1)[0] || path;
+
+  return /^\/admin\/transaksi\/[^/]+\/nota\/?$/.test(pathname);
+}
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
   const isDashboardRoute = currentPath === "/admin";
   const currentUser = await getAdminSessionUser(currentPath);
+
+  if (isAdminReceiptRoute(currentPath)) {
+    return <>{children}</>;
+  }
+
   const [unit] = currentUser.unitId
     ? await db.select().from(units).where(eq(units.id, currentUser.unitId)).limit(1)
     : [];

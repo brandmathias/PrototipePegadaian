@@ -6,9 +6,20 @@ import { getBuyerShellSummary } from "@/lib/services/buyer.service";
 
 export const dynamic = "force-dynamic";
 
+function isBuyerReceiptRoute(path: string) {
+  const pathname = path.split(/[?#]/, 1)[0] || path;
+
+  return /^\/transaksi\/[^/]+\/nota\/?$/.test(pathname);
+}
+
 export default async function UserLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
   const session = await requireBuyerSession(currentPath);
+
+  if (isBuyerReceiptRoute(currentPath)) {
+    return <>{children}</>;
+  }
+
   const summary = await getBuyerShellSummary(session.user.id);
 
   return (

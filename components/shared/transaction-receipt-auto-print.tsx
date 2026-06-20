@@ -189,7 +189,7 @@ export function TransactionReceiptAutoPrint({
           body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > aside,
           body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > button,
           body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > div > header,
-          body:has(#transaction-receipt-auto-output) .print\\:hidden {
+          body:has(#transaction-receipt-auto-output) .print\\:hidden:not(.transaction-receipt-output-cover) {
             display: none !important;
           }
 
@@ -232,6 +232,14 @@ export function TransactionReceiptAutoPrint({
           }
         }
       `}</style>
+      <div
+        aria-live="polite"
+        className="transaction-receipt-output-cover fixed inset-0 z-[2147483001] grid place-items-center bg-[#eef3ef] px-6 text-center text-[#0b4f37] print:hidden"
+      >
+        <div className="rounded-xl border border-[#cbd9cc] bg-white px-4 py-3 shadow-[0_18px_42px_-34px_rgba(8,69,50,0.45)]">
+          <p className="text-sm font-semibold">Menyiapkan nota...</p>
+        </div>
+      </div>
       <div className="sr-only" id="transaction-receipt-auto-output">
         Menyiapkan nota untuk cetak.
       </div>

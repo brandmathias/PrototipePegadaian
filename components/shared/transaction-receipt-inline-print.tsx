@@ -13,6 +13,7 @@ type TransactionReceiptInlinePrintProps = {
   documentClassName?: string;
   documentTestId?: string;
   label?: string;
+  mobilePrintHref?: string;
   rootId: string;
 };
 
@@ -66,12 +67,44 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
   await new Promise((resolve) => window.setTimeout(resolve, 80));
 }
 
+export function shouldUseDedicatedMobilePrintRoute() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+  const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+  return (
+    /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(userAgent) ||
+    (platform === "MacIntel" && maxTouchPoints > 1)
+  );
+}
+
+export function openDedicatedMobilePrintView(href: string) {
+  const printWindow = window.open(href, "_blank");
+
+  if (printWindow) {
+    try {
+      printWindow.opener = null;
+      printWindow.focus?.();
+    } catch {
+      // Some mobile browsers expose a restricted WindowProxy after opening a new tab.
+    }
+    return;
+  }
+
+  window.location.assign(href);
+}
+
 export function TransactionReceiptInlinePrint({
   buttonClassName,
   children,
   documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
   documentTestId = "transaction-receipt-print-document",
   label = "Cetak Nota",
+  mobilePrintHref,
   rootId
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
@@ -100,6 +133,11 @@ export function TransactionReceiptInlinePrint({
   }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
+    if (mobilePrintHref && shouldUseDedicatedMobilePrintRoute()) {
+      openDedicatedMobilePrintView(mobilePrintHref);
+      return;
+    }
+
     enableReceiptPrintMode();
     window.addEventListener("afterprint", clearPrintSheet, { once: true });
 
@@ -114,7 +152,7 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [clearPrintSheet, rootId]);
+  }, [clearPrintSheet, mobilePrintHref, rootId]);
 
   return (
     <>

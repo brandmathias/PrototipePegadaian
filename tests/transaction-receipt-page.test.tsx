@@ -74,6 +74,10 @@ describe("transaction receipt page", () => {
     expect(style).toHaveTextContent(".receipt-auto-output-stage");
     expect(style).toHaveTextContent(".buyer-experience-root");
     expect(style).toHaveTextContent("[data-admin-shell=\"true\"] > div > header");
+    const cover = document.querySelector(".transaction-receipt-output-cover");
+    expect(cover).toBeInTheDocument();
+    expect(cover).toHaveClass("fixed", "inset-0", "print:hidden");
+    expect(cover).toHaveTextContent(/menyiapkan nota/i);
   });
 
   it("renders an informative pickup note with buyer, unit, totals, and terms", () => {

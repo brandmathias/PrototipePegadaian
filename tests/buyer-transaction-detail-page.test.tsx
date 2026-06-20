@@ -200,7 +200,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
-  it("prints the prepared receipt directly on mobile without opening the visual receipt route", async () => {
+  it("opens the sterile receipt print route on mobile for verified fixed-price payments", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -228,9 +228,9 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
-      expect(openSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).not.toBeNull();
+      expect(openSpy).toHaveBeenCalledWith("/transaksi/trx-fixed-1/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).toBeNull();
     } finally {
       document.body.classList.remove("transaction-receipt-printing");
       Object.defineProperty(window.navigator, "userAgent", {
@@ -326,7 +326,7 @@ describe("buyer transaction detail page", () => {
     printSpy.mockRestore();
   });
 
-  it("prints the paid auction winner receipt directly on mobile without opening the visual receipt route", async () => {
+  it("opens the sterile receipt print route on mobile for paid auction winners", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -369,9 +369,9 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
-      expect(openSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).not.toBeNull();
+      expect(openSpy).toHaveBeenCalledWith("/transaksi/trx-vickrey-paid/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

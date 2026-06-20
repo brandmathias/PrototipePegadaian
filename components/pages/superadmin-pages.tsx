@@ -4046,6 +4046,9 @@ function SuperAdminVickreyReceiptInlinePrint({
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
       label={label}
+      mobilePrintHref={
+        session.transactionId ? `/superadmin/transaksi/${session.transactionId}/nota?output=print` : undefined
+      }
       rootId={getSuperAdminVickreyReceiptPrintRootId(session)}
     >
       <TransactionReceiptDocument

@@ -6,9 +6,19 @@ import { getAppPathFromRequestHeaders, getSuperAdminSessionUser } from "@/lib/au
 
 export const dynamic = "force-dynamic";
 
+function isSuperAdminReceiptRoute(path: string) {
+  const pathname = path.split(/[?#]/, 1)[0] || path;
+
+  return /^\/superadmin\/transaksi\/[^/]+\/nota\/?$/.test(pathname);
+}
+
 export default async function SuperAdminLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
   const currentUser = await getSuperAdminSessionUser(currentPath);
+
+  if (isSuperAdminReceiptRoute(currentPath)) {
+    return <>{children}</>;
+  }
 
   return (
     <DashboardShell
