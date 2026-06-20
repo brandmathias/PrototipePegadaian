@@ -106,7 +106,7 @@ describe("DashboardShell", () => {
 
   it.each([
     ["/superadmin", "Dashboard Nasional"],
-    ["/superadmin/blacklist/detail/buyer-1", "Pelanggaran"],
+    ["/superadmin/blacklist/detail/buyer-1", "Pelanggaran User"],
     ["/superadmin/monitoring-unit", "Monitoring Unit"],
     ["/superadmin/monitoring", "Monitoring Unit"],
     ["/superadmin/unit/unit-1", "Monitoring Unit"],
@@ -125,6 +125,15 @@ describe("DashboardShell", () => {
 
     expect(activeLinks).toHaveLength(1);
     expect(activeLinks[0]).toHaveAccessibleName(expectedLabel);
+  });
+
+  it("places Pelanggaran User immediately before Kebijakan Pelanggaran", () => {
+    const labels = superadminNavigation.map((item) => item.label);
+
+    expect(labels.slice(-2)).toEqual([
+      "Pelanggaran User",
+      "Kebijakan Pelanggaran",
+    ]);
   });
 
   it("uses a white admin shell background on every admin route", () => {
@@ -192,6 +201,39 @@ describe("DashboardShell", () => {
     expect(screen.queryByText(/ringkasan unit/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/total barang/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/data per/i)).not.toBeInTheDocument();
+  });
+
+  it("does not render the office vector in admin unit and superadmin sidebars", () => {
+    navigationMock.pathname = "/admin";
+
+    const { container, rerender } = render(
+      <DashboardShell
+        currentUser={{ name: "Admin Unit", role: "admin_unit" }}
+        nav={nav}
+        showHeaderSearch={false}
+        subtitle="Pusat kendali operasional unit"
+        title="UPC Ranotana"
+      >
+        <div>Konten admin</div>
+      </DashboardShell>
+    );
+
+    expect(container.querySelector('[style*="Sidebar"]')).not.toBeInTheDocument();
+
+    navigationMock.pathname = "/superadmin";
+    rerender(
+      <DashboardShell
+        currentUser={{ name: "Superadmin", role: "super_admin" }}
+        nav={[{ href: "/superadmin", label: "Dashboard Global", icon: "dashboard" }]}
+        showHeaderSearch={false}
+        subtitle="Control center lintas unit"
+        title="Superadmin Nasional"
+      >
+        <div>Konten superadmin</div>
+      </DashboardShell>
+    );
+
+    expect(container.querySelector('[style*="Sidebar"]')).not.toBeInTheDocument();
   });
 
   it("uses the same profile dropdown for superadmin accounts", () => {

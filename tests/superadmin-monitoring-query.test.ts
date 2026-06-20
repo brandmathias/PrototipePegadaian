@@ -1,6 +1,44 @@
 import { describe, expect, it } from "vitest";
 
 describe("superadmin monitoring query", () => {
+  it("summarizes only restrictions that are effectively active", async () => {
+    process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
+
+    const { summarizeBlacklistCompliance } = await import("@/lib/services/monitoring.service");
+    const summary = summarizeBlacklistCompliance(
+      [
+        {
+          blockedUntil: new Date("2026-06-19T10:00:00.000Z"),
+          isActive: true,
+          totalViolations: 1,
+        },
+        {
+          blockedUntil: new Date("2026-06-21T10:00:00.000Z"),
+          isActive: true,
+          totalViolations: 1,
+        },
+        {
+          blockedUntil: new Date("2026-06-21T10:00:00.000Z"),
+          isActive: true,
+          totalViolations: 2,
+        },
+        {
+          blockedUntil: new Date("2026-06-19T10:00:00.000Z"),
+          isActive: true,
+          totalViolations: 3,
+        },
+      ],
+      new Date("2026-06-20T10:00:00.000Z"),
+    );
+
+    expect(summary).toEqual({
+      levelOne: 1,
+      levelTwo: 1,
+      levelThree: 1,
+      total: 3,
+    });
+  });
+
   it("qualifies the outer unit id inside comparative subqueries", async () => {
     process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
 

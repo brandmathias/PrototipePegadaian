@@ -828,6 +828,69 @@ describe("superadmin pages", () => {
     );
   });
 
+  it("uses the centered floating header for account and admin detail popups", () => {
+    render(
+      <SuperAdminManagementUnitDetailPage
+        unit={{
+          id: "unit-1",
+          code: "CP-MND-13",
+          name: "UPC Ranotana",
+          address: "Jl. Sam Ratulangi",
+          status: "Aktif",
+          isActive: true,
+          adminCount: 1,
+          accountCount: 1,
+          activeAccount: {
+            id: "rek-1",
+            bankName: "BRI",
+            accountNumber: "170101027682501",
+            accountHolder: "Brando Mathias Zusriadi",
+            branch: "",
+            status: "AKTIF",
+          },
+          accounts: [
+            {
+              id: "rek-1",
+              bankName: "BRI",
+              accountNumber: "170101027682501",
+              accountHolder: "Brando Mathias Zusriadi",
+              branch: "",
+              status: "AKTIF",
+            },
+          ],
+          admins: [
+            {
+              id: "admin-1",
+              name: "Admin Unit Ranotana",
+              email: "admin.unit.ranotana@pegadaian.co.id",
+              phone: "081200001234",
+              status: "Aktif",
+            },
+          ],
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /lihat detail rekening bri/i }));
+
+    const accountDialog = screen.getByRole("dialog", { name: "Detail Rekening Unit" });
+    expect(accountDialog).toHaveAttribute("data-header-layout", "floating-centered");
+    expect(
+      within(accountDialog).getByRole("heading", { name: "Detail Rekening Unit" }),
+    ).toHaveClass("text-center");
+
+    fireEvent.click(within(accountDialog).getByRole("button", { name: /tutup panel detail/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /lihat detail admin admin unit ranotana/i }),
+    );
+
+    const adminDialog = screen.getByRole("dialog", { name: "Detail Admin Unit" });
+    expect(adminDialog).toHaveAttribute("data-header-layout", "floating-centered");
+    expect(
+      within(adminDialog).getByRole("heading", { name: "Detail Admin Unit" }),
+    ).toHaveClass("text-center");
+  });
+
   it("returns to management after saving unit profile changes", async () => {
     vi.useRealTimers();
     const fetchMock = vi.fn().mockResolvedValue(
@@ -1448,6 +1511,16 @@ describe("superadmin pages", () => {
             status: "Aktif",
             lastLogin: "-",
           },
+          {
+            id: "admin-2",
+            name: "Admin Wanea",
+            unitId: "unit-2",
+            unit: "UPC Wanea",
+            email: "admin.wanea@example.com",
+            phone: "-",
+            status: "Aktif",
+            lastLogin: "-",
+          },
         ]}
         units={[
           {
@@ -1494,6 +1567,12 @@ describe("superadmin pages", () => {
       "hover:text-white",
     );
     expect(screen.queryByRole("link", { name: /^rekening$/i })).not.toBeInTheDocument();
+
+    const adminSearch = screen.getByRole("textbox", { name: /cari admin unit aktif/i });
+    fireEvent.change(adminSearch, { target: { value: "wanea" } });
+
+    expect(screen.getByText("Admin Wanea")).toBeInTheDocument();
+    expect(screen.queryByText("Admin Manado")).not.toBeInTheDocument();
   });
 
   it("submits integrated unit setup without using admin NIK as buyer identity", async () => {
@@ -1531,7 +1610,7 @@ describe("superadmin pages", () => {
     });
 
     fireEvent.change(screen.getByLabelText(/nama bank/i), {
-      target: { value: "Bank Mandiri" },
+      target: { value: "Mandiri" },
     });
     fireEvent.change(screen.getByLabelText(/nomor rekening/i), {
       target: { value: "1230098765432" },

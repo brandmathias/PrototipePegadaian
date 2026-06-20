@@ -28,6 +28,10 @@ const guestNav = [
   {
     href: "/katalog",
     label: "Katalog"
+  },
+  {
+    href: "/bantuan",
+    label: "Pusat Bantuan"
   }
 ];
 

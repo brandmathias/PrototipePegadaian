@@ -50,7 +50,7 @@ type WishlistPageProps = {
 };
 
 type SaleMode = "all" | AuctionMode;
-type SortMode = "latest" | "popular" | "lowest" | "highest" | "ending";
+type SortMode = "latest" | "popular" | "lowest" | "highest";
 type ViewMode = "grid" | "list";
 type PriceBand = "all" | "under-10000000" | "10000000-25000000" | "25000000-50000000" | "over-50000000";
 
@@ -60,7 +60,6 @@ const sortOptions = [
   { value: "popular", label: "Paling Dilihat" },
   { value: "lowest", label: "Harga Terendah" },
   { value: "highest", label: "Harga Tertinggi" },
-  { value: "ending", label: "Lelang Berakhir Dekat" },
 ];
 
 const modeCopy: Record<Exclude<SaleMode, "all">, { label: string; icon: ReactNode; tone: string }> = {
@@ -720,47 +719,6 @@ function WishlistCard({
   );
 }
 
-function UnavailableWishlistSection({
-  items,
-  onRemove
-}: {
-  items: BuyerWishlistItem[];
-  onRemove: (lotId: string) => void;
-}) {
-  if (!items.length) {
-    return null;
-  }
-
-  return (
-    <section className="overflow-hidden rounded-md border border-[#ded9cc] bg-[#f5f3ed] shadow-[0_24px_64px_-54px_rgba(63,55,35,0.44)]">
-      <div className="flex flex-col gap-2 border-b border-[#ded9cc] bg-[#ece9e0] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#8a6c28]">Arsip Wishlist</p>
-          <h2 className="mt-1 font-headline text-2xl font-black text-[#343a36]">Sudah tidak tersedia</h2>
-          <p className="mt-1 text-sm leading-6 text-[#6a6f6b]">
-            Aksi pembelian dan lelang dinonaktifkan, tetapi barang tetap ditampilkan agar riwayat pilihan Anda jelas.
-          </p>
-        </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#d6cfbd] bg-white/75 px-3 py-1.5 text-xs font-black text-[#75663f]">
-          <CircleOff className="size-4" />
-          {getCountLabel(items.length)} barang
-        </span>
-      </div>
-      <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <WishlistCard
-            favorite
-            item={item}
-            key={item.lot.id}
-            viewMode="grid"
-            onToggleFavorite={() => onRemove(item.lot.id)}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function PaginationFooter({
   pageIndex,
   pageSize,
@@ -890,61 +848,66 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
     }
   }
 
+  const currentItems = useMemo(
+    () => [...currentActiveItems, ...currentUnavailableItems],
+    [currentActiveItems, currentUnavailableItems],
+  );
+
   const itemsWithInsights = useMemo(
     () =>
-      currentActiveItems.map((item) => ({
+      currentItems.map((item) => ({
         insights: getWishlistInsights(item),
         item,
       })),
-    [currentActiveItems],
+    [currentItems],
   );
 
   const modeCounts = useMemo(
     () => ({
-      all: currentActiveItems.length,
-      fixed_price: currentActiveItems.filter((item) => item.lot.mode === "fixed_price").length,
-      vickrey: currentActiveItems.filter((item) => item.lot.mode === "vickrey").length,
+      all: currentItems.length,
+      fixed_price: currentItems.filter((item) => item.lot.mode === "fixed_price").length,
+      vickrey: currentItems.filter((item) => item.lot.mode === "vickrey").length,
     }),
-    [currentActiveItems],
+    [currentItems],
   );
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
-    currentActiveItems.forEach((item) => map.set(item.lot.category, (map.get(item.lot.category) ?? 0) + 1));
+    currentItems.forEach((item) => map.set(item.lot.category, (map.get(item.lot.category) ?? 0) + 1));
     const rank = new Map<string, number>(ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index]));
     return [...map.entries()].sort((a, b) => {
       const leftRank = rank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
       const rightRank = rank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
       return leftRank - rightRank || a[0].localeCompare(b[0], "id");
     });
-  }, [currentActiveItems]);
+  }, [currentItems]);
 
   const conditions = useMemo(() => {
     const map = new Map<string, number>();
-    currentActiveItems.forEach((item) => {
+    currentItems.forEach((item) => {
       const condition = titleCase(item.lot.condition);
       map.set(condition, (map.get(condition) ?? 0) + 1);
     });
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "id"));
-  }, [currentActiveItems]);
+  }, [currentItems]);
 
   const units = useMemo(() => {
     const map = new Map<string, number>();
-    currentActiveItems.forEach((item) => map.set(item.lot.unitName, (map.get(item.lot.unitName) ?? 0) + 1));
+    currentItems.forEach((item) => map.set(item.lot.unitName, (map.get(item.lot.unitName) ?? 0) + 1));
     return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
-  }, [currentActiveItems]);
+  }, [currentItems]);
 
   const priceUpperBound = useMemo(() => {
-    const highestPrice = currentActiveItems.reduce((max, item) => Math.max(max, item.lot.price), 0);
+    const highestPrice = currentItems.reduce((max, item) => Math.max(max, item.lot.price), 0);
     const roundedLimit = Math.ceil(highestPrice / 100000) * 100000;
     return Math.max(roundedLimit, 1000000);
-  }, [currentActiveItems]);
+  }, [currentItems]);
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
   const matchingUnits = units.filter(([unit]) => normalize(unit).includes(normalize(unitQuery)));
   const hiddenUnitCount = unitQuery.trim() ? 0 : Math.max(0, matchingUnits.length - 4);
   const visibleUnits = unitQuery.trim() || showAllUnits ? matchingUnits : matchingUnits.slice(0, 4);
-  const totalCount = currentActiveItems.length + currentUnavailableItems.length;
+  const totalCount = currentItems.length;
 
   const filteredItems = useMemo(() => {
     const parsedMinPrice = minPrice.trim() ? Number(minPrice) : null;
@@ -960,27 +923,27 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
       return true;
     });
 
-    if (sortBy === "popular") {
-      return [...filtered].sort((a, b) => b.insights.views - a.insights.views);
-    }
+    return [...filtered].sort((left, right) => {
+      const availabilityOrder = Number(right.item.isAvailable) - Number(left.item.isAvailable);
 
-    if (sortBy === "lowest") {
-      return [...filtered].sort((a, b) => a.item.lot.price - b.item.lot.price);
-    }
+      if (availabilityOrder !== 0) {
+        return availabilityOrder;
+      }
 
-    if (sortBy === "highest") {
-      return [...filtered].sort((a, b) => b.item.lot.price - a.item.lot.price);
-    }
+      if (sortBy === "popular") {
+        return right.insights.views - left.insights.views;
+      }
 
-    if (sortBy === "ending") {
-      return [...filtered].sort((a, b) => {
-        const first = a.item.lot.endsAt ? new Date(a.item.lot.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
-        const second = b.item.lot.endsAt ? new Date(b.item.lot.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
-        return first - second;
-      });
-    }
+      if (sortBy === "lowest") {
+        return left.item.lot.price - right.item.lot.price;
+      }
 
-    return filtered;
+      if (sortBy === "highest") {
+        return right.item.lot.price - left.item.lot.price;
+      }
+
+      return 0;
+    });
   }, [
     itemsWithInsights,
     maxPrice,
@@ -1015,18 +978,6 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
           Jelajahi Katalog
         </Link>
       </section>
-    );
-  }
-
-  if (currentActiveItems.length === 0) {
-    return (
-      <div className="space-y-5">
-        <WishlistHero activeCount={0} totalCount={totalCount} />
-        <UnavailableWishlistSection
-          items={currentUnavailableItems}
-          onRemove={(lotId) => void handleRemoveFavorite(lotId)}
-        />
-      </div>
     );
   }
 
@@ -1097,9 +1048,9 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
         <div className="bg-[#fbfaf6] p-5">
           <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
-              <h2 className="font-headline text-2xl font-black text-[#13211c]">Masih tersedia</h2>
+              <h2 className="font-headline text-2xl font-black text-[#13211c]">Barang tersimpan</h2>
               <p className="mt-1 text-sm text-black/52">
-                {getCountLabel(filteredItems.length)} dari {getCountLabel(currentActiveItems.length)} barang aktif tampil sesuai filter.
+                {getCountLabel(filteredItems.length)} dari {getCountLabel(totalCount)} barang tampil sesuai filter. Barang yang sudah tidak tersedia ditempatkan paling akhir.
               </p>
             </div>
           </div>
@@ -1139,10 +1090,6 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
           onPageSizeChange={setPageSize}
         />
       </section>
-      <UnavailableWishlistSection
-        items={currentUnavailableItems}
-        onRemove={(lotId) => void handleRemoveFavorite(lotId)}
-      />
     </div>
   );
 }

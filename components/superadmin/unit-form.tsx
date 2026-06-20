@@ -25,6 +25,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
+import {
+  normalizeUnitAccountNumber,
+  normalizeUnitBankName,
+} from "@/lib/superadmin/validation";
 import { cn } from "@/lib/utils";
 
 type UnitFormProps = {
@@ -67,14 +71,14 @@ type AdminDraft = {
 };
 
 const bankOptions = [
-  "Bank Mandiri",
-  "Bank BNI",
+  "Mandiri",
+  "BNI",
   "BRI",
   "BCA",
   "BTN",
   "BSI",
-  "Bank Danamon",
-  "Bank CIMB Niaga",
+  "Danamon",
+  "CIMB Niaga",
 ] as const;
 
 function createDraftId(prefix: string) {
@@ -418,8 +422,8 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
       ...current,
       {
         id: createDraftId("rekening"),
-        bankName: bankName.trim(),
-        accountNumber: accountNumber.trim(),
+        bankName: normalizeUnitBankName(bankName),
+        accountNumber: normalizeUnitAccountNumber(accountNumber),
         accountHolderName: accountHolderName.trim(),
       },
     ]);
@@ -632,7 +636,9 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   <UnitTextInput
                     id="account-number"
                     label="Nomor Rekening"
-                    onChange={(event) => setAccountNumber(event.target.value)}
+                    onChange={(event) =>
+                      setAccountNumber(normalizeUnitAccountNumber(event.target.value))
+                    }
                     placeholder="Masukkan nomor rekening"
                     required
                     value={accountNumber}

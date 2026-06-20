@@ -28,11 +28,6 @@ export const superadminNavigation: NavItem[] = [
     icon: "dashboard",
   },
   {
-    href: "/superadmin/blacklist",
-    label: "Pelanggaran",
-    icon: "blacklist",
-  },
-  {
     href: "/superadmin/monitoring-unit",
     label: "Monitoring Unit",
     icon: "monitoring",
@@ -48,6 +43,11 @@ export const superadminNavigation: NavItem[] = [
     href: "/superadmin/manajemen-superadmin",
     label: "Manajemen Superadmin",
     icon: "superadmin",
+  },
+  {
+    href: "/superadmin/blacklist",
+    label: "Pelanggaran User",
+    icon: "blacklist",
   },
   {
     href: "/superadmin/kebijakan-pelanggaran",

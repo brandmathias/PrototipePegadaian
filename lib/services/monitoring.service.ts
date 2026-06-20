@@ -12,7 +12,11 @@ import {
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/lib/db/client";
-import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
+import {
+  deriveEffectiveBlacklistState,
+  isBlacklistRestrictionActive,
+  type EffectiveBlacklistState,
+} from "@/lib/blacklist/effective-state";
 import {
   barang,
   blacklists,
@@ -66,7 +70,14 @@ function toNumber(value: unknown) {
   return Number(value ?? 0);
 }
 
-async function getEffectiveBlacklistLevels(
+type MonitoringBlacklistTrace = {
+  createdAt: Date;
+  escalationEligible: boolean | null;
+  id: string;
+  occurredAt: string;
+};
+
+async function getEffectiveBlacklistStates(
   rows: Array<{
     blockedUntil: Date | null;
     totalViolations: number | null;
@@ -75,7 +86,7 @@ async function getEffectiveBlacklistLevels(
 ) {
   const userIds = Array.from(new Set(rows.map((row) => row.userId).filter(Boolean)));
   if (userIds.length === 0) {
-    return new Map<string, number>();
+    return new Map<string, EffectiveBlacklistState<MonitoringBlacklistTrace>>();
   }
 
   const traces = await db
@@ -99,7 +110,7 @@ async function getEffectiveBlacklistLevels(
   return new Map(
     rows.map((row) => [
       row.userId,
-      deriveEffectiveBlacklistState({
+      deriveEffectiveBlacklistState<MonitoringBlacklistTrace>({
         storedBlockedUntil: row.blockedUntil,
         storedTotalViolations: row.totalViolations,
         traces: (tracesByUser.get(row.userId) ?? []).map((trace) => ({
@@ -108,8 +119,44 @@ async function getEffectiveBlacklistLevels(
           id: trace.id,
           occurredAt: trace.createdAt.toISOString(),
         })),
-      }).totalViolations,
+      }),
     ]),
+  );
+}
+
+export function summarizeBlacklistCompliance(
+  rows: Array<{
+    blockedUntil: Date | null;
+    isActive: boolean;
+    totalViolations: number;
+  }>,
+  now = new Date(),
+) {
+  return rows.reduce(
+    (accumulator, row) => {
+      if (
+        !isBlacklistRestrictionActive({
+          blockedUntil: row.blockedUntil,
+          isActive: row.isActive,
+          now,
+          totalViolations: row.totalViolations,
+        })
+      ) {
+        return accumulator;
+      }
+
+      if (row.totalViolations === 1) {
+        accumulator.levelOne += 1;
+      } else if (row.totalViolations === 2) {
+        accumulator.levelTwo += 1;
+      } else if (row.totalViolations >= 3) {
+        accumulator.levelThree += 1;
+      }
+      accumulator.total += 1;
+
+      return accumulator;
+    },
+    { levelOne: 0, levelThree: 0, levelTwo: 0, total: 0 },
   );
 }
 
@@ -471,12 +518,6 @@ export async function getSuperAdminMonitoring() {
         )[0]
       : { activeAccounts: 0 };
 
-  const [blacklistStats] = await db
-    .select({
-      activeBlacklists: sql<number>`count(*) filter (where ${blacklists.isActive} = true)`,
-    })
-    .from(blacklists);
-
   const activeBlacklistLevelRows = await db
     .select({
       blockedUntil: blacklists.blockedUntil,
@@ -485,23 +526,20 @@ export async function getSuperAdminMonitoring() {
     })
     .from(blacklists)
     .where(eq(blacklists.isActive, true));
-  const effectiveBlacklistLevels = await getEffectiveBlacklistLevels(activeBlacklistLevelRows);
-  const complianceStats = Array.from(effectiveBlacklistLevels.values()).reduce(
-    (accumulator, level) => {
-      if (level <= 0) {
-        return accumulator;
-      }
-      if (level === 1) {
-        accumulator.levelOne += 1;
-      } else if (level === 2) {
-        accumulator.levelTwo += 1;
-      } else {
-        accumulator.levelThree += 1;
-      }
+  const effectiveBlacklistStates = await getEffectiveBlacklistStates(activeBlacklistLevelRows);
+  const complianceStats = summarizeBlacklistCompliance(
+    activeBlacklistLevelRows.map((row) => {
+      const state = effectiveBlacklistStates.get(row.userId);
+      const level = state?.totalViolations ?? Number(row.totalViolations ?? 0);
+      const blockedUntil = state?.blockedUntil ?? row.blockedUntil;
 
-      return accumulator;
-    },
-    { levelOne: 0, levelThree: 0, levelTwo: 0 },
+      return {
+        blockedUntil,
+        isActive: true,
+        totalViolations: level,
+      };
+    }),
+    now,
   );
 
   const [transactionStats] = await db
@@ -721,7 +759,9 @@ export async function getSuperAdminMonitoring() {
     .filter((item) => !isHiddenOperationalUnit({ id: item.unitId }))
     .map((item) => ({
       ...item,
-      totalViolations: effectiveBlacklistLevels.get(item.userId) ?? item.totalViolations,
+      totalViolations:
+        effectiveBlacklistStates.get(item.userId)?.totalViolations ??
+        item.totalViolations,
     }));
 
   const timeSensitiveMonitoring = [
@@ -912,7 +952,7 @@ export async function getSuperAdminMonitoring() {
         },
         {
           label: "Pembatasan aktif",
-          value: `${toNumber(blacklistStats?.activeBlacklists)} buyer`,
+          value: `${complianceStats.total} buyer`,
         },
       ],
       priorities: priorityItems,

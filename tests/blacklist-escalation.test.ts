@@ -4,7 +4,10 @@ import {
   deriveBlacklistEscalationMilestones,
   getSequentialBlacklistViolationTotal
 } from "@/lib/blacklist/escalation";
-import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
+import {
+  deriveEffectiveBlacklistState,
+  isBlacklistRestrictionActive
+} from "@/lib/blacklist/effective-state";
 
 describe("blacklist escalation sequence", () => {
   it("only escalates after the previous punishment window has finished", () => {
@@ -67,5 +70,36 @@ describe("blacklist escalation sequence", () => {
       "level-1",
       "level-2"
     ]);
+  });
+
+  it("uses the same effective deadline rule for dashboard and blacklist ledger", () => {
+    const now = new Date("2026-06-20T10:00:00.000Z");
+
+    expect(
+      isBlacklistRestrictionActive({
+        blockedUntil: new Date("2026-06-19T10:00:00.000Z"),
+        isActive: true,
+        now,
+        totalViolations: 2
+      })
+    ).toBe(false);
+
+    expect(
+      isBlacklistRestrictionActive({
+        blockedUntil: new Date("2026-06-21T10:00:00.000Z"),
+        isActive: true,
+        now,
+        totalViolations: 2
+      })
+    ).toBe(true);
+
+    expect(
+      isBlacklistRestrictionActive({
+        blockedUntil: new Date("2026-06-19T10:00:00.000Z"),
+        isActive: true,
+        now,
+        totalViolations: 3
+      })
+    ).toBe(true);
   });
 });

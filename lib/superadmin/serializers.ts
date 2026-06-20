@@ -1,5 +1,9 @@
 import { getCountdownState } from "@/lib/countdown";
-import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
+import { isBlacklistRestrictionActive } from "@/lib/blacklist/effective-state";
+import {
+  normalizeUnitAccountNumber,
+  normalizeUnitBankName
+} from "@/lib/superadmin/validation";
 
 type SerializedUnitAccount = {
   id: string;
@@ -20,8 +24,8 @@ export function serializeUnitAccount(account: {
 }): SerializedUnitAccount {
   return {
     id: account.id,
-    bankName: account.bankName,
-    accountNumber: account.accountNumber,
+    bankName: normalizeUnitBankName(account.bankName),
+    accountNumber: normalizeUnitAccountNumber(account.accountNumber),
     accountHolder: account.accountHolderName,
     branch: account.branchName,
     status: account.isActive ? "AKTIF" : "CADANGAN"
@@ -97,12 +101,12 @@ export function serializeBlacklistEntry(input: {
   now?: Date;
 }) {
   const now = input.now ?? new Date();
-  const policy = getBlacklistRestrictionPolicy(input.totalViolations);
-  const activeByDate =
-    !input.blockedUntil ||
-    input.blockedUntil.getTime() > now.getTime();
-  const isCurrentlyActive =
-    input.isActive && (policy.requiresManualReview || activeByDate);
+  const isCurrentlyActive = isBlacklistRestrictionActive({
+    blockedUntil: input.blockedUntil,
+    isActive: input.isActive,
+    now,
+    totalViolations: input.totalViolations
+  });
   const countdown = isCurrentlyActive
     ? getCountdownState(input.blockedUntil, {
         now: now.getTime(),

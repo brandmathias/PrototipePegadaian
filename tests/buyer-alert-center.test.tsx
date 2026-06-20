@@ -130,6 +130,7 @@ describe("buyer alert center", () => {
 
     expect(screen.getByText(/anda memenangkan lelang motor racing/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan bayar langsung/i)).toBeInTheDocument();
+    expect(screen.getByText("Jumat, 22 Mei 2026 • 08.00 WIB")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalledWith("/api/user/notifikasi/read-all", {
       method: "POST"

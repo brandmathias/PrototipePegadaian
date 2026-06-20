@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
+import { APP_TIME_ZONE, APP_TIME_ZONE_LABEL } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 import {
   useAdminUnitNotifications,
@@ -28,13 +29,30 @@ type AlertCenterProps = {
   className?: string;
 };
 
-function formatTimeLabel(timestamp: number | string) {
+function formatNotificationDateTime(timestamp: number | string) {
   const value = typeof timestamp === "number" ? timestamp : new Date(timestamp).getTime();
 
-  return new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit"
+  if (Number.isNaN(value)) {
+    return "-";
+  }
+
+  const dateLabel = new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    timeZone: APP_TIME_ZONE,
+    weekday: "long",
+    year: "numeric",
   }).format(value);
+  const timeParts = new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    timeZone: APP_TIME_ZONE,
+  }).formatToParts(value);
+  const hour = timeParts.find((part) => part.type === "hour")?.value ?? "00";
+  const minute = timeParts.find((part) => part.type === "minute")?.value ?? "00";
+
+  return `${dateLabel} • ${hour}.${minute} ${APP_TIME_ZONE_LABEL}`;
 }
 
 function getPersistedVariant(type: string) {
@@ -271,7 +289,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
           <div className={cn("mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42 dark:text-slate-400", isLoserNotification ? "text-[#8d6c70] dark:text-rose-100/52" : "")}>
             <span className="inline-flex items-center gap-2">
               <Clock3 aria-hidden="true" className="size-3.5" />
-              {formatTimeLabel(notification.createdAt)}
+              {formatNotificationDateTime(notification.createdAt)}
             </span>
             {notification.href ? (
               <span className={cn("font-semibold text-[#0a6a49] dark:text-emerald-200", isLoserNotification ? "text-[#c43d48] dark:text-rose-200" : "")}>Buka detail</span>

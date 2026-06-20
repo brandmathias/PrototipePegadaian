@@ -11,6 +11,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
+import {
+  normalizeUnitAccountNumber,
+  normalizeUnitBankName,
+} from "@/lib/superadmin/validation";
 
 type RekeningFormProps = {
   unitId: string;
@@ -66,8 +70,8 @@ export function RekeningForm({
       await fetchSuperAdminJson(path, {
         method: mode === "create" ? "POST" : "PUT",
         body: JSON.stringify({
-          bankName,
-          accountNumber,
+          bankName: normalizeUnitBankName(bankName),
+          accountNumber: normalizeUnitAccountNumber(accountNumber),
           accountHolderName,
           branchName: initialValue?.branchName ?? "",
           isActive
@@ -140,7 +144,9 @@ export function RekeningForm({
           <Input
             autoComplete="off"
             id={accountNumberId}
-            onChange={(event) => setAccountNumber(event.target.value)}
+            onChange={(event) =>
+              setAccountNumber(normalizeUnitAccountNumber(event.target.value))
+            }
             placeholder="Masukkan nomor rekening"
             value={accountNumber}
           />

@@ -22,6 +22,42 @@ export function normalizeUnitCode(value: string) {
   return value.trim().toUpperCase();
 }
 
+export function normalizeUnitBankName(value: unknown) {
+  const bankName = String(value ?? "").trim().replace(/\s+/g, " ");
+  const normalized = bankName.toLowerCase();
+
+  if (normalized.includes("bank rakyat indonesia") || /\bbri\b/.test(normalized)) {
+    return "BRI";
+  }
+  if (normalized.includes("bank negara indonesia") || /\bbni\b/.test(normalized)) {
+    return "BNI";
+  }
+  if (normalized.includes("bank central asia") || /\bbca\b/.test(normalized)) {
+    return "BCA";
+  }
+  if (normalized.includes("bank tabungan negara") || /\bbtn\b/.test(normalized)) {
+    return "BTN";
+  }
+  if (normalized.includes("bank syariah indonesia") || /\bbsi\b/.test(normalized)) {
+    return "BSI";
+  }
+  if (normalized.includes("cimb niaga")) {
+    return "CIMB Niaga";
+  }
+  if (normalized.includes("mandiri")) {
+    return "Mandiri";
+  }
+  if (normalized.includes("danamon")) {
+    return "Danamon";
+  }
+
+  return bankName.replace(/^bank\s+/i, "");
+}
+
+export function normalizeUnitAccountNumber(value: unknown) {
+  return String(value ?? "").replace(/\D/g, "");
+}
+
 export function validateUnitPayload(input: {
   code?: string;
   name?: string;
@@ -45,8 +81,8 @@ export function validateUnitAccountPayload(input: {
   branchName?: string;
   isActive?: boolean;
 }) {
-  const bankName = String(input.bankName ?? "").trim();
-  const accountNumber = String(input.accountNumber ?? "").trim();
+  const bankName = normalizeUnitBankName(input.bankName);
+  const accountNumber = normalizeUnitAccountNumber(input.accountNumber);
   const accountHolderName = String(input.accountHolderName ?? "").trim();
   const branchName = String(input.branchName ?? "").trim();
 

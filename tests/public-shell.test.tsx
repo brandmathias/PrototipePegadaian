@@ -14,7 +14,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("PublicShell", () => {
-  it("keeps guest navigation focused on the catalog only", () => {
+  it("provides catalog and help navigation for guests", () => {
     render(
       <ToastProvider>
         <PublicShell>
@@ -28,6 +28,8 @@ describe("PublicShell", () => {
     expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })[0]).toHaveAttribute("href", "/bantuan");
     expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
   });
 

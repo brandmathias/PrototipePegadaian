@@ -48,6 +48,22 @@ describe("superadmin serializers", () => {
     });
   });
 
+  it("normalizes legacy account values before rendering them", () => {
+    expect(
+      serializeUnitAccount({
+        id: "acc-legacy",
+        bankName: "Bank Rakyat Indonesia (BRI)",
+        accountNumber: "0123-4567-8901-234",
+        accountHolderName: "PT Pegadaian",
+        branchName: "Ranotana",
+        isActive: true
+      })
+    ).toMatchObject({
+      bankName: "BRI",
+      accountNumber: "012345678901234"
+    });
+  });
+
   it("serializes monitoring summary to dashboard shape", () => {
     expect(
       serializeMonitoringSummary({

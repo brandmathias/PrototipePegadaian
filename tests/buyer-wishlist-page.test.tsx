@@ -66,7 +66,7 @@ describe("WishlistPage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders available wishlist items with buyer actions and unavailable items separately", () => {
+  it("renders available and unavailable wishlist items in one ordered collection", () => {
     render(
       <WishlistPage
         activeItems={[
@@ -110,12 +110,15 @@ describe("WishlistPage", () => {
     expect(screen.queryByRole("combobox", { name: /kondisi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: /lokasi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: /^harga$/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /masih tersedia/i })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: /tidak tersedia/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barang tersimpan/i })).toBeInTheDocument();
     expect(screen.getByText("Cincin Emas 2")).toBeInTheDocument();
     expect(screen.getByText("Kalung Emas 2")).toBeInTheDocument();
-    expect(screen.queryByText("Liontin Emas Lama")).not.toBeInTheDocument();
-    expect(screen.queryByText(/barang sudah tidak tersedia/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Liontin Emas Lama")).toBeInTheDocument();
+    expect(screen.getByText(/barang sudah tidak tersedia/i)).toBeInTheDocument();
+    expect(screen.getByText("Cincin Emas 2").compareDocumentPosition(screen.getByText("Liontin Emas Lama")))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.getByText("Kalung Emas 2").compareDocumentPosition(screen.getByText("Liontin Emas Lama")))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.queryByText(/bagikan wishlist/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/arsip/i)).not.toBeInTheDocument();
     expect(screen.getAllByText("Hapus dari disukai").length).toBeGreaterThan(0);
@@ -127,6 +130,10 @@ describe("WishlistPage", () => {
       "href",
       "/katalog/lot-vickrey-1"
     );
+    expect(screen.getByText("Aksi Tidak Tersedia")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("combobox", { name: /urutkan wishlist/i }));
+    expect(screen.queryByRole("option", { name: /lelang berakhir dekat/i })).not.toBeInTheDocument();
   });
 
   it("keeps the mode badge on wishlist media without duplicating the category overlay", () => {

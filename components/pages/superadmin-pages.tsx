@@ -2318,7 +2318,7 @@ function SuperAdminUnitDetailPopup({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:py-6">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain px-3 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:px-6">
       <button
         aria-label="Tutup panel detail"
         className="absolute inset-0 bg-[#052315]/34 backdrop-blur-[3px]"
@@ -2328,35 +2328,36 @@ function SuperAdminUnitDetailPopup({
       <section
         aria-label={title}
         aria-modal="true"
-        className="toast-enter modal-viewport relative z-[121] my-auto w-full max-w-xl overflow-hidden rounded-[1.35rem] border border-[#dfe8e3] bg-white shadow-[0_30px_90px_-36px_rgba(8,69,50,0.38)] sm:rounded-[1.55rem]"
+        className="toast-enter modal-viewport relative z-[121] my-auto w-full max-w-xl overflow-visible rounded-[1.75rem] border border-[#dfe8e3] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
+        data-header-layout="floating-centered"
         role="dialog"
       >
-        <div className="border-b border-[#edf2ee] bg-[#fbfcfa] px-5 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex min-w-0 items-start gap-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-[1rem] border border-[#cde7da] bg-[#ecfff3] text-[#006747]">
-                <Icon className="size-5" strokeWidth={2} />
-              </span>
-              <div className="min-w-0">
-                <p className="font-headline text-[1.02rem] font-black tracking-[-0.02em] text-[#13211c]">
-                  {title}
-                </p>
-                <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-black/48">
-                  {subtitle}
-                </p>
-              </div>
-            </div>
-            <button
-              aria-label="Tutup panel detail"
-              className="grid size-9 shrink-0 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] active:scale-[0.98]"
-              onClick={() => onOpenChange(false)}
-              type="button"
-            >
-              <X className="size-4" />
-            </button>
+        <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+          <span className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
+            <Icon className="size-6" strokeWidth={2.2} />
+          </span>
+        </div>
+        <div className="relative overflow-hidden rounded-[inherit] bg-white px-5 pb-5 pt-11 sm:px-7 sm:pb-6 sm:pt-12">
+          <button
+            aria-label="Tutup panel detail"
+            className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.98]"
+            onClick={() => onOpenChange(false)}
+            type="button"
+          >
+            <X className="size-4.5" strokeWidth={2.2} />
+          </button>
+          <div className="mx-auto max-w-md text-center">
+            <h2 className="text-center font-headline text-[1.35rem] font-black tracking-tight text-[#15231d] sm:text-[1.5rem]">
+              {title}
+            </h2>
+            <p className="mt-2 text-center text-[0.82rem] font-semibold leading-6 text-slate-500">
+              {subtitle}
+            </p>
+          </div>
+          <div className="mt-5 grid gap-3 border-t border-[#edf2ee] pt-5 sm:grid-cols-2">
+            {children}
           </div>
         </div>
-        <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">{children}</div>
       </section>
     </div>,
     document.body,
@@ -5354,6 +5355,7 @@ export function SuperAdminManagementPage({
   admins: SuperAdminAdminItem[];
 }) {
   const [query, setQuery] = useState("");
+  const [adminQuery, setAdminQuery] = useState("");
   const [pageSize, setPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
   const [pageIndex, setPageIndex] = useState(0);
   const filteredUnits = useMemo(() => {
@@ -5373,7 +5375,22 @@ export function SuperAdminManagementPage({
   const visibleUnits = filteredUnits.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
   const pageStart = filteredUnits.length === 0 ? 0 : currentPage * pageSize + 1;
   const pageEnd = Math.min(filteredUnits.length, (currentPage + 1) * pageSize);
-  const activeAdmins = admins.filter((admin) => admin.status === "Aktif");
+  const activeAdmins = useMemo(() => {
+    const normalized = adminQuery.trim().toLowerCase();
+
+    return admins.filter((admin) => {
+      if (admin.status !== "Aktif") {
+        return false;
+      }
+
+      return (
+        normalized.length === 0 ||
+        admin.name.toLowerCase().includes(normalized) ||
+        admin.unit.toLowerCase().includes(normalized) ||
+        admin.email.toLowerCase().includes(normalized)
+      );
+    });
+  }, [adminQuery, admins]);
   const activeUnitCount = units.length;
   const activeAccountCount = units.filter((unit) => unit.activeAccount).length;
 
@@ -5590,15 +5607,31 @@ export function SuperAdminManagementPage({
                     Admin unit aktif
                   </h3>
                 </div>
+                <label className="relative mt-3 block">
+                  <span className="sr-only">Cari admin unit aktif</span>
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-black/35" />
+                  <Input
+                    aria-label="Cari admin unit aktif"
+                    className="h-10 rounded-[1rem] bg-[#f8faf9] pl-9 text-[0.78rem] font-semibold"
+                    name="activeAdminSearch"
+                    onChange={(event) => setAdminQuery(event.target.value)}
+                    placeholder="Cari nama, unit, atau email..."
+                    value={adminQuery}
+                  />
+                </label>
               </div>
 
               <div className="mt-4 space-y-3">
                 {activeAdmins.length === 0 ? (
                   <EmptyState
                     className="p-5"
-                    description="Admin unit aktif yang tersimpan di database akan muncul sebagai feed singkat."
+                    description={
+                      adminQuery
+                        ? "Coba gunakan nama, unit, atau email admin yang berbeda."
+                        : "Admin unit aktif yang tersimpan di database akan muncul sebagai feed singkat."
+                    }
                     icon={UserCog}
-                    title="Belum ada admin aktif"
+                    title={adminQuery ? "Admin tidak ditemukan" : "Belum ada admin aktif"}
                   />
                 ) : (
                   activeAdmins.slice(0, 6).map((admin) => (

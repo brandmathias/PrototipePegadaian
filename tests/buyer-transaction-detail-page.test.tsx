@@ -97,9 +97,9 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByRole("heading", { name: /detail transaksi lelang gagal/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cetak ringkasan/i })).toBeInTheDocument();
-    expect(screen.getByText(/^workflow pembayaran$/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /workflow pembayaran gagal/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /cetak nota|cetak ringkasan/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/^alur pembayaran$/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /alur pembayaran gagal/i })).toBeInTheDocument();
     expect(screen.getAllByText(/pembayaran gagal/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/melewati 24 jam/i)).toBeInTheDocument();
     expect(
@@ -279,8 +279,9 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByRole("heading", { name: /detail transaksi lelang berhasil/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /cetak ringkasan/i })).toBeInTheDocument();
-    expect(screen.getByText(/^workflow pembayaran$/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /cetak nota/i })).toBeInTheDocument();
+    expect(screen.getByText(/^alur pembayaran$/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /konfirmasi selesai/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pelunasan berhasil dalam batas waktu 24 jam/i })).toBeInTheDocument();
     expect(screen.getByText(/transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan/i)).toBeInTheDocument();
     expect(screen.getByText(/nominal lelang/i)).toBeInTheDocument();
@@ -298,8 +299,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/dibuat pada/i)).toBeInTheDocument();
     expect(screen.getByText(/system \(auto\)/i)).toBeInTheDocument();
     expect(screen.getByText(/trx-suk-pgj-vic-trxvick/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembayaran tervalidasi/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak ada restriksi aktif/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran terverifikasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak memiliki kendala verifikasi/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang cincin emas berlian/i })).toBeInTheDocument();
@@ -389,7 +390,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/workflow verifikasi gagal/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /alur verifikasi gagal/i })).toBeInTheDocument();
     expect(screen.getAllByText(/bukti pembayaran ditolak/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/nominal uang yang dikirim tidak sesuai harga barang/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i).length).toBeGreaterThan(0);

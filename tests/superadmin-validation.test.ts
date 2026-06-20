@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  normalizeUnitAccountNumber,
+  normalizeUnitBankName,
   normalizeUnitCode,
   normalizeSuperAdminLevel,
   validateAdminUnitPayload,
@@ -36,6 +38,25 @@ describe("superadmin validation", () => {
         accountHolderName: ""
       })
     ).toThrow("Data rekening unit belum lengkap.");
+  });
+
+  it("normalizes bank labels and account numbers for consistent unit records", () => {
+    expect(normalizeUnitBankName(" Bank Rakyat Indonesia (BRI) ")).toBe("BRI");
+    expect(normalizeUnitBankName("Bank Mandiri")).toBe("Mandiri");
+    expect(normalizeUnitBankName("Bank Negara Indonesia (BNI)")).toBe("BNI");
+    expect(normalizeUnitAccountNumber("0123-4567 8901-234")).toBe("012345678901234");
+
+    expect(
+      validateUnitAccountPayload({
+        bankName: " Bank Rakyat Indonesia (BRI) ",
+        accountNumber: "0123-4567 8901-234",
+        accountHolderName: " PT Pegadaian UPC Ranotana "
+      })
+    ).toMatchObject({
+      bankName: "BRI",
+      accountNumber: "012345678901234",
+      accountHolderName: "PT Pegadaian UPC Ranotana"
+    });
   });
 
   it("normalizes unit code helper", () => {
