@@ -83,10 +83,13 @@ describe("handover proof UI", () => {
     });
 
     expect(createObjectUrlMock).toHaveBeenCalledWith(file);
-    expect(await screen.findByRole("img", { name: /preview bukti serah-terima barang/i })).toHaveAttribute(
+    const previewImage = await screen.findByRole("img", { name: /preview bukti serah-terima barang/i });
+    expect(previewImage).toHaveAttribute(
       "src",
       "blob:handover-preview",
     );
+    expect(previewImage).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-contain");
+    expect(previewImage).not.toHaveClass("object-cover", "min-h-[13rem]");
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeEnabled();
 
     unmount();

@@ -161,7 +161,7 @@ export function HandoverProofCard({
               {fileUrl ? (
                 <button
                   aria-label="Buka fullscreen bukti serah-terima barang"
-                  className="group relative block flex-1 overflow-hidden rounded-[1.35rem] border border-[#d9ddd7] bg-white text-left shadow-[0_24px_48px_-30px_rgba(8,69,50,0.22)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_28px_54px_-28px_rgba(8,69,50,0.26)] active:scale-[0.995]"
+                  className="group relative block min-h-[18rem] flex-1 overflow-hidden rounded-[1.35rem] border border-[#d9ddd7] bg-[#f8f8f5] text-left shadow-[0_24px_48px_-30px_rgba(8,69,50,0.22)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_28px_54px_-28px_rgba(8,69,50,0.26)] active:scale-[0.995]"
                   onClick={() => setIsPreviewOpen(true)}
                   type="button"
                 >
@@ -169,13 +169,13 @@ export function HandoverProofCard({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       alt={imageAlt}
-                      className="h-full min-h-[13rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      className="absolute inset-0 h-full w-full object-contain transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       src={fileUrl}
                     />
                   ) : (
                     <Image
                       alt={imageAlt}
-                      className="object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      className="object-contain transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       fill
                       sizes={compact ? "(max-width: 768px) 100vw, 420px" : "(max-width: 1024px) 100vw, 58vw"}
                       src={fileUrl}

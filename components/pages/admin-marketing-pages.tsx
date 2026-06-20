@@ -3428,11 +3428,11 @@ function VickreyWinnerAssetPanel({ auction }: { auction: MarketingSession }) {
   const detailRows = getVickreyAssetDetailRows(auction, fulfilled);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section className="flex h-full flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] lg:min-h-[18.75rem]">
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
         {fulfilled ? "Detail Aset Lelang (Arsip)" : "Detail Aset Lelang"}
       </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,0.9fr)] sm:items-center">
+      <div className="mt-4 grid flex-1 gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,0.9fr)] sm:items-center">
         <div className="aspect-[16/9] overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f6f2eb]">
           {media ? (
             isVideo ? (
@@ -3495,7 +3495,13 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
   return <CompactTransactionProgress steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
 }
 
-function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
+function VickreyPaymentTotalPanel({
+  auction,
+  onPrintReceipt
+}: {
+  auction: MarketingSession;
+  onPrintReceipt?: () => Promise<void>;
+}) {
   const paymentPrice = auction.finalPrice ?? auction.basePrice ?? 0;
   const statusLabel = auction.transactionStatus ? humanize(auction.transactionStatus) : "Menunggu pembayaran";
   const fulfilled = isVickreyPaymentFulfilled(auction);
@@ -3533,7 +3539,7 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
 
   if (verified) {
     return (
-      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] sm:px-5">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
           Nota & Konfirmasi Buyer
         </p>
@@ -3541,20 +3547,43 @@ function VickreyPaymentTotalPanel({ auction }: { auction: MarketingSession }) {
           Nota sudah dapat dicetak, tetapi arsip final menunggu buyer menekan Pembelian Selesai.
         </p>
 
-        <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
-          <div className="flex items-center justify-between gap-4">
-            <span>Harga akhir lelang</span>
-            <span className="whitespace-nowrap font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
-          </div>
-          <div className="border-t border-[#dfe7e2] pt-2">
-            <div className="flex items-end justify-between gap-4">
-              <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
-                Status Admin
-              </span>
-              <span className="text-right font-mono text-[0.9rem] font-black leading-tight text-[#006747]">
-                Terverifikasi
-              </span>
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.5fr)] lg:items-stretch">
+          <div className="rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+            <div className="flex min-h-10 items-center justify-between gap-4">
+              <span>Harga akhir lelang</span>
+              <span className="whitespace-nowrap font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
             </div>
+            <div className="border-t border-[#dfe7e2] pt-3">
+              <div className="flex min-h-10 items-center justify-between gap-4">
+                <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
+                  Status Admin
+                </span>
+                <span className="text-right font-mono text-[0.9rem] font-black leading-tight text-[#006747]">
+                  Terverifikasi
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-3 print:hidden">
+            {auction.transactionId && onPrintReceipt ? (
+              <VickreyReceiptPrintButton
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+                onPrint={onPrintReceipt}
+              />
+            ) : (
+              <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled>
+                <Printer className="size-4" />
+                Cetak Nota
+              </Button>
+            )}
+            <Button
+              className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#6f83b6]"
+              disabled
+              variant="secondary"
+            >
+              <Clock3 className="size-4" />
+              Menunggu Buyer Selesai
+            </Button>
           </div>
         </div>
       </section>
@@ -5089,6 +5118,7 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
 
 function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSession }) {
   const [isPrintSheetReady, setIsPrintSheetReady] = useState(false);
+  const isWaitingBuyerCompletion = isVickreyPaymentVerified(auction) && !isVickreyPaymentFulfilled(auction);
   const receiptPrintRootId = useMemo(
     () => `vickrey-receipt-print-root-${(auction.transactionId || auction.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`,
     [auction.id, auction.transactionId]
@@ -5160,12 +5190,16 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           </div>
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <div className="space-y-4 lg:col-start-2">
-            <VickreyPaymentTotalPanel auction={auction} />
-            <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
+        {isWaitingBuyerCompletion ? (
+          <VickreyPaymentTotalPanel auction={auction} onPrintReceipt={handlePrintReceipt} />
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
+            <div className="space-y-4 lg:col-start-2">
+              <VickreyPaymentTotalPanel auction={auction} />
+              <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
       {isPrintSheetReady ? <VickreyReceiptPrintSheet auction={auction} rootId={receiptPrintRootId} /> : null}
     </div>

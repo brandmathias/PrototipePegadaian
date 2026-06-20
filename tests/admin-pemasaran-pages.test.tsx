@@ -1155,12 +1155,20 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/^Pemenang$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/harga bayar/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/detail aset lelang$/i)).toBeInTheDocument();
+    expect(screen.getByText(/detail aset lelang$/i).closest("section")).toHaveClass("lg:min-h-[18.75rem]");
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/selesai: menunggu buyer/i)).toHaveClass("border-[#d7ad2f]");
-    expect(screen.getByText(/nota & konfirmasi buyer/i)).toBeInTheDocument();
-    expect(handoverPanel.compareDocumentPosition(screen.getByText(/nota & konfirmasi buyer/i)) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    const noteTitle = screen.getByText(/nota & konfirmasi buyer/i);
+    const notePanel = noteTitle.closest("section");
+    expect(notePanel).not.toBeNull();
+    expect(notePanel).toHaveTextContent(/harga akhir lelang/i);
+    expect(notePanel).toHaveTextContent(/status admin/i);
+    expect(notePanel).toHaveTextContent(/terverifikasi/i);
+    expect(notePanel).toContainElement(screen.getByRole("button", { name: /cetak nota/i }));
+    expect(notePanel).toContainElement(screen.getByRole("button", { name: /menunggu buyer selesai/i }));
+    expect(handoverPanel.compareDocumentPosition(noteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
     expect(screen.getByText(/progress penyelesaian/i).closest("section")?.parentElement).not.toHaveClass("lg:sticky");
