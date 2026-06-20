@@ -1155,7 +1155,11 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/^Pemenang$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/harga bayar/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/detail aset lelang$/i)).toBeInTheDocument();
-    expect(screen.getByText(/detail aset lelang$/i).closest("section")).toHaveClass("lg:min-h-[18.75rem]");
+    const assetPanel = screen.getByText(/detail aset lelang$/i).closest("section");
+    const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
+    expect(assetPanel).not.toHaveClass("h-full");
+    expect(progressPanel?.parentElement).toHaveClass("grid", "lg:grid-rows-[minmax(0,1fr)_auto]");
+    expect(progressPanel?.parentElement).not.toHaveClass("space-y-4");
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
@@ -1272,6 +1276,15 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByLabelText(/^selesai: selesai$/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
+    const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
+    const finalNoteTitle = screen.getByText(/nota dokumen final/i);
+    const finalNotePanel = finalNoteTitle.closest("section");
+    expect(finalNotePanel).not.toBeNull();
+    expect(finalNotePanel).toContainElement(screen.getByRole("button", { name: /cetak nota/i }));
+    expect(finalNotePanel).toContainElement(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i }));
+    expect(handoverPanel.compareDocumentPosition(finalNoteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
     fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
     const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-completed");
