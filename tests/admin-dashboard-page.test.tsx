@@ -134,14 +134,14 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
   });
 
-  it("keeps the action-needed card title in one tidy line beside the status pill", () => {
+  it("keeps the action-needed card title tidy without showing the urgent badge", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
     expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toHaveClass(
       "whitespace-nowrap",
       "text-[1.05rem]"
     );
-    expect(screen.getByText(/^Urgent$/i)).toHaveClass("shrink-0", "text-[0.66rem]");
+    expect(screen.queryByText(/^Urgent$/i)).not.toBeInTheDocument();
   });
 
   it("renders the daily checklist and amber alert action", () => {

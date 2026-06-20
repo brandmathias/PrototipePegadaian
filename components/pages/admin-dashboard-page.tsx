@@ -295,7 +295,7 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
       ) : null}
       <div className="relative grid h-full grid-cols-[5.15rem_minmax(0,1fr)] items-start gap-5 pr-0 sm:pr-16">
         <DashboardGlyph icon={Icon} tone={isCritical ? "red" : isTeal ? "teal" : "green"} />
-        <div className={cx("min-w-0 pt-2", isCritical && "pr-[4.85rem] sm:pr-[5.35rem]")}>
+        <div className={cx("min-w-0 pt-2", isCritical && card.pill && "pr-[4.85rem] sm:pr-[5.35rem]")}>
           <h2
             className={cx(
               "pr-16 text-[0.98rem] font-black leading-tight tracking-[-0.02em] text-[#111a16] dark:text-slate-100 sm:pr-0 sm:text-[1.05rem]",
@@ -453,7 +453,6 @@ function buildDashboardCards(metrics: AdminDashboardMetrics): DashboardMetricCar
       value: formatCount(metrics.actionableTransactions),
       subtext: `${formatCount(metrics.totalTransactions)} total transaksi tercatat`,
       icon: FileWarning,
-      pill: metrics.actionableTransactions > 0 ? "Urgent" : "Aman",
       tone: metrics.actionableTransactions > 0 ? "red" : "green"
     }
   ];
