@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -200,14 +200,15 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
-  it("prints immediately on mobile so the browser keeps the tap gesture", () => {
+  it("opens the dedicated receipt print route on mobile instead of printing the detail page", () => {
     const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     Object.defineProperty(window.navigator, "userAgent", {
       configurable: true,
       value:
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
     });
 
     try {
@@ -227,24 +228,19 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      expect(printSpy).toHaveBeenCalledTimes(1);
-
-      const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-fixed-1-status");
-
-      expect(receiptPrintRoot).not.toBeNull();
-      expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
-      expect(document.body).toHaveClass("transaction-receipt-printing");
-      expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-target");
-      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(openSpy).toHaveBeenCalledWith(
+        "/transaksi/trx-fixed-1/nota?output=print",
+        "_blank"
+      );
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).toBeNull();
     } finally {
-      act(() => {
-        window.dispatchEvent(new Event("afterprint"));
-      });
       document.body.classList.remove("transaction-receipt-printing");
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
         value: originalUserAgent
       });
+      openSpy.mockRestore();
       printSpy.mockRestore();
     }
   });
@@ -331,6 +327,65 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/cincin-lelang.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
+  });
+
+  it("opens the dedicated receipt print route on mobile for a paid auction winner", () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
+    });
+
+    try {
+      render(
+        <TransactionDetailPage
+          buyer={buyer}
+          transaction={{
+            ...transaction,
+            id: "trx-vickrey-paid",
+            lotId: "pm-vickrey-1",
+            kind: "VICKREY_WIN",
+            title: "Cincin Emas Berlian",
+            amount: 10000000,
+            status: "SELESAI",
+            method: "BAYAR_LANGSUNG",
+            unit: "UPC Ranotana",
+            unitAddress: "Jl. Sam Ratulangi, Manado",
+            reference: "CASH-OCE8A1",
+            applicationNumber: "PGJ-VIC-TRXVICK",
+            paymentLabel: "Bayar langsung di unit",
+            paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
+            imageUrl: "/uploads/barang/cincin-lelang.jpg",
+            verifiedAt: "3 Jun 2026, 07.39 WIB",
+            completedAt: "13 Jun 2026, 23.39 WIB",
+            receiptNumber: "CASH-OCE8A1"
+          }}
+          transactionId="trx-vickrey-paid"
+        />
+      );
+
+      expect(screen.getByRole("heading", { name: /detail transaksi lelang berhasil/i })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+
+      expect(openSpy).toHaveBeenCalledWith(
+        "/transaksi/trx-vickrey-paid/nota?output=print",
+        "_blank"
+      );
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      openSpy.mockRestore();
+      printSpy.mockRestore();
+    }
   });
 
   it("shows uploaded proof as read-only review state after the buyer sends payment proof", () => {

@@ -13,6 +13,7 @@ type TransactionReceiptInlinePrintProps = {
   documentClassName?: string;
   documentTestId?: string;
   label?: string;
+  mobilePrintHref?: string;
   rootId: string;
 };
 
@@ -37,6 +38,16 @@ function enableReceiptPrintMode() {
 
 function disableReceiptPrintMode() {
   document.body.classList.remove(RECEIPT_PRINTING_BODY_CLASS);
+}
+
+function openDedicatedMobilePrintView(href: string) {
+  const printWindow = window.open(href, "_blank");
+
+  if (printWindow) {
+    printWindow.opener = null;
+  } else {
+    window.location.assign(href);
+  }
 }
 
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
@@ -87,6 +98,7 @@ export function TransactionReceiptInlinePrint({
   documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
   documentTestId = "transaction-receipt-print-document",
   label = "Cetak Nota",
+  mobilePrintHref,
   rootId
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
@@ -115,6 +127,11 @@ export function TransactionReceiptInlinePrint({
   }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
+    if (mobilePrintHref && shouldPrintImmediatelyOnMobile()) {
+      openDedicatedMobilePrintView(mobilePrintHref);
+      return;
+    }
+
     enableReceiptPrintMode();
     window.addEventListener("afterprint", clearPrintSheet, { once: true });
 
@@ -134,7 +151,7 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [clearPrintSheet, rootId]);
+  }, [clearPrintSheet, mobilePrintHref, rootId]);
 
   return (
     <>
