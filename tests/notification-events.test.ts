@@ -1,11 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  createNotificationOnce: vi.fn()
+  createNotificationOnce: vi.fn(),
+  createOrRefreshNotification: vi.fn()
 }));
 
 vi.mock("@/lib/services/notification.service", () => ({
-  createNotificationOnce: mocks.createNotificationOnce
+  createNotificationOnce: mocks.createNotificationOnce,
+  createOrRefreshNotification: mocks.createOrRefreshNotification
+}));
+
+vi.mock("@/lib/db/client", () => ({
+  db: {}
+}));
+
+vi.mock("@/lib/db/schema", () => ({
+  blacklists: {},
+  notifications: {},
+  pelanggaranUser: {}
 }));
 
 import {
@@ -24,6 +36,7 @@ describe("notification event helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createNotificationOnce.mockResolvedValue({ id: "notif-1" });
+    mocks.createOrRefreshNotification.mockResolvedValue({ id: "notif-1" });
   });
 
   it("creates a Lelang Tertutup winner notification with direct-payment guidance", async () => {
@@ -115,26 +128,31 @@ describe("notification event helpers", () => {
         title: "Batas pembayaran Motor Racing hampir habis"
       })
     );
-    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+    expect(mocks.createOrRefreshNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "blacklist_active",
         title: "Akun Anda dikenakan pembatasan",
+        entityType: "blacklist",
+        entityId: "blacklist-buyer-1",
+        actionHref: "/pelanggaran",
         message: expect.stringMatching(/Pelanggaran saat ini: 2x/i)
       })
     );
   });
 
-  it("routes blacklist notifications without transaction to the buyer transactions hub", async () => {
+  it("routes blacklist notifications to the buyer violation page as one canonical status", async () => {
     await notifyBlacklistActivated({
       userId: "buyer-1",
       totalViolations: 1,
       blockedUntilLabel: "2 Juni 2026"
     });
 
-    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+    expect(mocks.createOrRefreshNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "blacklist_active",
-        actionHref: "/transaksi?tab=bids"
+        entityType: "blacklist",
+        entityId: "blacklist-buyer-1",
+        actionHref: "/pelanggaran"
       })
     );
   });

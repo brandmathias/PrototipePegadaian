@@ -15,6 +15,7 @@ vi.mock("@/lib/db/client", () => ({
 }));
 
 import {
+  createOrRefreshNotification,
   createNotification,
   createNotificationOnce,
   listUserNotifications,
@@ -110,6 +111,56 @@ describe("notification service", () => {
     expect(mocks.db.insert).not.toHaveBeenCalled();
   });
 
+  it("refreshes an existing notification without forcing it unread during data sync", async () => {
+    mockSelectRows([
+      {
+        ...notificationRow,
+        entityId: "blacklist-buyer-1",
+        type: "blacklist_active"
+      }
+    ]);
+    const refreshedRow = {
+      ...notificationRow,
+      entityId: "blacklist-buyer-1",
+      message: "Pelanggaran saat ini: 2x.",
+      type: "blacklist_active"
+    };
+    const returning = vi.fn().mockResolvedValue([refreshedRow]);
+    const where = vi.fn().mockReturnValue({ returning });
+    const set = vi.fn().mockReturnValue({ where });
+    mocks.db.update.mockReturnValueOnce({ set });
+
+    await expect(
+      createOrRefreshNotification(
+        {
+          userId: "buyer-1",
+          title: "Akun Anda dikenakan pembatasan",
+          message: "Pelanggaran saat ini: 2x.",
+          type: "blacklist_active",
+          entityType: "blacklist",
+          entityId: "blacklist-buyer-1",
+          actionHref: "/pelanggaran",
+          metadata: { totalViolations: 2 }
+        },
+        { markUnread: false }
+      )
+    ).resolves.toMatchObject({
+      entityId: "blacklist-buyer-1",
+      message: "Pelanggaran saat ini: 2x."
+    });
+
+    expect(mocks.db.insert).not.toHaveBeenCalled();
+    expect(set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionHref: "/pelanggaran",
+        entityType: "blacklist",
+        message: "Pelanggaran saat ini: 2x."
+      })
+    );
+    expect(set.mock.calls[0]?.[0]).not.toHaveProperty("isRead");
+    expect(set.mock.calls[0]?.[0]).not.toHaveProperty("readAt");
+  });
+
   it("lists latest notifications and supports unread filtering", async () => {
     const chain = mockSelectRows([notificationRow]);
 
@@ -122,6 +173,43 @@ describe("notification service", () => {
     ]);
 
     expect(chain.limit).toHaveBeenCalledWith(5);
+  });
+
+  it("filters legacy review and stale transaction blacklist notifications from the buyer list", async () => {
+    mockSelectRows([
+      {
+        ...notificationRow,
+        id: "notif-current-blacklist",
+        entityId: "blacklist-buyer-1",
+        entityType: "blacklist",
+        message: "Pelanggaran saat ini: 2x.",
+        title: "Akun Anda dikenakan pembatasan",
+        type: "blacklist_active"
+      },
+      {
+        ...notificationRow,
+        id: "notif-stale-blacklist",
+        entityId: "trx-legacy-1",
+        message: "Pelanggaran saat ini: 3x.",
+        title: "Akun Anda dikenakan pembatasan",
+        type: "blacklist_active"
+      },
+      {
+        ...notificationRow,
+        id: "notif-review-legacy",
+        message: "Superadmin menyetujui review insiden Anda.",
+        title: "Review insiden disetujui",
+        type: "blacklist_review_approved"
+      }
+    ]);
+
+    await expect(listUserNotifications("buyer-1", { limit: 12 })).resolves.toEqual([
+      expect.objectContaining({
+        id: "notif-current-blacklist",
+        entityId: "blacklist-buyer-1",
+        message: "Pelanggaran saat ini: 2x."
+      })
+    ]);
   });
 
   it("marks one notification read only inside the owner scope", async () => {

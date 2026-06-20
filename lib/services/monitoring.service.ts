@@ -12,9 +12,11 @@ import {
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/lib/db/client";
+import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
 import {
   barang,
   blacklists,
+  pelanggaranUser,
   pemasaran,
   transaksi,
   unitAccounts,
@@ -62,6 +64,53 @@ const MONTH_WEEK_LABELS = [
 
 function toNumber(value: unknown) {
   return Number(value ?? 0);
+}
+
+async function getEffectiveBlacklistLevels(
+  rows: Array<{
+    blockedUntil: Date | null;
+    totalViolations: number | null;
+    userId: string;
+  }>,
+) {
+  const userIds = Array.from(new Set(rows.map((row) => row.userId).filter(Boolean)));
+  if (userIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const traces = await db
+    .select({
+      createdAt: pelanggaranUser.createdAt,
+      escalationEligible: pelanggaranUser.escalationEligible,
+      id: pelanggaranUser.id,
+      userId: pelanggaranUser.userId,
+    })
+    .from(pelanggaranUser)
+    .where(inArray(pelanggaranUser.userId, userIds))
+    .orderBy(desc(pelanggaranUser.createdAt));
+
+  const tracesByUser = new Map<string, typeof traces>();
+  for (const trace of traces) {
+    const current = tracesByUser.get(trace.userId) ?? [];
+    current.push(trace);
+    tracesByUser.set(trace.userId, current);
+  }
+
+  return new Map(
+    rows.map((row) => [
+      row.userId,
+      deriveEffectiveBlacklistState({
+        storedBlockedUntil: row.blockedUntil,
+        storedTotalViolations: row.totalViolations,
+        traces: (tracesByUser.get(row.userId) ?? []).map((trace) => ({
+          createdAt: trace.createdAt,
+          escalationEligible: trace.escalationEligible,
+          id: trace.id,
+          occurredAt: trace.createdAt.toISOString(),
+        })),
+      }).totalViolations,
+    ]),
+  );
 }
 
 export function getSuperAdminUnitDetailHref(unitId: string) {
@@ -428,13 +477,32 @@ export async function getSuperAdminMonitoring() {
     })
     .from(blacklists);
 
-  const [complianceStats] = await db
+  const activeBlacklistLevelRows = await db
     .select({
-      levelOne: sql<number>`count(*) filter (where ${blacklists.isActive} = true and ${blacklists.totalViolations} = 1)`,
-      levelTwo: sql<number>`count(*) filter (where ${blacklists.isActive} = true and ${blacklists.totalViolations} = 2)`,
-      levelThree: sql<number>`count(*) filter (where ${blacklists.isActive} = true and ${blacklists.totalViolations} >= 3)`,
+      blockedUntil: blacklists.blockedUntil,
+      totalViolations: blacklists.totalViolations,
+      userId: blacklists.userId,
     })
-    .from(blacklists);
+    .from(blacklists)
+    .where(eq(blacklists.isActive, true));
+  const effectiveBlacklistLevels = await getEffectiveBlacklistLevels(activeBlacklistLevelRows);
+  const complianceStats = Array.from(effectiveBlacklistLevels.values()).reduce(
+    (accumulator, level) => {
+      if (level <= 0) {
+        return accumulator;
+      }
+      if (level === 1) {
+        accumulator.levelOne += 1;
+      } else if (level === 2) {
+        accumulator.levelTwo += 1;
+      } else {
+        accumulator.levelThree += 1;
+      }
+
+      return accumulator;
+    },
+    { levelOne: 0, levelThree: 0, levelTwo: 0 },
+  );
 
   const [transactionStats] = await db
     .select({
@@ -649,9 +717,12 @@ export async function getSuperAdminMonitoring() {
   const visibleActiveAuctionMonitoring = activeAuctionMonitoring.filter(
     (item) => !isHiddenOperationalUnit({ id: item.unitId }),
   );
-  const visibleActiveBlacklistMonitoring = activeBlacklistMonitoring.filter(
-    (item) => !isHiddenOperationalUnit({ id: item.unitId }),
-  );
+  const visibleActiveBlacklistMonitoring = activeBlacklistMonitoring
+    .filter((item) => !isHiddenOperationalUnit({ id: item.unitId }))
+    .map((item) => ({
+      ...item,
+      totalViolations: effectiveBlacklistLevels.get(item.userId) ?? item.totalViolations,
+    }));
 
   const timeSensitiveMonitoring = [
     ...visibleActiveTransactionMonitoring.map((item) => {

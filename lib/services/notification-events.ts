@@ -1,15 +1,100 @@
-import { createNotificationOnce } from "@/lib/services/notification.service";
+import { and, desc, eq, ilike, isNull, ne, or } from "drizzle-orm";
+
+import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
+import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import {
   getBuyerLoserAnnouncementHref,
-  getBuyerTransactionsHref,
   getBuyerWinnerAnnouncementHref,
 } from "@/lib/buyer/transaction-links";
+import { db } from "@/lib/db/client";
+import { blacklists, notifications, pelanggaranUser } from "@/lib/db/schema";
+import { createNotificationOnce, createOrRefreshNotification } from "@/lib/services/notification.service";
+import { formatAppDateTime } from "@/lib/timezone";
 
 type TransactionEventInput = {
   userId: string;
   transactionId: string;
   lotName: string;
 };
+
+const BUYER_RESTRICTION_NOTIFICATION_HREF = "/pelanggaran";
+const LEGACY_BUYER_RESTRICTION_PATTERNS = [
+  "review insiden",
+  "pengajuan review insiden",
+  "permohonan anda sudah masuk antrean review",
+  "pembatasan untuk insiden ini"
+];
+
+function buyerBlacklistEntityId(userId: string) {
+  return `blacklist-${userId}`;
+}
+
+function legacyBuyerRestrictionWhere(userId: string) {
+  const legacyClauses = LEGACY_BUYER_RESTRICTION_PATTERNS.flatMap((pattern) => [
+    ilike(notifications.title, `%${pattern}%`),
+    ilike(notifications.message, `%${pattern}%`)
+  ]);
+
+  return and(
+    eq(notifications.userId, userId),
+    eq(notifications.isRead, false),
+    or(
+      ilike(notifications.type, "%blacklist_review%"),
+      ...legacyClauses,
+      and(
+        eq(notifications.type, "blacklist_active"),
+        or(isNull(notifications.entityId), ne(notifications.entityId, buyerBlacklistEntityId(userId)))
+      )
+    )
+  );
+}
+
+async function getBuyerRestrictionSnapshot(userId: string) {
+  const [blacklist] = await db
+    .select()
+    .from(blacklists)
+    .where(and(eq(blacklists.userId, userId), eq(blacklists.isActive, true)))
+    .limit(1);
+
+  if (!blacklist) {
+    return {
+      active: false,
+      blockedUntil: null,
+      totalViolations: 0
+    };
+  }
+
+  const rows = await db
+    .select({
+      createdAt: pelanggaranUser.createdAt,
+      escalationEligible: pelanggaranUser.escalationEligible,
+      id: pelanggaranUser.id
+    })
+    .from(pelanggaranUser)
+    .where(eq(pelanggaranUser.userId, userId))
+    .orderBy(desc(pelanggaranUser.createdAt));
+
+  const effectiveState = deriveEffectiveBlacklistState({
+    storedBlockedUntil: blacklist.blockedUntil,
+    storedTotalViolations: blacklist.totalViolations,
+    traces: rows.map((row) => ({
+      createdAt: row.createdAt,
+      escalationEligible: row.escalationEligible,
+      id: row.id,
+      occurredAt: row.createdAt.toISOString()
+    }))
+  });
+  const policy = getBlacklistRestrictionPolicy(effectiveState.totalViolations);
+  const activeByDate =
+    !effectiveState.blockedUntil ||
+    effectiveState.blockedUntil.getTime() > new Date().getTime();
+
+  return {
+    active: policy.requiresManualReview || activeByDate,
+    blockedUntil: effectiveState.blockedUntil,
+    totalViolations: effectiveState.totalViolations
+  };
+}
 
 function uniqueIds(userIds: string[]) {
   return Array.from(new Set(userIds.filter(Boolean)));
@@ -180,21 +265,73 @@ export async function notifyBlacklistActivated(
     blockedUntilLabel: string;
   }
 ) {
-  return createNotificationOnce({
+  return createOrRefreshNotification({
     userId: input.userId,
     title: "Akun Anda dikenakan pembatasan",
     message: `Pelanggaran saat ini: ${input.totalViolations}x. Pembatasan aktif sampai ${input.blockedUntilLabel}. Hubungi unit terkait jika membutuhkan bantuan.`,
     type: "blacklist_active",
-    entityType: input.transactionId ? "transaction" : "blacklist",
-    entityId: input.transactionId ?? `blacklist-${input.userId}`,
-    actionHref: input.transactionId
-      ? `/transaksi/${input.transactionId}`
-      : getBuyerTransactionsHref({ tab: "bids" }),
+    entityType: "blacklist",
+    entityId: buyerBlacklistEntityId(input.userId),
+    actionHref: BUYER_RESTRICTION_NOTIFICATION_HREF,
     metadata: {
+      sourceTransactionId: input.transactionId ?? null,
       totalViolations: input.totalViolations,
       blockedUntilLabel: input.blockedUntilLabel
     }
   });
+}
+
+export async function syncBuyerRestrictionNotifications(userId: string) {
+  const readAt = new Date();
+  await db
+    .update(notifications)
+    .set({
+      isRead: true,
+      readAt
+    })
+    .where(legacyBuyerRestrictionWhere(userId));
+
+  const snapshot = await getBuyerRestrictionSnapshot(userId);
+  const entityId = buyerBlacklistEntityId(userId);
+
+  if (!snapshot.active || snapshot.totalViolations <= 0) {
+    await db
+      .update(notifications)
+      .set({
+        isRead: true,
+        readAt
+      })
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.type, "blacklist_active"),
+          eq(notifications.entityId, entityId),
+          eq(notifications.isRead, false)
+        )
+      );
+    return;
+  }
+
+  const blockedUntilLabel = snapshot.blockedUntil
+    ? formatAppDateTime(snapshot.blockedUntil)
+    : "batas waktu belum tersedia";
+
+  await createOrRefreshNotification(
+    {
+      userId,
+      title: "Akun Anda dikenakan pembatasan",
+      message: `Pelanggaran saat ini: ${snapshot.totalViolations}x. Pembatasan aktif sampai ${blockedUntilLabel}. Hubungi unit terkait jika membutuhkan bantuan.`,
+      type: "blacklist_active",
+      entityType: "blacklist",
+      entityId,
+      actionHref: BUYER_RESTRICTION_NOTIFICATION_HREF,
+      metadata: {
+        blockedUntilLabel,
+        totalViolations: snapshot.totalViolations
+      }
+    },
+    { markUnread: false }
+  );
 }
 
 export async function notifyAdminUnitPaymentProofUploaded(input: {

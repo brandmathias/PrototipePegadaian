@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireAdminApiSession: vi.fn(),
   requireBuyerApiSession: vi.fn(),
   ensureVickreyLossNotifications: vi.fn(),
+  syncBuyerRestrictionNotifications: vi.fn(),
   listUserNotifications: vi.fn(),
   getUnreadNotificationCount: vi.fn(),
   markNotificationRead: vi.fn(),
@@ -23,7 +24,8 @@ vi.mock("@/lib/services/notification.service", () => ({
 }));
 
 vi.mock("@/lib/services/notification-events", () => ({
-  ensureVickreyLossNotifications: mocks.ensureVickreyLossNotifications
+  ensureVickreyLossNotifications: mocks.ensureVickreyLossNotifications,
+  syncBuyerRestrictionNotifications: mocks.syncBuyerRestrictionNotifications
 }));
 
 const buyerAccess = {
@@ -52,6 +54,7 @@ describe("buyer notification routes", () => {
     mocks.requireAdminApiSession.mockResolvedValue(adminAccess);
     mocks.requireBuyerApiSession.mockResolvedValue(buyerAccess);
     mocks.ensureVickreyLossNotifications.mockResolvedValue(undefined);
+    mocks.syncBuyerRestrictionNotifications.mockResolvedValue(undefined);
   });
 
   it("lists buyer notifications with unread filter", async () => {
@@ -81,6 +84,7 @@ describe("buyer notification routes", () => {
       limit: 5
     });
     expect(mocks.ensureVickreyLossNotifications).toHaveBeenCalledWith("buyer-1");
+    expect(mocks.syncBuyerRestrictionNotifications).toHaveBeenCalledWith("buyer-1");
   });
 
   it("returns unread notification count", async () => {
@@ -95,6 +99,7 @@ describe("buyer notification routes", () => {
         count: 3
       }
     });
+    expect(mocks.syncBuyerRestrictionNotifications).toHaveBeenCalledWith("buyer-1");
   });
 
   it("marks one notification read in the buyer scope", async () => {
@@ -156,6 +161,7 @@ describe("admin unit notification routes", () => {
     mocks.requireAdminApiSession.mockResolvedValue(adminAccess);
     mocks.requireBuyerApiSession.mockResolvedValue(buyerAccess);
     mocks.ensureVickreyLossNotifications.mockResolvedValue(undefined);
+    mocks.syncBuyerRestrictionNotifications.mockResolvedValue(undefined);
   });
 
   it("lists admin unit notifications without buyer-only reconciliation", async () => {

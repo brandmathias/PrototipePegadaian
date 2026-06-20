@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, ne, not, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { notifications } from "@/lib/db/schema";
@@ -48,6 +48,13 @@ export type NotificationListOptions = {
 
 type NotificationRow = typeof notifications.$inferSelect;
 
+const LEGACY_BUYER_NOTIFICATION_PATTERNS = [
+  "review insiden",
+  "pengajuan review insiden",
+  "permohonan anda sudah masuk antrean review",
+  "pembatasan untuk insiden ini"
+];
+
 function serializeNotification(row: NotificationRow) {
   return {
     id: row.id,
@@ -71,6 +78,47 @@ function normalizeLimit(limit: number | undefined) {
   }
 
   return Math.min(Math.max(Math.trunc(limit ?? 20), 1), 50);
+}
+
+function canonicalBlacklistEntityId(userId: string) {
+  return `blacklist-${userId}`;
+}
+
+function isLegacyBuyerNotification(row: NotificationRow) {
+  const haystack = `${row.type} ${row.title} ${row.message}`.toLowerCase();
+
+  return (
+    haystack.includes("blacklist_review") ||
+    LEGACY_BUYER_NOTIFICATION_PATTERNS.some((pattern) => haystack.includes(pattern))
+  );
+}
+
+function isStaleBlacklistNotification(row: NotificationRow, userId: string) {
+  return row.type === "blacklist_active" && row.entityId !== canonicalBlacklistEntityId(userId);
+}
+
+function isDisplayableNotification(row: NotificationRow, userId: string) {
+  return !isLegacyBuyerNotification(row) && !isStaleBlacklistNotification(row, userId);
+}
+
+function displayableNotificationWhere(userId: string) {
+  const legacyClauses = LEGACY_BUYER_NOTIFICATION_PATTERNS.flatMap((pattern) => [
+    ilike(notifications.title, `%${pattern}%`),
+    ilike(notifications.message, `%${pattern}%`)
+  ]);
+  const hiddenNotificationClause = or(
+    ilike(notifications.type, "%blacklist_review%"),
+    ...legacyClauses,
+    and(
+      eq(notifications.type, "blacklist_active"),
+      or(isNull(notifications.entityId), ne(notifications.entityId, canonicalBlacklistEntityId(userId)))
+    )
+  );
+
+  return and(
+    eq(notifications.userId, userId),
+    hiddenNotificationClause ? not(hiddenNotificationClause) : undefined
+  );
 }
 
 export async function createNotification(input: NotificationInput) {
@@ -119,10 +167,54 @@ export async function createNotificationOnce(input: NotificationInput) {
   return createNotification(input);
 }
 
+export async function createOrRefreshNotification(input: NotificationInput, options: { markUnread?: boolean } = {}) {
+  if (!input.entityId) {
+    return createNotification(input);
+  }
+
+  const [existing] = await db
+    .select()
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.userId, input.userId),
+        eq(notifications.type, input.type),
+        eq(notifications.entityId, input.entityId)
+      )
+    )
+    .limit(1);
+
+  if (!existing) {
+    return createNotification(input);
+  }
+
+  const shouldMarkUnread = options.markUnread !== false;
+  const [updated] = await db
+    .update(notifications)
+    .set({
+      title: input.title,
+      message: input.message,
+      entityType: input.entityType ?? null,
+      actionHref: input.actionHref ?? null,
+      metadata: input.metadata ?? null,
+      ...(shouldMarkUnread
+        ? {
+            createdAt: new Date(),
+            isRead: false,
+            readAt: null
+          }
+        : {})
+    })
+    .where(eq(notifications.id, existing.id))
+    .returning();
+
+  return serializeNotification(updated ?? existing);
+}
+
 export async function listUserNotifications(userId: string, options: NotificationListOptions = {}) {
   const whereClause = options.unreadOnly
-    ? and(eq(notifications.userId, userId), eq(notifications.isRead, false))
-    : eq(notifications.userId, userId);
+    ? and(displayableNotificationWhere(userId), eq(notifications.isRead, false))
+    : displayableNotificationWhere(userId);
 
   const rows = await db
     .select()
@@ -131,14 +223,14 @@ export async function listUserNotifications(userId: string, options: Notificatio
     .orderBy(desc(notifications.createdAt))
     .limit(normalizeLimit(options.limit));
 
-  return rows.map(serializeNotification);
+  return rows.filter((row) => isDisplayableNotification(row, userId)).map(serializeNotification);
 }
 
 export async function getUnreadNotificationCount(userId: string) {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(notifications)
-    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    .where(and(displayableNotificationWhere(userId), eq(notifications.isRead, false)));
 
   return Number(row?.count ?? 0);
 }
