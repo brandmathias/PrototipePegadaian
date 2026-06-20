@@ -306,14 +306,16 @@ export function TransactionReceiptDocument({
                   {currency.format(total)}
                 </p>
                 <div
-                  className={`mt-3 flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-sm ${
+                  className={`receipt-status-pill mt-3 flex w-full items-center border ${
                     outputLayout
-                      ? "border-[#c9d9ca] bg-[#edf5ef] text-[#0b6a46]"
-                      : "border-[#dbe4da] bg-white text-[#49624d]"
+                      ? "min-h-[1.45rem] gap-1.5 overflow-hidden rounded-xl border-[#c9d9ca] bg-[#edf5ef] px-2.5 py-1.5 text-[0.72rem] leading-none text-[#0b6a46]"
+                      : "gap-2 rounded-2xl border-[#dbe4da] bg-white px-3 py-2 text-sm text-[#49624d]"
                   }`}
                 >
-                  <CircleDot className={`shrink-0 ${outputLayout ? "size-3.5 text-[#0b6a46]" : "size-4 text-[#b88c1a]"}`} />
-                  <span className="whitespace-nowrap font-semibold">{statusLabel}</span>
+                  <CircleDot className={`shrink-0 ${outputLayout ? "size-3 text-[#0b6a46]" : "size-4 text-[#b88c1a]"}`} />
+                  <span className="receipt-status-pill-label min-w-0 whitespace-nowrap font-semibold leading-none">
+                    {statusLabel}
+                  </span>
                 </div>
               </div>
             </div>

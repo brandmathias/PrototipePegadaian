@@ -77,8 +77,10 @@ export function TransactionReceiptAutoPrint({
   fileName?: string;
   mode?: string;
 }) {
+  const isAutoOutput = mode === "print" || mode === "download";
+
   useEffect(() => {
-    if (mode !== "print" && mode !== "download") {
+    if (!isAutoOutput) {
       return;
     }
 
@@ -128,7 +130,7 @@ export function TransactionReceiptAutoPrint({
           } catch {
             // Fall back to the iframe flow below when the popup is not ready yet.
           }
-        }, 800);
+        }, 350);
         return;
       }
 
@@ -159,7 +161,80 @@ export function TransactionReceiptAutoPrint({
         window.URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [fileName, mode]);
+  }, [fileName, isAutoOutput, mode]);
 
-  return null;
+  if (!isAutoOutput) {
+    return null;
+  }
+
+  return (
+    <>
+      <style id="transaction-receipt-auto-output-style">{`
+        @media screen {
+          body:has(#transaction-receipt-auto-output) {
+            margin: 0 !important;
+            overflow: hidden !important;
+            background: #eef3ef !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) .buyer-experience-root,
+          body:has(#transaction-receipt-auto-output) .buyer-motion-main,
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"],
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > div {
+            min-height: 100dvh !important;
+            background: #eef3ef !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) .buyer-experience-root > :not(.buyer-motion-main),
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > aside,
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > button,
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] > div > header,
+          body:has(#transaction-receipt-auto-output) .print\\:hidden {
+            display: none !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] {
+            padding-left: 0 !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) .buyer-motion-main,
+          body:has(#transaction-receipt-auto-output) [data-admin-shell="true"] main {
+            width: 100% !important;
+            max-width: none !important;
+            padding: 0 !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) .receipt-auto-output-stage {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 2147483000 !important;
+            display: grid !important;
+            place-items: center !important;
+            width: 100vw !important;
+            height: 100dvh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            background: #eef3ef !important;
+          }
+
+          body:has(#transaction-receipt-auto-output) .receipt-auto-output-stage::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            background: #eef3ef;
+          }
+
+          body:has(#transaction-receipt-auto-output) #transaction-receipt-document {
+            position: relative !important;
+            z-index: 1 !important;
+          }
+        }
+      `}</style>
+      <div className="sr-only" id="transaction-receipt-auto-output">
+        Menyiapkan nota untuk cetak.
+      </div>
+    </>
+  );
 }

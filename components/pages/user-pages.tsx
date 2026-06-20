@@ -2169,8 +2169,9 @@ export function TransactionReceiptPage({
     <div
       className={cn(
         "space-y-8 md:space-y-10 print:space-y-4",
-        isAutoOutput && "mx-auto max-w-[980px] space-y-0 py-5 md:py-6 print:max-w-none print:py-0"
+        isAutoOutput && "receipt-auto-output-stage mx-auto max-w-[980px] space-y-0 py-5 md:py-6 print:max-w-none print:py-0"
       )}
+      data-auto-output-mode={isAutoOutput ? outputMode : undefined}
     >
       <TransactionReceiptAutoPrint fileName={transaction.receiptNumber} mode={outputMode} />
       {!isAutoOutput ? (

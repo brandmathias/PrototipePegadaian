@@ -1149,9 +1149,10 @@ export function AdminTransactionReceiptPage({
 
   return (
     <div
+      data-auto-output-mode={isAutoOutput ? outputMode : undefined}
       className={
         isAutoOutput
-          ? "mx-auto max-w-[980px] space-y-0 py-5 md:py-6 print:max-w-none print:py-0"
+          ? "receipt-auto-output-stage mx-auto max-w-[980px] space-y-0 py-5 md:py-6 print:max-w-none print:py-0"
           : "space-y-6 print:space-y-0"
       }
     >

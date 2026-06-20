@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { TransactionReceiptPage } from "@/components/pages/user-pages";
+import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerTransaction } from "@/lib/contracts/buyer";
 
@@ -60,6 +61,21 @@ const vickreyTransaction: BuyerTransaction = {
 };
 
 describe("transaction receipt page", () => {
+  it("prepares a sterile mobile auto-output stage before opening the print preview", () => {
+    render(<TransactionReceiptAutoPrint fileName="CASH-OCE8A1" mode="print" />);
+
+    const marker = document.getElementById("transaction-receipt-auto-output");
+    const style = document.getElementById("transaction-receipt-auto-output-style");
+
+    expect(marker).toBeInTheDocument();
+    expect(marker).toHaveTextContent(/menyiapkan nota/i);
+    expect(style).toBeInTheDocument();
+    expect(style).toHaveTextContent("body:has(#transaction-receipt-auto-output)");
+    expect(style).toHaveTextContent(".receipt-auto-output-stage");
+    expect(style).toHaveTextContent(".buyer-experience-root");
+    expect(style).toHaveTextContent("[data-admin-shell=\"true\"] > div > header");
+  });
+
   it("renders an informative pickup note with buyer, unit, totals, and terms", () => {
     render(
       <TransactionReceiptPage
@@ -120,12 +136,16 @@ describe("transaction receipt page", () => {
     const itemGrid = receipt!.querySelector(".receipt-output-item-grid");
     const buyerGrid = receipt!.querySelector(".receipt-output-buyer-grid");
     const summaryGrid = receipt!.querySelector(".receipt-output-summary-grid");
+    const statusPill = receipt!.querySelector(".receipt-status-pill");
+    const statusLabel = receipt!.querySelector(".receipt-status-pill-label");
 
     expect(headerGrid).toHaveClass("flex-row", "items-center", "justify-between");
     expect(mainGrid).toHaveClass("grid-cols-[1.38fr_0.86fr]", "gap-3");
     expect(itemGrid).toHaveClass("grid-cols-[3.75rem_minmax(0,1fr)_7.2rem]", "items-center");
     expect(buyerGrid).toHaveClass("grid-cols-2");
     expect(summaryGrid).toHaveClass("grid-cols-[1.2fr_0.8fr]", "gap-3");
+    expect(statusPill).toHaveClass("min-h-[1.45rem]", "overflow-hidden", "rounded-xl", "text-[0.72rem]", "leading-none");
+    expect(statusLabel).toHaveClass("whitespace-nowrap", "font-semibold", "leading-none");
     expect(receipt!).toHaveTextContent("Lelang");
     expect(receipt!).not.toHaveTextContent("Lelang Tertutup");
     expect(receipt!).toHaveTextContent("Langsung di unit");
