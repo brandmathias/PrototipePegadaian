@@ -497,7 +497,7 @@ describe("admin pemasaran pages", () => {
     printSpy.mockRestore();
   });
 
-  it("opens the dedicated admin receipt route on mobile for verified harga tetap payments", () => {
+  it("prints the prepared admin receipt directly on mobile for verified harga tetap payments", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -541,9 +541,9 @@ describe("admin pemasaran pages", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-fixed-paid/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
@@ -1255,7 +1255,7 @@ describe("admin pemasaran pages", () => {
     printSpy.mockRestore();
   });
 
-  it("opens the dedicated admin receipt route on mobile for verified vickrey winners", () => {
+  it("prints the prepared admin receipt directly on mobile for verified vickrey winners", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -1307,9 +1307,9 @@ describe("admin pemasaran pages", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-vickrey-paid/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

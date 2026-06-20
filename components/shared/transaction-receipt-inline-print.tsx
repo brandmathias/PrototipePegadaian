@@ -13,24 +13,8 @@ type TransactionReceiptInlinePrintProps = {
   documentClassName?: string;
   documentTestId?: string;
   label?: string;
-  mobilePrintHref?: string;
   rootId: string;
 };
-
-export function shouldPrintImmediatelyOnMobile() {
-  if (typeof navigator === "undefined") {
-    return false;
-  }
-
-  const userAgent = navigator.userAgent || "";
-  const platform = navigator.platform || "";
-  const maxTouchPoints = navigator.maxTouchPoints ?? 0;
-
-  return (
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent) ||
-    (platform === "MacIntel" && maxTouchPoints > 1)
-  );
-}
 
 function enableReceiptPrintMode() {
   document.body.classList.add(RECEIPT_PRINTING_BODY_CLASS);
@@ -38,16 +22,6 @@ function enableReceiptPrintMode() {
 
 function disableReceiptPrintMode() {
   document.body.classList.remove(RECEIPT_PRINTING_BODY_CLASS);
-}
-
-export function openDedicatedMobilePrintView(href: string) {
-  const printWindow = window.open(href, "_blank");
-
-  if (printWindow) {
-    printWindow.opener = null;
-  } else {
-    window.location.assign(href);
-  }
 }
 
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
@@ -98,7 +72,6 @@ export function TransactionReceiptInlinePrint({
   documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
   documentTestId = "transaction-receipt-print-document",
   label = "Cetak Nota",
-  mobilePrintHref,
   rootId
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
@@ -127,20 +100,10 @@ export function TransactionReceiptInlinePrint({
   }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
-    if (mobilePrintHref && shouldPrintImmediatelyOnMobile()) {
-      openDedicatedMobilePrintView(mobilePrintHref);
-      return;
-    }
-
     enableReceiptPrintMode();
     window.addEventListener("afterprint", clearPrintSheet, { once: true });
 
     flushSync(() => setIsPrintReady(true));
-
-    if (shouldPrintImmediatelyOnMobile()) {
-      window.print();
-      return;
-    }
 
     await new Promise((resolve) => window.requestAnimationFrame(() => resolve(undefined)));
 
@@ -151,7 +114,7 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [clearPrintSheet, mobilePrintHref, rootId]);
+  }, [clearPrintSheet, rootId]);
 
   return (
     <>

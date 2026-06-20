@@ -253,7 +253,7 @@ describe("admin transaction pages", () => {
     printSpy.mockRestore();
   });
 
-  it("opens the admin receipt print route on mobile instead of printing the detail page", async () => {
+  it("prints the prepared admin receipt directly on mobile without opening the visual receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -275,9 +275,9 @@ describe("admin transaction pages", () => {
 
       await userEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-history/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("transaction-receipt-print-root-trx-history")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("transaction-receipt-print-root-trx-history")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

@@ -144,7 +144,8 @@ describe("transaction receipt page", () => {
     expect(itemGrid).toHaveClass("grid-cols-[3.75rem_minmax(0,1fr)_7.2rem]", "items-center");
     expect(buyerGrid).toHaveClass("grid-cols-2");
     expect(summaryGrid).toHaveClass("grid-cols-[1.2fr_0.8fr]", "gap-3");
-    expect(statusPill).toHaveClass("min-h-[1.45rem]", "overflow-hidden", "rounded-xl", "text-[0.72rem]", "leading-none");
+    expect(statusPill).toHaveClass("h-[1.35rem]", "overflow-hidden", "rounded-[0.7rem]", "text-[0.68rem]", "leading-none");
+    expect(statusPill!.querySelector(".receipt-status-pill-icon")).not.toBeNull();
     expect(statusLabel).toHaveClass("whitespace-nowrap", "font-semibold", "leading-none");
     expect(receipt!).toHaveTextContent("Lelang");
     expect(receipt!).not.toHaveTextContent("Lelang Tertutup");

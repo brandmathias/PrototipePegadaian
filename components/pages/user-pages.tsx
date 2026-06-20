@@ -741,7 +741,6 @@ function BuyerTransactionInlineReceiptPrint({
       documentClassName={getReceiptPrintDocumentClassName(transaction)}
       documentTestId={getReceiptPrintDocumentTestId(transaction)}
       label={label}
-      mobilePrintHref={`/transaksi/${transaction.id}/nota?output=print`}
       rootId={getBuyerTransactionReceiptPrintRootId(transaction, rootSuffix)}
     >
       <TransactionReceiptDocument

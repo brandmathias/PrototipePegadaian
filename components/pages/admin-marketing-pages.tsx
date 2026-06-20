@@ -61,11 +61,7 @@ import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
-import {
-  openDedicatedMobilePrintView,
-  shouldPrintImmediatelyOnMobile,
-  TransactionReceiptInlinePrint
-} from "@/components/shared/transaction-receipt-inline-print";
+import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -3511,7 +3507,6 @@ function VickreyPaymentTotalPanel({
   const statusLabel = auction.transactionStatus ? humanize(auction.transactionStatus) : "Menunggu pembayaran";
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
-  const mobilePrintHref = auction.transactionId ? `/admin/transaksi/${auction.transactionId}/nota?output=print` : undefined;
 
   if (fulfilled) {
     return (
@@ -3544,7 +3539,6 @@ function VickreyPaymentTotalPanel({
             {auction.transactionId && onPrintReceipt ? (
               <VickreyReceiptPrintButton
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
-                mobilePrintHref={mobilePrintHref}
                 onPrint={onPrintReceipt}
               />
             ) : (
@@ -3597,7 +3591,6 @@ function VickreyPaymentTotalPanel({
             {auction.transactionId && onPrintReceipt ? (
               <VickreyReceiptPrintButton
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-                mobilePrintHref={mobilePrintHref}
                 onPrint={onPrintReceipt}
               />
             ) : (
@@ -4522,7 +4515,6 @@ function FixedPriceReceiptInlinePrint({
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
       label={label}
-      mobilePrintHref={auction.transactionId ? `/admin/transaksi/${auction.transactionId}/nota?output=print` : undefined}
       rootId={getFixedPriceReceiptPrintRootId(auction)}
     >
       <TransactionReceiptDocument
@@ -4639,19 +4631,12 @@ async function waitForVickreyReceiptPrintAssets(root: HTMLElement) {
 
 function VickreyReceiptPrintButton({
   className,
-  mobilePrintHref,
   onPrint
 }: {
   className: string;
-  mobilePrintHref?: string;
   onPrint: () => Promise<void>;
 }) {
   const handleClick = () => {
-    if (mobilePrintHref && shouldPrintImmediatelyOnMobile()) {
-      openDedicatedMobilePrintView(mobilePrintHref);
-      return;
-    }
-
     void onPrint();
   };
 
@@ -4670,15 +4655,12 @@ function VickreyWinnerActionFooter({
   auction: MarketingSession;
   onPrintReceipt: () => Promise<void>;
 }) {
-  const mobilePrintHref = auction.transactionId ? `/admin/transaksi/${auction.transactionId}/nota?output=print` : undefined;
-
   if (isVickreyPaymentFulfilled(auction)) {
     return (
       <div className="grid gap-3 print:hidden">
         {auction.transactionId ? (
           <VickreyReceiptPrintButton
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
-            mobilePrintHref={mobilePrintHref}
             onPrint={onPrintReceipt}
           />
         ) : (
@@ -4704,7 +4686,6 @@ function VickreyWinnerActionFooter({
         {auction.transactionId ? (
           <VickreyReceiptPrintButton
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-            mobilePrintHref={mobilePrintHref}
             onPrint={onPrintReceipt}
           />
         ) : (

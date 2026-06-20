@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { BadgeCheck, CircleDot, FileText, Landmark, UserRound } from "lucide-react";
+import { BadgeCheck, FileText, Landmark, UserRound } from "lucide-react";
 
 import { currency } from "@/lib/formatters/currency";
 
@@ -308,11 +308,20 @@ export function TransactionReceiptDocument({
                 <div
                   className={`receipt-status-pill mt-3 flex w-full items-center border ${
                     outputLayout
-                      ? "min-h-[1.45rem] gap-1.5 overflow-hidden rounded-xl border-[#c9d9ca] bg-[#edf5ef] px-2.5 py-1.5 text-[0.72rem] leading-none text-[#0b6a46]"
+                      ? "h-[1.35rem] gap-1.5 overflow-hidden rounded-[0.7rem] border-[#c9d9ca] bg-[#edf5ef] px-2 text-[0.68rem] leading-none text-[#0b6a46]"
                       : "gap-2 rounded-2xl border-[#dbe4da] bg-white px-3 py-2 text-sm text-[#49624d]"
                   }`}
                 >
-                  <CircleDot className={`shrink-0 ${outputLayout ? "size-3 text-[#0b6a46]" : "size-4 text-[#b88c1a]"}`} />
+                  <span
+                    aria-hidden="true"
+                    className={`receipt-status-pill-icon grid shrink-0 place-items-center rounded-full ${
+                      outputLayout
+                        ? "size-3.5 border border-[#0b6a46]/55 bg-white/40"
+                        : "size-4 border border-[#b88c1a]/55 bg-[#fff8e8]"
+                    }`}
+                  >
+                    <span className={`rounded-full ${outputLayout ? "size-1 bg-[#0b6a46]" : "size-1.5 bg-[#b88c1a]"}`} />
+                  </span>
                   <span className="receipt-status-pill-label min-w-0 whitespace-nowrap font-semibold leading-none">
                     {statusLabel}
                   </span>

@@ -200,7 +200,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
-  it("opens the dedicated receipt print route on mobile instead of printing the detail page", () => {
+  it("prints the prepared receipt directly on mobile without opening the visual receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -228,12 +228,9 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      expect(openSpy).toHaveBeenCalledWith(
-        "/transaksi/trx-fixed-1/nota?output=print",
-        "_blank"
-      );
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).not.toBeNull();
     } finally {
       document.body.classList.remove("transaction-receipt-printing");
       Object.defineProperty(window.navigator, "userAgent", {
@@ -329,7 +326,7 @@ describe("buyer transaction detail page", () => {
     printSpy.mockRestore();
   });
 
-  it("opens the dedicated receipt print route on mobile for a paid auction winner", () => {
+  it("prints the paid auction winner receipt directly on mobile without opening the visual receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -372,12 +369,9 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      expect(openSpy).toHaveBeenCalledWith(
-        "/transaksi/trx-vickrey-paid/nota?output=print",
-        "_blank"
-      );
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
