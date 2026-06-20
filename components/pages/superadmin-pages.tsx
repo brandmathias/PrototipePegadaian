@@ -2318,17 +2318,21 @@ function SuperAdminUnitDetailPopup({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain px-3 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:px-6">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/42 p-4 backdrop-blur-[2px] sm:p-6">
       <button
         aria-label="Tutup panel detail"
-        className="absolute inset-0 bg-[#052315]/34 backdrop-blur-[3px]"
+        className="absolute inset-0"
         onClick={() => onOpenChange(false)}
         type="button"
       />
+      <div
+        className="my-auto w-full max-w-xl py-8 sm:py-10"
+        data-safe-floating-header-frame="true"
+      >
       <section
         aria-label={title}
         aria-modal="true"
-        className="toast-enter modal-viewport relative z-[121] my-auto w-full max-w-xl overflow-visible rounded-[1.75rem] border border-[#dfe8e3] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
+        className="toast-enter relative z-[121] w-full overflow-visible rounded-[1.75rem] border border-[#dfe8e3] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
         data-header-layout="floating-centered"
         role="dialog"
       >
@@ -2359,6 +2363,7 @@ function SuperAdminUnitDetailPopup({
           </div>
         </div>
       </section>
+      </div>
     </div>,
     document.body,
   );

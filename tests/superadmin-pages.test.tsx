@@ -875,6 +875,8 @@ describe("superadmin pages", () => {
 
     const accountDialog = screen.getByRole("dialog", { name: "Detail Rekening Unit" });
     expect(accountDialog).toHaveAttribute("data-header-layout", "floating-centered");
+    expect(accountDialog.parentElement).toHaveAttribute("data-safe-floating-header-frame", "true");
+    expect(accountDialog.parentElement).toHaveClass("py-8", "sm:py-10");
     expect(
       within(accountDialog).getByRole("heading", { name: "Detail Rekening Unit" }),
     ).toHaveClass("text-center");
@@ -886,6 +888,8 @@ describe("superadmin pages", () => {
 
     const adminDialog = screen.getByRole("dialog", { name: "Detail Admin Unit" });
     expect(adminDialog).toHaveAttribute("data-header-layout", "floating-centered");
+    expect(adminDialog.parentElement).toHaveAttribute("data-safe-floating-header-frame", "true");
+    expect(adminDialog.parentElement).toHaveClass("py-8", "sm:py-10");
     expect(
       within(adminDialog).getByRole("heading", { name: "Detail Admin Unit" }),
     ).toHaveClass("text-center");

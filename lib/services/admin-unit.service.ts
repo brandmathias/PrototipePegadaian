@@ -1,4 +1,4 @@
-import { and, desc, eq, or, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
 import { hashPassword } from "@better-auth/utils/password";
 
 import { db } from "@/lib/db/client";
@@ -87,12 +87,12 @@ export async function listAdminUnits() {
     .from(users)
     .leftJoin(units, eq(units.id, users.unitId))
     .leftJoin(sessions, eq(sessions.userId, users.id))
-    .where(and(eq(users.role, "admin_unit"), eq(users.isActive, true)))
+    .where(and(eq(users.role, "admin_unit"), eq(users.isActive, true), isNotNull(users.unitId)))
     .groupBy(users.id, units.name, units.code)
     .orderBy(desc(users.createdAt));
 
   return rows
-    .filter((row) => !isHiddenOperationalUnit({ id: row.unitId, code: row.unitCode }))
+    .filter((row) => Boolean(row.unitId && row.unitName) && !isHiddenOperationalUnit({ id: row.unitId, code: row.unitCode }))
     .map((row) => ({
       id: row.id,
       name: row.name,

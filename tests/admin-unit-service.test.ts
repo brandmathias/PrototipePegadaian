@@ -19,6 +19,7 @@ vi.mock("@/lib/db/client", () => ({
 
 import {
   deactivateAdminUnit,
+  listAdminUnits,
   releaseInactiveAdminIdentityConflicts,
 } from "@/lib/services/admin-unit.service";
 
@@ -110,6 +111,65 @@ describe("admin unit identity cleanup", () => {
         phoneNumber: null,
         unitId: null,
         isActive: false,
+      }),
+    ]);
+  });
+
+  it("keeps active admin feed limited to admins attached to real units", async () => {
+    const rows = [
+      {
+        id: "admin-ranotana",
+        name: "Admin Unit Ranotana",
+        email: "admin.unit.ranotana@pegadaian.co.id",
+        phoneNumber: "081200001234",
+        isActive: true,
+        unitId: "unit-ranotana",
+        unitName: "UPC Ranotana",
+        unitCode: "UPC-RNT",
+        lastLogin: null,
+      },
+      {
+        id: "admin-test",
+        name: "Admin Unit Test",
+        email: "admin.unit.1776893226@example.com",
+        phoneNumber: null,
+        isActive: true,
+        unitId: null,
+        unitName: null,
+        unitCode: null,
+        lastLogin: null,
+      },
+      {
+        id: "admin-stale",
+        name: "Admin Unit Tanpa Unit",
+        email: "admin.unit.stale@example.com",
+        phoneNumber: null,
+        isActive: true,
+        unitId: "unit-missing",
+        unitName: null,
+        unitCode: null,
+        lastLogin: null,
+      },
+    ];
+    const chain = {
+      from: vi.fn(),
+      groupBy: vi.fn(),
+      leftJoin: vi.fn(),
+      orderBy: vi.fn().mockResolvedValue(rows),
+      where: vi.fn(),
+    };
+
+    chain.from.mockReturnValue(chain);
+    chain.leftJoin.mockReturnValue(chain);
+    chain.where.mockReturnValue(chain);
+    chain.groupBy.mockReturnValue(chain);
+    mocks.db.select.mockReturnValueOnce(chain);
+
+    await expect(listAdminUnits()).resolves.toEqual([
+      expect.objectContaining({
+        id: "admin-ranotana",
+        name: "Admin Unit Ranotana",
+        unit: "UPC Ranotana",
       }),
     ]);
   });
