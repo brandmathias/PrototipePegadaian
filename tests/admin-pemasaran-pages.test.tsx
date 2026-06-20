@@ -1269,6 +1269,17 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText(/lunas & diserahkan/i)).toBeInTheDocument();
     expect(screen.getByText(/detail aset lelang \(arsip\)/i)).toBeInTheDocument();
+    const archivedAuctionStatus = screen.getByText("Selesai & Diarsipkan");
+    expect(archivedAuctionStatus).toHaveClass(
+      "max-w-full",
+      "min-w-0",
+      "gap-1",
+      "px-2",
+      "text-[0.52rem]"
+    );
+    expect(archivedAuctionStatus).not.toHaveClass("2xl:text-[0.64rem]");
+    expect(archivedAuctionStatus.querySelector("svg")).toHaveClass("size-3", "shrink-0");
+    expect(archivedAuctionStatus.parentElement).toHaveClass("min-w-0", "overflow-hidden");
     expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
     expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();

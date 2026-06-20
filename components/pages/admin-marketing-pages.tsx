@@ -3261,10 +3261,10 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
 
-        <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
-          <span className="mt-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2.5 py-1 text-[0.6rem] font-black uppercase text-[#006747] 2xl:text-[0.64rem]">
-            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3.5" />
+          <span className="mt-2 inline-flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 text-[0.52rem] font-black uppercase leading-none text-[#006747]">
+            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3 shrink-0" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
             {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
