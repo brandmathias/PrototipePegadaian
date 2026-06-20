@@ -126,7 +126,9 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByRole("button", { name: /level 3/i })).toBeInTheDocument();
     expect(screen.getByText(/insiden 7 hari/i)).toBeInTheDocument();
     expect(screen.getByText("Tingkat Pelanggaran")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /detail/i })).toHaveLength(10);
+    const detailLinks = screen.getAllByRole("link", { name: /lihat detail/i });
+    expect(detailLinks).toHaveLength(10);
+    expect(detailLinks[0]).toHaveClass("hover:bg-[#006747]", "hover:text-white");
     expect(
       screen.queryByRole("link", { name: /perpanjang/i }),
     ).not.toBeInTheDocument();

@@ -1522,7 +1522,8 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
             {auction.lot}
           </h3>
           <p className="mt-1 text-sm font-semibold text-black/52 dark:text-slate-300/68">
-            {auction.category || "Kategori belum diisi"} - {auction.condition || "Kondisi belum diisi"}
+            {auction.category ? humanize(auction.category) : "Kategori belum diisi"} -{" "}
+            {auction.condition ? humanize(auction.condition) : "Kondisi belum diisi"}
           </p>
         </div>
 

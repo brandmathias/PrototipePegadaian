@@ -650,10 +650,12 @@ describe("superadmin pages", () => {
     expect(
       screen.queryByRole("columnheader", { name: "Pelanggaran Aktif" }),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+    const monitoringDetailLink = screen.getAllByRole("link", { name: /lihat detail/i })[0];
+    expect(monitoringDetailLink).toHaveAttribute(
       "href",
       "/superadmin/unit/unit-1",
     );
+    expect(monitoringDetailLink).toHaveClass("hover:bg-[#006747]", "hover:text-white");
     expect(screen.queryByText("Kelola Rekening")).not.toBeInTheDocument();
     expect(screen.queryByText(/risk heat indicator/i)).not.toBeInTheDocument();
   }, 10000);
@@ -1268,6 +1270,10 @@ describe("superadmin pages", () => {
         content.includes("Sisa waktu 1 menit 5 detik"),
       ),
     ).toHaveLength(2);
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
+      "hover:bg-[#006747]",
+      "hover:text-white"
+    );
 
     act(() => {
       vi.advanceTimersByTime(1000);

@@ -94,6 +94,7 @@ import {
 } from "@/components/superadmin/unit-form";
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
+import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -6514,13 +6515,9 @@ export function SuperAdminMonitoringPage({
                           {formatDashboardCount(row.followUpItems)}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Link
-                            className="interactive-tap inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface-lowest px-4 text-sm font-semibold text-primary transition-[transform,background-color,border-color,color,opacity,box-shadow] duration-200 ease-out hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          <DetailActionLink
                             href={`/superadmin/unit/${row.id}`}
-                          >
-                            <Eye className="size-4" />
-                            Detail
-                          </Link>
+                          />
                         </td>
                       </tr>
                     ))}
@@ -6830,12 +6827,9 @@ export function SuperAdminBlacklistPage({
                     </div>
 
                     <div className="flex flex-wrap justify-start gap-3 lg:justify-end">
-                      <Link
-                        className="text-sm font-black text-[#005f3e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#003d27] active:scale-[0.98]"
+                      <DetailActionLink
                         href={`/superadmin/blacklist/detail/${item.userId}`}
-                      >
-                        Detail
-                      </Link>
+                      />
                     </div>
                   </article>
                 );

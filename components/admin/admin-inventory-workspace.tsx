@@ -5,7 +5,6 @@ import Link from "next/link";
 import { startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUp,
   CalendarClock,
   CarFront,
@@ -37,6 +36,7 @@ import {
 
 import { AdminPaginationFooter, useAdminPagination } from "@/components/admin/admin-pagination";
 import { AdminSelect } from "@/components/admin/admin-select";
+import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { Input } from "@/components/ui/input";
 import {
   isAdminInventoryDueSoon,
@@ -379,13 +379,9 @@ function InventoryHistoryList({
               </div>
 
               <div className="flex justify-start lg:justify-end">
-                <Link
-                  className="group inline-flex h-9 items-center gap-2 rounded-xl border border-[#d8e7de] bg-white px-3 text-[0.74rem] font-black text-[#0a6a49] shadow-[0_14px_26px_-24px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:bg-[#f4faf6]"
+                <DetailActionLink
                   href={`/admin/barang/${entry.barangId}`}
-                >
-                  Detail
-                  <ArrowRight className="size-4 transition duration-500 group-hover:translate-x-0.5" />
-                </Link>
+                />
               </div>
             </div>
           );
@@ -841,12 +837,10 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                     </span>
                   </td>
                   <td className="px-3 py-3.5 text-right align-middle">
-                    <Link
-                      className="inline-flex h-8 items-center justify-center whitespace-nowrap rounded-xl border border-black/10 bg-white px-3 text-[0.7rem] font-bold text-[#0a6a49] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/25 hover:bg-[#eef7f0] xl:text-[0.74rem]"
+                    <DetailActionLink
+                      className="min-h-8 text-[0.7rem] xl:text-[0.74rem]"
                       href={`/admin/barang/${item.id}`}
-                    >
-                      Lihat Detail
-                    </Link>
+                    />
                   </td>
                 </tr>
                 );

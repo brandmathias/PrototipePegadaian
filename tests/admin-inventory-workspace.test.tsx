@@ -38,6 +38,9 @@ describe("AdminInventoryWorkspace", () => {
   it("keeps process status out of the inventory table", () => {
     render(<AdminInventoryWorkspace items={Array.from({ length: 3 }, (_, index) => makeItem(index + 1))} />);
 
+    const detailLink = screen.getAllByRole("link", { name: /lihat detail/i })[0];
+    expect(detailLink).toHaveAttribute("href", "/admin/barang/barang-1");
+    expect(detailLink).toHaveClass("hover:bg-[#006747]", "hover:text-white");
     expect(screen.queryByText("Semua Status")).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: /status/i })).not.toBeInTheDocument();
     expect(screen.queryByText("JAMINAN")).not.toBeInTheDocument();
@@ -345,6 +348,10 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(screen.queryByText("Aktor Internal")).not.toBeInTheDocument();
     expect(screen.queryByText("Operator Arsip")).not.toBeInTheDocument();
     expect(screen.getByText("31 Mei 2026, 09:12:33 WIB")).not.toHaveClass("font-mono");
+    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
+      "hover:bg-[#006747]",
+      "hover:text-white"
+    );
   });
 
   it("prepares a same-page printable audit report before opening native print preview", async () => {

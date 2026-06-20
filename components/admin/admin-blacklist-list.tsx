@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   startTransition,
   useDeferredValue,
@@ -9,7 +8,6 @@ import {
 } from "react";
 import {
   CalendarClock,
-  Eye,
   Gavel,
   Search,
   SearchX,
@@ -22,6 +20,7 @@ import {
   AdminPaginationFooter,
   useAdminPagination,
 } from "@/components/admin/admin-pagination";
+import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -561,13 +560,9 @@ export function AdminBlacklistList({
                   </div>
 
                   <div className="flex flex-wrap justify-start gap-3 lg:justify-end">
-                    <Link
-                      className="inline-flex items-center gap-2 text-sm font-black text-[#005f3e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[#003d27] active:scale-[0.98]"
+                    <DetailActionLink
                       href={`/admin/blacklist/${entry.userId}`}
-                    >
-                      <Eye className="size-4" />
-                      Detail
-                    </Link>
+                    />
                   </div>
                 </article>
               );

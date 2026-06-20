@@ -109,10 +109,12 @@ describe("SuperAdminAccountWorkspace", () => {
 
     expect(screen.getByRole("heading", { name: /manajemen superadmin/i })).toBeInTheDocument();
     expect(screen.getAllByText(/owner nasional/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
+    const detailLink = screen.getAllByRole("link", { name: /lihat detail/i })[0];
+    expect(detailLink).toHaveAttribute(
       "href",
       "/superadmin/manajemen-superadmin/owner-1"
     );
+    expect(detailLink).toHaveClass("hover:bg-[#006747]", "hover:text-white");
 
     fireEvent.click(screen.getByRole("button", { name: /tambah akses/i }));
 

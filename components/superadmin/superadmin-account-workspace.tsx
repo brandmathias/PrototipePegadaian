@@ -7,7 +7,6 @@ import {
   Ban,
   CalendarDays,
   Crown,
-  Eye,
   History,
   KeyRound,
   LoaderCircle,
@@ -27,6 +26,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminSelect } from "@/components/admin/admin-select";
+import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -773,16 +773,10 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
                   </div>
 
                   <div className="flex justify-start lg:justify-end">
-                    <Link
-                      className={cn(
-                        buttonVariants({ variant: "secondary" }),
-                        "min-h-10 w-full rounded-[0.95rem] text-[0.74rem] sm:w-auto"
-                      )}
+                    <DetailActionLink
+                      className="min-h-10 w-full sm:w-auto"
                       href={`/superadmin/manajemen-superadmin/${account.id}`}
-                    >
-                      <Eye className="size-4" />
-                      Lihat Detail
-                    </Link>
+                    />
                   </div>
                 </article>
               ))}

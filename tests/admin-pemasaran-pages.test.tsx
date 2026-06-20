@@ -170,6 +170,8 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
+    expect(screen.getAllByText("Perhiasan - Sangat Baik").length).toBeGreaterThan(0);
+    expect(screen.queryByText("perhiasan - sangat baik")).not.toBeInTheDocument();
     expect(screen.getByText(/pemenang gagal bayar 24 jam \/ tanpa peserta/i)).toBeInTheDocument();
     expect(screen.getByText("2 Produk")).toBeInTheDocument();
     expect(screen.getByText("Lelang Gagal")).toBeInTheDocument();
