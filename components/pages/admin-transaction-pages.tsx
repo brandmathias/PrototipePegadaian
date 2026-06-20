@@ -401,6 +401,7 @@ function AdminTransactionInlineReceiptPrint({
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
       label={label}
+      mobilePrintHref={`/admin/transaksi/${transaction.id}/nota?output=print`}
       rootId={getTransactionReceiptPrintRootId(transaction)}
     >
       <TransactionReceiptDocument

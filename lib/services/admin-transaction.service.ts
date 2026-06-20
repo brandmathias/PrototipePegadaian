@@ -36,7 +36,7 @@ function primaryBarangPhotoUrl() {
   )`;
 }
 
-async function getTransactionForUnit(unitId: string, transactionId: string) {
+async function getTransactionJoin(transactionId: string, unitId?: string) {
   const [row] = await db
     .select({
       transaction: transaksi,
@@ -56,11 +56,27 @@ async function getTransactionForUnit(unitId: string, transactionId: string) {
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
     .leftJoin(handoverUploader, eq(handoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
-    .where(and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)))
+    .where(unitId ? and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)) : eq(transaksi.id, transactionId))
     .limit(1);
+
+  return row ?? null;
+}
+
+async function getTransactionForUnit(unitId: string, transactionId: string) {
+  const row = await getTransactionJoin(transactionId, unitId);
 
   if (!row) {
     throw new Error("Transaksi tidak ditemukan di unit Anda.");
+  }
+
+  return row;
+}
+
+async function getTransactionForSuperAdmin(transactionId: string) {
+  const row = await getTransactionJoin(transactionId);
+
+  if (!row) {
+    throw new Error("Transaksi tidak ditemukan.");
   }
 
   return row;
@@ -132,6 +148,10 @@ export async function listAdminTransactions(unitId: string) {
 
 export async function getAdminTransactionById(unitId: string, transactionId: string) {
   return serializeTransactionJoin(await getTransactionForUnit(unitId, transactionId));
+}
+
+export async function getSuperAdminTransactionById(transactionId: string) {
+  return serializeTransactionJoin(await getTransactionForSuperAdmin(transactionId));
 }
 
 export async function uploadAdminTransactionHandoverProof(

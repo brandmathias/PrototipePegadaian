@@ -497,6 +497,63 @@ describe("admin pemasaran pages", () => {
     printSpy.mockRestore();
   });
 
+  it("opens the dedicated admin receipt route on mobile for verified harga tetap payments", () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
+    });
+
+    try {
+      render(
+        <AdminFixedPriceDetailPage
+          auction={{
+            id: "pm-fixed-paid",
+            lotId: "barang-fixed-paid",
+            lot: "Cincin Emas 3",
+            code: "BRG-02393124",
+            category: "perhiasan",
+            condition: "baik",
+            status: "AKTIF",
+            mode: "FIXED_PRICE",
+            startsAt: "2026-05-26T12:49:00.000Z",
+            price: 15000000,
+            transactionId: "trx-fixed-paid",
+            transactionStatus: "LUNAS",
+            buyerName: "Buyer Satu",
+            buyerEmail: "buyer1@mail.com",
+            buyerPhone: "6281200001001",
+            paymentMethod: "TRANSFER_BANK",
+            reference: "FP-02393124",
+            soldAt: "2026-06-03T00:39:00.000Z",
+            unitName: "UPC Ranotana",
+            unitAddress: "Jl. Sam Ratulangi",
+            media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+            primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+            note: "Pembayaran sudah diverifikasi admin unit."
+          }}
+        />
+      );
+
+      fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+
+      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-fixed-paid/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("fixed-price-receipt-print-root-trx-fixed-paid")).toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      openSpy.mockRestore();
+      printSpy.mockRestore();
+    }
+  });
+
   it("renders harga tetap detail as the compact marketing inventory workspace", () => {
     render(
       <AdminFixedPriceDetailPage
@@ -1196,6 +1253,71 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /menunggu buyer selesai/i })).toBeDisabled();
 
     printSpy.mockRestore();
+  });
+
+  it("opens the dedicated admin receipt route on mobile for verified vickrey winners", () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
+    });
+
+    try {
+      render(
+        <AdminVickreyAuctionDetailPage
+          auction={{
+            id: "pm-vickrey-paid",
+            lotId: "barang-paid",
+            lot: "22K Gold Bangle",
+            code: "LGL-8829-XJ",
+            category: "emas",
+            condition: "sangat baik",
+            unitName: "UPC Ranotana",
+            unitAddress: "Jl. Sam Ratulangi",
+            status: "SELESAI",
+            mode: "VICKREY_AUCTION",
+            ending: "31 Mei 2026",
+            endingAt: "2026-05-31T11:17:48.000Z",
+            participants: 5,
+            basePrice: 65000000,
+            appraisalValue: 85000000,
+            finalPrice: 78000000,
+            winner: "Budi Santoso",
+            visibility: "HASIL_DIBUKA",
+            transactionId: "trx-vickrey-paid",
+            transactionStatus: "LUNAS",
+            buyerName: "Budi Santoso",
+            buyerEmail: "budi.santoso@email.com",
+            buyerPhone: "0812-3456-7890",
+            paymentMethod: "BAYAR_LANGSUNG",
+            reference: "PGD1029384",
+            proofUrl: null,
+            soldAt: "2026-06-01T12:25:00.000Z",
+            paymentDeadline: "2026-06-02T23:35:00.000Z",
+            media: [{ id: "asset-paid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
+            primaryMedia: { id: "asset-paid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" },
+            bids: []
+          }}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+
+      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-vickrey-paid/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("vickrey-receipt-print-root-trx-vickrey-paid")).toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      openSpy.mockRestore();
+      printSpy.mockRestore();
+    }
   });
 
   it("renders the completed vickrey winner page as a final fulfillment archive with nota action", async () => {

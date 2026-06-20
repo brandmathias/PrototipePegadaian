@@ -17,7 +17,7 @@ type TransactionReceiptInlinePrintProps = {
   rootId: string;
 };
 
-function shouldPrintImmediatelyOnMobile() {
+export function shouldPrintImmediatelyOnMobile() {
   if (typeof navigator === "undefined") {
     return false;
   }
@@ -40,7 +40,7 @@ function disableReceiptPrintMode() {
   document.body.classList.remove(RECEIPT_PRINTING_BODY_CLASS);
 }
 
-function openDedicatedMobilePrintView(href: string) {
+export function openDedicatedMobilePrintView(href: string) {
   const printWindow = window.open(href, "_blank");
 
   if (printWindow) {

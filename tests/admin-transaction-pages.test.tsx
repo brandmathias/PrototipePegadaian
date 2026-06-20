@@ -252,4 +252,39 @@ describe("admin transaction pages", () => {
 
     printSpy.mockRestore();
   });
+
+  it("opens the admin receipt print route on mobile instead of printing the detail page", async () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
+    });
+
+    try {
+      render(
+        <AdminTransactionDetailWorkspacePage
+          backHref="/admin/transaksi/riwayat"
+          backLabel="Kembali ke riwayat"
+          transaction={transactions[1]}
+        />
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+
+      expect(openSpy).toHaveBeenCalledWith("/admin/transaksi/trx-history/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("transaction-receipt-print-root-trx-history")).toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      openSpy.mockRestore();
+      printSpy.mockRestore();
+    }
+  });
 });

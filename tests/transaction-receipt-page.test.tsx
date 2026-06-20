@@ -115,8 +115,17 @@ describe("transaction receipt page", () => {
 
     expect(receipt).not.toBeNull();
     expect(receipt).toHaveStyle({ width: "210mm", minHeight: "297mm" });
-    expect(receipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
-    expect(receipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
+    const headerGrid = receipt!.querySelector(".receipt-output-header-grid");
+    const mainGrid = receipt!.querySelector(".receipt-output-main-grid");
+    const itemGrid = receipt!.querySelector(".receipt-output-item-grid");
+    const buyerGrid = receipt!.querySelector(".receipt-output-buyer-grid");
+    const summaryGrid = receipt!.querySelector(".receipt-output-summary-grid");
+
+    expect(headerGrid).toHaveClass("flex-row", "items-center", "justify-between");
+    expect(mainGrid).toHaveClass("grid-cols-[1.38fr_0.86fr]", "gap-3");
+    expect(itemGrid).toHaveClass("grid-cols-[3.75rem_minmax(0,1fr)_7.2rem]", "items-center");
+    expect(buyerGrid).toHaveClass("grid-cols-2");
+    expect(summaryGrid).toHaveClass("grid-cols-[1.2fr_0.8fr]", "gap-3");
     expect(receipt!).toHaveTextContent("Lelang");
     expect(receipt!).not.toHaveTextContent("Lelang Tertutup");
     expect(receipt!).toHaveTextContent("Langsung di unit");

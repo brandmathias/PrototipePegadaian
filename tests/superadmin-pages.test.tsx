@@ -1309,6 +1309,91 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
+  it("opens the superadmin receipt print route on mobile instead of printing the monitoring page", () => {
+    const originalUserAgent = window.navigator.userAgent;
+    const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    Object.defineProperty(window.navigator, "userAgent", {
+      configurable: true,
+      value:
+        "Mozilla/5.0 (Linux; Android 14; SM-A546E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"
+    });
+
+    try {
+      render(
+        <SuperAdminUnitBarangDetailPage
+          detail={
+            {
+              unit: {
+                id: "unit-1",
+                code: "CP-MND-13",
+                name: "UPC Ranotana",
+                address: "Jl. Sam Ratulangi",
+                status: "Aktif",
+              },
+              item: {
+                id: "barang-3",
+                code: "BRG-003",
+                name: "Cincin Emas Ranotana",
+                category: "emas",
+                condition: "baik",
+                status: "terjual",
+                media: [{ id: "media-1", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+                specifications: {},
+              },
+              operationalStatus: "Status Terjual",
+              operationalTone: "emerald",
+              marketing: {
+                id: "pemasaran-superadmin-nota",
+                lotId: "barang-3",
+                lot: "Cincin Emas Ranotana",
+                code: "BRG-003",
+                status: "SELESAI",
+                mode: "VICKREY_AUCTION",
+                unitName: "UPC Ranotana",
+                unitAddress: "Jl. Sam Ratulangi",
+                participants: 3,
+                revealedBidCount: 3,
+                pendingRevealCount: 0,
+                basePrice: 18_000_000,
+                finalPrice: 21_000_000,
+                winner: "Buyer Ranotana",
+                buyerName: "Buyer Ranotana",
+                buyerEmail: "buyer.ranotana@example.com",
+                buyerPhone: "081211112222",
+                transactionId: "trx-superadmin-nota",
+                transactionStatus: "SELESAI",
+                paymentMethod: "TRANSFER_BANK",
+                reference: "PEG-20260530-003",
+                soldAt: "2026-05-31T08:30:00+08:00",
+                paymentDeadline: "2026-05-31T10:10:00+08:00",
+                visibility: "HASIL_DIBUKA",
+                media: [{ id: "media-1", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
+                primaryMedia: { id: "media-1", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
+                bids: [],
+              },
+              history: [],
+            } as any
+          }
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Cetak Nota" }));
+
+      expect(openSpy).toHaveBeenCalledWith("/superadmin/transaksi/trx-superadmin-nota/nota?output=print", "_blank");
+      expect(printSpy).not.toHaveBeenCalled();
+      expect(document.getElementById("superadmin-vickrey-receipt-print-root-trx-superadmin-nota")).toBeNull();
+    } finally {
+      Object.defineProperty(window.navigator, "userAgent", {
+        configurable: true,
+        value: originalUserAgent
+      });
+      openSpy.mockRestore();
+      printSpy.mockRestore();
+    }
+  });
+
   it("updates blacklist countdown on superadmin blacklist page", () => {
     render(
       <SuperAdminBlacklistPage
