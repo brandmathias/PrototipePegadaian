@@ -855,6 +855,25 @@
       max-width: 210mm !important;
     }
 
+    body.transaction-receipt-printing {
+      overflow: visible !important;
+      width: 210mm !important;
+      min-height: 297mm !important;
+    }
+
+    body.transaction-receipt-printing > :not(.transaction-receipt-print-target) {
+      display: none !important;
+    }
+
+    body.transaction-receipt-printing > .transaction-receipt-print-target {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 210mm !important;
+      max-width: 210mm !important;
+      min-height: 297mm !important;
+    }
+
     :where(.vickrey-receipt-print-document, .transaction-receipt-print-document) .receipt-output-sheet {
       width: 210mm !important;
       height: 297mm !important;

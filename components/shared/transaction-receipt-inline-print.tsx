@@ -4,6 +4,9 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { Printer } from "lucide-react";
 
+const RECEIPT_PRINTING_BODY_CLASS = "transaction-receipt-printing";
+const RECEIPT_PRINT_TARGET_CLASS = "transaction-receipt-print-target";
+
 type TransactionReceiptInlinePrintProps = {
   buttonClassName: string;
   children: ReactNode;
@@ -26,6 +29,14 @@ function shouldPrintImmediatelyOnMobile() {
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(userAgent) ||
     (platform === "MacIntel" && maxTouchPoints > 1)
   );
+}
+
+function enableReceiptPrintMode() {
+  document.body.classList.add(RECEIPT_PRINTING_BODY_CLASS);
+}
+
+function disableReceiptPrintMode() {
+  document.body.classList.remove(RECEIPT_PRINTING_BODY_CLASS);
 }
 
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
@@ -81,6 +92,11 @@ export function TransactionReceiptInlinePrint({
   const [isMounted, setIsMounted] = useState(false);
   const [isPrintReady, setIsPrintReady] = useState(false);
 
+  const clearPrintSheet = useCallback(() => {
+    disableReceiptPrintMode();
+    setIsPrintReady(false);
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -90,14 +106,18 @@ export function TransactionReceiptInlinePrint({
       return;
     }
 
-    const clearPrintSheet = () => setIsPrintReady(false);
-
     window.addEventListener("afterprint", clearPrintSheet);
 
-    return () => window.removeEventListener("afterprint", clearPrintSheet);
-  }, [isPrintReady]);
+    return () => {
+      window.removeEventListener("afterprint", clearPrintSheet);
+      disableReceiptPrintMode();
+    };
+  }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
+    enableReceiptPrintMode();
+    window.addEventListener("afterprint", clearPrintSheet, { once: true });
+
     flushSync(() => setIsPrintReady(true));
 
     if (shouldPrintImmediatelyOnMobile()) {
@@ -114,7 +134,7 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [rootId]);
+  }, [clearPrintSheet, rootId]);
 
   return (
     <>
@@ -125,7 +145,7 @@ export function TransactionReceiptInlinePrint({
       {isMounted && isPrintReady
         ? createPortal(
             <div
-              className={documentClassName}
+              className={`${documentClassName} ${RECEIPT_PRINT_TARGET_CLASS}`}
               data-testid={documentTestId}
               id={rootId}
             >

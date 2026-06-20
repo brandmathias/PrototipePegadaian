@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -233,8 +233,14 @@ describe("buyer transaction detail page", () => {
 
       expect(receiptPrintRoot).not.toBeNull();
       expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-document", "hidden", "print:block");
+      expect(document.body).toHaveClass("transaction-receipt-printing");
+      expect(receiptPrintRoot!).toHaveClass("transaction-receipt-print-target");
       expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
     } finally {
+      act(() => {
+        window.dispatchEvent(new Event("afterprint"));
+      });
+      document.body.classList.remove("transaction-receipt-printing");
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,
         value: originalUserAgent
