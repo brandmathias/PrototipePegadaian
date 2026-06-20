@@ -1309,7 +1309,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
-  it("opens the sterile superadmin receipt print route on mobile", async () => {
+  it("prints the prepared superadmin receipt in place on mobile without opening the receipt route", async () => {
     vi.useRealTimers();
 
     const originalUserAgent = window.navigator.userAgent;
@@ -1383,9 +1383,12 @@ describe("superadmin pages", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Cetak Nota" }));
 
-      expect(openSpy).toHaveBeenCalledWith("/superadmin/transaksi/trx-superadmin-nota/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("superadmin-vickrey-receipt-print-root-trx-superadmin-nota")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      const receiptPrintRoot = document.getElementById("superadmin-vickrey-receipt-print-root-trx-superadmin-nota");
+      expect(receiptPrintRoot).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

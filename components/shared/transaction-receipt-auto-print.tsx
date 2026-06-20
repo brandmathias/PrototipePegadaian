@@ -85,9 +85,6 @@ export function TransactionReceiptAutoPrint({
     }
 
     let cancelled = false;
-    let objectUrl: string | null = null;
-    let previewFrame: HTMLIFrameElement | null = null;
-    let previewWindow: Window | null = null;
 
     const run = async () => {
       const root = document.getElementById("transaction-receipt-document");
@@ -99,6 +96,17 @@ export function TransactionReceiptAutoPrint({
       await waitForReceiptAssets(root);
 
       if (cancelled) {
+        return;
+      }
+
+      if (mode === "print") {
+        window.setTimeout(() => {
+          if (cancelled) {
+            return;
+          }
+
+          window.print();
+        }, 120);
         return;
       }
 
@@ -115,51 +123,13 @@ export function TransactionReceiptAutoPrint({
         window.setTimeout(() => {
           window.close();
         }, 120);
-        return;
       }
-
-      const blob = pdf.output("blob");
-      objectUrl = window.URL.createObjectURL(blob);
-      previewWindow = window.open(objectUrl, "_blank");
-
-      if (previewWindow) {
-        window.setTimeout(() => {
-          try {
-            previewWindow?.focus();
-            previewWindow?.print();
-          } catch {
-            // Fall back to the iframe flow below when the popup is not ready yet.
-          }
-        }, 350);
-        return;
-      }
-
-      previewFrame = document.createElement("iframe");
-      previewFrame.style.position = "fixed";
-      previewFrame.style.right = "0";
-      previewFrame.style.bottom = "0";
-      previewFrame.style.width = "0";
-      previewFrame.style.height = "0";
-      previewFrame.style.border = "0";
-      previewFrame.src = objectUrl;
-      previewFrame.onload = () => {
-        window.setTimeout(() => {
-          previewFrame?.contentWindow?.focus();
-          previewFrame?.contentWindow?.print();
-        }, 250);
-      };
-      document.body.appendChild(previewFrame);
     };
 
     void run();
 
     return () => {
       cancelled = true;
-      previewFrame?.remove();
-      previewWindow?.close();
-      if (objectUrl) {
-        window.URL.revokeObjectURL(objectUrl);
-      }
     };
   }, [fileName, isAutoOutput, mode]);
 

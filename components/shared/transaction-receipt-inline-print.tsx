@@ -13,7 +13,6 @@ type TransactionReceiptInlinePrintProps = {
   documentClassName?: string;
   documentTestId?: string;
   label?: string;
-  mobilePrintHref?: string;
   rootId: string;
 };
 
@@ -67,44 +66,12 @@ async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
   await new Promise((resolve) => window.setTimeout(resolve, 80));
 }
 
-export function shouldUseDedicatedMobilePrintRoute() {
-  if (typeof navigator === "undefined") {
-    return false;
-  }
-
-  const userAgent = navigator.userAgent || "";
-  const platform = navigator.platform || "";
-  const maxTouchPoints = navigator.maxTouchPoints || 0;
-
-  return (
-    /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(userAgent) ||
-    (platform === "MacIntel" && maxTouchPoints > 1)
-  );
-}
-
-export function openDedicatedMobilePrintView(href: string) {
-  const printWindow = window.open(href, "_blank");
-
-  if (printWindow) {
-    try {
-      printWindow.opener = null;
-      printWindow.focus?.();
-    } catch {
-      // Some mobile browsers expose a restricted WindowProxy after opening a new tab.
-    }
-    return;
-  }
-
-  window.location.assign(href);
-}
-
 export function TransactionReceiptInlinePrint({
   buttonClassName,
   children,
   documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
   documentTestId = "transaction-receipt-print-document",
   label = "Cetak Nota",
-  mobilePrintHref,
   rootId
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
@@ -133,11 +100,6 @@ export function TransactionReceiptInlinePrint({
   }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
-    if (mobilePrintHref && shouldUseDedicatedMobilePrintRoute()) {
-      openDedicatedMobilePrintView(mobilePrintHref);
-      return;
-    }
-
     enableReceiptPrintMode();
     window.addEventListener("afterprint", clearPrintSheet, { once: true });
 
@@ -152,7 +114,7 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [clearPrintSheet, mobilePrintHref, rootId]);
+  }, [clearPrintSheet, rootId]);
 
   return (
     <>
@@ -160,21 +122,43 @@ export function TransactionReceiptInlinePrint({
         <Printer className="size-4" />
         {label}
       </button>
-      {isMounted && isPrintReady
+      {isMounted
         ? createPortal(
             <div
+              aria-hidden={!isPrintReady}
               className={`${documentClassName} ${RECEIPT_PRINT_TARGET_CLASS}`}
               data-testid={documentTestId}
+              hidden={!isPrintReady}
               id={rootId}
             >
               <style>{`
+                @media screen {
+                  #${rootId}.${RECEIPT_PRINT_TARGET_CLASS} {
+                    display: block !important;
+                    position: fixed !important;
+                    inset: auto auto auto -10000px !important;
+                    width: 210mm !important;
+                    max-width: 210mm !important;
+                    min-height: 297mm !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    overflow: hidden !important;
+                    pointer-events: none !important;
+                    opacity: 0 !important;
+                    visibility: hidden !important;
+                  }
+                }
+
                 @media print {
-                  body > :not(#${rootId}) {
+                  body.${RECEIPT_PRINTING_BODY_CLASS} > :not(#${rootId}) {
                     display: none !important;
                   }
 
-                  #${rootId} {
+                  body.${RECEIPT_PRINTING_BODY_CLASS} #${rootId} {
                     display: block !important;
+                    position: static !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
                     margin: 0 !important;
                     padding: 0 !important;
                     width: 210mm !important;
@@ -183,7 +167,7 @@ export function TransactionReceiptInlinePrint({
                   }
                 }
               `}</style>
-              {children}
+              {isPrintReady ? children : null}
             </div>,
             document.body
           )

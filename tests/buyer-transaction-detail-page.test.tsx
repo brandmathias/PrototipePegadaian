@@ -200,7 +200,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
-  it("opens the sterile receipt print route on mobile for verified fixed-price payments", async () => {
+  it("prints the prepared receipt in place on mobile without opening the receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -226,11 +226,18 @@ describe("buyer transaction detail page", () => {
         />
       );
 
+      const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-fixed-1-status");
+      expect(receiptPrintRoot).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector("style")?.textContent).toContain(
+        "body.transaction-receipt-printing > :not(#buyer-receipt-print-root-trx-fixed-1-status)"
+      );
+
       fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
 
-      expect(openSpy).toHaveBeenCalledWith("/transaksi/trx-fixed-1/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-fixed-1-status")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       document.body.classList.remove("transaction-receipt-printing");
       Object.defineProperty(window.navigator, "userAgent", {
@@ -326,7 +333,7 @@ describe("buyer transaction detail page", () => {
     printSpy.mockRestore();
   });
 
-  it("opens the sterile receipt print route on mobile for paid auction winners", async () => {
+  it("prints the paid auction winner receipt in place on mobile without opening the receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
@@ -369,9 +376,12 @@ describe("buyer transaction detail page", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
 
-      expect(openSpy).toHaveBeenCalledWith("/transaksi/trx-vickrey-paid/nota?output=print", "_blank");
-      expect(printSpy).not.toHaveBeenCalled();
-      expect(document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status")).toBeNull();
+      await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
+      expect(openSpy).not.toHaveBeenCalled();
+      const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-vickrey-paid-status");
+      expect(receiptPrintRoot).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-header-grid")).not.toBeNull();
+      expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {
       Object.defineProperty(window.navigator, "userAgent", {
         configurable: true,

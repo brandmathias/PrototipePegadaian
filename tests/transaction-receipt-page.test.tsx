@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { TransactionReceiptPage } from "@/components/pages/user-pages";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
@@ -62,7 +62,14 @@ const vickreyTransaction: BuyerTransaction = {
 
 describe("transaction receipt page", () => {
   it("prepares a sterile mobile auto-output stage before opening the print preview", () => {
-    render(<TransactionReceiptAutoPrint fileName="CASH-OCE8A1" mode="print" />);
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <>
+        <div id="transaction-receipt-document">Nota siap cetak</div>
+        <TransactionReceiptAutoPrint fileName="CASH-OCE8A1" mode="print" />
+      </>
+    );
 
     const marker = document.getElementById("transaction-receipt-auto-output");
     const style = document.getElementById("transaction-receipt-auto-output-style");
@@ -78,6 +85,10 @@ describe("transaction receipt page", () => {
     expect(cover).toBeInTheDocument();
     expect(cover).toHaveClass("fixed", "inset-0", "print:hidden");
     expect(cover).toHaveTextContent(/menyiapkan nota/i);
+
+    return waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1)).finally(() => {
+      printSpy.mockRestore();
+    });
   });
 
   it("renders an informative pickup note with buyer, unit, totals, and terms", () => {
@@ -148,9 +159,9 @@ describe("transaction receipt page", () => {
     expect(itemGrid).toHaveClass("grid-cols-[3.75rem_minmax(0,1fr)_7.2rem]", "items-center");
     expect(buyerGrid).toHaveClass("grid-cols-2");
     expect(summaryGrid).toHaveClass("grid-cols-[1.2fr_0.8fr]", "gap-3");
-    expect(statusPill).toHaveClass("h-[1.35rem]", "overflow-hidden", "rounded-[0.7rem]", "text-[0.68rem]", "leading-none");
+    expect(statusPill).toHaveClass("h-[1.45rem]", "overflow-hidden", "rounded-[0.72rem]", "text-[0.62rem]", "leading-none");
     expect(statusPill!.querySelector(".receipt-status-pill-icon")).not.toBeNull();
-    expect(statusLabel).toHaveClass("whitespace-nowrap", "font-semibold", "leading-none");
+    expect(statusLabel).toHaveClass("flex-1", "truncate", "whitespace-nowrap", "font-bold", "leading-none");
     expect(receipt!).toHaveTextContent("Lelang");
     expect(receipt!).not.toHaveTextContent("Lelang Tertutup");
     expect(receipt!).toHaveTextContent("Langsung di unit");
