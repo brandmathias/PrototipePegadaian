@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -21,8 +21,12 @@ describe("FixedPriceBuyButton", () => {
     refreshMock.mockReset();
   });
 
-  it("opens the fixed price payment proof workflow without creating a transaction", async () => {
-    const fetchMock = vi.fn();
+  it("creates a fixed price transaction and opens its payment detail", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ data: { id: "trx-fixed-1" } })
+    });
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
 
@@ -30,8 +34,19 @@ describe("FixedPriceBuyButton", () => {
 
     await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
 
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(replaceMock).toHaveBeenCalledWith("/katalog/lot-fixed-1/beli");
-    expect(refreshMock).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/user/beli/lot-fixed-1",
+        expect.objectContaining({
+          body: JSON.stringify({ paymentMethod: "transfer" }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST"
+        })
+      );
+    });
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-fixed-1");
+      expect(refreshMock).toHaveBeenCalledTimes(1);
+    });
   });
 });

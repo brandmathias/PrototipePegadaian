@@ -53,50 +53,43 @@ describe("PurchaseWorkflow", () => {
     refreshMock.mockReset();
   });
 
-  it("uploads payment proof before creating a harga tetap transaction", async () => {
+  it("creates a harga tetap transaction before opening the detail payment workflow", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { id: "trx-transfer-1", status: "BUKTI_DIUNGGAH" } })
+      json: async () => ({ data: { id: "trx-transfer-1", status: "MENUNGGU_PEMBAYARAN" } })
     });
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
-    const proofFile = new File(["proof"], "bukti-transfer.png", { type: "image/png" });
 
     renderPurchaseWorkflow();
 
     expect(screen.getByText(/lanjutkan ke detail pembayaran/i)).toBeInTheDocument();
     expect(screen.getAllByText(/transfer bank/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
-    expect(screen.getAllByText(/siap menerima bukti pembayaran/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/siap membuat transaksi/i).length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.getByText(/0123-4567-8901-234/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
+    expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
 
-    await user.upload(screen.getByLabelText(/file bukti pembayaran/i), proofFile);
-    await user.type(screen.getByPlaceholderText(/opsional/i), "BRI-2026-001");
-    await user.click(screen.getByRole("button", { name: /kirim bukti pembayaran/i }));
+    await user.click(screen.getByRole("button", { name: /lanjut ke detail pembayaran/i }));
 
     await waitFor(() => {
-      const request = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
-      const body = request?.body as FormData;
-
       expect(fetchMock).toHaveBeenCalledWith(
         "/api/user/beli/fixed-direct-1",
         expect.objectContaining({
+          body: JSON.stringify({ paymentMethod: "transfer" }),
+          headers: { "Content-Type": "application/json" },
           method: "POST"
         })
       );
-      expect(body).toBeInstanceOf(FormData);
-      expect(body.get("file")).toBe(proofFile);
-      expect(body.get("reference")).toBe("BRI-2026-001");
     });
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-transfer-1");
     });
   });
 
-  it("confirms before returning to harga tetap detail without creating a transaction", async () => {
+  it("confirms before returning to harga tetap detail before creating a transaction", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();

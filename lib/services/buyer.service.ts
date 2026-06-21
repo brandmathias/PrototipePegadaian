@@ -42,6 +42,7 @@ import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timez
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
+  "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung"
 ];
@@ -445,9 +446,7 @@ export async function listBuyerTransactions(userId: string, options?: BuyerReadO
   await refreshBuyerAuctionSettlementState(options);
 
   const rows = await getTransactionRows(userId);
-  return rows
-    .filter((row) => !(row.type === "fixed_price" && row.status === "menunggu_pembayaran"))
-    .map(serializeBuyerTransaction);
+  return rows.map(serializeBuyerTransaction);
 }
 
 export async function getBuyerTransactionById(userId: string, transactionId: string, options?: BuyerReadOptions) {
@@ -872,6 +871,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     throw new Error("Rekening tujuan unit belum tersedia untuk pembayaran transfer.");
   }
 
+  const hasProof = Boolean(payload.fileName);
   const [created] = await db
     .insert(transaksi)
     .values({
@@ -881,19 +881,21 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       type: "fixed_price",
       amount: String(amount),
       paymentMethod: payload.paymentMethod,
-      status: "bukti_diunggah",
-      proofUrl: payload.fileName,
+      status: hasProof ? "bukti_diunggah" : "menunggu_pembayaran",
+      proofUrl: payload.fileName ?? null,
       referenceNumber: payload.reference ?? null,
       paymentDeadline: null
     })
     .returning();
 
-  const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.item.unitId);
-  await notifyAdminUnitPaymentProofUploaded({
-    adminUserIds,
-    transactionId: created.id,
-    lotName: row.item.name
-  });
+  if (hasProof) {
+    const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.item.unitId);
+    await notifyAdminUnitPaymentProofUploaded({
+      adminUserIds,
+      transactionId: created.id,
+      lotName: row.item.name
+    });
+  }
 
   return serializeBuyerTransaction({
     ...created,
