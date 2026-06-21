@@ -2933,19 +2933,19 @@ function SuperAdminUnitInventorySection({
             </p>
             <label className="inline-flex items-center gap-2 text-xs font-bold text-[#536279]">
               Tampilkan
-              <UnitDetailSelect
+              <AdminSelect
                 ariaLabel="Jumlah barang per halaman"
-                label={String(pageSize)}
-                onChange={(value) =>
+                className="w-[6.25rem]"
+                onValueChange={(value) =>
                   setPageSize(Number(value) as (typeof unitDetailPageSizeOptions)[number])
                 }
                 options={unitDetailPageSizeOptions.map((option) => ({
                   label: String(option),
-                  value: String(option),
+                  value: option,
                 }))}
-                showActiveState={false}
-                value={String(pageSize)}
-                widthClass="w-[6.25rem]"
+                placement="top"
+                size="compact"
+                value={pageSize}
               />
             </label>
           </div>
@@ -5583,6 +5583,7 @@ export function SuperAdminManagementPage({
                       value: size,
                       label: String(size),
                     }))}
+                    placement="top"
                     size="compact"
                     value={pageSize}
                     onValueChange={(nextValue) => {

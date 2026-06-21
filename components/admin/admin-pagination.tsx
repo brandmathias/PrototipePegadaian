@@ -108,6 +108,7 @@ export function AdminPaginationFooter({
           className="min-w-[6.9rem]"
           id={`pagination-size-${itemLabel}`}
           options={ADMIN_PAGE_SIZE_OPTIONS.map((size) => ({ value: size, label: String(size) }))}
+          placement="top"
           size="compact"
           value={pageSize}
           onValueChange={(nextValue) => onPageSizeChange(Number(nextValue))}

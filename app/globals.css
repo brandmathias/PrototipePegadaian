@@ -2841,7 +2841,7 @@
   overscroll-behavior: contain;
   overflow-y: auto;
   padding: 0.35rem;
-  position: absolute;
+  position: fixed;
   scrollbar-width: none;
   transform-origin: top center;
   z-index: 160;

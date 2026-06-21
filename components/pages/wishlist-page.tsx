@@ -787,6 +787,7 @@ function PaginationFooter({
           ariaLabel="Jumlah wishlist per halaman"
           className="w-24"
           options={PAGE_SIZE_OPTIONS.map((size) => ({ value: size, label: String(size) }))}
+          placement="top"
           size="compact"
           value={pageSize}
           onValueChange={(nextValue) => onPageSizeChange(Number(nextValue))}

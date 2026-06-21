@@ -18,6 +18,7 @@ export function AdminSelect({
   className,
   id,
   options,
+  placement = "auto",
   value,
   onValueChange,
   size = "default"
@@ -27,6 +28,7 @@ export function AdminSelect({
   className?: string;
   id?: string;
   options: AdminSelectOption[];
+  placement?: "auto" | "bottom" | "top";
   value: string | number;
   onValueChange: (value: string) => void;
   size?: "default" | "compact";
@@ -90,12 +92,14 @@ export function AdminSelect({
       const viewportOffsetLeft = visualViewport?.offsetLeft ?? 0;
       const bottomSpace = viewportOffsetTop + viewportHeight - rect.bottom - viewportPadding;
       const topSpace = rect.top - viewportOffsetTop - viewportPadding;
-      const openUp = bottomSpace < 180 && topSpace > bottomSpace;
+      const openUp =
+        placement === "top" || (placement === "auto" && bottomSpace < 180 && topSpace > bottomSpace);
       const availableSpace = Math.max(openUp ? topSpace : bottomSpace, 160);
       const maxHeight = Math.max(160, Math.min(288, availableSpace - gap));
+      const renderedMenuHeight = Math.min(menu.scrollHeight, maxHeight);
       const top = openUp
-        ? rect.top + window.scrollY - maxHeight - gap
-        : rect.bottom + gap + window.scrollY;
+        ? rect.top - renderedMenuHeight - gap
+        : rect.bottom + gap;
       const maxWidth = viewportWidth - viewportPadding * 2;
       const optionWidths = Array.from(menu.querySelectorAll<HTMLElement>(".admin-select-option")).map(
         (option) => option.scrollWidth
@@ -103,8 +107,8 @@ export function AdminSelect({
       const contentWidth = Math.max(menu.scrollWidth, ...optionWidths);
       const width = Math.min(Math.max(rect.width, contentWidth), maxWidth);
       const left = Math.min(
-        Math.max(viewportOffsetLeft + viewportPadding, rect.left + window.scrollX),
-        window.scrollX + viewportOffsetLeft + viewportWidth - width - viewportPadding
+        Math.max(viewportOffsetLeft + viewportPadding, rect.left),
+        viewportOffsetLeft + viewportWidth - width - viewportPadding
       );
 
       setMenuPlacement(openUp ? "top" : "bottom");
@@ -134,7 +138,7 @@ export function AdminSelect({
       visualViewport?.removeEventListener("resize", updateMenuPosition);
       visualViewport?.removeEventListener("scroll", updateMenuPosition);
     };
-  }, [open]);
+  }, [open, placement]);
 
   function selectValue(nextValue: string) {
     onValueChange(nextValue);
@@ -206,9 +210,13 @@ export function AdminSelect({
                 type="button"
                 onClick={() => selectValue(String(option.value))}
               >
-                <span className={cn("flex min-w-0 items-center gap-2 pr-6 text-left", allowWrap && "items-start")}>
+                <span className={cn("flex min-w-0 flex-1 items-center gap-2 text-left", allowWrap && "items-start")}>
                   {OptionIcon ? <OptionIcon className="size-4 shrink-0 text-current" strokeWidth={2} /> : null}
-                  <span className={cn(allowWrap ? "whitespace-normal break-words leading-5" : "truncate")}>
+                  <span
+                    className={cn(
+                      allowWrap ? "whitespace-normal break-words leading-5" : "whitespace-nowrap"
+                    )}
+                  >
                     {option.label}
                   </span>
                 </span>
