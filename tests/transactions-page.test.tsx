@@ -239,6 +239,7 @@ describe("TransactionsPage", () => {
     expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
+    expect(screen.queryByText("TRX-250520-0012")).not.toBeInTheDocument();
     expect(screen.getByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i)).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
@@ -247,6 +248,9 @@ describe("TransactionsPage", () => {
     expect(screen.getByText(/Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam/i)).toBeInTheDocument();
     expect(screen.getByText(/Batas pembayaran 24 jam telah lewat/i)).toBeInTheDocument();
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
+    expect(screen.getAllByTestId("buyer-transaction-unit-icon")[0]).toHaveClass("lucide-building-2");
+    expect(screen.getByTestId("buyer-bid-status-MENANG-icon")).toHaveClass("lucide-trophy");
+    expect(screen.getByTestId("buyer-bid-status-TIDAK_MENANG-icon")).toHaveClass("lucide-circle-x");
     expect(screen.getByAltText("Foto transaksi Gelang Emas 24K - 10 Gram")).toHaveAttribute(
       "src",
       expect.stringContaining(encodeURIComponent("/uploads/barang/gelang.jpg"))
@@ -272,6 +276,8 @@ describe("TransactionsPage", () => {
 
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
     expect(screen.getByText("Kamera Mirrorless Full Frame")).toBeInTheDocument();
+    expect(screen.getByTestId("buyer-bid-filter-won-icon")).toHaveClass("lucide-trophy");
+    expect(screen.getByTestId("buyer-bid-filter-lost-icon")).toHaveClass("lucide-circle-x");
     expect(
       screen
         .getAllByRole("link", { name: /lihat hasil/i })

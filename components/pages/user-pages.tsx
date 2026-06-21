@@ -7,6 +7,7 @@ import {
   CalendarClock,
   CalendarDays,
   CheckCircle2,
+  CircleX,
   ClipboardCheck,
   Clock3,
   ExternalLink,
@@ -24,6 +25,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
+  Trophy,
   UploadCloud,
   UserRound,
   X,
@@ -223,7 +225,16 @@ function StatusPill({
 }
 
 function BidPill({ status }: { status: BuyerBidStatus }) {
-  return <Badge variant={bidStatusMeta[status].variant}>{bidStatusMeta[status].label}</Badge>;
+  const Icon = status === "MENANG" ? Trophy : status === "TIDAK_MENANG" ? CircleX : null;
+
+  return (
+    <Badge className={Icon ? "gap-1.5" : undefined} variant={bidStatusMeta[status].variant}>
+      {Icon ? (
+        <Icon className="size-3.5" data-testid={`buyer-bid-history-status-${status}-icon`} strokeWidth={1.9} />
+      ) : null}
+      {bidStatusMeta[status].label}
+    </Badge>
+  );
 }
 
 function getBidPaymentAmount(item: BuyerBid) {

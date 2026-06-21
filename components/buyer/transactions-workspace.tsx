@@ -6,16 +6,16 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  Building2,
   CheckCircle2,
   CircleX,
   Clock3,
-  FileCheck2,
   Gavel,
   Grid2X2,
   Hourglass,
-  MapPin,
   ShoppingBag,
   ShieldCheck,
+  Trophy,
 } from "lucide-react";
 
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -211,7 +211,7 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
         title: "Bayar langsung di unit",
         description: "Datang ke unit dan tunggu admin mengonfirmasi pembayaran langsung Anda.",
         className: "bg-[#f9f5eb] text-[#8b6a1d]",
-        icon: <MapPin className="size-5" strokeWidth={1.85} />,
+        icon: <Building2 className="size-5" strokeWidth={1.85} />,
       };
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_VERIFIKASI":
@@ -366,16 +366,24 @@ function getBidFilterStatus(status: BuyerBidStatus): BidFilter {
 function getBidStatusPill(status: BuyerBidStatus) {
   switch (status) {
     case "MENANG":
-      return { label: "Menang", className: "bg-emerald-50 text-[#137333]" };
+      return {
+        icon: <Trophy className="size-3.5" data-testid="buyer-bid-status-MENANG-icon" strokeWidth={1.9} />,
+        label: "Menang",
+        className: "bg-emerald-50 text-[#137333]",
+      };
     case "MENUNGGU_HASIL":
-      return { label: "Menunggu Hasil", className: "bg-amber-50/80 text-amber-700" };
+      return { icon: null, label: "Menunggu Hasil", className: "bg-amber-50/80 text-amber-700" };
     case "TIDAK_MENANG":
-      return { label: "Tidak Menang", className: "bg-slate-100 text-slate-500" };
+      return {
+        icon: <CircleX className="size-3.5" data-testid="buyer-bid-status-TIDAK_MENANG-icon" strokeWidth={1.9} />,
+        label: "Tidak Menang",
+        className: "bg-slate-100 text-slate-500",
+      };
     case "GAGAL":
-      return { label: "Gagal", className: "bg-red-50 text-red-600" };
+      return { icon: null, label: "Gagal", className: "bg-red-50 text-red-600" };
     case "BID_TERCATAT":
     default:
-      return { label: "Bid Tercatat", className: "bg-slate-100 text-slate-600" };
+      return { icon: null, label: "Bid Tercatat", className: "bg-slate-100 text-slate-600" };
   }
 }
 
@@ -568,9 +576,8 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
           <h2 className="line-clamp-2 font-headline text-[1.28rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.55rem]">
             {transaction.title}
           </h2>
-          <p className="mt-2 text-[0.9rem] font-medium tracking-[-0.01em] text-slate-500">{transaction.id}</p>
-          <p className="mt-1.5 inline-flex items-center gap-1.5 text-[0.92rem] font-medium tracking-[-0.01em] text-slate-500">
-            <MapPin className="size-3.5" strokeWidth={1.85} />
+          <p className="mt-2 inline-flex items-center gap-1.5 text-[0.92rem] font-medium tracking-[-0.01em] text-slate-500">
+            <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
             <span>Unit {transaction.unit}</span>
           </p>
 
@@ -652,13 +659,21 @@ function BidRow({ item }: { item: BuyerBid }) {
           </h2>
           <p className="mt-2 text-[0.9rem] font-medium tracking-[-0.01em] text-slate-500">Riwayat Lelang</p>
           <p className="mt-1.5 inline-flex items-center gap-1.5 text-[0.92rem] font-medium tracking-[-0.01em] text-slate-500">
-            <MapPin className="size-3.5" strokeWidth={1.85} />
+            <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
             <span>Unit {item.unit}</span>
           </p>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
             <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
-            <TransactionBadge className={statusMeta.className} label={statusMeta.label} />
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[0.92rem] font-medium tracking-[-0.01em]",
+                statusMeta.className
+              )}
+            >
+              {statusMeta.icon}
+              {statusMeta.label}
+            </span>
           </div>
 
           <p className="mt-3.5 max-w-[31rem] text-[0.95rem] leading-6 text-slate-600">{item.note}</p>
@@ -780,13 +795,13 @@ export function TransactionsWorkspace({
       {
         key: "won" as const,
         label: "Menang",
-        icon: <CheckCircle2 className="size-4" strokeWidth={1.85} />,
+        icon: <Trophy className="size-4" data-testid="buyer-bid-filter-won-icon" strokeWidth={1.85} />,
         tone: "green" as const,
       },
       {
         key: "lost" as const,
         label: "Tidak Menang",
-        icon: <FileCheck2 className="size-4" strokeWidth={1.85} />,
+        icon: <CircleX className="size-4" data-testid="buyer-bid-filter-lost-icon" strokeWidth={1.85} />,
         tone: "slate" as const,
       },
       {

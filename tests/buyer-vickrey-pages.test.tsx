@@ -299,6 +299,7 @@ describe("buyer vickrey pages", () => {
     render(<BidHistoryPage bids={[winningBid]} buyer={buyer} />);
 
     expect(screen.getAllByText(/harga akhir lelang/i).length).toBeGreaterThan(0);
+    expect(screen.getByTestId("buyer-bid-history-status-MENANG-icon")).toHaveClass("lucide-trophy");
     expect(screen.getByText(/status transaksi/i)).toBeInTheDocument();
     expect(screen.getByText(/menunggu konfirmasi langsung/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lanjutkan pembayaran/i })).toHaveAttribute(
