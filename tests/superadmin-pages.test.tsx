@@ -1319,6 +1319,94 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
+  it("keeps the verified superadmin winner manifest compact inside the settlement grid", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-cr",
+              code: "UPC-RNT",
+              name: "UPC Ranotana",
+              address: "Ranotana",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-ipad",
+              code: "BRG-CR7",
+              name: "Ipad",
+              category: "elektronik",
+              condition: "baik",
+              status: "terjual",
+              media: [{ id: "ipad-1", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+              specifications: {},
+            },
+            operationalStatus: "Status Terjual",
+            operationalTone: "emerald",
+            marketing: {
+              id: "pemasaran-ipad-vickrey",
+              lotId: "barang-ipad",
+              lot: "Ipad",
+              code: "BRG-CR7",
+              status: "SELESAI",
+              mode: "VICKREY_AUCTION",
+              unitName: "UPC Ranotana",
+              unitAddress: "Ranotana",
+              participants: 2,
+              revealedBidCount: 2,
+              pendingRevealCount: 0,
+              basePrice: 7_500_000,
+              finalPrice: 7_500_000,
+              winner: "Cristiano Ronaldo",
+              buyerName: "Cristiano Ronaldo",
+              buyerEmail: "buyer1@mail.com",
+              buyerPhone: "6281200001001",
+              buyerNationalId: "seed-buyer-simple-1",
+              transactionId: "trx-cr7-lunas",
+              transactionStatus: "LUNAS",
+              paymentMethod: "BAYAR_LANGSUNG",
+              reference: "INV/CR7",
+              soldAt: "2026-06-02T10:48:00+08:00",
+              paymentDeadline: "2026-06-02T12:00:00+08:00",
+              visibility: "HASIL_DIBUKA",
+              media: [{ id: "ipad-1", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+              primaryMedia: { id: "ipad-1", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" },
+              bids: [
+                {
+                  id: "bid-cr7",
+                  bidderId: "seed-buyer-simple-1",
+                  bidderName: "Cristiano Ronaldo",
+                  submittedAtLabel: "1 Jun 2026, 21.56 WIB",
+                  amount: 8_500_000,
+                  isRevealed: true,
+                  rank: 1,
+                  isWinner: true,
+                  determinesFinalPrice: false,
+                },
+              ],
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    const winnerPanel = screen.getByTestId("superadmin-vickrey-winner-profile");
+
+    expect(winnerPanel).toHaveTextContent("Manifes Penyerahan & Pemenang");
+    expect(winnerPanel).toHaveTextContent("Pemenang Terverifikasi");
+    expect(winnerPanel).toHaveTextContent("Cristiano Ronaldo");
+    expect(winnerPanel).toHaveTextContent("6281200001001");
+    expect(winnerPanel).toHaveTextContent("buyer1@mail.com");
+    expect(within(winnerPanel).queryByText(/Member ID:/i)).not.toBeInTheDocument();
+    const verifiedBadges = within(winnerPanel).getAllByText("Pemenang Terverifikasi");
+
+    expect(within(winnerPanel).getByText("Cristiano Ronaldo")).toHaveClass("truncate");
+    expect(within(winnerPanel).getByText("6281200001001").closest("p")).toHaveClass("min-w-0");
+    expect(verifiedBadges[0].parentElement).toHaveClass("text-[0.56rem]");
+    expect(within(winnerPanel).getByText("Menunggu Buyer Selesai").parentElement).toHaveClass("text-[0.56rem]");
+  });
+
   it("prints the prepared superadmin receipt in place on mobile without opening the receipt route", async () => {
     vi.useRealTimers();
 

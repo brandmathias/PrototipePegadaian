@@ -3625,62 +3625,61 @@ function SuperAdminVickreyWinnerProfilePanel({
   session: SuperAdminUnitBarangMarketingSession;
 }) {
   const winnerName = session.buyerName || session.winner || "Pemenang belum tercatat";
-  const winnerBid = getSuperAdminWinnerBid(session);
-  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
+  const title = verified ? "Manifes Penyerahan & Pemenang" : "Detail Pemenang Lelang";
+  const actionLabel = fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai";
 
   return (
-    <section className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="superadmin-vickrey-winner-profile"
+    >
       {verified ? (
-        <CheckCircle2 className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#f0f6f2]" strokeWidth={2.6} />
+        <CheckCircle2 className="pointer-events-none absolute -right-4 -top-5 size-20 text-[#f3f8f5]" strokeWidth={2.4} />
       ) : null}
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-        {fulfilled ? "Manifes Penyerahan & Pemenang" : verified ? "Pemenang Terverifikasi" : "Detail Pemenang Lelang"}
+        {title}
       </p>
-      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1.25rem] font-black text-[#006747]">
-            {getSuperAdminInitials(winnerName)}
-          </span>
-          <div className="min-w-0">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h3 className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#111b46]">
-                {winnerName}
-              </h3>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#d6efe1] bg-[#f1fbf6] px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em] text-[#006747]">
-                <CheckCircle2 className="size-3" />
-                Terverifikasi
+
+      <div className="relative mt-4 flex min-w-0 items-center gap-3">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1rem] font-black text-[#006747]">
+          {getSuperAdminInitials(winnerName)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate font-headline text-[0.95rem] font-black leading-tight text-[#111b46]">
+            {winnerName}
+          </h3>
+          {verified ? (
+            <span className="mt-1.5 inline-flex max-w-full items-center gap-1 rounded-full border border-[#d6efe1] bg-[#f1fbf6] px-2 py-1 text-[0.56rem] font-black uppercase leading-none tracking-[0.07em] text-[#006747]">
+              <CheckCircle2 className="size-3 shrink-0" />
+              <span className="truncate">Pemenang Terverifikasi</span>
+            </span>
+          ) : null}
+          <div className="mt-2 grid min-w-0 gap-1.5 text-[0.72rem] font-bold leading-4 text-[#111b46]">
+            <p className="flex min-w-0 items-center gap-2">
+              <Phone className="size-3.5 shrink-0 text-[#40558b]" />
+              <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
+            </p>
+            <p className="flex min-w-0 items-center gap-2">
+              <Mail className="size-3.5 shrink-0 text-[#40558b]" />
+              <span className="min-w-0 truncate font-mono text-[0.7rem]">
+                {session.buyerEmail || "email-belum-tercatat"}
               </span>
-            </div>
-            <p className="mt-2 text-[0.74rem] font-bold text-[#52655d]">
-              Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
             </p>
           </div>
         </div>
-
-        <div className="grid gap-2 border-t border-[#edf2ee] pt-3 text-[0.76rem] font-bold text-[#111b46] md:border-l md:border-t-0 md:pl-5 md:pt-0">
-          <p className="flex min-w-0 items-center gap-2">
-            <Phone className="size-4 shrink-0 text-[#40558b]" />
-            <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
-          </p>
-          <p className="flex min-w-0 items-center gap-2">
-            <Mail className="size-4 shrink-0 text-[#40558b]" />
-            <span className="min-w-0 truncate font-mono text-[0.72rem]">
-              {session.buyerEmail || "email-belum-tercatat"}
-            </span>
-          </p>
-        </div>
       </div>
+
       {verified ? (
         <div className="mt-4 flex flex-wrap gap-2 border-t border-[#edf2ee] pt-3">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#006747] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
-            <CheckCircle2 className="size-3.5" />
-            Pembayaran Terverifikasi
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-[#006747] px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-none tracking-[0.05em] text-white">
+            <CheckCircle2 className="size-3.5 shrink-0" />
+            <span className="truncate">Pemenang Terverifikasi</span>
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2463eb] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
-            <ShieldCheck className="size-3.5" />
-            {fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai"}
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-[#2463eb] px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-none tracking-[0.05em] text-white">
+            <ShieldCheck className="size-3.5 shrink-0" />
+            <span className="truncate">{actionLabel}</span>
           </span>
         </div>
       ) : null}
