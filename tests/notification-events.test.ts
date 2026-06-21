@@ -177,7 +177,8 @@ describe("notification event helpers", () => {
         entityType: "transaction",
         entityId: "trx-fixed-1",
         actionHref: "/admin/transaksi/trx-fixed-1",
-        title: "Bukti pembayaran Kalung Emas masuk"
+        title: "Bukti pembayaran harga tetap Kalung Emas masuk",
+        message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit."
       })
     );
     expect(mocks.createNotificationOnce).toHaveBeenCalledWith(

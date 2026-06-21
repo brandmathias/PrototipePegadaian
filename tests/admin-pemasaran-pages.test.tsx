@@ -411,6 +411,41 @@ describe("admin pemasaran pages", () => {
     expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeDisabled();
   });
 
+  it("keeps harga tetap verification locked when payment proof url is missing", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-verification-without-proof",
+          lotId: "barang-fixed-verify-empty",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          transactionId: "trx-fixed-verify-empty",
+          transactionStatus: "BUKTI_DIUNGGAH",
+          buyerName: "Buyer Demo 13 B",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: null,
+          reference: "FP-02393124",
+          paymentDeadline: "2099-06-05T12:00:00.000Z",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Status transaksi belum membawa file bukti pembayaran."
+        }}
+      />
+    );
+
+    const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
+
+    expect(verifyButton).toBeDisabled();
+    fireEvent.click(verifyButton);
+    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
+  });
+
   it("does not reopen harga tetap verification actions after payment proof has been rejected", () => {
     render(
       <AdminFixedPriceDetailPage
@@ -628,7 +663,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /verifikasi pembayaran/i })).toBeDisabled();
   });
 
-  it("keeps fixed price handover proof visible as a full width block before session actions", () => {
+  it("places fixed price handover proof after description and management panels", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -677,10 +712,19 @@ describe("admin pemasaran pages", () => {
     expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
     expect(handoverPanel).toHaveTextContent("Belum ada bukti serah-terima");
     expect(handoverPanel).toContainElement(screen.getByLabelText(/file bukti serah-terima barang/i));
+    expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "false");
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
 
     const performanceTitle = screen.getByText(/performa & aktivitas sesi publik/i);
-    expect(handoverPanel.compareDocumentPosition(performanceTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    const descriptionTitle = screen.getByText(/deskripsi barang/i);
+    const consoleTitle = screen.getByText(/konsol manajemen/i);
+    expect(performanceTitle.compareDocumentPosition(handoverPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(descriptionTitle.compareDocumentPosition(handoverPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(consoleTitle.compareDocumentPosition(handoverPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
   });

@@ -340,7 +340,7 @@ export async function notifyAdminUnitPaymentProofUploaded(input: {
   lotName: string;
 }) {
   return createForUsers(input.adminUserIds, {
-    title: `Bukti pembayaran ${input.lotName} masuk`,
+    title: `Bukti pembayaran harga tetap ${input.lotName} masuk`,
     message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit.",
     type: "admin_payment_proof_uploaded",
     entityType: "transaction",

@@ -266,7 +266,7 @@ describe("buyer alert center", () => {
               data: [
                 {
                   id: "notif-admin-1",
-                  title: "Bukti pembayaran Kalung Emas masuk",
+                  title: "Bukti pembayaran harga tetap Kalung Emas masuk",
                   message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit.",
                   type: "admin_payment_proof_uploaded",
                   actionHref: "/admin/transaksi/trx-1",
@@ -290,7 +290,7 @@ describe("buyer alert center", () => {
     expect(await screen.findByText("1")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
 
-    const link = await screen.findByRole("link", { name: /bukti pembayaran kalung emas masuk/i });
+    const link = await screen.findByRole("link", { name: /bukti pembayaran harga tetap kalung emas masuk/i });
     expect(link).toHaveAttribute("href", "/admin/transaksi/trx-1");
     expect(screen.getByText(/menunggu verifikasi unit/i)).toBeInTheDocument();
 

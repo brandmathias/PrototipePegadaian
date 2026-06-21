@@ -1095,16 +1095,19 @@ function hasFixedPricePaymentSubmission(auction: MarketingSession) {
   const transactionStatus = auction.transactionStatus ?? "";
 
   return (
-    Boolean(auction.proofUrl) ||
-    transactionStatus === "BUKTI_DIUNGGAH" ||
+    hasFixedPricePaymentProof(auction) ||
     transactionStatus === "LUNAS" ||
     transactionStatus === "SELESAI" ||
     Boolean(auction.soldAt)
   );
 }
 
+function hasFixedPricePaymentProof(auction: MarketingSession) {
+  return Boolean(auction.proofUrl);
+}
+
 function hasFixedPriceVerificationReady(auction: MarketingSession) {
-  return Boolean(auction.transactionId) && auction.transactionStatus === "BUKTI_DIUNGGAH";
+  return Boolean(auction.transactionId) && auction.transactionStatus === "BUKTI_DIUNGGAH" && hasFixedPricePaymentProof(auction);
 }
 
 function getFixedPriceWorkflowStatus(auction: MarketingSession) {
@@ -2506,9 +2509,26 @@ export function AdminFixedPriceDetailPage({
         </div>
       </div>
 
-      <FixedPriceHandoverProofSection auction={auction} />
-
       <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]">
+        <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+          <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
+          <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
+            <p className="text-[0.92rem] font-semibold leading-7 text-[#31433b]">
+              {auction.description ||
+                auction.note ||
+                "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
+            </p>
+            <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck className="size-4 text-[#006747]" />
+                Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
+              </span>
+              <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-4">
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -2568,24 +2588,10 @@ export function AdminFixedPriceDetailPage({
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
           </section>
+        </div>
       </div>
 
-      <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-        <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
-        <p className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4 text-[0.92rem] font-semibold leading-7 text-[#31433b]">
-          {auction.description ||
-            auction.note ||
-            "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
-        </p>
-      </section>
-
-      <div className="flex flex-col gap-3 rounded-xl border border-[#dce9df] bg-[#f8fcf9] px-4 py-3 text-[0.78rem] font-semibold text-[#52675e] shadow-[0_16px_40px_-34px_rgba(8,69,50,0.32)] sm:flex-row sm:items-center sm:justify-between">
-        <span className="inline-flex items-center gap-2">
-          <ShieldCheck className="size-4 text-[#006747]" />
-          Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
-        </span>
-        <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
-      </div>
+      <FixedPriceHandoverProofSection auction={auction} />
     </div>
   );
 }
