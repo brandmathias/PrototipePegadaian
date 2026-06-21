@@ -2418,6 +2418,8 @@ export function AdminFixedPriceDetailPage({
   const specTiles = getFixedPriceSpecificationTiles(auction);
   const lastUpdated = dateLabel(auction.soldAt ?? auction.startsAt);
   const canPrintReceipt = isFixedPriceReceiptPrintable(auction);
+  const fixedPriceAmount = currency.format(auction.price ?? 0);
+  const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
 
   return (
     <div className="space-y-4">
@@ -2463,7 +2465,7 @@ export function AdminFixedPriceDetailPage({
       <MarketingIterationHistoryPanel auction={auction} />
 
       <div
-        className="grid gap-4 xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]"
+        className="grid gap-4 xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)] xl:items-start"
         data-testid="fixed-price-primary-layout"
       >
         <div className="space-y-4">
@@ -2489,16 +2491,40 @@ export function AdminFixedPriceDetailPage({
               ))}
             </div>
           </section>
+
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
+            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
+              <p className="text-[0.92rem] font-semibold leading-7 text-[#31433b]">
+                {auction.description ||
+                  auction.note ||
+                  "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
+              </p>
+              <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
+                <span className="inline-flex items-center gap-2">
+                  <ShieldCheck className="size-4 text-[#006747]" />
+                  Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
+                </span>
+                <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div className="space-y-4">
+        <aside className="space-y-4" data-testid="fixed-price-secondary-layout">
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={Tag} title="Harga Barang" />
-            <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5">
+            <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5 sm:p-6">
               <div className="min-w-0">
                 <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#53655e]">Harga Tetap</p>
-                <p className="mt-3 max-w-full break-words font-headline text-[2.55rem] font-black leading-none text-[#070b16] sm:text-[3.35rem] xl:text-[3.55rem] 2xl:text-[4.25rem]">
-                  {currency.format(auction.price ?? 0)}
+                <p
+                  className={cn(
+                    "mt-3 block max-w-full overflow-hidden whitespace-nowrap font-headline font-black leading-none text-[#070b16] tabular-nums",
+                    fixedPriceAmountClass
+                  )}
+                  title={fixedPriceAmount}
+                >
+                  {fixedPriceAmount}
                 </p>
                 <p className="mt-5 inline-flex items-center gap-2 text-[1.02rem] font-black text-[#13211c]">
                   <MapPin className="size-5 text-[#006747]" />
@@ -2509,32 +2535,7 @@ export function AdminFixedPriceDetailPage({
           </section>
 
           {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
-        </div>
-      </div>
 
-      <div
-        className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]"
-        data-testid="fixed-price-secondary-layout"
-      >
-        <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-          <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
-          <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
-            <p className="text-[0.92rem] font-semibold leading-7 text-[#31433b]">
-              {auction.description ||
-                auction.note ||
-                "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
-            </p>
-            <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck className="size-4 text-[#006747]" />
-                Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
-              </span>
-              <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
-            </div>
-          </div>
-        </section>
-
-        <div className="space-y-4">
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -2594,12 +2595,27 @@ export function AdminFixedPriceDetailPage({
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
           </section>
-        </div>
+        </aside>
       </div>
 
       <FixedPriceHandoverProofSection auction={auction} />
     </div>
   );
+}
+
+function getFixedPriceAmountClass(value?: number | null) {
+  const normalized = Number(value ?? 0);
+  const digits = Math.max(1, Math.trunc(Math.abs(normalized)).toString().length);
+
+  if (digits >= 10) {
+    return "text-[1.9rem] sm:text-[2.35rem] 2xl:text-[2.75rem]";
+  }
+
+  if (digits >= 9) {
+    return "text-[2.05rem] sm:text-[2.65rem] 2xl:text-[3rem]";
+  }
+
+  return "text-[2.35rem] sm:text-[3.1rem] 2xl:text-[3.35rem]";
 }
 
 function normalizeFixedPriceInsights(insights?: LotInsights | null): LotInsights {

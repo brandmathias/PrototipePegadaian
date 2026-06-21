@@ -677,7 +677,7 @@ describe("admin pemasaran pages", () => {
           status: "AKTIF",
           mode: "FIXED_PRICE",
           startsAt: "2026-06-01T02:00:00.000Z",
-          price: 10000000,
+          price: 100000000,
           unitName: "UPC Ranotana",
           unitAddress: "Ranotana",
           transactionId: "trx-fixed-paid-no-handover",
@@ -712,8 +712,11 @@ describe("admin pemasaran pages", () => {
     const secondaryLayout = screen.getByTestId("fixed-price-secondary-layout");
 
     expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
+    expect(primaryLayout).toHaveClass("xl:items-start");
     expect(primaryLayout).not.toHaveClass("2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
-    expect(secondaryLayout).toHaveClass("xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]");
+    expect(secondaryLayout).toHaveClass("space-y-4");
+    expect(secondaryLayout).not.toHaveClass("xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]");
+    expect(screen.getByText("Rp 100.000.000")).toHaveClass("whitespace-nowrap");
     expect(handoverPanel).toHaveClass("w-full");
     expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
     expect(handoverPanel).toHaveTextContent("Belum ada bukti serah-terima");
