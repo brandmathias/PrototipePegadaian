@@ -104,6 +104,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 export type SuperAdminMetric = {
@@ -3211,18 +3212,7 @@ function formatSuperAdminDateTime(value?: string | null) {
     return value;
   }
 
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Makassar",
-    timeZoneName: "short",
-  })
-    .format(parsed)
-    .replace(/\./g, ":")
-    .replace("GMT+8", "WIB");
+  return formatAppDateTime(parsed);
 }
 
 function getSuperAdminMarketingModeLabel(session?: SuperAdminUnitBarangMarketingSession | null) {
@@ -3297,10 +3287,11 @@ function getSuperAdminIterationHistory(marketing: SuperAdminUnitBarangMarketingS
 }
 
 function getSuperAdminMarketingDateLabel(session: SuperAdminUnitBarangMarketingSession) {
-  return (
-    session.ending ||
-    formatSuperAdminDateTime(session.endingAt ?? session.soldAt ?? session.paymentDeadline ?? session.createdAt)
+  const dateLabel = formatSuperAdminDateTime(
+    session.endingAt ?? session.soldAt ?? session.paymentDeadline ?? session.createdAt,
   );
+
+  return dateLabel !== "-" ? dateLabel : session.ending || "-";
 }
 
 function getSuperAdminWinnerBid(session: SuperAdminUnitBarangMarketingSession) {
@@ -3942,7 +3933,7 @@ function SuperAdminVickreyNotePanel({
     return (
       <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
-          Nota Dokumen Final
+          Ringkasan Transaksi
         </p>
         <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
           Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
@@ -4654,6 +4645,7 @@ function SuperAdminVickreyWorkspace({
 }) {
   const failureArchive = isSuperAdminVickreyFailureArchive(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
 
   if (failureArchive) {
     const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
@@ -4684,6 +4676,46 @@ function SuperAdminVickreyWorkspace({
     );
   }
 
+  if (verified || fulfilled) {
+    return (
+      <div className="space-y-4" data-testid="superadmin-vickrey-settlement-layout">
+        <SuperAdminVickreySettlementBanner session={session} />
+        <div
+          className="grid gap-4 xl:grid-cols-3"
+          data-testid="superadmin-vickrey-settlement-primary-grid"
+        >
+          <SuperAdminVickreyWinnerProfilePanel session={session} />
+          <SuperAdminVickreyProgressPanel session={session} />
+          <div className="grid content-start gap-4">
+            <SuperAdminVickreyNotePanel session={session} />
+            <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
+          </div>
+        </div>
+
+        <div
+          className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
+          data-testid="superadmin-vickrey-settlement-secondary-grid"
+        >
+          <SuperAdminVickreyMechanismPanel session={session} />
+          <SuperAdminVickreyRankingTable session={session} />
+        </div>
+
+        <div data-testid="superadmin-vickrey-settlement-handover">
+          <SuperAdminHandoverProofAuditCard
+            itemTitle={receiptContext.itemTitle}
+            session={session}
+            unitName={receiptContext.unitName}
+          />
+        </div>
+
+        <SuperAdminReadOnlyAuditFooter
+          icon={ShieldCheck}
+          note="Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <SuperAdminVickreySettlementBanner session={session} />
@@ -4706,11 +4738,7 @@ function SuperAdminVickreyWorkspace({
       </div>
       <SuperAdminReadOnlyAuditFooter
         icon={ShieldCheck}
-        note={
-          verified
-            ? "Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
-            : "Ringkasan sesi, pemenang, dan ranking bid ditampilkan read-only untuk monitoring lintas unit."
-        }
+        note="Ringkasan sesi, pemenang, dan ranking bid ditampilkan read-only untuk monitoring lintas unit."
       />
     </div>
   );
@@ -4849,7 +4877,7 @@ function SuperAdminMarketingAuditPanel({
           </span>
           <span className="inline-flex items-center gap-2 font-mono text-[0.76rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
             <Clock3 className="size-4 shrink-0" />
-            {selectedIteration.ending || formatSuperAdminDateTime(selectedIteration.endingAt ?? selectedIteration.createdAt)}
+            {getSuperAdminMarketingDateLabel(selectedIteration)}
           </span>
         </div>
       </div>

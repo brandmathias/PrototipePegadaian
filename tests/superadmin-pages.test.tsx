@@ -1290,9 +1290,19 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Manifes Penyerahan & Pemenang")).toBeInTheDocument();
     expect(screen.getByText("Mekanisme Lelang (Arsip)")).toBeInTheDocument();
     expect(screen.getByText("Progress Penyelesaian")).toBeInTheDocument();
-    expect(screen.getByText("Nota Dokumen Final")).toBeInTheDocument();
+    expect(screen.getByText("Ringkasan Transaksi")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cetak Nota" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Tutup & Arsipkan Berkas Lelang" })).toBeInTheDocument();
+    expect(screen.getByTestId("superadmin-vickrey-settlement-layout")).toBeInTheDocument();
+    expect(screen.getByTestId("superadmin-vickrey-settlement-primary-grid")).toHaveClass("xl:grid-cols-3");
+    expect(screen.getByTestId("superadmin-vickrey-settlement-secondary-grid")).toHaveClass(
+      "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+    );
+    expect(screen.getByTestId("superadmin-vickrey-settlement-handover")).toHaveTextContent(
+      "Dokumentasi Serah Terima Barang Fisik",
+    );
+    expect(screen.getAllByText("30 Mei 2026, 09.00 WIB").length).toBeGreaterThan(0);
+    expect(screen.queryByText("30 Mei 2026, 10:00 WIB")).not.toBeInTheDocument();
     expect(screen.getAllByText("Iterasi 2 (Terkini)").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: /Iterasi 2 \(Terkini\)/i }));
     fireEvent.click(screen.getAllByRole("option", { name: "Iterasi 1" })[1]);
