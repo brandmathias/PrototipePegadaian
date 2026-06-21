@@ -63,7 +63,11 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /rincian transaksi/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
-    expect(screen.getByText(/0123-4567-8901-234/i)).toBeInTheDocument();
+    const accountNumber = screen.getByText(/0123-4567-8901-234/i);
+    expect(accountNumber).toBeInTheDocument();
+    expect(accountNumber).toHaveClass("break-all");
+    expect(accountNumber).not.toHaveClass("whitespace-nowrap");
+    expect(accountNumber.closest("div")).not.toHaveClass("overflow-x-auto");
     expect(screen.getByRole("button", { name: /kembali ke detail barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });

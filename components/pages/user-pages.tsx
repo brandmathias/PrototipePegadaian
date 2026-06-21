@@ -1886,9 +1886,9 @@ export function TransactionDetailPage({
                   <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                     Nomor Rekening
                   </p>
-                  <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-black/10 bg-white px-4 py-3">
-                    <div className="min-w-0 flex-1 overflow-x-auto">
-                      <p className="whitespace-nowrap font-headline text-[1.55rem] font-black tracking-[0.06em] text-primary sm:text-[1.8rem]">
+                  <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-black/10 bg-white px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-all font-headline text-[clamp(1.18rem,6vw,1.8rem)] font-black leading-tight tracking-[0.04em] text-primary">
                         {transaction.bankAccountNumber ?? "-"}
                       </p>
                     </div>
