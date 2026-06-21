@@ -2378,6 +2378,29 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   return <CompactTransactionProgress steps={steps} title="Progress Penyelesaian" />;
 }
 
+function FixedPriceHandoverProofSection({ auction }: { auction: MarketingSession }) {
+  if (!auction.transactionId) {
+    return null;
+  }
+
+  return (
+    <div aria-label="Area upload bukti serah-terima harga tetap" className="w-full">
+      <HandoverProofUploadForm
+        canUpload={auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI"}
+        itemTitle={auction.lot}
+        location={auction.unitName ?? auction.unitAddress ?? undefined}
+        proof={{
+          fileUrl: auction.handoverProofUrl,
+          uploadedAt: auction.handoverProofUploadedAt ? dateLabel(auction.handoverProofUploadedAt) : null,
+          uploadedBy: auction.handoverProofUploadedBy,
+          location: auction.unitName ?? auction.unitAddress
+        }}
+        transactionId={auction.transactionId}
+      />
+    </div>
+  );
+}
+
 export function AdminFixedPriceDetailPage({
   auction
 }: {
@@ -2480,24 +2503,12 @@ export function AdminFixedPriceDetailPage({
           </section>
 
           {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
+        </div>
+      </div>
 
-          {auction.transactionId ? (
-            <HandoverProofUploadForm
-              canUpload={auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI"}
-              itemTitle={auction.lot}
-              location={auction.unitName ?? auction.unitAddress ?? undefined}
-              proof={{
-                fileUrl: auction.handoverProofUrl,
-                uploadedAt: auction.handoverProofUploadedAt
-                  ? dateLabel(auction.handoverProofUploadedAt)
-                  : null,
-                uploadedBy: auction.handoverProofUploadedBy,
-                location: auction.unitName ?? auction.unitAddress
-              }}
-              transactionId={auction.transactionId}
-            />
-          ) : null}
+      <FixedPriceHandoverProofSection auction={auction} />
 
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]">
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -2557,7 +2568,6 @@ export function AdminFixedPriceDetailPage({
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
           </section>
-        </div>
       </div>
 
       <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">

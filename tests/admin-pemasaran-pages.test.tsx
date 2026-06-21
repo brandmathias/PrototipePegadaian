@@ -26,6 +26,9 @@ describe("admin pemasaran pages", () => {
   });
 
   afterEach(() => {
+    document
+      .querySelectorAll('iframe[data-receipt-print-frame="true"]')
+      .forEach((frame) => frame.remove());
     vi.clearAllTimers();
     vi.useRealTimers();
   });
@@ -623,6 +626,63 @@ describe("admin pemasaran pages", () => {
     );
     expect(screen.queryByRole("link", { name: /lihat log/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /verifikasi pembayaran/i })).toBeDisabled();
+  });
+
+  it("keeps fixed price handover proof visible as a full width block before session actions", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-paid-no-handover",
+          lotId: "barang-fixed-paid",
+          lot: "Ipad Harga Tetap",
+          code: "BRG-FIX-778",
+          category: "elektronik",
+          condition: "baik",
+          description: "Ipad sudah dibayar dan menunggu dokumentasi serah-terima.",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-06-01T02:00:00.000Z",
+          price: 10000000,
+          unitName: "UPC Ranotana",
+          unitAddress: "Ranotana",
+          transactionId: "trx-fixed-paid-no-handover",
+          transactionStatus: "LUNAS",
+          buyerName: "Cristiano Ronaldo",
+          buyerEmail: "buyer1@mail.com",
+          buyerPhone: "6281200001001",
+          paymentMethod: "Langsung di unit",
+          reference: "INV/FIX778",
+          soldAt: "2026-06-03T00:39:00.000Z",
+          handoverProofUrl: null,
+          handoverProofUploadedAt: null,
+          handoverProofUploadedBy: null,
+          insights: {
+            views: 12,
+            likes: 2,
+            participants: 0
+          },
+          specifications: {
+            merek: "Apple",
+            model: "iPad Air"
+          },
+          media: [{ id: "ipad-main", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" }],
+          primaryMedia: { id: "ipad-main", type: "foto", url: "/uploads/ipad.jpg", fileName: "ipad.jpg" },
+          note: "Pembayaran sudah terverifikasi dan barang siap dinyatakan terjual."
+        }}
+      />
+    );
+
+    const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima harga tetap/i);
+    expect(handoverPanel).toHaveClass("w-full");
+    expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
+    expect(handoverPanel).toHaveTextContent("Belum ada bukti serah-terima");
+    expect(handoverPanel).toContainElement(screen.getByLabelText(/file bukti serah-terima barang/i));
+    expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
+
+    const performanceTitle = screen.getByText(/performa & aktivitas sesi publik/i);
+    expect(handoverPanel.compareDocumentPosition(performanceTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
   });
 
   it("keeps vickrey bids locked before deadline", () => {
