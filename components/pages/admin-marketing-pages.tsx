@@ -2462,7 +2462,10 @@ export function AdminFixedPriceDetailPage({
 
       <MarketingIterationHistoryPanel auction={auction} />
 
-      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
+      <div
+        className="grid gap-4 xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]"
+        data-testid="fixed-price-primary-layout"
+      >
         <div className="space-y-4">
           <FixedPriceAuditGallery auction={auction} media={media} />
 
@@ -2509,7 +2512,10 @@ export function AdminFixedPriceDetailPage({
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]">
+      <div
+        className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]"
+        data-testid="fixed-price-secondary-layout"
+      >
         <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
           <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
           <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">

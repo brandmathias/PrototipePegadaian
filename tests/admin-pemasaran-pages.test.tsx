@@ -708,6 +708,12 @@ describe("admin pemasaran pages", () => {
     );
 
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima harga tetap/i);
+    const primaryLayout = screen.getByTestId("fixed-price-primary-layout");
+    const secondaryLayout = screen.getByTestId("fixed-price-secondary-layout");
+
+    expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
+    expect(primaryLayout).not.toHaveClass("2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
+    expect(secondaryLayout).toHaveClass("xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]");
     expect(handoverPanel).toHaveClass("w-full");
     expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
     expect(handoverPanel).toHaveTextContent("Belum ada bukti serah-terima");

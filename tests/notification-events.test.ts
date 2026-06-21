@@ -160,6 +160,7 @@ describe("notification event helpers", () => {
   it("creates admin unit operational notifications for payment proof and auction results", async () => {
     await notifyAdminUnitPaymentProofUploaded({
       adminUserIds: ["admin-1", "admin-2"],
+      pemasaranId: "pm-fixed-1",
       transactionId: "trx-fixed-1",
       lotName: "Kalung Emas"
     });
@@ -176,7 +177,7 @@ describe("notification event helpers", () => {
         type: "admin_payment_proof_uploaded",
         entityType: "transaction",
         entityId: "trx-fixed-1",
-        actionHref: "/admin/transaksi/trx-fixed-1",
+        actionHref: "/admin/pemasaran/fixed-price/pm-fixed-1",
         title: "Bukti pembayaran harga tetap Kalung Emas masuk",
         message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit."
       })

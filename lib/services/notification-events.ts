@@ -336,6 +336,7 @@ export async function syncBuyerRestrictionNotifications(userId: string) {
 
 export async function notifyAdminUnitPaymentProofUploaded(input: {
   adminUserIds: string[];
+  pemasaranId?: string | null;
   transactionId: string;
   lotName: string;
 }) {
@@ -345,7 +346,9 @@ export async function notifyAdminUnitPaymentProofUploaded(input: {
     type: "admin_payment_proof_uploaded",
     entityType: "transaction",
     entityId: input.transactionId,
-    actionHref: `/admin/transaksi/${input.transactionId}`
+    actionHref: input.pemasaranId
+      ? `/admin/pemasaran/fixed-price/${input.pemasaranId}`
+      : `/admin/transaksi/${input.transactionId}`
   });
 }
 

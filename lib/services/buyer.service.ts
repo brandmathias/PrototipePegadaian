@@ -892,6 +892,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.item.unitId);
     await notifyAdminUnitPaymentProofUploaded({
       adminUserIds,
+      pemasaranId,
       transactionId: created.id,
       lotName: row.item.name
     });
@@ -1127,6 +1128,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
   const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.unitId);
   await notifyAdminUnitPaymentProofUploaded({
     adminUserIds,
+    pemasaranId: row.pemasaranId,
     transactionId: updated.id,
     lotName: row.lotName
   });
