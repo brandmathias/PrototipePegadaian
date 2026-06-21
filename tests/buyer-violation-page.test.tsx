@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 
 import { BuyerViolationPage } from "@/components/buyer/buyer-violation-page";
 import type { BuyerViolationPageData } from "@/lib/services/buyer.service";
@@ -70,13 +70,21 @@ describe("BuyerViolationPage", () => {
   it("renders active restriction details from real buyer blacklist data", () => {
     render(<BuyerViolationPage data={activeLevelTwoData} serverNow="2026-06-17T06:02:00.000Z" />);
 
+    const restrictedFeaturesSection = screen.getByTestId("restricted-features-section");
+    const violationHistorySection = screen.getByTestId("violation-history-section");
+
     expect(screen.getByRole("heading", { name: /status penawaran anda/i })).toBeInTheDocument();
     expect(screen.getByText(/sedang dibatasi sementara/i)).toBeInTheDocument();
     expect(screen.getAllByText(/level 2 pembatasan/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/12 juli 2026/i)).toBeInTheDocument();
-    expect(screen.getByText(/pengajuan bid lelang baru/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembelian harga tetap baru/i)).toBeInTheDocument();
-    expect(screen.getByText(/unduh bukti transaksi lama/i)).toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).getByText(/pengajuan bid lelang baru/i)).toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).getByText(/pembelian harga tetap baru/i)).toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).getByText(/penyelesaian transaksi berjalan/i)).toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).getByText(/3 fitur dibatasi pada level 2/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /fitur yang tetap aktif/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/unduh bukti transaksi lama/i)).not.toBeInTheDocument();
+    expect(restrictedFeaturesSection).toHaveClass("min-h-[20rem]");
+    expect(violationHistorySection).toHaveClass("min-h-[20rem]");
     expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
     expect(screen.getAllByText(/kalung emas 2/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/level 2 pembatasan \(30 hari\)/i).length).toBeGreaterThan(0);
@@ -109,7 +117,11 @@ describe("BuyerViolationPage", () => {
       />
     );
 
+    const restrictedFeaturesSection = screen.getByTestId("restricted-features-section");
+
     expect(screen.getAllByText(/akun dalam kondisi baik/i).length).toBeGreaterThan(0);
+    expect(within(restrictedFeaturesSection).getByText(/tidak ada fitur yang dibatasi/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /fitur yang tetap aktif/i })).not.toBeInTheDocument();
     expect(screen.getByText(/tidak ada riwayat pelanggaran pembayaran/i)).toBeInTheDocument();
   });
 

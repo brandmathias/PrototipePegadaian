@@ -6,12 +6,8 @@ import {
   CalendarClock,
   CheckCircle2,
   ChevronDown,
-  CircleHelp,
   Clock3,
   Coins,
-  Eye,
-  FileDown,
-  History,
   ImageIcon,
   LockKeyhole,
   ReceiptText,
@@ -75,7 +71,7 @@ function FeatureRow({
   tone?: "success" | "danger";
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-[1.25rem] border border-black/5 bg-white px-4 py-3.5 shadow-[0_16px_40px_-34px_rgba(10,31,25,0.38)]">
+    <div className="flex h-full items-start gap-4 rounded-[1.25rem] border border-black/5 bg-white px-4 py-3.5 shadow-[0_16px_40px_-34px_rgba(10,31,25,0.38)]">
       <span
         className={cn(
           "grid size-10 shrink-0 place-items-center rounded-2xl",
@@ -351,32 +347,9 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
           description: "Akun dapat memakai fitur pembelian dan lelang sesuai aturan layanan."
         }
       ];
-  const activeFeatures = [
-    ...(hasRestriction && !policy.blocksFixedPrice
-      ? [
-          {
-            icon: <ShoppingCart className="size-5" />,
-            title: "Pembelian Harga Tetap (Beli Langsung)",
-            description: "Level saat ini masih mengizinkan transaksi harga tetap baru."
-          }
-        ]
-      : []),
-    {
-      icon: <FileDown className="size-5" />,
-      title: "Unduh Bukti Transaksi Lama",
-      description: "Riwayat, nota, dan bukti transaksi yang sudah selesai tetap dapat diakses."
-    },
-    {
-      icon: <History className="size-5" />,
-      title: "Akses Riwayat Transaksi",
-      description: "Anda tetap dapat memantau arsip transaksi, status lama, dan detail pelanggaran."
-    },
-    {
-      icon: <CircleHelp className="size-5" />,
-      title: "Pusat Bantuan",
-      description: "Gunakan informasi bantuan untuk memahami alasan pembatasan dan proses pemulihan."
-    }
-  ];
+  const restrictionSummary = hasRestriction
+    ? `${restrictedFeatures.length} fitur dibatasi pada Level ${policy.level} sampai masa pembatasan selesai.`
+    : "Akun dapat memakai fitur pembelian dan lelang sesuai aturan layanan.";
 
   useEffect(() => {
     const update = () => setNow(syncedNow());
@@ -468,58 +441,68 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
           </div>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-2">
-          <div className="rounded-[1.6rem] border border-red-100 bg-[linear-gradient(135deg,#fff6f6_0%,#fff_100%)] p-5 shadow-[0_22px_60px_-50px_rgba(137,18,18,0.38)]">
-            <div className="flex items-start gap-4">
-              <span className="grid size-16 shrink-0 place-items-center rounded-[1.25rem] bg-red-50 text-red-700">
-                <LockKeyhole className="size-8" />
-              </span>
-              <div>
-                <h2 className="font-headline text-2xl font-black text-red-700">Fitur yang Dibatasi</h2>
-                <p className="mt-1 text-sm leading-6 text-[#506079]">
-                  Fitur berikut mengikuti level pembatasan yang sedang berlaku di sistem.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {restrictedFeatures.map((feature) => (
-                <FeatureRow
-                  description={feature.description}
-                  icon={feature.icon}
-                  key={feature.title}
-                  title={feature.title}
-                  tone="danger"
-                />
-              ))}
+        <section
+          className="min-h-[20rem] rounded-[1.45rem] border border-red-100 bg-[linear-gradient(135deg,#fff8f8_0%,#fff_100%)] p-5 shadow-[0_20px_64px_-54px_rgba(137,18,18,0.34)] md:p-6"
+          data-testid="restricted-features-section"
+        >
+          <div className="flex items-start gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-[1.15rem] bg-red-50 text-red-700">
+              <LockKeyhole className="size-7" />
+            </span>
+            <div>
+              <h2 className="font-headline text-2xl font-black text-red-700">Fitur yang Dibatasi</h2>
+              <p className="mt-1 text-sm leading-6 text-[#506079]">
+                Fitur berikut mengikuti level pembatasan yang sedang berlaku di sistem.
+              </p>
             </div>
           </div>
 
-          <div className="rounded-[1.6rem] border border-emerald-100 bg-[linear-gradient(135deg,#f5fff9_0%,#fff_100%)] p-5 shadow-[0_22px_60px_-50px_rgba(8,91,62,0.34)]">
-            <div className="flex items-start gap-4">
-              <span className="grid size-16 shrink-0 place-items-center rounded-[1.25rem] bg-emerald-50 text-emerald-700">
-                <Eye className="size-8" />
-              </span>
-              <div>
-                <h2 className="font-headline text-2xl font-black text-emerald-800">Fitur yang Tetap Aktif</h2>
-                <p className="mt-1 text-sm leading-6 text-[#506079]">
-                  Akses berikut tetap tersedia agar Anda masih bisa memantau arsip dan bantuan akun.
-                </p>
+          {hasRestriction ? (
+            <>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-red-100 bg-white/80 px-4 py-3">
+                <p className="text-sm font-semibold leading-6 text-[#34435a]">{restrictionSummary}</p>
+                <span className="inline-flex shrink-0 items-center rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-black text-red-700">
+                  Level {policy.level} · {policy.durationDays} hari
+                </span>
               </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {activeFeatures.map((feature) => (
-                <FeatureRow
-                  description={feature.description}
+              <div
+                className={cn(
+                  "mt-3 grid gap-3",
+                  restrictedFeatures.length > 2 ? "lg:grid-cols-3" : "md:grid-cols-2"
+                )}
+              >
+                {restrictedFeatures.map((feature) => (
+                  <FeatureRow
+                    description={feature.description}
                   icon={feature.icon}
                   key={feature.title}
                   title={feature.title}
-                />
-              ))}
+                    tone="danger"
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="mt-5 grid min-h-[12rem] place-items-center rounded-[1.25rem] border border-red-100 bg-white px-5 py-7 text-center">
+              <div>
+                <span className="mx-auto grid size-16 place-items-center rounded-full border border-dashed border-red-200 bg-red-50/60 text-red-700">
+                  <CheckCircle2 className="size-7" />
+                </span>
+                <p className="mt-4 font-headline text-xl font-black text-[#101923]">
+                  Tidak Ada Fitur yang Dibatasi
+                </p>
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#506079]">
+                  {restrictionSummary}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
-        <section className="rounded-[1.45rem] border border-black/5 bg-white p-5 shadow-[0_20px_64px_-54px_rgba(10,31,25,0.34)] md:p-6">
+        <section
+          className="min-h-[20rem] rounded-[1.45rem] border border-black/5 bg-white p-5 shadow-[0_20px_64px_-54px_rgba(10,31,25,0.34)] md:p-6"
+          data-testid="violation-history-section"
+        >
           <div>
             <div>
               <h2 className="font-headline text-2xl font-black text-[#101923]">
