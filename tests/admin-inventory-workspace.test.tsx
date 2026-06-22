@@ -160,6 +160,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
       />
     );
 
+    const statusBadge = screen.getAllByText("Barang Masuk").find((element) => element.tagName.toLowerCase() === "div");
+
+    expect(statusBadge).toHaveClass("whitespace-nowrap");
+    expect(statusBadge).toHaveClass("min-w-[8.5rem]");
+
     fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "ditebus" } });
 
     expect(screen.getByText("Kalung Emas")).toBeInTheDocument();

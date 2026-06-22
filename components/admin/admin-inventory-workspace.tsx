@@ -318,10 +318,10 @@ function InventoryHistoryList({
                 <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
                   <ActionIcon className="size-4.5" />
                 </span>
-                <div className="min-w-0 lg:min-w-0">
+                <div className="min-w-0 lg:min-w-0 lg:pt-0.5">
                   <div
                     className={cn(
-                      "inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.08em]",
+                      "inline-flex min-w-[8.5rem] max-w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.06em]",
                       historyToneClasses[entry.actionTone]
                     )}
                   >
