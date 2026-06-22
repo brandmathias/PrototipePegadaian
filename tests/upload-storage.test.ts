@@ -3,12 +3,19 @@ import { afterEach, describe, expect, it } from "vitest";
 
 describe("upload storage helpers", () => {
   const originalUploadsDir = process.env.UPLOADS_DIR;
+  const originalBundledUploadsDir = process.env.BUNDLED_UPLOADS_DIR;
 
   afterEach(() => {
     if (originalUploadsDir === undefined) {
       delete process.env.UPLOADS_DIR;
     } else {
       process.env.UPLOADS_DIR = originalUploadsDir;
+    }
+
+    if (originalBundledUploadsDir === undefined) {
+      delete process.env.BUNDLED_UPLOADS_DIR;
+    } else {
+      process.env.BUNDLED_UPLOADS_DIR = originalBundledUploadsDir;
     }
   });
 
@@ -38,6 +45,7 @@ describe("upload storage helpers", () => {
 
   it("falls back to bundled uploads when a configured volume does not contain legacy media", async () => {
     process.env.UPLOADS_DIR = path.join(process.cwd(), ".tmp-production-uploads");
+    process.env.BUNDLED_UPLOADS_DIR = path.join(process.cwd(), ".tmp-bundled-uploads");
 
     const { resolvePublicUploadPaths } = await import("@/lib/uploads/storage");
     const mediaPath = [
@@ -47,15 +55,16 @@ describe("upload storage helpers", () => {
 
     expect(resolvePublicUploadPaths(mediaPath)).toEqual([
       path.join(process.cwd(), ".tmp-production-uploads", ...mediaPath),
-      path.join(process.cwd(), "public", "uploads", ...mediaPath)
+      path.join(process.cwd(), ".tmp-bundled-uploads", ...mediaPath)
     ]);
   });
 
   it("serves bundled legacy media when the persistent volume is empty", async () => {
     process.env.UPLOADS_DIR = path.join(process.cwd(), ".tmp-production-uploads");
+    process.env.BUNDLED_UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 
     const fileName =
-      "1779802393085-3c5f13ca-a6a5-432e-9ac7-83b4428e69a6-pexels-arjunadinata-32266896.jpg";
+      "1779755291313-bf0ae1c7-47da-46ec-b0a9-37740995d0e9-pexels-sejio402-34372588.jpg";
     const { HEAD } = await import("@/app/uploads/[...path]/route");
     const response = await HEAD(new Request(`http://localhost/uploads/barang/${fileName}`), {
       params: Promise.resolve({ path: ["barang", fileName] })
@@ -63,6 +72,6 @@ describe("upload storage helpers", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/jpeg");
-    expect(response.headers.get("content-length")).toBe("162845");
+    expect(response.headers.get("content-length")).toBe("962082");
   });
 });

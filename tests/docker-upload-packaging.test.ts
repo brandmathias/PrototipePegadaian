@@ -16,4 +16,15 @@ describe("Docker upload packaging", () => {
     expect(ignoredPaths).not.toContain("public/uploads/blacklist-review");
     expect(ignoredPaths).not.toContain("public/uploads/serah-terima");
   });
+
+  it("moves recovery media outside the persistent mount before the Next build", async () => {
+    const dockerfile = await readFile(path.join(process.cwd(), "Dockerfile"), "utf8");
+    const moveUploadsAt = dockerfile.indexOf("/app/public/uploads /app/bundled-uploads");
+    const buildAt = dockerfile.indexOf("RUN npm run build");
+
+    expect(dockerfile).toContain("ENV BUNDLED_UPLOADS_DIR=/app/bundled-uploads");
+    expect(moveUploadsAt).toBeGreaterThan(-1);
+    expect(moveUploadsAt).toBeLessThan(buildAt);
+    expect(dockerfile).toContain("/app/bundled-uploads ./bundled-uploads");
+  });
 });

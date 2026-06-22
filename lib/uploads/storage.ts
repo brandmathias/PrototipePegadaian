@@ -20,6 +20,11 @@ function defaultUploadsRoot() {
   return path.join(process.cwd(), "public", "uploads");
 }
 
+function bundledUploadsRoot() {
+  const configuredRoot = process.env.BUNDLED_UPLOADS_DIR?.trim();
+  return path.resolve(configuredRoot || defaultUploadsRoot());
+}
+
 function assertSafeSegment(segment: string) {
   if (!segment || segment === "." || segment === ".." || /[\\/]/.test(segment)) {
     throw new Error("Path upload tidak valid.");
@@ -89,9 +94,7 @@ export function resolvePublicUploadPaths(segments: string[] | undefined) {
 
   try {
     const safeSegments = decodedSegments.map(assertSafeSegment);
-    const roots = Array.from(
-      new Set([getUploadsRoot(), path.resolve(defaultUploadsRoot())])
-    );
+    const roots = Array.from(new Set([getUploadsRoot(), bundledUploadsRoot()]));
 
     return roots
       .map((root) => assertInsideUploads(path.resolve(root, ...safeSegments), root))

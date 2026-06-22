@@ -13,6 +13,8 @@ FROM base AS builder
 RUN apk add --no-cache libc6-compat
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mv /app/public/uploads /app/bundled-uploads \
+  && mkdir -p /app/public/uploads
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/pegadaian_build
 ARG BETTER_AUTH_URL=http://localhost:3000
 ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -34,12 +36,14 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV BUNDLED_UPLOADS_DIR=/app/bundled-uploads
 
 RUN apk add --no-cache libc6-compat \
   && addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/bundled-uploads ./bundled-uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
