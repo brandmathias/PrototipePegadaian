@@ -284,9 +284,9 @@ function InventoryHistoryList({
 
   return (
     <div>
-      <div className="hidden border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[7.2rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]">
+      <div className="hidden border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]">
         <div className="px-3.5 py-3.5">Status</div>
-        <div className="px-3.5 py-3.5">Informasi Barang</div>
+        <div className="px-3.5 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
         <div className="px-3.5 py-3.5">Kategori</div>
         <div className="px-3.5 py-3.5">Nasabah Pemilik</div>
         <div className="px-3.5 py-3.5">

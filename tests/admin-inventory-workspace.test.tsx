@@ -163,9 +163,13 @@ describe("AdminInventoryHistoryWorkspace", () => {
     const statusBadge = screen.getAllByText("Barang Masuk").find((element) => element.tagName.toLowerCase() === "div");
     const historyRow = screen.getByText("Motor Racing").closest('[class*="lg:grid-cols-"]');
     const infoCell = screen.getByText("Motor Racing").closest("div.flex")?.parentElement;
+    const headerRow = screen.getByText("Informasi Barang").closest('[class*="lg:grid-cols-"]');
+    const infoHeader = screen.getByText("Informasi Barang").closest("div.px-3\\.5");
 
     expect(statusBadge).toHaveClass("whitespace-nowrap");
     expect(statusBadge).toHaveClass("min-w-[8.5rem]");
+    expect(headerRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
+    expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
     expect(historyRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
     expect(infoCell).toHaveClass("lg:pl-2");
 
