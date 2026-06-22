@@ -18,13 +18,8 @@ pnpm-debug.log*
 /.tmp-*.png
 /nota-output-check.png
 
-# Runtime uploads are stored on the Dokploy volume or UPLOADS_DIR.
-# Keep static design assets under public/uploads, but do not bake buyer/admin
-# uploaded media into the Docker image.
-public/uploads/barang
-public/uploads/bukti
-public/uploads/blacklist-review
-public/uploads/serah-terima
+# Tracked uploads are packaged as a recovery fallback. Production uploads
+# should still use a persistent Dokploy volume through UPLOADS_DIR.
 
 Dockerfile
 .dockerignore
