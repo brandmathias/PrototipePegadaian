@@ -43,6 +43,7 @@ import {
   isAdminInventoryReadyForMarketing
 } from "@/lib/admin-unit/operational-metrics";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { ADMIN_UNIT_CATEGORY_OPTIONS } from "@/lib/catalog/categories";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,10 @@ type AdminBarangHistoryEntry = {
   createdAt: string;
   createdAtLabel: string;
 };
+
+const ADMIN_HISTORY_CATEGORY_LABELS = new Map(
+  ADMIN_UNIT_CATEGORY_OPTIONS.map((option) => [String(option.value), option.label])
+);
 
 function getInventoryDaysUntil(dateLabel: string | null | undefined) {
   if (!dateLabel || dateLabel === "-") return null;
@@ -279,11 +284,12 @@ function InventoryHistoryList({
 
   return (
     <div>
-      <div className="hidden gap-3.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]">
+      <div className="hidden gap-3.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]">
         <div className="px-3.5 py-3.5">Status</div>
         <div className="px-3.5 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
         <div className="px-3.5 py-3.5">Kategori</div>
         <div className="px-3.5 py-3.5">Nasabah Pemilik</div>
+        <div className="px-3.5 py-3.5">Aktor Internal</div>
         <div className="px-3.5 py-3.5">
           <button
             aria-label={`Urutkan Waktu Proses ${sortDirection === "desc" ? "terlama dulu" : "terbaru dulu"}`}
@@ -306,7 +312,7 @@ function InventoryHistoryList({
 
           return (
             <div
-              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem] lg:items-center"
+              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem] lg:items-center"
               key={entry.id}
             >
               <div className="flex min-w-0 items-start gap-3 lg:block">
@@ -353,6 +359,15 @@ function InventoryHistoryList({
                     <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-[#52655d]">{entry.customerNumber || "-"}</p>
                   </div>
                 </div>
+              </div>
+
+              <div className="min-w-0">
+                <p
+                  className="truncate text-[0.78rem] font-black tracking-[-0.01em] text-[#13211c]"
+                  title={entry.actorName || "Admin Unit"}
+                >
+                  {entry.actorName || "Admin Unit"}
+                </p>
               </div>
 
               <div className="min-w-0">
@@ -532,6 +547,7 @@ function HistoryPrintDocument({
               <th className="px-3 py-3">Informasi Barang</th>
               <th className="w-[10.5rem] px-3 py-3">Kategori</th>
               <th className="w-[11.5rem] px-3 py-3">Nasabah</th>
+              <th className="w-[10.5rem] px-3 py-3">Aktor Internal</th>
               <th className="w-[14.5rem] px-3 py-3">Waktu Proses</th>
             </tr>
           </thead>
@@ -571,6 +587,11 @@ function HistoryPrintDocument({
                     </p>
                   </td>
                   <td className="px-3 py-3">
+                    <p className="whitespace-normal break-words font-black text-[#13211c]">
+                      {entry.actorName || "Admin Unit"}
+                    </p>
+                  </td>
+                  <td className="px-3 py-3">
                     <p className="whitespace-normal break-words font-black leading-5 text-[#13211c]">
                       {entry.createdAtLabel}
                     </p>
@@ -582,7 +603,7 @@ function HistoryPrintDocument({
               ))
             ) : (
               <tr>
-                <td className="px-4 py-8 text-center text-sm font-bold text-[#52655d]" colSpan={6}>
+                <td className="px-4 py-8 text-center text-sm font-bold text-[#52655d]" colSpan={7}>
                   Tidak ada catatan yang cocok dengan filter laporan.
                 </td>
               </tr>
@@ -893,7 +914,11 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   }, [datePickerOpen]);
 
   const categories = useMemo(() => {
-    return ["SEMUA", ...new Set(history.map((entry) => String(entry.category ?? "").trim()).filter(Boolean))];
+    const masterCategories = ADMIN_UNIT_CATEGORY_OPTIONS.map((option) => String(option.value));
+    const historyCategories = history.map((entry) => String(entry.category ?? "").trim()).filter(Boolean);
+    const extraCategories = historyCategories.filter((category) => !masterCategories.includes(category));
+
+    return ["SEMUA", ...masterCategories, ...Array.from(new Set(extraCategories))];
   }, [history]);
 
   const filteredHistory = useMemo(() => {
@@ -1163,7 +1188,10 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={categories.map((category) => ({
               value: category,
-              label: category === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(category)
+              label:
+                category === "SEMUA"
+                  ? "Semua Kategori"
+                  : (ADMIN_HISTORY_CATEGORY_LABELS.get(category) ?? formatDisplayLabel(category))
             }))}
             value={categoryFilter}
             onValueChange={setCategoryFilter}

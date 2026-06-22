@@ -48,6 +48,44 @@ describe("AdminInventoryDetailPage", () => {
     expect(screen.getByRole("link", { name: /lelang lagi/i })).toBeInTheDocument();
   });
 
+  it("shows asset chronology from first action to latest with internal actors", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={baseItem}
+        history={[
+          {
+            id: "hist-latest",
+            barangId: "barang-demo",
+            actionLabel: "Dipasarkan",
+            actionKey: "dipasarkan",
+            note: "Barang dipublikasikan ke katalog.",
+            actorName: "Admin Pemasaran",
+            createdAtLabel: "3 Jun 2026, 10.00 WIB",
+          },
+          {
+            id: "hist-first",
+            barangId: "barang-demo",
+            actionLabel: "Barang Masuk",
+            actionKey: "input_baru",
+            note: "Barang dicatat sebagai barang jaminan unit.",
+            actorName: "Admin Input",
+            createdAtLabel: "1 Jun 2026, 09.00 WIB",
+          },
+        ]}
+      />,
+    );
+
+    const timeline = screen.getByText("Riwayat Kronologi Aset").closest("aside");
+
+    expect(timeline).not.toBeNull();
+    expect(timeline).toHaveTextContent("Aktor Internal: Admin Input");
+    expect(timeline).toHaveTextContent("Aktor Internal: Admin Pemasaran");
+    expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
+
+    const timelineText = timeline?.textContent ?? "";
+    expect(timelineText.indexOf("Barang Masuk")).toBeLessThan(timelineText.indexOf("Dipasarkan"));
+  });
+
   it("switches additional media thumbnails into the main preview", () => {
     render(
       <AdminInventoryDetailPage

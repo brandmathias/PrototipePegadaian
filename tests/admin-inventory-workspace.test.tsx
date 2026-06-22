@@ -169,9 +169,13 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(statusBadge).toHaveClass("whitespace-nowrap");
     expect(statusBadge).toHaveClass("min-w-[8.5rem]");
     expect(headerRow).toHaveClass("gap-3.5");
-    expect(headerRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
+    expect(headerRow).toHaveClass(
+      "lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+    );
     expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
-    expect(historyRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
+    expect(historyRow).toHaveClass(
+      "lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+    );
     expect(infoCell).toHaveClass("lg:pl-2");
 
     fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "ditebus" } });
@@ -359,8 +363,9 @@ describe("AdminInventoryHistoryWorkspace", () => {
 
     expect(screen.getByText("Informasi Barang")).toBeInTheDocument();
     expect(screen.queryByText("Komoditas Jaminan")).not.toBeInTheDocument();
-    expect(screen.queryByText("Aktor Internal")).not.toBeInTheDocument();
-    expect(screen.queryByText("Operator Arsip")).not.toBeInTheDocument();
+    expect(screen.getByText("Aktor Internal")).toBeInTheDocument();
+    expect(screen.getByText("Operator Arsip")).toBeInTheDocument();
+    expect(screen.queryByText("ADMIN UNIT")).not.toBeInTheDocument();
     expect(screen.getByText("31 Mei 2026, 09:12:33 WIB")).not.toHaveClass("font-mono");
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
       "hover:bg-[#006747]",
@@ -423,7 +428,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(report).toHaveTextContent("Barang dipublikasikan ke katalog dengan catatan proses yang cukup panjang.");
     expect(report).toHaveTextContent("Dokumen ini dihasilkan otomatis dari sistem Ruang Agunan");
     expect(report).toHaveTextContent("Admin Unit");
-    expect(report).not.toHaveTextContent("Aktor Internal");
+    expect(report).toHaveTextContent("Aktor Internal");
 
     const reportClasses = Array.from(report.querySelectorAll("[class]"))
       .map((element) => element.getAttribute("class") ?? "")
@@ -445,6 +450,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(printCss).toContain("size: auto;");
     expect(printCss).toContain("@media print and (orientation: portrait)");
     expect(printCss).toContain(".admin-history-print-table th:nth-child(6)");
+    expect(printCss).toContain(".admin-history-print-table th:nth-child(7)");
     expect(printCss).not.toContain("size: A4 landscape");
 
     printSpy.mockRestore();
@@ -503,8 +509,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
     const categoryTrigger = categorySelect.closest(".admin-select-root")?.querySelector("button");
 
     expect(categoryTrigger?.querySelectorAll("svg")).toHaveLength(1);
+    expect(screen.getByRole("option", { name: "Perhiasan" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Logam Mulia" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Elektronik" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Kendaraan" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Lainnya" })).toBeInTheDocument();
 
     fireEvent.change(categorySelect, { target: { value: "elektronik" } });
 

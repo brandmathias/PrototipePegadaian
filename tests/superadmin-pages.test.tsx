@@ -1346,7 +1346,12 @@ describe("superadmin pages", () => {
     expect(fixedPriceHandoverPanel).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]");
     expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cetak Nota" })).not.toBeInTheDocument();
-    expect(screen.getByText("Riwayat Kronologi Aset")).toBeInTheDocument();
+    const timeline = screen.getByText("Riwayat Kronologi Aset").closest("aside");
+    expect(timeline).not.toBeNull();
+    expect(timeline).toHaveTextContent("Aktor Internal: Admin Unit");
+    expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
+    const timelineText = timeline?.textContent ?? "";
+    expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(timelineText.indexOf("Terjual"));
     expect(screen.queryByText("Edit Data Barang")).not.toBeInTheDocument();
     expect(screen.queryByText("Pasarkan Barang")).not.toBeInTheDocument();
     expect(screen.queryByText("Catat Penebusan")).not.toBeInTheDocument();

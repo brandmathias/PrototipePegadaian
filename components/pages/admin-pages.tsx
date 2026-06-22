@@ -308,6 +308,72 @@ function splitTimelineStamp(label: string | null | undefined) {
   return { date: normalized, time: "" };
 }
 
+const TIMELINE_MONTH_INDEX: Record<string, number> = {
+  januari: 0,
+  jan: 0,
+  februari: 1,
+  feb: 1,
+  maret: 2,
+  mar: 2,
+  april: 3,
+  apr: 3,
+  mei: 4,
+  juni: 5,
+  jun: 5,
+  juli: 6,
+  jul: 6,
+  agustus: 7,
+  agu: 7,
+  ags: 7,
+  september: 8,
+  sep: 8,
+  oktober: 9,
+  okt: 9,
+  november: 10,
+  nov: 10,
+  desember: 11,
+  des: 11,
+};
+
+function parseTimelineTime(label: string | null | undefined) {
+  const normalized = String(label ?? "").trim();
+  if (!normalized || normalized === "-") return Number.POSITIVE_INFINITY;
+
+  const localizedMatch = normalized.match(
+    /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:,\s*(\d{1,2})[.:](\d{2})(?::(\d{2}))?)?/,
+  );
+
+  if (localizedMatch) {
+    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] = localizedMatch;
+    const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
+
+    if (typeof month === "number") {
+      return new Date(
+        Number(year),
+        month,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second),
+      ).getTime();
+    }
+  }
+
+  const parsed = Date.parse(normalized);
+  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
+}
+
+function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(entries: T[]) {
+  return entries
+    .map((entry, index) => ({
+      entry,
+      index,
+      time: parseTimelineTime(entry.createdAtLabel),
+    }))
+    .sort((left, right) => left.time - right.time || left.index - right.index)
+    .map(({ entry }) => entry);
+}
+
 function AdminAuctionDeadline({
   auction,
   prefix,
@@ -740,7 +806,7 @@ export function AdminInventoryDetailPage({
       ),
     ) ?? specificationRows[1];
   const canEditItem = ["GADAI", "JAMINAN", "GAGAL"].includes(String(item.status));
-  const timelineEntries =
+  const timelineSourceEntries =
     history.length > 0
       ? history
       : [
@@ -754,6 +820,7 @@ export function AdminInventoryDetailPage({
             createdAtLabel: item.pawnedAt || item.date || "-",
           },
         ];
+  const timelineEntries = sortTimelineEntries(timelineSourceEntries);
   const summaryMetrics = [
     {
       label: "Kategori",
@@ -1010,8 +1077,8 @@ export function AdminInventoryDetailPage({
           </section>
         </div>
 
-        <div>
-          <aside className="h-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="min-h-0">
+          <aside className="flex h-full max-h-[min(44rem,calc(100vh-8rem))] min-h-0 flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
             <div className="px-4 py-4">
               <div className="flex items-center gap-3">
                 <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
@@ -1023,7 +1090,7 @@ export function AdminInventoryDetailPage({
               </div>
             </div>
 
-            <div className="relative px-4 pb-4">
+            <div className="scrollbar-none relative min-h-0 flex-1 overflow-y-auto px-4 pb-4">
               <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
               {timelineEntries.map((entry) => {
                 const iconMap = {
@@ -1054,6 +1121,9 @@ export function AdminInventoryDetailPage({
                       </h3>
                       <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
                         {entry.note}
+                      </p>
+                      <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
+                        Aktor Internal: {entry.actorName || "Admin Unit"}
                       </p>
                     </div>
                     <div className="pt-0.5 text-right text-[0.82rem] leading-6 text-[#667085]">

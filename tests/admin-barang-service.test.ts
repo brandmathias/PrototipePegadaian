@@ -493,4 +493,63 @@ describe("listAdminBarangHistory", () => {
       })
     ]);
   });
+
+  it("keeps internal actor names from status and extension history joins", async () => {
+    const baseRow = {
+      barangId: "barang-actor",
+      barangCode: "BRG-ACTOR",
+      barangName: "Kalung Emas",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Barang perhiasan.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-ACTOR"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-status-actor",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang dicatat oleh admin unit.",
+            actorName: "Admin Unit Ranotana",
+            actorRole: "admin_unit",
+            createdAt: new Date("2026-06-03T04:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-extension-actor",
+            note: "Jatuh tempo diperpanjang.",
+            actorName: "Operator Arsip Ranotana",
+            actorRole: "admin_unit",
+            createdAt: new Date("2026-06-03T05:00:00.000Z")
+          }
+        ])
+      );
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "hist-extension-actor",
+        actionKey: "perpanjangan",
+        actorName: "Operator Arsip Ranotana",
+        actorRole: "admin_unit"
+      }),
+      expect.objectContaining({
+        id: "hist-status-actor",
+        actionKey: "input_baru",
+        actorName: "Admin Unit Ranotana",
+        actorRole: "admin_unit"
+      })
+    ]);
+  });
 });

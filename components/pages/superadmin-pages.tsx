@@ -269,6 +269,72 @@ export type SuperAdminUnitBarangHistoryEntry = {
   createdAtLabel: string;
 };
 
+const TIMELINE_MONTH_INDEX: Record<string, number> = {
+  januari: 0,
+  jan: 0,
+  februari: 1,
+  feb: 1,
+  maret: 2,
+  mar: 2,
+  april: 3,
+  apr: 3,
+  mei: 4,
+  juni: 5,
+  jun: 5,
+  juli: 6,
+  jul: 6,
+  agustus: 7,
+  agu: 7,
+  ags: 7,
+  september: 8,
+  sep: 8,
+  oktober: 9,
+  okt: 9,
+  november: 10,
+  nov: 10,
+  desember: 11,
+  des: 11,
+};
+
+function parseTimelineTime(label: string | null | undefined) {
+  const normalized = String(label ?? "").trim();
+  if (!normalized || normalized === "-") return Number.POSITIVE_INFINITY;
+
+  const localizedMatch = normalized.match(
+    /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:,\s*(\d{1,2})[.:](\d{2})(?::(\d{2}))?)?/,
+  );
+
+  if (localizedMatch) {
+    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] = localizedMatch;
+    const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
+
+    if (typeof month === "number") {
+      return new Date(
+        Number(year),
+        month,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second),
+      ).getTime();
+    }
+  }
+
+  const parsed = Date.parse(normalized);
+  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
+}
+
+function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(entries: T[]) {
+  return entries
+    .map((entry, index) => ({
+      entry,
+      index,
+      time: parseTimelineTime(entry.createdAtLabel),
+    }))
+    .sort((left, right) => left.time - right.time || left.index - right.index)
+    .map(({ entry }) => entry);
+}
+
 export type SuperAdminUnitBarangDetail = {
   unit: {
     id: string;
@@ -4822,7 +4888,7 @@ function SuperAdminAssetTimeline({
   history: SuperAdminUnitBarangHistoryEntry[];
   item: SuperAdminUnitBarangDetail["item"];
 }) {
-  const timelineEntries =
+  const timelineSourceEntries =
     history.length > 0
       ? history
       : [
@@ -4836,6 +4902,7 @@ function SuperAdminAssetTimeline({
             createdAtLabel: String(item.pawnedAt ?? item.date ?? "-"),
           },
         ];
+  const timelineEntries = sortTimelineEntries(timelineSourceEntries);
   const iconMap: Record<SuperAdminUnitBarangHistoryEntry["actionKey"], LucideIcon> = {
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
@@ -4879,10 +4946,13 @@ function SuperAdminAssetTimeline({
                 <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
                   {entry.actionLabel}
                 </h3>
-                <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
-                  {entry.note}
-                </p>
-              </div>
+              <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
+                {entry.note}
+              </p>
+              <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
+                Aktor Internal: {entry.actorName || "Admin Unit"}
+              </p>
+            </div>
               <div className="pt-0.5 text-right text-[0.78rem] leading-6 text-[#667085]">
                 <p>{stamp[0]?.trim() || "-"}</p>
                 <p>{stamp.slice(1).join(",").trim()}</p>
