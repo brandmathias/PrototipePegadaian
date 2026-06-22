@@ -1028,12 +1028,12 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
     <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd] print:rounded-none print:bg-white print:shadow-none print:ring-0">
       <div className="print:hidden">
         <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
-          <div className="relative min-w-0">
-            <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
+        <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative min-w-0 xl:w-[38rem] xl:max-w-[58%]">
+            <Search className="absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-[#0a6a49]/42" />
             <Input
-              className="h-12 rounded-[1.15rem] border border-[#dce9df] bg-white pl-12 text-sm font-semibold shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:bg-white focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8"
-              placeholder="Cari berdasarkan barang, nama nasabah, atau staf penginput..."
+              className="h-11 rounded-[1rem] border border-[#dce9df] bg-white pl-10 pr-3.5 text-[0.83rem] font-semibold shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:bg-white focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8"
+              placeholder="Cari barang, nasabah, atau staf penginput"
               value={query}
               onChange={(event) => {
                 const value = event.target.value;
@@ -1042,30 +1042,32 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             />
           </div>
 
-          <button
-            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-[0.78rem] font-black text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={!hasActiveFilter}
-            type="button"
-            onClick={resetFilters}
-          >
-            <RefreshCw className="size-4" />
-            Reset Filter
-          </button>
-          <button
-            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#0a6a49]/30 hover:text-[#006747]"
-            type="button"
-            onClick={printHistoryReport}
-          >
-            <Printer className="size-5" />
-            Cetak
-          </button>
+          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[1rem] px-3.5 text-[0.76rem] font-black text-[#66756e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!hasActiveFilter}
+              type="button"
+              onClick={resetFilters}
+            >
+              <RefreshCw className="size-3.5" />
+              Reset Filter
+            </button>
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[1rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#0a6a49]/30 hover:text-[#006747]"
+              type="button"
+              onClick={printHistoryReport}
+            >
+              <Printer className="size-5" />
+              Cetak
+            </button>
+          </div>
         </div>
 
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <div className="mt-2.5 grid max-w-[53rem] gap-2.5 md:grid-cols-[17rem_15rem_16rem]">
           <div className="relative" ref={popoverRef}>
             <button
               className={cn(
-                "flex h-12 w-full items-center justify-between gap-3 rounded-[1.15rem] border px-4 text-left text-[0.78rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
+                "flex h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
                 datePickerOpen || timelineFilter !== "all"
                   ? "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10"
                   : "border-[#dce9df] bg-white text-[#13211c]"
@@ -1178,14 +1180,14 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
 
           <AdminSelect
             ariaLabel="Filter proses riwayat barang"
-            className="w-full"
+            className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={historyFilterOptions}
             value={actionFilter}
             onValueChange={(nextValue) => setActionFilter(nextValue as typeof actionFilter)}
           />
           <AdminSelect
             ariaLabel="Filter kategori riwayat barang"
-            className="w-full"
+            className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={categories.map((category) => ({
               value: category,
               label: category === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(category),

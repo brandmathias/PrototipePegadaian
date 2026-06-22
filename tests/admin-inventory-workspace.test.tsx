@@ -354,7 +354,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     );
 
     const searchInput = screen.getByPlaceholderText(
-      "Cari berdasarkan barang, nama nasabah, atau staf penginput..."
+      "Cari barang, nasabah, atau staf penginput"
     );
     const timelineButton = screen.getByRole("button", { name: /Linimasa:/i });
     expect(searchInput.parentElement?.parentElement).not.toContainElement(timelineButton);
