@@ -281,14 +281,21 @@ function InventoryHistoryList({
   sortDirection: "asc" | "desc";
 }) {
   const TimeSortIcon = sortDirection === "desc" ? ArrowDown : ArrowUp;
+  const historyGridTemplate =
+    "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]";
 
   return (
     <div>
-      <div className="hidden gap-3.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]">
-        <div className="px-3.5 py-3.5">Status</div>
+      <div
+        className={cn(
+          "hidden gap-3.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid",
+          historyGridTemplate
+        )}
+      >
         <div className="px-3.5 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
         <div className="px-3.5 py-3.5">Kategori</div>
         <div className="px-3.5 py-3.5">Nasabah Pemilik</div>
+        <div className="px-3.5 py-3.5">Status</div>
         <div className="px-3.5 py-3.5">Aktor Internal</div>
         <div className="px-3.5 py-3.5">
           <button
@@ -312,26 +319,12 @@ function InventoryHistoryList({
 
           return (
             <div
-              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem] lg:items-center"
+              className={cn(
+                "grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:items-center",
+                historyGridTemplate
+              )}
               key={entry.id}
             >
-              <div className="flex min-w-0 items-start gap-3 lg:block">
-                <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
-                  <ActionIcon className="size-4.5" />
-                </span>
-                <div className="min-w-0 lg:min-w-0 lg:pt-0.5">
-                  <div
-                    className={cn(
-                      "inline-flex min-w-[8.5rem] max-w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.06em]",
-                      historyToneClasses[entry.actionTone]
-                    )}
-                  >
-                    <span className="size-1.5 shrink-0 rounded-full bg-current" />
-                    {entry.actionLabel}
-                  </div>
-                </div>
-              </div>
-
               <div className="min-w-0 lg:pl-2">
                 <p className="min-w-0 font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
                 <p className="mt-1 truncate font-mono text-[0.68rem] font-black uppercase tracking-[0.03em] text-[#52655d]">
@@ -357,6 +350,23 @@ function InventoryHistoryList({
                   <div className="min-w-0">
                     <p className="truncate font-black text-[#13211c]">{entry.ownerName}</p>
                     <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-[#52655d]">{entry.customerNumber || "-"}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex min-w-0 items-start gap-3 lg:block">
+                <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
+                  <ActionIcon className="size-4.5" />
+                </span>
+                <div className="min-w-0 lg:min-w-0 lg:pt-0.5">
+                  <div
+                    className={cn(
+                      "inline-flex min-w-[8.5rem] max-w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.06em]",
+                      historyToneClasses[entry.actionTone]
+                    )}
+                  >
+                    <span className="size-1.5 shrink-0 rounded-full bg-current" />
+                    {entry.actionLabel}
                   </div>
                 </div>
               </div>
@@ -543,10 +553,10 @@ function HistoryPrintDocument({
           <thead className="bg-[#eff7f1] text-[0.58rem] uppercase tracking-[0.16em] text-[#344c40]">
             <tr>
               <th className="w-[3rem] px-3 py-3">#</th>
-              <th className="w-[8.8rem] px-3 py-3">Status</th>
               <th className="px-3 py-3">Informasi Barang</th>
               <th className="w-[10.5rem] px-3 py-3">Kategori</th>
               <th className="w-[11.5rem] px-3 py-3">Nasabah</th>
+              <th className="w-[8.8rem] px-3 py-3">Status</th>
               <th className="w-[10.5rem] px-3 py-3">Aktor Internal</th>
               <th className="w-[14.5rem] px-3 py-3">Waktu Proses</th>
             </tr>
@@ -556,16 +566,6 @@ function HistoryPrintDocument({
               entries.map((entry, index) => (
                 <tr className="break-inside-avoid bg-white align-top" key={entry.id}>
                   <td className="px-3 py-3 font-black text-[#0a6a49]">{index + 1}</td>
-                  <td className="px-3 py-3">
-                    <span
-                      className={cn(
-                        "admin-history-print-status inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
-                        historyToneClasses[entry.actionTone]
-                      )}
-                    >
-                      {entry.actionLabel}
-                    </span>
-                  </td>
                   <td className="px-3 py-3">
                     <p className="whitespace-normal break-words font-black text-[#13211c]">{entry.barangName}</p>
                     <p className="mt-1 whitespace-normal break-words font-mono text-[0.62rem] font-black text-[#52655d]">
@@ -585,6 +585,16 @@ function HistoryPrintDocument({
                     <p className="mt-1 whitespace-normal break-words text-[0.66rem] font-semibold text-[#52655d]">
                       {entry.customerNumber || "-"}
                     </p>
+                  </td>
+                  <td className="px-3 py-3">
+                    <span
+                      className={cn(
+                        "admin-history-print-status inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
+                        historyToneClasses[entry.actionTone]
+                      )}
+                    >
+                      {entry.actionLabel}
+                    </span>
                   </td>
                   <td className="px-3 py-3">
                     <p className="whitespace-normal break-words font-black text-[#13211c]">

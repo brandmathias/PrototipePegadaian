@@ -970,19 +970,19 @@
     }
 
     .admin-history-print-table th:nth-child(2) {
-      width: 11.5% !important;
-    }
-
-    .admin-history-print-table th:nth-child(3) {
       width: 22% !important;
     }
 
-    .admin-history-print-table th:nth-child(4) {
+    .admin-history-print-table th:nth-child(3) {
       width: 13% !important;
     }
 
-    .admin-history-print-table th:nth-child(5) {
+    .admin-history-print-table th:nth-child(4) {
       width: 14% !important;
+    }
+
+    .admin-history-print-table th:nth-child(5) {
+      width: 10.5% !important;
     }
 
     .admin-history-print-table th:nth-child(6) {
@@ -990,7 +990,7 @@
     }
 
     .admin-history-print-table th:nth-child(7) {
-      width: 22.5% !important;
+      width: 23.5% !important;
     }
 
     .admin-history-print-status {

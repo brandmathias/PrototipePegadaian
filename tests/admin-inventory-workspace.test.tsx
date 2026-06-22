@@ -170,11 +170,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(statusBadge).toHaveClass("min-w-[8.5rem]");
     expect(headerRow).toHaveClass("gap-3.5");
     expect(headerRow).toHaveClass(
-      "lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+      "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
     );
     expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
     expect(historyRow).toHaveClass(
-      "lg:grid-cols-[8.6rem_minmax(13rem,1.35fr)_8.8rem_minmax(9.8rem,0.85fr)_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+      "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
     );
     expect(infoCell).toHaveClass("lg:pl-2");
 
@@ -367,6 +367,27 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(screen.getByText("Operator Arsip")).toBeInTheDocument();
     expect(screen.queryByText("ADMIN UNIT")).not.toBeInTheDocument();
     expect(screen.getByText("31 Mei 2026, 09:12:33 WIB")).not.toHaveClass("font-mono");
+
+    const headerRow = screen.getByText("Informasi Barang").closest('[class*="lg:grid-cols-"]');
+    const historyRow = screen.getByText("Ipad Terbaru").closest('[class*="lg:grid-cols-"]');
+    const headerLabels = Array.from(headerRow?.children ?? []).map((cell) =>
+      (cell.textContent ?? "").replace(/\s+/g, " ").trim()
+    );
+    const rowCells = Array.from(historyRow?.children ?? []);
+
+    expect(headerLabels).toEqual([
+      "Informasi Barang",
+      "Kategori",
+      "Nasabah Pemilik",
+      "Status",
+      "Aktor Internal",
+      "Waktu Proses",
+      "Aksi"
+    ]);
+    expect(rowCells[0]).toHaveTextContent("Ipad Terbaru");
+    expect(rowCells[3]).toHaveTextContent("Barang Masuk");
+    expect(rowCells[4]).toHaveTextContent("Operator Arsip");
+
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
       "hover:bg-[#006747]",
       "hover:text-white"
@@ -429,6 +450,24 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(report).toHaveTextContent("Dokumen ini dihasilkan otomatis dari sistem Ruang Agunan");
     expect(report).toHaveTextContent("Admin Unit");
     expect(report).toHaveTextContent("Aktor Internal");
+
+    const printHeaderLabels = Array.from(report.querySelectorAll("thead th")).map((cell) =>
+      (cell.textContent ?? "").replace(/\s+/g, " ").trim()
+    );
+    const printCells = Array.from(report.querySelectorAll("tbody tr:first-child td"));
+
+    expect(printHeaderLabels).toEqual([
+      "#",
+      "Informasi Barang",
+      "Kategori",
+      "Nasabah",
+      "Status",
+      "Aktor Internal",
+      "Waktu Proses"
+    ]);
+    expect(printCells[1]).toHaveTextContent("Ipad Terbaru Dengan Nama Panjang");
+    expect(printCells[4]).toHaveTextContent("Dipasarkan");
+    expect(printCells[5]).toHaveTextContent("Admin Unit");
 
     const reportClasses = Array.from(report.querySelectorAll("[class]"))
       .map((element) => element.getAttribute("class") ?? "")
