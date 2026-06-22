@@ -311,7 +311,7 @@ function InventoryHistoryList({
 
           return (
             <div
-              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[7.2rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem] lg:items-center"
+              className="grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem] lg:items-center"
               key={entry.id}
             >
               <div className="flex min-w-0 items-start gap-3 lg:block">
@@ -331,7 +331,7 @@ function InventoryHistoryList({
                 </div>
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 lg:pl-2">
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <p className="min-w-0 font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
                   <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#eef2f0] px-2 py-0.5 font-mono text-[0.62rem] font-black text-[#344c40]">
