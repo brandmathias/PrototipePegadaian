@@ -14,7 +14,6 @@ import {
   ChevronRight,
   Clock3,
   Clipboard,
-  Eraser,
   FilePlus2,
   Gavel,
   Gem,
@@ -26,6 +25,7 @@ import {
   Package2,
   PackageCheck,
   Printer,
+  RefreshCw,
   ReceiptText,
   ScrollText,
   Search,
@@ -1028,7 +1028,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
     <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd] print:rounded-none print:bg-white print:shadow-none print:ring-0">
       <div className="print:hidden">
         <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
-        <div className="grid gap-3 xl:grid-cols-[minmax(18rem,1fr)_16rem_12rem_12rem_6.4rem_6.4rem]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(20rem,1fr)_minmax(15rem,0.9fr)_minmax(13rem,0.72fr)_minmax(13rem,0.72fr)_auto_auto]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
             <Input
@@ -1055,7 +1055,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             >
               <span className="flex min-w-0 items-center gap-2">
                 <CalendarClock className="size-4 shrink-0 text-[#0a6a49]" />
-                <span className="truncate">Linimasa: {timelineLabel(timelineFilter, selectedDate)}</span>
+                <span className="whitespace-nowrap">Linimasa: {timelineLabel(timelineFilter, selectedDate)}</span>
               </span>
               <ChevronDown className={cn("size-4 shrink-0 transition duration-500", datePickerOpen && "rotate-180")} />
             </button>
@@ -1175,30 +1175,26 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             onValueChange={setCategoryFilter}
           />
           <button
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[1.15rem] border border-[#fecaca] bg-[#fff7f7] px-4 text-[0.78rem] font-black text-[#dc2626] shadow-[0_14px_30px_-28px_rgba(185,28,28,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-[0.78rem] font-black text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
             disabled={!hasActiveFilter}
             type="button"
             onClick={resetFilters}
           >
-            <Eraser className="size-4" />
-            Clean
+            <RefreshCw className="size-4" />
+            Reset Filter
           </button>
           <button
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:text-[#006747]"
+            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:text-[#006747]"
             type="button"
             onClick={printHistoryReport}
           >
             <Printer className="size-4" />
-            Print
+            Cetak
           </button>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[0.72rem] font-semibold text-[#52655d]">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#f3f8f5] px-3 py-2 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#0a6a49]">
-            <Clock3 className="size-3.5" />
-            {filteredHistory.length} catatan aktivitas
-          </div>
-          <span>
+        <div className="mt-3 flex justify-end text-[0.72rem] font-semibold text-[#52655d]">
+          <span className="text-right">
             Menampilkan audit dari <strong className="font-black text-[#13211c]">{history.length}</strong> aktivitas barang unit.
           </span>
         </div>

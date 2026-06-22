@@ -1926,11 +1926,6 @@ const unitDetailModeOptions = [
   { label: "Lelang Tertutup", value: "vickrey" },
 ] as const;
 
-type UnitDetailSelectOption = {
-  label: string;
-  value: string;
-};
-
 function normalizeUnitDetailOptionValue(value: string) {
   return value.trim().toLowerCase().replace(/[\s-]+/g, "_");
 }
@@ -2001,124 +1996,6 @@ function getUnitDetailMarketingModeValue(value: string) {
 function getUnitDetailMarketingModeLabel(value: string) {
   const modeValue = getUnitDetailMarketingModeValue(value);
   return unitDetailModeOptions.find((option) => option.value === modeValue)?.label ?? value;
-}
-
-function UnitDetailSelect({
-  ariaLabel,
-  icon,
-  label,
-  onChange,
-  options,
-  showActiveState = true,
-  value,
-  widthClass = "min-w-[12rem]",
-}: {
-  ariaLabel: string;
-  icon?: ReactNode;
-  label: string;
-  onChange: (value: string) => void;
-  options: UnitDetailSelectOption[];
-  showActiveState?: boolean;
-  value: string;
-  widthClass?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const listboxId = `${ariaLabel.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-listbox`;
-  const selectedOption = options.find((option) => option.value === value);
-  const triggerLabel = value === unitDetailFilterAll ? label : (selectedOption?.label ?? label);
-  const hasActiveFilter = showActiveState && value !== unitDetailFilterAll;
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
-
-  return (
-    <div className={cn("relative", widthClass)} ref={rootRef}>
-      <button
-        aria-controls={open ? listboxId : undefined}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-label={ariaLabel}
-        className={cn(
-          "group inline-flex h-11 w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 text-left text-sm font-bold shadow-[0_16px_38px_-34px_rgba(8,69,50,0.45)] outline-none transition-[transform,border-color,background-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#fbfefd] focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/10 active:scale-[0.985]",
-          open || hasActiveFilter ? "border-[#9acdaf] text-[#00563b]" : "border-[#d8e4de] text-[#273954]",
-        )}
-        role="combobox"
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          {icon ? <span className="shrink-0 text-[#007a4d]">{icon}</span> : null}
-          <span className="truncate">{triggerLabel}</span>
-        </span>
-        <ChevronDown
-          className={cn(
-            "size-4 shrink-0 text-[#6a7d73] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-            open && "rotate-180 text-[#00563b]",
-          )}
-        />
-      </button>
-
-      <div
-        aria-hidden={!open}
-        className={cn(
-          "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 origin-top overflow-hidden rounded-xl border border-[#d8e4de] bg-white p-1.5 shadow-[0_24px_58px_-34px_rgba(8,69,50,0.42)] ring-1 ring-white/70 transition-[opacity,transform,visibility] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          open
-            ? "visible translate-y-0 scale-100 opacity-100"
-            : "invisible -translate-y-1 scale-[0.98] opacity-0",
-        )}
-        id={listboxId}
-        role="listbox"
-      >
-        {options.map((option) => {
-          const active = option.value === value;
-
-          return (
-            <button
-              aria-selected={active}
-              className={cn(
-                "flex min-h-10 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-bold transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:translate-x-0.5 hover:bg-[#f5faf7] active:scale-[0.99]",
-                active ? "bg-[#eaf8f0] text-[#00563b]" : "text-[#273954]",
-              )}
-              key={option.value}
-              role="option"
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setOpen(false);
-              }}
-            >
-              <span className="truncate">{option.label}</span>
-              {active ? <BadgeCheck className="size-4 shrink-0 text-[#007a4d]" /> : null}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
 }
 
 function getUnitDetailStatusToneClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
@@ -2612,7 +2489,7 @@ function SuperAdminUnitInventorySection({
     });
 
     return [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      { label: "Semua Kategori", value: unitDetailFilterAll },
       ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
         left.label.localeCompare(right.label, "id-ID"),
       ),
@@ -2620,14 +2497,14 @@ function SuperAdminUnitInventorySection({
   }, [items]);
   const statusOptions = useMemo(
     () => [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      { label: "Semua Status", value: unitDetailFilterAll },
       ...unitDetailOperationalStatusOptions.map((status) => ({ label: status, value: status })),
     ],
     [],
   );
   const modeOptions = useMemo(
     () => [
-      { label: unitDetailFilterAll, value: unitDetailFilterAll },
+      { label: "Semua Mode", value: unitDetailFilterAll },
       ...unitDetailModeOptions,
     ],
     [],
@@ -2785,20 +2662,20 @@ function SuperAdminUnitInventorySection({
           })}
         </div>
 
-        <div className="mt-5 rounded-xl border border-[#edf2ee] bg-[#fbfcfb] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+        <div className="mt-5 rounded-[1.35rem] border border-[#edf2ee] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
             <div className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-[#536279]" />
               <input
                 aria-label="Cari nama barang atau ID barang"
-                className="h-11 w-full rounded-xl border border-[#d8e4de] bg-white pl-11 pr-4 text-sm font-semibold text-[#273954] outline-none transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] placeholder:text-[#8a97a8] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                className="h-12 w-full rounded-[1.15rem] border border-[#d8e4de] bg-white pl-11 pr-4 text-sm font-semibold text-[#273954] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-[#8a97a8] focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Cari nama barang atau ID barang..."
                 value={searchQuery}
               />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[12rem_13rem_12.5rem_auto]">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(12.5rem,1fr)_minmax(13.5rem,1fr)_minmax(12.5rem,1fr)_auto]">
               {[
                 {
                   label: "Kategori Barang",
@@ -2819,19 +2696,18 @@ function SuperAdminUnitInventorySection({
                   options: modeOptions,
                 },
               ].map((filter) => (
-                <UnitDetailSelect
+                <AdminSelect
                   ariaLabel={filter.label}
+                  className="w-full"
                   key={filter.label}
-                  label={filter.label}
-                  onChange={filter.onChange}
+                  onValueChange={filter.onChange}
                   options={filter.options}
                   value={filter.value}
-                  widthClass="w-full"
                 />
               ))}
 
               <button
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold text-[#536279] transition-[transform,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white hover:text-[#00563b] active:scale-[0.98]"
+                className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-sm font-bold text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#00563b] active:scale-[0.98]"
                 onClick={resetFilters}
                 type="button"
               >

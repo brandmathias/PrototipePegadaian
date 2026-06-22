@@ -48,7 +48,7 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.queryByText(/pencarian langsung/i)).not.toBeInTheDocument();
   });
 
-  it("does not render marketed or finished goods in the inventory table", () => {
+  it("keeps failed auctions ready for remarketing while hiding marketed and finished goods", () => {
     render(
       <AdminInventoryWorkspace
         items={[
@@ -62,11 +62,11 @@ describe("AdminInventoryWorkspace", () => {
     );
 
     expect(screen.getByText("BRG-001")).toBeInTheDocument();
-    expect(screen.queryByText("BRG-FAILED")).not.toBeInTheDocument();
+    expect(screen.getByText("BRG-FAILED")).toBeInTheDocument();
     expect(screen.queryByText("BRG-MARKET")).not.toBeInTheDocument();
     expect(screen.queryByText("BRG-WAIT")).not.toBeInTheDocument();
     expect(screen.queryByText("BRG-SOLD")).not.toBeInTheDocument();
-    expect(screen.getByText((_, node) => node?.textContent?.replace(/\s+/g, " ").trim() === "Menampilkan 1 dari 1 barang.")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent?.replace(/\s+/g, " ").trim() === "Menampilkan 2 dari 2 barang.")).toBeInTheDocument();
   });
 
   it("paginates inventory rows without rendering every item at once", () => {
@@ -97,7 +97,7 @@ describe("AdminInventoryWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /siap dipasarkan/i }));
 
     expect(screen.getByText("BRG-001")).toBeInTheDocument();
-    expect(screen.queryByText("BRG-003")).not.toBeInTheDocument();
+    expect(screen.getByText("BRG-003")).toBeInTheDocument();
   });
 
   it("sorts inventory rows by due date from the header control", () => {
@@ -385,7 +385,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /^print$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^cetak$/i }));
 
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1));
     expect(openSpy).not.toHaveBeenCalled();

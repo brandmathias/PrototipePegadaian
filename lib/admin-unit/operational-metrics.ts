@@ -20,14 +20,20 @@ export const ADMIN_VERIFICATION_ACTION_STATUSES = new Set([
   "MENUNGGU_KONFIRMASI_LANGSUNG"
 ]);
 
-const ADMIN_INVENTORY_LIST_STATUSES = new Set(["GADAI", "JAMINAN"]);
+const ADMIN_COLLATERAL_STATUSES = new Set(["GADAI", "JAMINAN"]);
+const ADMIN_INVENTORY_LIST_STATUSES = new Set(["GADAI", "JAMINAN", "GAGAL"]);
 
 export function getDaysUntilDateLabel(dateLabel: unknown, now = new Date()) {
   if (!dateLabel || dateLabel === "-") {
     return null;
   }
 
-  const date = new Date(`${String(dateLabel)}T00:00:00.000Z`);
+  const date =
+    dateLabel instanceof Date
+      ? dateLabel
+      : /^\d{4}-\d{2}-\d{2}$/.test(String(dateLabel))
+        ? new Date(`${String(dateLabel)}T00:00:00.000Z`)
+        : new Date(String(dateLabel));
   if (Number.isNaN(date.getTime())) {
     return null;
   }
@@ -39,6 +45,10 @@ export function getDaysUntilDateLabel(dateLabel: unknown, now = new Date()) {
 }
 
 export function isAdminInventoryDueSoon(item: InventoryMetricItem, now = new Date()) {
+  if (!ADMIN_COLLATERAL_STATUSES.has(String(item.status ?? "").toUpperCase())) {
+    return false;
+  }
+
   const days = getDaysUntilDateLabel(item.dueDate, now);
 
   return days !== null && days >= 0 && days <= 7;
@@ -48,8 +58,19 @@ export function isAdminInventoryListItem(item: InventoryMetricItem) {
   return ADMIN_INVENTORY_LIST_STATUSES.has(String(item.status ?? "").toUpperCase());
 }
 
-export function isAdminInventoryReadyForMarketing(item: InventoryMetricItem) {
-  return isAdminInventoryListItem(item);
+export function isAdminInventoryReadyForMarketing(item: InventoryMetricItem, now = new Date()) {
+  const status = String(item.status ?? "").toUpperCase();
+
+  if (status === "GAGAL") {
+    return true;
+  }
+
+  if (!ADMIN_COLLATERAL_STATUSES.has(status)) {
+    return false;
+  }
+
+  const days = getDaysUntilDateLabel(item.dueDate, now);
+  return days !== null && days <= 0;
 }
 
 export function getAdminInventoryMetrics(items: InventoryMetricItem[], now = new Date()) {
@@ -57,7 +78,7 @@ export function getAdminInventoryMetrics(items: InventoryMetricItem[], now = new
 
   return {
     total: inventoryItems.length,
-    readyForMarketing: inventoryItems.filter(isAdminInventoryReadyForMarketing).length,
+    readyForMarketing: inventoryItems.filter((item) => isAdminInventoryReadyForMarketing(item, now)).length,
     dueSoon: inventoryItems.filter((item) => isAdminInventoryDueSoon(item, now)).length
   };
 }

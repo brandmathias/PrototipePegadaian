@@ -7,19 +7,22 @@ import {
 describe("admin operational metrics", () => {
   const now = new Date("2026-05-25T00:00:00.000Z");
 
-  it("counts due-soon inventory from the due date shown in the table", () => {
+  it("counts only unredeemed inventory that has reached its due date as ready for marketing", () => {
     const metrics = getAdminInventoryMetrics(
       [
+        { dueDate: "2026-05-24", status: "GADAI" },
+        { dueDate: "2026-05-25", status: "JAMINAN" },
         { dueDate: "2026-05-31", status: "JAMINAN" },
+        { dueDate: "2026-06-17", status: "GAGAL" },
         { dueDate: "2026-05-31", status: "TERJUAL" },
         { dueDate: "2026-06-17", status: "JAMINAN" }
       ],
       now
     );
 
-    expect(metrics.total).toBe(2);
-    expect(metrics.readyForMarketing).toBe(2);
-    expect(metrics.dueSoon).toBe(1);
+    expect(metrics.total).toBe(5);
+    expect(metrics.readyForMarketing).toBe(3);
+    expect(metrics.dueSoon).toBe(2);
   });
 
   it("raises marketing action for ended and failed vickrey sessions", () => {

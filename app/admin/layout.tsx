@@ -30,11 +30,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const [unit] = currentUser.unitId
     ? await db.select().from(units).where(eq(units.id, currentUser.unitId)).limit(1)
     : [];
-  const { inventoryMetrics, marketingActionCount } = currentUser.unitId
+  const { inventoryMetrics } = currentUser.unitId
     ? await getAdminLayoutMetrics(currentUser.unitId)
     : {
-        inventoryMetrics: { dueSoon: 0, readyForMarketing: 0, total: 0 },
-        marketingActionCount: 0
+        inventoryMetrics: { dueSoon: 0, readyForMarketing: 0, total: 0 }
       };
   const nav = adminNavigation.map((item) => {
     if (item.href === "/admin/barang") {
@@ -42,13 +41,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         ...item,
         badge: inventoryMetrics.dueSoon || undefined,
         badgeTone: inventoryMetrics.dueSoon > 0 ? "warning" : "default"
-      } satisfies NavItem;
-    }
-    if (item.href === "/admin/pemasaran") {
-      return {
-        ...item,
-        badge: marketingActionCount || undefined,
-        badgeTone: marketingActionCount > 0 ? "warning" : "default"
       } satisfies NavItem;
     }
     return item;

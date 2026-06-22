@@ -553,7 +553,7 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
           value={inventoryMetrics.total}
         />
         <InventoryMetricCard
-          description="Barang jaminan yang sudah siap disiapkan ke pemasaran."
+          description="Barang jatuh tempo atau pemasaran gagal yang siap ditayangkan kembali."
           icon={BadgeCheck}
           label="Siap Dipasarkan"
           tone="success"
@@ -607,9 +607,9 @@ export function AdminInventoryHistoryPage({
               <ScrollText className="size-7" />
             </span>
             <div className="min-w-0">
-              <p className="page-heading-eyebrow">Admin Unit / Kelola Barang</p>
+              <p className="page-heading-eyebrow">Admin Unit / Riwayat Barang</p>
               <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
-                Audit Trail
+                Riwayat Barang
               </h2>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
                 Jejak aktivitas sistem dan pengguna terkait pengelolaan barang,
@@ -2002,27 +2002,12 @@ export function AdminBlacklistPage({
 }: {
   entries: AdminBlacklistItem[];
 }) {
-  const activeCount = entries.filter(
-    (entry) => String(entry.status).toUpperCase() === "AKTIF",
-  ).length;
-  const manualFollowUpCount = entries.filter(
-    (entry) =>
-      String(entry.status).toUpperCase() === "AKTIF" &&
-      Number(entry.violations ?? 0) >= 3,
-  ).length;
-
   return (
     <div className="space-y-6">
       <AdminPageHero
         description="Fokus pada kasus gagal bayar yang perlu dipantau, status pembatasan aktif, dan riwayat pelanggaran pembayaran di unit."
         eyebrow="Admin Unit / Pelanggaran"
         icon={Ban}
-        rightRail={
-          <>
-            <AdminHeroPill icon={BadgeCheck}>{activeCount} aktif</AdminHeroPill>
-            <AdminHeroPill tone="danger">{manualFollowUpCount} tindak lanjut</AdminHeroPill>
-          </>
-        }
         title="Pelanggaran Pengguna"
       />
 

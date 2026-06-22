@@ -1,9 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { CSSProperties } from "react";
 import {
-  AlertTriangle,
-  FileWarning,
+  Megaphone,
   ShoppingCart,
   Tag,
   TrendingUp,
@@ -15,6 +13,7 @@ import {
   type DashboardChecklistTask
 } from "@/components/pages/admin-dashboard-checklist-card";
 import { AdminDashboardTrendChart } from "@/components/pages/admin-dashboard-trend-chart";
+import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 
 export type DashboardTrendPoint = {
   label: string;
@@ -177,11 +176,12 @@ function getDashboardMetrics(data: AdminDashboardData): AdminDashboardMetrics {
     ACTIONABLE_TRANSACTION_STATUSES.has(getStatus(transaction.status))
   );
   const totalRevenue = verifiedTransactions.reduce((sum, transaction) => sum + Number(transaction.total ?? 0), 0);
+  const inventoryMetrics = getAdminInventoryMetrics(data.inventory);
 
   return {
     totalItems: data.inventory.length,
-    readyForMarketing: data.inventory.filter((item) => ["GADAI", "JAMINAN"].includes(getStatus(item.status))).length,
-    dueSoon: 0,
+    readyForMarketing: inventoryMetrics.readyForMarketing,
+    dueSoon: inventoryMetrics.dueSoon,
     soldItems: data.inventory.filter((item) => getStatus(item.status) === "TERJUAL").length || verifiedTransactions.length,
     redeemedItems: data.inventory.filter((item) => getStatus(item.status) === "DITEBUS").length,
     activeAuctions: data.inventory.filter((item) => Boolean(item.marketingMode)).length,
@@ -377,60 +377,6 @@ function AdminDashboardHero({
   );
 }
 
-function DashboardAlertCard({ actionableTransactions }: { actionableTransactions: number }) {
-  const hasAction = actionableTransactions > 0;
-
-  return (
-    <div
-      className={cx(
-        "relative self-start overflow-hidden rounded-[1.65rem] border p-5 shadow-[0_20px_48px_-40px_rgba(201,121,0,0.26)] transition-colors duration-300 dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)]",
-        hasAction
-          ? "border-[#f5d28f] bg-[linear-gradient(180deg,#fffdfa_0%,#fff8ee_100%)] dark:border-amber-300/18 dark:bg-[linear-gradient(180deg,rgba(77,48,18,0.54)_0%,rgba(41,28,15,0.42)_100%)]"
-          : "border-[#d9ebdf] bg-[linear-gradient(180deg,#ffffff_0%,#f8fcf9_100%)] dark:border-emerald-300/12 dark:bg-[linear-gradient(180deg,#101a15_0%,#0d1712_100%)]"
-      )}
-    >
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[radial-gradient(circle_at_18%_0%,rgba(255,208,119,0.2),transparent_42%)] opacity-80 dark:bg-[radial-gradient(circle_at_18%_0%,rgba(245,158,11,0.18),transparent_42%)]" />
-      <div className="relative flex items-start gap-4">
-        <span
-          className={cx(
-            "grid size-14 shrink-0 place-items-center rounded-full border text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.58)]",
-            hasAction
-              ? "border-[#f2d28d] bg-[radial-gradient(circle_at_30%_30%,#ffdb8f,#f5af1d)]"
-              : "border-[#9bd8b3] bg-[radial-gradient(circle_at_30%_30%,#7ddc9c,#10874c)]"
-          )}
-        >
-          <AlertTriangle className="size-7" strokeWidth={1.8} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="font-headline text-[1.25rem] font-black tracking-[-0.035em] text-[#bf5f00] dark:text-amber-200 sm:text-[1.35rem]">
-            {hasAction ? "Perhatian Diperlukan" : "Operasional Terkendali"}
-          </h2>
-          <p className="mt-2 max-w-md text-sm leading-6 text-[#8a6730] dark:text-amber-100/72">
-            {hasAction
-              ? `${formatCount(actionableTransactions)} transaksi menunggu tindakan Anda. Segera tindak lanjuti untuk menjaga kelancaran operasional.`
-              : "Tidak ada transaksi yang membutuhkan tindakan mendesak saat ini."}
-          </p>
-          <Link
-            className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#f2d28d] bg-white/75 px-4 py-2.5 text-sm font-black text-[#ba6514] shadow-[0_14px_28px_-24px_rgba(186,101,20,0.38)] transition duration-300 hover:-translate-y-0.5 hover:translate-x-1 hover:text-[#9f5407] dark:border-amber-300/16 dark:bg-white/[0.05] dark:text-amber-200 dark:hover:text-amber-100"
-            href="/admin/pemasaran"
-          >
-            Lihat Pemasaran
-            <svg fill="none" height="18" viewBox="0 0 24 24" width="18">
-              <path
-                d="m9 6 6 6-6 6"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2.2"
-              />
-            </svg>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function buildDashboardCards(metrics: AdminDashboardMetrics): DashboardMetricCard[] {
   return [
     {
@@ -449,11 +395,11 @@ function buildDashboardCards(metrics: AdminDashboardMetrics): DashboardMetricCar
       tone: "teal"
     },
     {
-      title: "Transaksi Perlu Tindakan",
-      value: formatCount(metrics.actionableTransactions),
-      subtext: `${formatCount(metrics.totalTransactions)} total transaksi tercatat`,
-      icon: FileWarning,
-      tone: metrics.actionableTransactions > 0 ? "red" : "green"
+      title: "Barang Dipasarkan",
+      value: formatCount(metrics.activeAuctions),
+      subtext: "Produk dalam sesi pemasaran aktif",
+      icon: Megaphone,
+      tone: "green"
     }
   ];
 }
@@ -513,10 +459,8 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
           <AdminDashboardChecklistCard nowIso={nowIso} tasks={tasks} />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.82fr)]">
+      <section>
         <AdminDashboardTrendChart metrics={metrics} />
-
-        <DashboardAlertCard actionableTransactions={metrics.actionableTransactions} />
       </section>
     </div>
   );

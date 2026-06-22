@@ -6,14 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  CalendarClock,
-  Gavel,
-  Search,
-  SearchX,
-  ShieldAlert,
-  ShieldBan,
-} from "lucide-react";
+import { Gavel, Search, SearchX, ShieldBan } from "lucide-react";
 
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import {
@@ -32,7 +25,7 @@ type BlacklistFilter =
   | "LEVEL_1"
   | "LEVEL_2"
   | "LEVEL_3"
-  | "BERAKHIR_DEKAT";
+  | "BERAKHIR";
 const DAY_MS = 86_400_000;
 
 function isActiveRestriction(entry: AdminBlacklistItem) {
@@ -191,38 +184,6 @@ function isPermanentBlacklist(entry: AdminBlacklistItem) {
   );
 }
 
-function parseIncidentDate(value: unknown) {
-  if (!value || value === "-") return null;
-  const date = new Date(String(value));
-
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function countRecentViolations(entry: AdminBlacklistItem) {
-  const now = Date.now();
-  const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-  const traces = Array.isArray(entry.unpaidAuctionTraces)
-    ? entry.unpaidAuctionTraces
-    : [];
-  const recentTraces = traces.filter((trace: Record<string, any>) => {
-    const date = parseIncidentDate(trace.occurredAt ?? trace.createdAt);
-    return date
-      ? now - date.getTime() >= 0 && now - date.getTime() <= sevenDaysMs
-      : false;
-  });
-
-  if (recentTraces.length > 0) return recentTraces.length;
-
-  const fallbackDate = parseIncidentDate(
-    entry.lastIncidentAt ?? entry.latestUnpaidAuction?.occurredAt,
-  );
-  return fallbackDate &&
-    now - fallbackDate.getTime() >= 0 &&
-    now - fallbackDate.getTime() <= sevenDaysMs
-    ? 1
-    : 0;
-}
-
 function getRestrictionLevelMeta(level: number) {
   if (level >= 3) {
     return {
@@ -310,13 +271,9 @@ export function AdminBlacklistList({
   const deferredQuery = useDeferredValue(query);
   const metrics = useMemo(() => {
     return {
-      recent: entries.reduce(
-        (total, entry) => total + countRecentViolations(entry),
-        0,
-      ),
       total: entries.length,
       active: entries.filter(isActiveRestriction).length,
-      dueSoon: entries.filter(isDueSoon).length,
+      ended: entries.filter((entry) => !isActiveRestriction(entry)).length,
       levelThree: entries.filter((entry) => getEntryLevel(entry) >= 3).length,
     };
   }, [entries]);
@@ -344,9 +301,9 @@ export function AdminBlacklistList({
         count: metrics.levelThree,
       },
       {
-        id: "BERAKHIR_DEKAT",
-        label: "Berakhir Dekat",
-        count: metrics.dueSoon,
+        id: "BERAKHIR",
+        label: "Berakhir",
+        count: metrics.ended,
       },
     ];
   const filteredEntries = useMemo(() => {
@@ -359,7 +316,7 @@ export function AdminBlacklistList({
         (filter === "LEVEL_1" && getEntryLevel(entry) === 1) ||
         (filter === "LEVEL_2" && getEntryLevel(entry) === 2) ||
         (filter === "LEVEL_3" && getEntryLevel(entry) >= 3) ||
-        (filter === "BERAKHIR_DEKAT" && isDueSoon(entry));
+        (filter === "BERAKHIR" && !isActiveRestriction(entry));
       const matchesQuery =
         !normalizedQuery ||
         [
@@ -387,30 +344,14 @@ export function AdminBlacklistList({
   return (
     <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
       <div className="border-b border-[#edf2ee] p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
-              Pembatasan Unit
-            </h2>
-            <p className="mt-1 text-xs font-semibold text-muted-foreground">
-              Ledger blacklist buyer di unit ini berdasarkan level pelanggaran
-              real dari sistem.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 text-[0.68rem] font-black uppercase tracking-[0.12em]">
-            <span className="inline-flex items-center gap-2 rounded-lg bg-[#e7f4ed] px-3 py-1.5 text-[#005f3e] ring-1 ring-[#cfe7d8]">
-              <ShieldAlert className="size-3.5" />
-              {metrics.active} aktif
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-1.5 text-rose-700 ring-1 ring-rose-100">
-              <ShieldBan className="size-3.5" />
-              Level 3: {metrics.levelThree}
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-lg bg-[#f3f4f6] px-3 py-1.5 text-slate-500 ring-1 ring-slate-200">
-              <CalendarClock className="size-3.5" />
-              {metrics.recent} insiden 7 hari
-            </span>
-          </div>
+        <div>
+          <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
+            Pembatasan Aktif
+          </h2>
+          <p className="mt-1 text-xs font-semibold text-muted-foreground">
+            Ledger blacklist buyer di unit ini berdasarkan level pelanggaran
+            real dari sistem.
+          </p>
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">

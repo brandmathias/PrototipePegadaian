@@ -121,7 +121,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByAltText(/ilustrasi operasional dashboard admin unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang terjual/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /barang ditebus/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /barang dipasarkan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /laporan tren penjualan/i })).toBeInTheDocument();
     expect(screen.getByText("Rp 20 jt")).toBeInTheDocument();
     expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
@@ -134,17 +134,14 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
   });
 
-  it("keeps the action-needed card title tidy without showing the urgent badge", () => {
+  it("keeps the marketed-item card title tidy without showing the urgent badge", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
-    expect(screen.getByRole("heading", { name: /transaksi perlu tindakan/i })).toHaveClass(
-      "whitespace-nowrap",
-      "text-[1.05rem]"
-    );
+    expect(screen.getByRole("heading", { name: /barang dipasarkan/i })).toBeInTheDocument();
     expect(screen.queryByText(/^Urgent$/i)).not.toBeInTheDocument();
   });
 
-  it("renders the daily checklist and amber alert action", () => {
+  it("renders the daily checklist without a separate attention card", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
     expect(screen.getByRole("heading", { name: /checklist harian/i })).toBeInTheDocument();
@@ -152,8 +149,8 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/dahulukan barang yang mendekati jatuh tempo/i)).toBeInTheDocument();
     expect(screen.getByText(/pantau pemenang yang belum menyelesaikan pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /perhatian diperlukan/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat pemasaran/i })).toHaveAttribute("href", "/admin/pemasaran");
+    expect(screen.queryByRole("heading", { name: /perhatian diperlukan/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /lihat pemasaran/i })).not.toBeInTheDocument();
   });
 
   it("allows toggling checklist items interactively", () => {
@@ -244,7 +241,7 @@ describe("AdminDashboardPage", () => {
           summary: baseDashboardData.summary,
           inventory: [
             { id: "B-1", status: "DITEBUS" },
-            { id: "B-2", status: "JAMINAN" }
+            { id: "B-2", dueDate: "2020-01-01", status: "JAMINAN" }
           ],
           transactions: [
             { id: "T-1", status: "LUNAS", total: 7_500_000, buyer: "Raras" },

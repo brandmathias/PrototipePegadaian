@@ -1,6 +1,7 @@
 import { listAdminBarang } from "@/lib/services/admin-barang.service";
 import { listAdminBlacklist } from "@/lib/services/admin-blacklist.service";
 import { listAdminTransactions } from "@/lib/services/admin-transaction.service";
+import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 import { db } from "@/lib/db/client";
 import { barang, pemasaran, transaksi, unitAccounts, units } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -246,14 +247,7 @@ export async function getAdminDashboardData(unitId: string) {
   const totalRevenue = verifiedTransactions.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const uniqueBuyerCount = new Set(transactionMetrics.map((row) => row.userId)).size;
   const now = new Date();
-  const dueSoon = unitItems.filter((item) => {
-    if (!item.dueDate) {
-      return false;
-    }
-
-    const delta = item.dueDate.getTime() - now.getTime();
-    return delta >= 0 && delta <= 1000 * 60 * 60 * 24 * 7;
-  }).length;
+  const inventoryMetrics = getAdminInventoryMetrics(unitItems, now);
 
   return {
     summary: {
@@ -265,8 +259,8 @@ export async function getAdminDashboardData(unitId: string) {
     },
     metrics: {
       totalItems: unitItems.length,
-      readyForMarketing: unitItems.filter((item) => item.status === "gadai" || item.status === "jaminan").length,
-      dueSoon,
+      readyForMarketing: inventoryMetrics.readyForMarketing,
+      dueSoon: inventoryMetrics.dueSoon,
       soldItems: unitItems.filter((item) => item.status === "terjual").length || verifiedTransactions.length,
       redeemedItems: unitItems.filter((item) => item.status === "ditebus").length,
       activeAuctions: activeMarketing.length,

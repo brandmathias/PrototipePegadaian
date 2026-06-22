@@ -116,7 +116,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText("Pengguna 1")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /tinjau sekarang/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Pengguna 11")).not.toBeInTheDocument();
-    expect(screen.getByText("Pembatasan Unit")).toBeInTheDocument();
+    expect(screen.getByText("Pembatasan Aktif")).toBeInTheDocument();
     expect(screen.getByText(/ledger blacklist buyer di unit ini/i)).toBeInTheDocument();
     expect(
       screen.getByPlaceholderText("Cari nama, email, level, atau alasan..."),
@@ -124,7 +124,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.queryByText("Unit")).not.toBeInTheDocument();
     expect(screen.queryByText("Ranotana")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /level 3/i })).toBeInTheDocument();
-    expect(screen.getByText(/insiden 7 hari/i)).toBeInTheDocument();
+    expect(screen.queryByText(/insiden 7 hari/i)).not.toBeInTheDocument();
     expect(screen.getByText("Tingkat Pelanggaran")).toBeInTheDocument();
     const detailLinks = screen.getAllByRole("link", { name: /lihat detail/i });
     expect(detailLinks).toHaveLength(10);
@@ -138,6 +138,27 @@ describe("AdminBlacklistPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "2" }));
 
     expect(screen.getByText("Pengguna 11")).toBeInTheDocument();
+  });
+
+  it("filters the historical list using the true ended restriction state", () => {
+    render(
+      <AdminBlacklistPage
+        entries={[
+          makeBlacklistEntry(1),
+          {
+            ...makeBlacklistEntry(2),
+            name: "Riwayat Pembatasan",
+            status: "BERAKHIR",
+            userId: "ended-user",
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /berakhir 1/i }));
+
+    expect(screen.getByText("Riwayat Pembatasan")).toBeInTheDocument();
+    expect(screen.queryByText("Pengguna 1")).not.toBeInTheDocument();
   });
 
   it("shows violation detail with level, countdown context, and unpaid auction traces", () => {

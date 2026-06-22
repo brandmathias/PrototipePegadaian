@@ -1808,8 +1808,7 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
 }
 
 export function AdminMarketingUnifiedPage({
-  auctions,
-  unitName = "Unit aktif"
+  auctions
 }: {
   auctions: MarketingSession[];
   unitName?: string;
@@ -1850,6 +1849,14 @@ export function AdminMarketingUnifiedPage({
   }, [marketingFeedItems, methodFilter, searchQuery, statusFilter]);
 
   const pagination = useAdminPagination(filteredAuctions, `${methodFilter}-${statusFilter}-${searchQuery}`);
+  const hasActiveFilter =
+    searchQuery.trim().length > 0 || methodFilter !== "ALL" || statusFilter !== "Semua";
+
+  function resetFilters() {
+    setSearchQuery("");
+    setMethodFilter("ALL");
+    setStatusFilter("Semua");
+  }
 
   return (
     <div className="space-y-5">
@@ -1865,7 +1872,6 @@ export function AdminMarketingUnifiedPage({
               <h1 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl lg:text-[2.85rem]">
                 Pemasaran Barang
               </h1>
-              <p className="mt-2 text-sm font-semibold text-[#006747] dark:text-emerald-200/78">{unitName}</p>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-black/60 sm:text-base">
                 Kelola sesi pemasaran aktif, pantau peserta lelang, dan buka tindak lanjut transaksi dari satu workspace operasional yang compact.
               </p>
@@ -1876,12 +1882,6 @@ export function AdminMarketingUnifiedPage({
               <BadgeCheck className="size-4" />
               Workspace pemasaran unit
             </span>
-            <Link href="#marketing-session-list">
-              <Button className="h-12 w-full rounded-2xl px-5 text-sm shadow-[0_18px_32px_-24px_rgba(10,106,73,0.55)] sm:w-auto sm:text-base">
-                <Gavel className="size-4" />
-                Lihat Sesi Aktif
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
@@ -1913,12 +1913,12 @@ export function AdminMarketingUnifiedPage({
         />
       </section>
 
-      <section className="rounded-[1.45rem] border border-[#d8e8dd] bg-white p-3 shadow-[0_18px_54px_-50px_rgba(8,69,50,0.28)] dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.72)]">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <label className="relative min-w-0 flex-1 xl:max-w-md">
+      <section className="rounded-[1.45rem] border border-[#d8e8dd] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] p-3 shadow-[0_18px_54px_-50px_rgba(8,69,50,0.28)] dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_24px_62px_-44px_rgba(0,0,0,0.72)]">
+        <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(20rem,1fr)_14rem_14rem_auto]">
+          <label className="relative min-w-0">
             <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-black/38 dark:text-slate-500" />
             <input
-              className="h-11 w-full rounded-2xl border border-[#dce9df] bg-[#fbfbfa] pl-11 pr-4 text-sm font-semibold text-[#15211b] outline-none transition duration-300 placeholder:text-black/36 focus:border-[#0a6a49]/30 focus:bg-white focus:ring-4 focus:ring-[#0a6a49]/8 dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-300/20 dark:focus:bg-white/[0.06] dark:focus:ring-emerald-300/10"
+              className="h-12 w-full rounded-[1.15rem] border border-[#dce9df] bg-white pl-11 pr-4 text-sm font-semibold text-[#15211b] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:ring-4 focus:ring-[#0a6a49]/8 dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-100 dark:placeholder:text-slate-500"
               placeholder="Cari nama barang atau Lot ID..."
               type="search"
               value={searchQuery}
@@ -1926,54 +1926,35 @@ export function AdminMarketingUnifiedPage({
             />
           </label>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex rounded-2xl bg-[#f4f5f1] p-1 dark:bg-white/[0.045]">
-              {MARKETING_METHOD_FILTERS.map((filter) => (
-                <button
-                  className={`rounded-xl px-4 py-2 text-xs font-black transition duration-300 ${
-                    methodFilter === filter.value
-                      ? "bg-[#006747] text-white shadow-[0_12px_24px_-18px_rgba(0,103,71,0.5)]"
-                      : "text-black/56 hover:text-[#006747] dark:text-slate-300/72 dark:hover:text-emerald-200"
-                  }`}
-                  key={filter.value}
-                  type="button"
-                  onClick={() => setMethodFilter(filter.value)}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            <span className="hidden h-6 w-px bg-black/10 dark:bg-white/10 sm:block" />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-black/40 dark:text-slate-500">
-                Status
-              </span>
-              {MARKETING_STATUS_FILTERS.map((filter) => (
-                <button
-                  className={`rounded-xl px-4 py-2 text-xs font-black transition duration-300 ${
-                    statusFilter === filter
-                      ? "bg-[#006747] text-white shadow-[0_12px_24px_-18px_rgba(0,103,71,0.5)]"
-                      : "border border-[#dce9df] bg-white text-black/58 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
-                  }`}
-                  key={filter}
-                  type="button"
-                  onClick={() => setStatusFilter(filter)}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
-
-            <button
-              aria-label="Filter lanjutan"
-              className="grid size-11 place-items-center rounded-2xl border border-[#dce9df] bg-white text-black/56 transition duration-300 hover:border-[#0a6a49]/18 hover:text-[#006747] dark:border-emerald-300/10 dark:bg-white/[0.04] dark:text-slate-300/72 dark:hover:border-emerald-300/18 dark:hover:text-emerald-200"
-              type="button"
-            >
-              <SlidersHorizontal className="size-4" />
-            </button>
-          </div>
+          <AdminSelect
+            ariaLabel="Filter metode pemasaran"
+            className="w-full"
+            options={MARKETING_METHOD_FILTERS.map((filter) => ({
+              label: filter.value === "ALL" ? "Semua Mode" : filter.label,
+              value: filter.value
+            }))}
+            value={methodFilter}
+            onValueChange={(value) => setMethodFilter(value as MarketingMethodFilter)}
+          />
+          <AdminSelect
+            ariaLabel="Filter status pemasaran"
+            className="w-full"
+            options={MARKETING_STATUS_FILTERS.map((filter) => ({
+              label: filter === "Semua" ? "Semua Status" : filter,
+              value: filter
+            }))}
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as MarketingStatusFilter)}
+          />
+          <button
+            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-[0.78rem] font-black text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={!hasActiveFilter}
+            type="button"
+            onClick={resetFilters}
+          >
+            <RefreshCcw className="size-4" />
+            Reset Filter
+          </button>
         </div>
       </section>
 

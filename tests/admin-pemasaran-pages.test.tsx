@@ -160,7 +160,10 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByRole("heading", { name: /pemasaran barang/i })).toBeInTheDocument();
-    expect(screen.getByText("UPC Ranotana")).toBeInTheDocument();
+    expect(screen.queryByText("UPC Ranotana")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lihat sesi aktif/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Filter metode pemasaran" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Filter status pemasaran" })).toBeInTheDocument();
     expect(screen.getByText("2 Sesi")).toBeInTheDocument();
     expect(screen.getByText(/1 Beli Putus \/ 1 Lelang/i)).toBeInTheDocument();
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
@@ -179,19 +182,25 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("2 Produk")).toBeInTheDocument();
     expect(screen.getByText("Lelang Gagal")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Aktif" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter status pemasaran" }), {
+      target: { value: "Aktif" },
+    });
 
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Sudah Terjual")).not.toBeInTheDocument();
     expect(screen.queryByText("Iphone Gagal Bayar")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Menunggu Buyer" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter status pemasaran" }), {
+      target: { value: "Menunggu Buyer" },
+    });
 
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.getByText("Iterasi 2/2")).toBeInTheDocument();
     expect(screen.queryByText("Kalung Emas Aktif")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Gagal" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Filter status pemasaran" }), {
+      target: { value: "Gagal" },
+    });
 
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
