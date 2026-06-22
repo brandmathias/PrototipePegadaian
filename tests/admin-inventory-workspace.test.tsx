@@ -168,6 +168,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
 
     expect(statusBadge).toHaveClass("whitespace-nowrap");
     expect(statusBadge).toHaveClass("min-w-[8.5rem]");
+    expect(headerRow).toHaveClass("gap-3.5");
     expect(headerRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
     expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
     expect(historyRow).toHaveClass("lg:grid-cols-[8.6rem_minmax(18rem,1.6fr)_10rem_minmax(11rem,0.95fr)_minmax(14rem,1fr)_6.6rem]");
