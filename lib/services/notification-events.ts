@@ -7,7 +7,7 @@ import {
   getBuyerWinnerAnnouncementHref,
 } from "@/lib/buyer/transaction-links";
 import { db } from "@/lib/db/client";
-import { blacklists, notifications, pelanggaranUser } from "@/lib/db/schema";
+import { blacklists, notifications, pelanggaranUser, transaksi } from "@/lib/db/schema";
 import { createNotificationOnce, createOrRefreshNotification } from "@/lib/services/notification.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
@@ -68,9 +68,11 @@ async function getBuyerRestrictionSnapshot(userId: string) {
     .select({
       createdAt: pelanggaranUser.createdAt,
       escalationEligible: pelanggaranUser.escalationEligible,
-      id: pelanggaranUser.id
+      id: pelanggaranUser.id,
+      paymentDeadline: transaksi.paymentDeadline
     })
     .from(pelanggaranUser)
+    .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .where(eq(pelanggaranUser.userId, userId))
     .orderBy(desc(pelanggaranUser.createdAt));
 
@@ -78,10 +80,10 @@ async function getBuyerRestrictionSnapshot(userId: string) {
     storedBlockedUntil: blacklist.blockedUntil,
     storedTotalViolations: blacklist.totalViolations,
     traces: rows.map((row) => ({
-      createdAt: row.createdAt,
+      createdAt: row.paymentDeadline ?? row.createdAt,
       escalationEligible: row.escalationEligible,
       id: row.id,
-      occurredAt: row.createdAt.toISOString()
+      occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString()
     }))
   });
   const policy = getBlacklistRestrictionPolicy(effectiveState.totalViolations);
@@ -263,6 +265,7 @@ export async function notifyBlacklistActivated(
     transactionId?: string | null;
     totalViolations: number;
     blockedUntilLabel: string;
+    occurredAt?: Date | null;
   }
 ) {
   return createOrRefreshNotification({
@@ -273,10 +276,12 @@ export async function notifyBlacklistActivated(
     entityType: "blacklist",
     entityId: buyerBlacklistEntityId(input.userId),
     actionHref: BUYER_RESTRICTION_NOTIFICATION_HREF,
+    ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
     metadata: {
       sourceTransactionId: input.transactionId ?? null,
       totalViolations: input.totalViolations,
-      blockedUntilLabel: input.blockedUntilLabel
+      blockedUntilLabel: input.blockedUntilLabel,
+      occurredAt: input.occurredAt?.toISOString() ?? null
     }
   });
 }
@@ -357,6 +362,7 @@ export async function notifyAdminUnitVickreyResult(input: {
   pemasaranId: string;
   lotName: string;
   result: "winner_selected" | "no_winner" | "payment_overdue";
+  occurredAt?: Date | null;
 }) {
   const message =
     input.result === "winner_selected"
@@ -372,8 +378,10 @@ export async function notifyAdminUnitVickreyResult(input: {
     entityType: "pemasaran",
     entityId: input.pemasaranId,
     actionHref: `/admin/pemasaran/vickrey-auction/${input.pemasaranId}`,
+    ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
     metadata: {
-      result: input.result
+      result: input.result,
+      occurredAt: input.occurredAt?.toISOString() ?? null
     }
   });
 }
@@ -385,6 +393,7 @@ export async function notifySuperAdminPolicyAlert(input: {
   lotName: string;
   totalViolations: number;
   blockedUntilLabel: string;
+  occurredAt?: Date | null;
 }) {
   const entityId = input.transactionId ?? `blacklist-${input.buyerId}`;
 
@@ -395,10 +404,12 @@ export async function notifySuperAdminPolicyAlert(input: {
     entityType: "blacklist",
     entityId,
     actionHref: `/superadmin/blacklist/detail/${input.buyerId}`,
+    ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
     metadata: {
       buyerId: input.buyerId,
       totalViolations: input.totalViolations,
-      blockedUntilLabel: input.blockedUntilLabel
+      blockedUntilLabel: input.blockedUntilLabel,
+      occurredAt: input.occurredAt?.toISOString() ?? null
     }
   });
 }

@@ -36,18 +36,20 @@ async function listViolationEscalationFacts(userIds: string[]) {
       createdAt: pelanggaranUser.createdAt,
       escalationEligible: pelanggaranUser.escalationEligible,
       id: pelanggaranUser.id,
+      paymentDeadline: transaksi.paymentDeadline,
       unitId: pelanggaranUser.unitId,
       userId: pelanggaranUser.userId,
     })
     .from(pelanggaranUser)
+    .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .where(inArray(pelanggaranUser.userId, userIds))
     .orderBy(desc(pelanggaranUser.createdAt));
 
   return rows.map((row) => ({
-    createdAt: row.createdAt,
+    createdAt: row.paymentDeadline ?? row.createdAt,
     escalationEligible: row.escalationEligible,
     id: row.id,
-    occurredAt: row.createdAt.toISOString(),
+    occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString(),
     unitId: row.unitId,
     userId: row.userId,
   }));
@@ -127,39 +129,45 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
       and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0))
     )
     .where(eq(pelanggaranUser.userId, userId))
-    .orderBy(desc(pelanggaranUser.createdAt));
+    .orderBy(desc(transaksi.paymentDeadline), desc(pelanggaranUser.createdAt));
 
-  return rows.map((row) => ({
-    id: row.violation.id,
-    userId: row.violation.userId,
-    escalationEligible: row.violation.escalationEligible,
-    unitName: row.unit?.name ?? "-",
-    lotCode: row.auction.id,
-    lotLabel: row.item.code,
-    itemCode: row.item.code,
-    itemId: row.item.id,
-    itemName: row.item.name,
-    itemCategory: row.item.category,
-    itemCondition: row.item.condition,
-    itemDescription: row.item.description,
-    itemAppraisalValue: toNullableNumber(row.item.appraisalValue),
-    imageUrl: row.media?.url ?? null,
-    imageFileName: row.media?.fileName ?? null,
-    auctionMode: row.auction.mode,
-    basePrice: toNullableNumber(row.auction.basePrice ?? row.auction.price),
-    fixedPrice: toNullableNumber(row.auction.price),
-    finalPrice: toNullableNumber(row.auction.finalPrice),
-    transactionId: row.transaction.id,
-    transactionStatus: row.transaction.status,
-    amount: Number(row.transaction.amount),
-    paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
-    paymentDeadlineLabel: row.transaction.paymentDeadline
-      ? formatAppDateTime(row.transaction.paymentDeadline)
-      : "-",
-    occurredAt: row.violation.createdAt.toISOString(),
-    occurredAtLabel: formatAppDateTime(row.violation.createdAt),
-    note: row.violation.note
-  }));
+  return rows.map((row) => {
+    const occurredAt = row.transaction.paymentDeadline ?? row.violation.createdAt;
+
+    return {
+      id: row.violation.id,
+      userId: row.violation.userId,
+      escalationEligible: row.violation.escalationEligible,
+      unitName: row.unit?.name ?? "-",
+      lotCode: row.auction.id,
+      lotLabel: row.item.code,
+      itemCode: row.item.code,
+      itemId: row.item.id,
+      itemName: row.item.name,
+      itemCategory: row.item.category,
+      itemCondition: row.item.condition,
+      itemDescription: row.item.description,
+      itemAppraisalValue: toNullableNumber(row.item.appraisalValue),
+      imageUrl: row.media?.url ?? null,
+      imageFileName: row.media?.fileName ?? null,
+      auctionMode: row.auction.mode,
+      basePrice: toNullableNumber(row.auction.basePrice ?? row.auction.price),
+      fixedPrice: toNullableNumber(row.auction.price),
+      finalPrice: toNullableNumber(row.auction.finalPrice),
+      transactionId: row.transaction.id,
+      transactionStatus: row.transaction.status,
+      amount: Number(row.transaction.amount),
+      paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
+      paymentDeadlineLabel: row.transaction.paymentDeadline
+        ? formatAppDateTime(row.transaction.paymentDeadline)
+        : "-",
+      occurredAt: occurredAt.toISOString(),
+      occurredAtLabel: formatAppDateTime(occurredAt),
+      wonAt: row.transaction.createdAt.toISOString(),
+      wonAtLabel: formatAppDateTime(row.transaction.createdAt),
+      note: row.violation.note
+    };
+  });
 }
 
 export async function listBlacklists() {

@@ -81,12 +81,15 @@ function mockOrderedLimitRows(rows: Array<Record<string, unknown>>) {
 }
 
 function mockOrderedRows(rows: Array<Record<string, unknown>>) {
+  const orderBy = vi.fn().mockResolvedValue(rows);
+  const where = vi.fn().mockReturnValue({ orderBy });
+  const query = {
+    leftJoin: vi.fn().mockReturnThis(),
+    where
+  };
+
   return {
-    from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        orderBy: vi.fn().mockResolvedValue(rows)
-      })
-    })
+    from: vi.fn().mockReturnValue(query)
   };
 }
 

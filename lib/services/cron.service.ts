@@ -95,6 +95,7 @@ type BlacklistNotificationPayload = {
   transactionId: string;
   totalViolations: number;
   blockedUntilLabel: string;
+  occurredAt: Date;
 };
 
 const UNPAID_VICKREY_STATUSES = [
@@ -579,6 +580,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
     let applied = false;
     let blacklistApplied = false;
     let blacklistNotification: BlacklistNotificationPayload | null = null;
+    const violationOccurredAt = row.transaction.paymentDeadline ?? now;
 
     await db.transaction(async (tx) => {
       const [updatedTransaction] = await tx
@@ -641,7 +643,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         (highest, blacklist) => Math.max(highest, Number(blacklist.totalViolations ?? 0)),
         0
       );
-      const escalationEligible = !isBlacklistRestrictionWindowActive(existingBlacklist, now);
+      const escalationEligible = !isBlacklistRestrictionWindowActive(existingBlacklist, violationOccurredAt);
 
       const violationId = randomUUID();
       await tx.insert(pelanggaranUser).values({
@@ -654,6 +656,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           ? "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam."
           : "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam saat pembatasan sebelumnya masih aktif.",
         escalationEligible,
+        createdAt: violationOccurredAt,
         updatedAt: now
       });
 
@@ -664,7 +667,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
       const totalViolations = resolveAccumulatedBlacklistViolations({
         previousTotalViolations
       });
-      const blockedUntil = getBlacklistBlockedUntil(now, totalViolations);
+      const blockedUntil = getBlacklistBlockedUntil(violationOccurredAt, totalViolations);
       const restriction = getBlacklistRestrictionPolicy(totalViolations);
       const shouldSuspendLogin = shouldSuspendLoginForBlacklist(totalViolations);
       const blacklistId = existingBlacklist?.id ?? randomUUID();
@@ -678,7 +681,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
             nationalId: row.buyerNationalId ?? existingBlacklist.nationalId,
             totalViolations,
             isActive: true,
-            blockedAt: now,
+            blockedAt: violationOccurredAt,
             blockedUntil,
             revokedByUserId: null,
             revokeReason: null,
@@ -693,7 +696,7 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           nationalId: row.buyerNationalId,
           totalViolations,
           isActive: true,
-          blockedAt: now,
+          blockedAt: violationOccurredAt,
           blockedUntil,
           revokedByUserId: null,
           revokeReason: null,
@@ -705,7 +708,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         userId: row.transaction.userId,
         transactionId: row.transaction.id,
         totalViolations,
-        blockedUntilLabel: formatAppDateTime(blockedUntil)
+        blockedUntilLabel: formatAppDateTime(blockedUntil),
+        occurredAt: violationOccurredAt
       };
 
       if (shouldSuspendLogin) {
@@ -752,7 +756,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           adminUserIds,
           pemasaranId: row.marketing.id,
           lotName: row.item.name,
-          result: "payment_overdue"
+          result: "payment_overdue",
+          occurredAt: notificationPayload.occurredAt
         }),
         notifySuperAdminPolicyAlert({
           superAdminUserIds,
@@ -760,7 +765,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           transactionId: row.transaction.id,
           lotName: row.item.name,
           totalViolations: notificationPayload.totalViolations,
-          blockedUntilLabel: notificationPayload.blockedUntilLabel
+          blockedUntilLabel: notificationPayload.blockedUntilLabel,
+          occurredAt: notificationPayload.occurredAt
         })
       ]);
     }

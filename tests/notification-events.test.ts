@@ -17,7 +17,8 @@ vi.mock("@/lib/db/client", () => ({
 vi.mock("@/lib/db/schema", () => ({
   blacklists: {},
   notifications: {},
-  pelanggaranUser: {}
+  pelanggaranUser: {},
+  transaksi: {}
 }));
 
 import {
@@ -141,18 +142,25 @@ describe("notification event helpers", () => {
   });
 
   it("routes blacklist notifications to the buyer violation page as one canonical status", async () => {
+    const occurredAt = new Date("2026-06-18T20:03:00.000Z");
+
     await notifyBlacklistActivated({
       userId: "buyer-1",
       totalViolations: 1,
-      blockedUntilLabel: "2 Juni 2026"
-    });
+      blockedUntilLabel: "2 Juni 2026",
+      occurredAt
+    } as any);
 
     expect(mocks.createOrRefreshNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "blacklist_active",
         entityType: "blacklist",
         entityId: "blacklist-buyer-1",
-        actionHref: "/pelanggaran"
+        actionHref: "/pelanggaran",
+        createdAt: occurredAt,
+        metadata: expect.objectContaining({
+          occurredAt: occurredAt.toISOString()
+        })
       })
     );
   });

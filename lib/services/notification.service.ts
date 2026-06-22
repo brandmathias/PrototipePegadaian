@@ -38,6 +38,7 @@ export type NotificationInput = {
   entityType?: NotificationEntityType;
   entityId?: string;
   actionHref?: string;
+  createdAt?: Date;
   metadata?: Record<string, unknown>;
 };
 
@@ -134,6 +135,7 @@ export async function createNotification(input: NotificationInput) {
       entityId: input.entityId ?? null,
       actionHref: input.actionHref ?? null,
       isRead: false,
+      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
       metadata: input.metadata ?? null
     })
     .returning();
@@ -199,7 +201,7 @@ export async function createOrRefreshNotification(input: NotificationInput, opti
       metadata: input.metadata ?? null,
       ...(shouldMarkUnread
         ? {
-            createdAt: new Date(),
+            createdAt: input.createdAt ?? new Date(),
             isRead: false,
             readAt: null
           }

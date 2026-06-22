@@ -146,6 +146,8 @@ describe("overdue Lelang Tertutup payment settlement", () => {
 
   it("continues blacklist level from an expired historical restriction", async () => {
     const updatePayloads: Array<Record<string, unknown>> = [];
+    const insertPayloads: Array<Record<string, unknown>> = [];
+    const paymentDeadline = new Date("2026-05-28T14:36:04.000Z");
 
     mocks.db.select.mockImplementationOnce(() =>
       mockOverdueRows([
@@ -162,6 +164,7 @@ describe("overdue Lelang Tertutup payment settlement", () => {
           transaction: {
             id: "trx-1",
             pemasaranId: "pemasaran-1",
+            paymentDeadline,
             userId: "buyer-current"
           }
         }
@@ -172,7 +175,10 @@ describe("overdue Lelang Tertutup payment settlement", () => {
       .mockImplementationOnce(() => mockUpdatedTransaction())
       .mockImplementation(() => mockVoidUpdate((value) => updatePayloads.push(value)));
     mocks.tx.insert.mockReturnValue({
-      values: vi.fn().mockResolvedValue(undefined)
+      values: vi.fn((value) => {
+        insertPayloads.push(value);
+        return Promise.resolve(undefined);
+      })
     });
     mocks.tx.select.mockImplementationOnce(() =>
       mockExistingBlacklist([
@@ -194,14 +200,26 @@ describe("overdue Lelang Tertutup payment settlement", () => {
     expect(updatePayloads).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          blockedAt: paymentDeadline,
+          blockedUntil: new Date("2026-06-27T14:36:04.000Z"),
           isActive: true,
           totalViolations: 2,
           userId: "buyer-current"
         })
       ])
     );
+    expect(insertPayloads).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          createdAt: paymentDeadline,
+          escalationEligible: true,
+          transaksiId: "trx-1"
+        })
+      ])
+    );
     expect(mocks.notifyBlacklistActivated).toHaveBeenCalledWith(
       expect.objectContaining({
+        occurredAt: paymentDeadline,
         totalViolations: 2,
         userId: "buyer-current"
       })

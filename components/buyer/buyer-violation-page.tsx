@@ -264,7 +264,9 @@ function TimelineItem({
               <Clock3 className="size-9 shrink-0 text-[#46536a]" />
               <div>
                 <p className="text-[0.65rem] font-black uppercase text-[#6b7586]">Waktu Menang Lelang</p>
-                <p className="mt-1 text-sm font-black leading-6 text-[#101923]">{entry.occurredAtLabel}</p>
+                <p className="mt-1 text-sm font-black leading-6 text-[#101923]">
+                  {entry.wonAtLabel ?? entry.occurredAtLabel}
+                </p>
               </div>
             </div>
           </div>

@@ -120,6 +120,8 @@ export type BuyerViolationHistoryEntry = {
   transactionId: string;
   unitName: string;
   violationLevel: number;
+  wonAt: string;
+  wonAtLabel: string;
 };
 
 export type BuyerViolationPageData = {
@@ -260,16 +262,18 @@ async function listBuyerViolationEscalationFacts(userId: string) {
       createdAt: pelanggaranUser.createdAt,
       escalationEligible: pelanggaranUser.escalationEligible,
       id: pelanggaranUser.id,
+      paymentDeadline: transaksi.paymentDeadline,
     })
     .from(pelanggaranUser)
+    .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .where(eq(pelanggaranUser.userId, userId))
     .orderBy(desc(pelanggaranUser.createdAt));
 
   return rows.map((row) => ({
-    createdAt: row.createdAt,
+    createdAt: row.paymentDeadline ?? row.createdAt,
     escalationEligible: row.escalationEligible,
     id: row.id,
-    occurredAt: row.createdAt.toISOString(),
+    occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString(),
   }));
 }
 
@@ -344,28 +348,34 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
     .leftJoin(units, eq(units.id, pelanggaranUser.unitId))
     .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .where(eq(pelanggaranUser.userId, userId))
-    .orderBy(desc(pelanggaranUser.createdAt));
+    .orderBy(desc(transaksi.paymentDeadline), desc(pelanggaranUser.createdAt));
 
-  const history = rows.map((row) => ({
-    id: row.violation.id,
-    amount: toNumber(row.transaction.amount),
-    auctionMode: row.auction.mode,
-    escalationEligible: row.violation.escalationEligible,
-    imageUrl: row.media?.url ?? null,
-    itemCode: row.item.code,
-    itemName: row.item.name,
-    note: row.violation.note,
-    occurredAt: row.violation.createdAt.toISOString(),
-    occurredAtLabel: formatAppDateTime(row.violation.createdAt),
-    paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
-    paymentDeadlineLabel: row.transaction.paymentDeadline
-      ? formatAppDateTime(row.transaction.paymentDeadline)
-      : "-",
-    status: row.transaction.status,
-    transactionId: row.transaction.id,
-    unitName: row.unit?.name ?? "-",
-    violationLevel: 0
-  }));
+  const history = rows.map((row) => {
+    const occurredAt = row.transaction.paymentDeadline ?? row.violation.createdAt;
+
+    return {
+      id: row.violation.id,
+      amount: toNumber(row.transaction.amount),
+      auctionMode: row.auction.mode,
+      escalationEligible: row.violation.escalationEligible,
+      imageUrl: row.media?.url ?? null,
+      itemCode: row.item.code,
+      itemName: row.item.name,
+      note: row.violation.note,
+      occurredAt: occurredAt.toISOString(),
+      occurredAtLabel: formatAppDateTime(occurredAt),
+      paymentDeadline: row.transaction.paymentDeadline?.toISOString() ?? null,
+      paymentDeadlineLabel: row.transaction.paymentDeadline
+        ? formatAppDateTime(row.transaction.paymentDeadline)
+        : "-",
+      status: row.transaction.status,
+      transactionId: row.transaction.id,
+      unitName: row.unit?.name ?? "-",
+      violationLevel: 0,
+      wonAt: row.transaction.createdAt.toISOString(),
+      wonAtLabel: formatAppDateTime(row.transaction.createdAt)
+    };
+  });
 
   return filterCountedBuyerViolationHistory(history);
 }

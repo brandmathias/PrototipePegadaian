@@ -94,9 +94,11 @@ async function getEffectiveBlacklistStates(
       createdAt: pelanggaranUser.createdAt,
       escalationEligible: pelanggaranUser.escalationEligible,
       id: pelanggaranUser.id,
+      paymentDeadline: transaksi.paymentDeadline,
       userId: pelanggaranUser.userId,
     })
     .from(pelanggaranUser)
+    .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
     .where(inArray(pelanggaranUser.userId, userIds))
     .orderBy(desc(pelanggaranUser.createdAt));
 
@@ -114,10 +116,10 @@ async function getEffectiveBlacklistStates(
         storedBlockedUntil: row.blockedUntil,
         storedTotalViolations: row.totalViolations,
         traces: (tracesByUser.get(row.userId) ?? []).map((trace) => ({
-          createdAt: trace.createdAt,
+          createdAt: trace.paymentDeadline ?? trace.createdAt,
           escalationEligible: trace.escalationEligible,
           id: trace.id,
-          occurredAt: trace.createdAt.toISOString(),
+          occurredAt: (trace.paymentDeadline ?? trace.createdAt).toISOString(),
         })),
       }),
     ]),

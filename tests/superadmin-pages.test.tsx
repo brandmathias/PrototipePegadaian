@@ -1589,11 +1589,14 @@ describe("superadmin pages", () => {
               itemName: "Cincin Emas 5 Gram",
               lotLabel: "BRG-13B",
               note: "User memenangkan lelang tetapi gagal melakukan pelunasan hingga batas waktu berakhir.",
-              occurredAt: "2026-05-28T06:00:00.000Z",
-              occurredAtLabel: "28 Mei 2026, 14.00 WIB",
+              occurredAt: "2026-05-29T06:00:00.000Z",
+              occurredAtLabel: "29 Mei 2026, 14.00 WIB",
+              paymentDeadline: "2026-05-29T06:00:00.000Z",
               paymentDeadlineLabel: "29 Mei 2026, 14.00 WIB",
               transactionStatus: "menunggu_pembayaran",
               unitName: "UPC Ranotana",
+              wonAt: "2026-05-28T06:00:00.000Z",
+              wonAtLabel: "28 Mei 2026, 14.00 WIB",
             },
             {
               amount: 2500000,
@@ -1601,11 +1604,14 @@ describe("superadmin pages", () => {
               id: "violation-13b-old",
               itemName: "Gelang Emas",
               note: "Pelanggaran sebelumnya sudah selesai.",
-              occurredAt: "2026-01-10T14:00:00.000Z",
-              occurredAtLabel: "10 Januari 2026, 14.00 WIB",
+              occurredAt: "2026-01-11T14:00:00.000Z",
+              occurredAtLabel: "11 Januari 2026, 14.00 WIB",
+              paymentDeadline: "2026-01-11T14:00:00.000Z",
               paymentDeadlineLabel: "11 Januari 2026, 14.00 WIB",
               transactionStatus: "gagal_bayar",
               unitName: "UPC Ranotana",
+              wonAt: "2026-01-10T14:00:00.000Z",
+              wonAtLabel: "10 Januari 2026, 14.00 WIB",
             },
           ],
           until: "2026-06-28",
@@ -1631,7 +1637,7 @@ describe("superadmin pages", () => {
         /Tidak Bayar Dalam 1x24 Jam/i,
       ).length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText(/29 Mei 2026.*14.00/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/29 Mei 2026.*14.00/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Rp 4.500.000/i).length).toBeGreaterThan(0);
   });
 

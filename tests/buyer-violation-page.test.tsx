@@ -36,15 +36,17 @@ const activeLevelTwoData: BuyerViolationPageData = {
       itemCode: "BRG-55291335",
       itemName: "Kalung Emas 2",
       note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.",
-      occurredAt: "2026-06-12T05:33:00.000Z",
-      occurredAtLabel: "12 Juni 2026, 13.33 WITA",
+      occurredAt: "2026-06-13T05:33:00.000Z",
+      occurredAtLabel: "13 Juni 2026, 13.33 WITA",
       paymentDeadline: "2026-06-13T05:33:00.000Z",
       paymentDeadlineLabel: "13 Juni 2026, 13.33 WITA",
       status: "gagal",
       transactionId: "trx-2",
       unitName: "UPC Ranotana",
-      violationLevel: 2
-    },
+      violationLevel: 2,
+      wonAt: "2026-06-12T05:33:00.000Z",
+      wonAtLabel: "12 Juni 2026, 13.33 WITA"
+    } as any,
     {
       id: "violation-1",
       amount: 25000000,
@@ -54,19 +56,38 @@ const activeLevelTwoData: BuyerViolationPageData = {
       itemCode: "BRG-34145928",
       itemName: "Laptop",
       note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.",
-      occurredAt: "2026-03-20T07:00:00.000Z",
-      occurredAtLabel: "20 Maret 2026, 15.00 WITA",
+      occurredAt: "2026-03-21T07:00:00.000Z",
+      occurredAtLabel: "21 Maret 2026, 15.00 WITA",
       paymentDeadline: "2026-03-21T07:00:00.000Z",
       paymentDeadlineLabel: "21 Maret 2026, 15.00 WITA",
       status: "gagal",
       transactionId: "trx-1",
       unitName: "UPC Ranotana",
-      violationLevel: 1
-    }
+      violationLevel: 1,
+      wonAt: "2026-03-20T07:00:00.000Z",
+      wonAtLabel: "20 Maret 2026, 15.00 WITA"
+    } as any
   ]
 };
 
 describe("BuyerViolationPage", () => {
+  it("keeps win time, payment deadline, and violation time separated", () => {
+    render(<BuyerViolationPage data={activeLevelTwoData} serverNow="2026-06-17T06:02:00.000Z" />);
+
+    expect(screen.getByText(/waktu menang lelang/i).parentElement).toHaveTextContent(
+      "12 Juni 2026, 13.33 WITA"
+    );
+    expect(screen.getByText(/batas waktu bayar/i).parentElement).toHaveTextContent(
+      "13 Juni 2026, 13.33 WITA"
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /tutup detail pelanggaran kalung emas 2/i }));
+
+    expect(screen.getAllByText(/tanggal terjadi/i)[0]?.parentElement).toHaveTextContent(
+      "13 Juni 2026, 13.33 WITA"
+    );
+  });
+
   it("renders active restriction details from real buyer blacklist data", () => {
     render(<BuyerViolationPage data={activeLevelTwoData} serverNow="2026-06-17T06:02:00.000Z" />);
 

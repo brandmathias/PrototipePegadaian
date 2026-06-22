@@ -207,7 +207,10 @@ function getCurrentViolationItem(items: ViolationItem[]) {
 }
 
 function getPaymentDeadlineFromWinTime(trace: Record<string, any> | null | undefined) {
-  const wonAt = parseDate(trace?.occurredAt ?? trace?.createdAt);
+  const explicitDeadline = parseDate(trace?.paymentDeadline);
+  if (explicitDeadline) return explicitDeadline;
+
+  const wonAt = parseDate(trace?.wonAt ?? trace?.transactionCreatedAt ?? trace?.createdAt);
 
   return wonAt ? new Date(wonAt.getTime() + DAY_MS) : null;
 }
@@ -407,7 +410,7 @@ function TimelineItemCard({
   const completed = !item.isCurrent;
   const tone = getLevelTone(item.level, completed);
   const trace = item.trace;
-  const wonAt = parseDate(trace?.occurredAt ?? trace?.createdAt);
+  const wonAt = parseDate(trace?.wonAt ?? trace?.transactionCreatedAt ?? trace?.createdAt);
   const paymentDeadline = getPaymentDeadlineFromWinTime(trace);
 
   return (
