@@ -637,18 +637,6 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
         description="Kelola akses Owner dan Operator Superadmin dengan guardrail, audit, dan alert penting yang tersimpan."
         eyebrow="Superadmin / Manajemen Superadmin"
         icon={UsersRound}
-        rightRail={
-          <>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d9e8df] bg-white/82 px-3 py-2 text-xs font-bold text-[#006747] shadow-[0_16px_32px_-28px_rgba(8,69,50,0.38)]">
-              <Crown className="size-4" />
-              {data.stats.activeOwners} Owner aktif
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d9e8df] bg-white/82 px-3 py-2 text-xs font-bold text-[#006747] shadow-[0_16px_32px_-28px_rgba(8,69,50,0.38)]">
-              <ShieldCheck className="size-4" />
-              {data.stats.activeOperators} Operator aktif
-            </span>
-          </>
-        }
         title="Manajemen Superadmin"
       />
 

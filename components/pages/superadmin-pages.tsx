@@ -408,13 +408,19 @@ export type SuperAdminBlacklistItem = {
   expiredLabel?: string;
 };
 
-type SuperAdminRestrictionLevelFilter = "Semua" | "Level 1" | "Level 2" | "Level 3";
+type SuperAdminRestrictionLevelFilter =
+  | "Semua"
+  | "Level 1"
+  | "Level 2"
+  | "Level 3"
+  | "Berakhir";
 
 const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
   "Semua",
   "Level 1",
   "Level 2",
   "Level 3",
+  "Berakhir",
 ];
 
 const DAY_MS = 86_400_000;
@@ -1908,6 +1914,13 @@ export function SuperAdminUnitsPage({
 
 const unitDetailPageSizeOptions = [10, 20, 50] as const;
 const unitDetailFilterAll = "Semua";
+const unitDetailOperationalStatusOptions = [
+  "Barang Jaminan",
+  "Ditebus",
+  "Sedang Dipasarkan",
+  "Siap Dipasarkan",
+  "Terjual",
+] as const;
 const unitDetailModeOptions = [
   { label: "Harga Tetap", value: "fixed_price" },
   { label: "Lelang Tertutup", value: "vickrey" },
@@ -2123,6 +2136,38 @@ function getUnitDetailStatusToneClass(tone: SuperAdminUnitBarangItem["operationa
   }
 
   return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+}
+
+function getUnitDetailDisplayStatus(status: string) {
+  const normalizedStatus = normalizeUnitDetailOptionValue(status);
+
+  if (
+    ["bukti_diunggah", "menunggu_pembayaran", "menunggu_konfirmasi_langsung"].includes(
+      normalizedStatus,
+    )
+  ) {
+    return "Sedang Dipasarkan";
+  }
+
+  if (["ada_tindak_lanjut", "gagal", "ditolak_bukti"].includes(normalizedStatus)) {
+    return "Siap Dipasarkan";
+  }
+
+  return status;
+}
+
+function getUnitDetailDisplayTone(
+  status: string,
+  fallbackTone: SuperAdminUnitBarangItem["operationalTone"],
+) {
+  const displayStatus = getUnitDetailDisplayStatus(status);
+
+  if (displayStatus === "Barang Jaminan") return "amber";
+  if (displayStatus === "Sedang Dipasarkan") return "blue";
+  if (displayStatus === "Siap Dipasarkan") return "emerald";
+  if (displayStatus === "Ditebus" || displayStatus === "Terjual") return "slate";
+
+  return fallbackTone;
 }
 
 function getUnitDetailStatusDotClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
@@ -2576,11 +2621,9 @@ function SuperAdminUnitInventorySection({
   const statusOptions = useMemo(
     () => [
       { label: unitDetailFilterAll, value: unitDetailFilterAll },
-      ...Array.from(new Set(items.map((item) => item.operationalStatus).filter(Boolean)))
-        .sort()
-        .map((status) => ({ label: status, value: status })),
+      ...unitDetailOperationalStatusOptions.map((status) => ({ label: status, value: status })),
     ],
-    [items],
+    [],
   );
   const modeOptions = useMemo(
     () => [
@@ -2601,7 +2644,8 @@ function SuperAdminUnitInventorySection({
         categoryFilter === unitDetailFilterAll ||
         normalizeUnitDetailOptionValue(item.category) === categoryFilter;
       const matchesStatus =
-        statusFilter === unitDetailFilterAll || item.operationalStatus === statusFilter;
+        statusFilter === unitDetailFilterAll ||
+        getUnitDetailDisplayStatus(item.operationalStatus) === statusFilter;
       const matchesMode =
         modeFilter === unitDetailFilterAll ||
         getUnitDetailMarketingModeValue(item.marketingModeLabel) === modeFilter;
@@ -2619,17 +2663,16 @@ function SuperAdminUnitInventorySection({
     filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const currentPageEnd = Math.min(currentPage * pageSize, filteredItems.length);
   const collateralCount = items.filter(
-    (item) => item.operationalStatus === "Barang Jaminan",
+    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Barang Jaminan",
   ).length;
   const readyCount = items.filter(
-    (item) => item.operationalStatus === "Siap Dipasarkan",
+    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Siap Dipasarkan",
   ).length;
   const marketedCount = items.filter(
-    (item) => item.operationalStatus === "Sedang Dipasarkan",
+    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Sedang Dipasarkan",
   ).length;
-  const soldCount = items.filter((item) => item.operationalStatus === "Terjual").length;
-  const followUpCount = items.filter(
-    (item) => item.operationalStatus === "Ada Tindak Lanjut",
+  const soldCount = items.filter(
+    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Terjual",
   ).length;
   const unitDetailMetrics = [
     {
@@ -2659,13 +2702,6 @@ function SuperAdminUnitInventorySection({
       icon: BadgeCheck,
       iconClass: "bg-slate-100 text-slate-700 ring-slate-200",
       filter: "Terjual",
-    },
-    {
-      label: "Perlu Tindak Lanjut",
-      value: followUpCount,
-      icon: AlertTriangle,
-      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
-      filter: "Ada Tindak Lanjut",
     },
   ];
   const resetFilters = () => {
@@ -2713,7 +2749,7 @@ function SuperAdminUnitInventorySection({
       </div>
 
       <div className="p-4 sm:p-5 lg:p-6">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {unitDetailMetrics.map((metric) => {
             const Icon = metric.icon;
 
@@ -2846,8 +2882,15 @@ function SuperAdminUnitInventorySection({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#edf2ee] bg-white">
-                  {paginatedItems.map((item, index) => (
-                    <tr
+                  {paginatedItems.map((item, index) => {
+                    const operationalStatus = getUnitDetailDisplayStatus(item.operationalStatus);
+                    const operationalTone = getUnitDetailDisplayTone(
+                      item.operationalStatus,
+                      item.operationalTone,
+                    );
+
+                    return (
+                      <tr
                       className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
                       key={item.id}
                     >
@@ -2888,26 +2931,24 @@ function SuperAdminUnitInventorySection({
                         <span
                           className={cn(
                             "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
-                            getUnitDetailStatusToneClass(item.operationalTone),
+                            getUnitDetailStatusToneClass(operationalTone),
                           )}
                         >
                           <span
                             className={cn(
                               "size-1.5 rounded-full",
-                              getUnitDetailStatusDotClass(item.operationalTone),
+                              getUnitDetailStatusDotClass(operationalTone),
                             )}
                           />
-                          {item.operationalStatus}
+                          {operationalStatus}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-2">
-                          <Link
-                            className="inline-flex h-9 items-center justify-center rounded-lg border border-[#d8e4de] bg-white px-3 text-xs font-bold text-[#007a4d] transition-[transform,border-color,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[#afd4bd] hover:bg-[#f8fbf9] active:scale-[0.98]"
+                          <DetailActionLink
+                            className="min-h-9 rounded-lg px-3 text-xs"
                             href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
-                          >
-                            Detail
-                          </Link>
+                          />
                           <button
                             aria-label={`Menu ${item.name}`}
                             className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
@@ -2917,8 +2958,9 @@ function SuperAdminUnitInventorySection({
                           </button>
                         </div>
                       </td>
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -5429,9 +5471,6 @@ export function SuperAdminManagementPage({
       );
     });
   }, [adminQuery, admins]);
-  const activeUnitCount = units.length;
-  const activeAccountCount = units.filter((unit) => unit.activeAccount).length;
-
   useEffect(() => {
     setPageIndex(0);
   }, [filteredUnits.length, pageSize, query]);
@@ -5442,16 +5481,6 @@ export function SuperAdminManagementPage({
         description="Kelola unit, rekening aktif utama, dan admin unit dari data database dalam tampilan ledger yang ringkas."
         eyebrow="Superadmin / Manajemen Unit"
         icon={Building2}
-        rightRail={
-          <>
-            <SuperAdminHeroPill icon={Building2}>
-              {activeUnitCount} unit aktif
-            </SuperAdminHeroPill>
-            <SuperAdminHeroPill icon={WalletCards}>
-              {activeAccountCount} rekening utama
-            </SuperAdminHeroPill>
-          </>
-        }
         title="Manajemen Unit"
       />
 
@@ -6029,9 +6058,6 @@ export function SuperAdminMonitoringPage({
   );
   const chartMinWidth = Math.max(920, filteredUnitRows.length * 128);
   const activeUnitCount = unitRows.length;
-  const followUpUnitCount = unitRows.filter(
-    (row) => Number(row.followUpItems) > 0,
-  ).length;
   const topMarketedUnit = [...unitRows].sort(
     (left, right) =>
       Number(right.marketedItems ?? 0) - Number(left.marketedItems ?? 0),
@@ -6113,31 +6139,6 @@ export function SuperAdminMonitoringPage({
         },
       ],
     },
-    {
-      label: "Perlu Tindak Lanjut",
-      value: unitRows.reduce(
-        (sum, row) => sum + Number(row.followUpItems ?? 0),
-        0,
-      ),
-      detail:
-        followUpUnitCount > 0
-          ? `${formatDashboardCount(followUpUnitCount)} unit perlu dipantau`
-          : "Tidak ada tindak lanjut aktif",
-      icon: AlertTriangle,
-      iconClass: "bg-rose-50 text-rose-600 ring-rose-100",
-      valueClass:
-        followUpUnitCount > 0 ? "text-rose-600" : "text-[#13211c]",
-      tooltipRows: [
-        {
-          label: "Unit terdampak",
-          value: formatDashboardCount(followUpUnitCount),
-        },
-        {
-          label: "Status fokus",
-          value: followUpUnitCount > 0 ? "Perlu dipantau" : "Aman",
-        },
-      ],
-    },
   ];
   const activeChartRows = activeChartTooltip
     ? monitoringChartSeries.map((series) => ({
@@ -6183,23 +6184,13 @@ export function SuperAdminMonitoringPage({
   return (
     <div className="space-y-5 lg:space-y-6">
       <AdminPageHero
-        description="Bandingkan distribusi barang lintas unit dari data database: barang jaminan, pemasaran aktif, penjualan, dan tindak lanjut unit."
+        description="Bandingkan distribusi barang lintas unit dari data database: barang jaminan, pemasaran aktif, dan penjualan."
         eyebrow="Superadmin / Monitoring Unit"
         icon={ShieldCheck}
-        rightRail={
-          <>
-            <SuperAdminHeroPill icon={Building2}>
-              {formatDashboardCount(unitRows.length)} unit tercatat
-            </SuperAdminHeroPill>
-            <SuperAdminHeroPill icon={BadgeCheck}>
-              {formatDashboardCount(activeUnitCount)} unit aktif
-            </SuperAdminHeroPill>
-          </>
-        }
         title="Monitoring Unit"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {itemMonitoringMetrics.map((metric, index) => {
           const Icon = metric.icon;
 
@@ -6512,7 +6503,7 @@ export function SuperAdminMonitoringPage({
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[860px] text-left text-sm">
+                <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-border/70 bg-[#fbfcfb] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#435476]">
                       <th className="px-6 py-3.5" scope="col">
@@ -6526,9 +6517,6 @@ export function SuperAdminMonitoringPage({
                       </th>
                       <th className="px-4 py-3.5 text-center" scope="col">
                         Terjual
-                      </th>
-                      <th className="px-4 py-3.5 text-center" scope="col">
-                        Perlu Tindak Lanjut
                       </th>
                       <th className="px-6 py-3.5 text-right" scope="col">
                         Aksi
@@ -6565,16 +6553,6 @@ export function SuperAdminMonitoringPage({
                         </td>
                         <td className="px-4 py-4 text-center font-bold text-[#13211c]">
                           {formatDashboardCount(row.soldItems)}
-                        </td>
-                        <td
-                          className={cn(
-                            "px-4 py-4 text-center font-black",
-                            row.followUpItems > 0
-                              ? "text-rose-600"
-                              : "text-slate-300",
-                          )}
-                        >
-                          {formatDashboardCount(row.followUpItems)}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <DetailActionLink
@@ -6673,17 +6651,15 @@ export function SuperAdminBlacklistPage({
   const [levelFilter, setLevelFilter] =
     useState<SuperAdminRestrictionLevelFilter>("Semua");
   const activeEntries = entries.filter((entry) => entry.status === "Aktif");
-  const levelThreeCount = activeEntries.filter(
-    (entry) => getSuperadminRestrictionLevel(entry) >= 3,
-  ).length;
-  const ledgerEntries = activeEntries;
-  const expiringEntry = entries.find(
-    (entry) => entry.status === "Aktif" && entry.countdownAt,
-  );
+  const isExpiredHistory = levelFilter === "Berakhir";
+  const ledgerEntries = isExpiredHistory
+    ? entries.filter((entry) => entry.status !== "Aktif")
+    : activeEntries;
   const filteredEntries = ledgerEntries.filter((entry) => {
     const level = getSuperadminRestrictionLevel(entry);
     const matchesLevel =
       levelFilter === "Semua" ||
+      levelFilter === "Berakhir" ||
       (levelFilter === "Level 1" && level === 1) ||
       (levelFilter === "Level 2" && level === 2) ||
       (levelFilter === "Level 3" && level >= 3);
@@ -6692,10 +6668,16 @@ export function SuperAdminBlacklistPage({
   });
   const filterCounts = restrictionLevelFilters.reduce(
     (accumulator, filter) => {
-      accumulator[filter] = ledgerEntries.filter((entry) => {
+      const entriesForFilter =
+        filter === "Berakhir"
+          ? entries.filter((entry) => entry.status !== "Aktif")
+          : activeEntries;
+
+      accumulator[filter] = entriesForFilter.filter((entry) => {
         const level = getSuperadminRestrictionLevel(entry);
 
         return (
+          filter === "Berakhir" ||
           filter === "Semua" ||
           (filter === "Level 1" && level === 1) ||
           (filter === "Level 2" && level === 2) ||
@@ -6714,16 +6696,6 @@ export function SuperAdminBlacklistPage({
         description="Pusat pengawasan pembatasan aktif dan riwayat pelanggaran pembayaran Lelang Tertutup lintas unit."
         eyebrow="Superadmin / Pelanggaran"
         icon={Ban}
-        rightRail={
-          <>
-            <SuperAdminHeroPill icon={BadgeCheck}>
-              {activeEntries.length} aktif
-            </SuperAdminHeroPill>
-            <SuperAdminHeroPill tone="danger">
-              Level 3: {levelThreeCount}
-            </SuperAdminHeroPill>
-          </>
-        }
         title="Pelanggaran Pengguna"
       />
 
@@ -6739,39 +6711,20 @@ export function SuperAdminBlacklistPage({
         </div>
         <div className="flex flex-wrap gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-muted-foreground">
           <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
-            {ledgerEntries.length} akun aktif
+            {ledgerEntries.length} akun {isExpiredHistory ? "berakhir" : "aktif"}
           </span>
         </div>
       </div>
 
       <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
         <div className="border-b border-[#edf2ee] p-4 sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
-                Pembatasan Aktif
-              </h2>
-              <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                Ledger blacklist buyer berdasarkan level pelanggaran real dari sistem.
-              </p>
-            </div>
-            {expiringEntry ? (
-              <div className="rounded-[1rem] bg-[#f4faf6] px-4 py-3 text-sm ring-1 ring-[#d8e8dd]">
-                <p className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-[#0a6a49]/62">
-                  Berakhir terdekat
-                </p>
-                <p className="mt-1 font-bold text-[#122018]">
-                  {expiringEntry.name}
-                </p>
-                <SuperAdminCountdown
-                  className="text-xs font-black text-primary"
-                  countdownAt={expiringEntry.countdownAt}
-                  countdownLabel={expiringEntry.countdownLabel}
-                  expiredLabel={expiringEntry.expiredLabel}
-                  serverNow={serverNow}
-                />
-              </div>
-            ) : null}
+          <div>
+            <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
+              {isExpiredHistory ? "Riwayat Pembatasan Berakhir" : "Pembatasan Aktif"}
+            </h2>
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">
+              Ledger blacklist buyer berdasarkan level pelanggaran real dari sistem.
+            </p>
           </div>
 
           <div className="admin-choice-shell mt-4 flex flex-wrap gap-2 rounded-[1.15rem] p-1">
@@ -6801,27 +6754,31 @@ export function SuperAdminBlacklistPage({
           <div className="p-4 sm:p-5">
             <EmptyState
               className="p-6"
-              description="Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
+              description={
+                isExpiredHistory
+                  ? "Belum ada riwayat pembatasan yang berakhir."
+                  : "Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
+              }
               icon={ShieldBan}
-              title="Belum ada blacklist aktif"
+              title={isExpiredHistory ? "Belum ada riwayat berakhir" : "Belum ada blacklist aktif"}
             />
           </div>
         ) : filteredEntries.length === 0 ? (
           <div className="p-4 sm:p-5">
             <EmptyState
               className="p-6"
-              description="Tidak ada pembatasan yang cocok dengan pencarian atau filter level saat ini."
+              description="Tidak ada pembatasan yang cocok dengan pencarian atau filter saat ini."
               icon={SearchX}
               title="Data tidak ditemukan"
             />
           </div>
         ) : (
           <>
-            <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
+              <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
               <div>Pengguna</div>
               <div>Unit Asal</div>
               <div>Tingkat Pelanggaran</div>
-              <div>Sisa Waktu</div>
+                <div>{isExpiredHistory ? "Berakhir Pada" : "Sisa Waktu"}</div>
               <div className="text-right">Aksi</div>
             </div>
 
@@ -6874,18 +6831,35 @@ export function SuperAdminBlacklistPage({
                     </div>
 
                     <div>
-                      <SuperAdminCountdown
-                        className="text-xs font-black text-[#42526b]"
-                        countdownAt={item.countdownAt}
-                        countdownLabel={item.countdownLabel}
-                        expiredLabel={item.expiredLabel}
-                        serverNow={serverNow}
-                      />
-                      {!item.countdownAt ? (
-                        <p className="text-xs font-black text-[#42526b]">
-                          {item.until}
-                        </p>
-                      ) : null}
+                      {isExpiredHistory ? (
+                        <>
+                          <p className="text-xs font-black text-[#42526b]">
+                            {item.until}
+                          </p>
+                          <SuperAdminCountdown
+                            className="mt-1 text-xs font-black text-[#42526b]"
+                            countdownAt={item.countdownAt}
+                            countdownLabel={item.countdownLabel}
+                            expiredLabel={item.expiredLabel}
+                            serverNow={serverNow}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <SuperAdminCountdown
+                            className="text-xs font-black text-[#42526b]"
+                            countdownAt={item.countdownAt}
+                            countdownLabel={item.countdownLabel}
+                            expiredLabel={item.expiredLabel}
+                            serverNow={serverNow}
+                          />
+                          {!item.countdownAt ? (
+                            <p className="text-xs font-black text-[#42526b]">
+                              {item.until}
+                            </p>
+                          ) : null}
+                        </>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap justify-start gap-3 lg:justify-end">

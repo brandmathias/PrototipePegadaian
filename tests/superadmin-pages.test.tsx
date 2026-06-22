@@ -620,8 +620,8 @@ describe("superadmin pages", () => {
       screen.getByRole("columnheader", { name: "Unit / Cabang" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "Perlu Tindak Lanjut" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("columnheader", { name: "Perlu Tindak Lanjut" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("columnheader", { name: "Status Unit" }),
     ).not.toBeInTheDocument();
@@ -629,6 +629,9 @@ describe("superadmin pages", () => {
     fireEvent.mouseEnter(metricCard);
     expect(screen.getByRole("tooltip")).toHaveTextContent("Unit tercatat");
     fireEvent.mouseLeave(metricCard);
+    expect(screen.queryByLabelText("Ringkasan Perlu Tindak Lanjut")).not.toBeInTheDocument();
+    expect(screen.queryByText(/2 unit tercatat/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/2 unit aktif/i)).not.toBeInTheDocument();
 
     const chartBar = screen.getByRole("button", {
       name: "Barang Jaminan Pegadaian CP Manado: 8 item",
@@ -766,8 +769,17 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Daftar Barang Unit")).toBeInTheDocument();
     expect(screen.getByText("Guci Antik 01")).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Kategori Barang" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("combobox", { name: "Status Operasional" }));
+    expect(screen.getByRole("option", { name: "Barang Jaminan" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Ditebus" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Sedang Dipasarkan" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Siap Dipasarkan" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Terjual" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Ada Tindak Lanjut" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Ringkasan Perlu Tindak Lanjut")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ada Tindak Lanjut")).not.toBeInTheDocument();
     expect(screen.getByText(/Menampilkan 1-10 dari 12 barang/i)).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Lihat detail" })[0]).toHaveAttribute(
       "href",
       "/superadmin/unit/unit-1/barang/barang-1",
     );
@@ -1018,7 +1030,7 @@ describe("superadmin pages", () => {
         now,
         transactionStatus: "ditolak_bukti",
       }).operationalStatus,
-    ).toBe("Sedang Dipasarkan");
+    ).toBe("Siap Dipasarkan");
 
     expect(
       getUnitItemOperationalState({
@@ -1029,7 +1041,7 @@ describe("superadmin pages", () => {
         now,
         transactionStatus: "bukti_diunggah",
       }).operationalStatus,
-    ).toBe("Bukti Diunggah");
+    ).toBe("Sedang Dipasarkan");
 
     expect(
       getUnitItemOperationalState({
@@ -1037,7 +1049,17 @@ describe("superadmin pages", () => {
         dueDate: new Date("2026-05-01T00:00:00.000Z"),
         now,
       }).operationalStatus,
-    ).toBe("Menunggu Pembayaran");
+    ).toBe("Sedang Dipasarkan");
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "ditebus",
+        now,
+      }),
+    ).toEqual({
+      operationalStatus: "Ditebus",
+      operationalTone: "slate",
+    });
   }, 10000);
 
   it("keeps unit inventory visible and paginated on superadmin unit detail", () => {
@@ -1061,7 +1083,7 @@ describe("superadmin pages", () => {
           itemNumber === 3
             ? "Sedang Dipasarkan"
             : itemNumber === 4
-              ? "Ada Tindak Lanjut"
+              ? "Siap Dipasarkan"
               : itemNumber === 5
                 ? "Terjual"
                 : "Siap Dipasarkan",
@@ -1069,7 +1091,7 @@ describe("superadmin pages", () => {
           itemNumber === 3
             ? "blue"
             : itemNumber === 4
-              ? "red"
+                ? "emerald"
               : itemNumber === 5
                 ? "slate"
                 : "emerald",
@@ -1107,7 +1129,7 @@ describe("superadmin pages", () => {
     expect(screen.getByRole("combobox", { name: "Mode Pemasaran" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Jumlah barang per halaman" })).toBeInTheDocument();
     expect(screen.getByText(/Menampilkan 1-10 dari 12 barang/i)).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Detail" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "Lihat detail" })[0]).toHaveAttribute(
       "href",
       "/superadmin/unit/unit-1/barang/barang-1",
     );
@@ -1540,6 +1562,19 @@ describe("superadmin pages", () => {
               countdownAt: new Date("2026-04-29T10:01:05+08:00").toISOString(),
               expiredLabel: "Masa blokir selesai",
             },
+            {
+              id: "blk-2",
+              userId: "buyer-2",
+              name: "Dian",
+              email: "dian@example.com",
+              unit: "UPC Wanea",
+              total: 1,
+              until: "10 Apr 2026",
+              reason: "Masa pembatasan telah selesai.",
+              status: "Nonaktif",
+              countdownAt: new Date("2026-04-10T10:01:05+08:00").toISOString(),
+              expiredLabel: "Masa blokir selesai",
+            },
           ] as any
         }
       />,
@@ -1549,7 +1584,10 @@ describe("superadmin pages", () => {
       screen.getAllByText((content) =>
         content.includes("Sisa waktu 1 menit 5 detik"),
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(screen.queryByText(/^1 aktif$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/level 3:/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/berakhir terdekat/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
       "hover:bg-[#006747]",
       "hover:text-white"
@@ -1563,7 +1601,12 @@ describe("superadmin pages", () => {
       screen.getAllByText((content) =>
         content.includes("Sisa waktu 1 menit 4 detik"),
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: /berakhir/i }));
+
+    expect(screen.getByText("Dian")).toBeInTheDocument();
+    expect(screen.getByText("Masa blokir selesai")).toBeInTheDocument();
   });
 
   it("renders superadmin violation dossier detail with timeline and countdown", () => {
@@ -1775,6 +1818,8 @@ describe("superadmin pages", () => {
 
     expect(screen.queryByRole("button", { name: /tambah admin/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /direktori admin/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/1 unit aktif/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1 rekening utama/i)).not.toBeInTheDocument();
     const detailLink = screen.getByRole("link", { name: /lihat detail/i });
 
     expect(detailLink).toHaveAttribute(

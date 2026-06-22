@@ -122,7 +122,8 @@ describe("superadmin serializers", () => {
       status: "Nonaktif",
       total: 2,
       countdownAt: "2026-06-13T16:42:23.866Z",
-      countdownLabel: undefined
+      countdownLabel: undefined,
+      expiredLabel: "Masa blokir selesai"
     });
   });
 });

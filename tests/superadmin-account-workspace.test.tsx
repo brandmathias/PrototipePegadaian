@@ -108,6 +108,8 @@ describe("SuperAdminAccountWorkspace", () => {
     renderWorkspace(true);
 
     expect(screen.getByRole("heading", { name: /manajemen superadmin/i })).toBeInTheDocument();
+    expect(screen.queryByText(/1 owner aktif/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1 operator aktif/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/owner nasional/i).length).toBeGreaterThan(0);
     const detailLink = screen.getAllByRole("link", { name: /lihat detail/i })[0];
     expect(detailLink).toHaveAttribute(

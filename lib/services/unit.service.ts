@@ -127,8 +127,16 @@ export function getUnitItemOperationalState(input: {
     return { operationalStatus: "Terjual", operationalTone: "slate" };
   }
 
-  if (itemStatus === "gagal" || latestMarketingStatus === "gagal") {
-    return { operationalStatus: "Ada Tindak Lanjut", operationalTone: "red" };
+  if (itemStatus === "ditebus") {
+    return { operationalStatus: "Ditebus", operationalTone: "slate" };
+  }
+
+  if (
+    itemStatus === "gagal" ||
+    latestMarketingStatus === "gagal" ||
+    transactionStatus === "ditolak_bukti"
+  ) {
+    return { operationalStatus: "Siap Dipasarkan", operationalTone: "emerald" };
   }
 
   const fixedPriceCatalogLocked =
@@ -141,13 +149,13 @@ export function getUnitItemOperationalState(input: {
 
   if (fixedPriceCatalogLocked) {
     return {
-      operationalStatus: formatUnitOperationalStatusLabel(transactionStatus),
-      operationalTone: "slate"
+      operationalStatus: "Sedang Dipasarkan",
+      operationalTone: "blue"
     };
   }
 
-  if (transactionStatus === "ditolak_bukti") {
-    return { operationalStatus: "Ada Tindak Lanjut", operationalTone: "red" };
+  if (itemStatus === "menunggu_pembayaran") {
+    return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
   }
 
   if (isCollateralStatus && isBeforeDueDate) {

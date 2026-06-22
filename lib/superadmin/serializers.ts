@@ -128,6 +128,6 @@ export function serializeBlacklistEntry(input: {
     status: isCurrentlyActive ? "Aktif" : "Nonaktif",
     countdownLabel: countdown?.label,
     countdownAt: input.blockedUntil?.toISOString(),
-    expiredLabel: countdown ? "Masa blokir selesai" : undefined
+    expiredLabel: "Masa blokir selesai"
   };
 }
