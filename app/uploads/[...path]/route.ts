@@ -1,8 +1,8 @@
-import { createReadStream } from "node:fs";
+import { createReadStream, type Stats } from "node:fs";
 import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 
-import { getUploadMimeType, resolvePublicUploadPath } from "@/lib/uploads/storage";
+import { getUploadMimeType, resolvePublicUploadPaths } from "@/lib/uploads/storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -50,23 +50,36 @@ function parseByteRange(rangeHeader: string | null, size: number) {
 
 async function getUploadResponse(request: Request, context: Context, includeBody: boolean) {
   const { path: uploadPath } = await context.params;
-  const filePath = resolvePublicUploadPath(uploadPath);
+  const filePaths = resolvePublicUploadPaths(uploadPath);
 
-  if (!filePath) {
+  if (!filePaths.length) {
     return new Response("Not found", { status: 404 });
   }
 
-  let fileStats: Awaited<ReturnType<typeof stat>>;
-  try {
-    fileStats = await stat(filePath);
-  } catch {
+  let resolvedFile:
+    | {
+        filePath: string;
+        fileStats: Stats;
+      }
+    | undefined;
+
+  for (const filePath of filePaths) {
+    try {
+      const fileStats = await stat(filePath);
+      if (fileStats.isFile()) {
+        resolvedFile = { filePath, fileStats };
+        break;
+      }
+    } catch {
+      // Continue to the bundled upload fallback when the persistent volume is incomplete.
+    }
+  }
+
+  if (!resolvedFile) {
     return new Response("Not found", { status: 404 });
   }
 
-  if (!fileStats.isFile()) {
-    return new Response("Not found", { status: 404 });
-  }
-
+  const { filePath, fileStats } = resolvedFile;
   const contentType = getUploadMimeType(filePath);
   const range = parseByteRange(request.headers.get("range"), fileStats.size);
   const baseHeaders = {

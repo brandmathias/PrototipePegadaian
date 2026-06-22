@@ -75,24 +75,32 @@ export function getUploadMimeType(filePath: string) {
   return UPLOAD_MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
 }
 
-export function resolvePublicUploadPath(segments: string[] | undefined) {
+export function resolvePublicUploadPaths(segments: string[] | undefined) {
   if (!segments?.length) {
-    return null;
+    return [];
   }
 
   let decodedSegments: string[];
   try {
     decodedSegments = segments.map((segment) => decodeURIComponent(segment));
   } catch {
-    return null;
+    return [];
   }
 
   try {
     const safeSegments = decodedSegments.map(assertSafeSegment);
-    const filePath = assertInsideUploads(path.resolve(getUploadsRoot(), ...safeSegments));
-    const isAllowedFileType = path.extname(filePath).toLowerCase() in UPLOAD_MIME_TYPES;
-    return isAllowedFileType ? filePath : null;
+    const roots = Array.from(
+      new Set([getUploadsRoot(), path.resolve(defaultUploadsRoot())])
+    );
+
+    return roots
+      .map((root) => assertInsideUploads(path.resolve(root, ...safeSegments), root))
+      .filter((filePath) => path.extname(filePath).toLowerCase() in UPLOAD_MIME_TYPES);
   } catch {
-    return null;
+    return [];
   }
+}
+
+export function resolvePublicUploadPath(segments: string[] | undefined) {
+  return resolvePublicUploadPaths(segments)[0] ?? null;
 }
