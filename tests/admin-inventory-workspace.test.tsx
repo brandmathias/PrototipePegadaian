@@ -162,7 +162,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
 
     const statusBadge = screen.getAllByText("Barang Masuk").find((element) => element.tagName.toLowerCase() === "div");
     const historyRow = screen.getByText("Motor Racing").closest('[class*="lg:grid-cols-"]');
-    const infoCell = screen.getByText("Motor Racing").closest("div.flex")?.parentElement;
+    const infoCell = screen.getByText("Motor Racing").closest('[class*="lg:pl-2"]');
     const headerRow = screen.getByText("Informasi Barang").closest('[class*="lg:grid-cols-"]');
     const infoHeader = screen.getByText("Informasi Barang").closest("div.px-3\\.5");
 
@@ -510,5 +510,42 @@ describe("AdminInventoryHistoryWorkspace", () => {
 
     expect(screen.getByText("Laptop Kerja")).toBeInTheDocument();
     expect(screen.queryByText("Koin Antam")).not.toBeInTheDocument();
+  });
+
+  it("shows item code under the item name without description copy controls", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-code",
+            barangId: "barang-code",
+            barangCode: "BRG-55291335",
+            barangName: "Kalung Emas 2",
+            category: "perhiasan",
+            condition: "cukup",
+            description: "Test 2",
+            specifications: {},
+            ownerName: "Andi 2",
+            customerNumber: "020202",
+            actionKey: "dipasarkan",
+            actionLabel: "Dipasarkan",
+            actionTone: "success",
+            note: "Barang dipublikasikan ke katalog.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-23T00:00:00.000Z",
+            createdAtLabel: "23 Jun 2026, 05.00 WIB"
+          }
+        ]}
+      />
+    );
+
+    const itemName = screen.getByText("Kalung Emas 2");
+    const itemInfo = itemName.closest("div.min-w-0");
+
+    expect(itemInfo).toHaveTextContent("Kalung Emas 2");
+    expect(itemInfo).toHaveTextContent("BRG-55291335");
+    expect(itemInfo).not.toHaveTextContent("Test 2");
+    expect(screen.queryByRole("button", { name: /salin kode/i })).not.toBeInTheDocument();
   });
 });

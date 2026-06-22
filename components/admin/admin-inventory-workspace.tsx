@@ -13,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Clipboard,
   FilePlus2,
   Gavel,
   Gem,
@@ -268,15 +267,11 @@ function matchesTimelineFilter(entry: AdminBarangHistoryEntry, filter: TimelineF
 }
 
 function InventoryHistoryList({
-  copiedId,
   entries,
-  onCopy,
   onSortTime,
   sortDirection
 }: {
-  copiedId: string | null;
   entries: AdminBarangHistoryEntry[];
-  onCopy: (value: string) => void;
   onSortTime: () => void;
   sortDirection: "asc" | "desc";
 }) {
@@ -332,22 +327,9 @@ function InventoryHistoryList({
               </div>
 
               <div className="min-w-0 lg:pl-2">
-                <div className="flex min-w-0 flex-wrap items-center gap-2">
-                  <p className="min-w-0 font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
-                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-[#eef2f0] px-2 py-0.5 font-mono text-[0.62rem] font-black text-[#344c40]">
-                    <span className="truncate">{entry.barangCode}</span>
-                    <button
-                      aria-label={`Salin kode ${entry.barangCode}`}
-                      className="grid size-5 shrink-0 place-items-center rounded-full text-[#0a6a49] transition duration-300 hover:bg-white"
-                      type="button"
-                      onClick={() => onCopy(entry.barangCode)}
-                    >
-                      {copiedId === entry.barangCode ? <Check className="size-3.5" /> : <Clipboard className="size-3.5" />}
-                    </button>
-                  </span>
-                </div>
-                <p className="mt-1 line-clamp-1 text-[0.76rem] font-semibold text-[#52655d]">
-                  {entry.description || entry.note || "Aktivitas barang tercatat pada riwayat unit."}
+                <p className="min-w-0 font-black tracking-[-0.02em] text-[#13211c]">{entry.barangName}</p>
+                <p className="mt-1 truncate font-mono text-[0.68rem] font-black uppercase tracking-[0.03em] text-[#52655d]">
+                  {entry.barangCode}
                 </p>
               </div>
 
@@ -880,7 +862,6 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(() => getInitialCalendarMonth(history));
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [printReportReady, setPrintReportReady] = useState(false);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const printDocumentTitleRef = useRef<string | null>(null);
@@ -997,14 +978,6 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
     setCategoryFilter("SEMUA");
     setTimelineFilter("all");
     setSelectedDate(null);
-  }
-
-  function copyCode(value: string) {
-    setCopiedId(value);
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      void navigator.clipboard.writeText(value);
-    }
-    window.setTimeout(() => setCopiedId(null), 1200);
   }
 
   function printHistoryReport() {
@@ -1205,10 +1178,8 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
       </div>
 
         <InventoryHistoryList
-          copiedId={copiedId}
           entries={pagination.visibleItems}
           sortDirection={timeSortDirection}
-          onCopy={copyCode}
           onSortTime={() => setTimeSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
         />
         <AdminPaginationFooter
