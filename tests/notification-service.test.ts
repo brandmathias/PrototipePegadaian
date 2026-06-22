@@ -161,6 +161,60 @@ describe("notification service", () => {
     expect(set.mock.calls[0]?.[0]).not.toHaveProperty("readAt");
   });
 
+  it("refreshes a synced notification business timestamp without forcing it unread", async () => {
+    const previousReadAt = new Date("2026-06-21T23:56:00.000Z");
+    mockSelectRows([
+      {
+        ...notificationRow,
+        createdAt: new Date("2026-06-21T23:56:00.000Z"),
+        entityId: "blacklist-buyer-1",
+        isRead: true,
+        readAt: previousReadAt,
+        type: "blacklist_active"
+      }
+    ]);
+    const occurredAt = new Date("2026-06-18T21:03:00.000Z");
+    const refreshedRow = {
+      ...notificationRow,
+      createdAt: occurredAt,
+      entityId: "blacklist-buyer-1",
+      isRead: true,
+      readAt: previousReadAt,
+      message: "Pelanggaran saat ini: 1x.",
+      type: "blacklist_active"
+    };
+    const returning = vi.fn().mockResolvedValue([refreshedRow]);
+    const where = vi.fn().mockReturnValue({ returning });
+    const set = vi.fn().mockReturnValue({ where });
+    mocks.db.update.mockReturnValueOnce({ set });
+
+    await createOrRefreshNotification(
+      {
+        userId: "buyer-1",
+        title: "Akun Anda dikenakan pembatasan",
+        message: "Pelanggaran saat ini: 1x.",
+        type: "blacklist_active",
+        entityType: "blacklist",
+        entityId: "blacklist-buyer-1",
+        actionHref: "/pelanggaran",
+        createdAt: occurredAt,
+        metadata: { occurredAt: occurredAt.toISOString(), totalViolations: 1 }
+      } as any,
+      { markUnread: false }
+    );
+
+    expect(set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        createdAt: occurredAt,
+        metadata: expect.objectContaining({
+          occurredAt: occurredAt.toISOString()
+        })
+      })
+    );
+    expect(set.mock.calls[0]?.[0]).not.toHaveProperty("isRead");
+    expect(set.mock.calls[0]?.[0]).not.toHaveProperty("readAt");
+  });
+
   it("uses the supplied business timestamp when refreshing an unread notification", async () => {
     mockSelectRows([
       {

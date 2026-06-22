@@ -161,6 +161,56 @@ describe("buyer alert center", () => {
     expect(within(dialog).queryByText(/barang baru tersimpan/i)).not.toBeInTheDocument();
   });
 
+  it("uses blacklist occurredAt metadata for the visible notification timestamp", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        if (init?.method === "PATCH") {
+          return Promise.resolve(
+            new Response(JSON.stringify({ data: { id: "notif-blacklist", isRead: true } }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            })
+          );
+        }
+
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: [
+                {
+                  id: "notif-blacklist",
+                  title: "Akun Anda dikenakan pembatasan",
+                  message: "Pelanggaran saat ini: 1x. Pembatasan aktif sampai 26 Jun 2026, 04.03 WIB.",
+                  type: "blacklist_active",
+                  actionHref: "/pelanggaran",
+                  isRead: false,
+                  createdAt: "2026-06-21T00:56:00.000Z",
+                  metadata: {
+                    occurredAt: "2026-06-18T21:03:00.000Z"
+                  }
+                }
+              ]
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" }
+            }
+          )
+        );
+      })
+    );
+
+    const user = userEvent.setup();
+    renderAlertCenter();
+
+    await user.click(await screen.findByRole("button", { name: /buka pusat alert/i }));
+
+    expect(await screen.findByText(/akun anda dikenakan pembatasan/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jumat, 19 Jun 2026.*04\.03 WIB/)).toBeInTheDocument();
+    expect(screen.queryByText(/Minggu, 21 Jun 2026.*07\.56 WIB/)).not.toBeInTheDocument();
+  });
+
   it("uses the mobile-safe fixed sheet layout for the buyer alert panel", async () => {
     const user = userEvent.setup();
     renderAlertCenter();

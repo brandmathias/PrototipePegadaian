@@ -191,6 +191,14 @@ export async function createOrRefreshNotification(input: NotificationInput, opti
   }
 
   const shouldMarkUnread = options.markUnread !== false;
+  const timestampPatch = input.createdAt ? { createdAt: input.createdAt } : {};
+  const unreadPatch = shouldMarkUnread
+    ? {
+        createdAt: input.createdAt ?? new Date(),
+        isRead: false,
+        readAt: null
+      }
+    : {};
   const [updated] = await db
     .update(notifications)
     .set({
@@ -199,13 +207,8 @@ export async function createOrRefreshNotification(input: NotificationInput, opti
       entityType: input.entityType ?? null,
       actionHref: input.actionHref ?? null,
       metadata: input.metadata ?? null,
-      ...(shouldMarkUnread
-        ? {
-            createdAt: input.createdAt ?? new Date(),
-            isRead: false,
-            readAt: null
-          }
-        : {})
+      ...timestampPatch,
+      ...unreadPatch
     })
     .where(eq(notifications.id, existing.id))
     .returning();

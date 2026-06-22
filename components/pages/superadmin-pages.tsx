@@ -4528,7 +4528,7 @@ function SuperAdminFixedPriceWorkspace({
           : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="superadmin-fixed-price-settlement-layout">
       <section className={cn(
         "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
         isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
@@ -4557,7 +4557,10 @@ function SuperAdminFixedPriceWorkspace({
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]">
+      <div
+        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]"
+        data-testid="superadmin-fixed-price-settlement-primary-grid"
+      >
         <div className="space-y-4">
           <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
             <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
@@ -4609,12 +4612,6 @@ function SuperAdminFixedPriceWorkspace({
               {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
             </div>
           </section>
-
-          <SuperAdminHandoverProofAuditCard
-            itemTitle={session.lot}
-            session={session}
-            unitName={session.unitName}
-          />
         </div>
 
         <div className="space-y-4">
@@ -4627,6 +4624,15 @@ function SuperAdminFixedPriceWorkspace({
           {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
         </div>
       </div>
+
+      <div data-testid="superadmin-fixed-price-settlement-handover">
+        <SuperAdminHandoverProofAuditCard
+          itemTitle={session.lot}
+          session={session}
+          unitName={session.unitName}
+        />
+      </div>
+
       <SuperAdminReadOnlyAuditFooter
         icon={ShieldCheck}
         note="Panel ini hanya untuk monitoring superadmin dan tidak membuka aksi operasional unit."

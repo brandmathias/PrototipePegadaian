@@ -1310,6 +1310,17 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Ringkasan Sesi Harga Tetap")).toBeInTheDocument();
     expect(screen.getByText("Harga Tetap")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 20.000.000").length).toBeGreaterThan(0);
+    const fixedPriceLayout = screen.getByTestId("superadmin-fixed-price-settlement-layout");
+    const fixedPricePrimaryGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
+    const fixedPriceHandover = screen.getByTestId("superadmin-fixed-price-settlement-handover");
+    const fixedPriceHandoverPanel = within(fixedPriceHandover).getByLabelText(/panel bukti serah-terima barang/i);
+    expect(fixedPriceLayout).toContainElement(fixedPricePrimaryGrid);
+    expect(fixedPriceLayout).toContainElement(fixedPriceHandover);
+    expect(fixedPricePrimaryGrid.compareDocumentPosition(fixedPriceHandover) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(fixedPriceHandover).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
+    expect(fixedPriceHandoverPanel).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]");
     expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cetak Nota" })).not.toBeInTheDocument();
     expect(screen.getByText("Riwayat Kronologi Aset")).toBeInTheDocument();

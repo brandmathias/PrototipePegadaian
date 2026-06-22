@@ -67,6 +67,29 @@ function getPersistedVariant(type: string) {
   return "success" as const;
 }
 
+function getMetadataTimestamp(metadata: unknown) {
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  const record = metadata as Record<string, unknown>;
+  const timestamp = typeof record.occurredAt === "string"
+    ? record.occurredAt
+    : typeof record.eventAt === "string"
+      ? record.eventAt
+      : null;
+
+  if (!timestamp) {
+    return null;
+  }
+
+  return Number.isNaN(new Date(timestamp).getTime()) ? null : timestamp;
+}
+
+function getNotificationDisplayTimestamp(notification: PersistedNotification) {
+  return getMetadataTimestamp(notification.metadata) ?? notification.createdAt;
+}
+
 function getNotificationIcon(type: string, variant: "success" | "error" | "info") {
   if (type === "vickrey_win") {
     return Trophy;
@@ -132,17 +155,17 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             : superAdminNotifications.notifications;
 
       return sourceNotifications.map((notification) => ({
-            id: notification.id,
-            title: notification.title,
-            description: notification.message,
-            variant: getPersistedVariant(notification.type),
-            createdAt: notification.createdAt,
-            read: notification.isRead,
-            href: notification.actionHref ?? undefined,
-            type: notification.type,
-            source: "server" as const,
-            raw: notification
-          }));
+        id: notification.id,
+        title: notification.title,
+        description: notification.message,
+        variant: getPersistedVariant(notification.type),
+        createdAt: getNotificationDisplayTimestamp(notification),
+        read: notification.isRead,
+        href: notification.actionHref ?? undefined,
+        type: notification.type,
+        source: "server" as const,
+        raw: notification
+      }));
     },
     [
       adminUnitNotifications.notifications,

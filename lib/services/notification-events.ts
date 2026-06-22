@@ -69,7 +69,8 @@ async function getBuyerRestrictionSnapshot(userId: string) {
       createdAt: pelanggaranUser.createdAt,
       escalationEligible: pelanggaranUser.escalationEligible,
       id: pelanggaranUser.id,
-      paymentDeadline: transaksi.paymentDeadline
+      paymentDeadline: transaksi.paymentDeadline,
+      transactionId: transaksi.id
     })
     .from(pelanggaranUser)
     .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
@@ -83,9 +84,11 @@ async function getBuyerRestrictionSnapshot(userId: string) {
       createdAt: row.paymentDeadline ?? row.createdAt,
       escalationEligible: row.escalationEligible,
       id: row.id,
-      occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString()
+      occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString(),
+      transactionId: row.transactionId
     }))
   });
+  const latestMilestone = effectiveState.milestones.at(-1);
   const policy = getBlacklistRestrictionPolicy(effectiveState.totalViolations);
   const activeByDate =
     !effectiveState.blockedUntil ||
@@ -94,6 +97,8 @@ async function getBuyerRestrictionSnapshot(userId: string) {
   return {
     active: policy.requiresManualReview || activeByDate,
     blockedUntil: effectiveState.blockedUntil,
+    occurredAt: latestMilestone?.occurredAt ?? rows[0]?.paymentDeadline ?? rows[0]?.createdAt ?? null,
+    sourceTransactionId: latestMilestone?.trace.transactionId ?? rows[0]?.transactionId ?? null,
     totalViolations: effectiveState.totalViolations
   };
 }
@@ -330,8 +335,11 @@ export async function syncBuyerRestrictionNotifications(userId: string) {
       entityType: "blacklist",
       entityId,
       actionHref: BUYER_RESTRICTION_NOTIFICATION_HREF,
+      ...(snapshot.occurredAt ? { createdAt: snapshot.occurredAt } : {}),
       metadata: {
         blockedUntilLabel,
+        occurredAt: snapshot.occurredAt?.toISOString() ?? null,
+        sourceTransactionId: snapshot.sourceTransactionId,
         totalViolations: snapshot.totalViolations
       }
     },
