@@ -213,7 +213,7 @@ function FieldLabel({ children }: { children: ReactNode }) {
 
 function DetailTile({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="interactive-card rounded-2xl border border-black/10 bg-[#fbfbfb] p-4 sm:p-5">
+    <div className="rounded-2xl border border-black/10 bg-[#fbfbfb] p-4 sm:p-5">
       <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-black/45 sm:text-xs">
         {label}
       </p>
@@ -494,7 +494,7 @@ function InventoryMetricCard({
   tone?: "default" | "success" | "warning";
 }) {
   return (
-    <div className="group rounded-[1.7rem] border border-[#cfe5d6] bg-white p-1.5 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.45)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/20">
+    <div className="rounded-[1.7rem] border border-[#cfe5d6] bg-white p-1.5 shadow-[0_22px_70px_-58px_rgba(8,69,50,0.45)]">
       <div className="flex h-full items-center gap-4 rounded-[calc(1.7rem-0.375rem)] border border-[#edf4ef] bg-[linear-gradient(145deg,#ffffff,#fbfaf5)] p-4">
         <span
           className={cn(

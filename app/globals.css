@@ -267,29 +267,8 @@
     animation-delay: calc(var(--admin-kpi-index, 0) * 90ms);
   }
 
-  .admin-kpi-card:hover {
-    transform: translate3d(0, -4px, 0);
-    box-shadow: 0 24px 58px rgba(15, 23, 42, 0.08);
-  }
-
   .admin-kpi-icon {
     transform: translate3d(0, 0, 0);
-    transition:
-      transform 620ms cubic-bezier(0.32, 0.72, 0, 1),
-      border-color 360ms cubic-bezier(0.32, 0.72, 0, 1),
-      background-color 360ms cubic-bezier(0.32, 0.72, 0, 1);
-  }
-
-  .admin-kpi-card:hover .admin-kpi-icon {
-    transform: translate3d(0, -4px, 0) scale(1.035);
-  }
-
-  .admin-kpi-icon svg {
-    transition: transform 620ms cubic-bezier(0.32, 0.72, 0, 1);
-  }
-
-  .admin-kpi-card:hover .admin-kpi-icon svg {
-    transform: translate3d(1px, -1px, 0) rotate(-2deg);
   }
 
   .admin-kpi-wave {

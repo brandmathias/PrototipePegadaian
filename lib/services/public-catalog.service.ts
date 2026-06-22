@@ -45,6 +45,47 @@ function fixedPriceCatalogAvailabilityPredicate() {
   );
 }
 
+export type PublicCatalogUnitMetrics = {
+  total: number;
+  fixedPrice: number;
+  vickrey: number;
+};
+
+export async function getPublicCatalogUnitMetrics(
+  unitId: string
+): Promise<PublicCatalogUnitMetrics> {
+  const visibleMarketing = await db
+    .select({
+      id: pemasaran.id,
+      mode: pemasaran.mode
+    })
+    .from(pemasaran)
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(
+      and(
+        eq(barang.unitId, unitId),
+        eq(pemasaran.status, "aktif"),
+        eq(barang.status, "dipasarkan"),
+        eq(units.isActive, true),
+        fixedPriceCatalogAvailabilityPredicate()
+      )
+    );
+
+  return visibleMarketing.reduce<PublicCatalogUnitMetrics>(
+    (metrics, marketing) => {
+      metrics.total += 1;
+      if (marketing.mode === "fixed_price") {
+        metrics.fixedPrice += 1;
+      } else if (marketing.mode === "vickrey") {
+        metrics.vickrey += 1;
+      }
+      return metrics;
+    },
+    { total: 0, fixedPrice: 0, vickrey: 0 }
+  );
+}
+
 async function getMediaByBarangId(
   barangIds: string[],
   options: { maxItemsPerBarang?: number } = {}

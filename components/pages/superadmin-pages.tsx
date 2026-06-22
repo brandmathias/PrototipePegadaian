@@ -1224,7 +1224,7 @@ export function SuperAdminDashboardPage({
 
               return (
                 <article
-                  className="group flex min-h-[5.85rem] items-center gap-4 rounded-[0.95rem] border border-[#dce6e1] bg-white/92 p-3.5 shadow-[0_18px_38px_-30px_rgba(15,23,42,0.28)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-white sm:min-h-[5.9rem] sm:p-4"
+                  className="flex min-h-[5.85rem] items-center gap-4 rounded-[0.95rem] border border-[#dce6e1] bg-white/92 p-3.5 shadow-[0_18px_38px_-30px_rgba(15,23,42,0.28)] sm:min-h-[5.9rem] sm:p-4"
                   key={card.label}
                 >
                   <span
@@ -2633,7 +2633,7 @@ function SuperAdminUnitInventorySection({
             return (
               <button
                 aria-label={`Ringkasan ${metric.label}`}
-                className="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe8e2] bg-white p-4 text-left shadow-[0_20px_48px_-44px_rgba(8,69,50,0.44)] outline-none transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:shadow-[0_22px_58px_-44px_rgba(8,69,50,0.55)] focus-visible:ring-2 focus-visible:ring-primary/20"
+                className="flex items-center gap-4 rounded-xl border border-[#dfe8e2] bg-white p-4 text-left shadow-[0_20px_48px_-44px_rgba(8,69,50,0.44)] outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                 key={metric.label}
                 onClick={() => setStatusFilter(metric.filter)}
                 type="button"
@@ -2641,7 +2641,7 @@ function SuperAdminUnitInventorySection({
                 <span className="flex min-w-0 items-center gap-4">
                   <span
                     className={cn(
-                      "grid size-12 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
+                      "grid size-12 shrink-0 place-items-center rounded-full ring-1",
                       metric.iconClass,
                     )}
                   >
@@ -2656,7 +2656,6 @@ function SuperAdminUnitInventorySection({
                     </span>
                   </span>
                 </span>
-                <ChevronRight className="size-5 shrink-0 text-[#9aa8a0] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5" />
               </button>
             );
           })}
@@ -6078,19 +6077,17 @@ export function SuperAdminMonitoringPage({
                   : undefined
               }
               aria-label={`Ringkasan ${metric.label}`}
-              className="group relative border border-border/70 bg-white p-5 shadow-[0_18px_55px_-44px_rgba(8,69,50,0.45)] outline-none transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:shadow-[0_22px_65px_-46px_rgba(8,69,50,0.5)] focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+              className="relative border border-border/70 bg-white p-5 shadow-[0_18px_55px_-44px_rgba(8,69,50,0.45)] outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
               key={metric.label}
               onBlur={() => setActiveMetricIndex(null)}
               onFocus={() => setActiveMetricIndex(index)}
-              onMouseEnter={() => setActiveMetricIndex(index)}
-              onMouseLeave={() => setActiveMetricIndex(null)}
               style={{ animationDelay: `${index * 70}ms` }}
               tabIndex={0}
             >
               <div className="flex items-start gap-4">
                 <span
                   className={cn(
-                    "grid size-14 shrink-0 place-items-center rounded-full ring-1 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105",
+                    "grid size-14 shrink-0 place-items-center rounded-full ring-1",
                     metric.iconClass,
                   )}
                 >

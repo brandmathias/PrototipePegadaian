@@ -1456,7 +1456,7 @@ function MarketingMetricCard({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-[1.35rem] border p-4 shadow-[0_20px_52px_-46px_rgba(8,69,50,0.34)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 dark:shadow-[0_22px_58px_-42px_rgba(0,0,0,0.72)] ${toneClasses}`}
+      className={`relative overflow-hidden rounded-[1.35rem] border p-4 shadow-[0_20px_52px_-46px_rgba(8,69,50,0.34)] dark:shadow-[0_22px_58px_-42px_rgba(0,0,0,0.72)] ${toneClasses}`}
     >
       <div className="relative z-[1] flex items-center gap-4">
         <span className={`grid size-14 shrink-0 place-items-center rounded-[1.05rem] border border-current/10 ${iconClasses}`}>
@@ -1471,7 +1471,6 @@ function MarketingMetricCard({
           {meta ? <p className="mt-1 text-[0.72rem] font-black uppercase tracking-[0.16em] text-current/70">{meta}</p> : null}
         </div>
       </div>
-      <ChevronRight className="absolute right-5 top-1/2 size-5 -translate-y-1/2 text-black/18 transition duration-500 group-hover:translate-x-1 group-hover:text-current/58 dark:text-white/18" />
     </article>
   );
 }
@@ -1808,9 +1807,15 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
 }
 
 export function AdminMarketingUnifiedPage({
-  auctions
+  auctions,
+  catalogMetrics
 }: {
   auctions: MarketingSession[];
+  catalogMetrics?: {
+    total: number;
+    fixedPrice: number;
+    vickrey: number;
+  };
   unitName?: string;
 }) {
   const [methodFilter, setMethodFilter] = useState<MarketingMethodFilter>("ALL");
@@ -1820,17 +1825,21 @@ export function AdminMarketingUnifiedPage({
 
   const metrics = useMemo(() => {
     const activeSessions = marketingFeedItems.filter(isMarketingActive);
-    const fixedActive = activeSessions.filter((auction) => auction.mode === "FIXED_PRICE").length;
-    const vickreyActive = activeSessions.filter((auction) => auction.mode === "VICKREY_AUCTION").length;
+    const fixedActive =
+      catalogMetrics?.fixedPrice ??
+      activeSessions.filter((auction) => auction.mode === "FIXED_PRICE").length;
+    const vickreyActive =
+      catalogMetrics?.vickrey ??
+      activeSessions.filter((auction) => auction.mode === "VICKREY_AUCTION").length;
 
     return {
-      active: activeSessions.length,
+      active: catalogMetrics?.total ?? activeSessions.length,
       fixedActive,
       vickreyActive,
       sold: marketingFeedItems.filter(isMarketingSold).length,
       failed: marketingFeedItems.filter(isFailedAuction).length
     };
-  }, [marketingFeedItems]);
+  }, [catalogMetrics, marketingFeedItems]);
 
   const filteredAuctions = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -1888,12 +1897,12 @@ export function AdminMarketingUnifiedPage({
 
       <section className="grid gap-4 xl:grid-cols-3" aria-label="Ringkasan pemasaran">
         <MarketingMetricCard
-          description={`${metrics.fixedActive} Beli Putus / ${metrics.vickreyActive} Lelang`}
+          description={`${metrics.fixedActive} Harga Tetap / ${metrics.vickreyActive} Lelang Tertutup`}
           icon={CalendarDays}
-          label="Sesi Sedang Berjalan"
+          label="Barang Dipasarkan"
           meta="Etalase aktif"
           tone="emerald"
-          value={`${metrics.active} Sesi`}
+          value={`${metrics.active} Barang`}
         />
         <MarketingMetricCard
           description="Periode minggu ini"

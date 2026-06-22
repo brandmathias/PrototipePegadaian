@@ -23,7 +23,7 @@ const baseDashboardData = {
     dueSoon: 3,
     soldItems: 2,
     redeemedItems: 1,
-    activeAuctions: 4,
+    activeAuctions: 3,
     activeParticipants: 5,
     totalTransactions: 9,
     verifiedTransactions: 2,
@@ -132,6 +132,11 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("button", { name: /hari ini/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
+
+    const marketedMetric = screen.getByRole("heading", { name: /barang dipasarkan/i }).closest("article");
+    expect(marketedMetric).not.toBeNull();
+    expect(within(marketedMetric as HTMLElement).getByText("3")).toBeInTheDocument();
+    expect(marketedMetric).not.toHaveClass("interactive-card", "group");
   });
 
   it("keeps the marketed-item card title tidy without showing the urgent badge", () => {

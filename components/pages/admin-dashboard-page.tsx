@@ -235,7 +235,7 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
   return (
     <article
       className={cx(
-        "admin-kpi-card interactive-card group relative min-h-[11.1rem] overflow-hidden rounded-[1.25rem] border bg-white px-5 py-5 shadow-[0_22px_54px_-42px_rgba(15,23,42,0.22)] transition duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] dark:bg-[#101a15] dark:shadow-[0_22px_58px_-36px_rgba(0,0,0,0.68)] sm:px-6",
+        "admin-kpi-card relative min-h-[11.1rem] overflow-hidden rounded-[1.25rem] border bg-white px-5 py-5 shadow-[0_22px_54px_-42px_rgba(15,23,42,0.22)] dark:bg-[#101a15] dark:shadow-[0_22px_58px_-36px_rgba(0,0,0,0.68)] sm:px-6",
         isCritical
           ? "border-[#ffbfc5] dark:border-rose-300/20"
           : isTeal

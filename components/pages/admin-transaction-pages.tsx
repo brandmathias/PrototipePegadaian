@@ -190,14 +190,13 @@ function MetricCard({
 }) {
   return (
     <Link
-      className="group rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_18px_44px_-38px_rgba(10,74,51,0.18)] transition duration-200 hover:-translate-y-1 hover:border-[#0a6a49]/18 dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_56px_-40px_rgba(0,0,0,0.58)] dark:hover:border-emerald-300/16"
+      className="rounded-[1.75rem] border border-black/10 bg-white p-5 shadow-[0_18px_44px_-38px_rgba(10,74,51,0.18)] dark:border-white/8 dark:bg-[#101a15] dark:shadow-[0_24px_56px_-40px_rgba(0,0,0,0.58)]"
       href={href}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
         <span className="grid size-11 place-items-center rounded-2xl bg-[#eef6f1] text-[#0a6a49] dark:bg-emerald-300/10 dark:text-emerald-200">
           {icon}
         </span>
-        <ArrowRight className="size-4 text-black/28 transition duration-200 group-hover:text-[#0a6a49] dark:text-slate-400 dark:group-hover:text-emerald-200" />
       </div>
       <p className="mt-5 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-black/45 dark:text-emerald-100/46">{label}</p>
       <p className="mt-3 font-headline text-4xl font-black tracking-tight text-black/88 dark:text-slate-100">{value}</p>

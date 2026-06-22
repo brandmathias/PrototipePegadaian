@@ -36,6 +36,7 @@ describe("admin pemasaran pages", () => {
   it("renders a compact unified marketing workspace from backend sessions", () => {
     render(
       <AdminMarketingUnifiedPage
+        catalogMetrics={{ total: 2, fixedPrice: 1, vickrey: 1 }}
         unitName="UPC Ranotana"
         auctions={[
           {
@@ -164,8 +165,12 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("button", { name: /lihat sesi aktif/i })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter metode pemasaran" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Filter status pemasaran" })).toBeInTheDocument();
-    expect(screen.getByText("2 Sesi")).toBeInTheDocument();
-    expect(screen.getByText(/1 Beli Putus \/ 1 Lelang/i)).toBeInTheDocument();
+    expect(screen.getByText("2 Barang")).toBeInTheDocument();
+    expect(screen.getByText(/1 Harga Tetap \/ 1 Lelang Tertutup/i)).toBeInTheDocument();
+    const marketedMetric = screen.getByText("Barang Dipasarkan").closest("article");
+    expect(marketedMetric).not.toBeNull();
+    expect(marketedMetric).not.toHaveClass("group", "hover:-translate-y-0.5");
+    expect(marketedMetric?.querySelector(".lucide-chevron-right")).toBeNull();
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
@@ -418,6 +423,34 @@ describe("admin pemasaran pages", () => {
 
     expect(within(dialog).getByRole("button", { name: /tolak pembayaran/i })).toBeEnabled();
     expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeDisabled();
+  });
+
+  it("uses the public catalog metric even when the admin session feed contains more active rows", () => {
+    render(
+      <AdminMarketingUnifiedPage
+        auctions={[
+          {
+            id: "visible-fixed",
+            lotId: "barang-visible",
+            lot: "Barang Terlihat",
+            status: "AKTIF",
+            mode: "FIXED_PRICE"
+          },
+          {
+            id: "locked-fixed",
+            lotId: "barang-locked",
+            lot: "Barang Dalam Transaksi",
+            status: "AKTIF",
+            mode: "FIXED_PRICE",
+            transactionStatus: "BUKTI_DIUNGGAH"
+          }
+        ]}
+        catalogMetrics={{ total: 1, fixedPrice: 1, vickrey: 0 }}
+      />
+    );
+
+    expect(screen.getByText("1 Barang")).toBeInTheDocument();
+    expect(screen.getByText("1 Harga Tetap / 0 Lelang Tertutup")).toBeInTheDocument();
   });
 
   it("keeps harga tetap verification locked when payment proof url is missing", () => {

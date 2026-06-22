@@ -1028,8 +1028,8 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
     <section className="relative overflow-visible rounded-[2rem] bg-white shadow-[0_28px_90px_-64px_rgba(8,69,50,0.44)] ring-1 ring-[#d7e8dd] print:rounded-none print:bg-white print:shadow-none print:ring-0">
       <div className="print:hidden">
         <div className="relative z-30 rounded-t-[2rem] border-b border-[#dce9df] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 sm:px-5">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(20rem,1fr)_minmax(15rem,0.9fr)_minmax(13rem,0.72fr)_minmax(13rem,0.72fr)_auto_auto]">
-          <div className="relative">
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <div className="relative min-w-0">
             <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
             <Input
               className="h-12 rounded-[1.15rem] border border-[#dce9df] bg-white pl-12 text-sm font-semibold shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:bg-white focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8"
@@ -1042,6 +1042,26 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             />
           </div>
 
+          <button
+            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-[0.78rem] font-black text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
+            disabled={!hasActiveFilter}
+            type="button"
+            onClick={resetFilters}
+          >
+            <RefreshCw className="size-4" />
+            Reset Filter
+          </button>
+          <button
+            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#0a6a49]/30 hover:text-[#006747]"
+            type="button"
+            onClick={printHistoryReport}
+          >
+            <Printer className="size-5" />
+            Cetak
+          </button>
+        </div>
+
+        <div className="mt-3 grid gap-3 md:grid-cols-3">
           <div className="relative" ref={popoverRef}>
             <button
               className={cn(
@@ -1174,23 +1194,6 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             value={categoryFilter}
             onValueChange={setCategoryFilter}
           />
-          <button
-            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] px-4 text-[0.78rem] font-black text-[#536279] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={!hasActiveFilter}
-            type="button"
-            onClick={resetFilters}
-          >
-            <RefreshCw className="size-4" />
-            Reset Filter
-          </button>
-          <button
-            className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] border border-[#dce9df] bg-white px-4 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#0a6a49]/30 hover:text-[#006747]"
-            type="button"
-            onClick={printHistoryReport}
-          >
-            <Printer className="size-4" />
-            Cetak
-          </button>
         </div>
 
         <div className="mt-3 flex justify-end text-[0.72rem] font-semibold text-[#52655d]">

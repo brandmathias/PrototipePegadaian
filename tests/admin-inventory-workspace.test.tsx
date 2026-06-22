@@ -352,6 +352,17 @@ describe("AdminInventoryHistoryWorkspace", () => {
       "hover:bg-[#006747]",
       "hover:text-white"
     );
+
+    const searchInput = screen.getByPlaceholderText(
+      "Cari berdasarkan barang, nama nasabah, atau staf penginput..."
+    );
+    const timelineButton = screen.getByRole("button", { name: /Linimasa:/i });
+    expect(searchInput.parentElement?.parentElement).not.toContainElement(timelineButton);
+    expect(timelineButton.querySelector(".truncate")).toBeNull();
+
+    const resetButton = screen.getByRole("button", { name: /reset filter/i });
+    expect(resetButton).not.toHaveClass("hover:-translate-y-0.5");
+    expect(screen.getByRole("button", { name: /^cetak$/i }).querySelector("svg")).toHaveClass("size-5");
   });
 
   it("prepares a same-page printable audit report before opening native print preview", async () => {

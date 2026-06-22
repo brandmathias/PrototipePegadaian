@@ -4,6 +4,7 @@ import { listAdminTransactions } from "@/lib/services/admin-transaction.service"
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 import { db } from "@/lib/db/client";
 import { barang, pemasaran, transaksi, unitAccounts, units } from "@/lib/db/schema";
+import { getPublicCatalogUnitMetrics } from "@/lib/services/public-catalog.service";
 import { and, eq } from "drizzle-orm";
 
 const ACTIONABLE_TRANSACTION_STATUSES = new Set([
@@ -203,7 +204,7 @@ export async function getAdminDashboardData(unitId: string) {
     [unit],
     [activeAccount],
     unitItems,
-    activeMarketing,
+    catalogMetrics,
     transactionMetrics
   ] = await Promise.all([
     listAdminBarang(unitId),
@@ -223,11 +224,7 @@ export async function getAdminDashboardData(unitId: string) {
       })
       .from(barang)
       .where(eq(barang.unitId, unitId)),
-    db
-      .select({ id: pemasaran.id })
-      .from(pemasaran)
-      .innerJoin(barang, eq(barang.id, pemasaran.barangId))
-      .where(and(eq(barang.unitId, unitId), eq(pemasaran.status, "aktif"))),
+    getPublicCatalogUnitMetrics(unitId),
     db
       .select({
         id: transaksi.id,
@@ -263,7 +260,7 @@ export async function getAdminDashboardData(unitId: string) {
       dueSoon: inventoryMetrics.dueSoon,
       soldItems: unitItems.filter((item) => item.status === "terjual").length || verifiedTransactions.length,
       redeemedItems: unitItems.filter((item) => item.status === "ditebus").length,
-      activeAuctions: activeMarketing.length,
+      activeAuctions: catalogMetrics.total,
       activeParticipants: uniqueBuyerCount,
       totalTransactions: transactionMetrics.length,
       verifiedTransactions: verifiedTransactions.length,

@@ -626,9 +626,10 @@ describe("superadmin pages", () => {
       screen.queryByRole("columnheader", { name: "Status Unit" }),
     ).not.toBeInTheDocument();
     const metricCard = screen.getByLabelText("Ringkasan Barang Jaminan");
-    fireEvent.mouseEnter(metricCard);
+    expect(metricCard).not.toHaveClass("group", "hover:-translate-y-0.5");
+    fireEvent.focus(metricCard);
     expect(screen.getByRole("tooltip")).toHaveTextContent("Unit tercatat");
-    fireEvent.mouseLeave(metricCard);
+    fireEvent.blur(metricCard);
     expect(screen.queryByLabelText("Ringkasan Perlu Tindak Lanjut")).not.toBeInTheDocument();
     expect(screen.queryByText(/2 unit tercatat/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/2 unit aktif/i)).not.toBeInTheDocument();
