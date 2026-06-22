@@ -1190,8 +1190,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={categories.map((category) => ({
               value: category,
-              label: category === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(category),
-              icon: category === "SEMUA" ? Package2 : getCategoryIcon(category)
+              label: category === "SEMUA" ? "Semua Kategori" : formatDisplayLabel(category)
             }))}
             value={categoryFilter}
             onValueChange={setCategoryFilter}

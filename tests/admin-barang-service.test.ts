@@ -451,4 +451,46 @@ describe("listAdminBarangHistory", () => {
       })
     ]);
   });
+
+  it("maps new collateral rows into barang masuk actions", async () => {
+    const baseRow = {
+      barangId: "barang-2",
+      barangCode: "BRG-002",
+      barangName: "Ipad Pro",
+      category: "elektronik",
+      condition: "baik",
+      description: "Barang elektronik baru dicatat.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-002",
+      actorName: "Admin Unit",
+      actorRole: "admin_unit"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-new",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang hasil input gadai dicatat sebagai barang jaminan unit.",
+            createdAt: new Date("2026-06-03T03:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "hist-new",
+        actionKey: "input_baru",
+        actionLabel: "Barang Masuk",
+        actionTone: "default"
+      })
+    ]);
+  });
 });

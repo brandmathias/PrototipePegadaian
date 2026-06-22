@@ -147,7 +147,7 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
   if (!oldStatus && newStatus === "jaminan") {
     return {
       actionKey: "input_baru" as const,
-      actionLabel: "Input Baru",
+      actionLabel: "Barang Masuk",
       actionTone: "default" as const
     };
   }

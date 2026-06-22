@@ -134,7 +134,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             ownerName: "Rizki",
             customerNumber: "9018",
             actionKey: "input_baru",
-            actionLabel: "Input Baru",
+            actionLabel: "Barang Masuk",
             actionTone: "default",
             note: "Barang masuk dari unit.",
             actorName: "Admin Unit",
@@ -182,7 +182,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             ownerName: "Budi Santoso",
             customerNumber: "0812-3456-7890",
             actionKey: "input_baru",
-            actionLabel: "Input Baru",
+            actionLabel: "Barang Masuk",
             actionTone: "default",
             note: "Barang masuk dari unit.",
             actorName: "Admin Unit",
@@ -217,7 +217,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             ownerName: "Budi Santoso",
             customerNumber: "0812-1111-1111",
             actionKey: "input_baru",
-            actionLabel: "Input Baru",
+            actionLabel: "Barang Masuk",
             actionTone: "default",
             note: "Barang masuk lebih awal.",
             actorName: "Admin Unit",
@@ -331,7 +331,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             ownerName: "Budi Santoso",
             customerNumber: "0812-3456-7890",
             actionKey: "input_baru",
-            actionLabel: "Input Baru",
+            actionLabel: "Barang Masuk",
             actionTone: "default",
             note: "Barang masuk dari unit.",
             actorName: "Operator Arsip",
@@ -453,7 +453,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             ownerName: "Rizki",
             customerNumber: "9018",
             actionKey: "input_baru",
-            actionLabel: "Input Baru",
+            actionLabel: "Barang Masuk",
             actionTone: "default",
             note: "Barang masuk dari unit.",
             actorName: "Admin Unit",
@@ -486,6 +486,9 @@ describe("AdminInventoryHistoryWorkspace", () => {
     );
 
     const categorySelect = screen.getByLabelText("Filter kategori riwayat barang");
+    const categoryTrigger = categorySelect.closest(".admin-select-root")?.querySelector("button");
+
+    expect(categoryTrigger?.querySelectorAll("svg")).toHaveLength(1);
     expect(screen.getByRole("option", { name: "Logam Mulia" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Elektronik" })).toBeInTheDocument();
 
