@@ -27,4 +27,12 @@ describe("Docker upload packaging", () => {
     expect(moveUploadsAt).toBeLessThan(buildAt);
     expect(dockerfile).toContain("/app/bundled-uploads ./bundled-uploads");
   });
+
+  it("prepares writable upload roots for current and legacy production env values", async () => {
+    const dockerfile = await readFile(path.join(process.cwd(), "Dockerfile"), "utf8");
+
+    expect(dockerfile).toContain("/app/public/uploads/serah-terima");
+    expect(dockerfile).toContain("/app/uploads/serah-terima");
+    expect(dockerfile).toContain("chown -R nextjs:nodejs /app/public/uploads /app/uploads");
+  });
 });

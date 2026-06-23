@@ -48,7 +48,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 RUN mkdir -p /app/public/uploads/barang /app/public/uploads/bukti /app/public/uploads/blacklist-review /app/public/uploads/serah-terima \
-  && chown -R nextjs:nodejs /app/public/uploads
+  && mkdir -p /app/uploads/barang /app/uploads/bukti /app/uploads/blacklist-review /app/uploads/serah-terima \
+  && chown -R nextjs:nodejs /app/public/uploads /app/uploads
 
 USER nextjs
 
