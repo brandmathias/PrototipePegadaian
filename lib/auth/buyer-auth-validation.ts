@@ -1,3 +1,5 @@
+import { getPhoneNumberDigits } from "@/lib/phone-number";
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DIGIT_PATTERN = /\D/g;
 
@@ -29,27 +31,21 @@ export function validateBuyerEmail(email: string) {
 }
 
 export function normalizeBuyerPhoneNumber(phoneNumber: string) {
-  const digits = phoneNumber.replace(DIGIT_PATTERN, "");
+  const digits = getPhoneNumberDigits(phoneNumber);
 
   if (!digits) {
     throw new Error("Nomor telepon wajib diisi.");
   }
 
-  let normalized = digits;
-
-  if (digits.startsWith("0")) {
-    normalized = `62${digits.slice(1)}`;
-  }
-
-  if (!normalized.startsWith("62")) {
+  if (!digits.startsWith("08") && !digits.startsWith("62")) {
     throw new Error("Nomor telepon harus diawali 08 atau 62.");
   }
 
-  if (normalized.length < 10 || normalized.length > 15) {
+  if (digits.length < 10 || digits.length > 15) {
     throw new Error("Nomor telepon harus terdiri dari 10 sampai 15 digit.");
   }
 
-  return normalized;
+  return digits;
 }
 
 export function normalizeBuyerNationalId(nationalId: string) {

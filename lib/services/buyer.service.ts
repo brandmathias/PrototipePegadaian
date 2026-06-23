@@ -38,6 +38,7 @@ import {
 } from "@/lib/services/notification-events";
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
@@ -1265,6 +1266,47 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
 
     if (existingProfileEmail) {
       throw new Error("Email sudah digunakan profil pembeli lain.");
+    }
+
+    const phoneVariants = getIndonesianPhoneNumberVariants(payload.phoneNumber);
+    const [existingUserPhone] = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(and(inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
+      .limit(1);
+
+    if (existingUserPhone) {
+      throw new Error("Nomor telepon sudah digunakan akun lain.");
+    }
+
+    const [existingProfilePhone] = await tx
+      .select({ userId: buyerProfiles.userId })
+      .from(buyerProfiles)
+      .where(and(inArray(buyerProfiles.phoneNumber, phoneVariants), ne(buyerProfiles.userId, userId)))
+      .limit(1);
+
+    if (existingProfilePhone) {
+      throw new Error("Nomor telepon sudah digunakan profil pembeli lain.");
+    }
+
+    const [existingUserNationalId] = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.nationalId, payload.nationalId), ne(users.id, userId)))
+      .limit(1);
+
+    if (existingUserNationalId) {
+      throw new Error("Nomor KTP sudah digunakan akun lain.");
+    }
+
+    const [existingProfileNationalId] = await tx
+      .select({ userId: buyerProfiles.userId })
+      .from(buyerProfiles)
+      .where(and(eq(buyerProfiles.nationalId, payload.nationalId), ne(buyerProfiles.userId, userId)))
+      .limit(1);
+
+    if (existingProfileNationalId) {
+      throw new Error("Nomor KTP sudah digunakan profil pembeli lain.");
     }
 
     const emailChanged = currentUser.email !== payload.email;

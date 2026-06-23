@@ -1,8 +1,9 @@
-import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { hashPassword } from "@better-auth/utils/password";
 
 import { db } from "@/lib/db/client";
 import { account, sessions, units, users } from "@/lib/db/schema";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import { validateAdminUnitPayload } from "@/lib/superadmin/validation";
 
@@ -35,8 +36,9 @@ export async function releaseInactiveAdminIdentityConflicts(
   email: string,
   phoneNumber?: string,
 ) {
-  const identityConflict = phoneNumber
-    ? or(eq(users.email, email), eq(users.phoneNumber, phoneNumber))
+  const phoneVariants = getIndonesianPhoneNumberVariants(phoneNumber ?? "");
+  const identityConflict = phoneVariants.length > 0
+    ? or(eq(users.email, email), inArray(users.phoneNumber, phoneVariants))
     : eq(users.email, email);
 
   const staleAdmins = await db
@@ -167,7 +169,8 @@ export async function createAdminUnit(input: {
   }
 
   if (payload.phoneNumber) {
-    const [existingPhone] = await db.select().from(users).where(eq(users.phoneNumber, payload.phoneNumber)).limit(1);
+    const phoneVariants = getIndonesianPhoneNumberVariants(payload.phoneNumber);
+    const [existingPhone] = await db.select().from(users).where(inArray(users.phoneNumber, phoneVariants)).limit(1);
     if (existingPhone) {
       throw new Error("Nomor telepon admin sudah dipakai.");
     }
@@ -235,6 +238,19 @@ export async function updateAdminUnit(
     .limit(1);
   if (existingEmail) {
     throw new Error("Email admin sudah dipakai.");
+  }
+
+  if (phoneNumber) {
+    const phoneVariants = getIndonesianPhoneNumberVariants(phoneNumber);
+    const [existingPhone] = await db
+      .select()
+      .from(users)
+      .where(and(inArray(users.phoneNumber, phoneVariants), sql`${users.id} <> ${adminId}`))
+      .limit(1);
+
+    if (existingPhone) {
+      throw new Error("Nomor telepon admin sudah dipakai.");
+    }
   }
 
   const targetIsActive = typeof input.isActive === "boolean" ? input.isActive : true;

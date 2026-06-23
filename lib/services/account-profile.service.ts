@@ -1,7 +1,8 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { buyerProfiles, users } from "@/lib/db/schema";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 
 type AccountProfileRole = "admin_unit" | "super_admin";
 
@@ -84,6 +85,19 @@ export async function updateAccountProfile(userId: string, role: AccountProfileR
 
     if (existingBuyerProfileEmail) {
       throw new Error("Email sudah digunakan profil pembeli lain.");
+    }
+
+    const phoneVariants = getIndonesianPhoneNumberVariants(payload.phoneNumber);
+    if (phoneVariants.length > 0) {
+      const [existingUserPhone] = await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(and(inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
+        .limit(1);
+
+      if (existingUserPhone) {
+        throw new Error("Nomor telepon sudah digunakan akun lain.");
+      }
     }
 
     const emailChanged = currentUser.email !== payload.email;

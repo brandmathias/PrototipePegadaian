@@ -7,6 +7,7 @@ import { account, barang, pemasaran, transaksi, unitAccounts, units, users } fro
 import { getAdminBarangById, listAdminBarangHistory } from "@/lib/services/admin-barang.service";
 import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
 import { releaseInactiveAdminIdentityConflicts } from "@/lib/services/admin-unit.service";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
 import {
@@ -527,7 +528,7 @@ function validateManagedUnitAdmins(admins: ManagedUnitAdminInput[] | undefined) 
     "Email admin unit tidak boleh duplikat dalam setup ini.",
   );
   assertUniqueValues(
-    payloads.map((admin) => admin.phoneNumber).filter(Boolean),
+    payloads.flatMap((admin) => getIndonesianPhoneNumberVariants(admin.phoneNumber)),
     "Nomor telepon admin unit tidak boleh duplikat dalam setup ini.",
   );
 
@@ -546,6 +547,7 @@ function validateSecondaryUnitAccounts(accounts: ManagedUnitAccountInput[] | und
 async function ensureAdminIdentityAvailable(admins: ReturnType<typeof validateManagedUnitAdmins>) {
   const emails = admins.map((admin) => admin.email);
   const phones = admins.map((admin) => admin.phoneNumber).filter(Boolean);
+  const phoneVariants = [...new Set(phones.flatMap((phone) => getIndonesianPhoneNumberVariants(phone)))];
 
   for (const admin of admins) {
     await releaseInactiveAdminIdentityConflicts(
@@ -561,8 +563,8 @@ async function ensureAdminIdentityAvailable(admins: ReturnType<typeof validateMa
     }
   }
 
-  if (phones.length > 0) {
-    const [existingPhone] = await db.select({ id: users.id }).from(users).where(inArray(users.phoneNumber, phones)).limit(1);
+  if (phoneVariants.length > 0) {
+    const [existingPhone] = await db.select({ id: users.id }).from(users).where(inArray(users.phoneNumber, phoneVariants)).limit(1);
     if (existingPhone) {
       throw new Error("Nomor telepon admin sudah dipakai.");
     }

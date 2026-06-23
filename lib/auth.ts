@@ -2,7 +2,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth, APIError } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { and, eq, gt, isNull, or } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
@@ -11,6 +11,7 @@ import {
   normalizeBuyerPhoneNumber
 } from "@/lib/auth/buyer-auth-validation";
 import { ensureBuyerRegistrationIdentityIsAvailable } from "@/lib/auth/buyer-registration-guard";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 
 export const auth = betterAuth({
   appName: "Ruang Agunan",
@@ -28,13 +29,14 @@ export const auth = betterAuth({
         try {
           await ensureBuyerRegistrationIdentityIsAvailable(ctx.body ?? {}, {
             async findExistingIdentity(identity) {
+              const phoneVariants = getIndonesianPhoneNumberVariants(identity.phoneNumber);
               const [existingUser] = await db
                 .select({ id: schema.users.id })
                 .from(schema.users)
                 .where(
                   or(
                     eq(schema.users.email, identity.email),
-                    eq(schema.users.phoneNumber, identity.phoneNumber),
+                    inArray(schema.users.phoneNumber, phoneVariants),
                     eq(schema.users.nationalId, identity.nationalId)
                   )
                 )

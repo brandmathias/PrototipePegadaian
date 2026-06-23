@@ -217,7 +217,7 @@ describe("LoginForm", () => {
       name: "Raras Maheswari Demo",
       nationalId: "7371121305260003",
       password: "password-rahasia",
-      phoneNumber: "6281200009999"
+      phoneNumber: "081200009999"
     });
   });
 

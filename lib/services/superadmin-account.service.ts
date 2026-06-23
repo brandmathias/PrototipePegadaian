@@ -5,6 +5,7 @@ import { and, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { account, sessions, superadminAccountAuditLogs, users } from "@/lib/db/schema";
+import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import {
   normalizeSuperAdminLevel,
   type SuperAdminLevel,
@@ -244,6 +245,23 @@ async function assertEmailAvailable(executor: DbExecutor, email: string, ignoreU
   }
 }
 
+async function assertPhoneAvailable(executor: DbExecutor, phoneNumber: string, ignoreUserId?: string) {
+  const phoneVariants = getIndonesianPhoneNumberVariants(phoneNumber);
+
+  if (phoneVariants.length === 0) {
+    return;
+  }
+
+  const whereClause = ignoreUserId
+    ? and(inArray(users.phoneNumber, phoneVariants), ne(users.id, ignoreUserId))
+    : inArray(users.phoneNumber, phoneVariants);
+  const [existing] = await executor.select({ id: users.id }).from(users).where(whereClause).limit(1);
+
+  if (existing) {
+    throw new SuperAdminAccountError("Nomor telepon superadmin sudah dipakai.", 409);
+  }
+}
+
 async function assertOwnerGuardrail(
   executor: DbExecutor,
   input: {
@@ -389,6 +407,7 @@ export async function createSuperAdminAccount(actorUserId: string, input: {
   await db.transaction(async (tx) => {
     const actor = await requireOwnerActor(tx, actorUserId, { action: "create" });
     await assertEmailAvailable(tx, payload.email);
+    await assertPhoneAvailable(tx, payload.phoneNumber);
 
     await tx.insert(users).values({
       id: userId,
@@ -451,6 +470,10 @@ export async function updateSuperAdminAccount(actorUserId: string, targetUserId:
 
     if (payload.email) {
       await assertEmailAvailable(tx, payload.email, targetUserId);
+    }
+
+    if ("phoneNumber" in payload) {
+      await assertPhoneAvailable(tx, payload.phoneNumber ?? "", targetUserId);
     }
 
     const [updated] = await tx

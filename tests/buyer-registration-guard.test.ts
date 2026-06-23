@@ -17,7 +17,7 @@ describe("buyer registration identity guard", () => {
       })
     ).toEqual({
       email: "buyer@example.com",
-      phoneNumber: "6281200009999",
+      phoneNumber: "081200009999",
       nationalId: "7371123052600002"
     });
   });
