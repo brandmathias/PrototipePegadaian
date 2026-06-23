@@ -325,7 +325,7 @@ export async function listAdminBarangHistory(
       actionLabel: action.actionLabel,
       actionTone: action.actionTone,
       note: row.note,
-      actorName: row.actorName ?? "Admin Unit",
+      actorName: row.actorName ?? "Sistem Otomatis",
       actorRole: row.actorRole,
       createdAt: row.createdAt.toISOString(),
       createdAtLabel: formatAppDateTime(row.createdAt)
@@ -347,7 +347,7 @@ export async function listAdminBarangHistory(
     actionLabel: "Diperpanjang",
     actionTone: "warning" as const,
     note: row.note || "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran.",
-    actorName: row.actorName ?? "Admin Unit",
+    actorName: row.actorName ?? "Sistem Otomatis",
     actorRole: row.actorRole,
     createdAt: row.createdAt.toISOString(),
     createdAtLabel: formatAppDateTime(row.createdAt)

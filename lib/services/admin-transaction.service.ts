@@ -285,7 +285,12 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
   });
 }
 
-export async function rejectAdminTransactionProof(unitId: string, transactionId: string, input: { reason?: unknown }) {
+export async function rejectAdminTransactionProof(
+  unitId: string,
+  adminId: string,
+  transactionId: string,
+  input: { reason?: unknown }
+) {
   const row = await getTransactionForUnit(unitId, transactionId);
   await ensureTransactionMutable(row.transaction.status);
   const payload = validateTransactionRejectPayload(input);
@@ -313,7 +318,7 @@ export async function rejectAdminTransactionProof(unitId: string, transactionId:
       barangId: row.item.id,
       oldStatus: row.item.status,
       newStatus: "gagal",
-      changedByUserId: null,
+      changedByUserId: adminId,
       note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${payload.reason}.`
     });
   }

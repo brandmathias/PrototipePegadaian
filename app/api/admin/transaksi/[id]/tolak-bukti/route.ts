@@ -13,7 +13,12 @@ export async function POST(request: Request, context: Context) {
 
   try {
     const { id } = await context.params;
-    const data = await rejectAdminTransactionProof(access.unitId, id, await request.json());
+    const data = await rejectAdminTransactionProof(
+      access.unitId,
+      access.session.user.id,
+      id,
+      await request.json()
+    );
     return NextResponse.json({ data });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Penolakan bukti gagal.";

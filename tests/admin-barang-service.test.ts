@@ -552,4 +552,45 @@ describe("listAdminBarangHistory", () => {
       })
     ]);
   });
+
+  it("labels status changes without a user actor as system automation", async () => {
+    const baseRow = {
+      barangId: "barang-system",
+      barangCode: "BRG-SYSTEM",
+      barangName: "Kalung Emas",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Barang perhiasan.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-SYSTEM"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-system",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Pemenang tidak menyelesaikan pembayaran dalam 24 jam.",
+            actorName: null,
+            actorRole: null,
+            createdAt: new Date("2026-06-03T06:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "hist-system",
+        actorName: "Sistem Otomatis",
+        actorRole: null
+      })
+    ]);
+  });
 });

@@ -387,9 +387,9 @@ function InventoryHistoryList({
               <div className="min-w-0 text-left lg:grid lg:place-items-center lg:text-center">
                 <p
                   className="w-full max-w-[10rem] truncate text-[0.78rem] font-black tracking-[-0.01em] text-[#13211c]"
-                  title={entry.actorName || "Admin Unit"}
+                  title={entry.actorName || "Sistem Otomatis"}
                 >
-                  {entry.actorName || "Admin Unit"}
+                  {entry.actorName || "Sistem Otomatis"}
                 </p>
               </div>
 
@@ -611,7 +611,7 @@ function HistoryPrintDocument({
                   </td>
                   <td className="px-3 py-3">
                     <p className="whitespace-normal break-words font-black text-[#13211c]">
-                      {entry.actorName || "Admin Unit"}
+                      {entry.actorName || "Sistem Otomatis"}
                     </p>
                   </td>
                   <td className="px-3 py-3">

@@ -118,7 +118,7 @@ describe("admin transaction service", () => {
   }
 
   it("treats an already rejected harga tetap proof as an idempotent result", async () => {
-    const result = await rejectAdminTransactionProof("unit-1", "trx-fixed-rejected", {
+    const result = await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
     });
 
@@ -189,7 +189,7 @@ describe("admin transaction service", () => {
       values: statusHistoryValuesSpy
     }));
 
-    await rejectAdminTransactionProof("unit-1", "trx-fixed-rejected", {
+    await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
     });
 
@@ -198,7 +198,7 @@ describe("admin transaction service", () => {
         barangId: "barang-1",
         oldStatus: "dipasarkan",
         newStatus: "gagal",
-        changedByUserId: null,
+        changedByUserId: "admin-1",
         note: expect.stringMatching(/harga tetap ditolak/i)
       })
     );

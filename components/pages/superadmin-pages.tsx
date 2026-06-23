@@ -4961,7 +4961,7 @@ function SuperAdminAssetTimeline({
                 {entry.note}
               </p>
               <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
-                Aktor Internal: {entry.actorName || "Admin Unit"}
+                Aktor Internal: {entry.actorName || "Sistem Otomatis"}
               </p>
             </div>
               <div className="pt-0.5 text-right text-[0.78rem] leading-6 text-[#667085]">
