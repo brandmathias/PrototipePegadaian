@@ -12,6 +12,11 @@ export type EffectiveBlacklistState<T extends BlacklistViolationTraceLike> = {
   totalViolations: number;
 };
 
+export function hasCountedBlacklistViolations(totalViolations: number | null | undefined) {
+  const normalized = Number(totalViolations ?? 0);
+  return Number.isFinite(normalized) && normalized > 0;
+}
+
 export function isBlacklistRestrictionActive({
   blockedUntil,
   isActive,

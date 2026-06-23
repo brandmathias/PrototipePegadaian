@@ -6,6 +6,7 @@ import {
 } from "@/lib/blacklist/escalation";
 import {
   deriveEffectiveBlacklistState,
+  hasCountedBlacklistViolations,
   isBlacklistRestrictionActive
 } from "@/lib/blacklist/effective-state";
 
@@ -84,6 +85,7 @@ describe("blacklist escalation sequence", () => {
       milestones: [],
       totalViolations: 0
     });
+    expect(hasCountedBlacklistViolations(effectiveState.totalViolations)).toBe(false);
     expect(
       isBlacklistRestrictionActive({
         blockedUntil: effectiveState.blockedUntil,

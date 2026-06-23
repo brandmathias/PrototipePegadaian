@@ -1,7 +1,10 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
+import {
+  deriveEffectiveBlacklistState,
+  hasCountedBlacklistViolations,
+} from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { validateBlacklistExtendPayload } from "@/lib/admin-unit/validation";
@@ -241,7 +244,7 @@ export async function listAdminBlacklist(unitId: string) {
     await listViolationEscalationFacts(rows.map((row) => row.user.id)),
   );
 
-  return rows.map((row) => {
+  return rows.flatMap((row) => {
     const userTraces = tracesByUser[row.user.id] ?? [];
     const scopeContext = buildViolationScopeContext({
       localTraces: userTraces,
@@ -250,6 +253,10 @@ export async function listAdminBlacklist(unitId: string) {
       unitId,
       userFacts: factsByUser[row.user.id] ?? [],
     });
+    if (!hasCountedBlacklistViolations(scopeContext.effectiveTotalViolations)) {
+      return [];
+    }
+
     const effectiveBlockedUntil =
       row.blacklist.isActive
         ? scopeContext.effectiveBlockedUntil
@@ -257,14 +264,14 @@ export async function listAdminBlacklist(unitId: string) {
     const serialized = serializeBlacklist(row, scopeContext.effectiveTotalViolations, effectiveBlockedUntil);
     const latestTrace = scopeContext.annotatedLocalTraces[0] ?? null;
 
-    return {
+    return [{
       ...serialized,
       crossUnitViolationSummary: scopeContext.crossUnitViolationSummary,
       reason: latestTrace?.note ?? serialized.reason,
       latestUnpaidAuction: latestTrace,
       unpaidAuctionCount: scopeContext.annotatedLocalTraces.length,
       unpaidAuctionTraces: scopeContext.annotatedLocalTraces,
-    };
+    }];
   });
 }
 
@@ -309,6 +316,10 @@ export async function getAdminBlacklistByUserId(
     unitId,
     userFacts: await listViolationEscalationFacts([userId]),
   });
+  if (!hasCountedBlacklistViolations(scopeContext.effectiveTotalViolations)) {
+    throw new Error("Riwayat blacklist tidak ditemukan di unit Anda.");
+  }
+
   const effectiveBlockedUntil =
     row.blacklist.isActive
       ? scopeContext.effectiveBlockedUntil

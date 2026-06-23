@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
+import {
+  deriveEffectiveBlacklistState,
+  hasCountedBlacklistViolations,
+} from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import {
   getBlacklistRestrictionPolicy,
@@ -191,14 +194,17 @@ export async function listBlacklists() {
     await listViolationEscalationFacts(rows.map((row) => row.userId)),
   );
 
-  return rows.map((row) => {
+  return rows.flatMap((row) => {
     const effectiveState = deriveEffectiveBlacklistState({
       storedBlockedUntil: row.blockedUntil,
       storedTotalViolations: row.totalViolations,
       traces: factsByUser[row.userId] ?? [],
     });
+    if (!hasCountedBlacklistViolations(effectiveState.totalViolations)) {
+      return [];
+    }
 
-    return serializeBlacklistEntry({
+    return [serializeBlacklistEntry({
       id: row.id,
       userId: row.userId,
       name: row.name,
@@ -208,7 +214,7 @@ export async function listBlacklists() {
       totalViolations: effectiveState.totalViolations,
       blockedUntil: row.isActive ? effectiveState.blockedUntil : row.blockedUntil,
       revokeReason: row.revokeReason
-    });
+    })];
   });
 }
 
@@ -348,6 +354,10 @@ export async function getSuperadminBlacklistByUserId(userId: string) {
     storedTotalViolations: row.blacklist.totalViolations,
     traces,
   });
+  if (!hasCountedBlacklistViolations(effectiveState.totalViolations)) {
+    throw new Error("Riwayat blacklist pengguna tidak ditemukan.");
+  }
+
   const visibleTraceIds = new Set(
     effectiveState.milestones.map((milestone) => String(milestone.trace.id)),
   );

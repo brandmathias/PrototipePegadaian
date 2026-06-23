@@ -14,6 +14,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/lib/db/client";
 import {
   deriveEffectiveBlacklistState,
+  hasCountedBlacklistViolations,
   isBlacklistRestrictionActive,
   type EffectiveBlacklistState,
 } from "@/lib/blacklist/effective-state";
@@ -759,6 +760,12 @@ export async function getSuperAdminMonitoring() {
   );
   const visibleActiveBlacklistMonitoring = activeBlacklistMonitoring
     .filter((item) => !isHiddenOperationalUnit({ id: item.unitId }))
+    .filter((item) =>
+      hasCountedBlacklistViolations(
+        effectiveBlacklistStates.get(item.userId)?.totalViolations ??
+          item.totalViolations,
+      ),
+    )
     .map((item) => ({
       ...item,
       totalViolations:
