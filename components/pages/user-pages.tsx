@@ -1659,7 +1659,7 @@ function VickreyPaymentSuccessDetail({
                 )
               ) : (
                 <Button
-                  className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none disabled:saturate-[0.82] disabled:blur-[0.65px]"
+                  className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-primary/10 disabled:bg-primary/45 disabled:text-white/95 disabled:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:saturate-[0.88]"
                   disabled
                   type="button"
                 >
@@ -1669,7 +1669,7 @@ function VickreyPaymentSuccessDetail({
               )}
               <BuyerTransactionInlineReceiptPrint
                 buyer={buyer}
-                buttonClassName="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[1rem] border border-primary bg-white px-5 py-3 text-center text-[0.98rem] font-bold leading-tight tracking-[0.01em] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
+                buttonClassName="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] border border-primary bg-white px-4 py-2.5 text-center text-sm font-semibold leading-tight text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
                 label="Cetak Nota"
                 rootSuffix="status"
                 transaction={transaction}

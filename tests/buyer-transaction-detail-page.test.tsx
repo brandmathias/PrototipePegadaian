@@ -206,7 +206,8 @@ describe("buyer transaction detail page", () => {
     const receiptButtons = screen.getAllByRole("button", { name: /cetak nota/i });
     expect(receiptButtons).toHaveLength(2);
     receiptButtons.forEach((button) => expect(button).toBeDisabled());
-    expect(receiptButtons[0]).toHaveClass("h-14", "text-base", "blur-[0.65px]");
+    expect(receiptButtons[0]).toHaveClass("h-14", "text-base");
+    expect(receiptButtons[0]).not.toHaveClass("blur-[0.65px]");
   });
 
   it("prints the prepared receipt in place on mobile without opening the receipt route", async () => {

@@ -75,7 +75,7 @@ export function CompletePurchaseButton({
   return (
     <div className="space-y-3">
       <Button
-        className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none disabled:saturate-[0.82] disabled:blur-[0.65px]"
+        className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-primary/10 disabled:bg-primary/45 disabled:text-white/95 disabled:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:saturate-[0.88]"
         disabled={!isHydrated || isPending || Boolean(disabledReason)}
         onClick={handleComplete}
       >

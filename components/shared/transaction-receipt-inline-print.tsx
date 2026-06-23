@@ -270,7 +270,7 @@ export function TransactionReceiptInlinePrint({
           className={cn(
             buttonClassName,
             isDisabled &&
-              "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 shadow-none saturate-[0.82] blur-[0.65px] hover:bg-slate-100 hover:text-slate-400 active:scale-100"
+              "cursor-not-allowed border-primary/25 bg-white text-primary/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] saturate-[0.88] hover:bg-white hover:text-primary/55 active:scale-100"
           )}
           disabled={isDisabled}
           onClick={() => void handlePrint()}
