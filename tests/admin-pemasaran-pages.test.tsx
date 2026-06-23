@@ -702,7 +702,20 @@ describe("admin pemasaran pages", () => {
       "/admin/barang/barang-fixed-3/edit"
     );
     expect(screen.queryByRole("link", { name: /lihat log/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /verifikasi pembayaran/i })).toBeDisabled();
+    const verifyPaymentButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
+    expect(verifyPaymentButton).toBeDisabled();
+    expect(verifyPaymentButton).toHaveClass("bg-[#edf5f1]", "text-[#285445]");
+
+    const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima harga tetap/i);
+    expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
+    expect(handoverPanel).toHaveTextContent("Belum ada bukti serah-terima");
+    expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "true");
+
+    const relistButton = screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i });
+    expect(relistButton).toBeInTheDocument();
+    fireEvent.click(relistButton);
+    expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("places fixed price handover proof after description and management panels", () => {

@@ -59,9 +59,11 @@ async function getBarangForUnit(barangId: string, unitId: string) {
   return row;
 }
 
-async function getLatestMarketingStatusForBarang(barangId: string) {
+async function getLatestMarketingForBarang(barangId: string) {
   const [row] = await db
     .select({
+      id: pemasaran.id,
+      mode: pemasaran.mode,
       status: pemasaran.status
     })
     .from(pemasaran)
@@ -69,7 +71,18 @@ async function getLatestMarketingStatusForBarang(barangId: string) {
     .orderBy(desc(pemasaran.createdAt))
     .limit(1);
 
-  return row?.status ?? null;
+  return row ?? null;
+}
+
+async function getTransactionCountForMarketing(pemasaranId: string) {
+  const [row] = await db
+    .select({
+      count: sql<number>`count(*)`
+    })
+    .from(transaksi)
+    .where(eq(transaksi.pemasaranId, pemasaranId));
+
+  return Number(row?.count ?? 0);
 }
 
 async function getMarketingMediaByBarangIds(barangIds: string[]) {
@@ -241,12 +254,22 @@ async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
-  const latestMarketingStatus =
-    item.status === "dipasarkan" ? await getLatestMarketingStatusForBarang(barangId) : null;
-  const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketingStatus === "gagal";
+  const latestMarketing = item.status === "dipasarkan" ? await getLatestMarketingForBarang(barangId) : null;
+  const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketing?.status === "gagal";
+  const canRepublishActiveFixedPrice =
+    item.status === "dipasarkan" &&
+    latestMarketing?.status === "aktif" &&
+    latestMarketing.mode === "fixed_price" &&
+    (await getTransactionCountForMarketing(latestMarketing.id)) === 0;
 
-  if (item.status !== "jaminan" && item.status !== "gagal" && item.status !== "gadai" && !canRepublishFailedMarketing) {
-    throw new Error("Barang hanya bisa dipasarkan dari status jaminan atau gagal.");
+  if (
+    item.status !== "jaminan" &&
+    item.status !== "gagal" &&
+    item.status !== "gadai" &&
+    !canRepublishFailedMarketing &&
+    !canRepublishActiveFixedPrice
+  ) {
+    throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi harga tetap aktif tanpa transaksi.");
   }
 
   const payload = validatePemasaranPayload(input);
@@ -271,6 +294,15 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     .where(eq(pemasaran.barangId, barangId));
 
   const created = await db.transaction(async (tx) => {
+    if (canRepublishActiveFixedPrice && latestMarketing) {
+      await tx
+        .update(pemasaran)
+        .set({ status: "gagal", updatedAt: now })
+        .where(
+          and(eq(pemasaran.id, latestMarketing.id), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price"))
+        );
+    }
+
     const [createdMarketing] = await tx
       .insert(pemasaran)
       .values({
@@ -298,7 +330,9 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
       oldStatus: item.status,
       newStatus: "dipasarkan",
       changedByUserId: userId,
-      note: "Barang dipublikasikan ke katalog."
+      note: canRepublishActiveFixedPrice
+        ? "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog."
+        : "Barang dipublikasikan ke katalog."
     });
 
     return createdMarketing;

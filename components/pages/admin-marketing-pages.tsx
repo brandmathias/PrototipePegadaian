@@ -2372,10 +2372,6 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
 }
 
 function FixedPriceHandoverProofSection({ auction }: { auction: MarketingSession }) {
-  if (!auction.transactionId) {
-    return null;
-  }
-
   return (
     <div aria-label="Area upload bukti serah-terima harga tetap" className="w-full">
       <HandoverProofUploadForm
@@ -2388,7 +2384,7 @@ function FixedPriceHandoverProofSection({ auction }: { auction: MarketingSession
           uploadedBy: auction.handoverProofUploadedBy,
           location: auction.unitName ?? auction.unitAddress
         }}
-        transactionId={auction.transactionId}
+        transactionId={auction.transactionId ?? `pending-${auction.id}`}
       />
     </div>
   );
@@ -2399,6 +2395,8 @@ export function AdminFixedPriceDetailPage({
 }: {
   auction: MarketingSession;
 }) {
+  const [isRelistModalOpen, setIsRelistModalOpen] = useState(false);
+  const serverNow = useMemo(() => new Date().toISOString(), []);
   const media = auction.media ?? [];
   const buyerName = getFixedPriceVisibleBuyerName(auction);
   const insights = normalizeFixedPriceInsights(auction.insights);
@@ -2410,6 +2408,7 @@ export function AdminFixedPriceDetailPage({
   const canPrintReceipt = isFixedPriceReceiptPrintable(auction);
   const fixedPriceAmount = currency.format(auction.price ?? 0);
   const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
+  const canScheduleRemarketing = auction.status === "AKTIF" && !auction.transactionId;
 
   return (
     <div className="space-y-4">
@@ -2569,10 +2568,20 @@ export function AdminFixedPriceDetailPage({
               ) : (
                 <FixedPricePaymentVerificationButton
                   auction={auction}
-                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99]"
+                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
                   label="Verifikasi Pembayaran"
                 />
               )}
+              {canScheduleRemarketing ? (
+                <button
+                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] sm:col-span-2"
+                  onClick={() => setIsRelistModalOpen(true)}
+                  type="button"
+                >
+                  <RefreshCcw className="size-4" />
+                  Jadwalkan Pasarkan Ulang
+                </button>
+              ) : null}
             </div>
             <div className="mt-4 rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3 text-[0.82rem] font-semibold leading-6 text-[#53655e]">
               {buyerName ? (
@@ -2589,6 +2598,24 @@ export function AdminFixedPriceDetailPage({
       </div>
 
       <FixedPriceHandoverProofSection auction={auction} />
+
+      {isRelistModalOpen ? (
+        <AdminMarketingForm
+          barangId={auction.lotId}
+          defaultMode="fixed_price"
+          defaultPrice={Number(auction.price ?? auction.appraisalValue ?? auction.basePrice ?? 1000000)}
+          endpoint={`/api/admin/barang/${auction.lotId}/pasarkan-ulang`}
+          heroIcon={<RefreshCcw className="size-6 text-white" strokeWidth={2.2} />}
+          onCancel={() => setIsRelistModalOpen(false)}
+          presentation="modal"
+          redirectTo="/admin/pemasaran"
+          serverNow={serverNow}
+          submitIcon={<RefreshCcw className="size-4" />}
+          submitLabel="Pasarkan ulang"
+          successDescription="Sesi harga tetap lama ditutup dan barang dipublikasikan ulang."
+          successTitle="Barang dipasarkan ulang"
+        />
+      ) : null}
     </div>
   );
 }

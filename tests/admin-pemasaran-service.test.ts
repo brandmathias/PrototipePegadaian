@@ -257,4 +257,120 @@ describe("publishAdminBarang", () => {
     expect(updateWhereSpy).toHaveBeenCalledTimes(1);
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("closes an active fixed price session without transactions before remarketing", async () => {
+    const now = new Date("2026-05-12T08:30:45.000+08:00");
+    const item = {
+      id: "barang-fixed-active",
+      unitId: "unit-1",
+      name: "Kalung Harga Tetap",
+      code: "BRG-FIX-ACTIVE",
+      category: "perhiasan",
+      condition: "Cukup",
+      description: "Sesi harga tetap aktif belum memiliki transaksi buyer.",
+      appraisalValue: 15000000,
+      specifications: {},
+      status: "dipasarkan"
+    };
+    const createdRow = {
+      id: "marketing-fixed-new",
+      barangId: "barang-fixed-active",
+      mode: "fixed_price",
+      price: 15000000,
+      basePrice: null,
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: now,
+      endsAt: null,
+      revealEndsAt: null,
+      iteration: 3,
+      status: "aktif",
+      createdByUserId: "user-1"
+    };
+    const closeMarketingSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined)
+    });
+    const insertValuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([createdRow])
+    });
+    const updateBarangWhereSpy = vi.fn().mockResolvedValue(undefined);
+    const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([item])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([
+                {
+                  id: "marketing-fixed-active",
+                  mode: "fixed_price",
+                  status: "aktif"
+                }
+              ])
+            })
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ count: 0 }])
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ nextIteration: 3 }])
+        })
+      }));
+
+    mocks.db.update
+      .mockImplementationOnce(() => ({
+        set: closeMarketingSetSpy
+      }))
+      .mockImplementationOnce(() => ({
+        set: vi.fn().mockReturnValue({
+          where: updateBarangWhereSpy
+        })
+      }));
+    mocks.db.insert
+      .mockImplementationOnce(() => ({
+        values: insertValuesSpy
+      }))
+      .mockImplementationOnce(() => ({
+        values: statusHistoryValuesSpy
+      }));
+
+    await publishAdminBarang("unit-1", "user-1", "barang-fixed-active", {
+      mode: "fixed_price",
+      price: "15000000"
+    });
+
+    expect(closeMarketingSetSpy).toHaveBeenCalledWith({
+      status: "gagal",
+      updatedAt: now
+    });
+    expect(insertValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "fixed_price",
+        price: "15000000",
+        iteration: 3,
+        status: "aktif"
+      })
+    );
+    expect(updateBarangWhereSpy).toHaveBeenCalledTimes(1);
+    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        oldStatus: "dipasarkan",
+        newStatus: "dipasarkan",
+        note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog."
+      })
+    );
+  });
 });
