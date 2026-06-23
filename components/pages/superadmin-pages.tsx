@@ -95,6 +95,7 @@ import {
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { DetailActionLink } from "@/components/shared/detail-action-link";
+import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -104,6 +105,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import type { LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
@@ -239,6 +241,7 @@ export type SuperAdminUnitBarangMarketingSession = {
   completedAt?: string | null;
   transactionCreatedAt?: string | null;
   paymentDeadline?: string | null;
+  insights?: LotInsights | null;
   basePrice?: number | null;
   appraisalValue?: number | null;
   finalPrice?: number | null;
@@ -4608,6 +4611,8 @@ function SuperAdminFixedPriceWorkspace({
         </div>
       </div>
 
+      <MarketingPerformancePanel insights={session.insights} testId="superadmin-fixed-price-performance-panel" />
+
       <div data-testid="superadmin-fixed-price-settlement-handover">
         <SuperAdminHandoverProofAuditCard
           itemTitle={session.lot}
@@ -4641,14 +4646,18 @@ function SuperAdminVickreyWorkspace({
     return (
       <div className="space-y-4">
         <SuperAdminVickreyFailureBanner session={session} />
-      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
-        <div className="space-y-4">
-          <SuperAdminVickreyFailureProfilePanel session={session} />
-          <SuperAdminVickreyFailureMechanismPanel session={session} />
-          <SuperAdminVickreyFailureRankingTable session={session} />
-        </div>
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
+          <div className="space-y-4">
+            <SuperAdminVickreyFailureProfilePanel session={session} />
+            <SuperAdminVickreyFailureMechanismPanel session={session} />
+            <SuperAdminVickreyFailureRankingTable session={session} />
+          </div>
           <div className="space-y-4 2xl:sticky 2xl:top-4">
             <SuperAdminVickreyFailureProgressPanel session={session} />
+            <MarketingPerformancePanel
+              insights={session.insights}
+              testId="superadmin-vickrey-failure-performance-panel"
+            />
             <SuperAdminVickreyFailureActionFooter />
           </div>
         </div>
@@ -4688,6 +4697,8 @@ function SuperAdminVickreyWorkspace({
           <SuperAdminVickreyRankingTable session={session} />
         </div>
 
+        <MarketingPerformancePanel insights={session.insights} testId="superadmin-vickrey-settlement-performance-panel" />
+
         <div data-testid="superadmin-vickrey-settlement-handover">
           <SuperAdminHandoverProofAuditCard
             itemTitle={receiptContext.itemTitle}
@@ -4720,6 +4731,7 @@ function SuperAdminVickreyWorkspace({
         </div>
         <div className="space-y-4 2xl:sticky 2xl:top-4">
           <SuperAdminVickreyProgressPanel session={session} />
+          <MarketingPerformancePanel insights={session.insights} testId="superadmin-vickrey-active-performance-panel" />
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
         </div>

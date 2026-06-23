@@ -25,7 +25,11 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminPemasaran: mocks.serializeAdminPemasaran
 }));
 
-import { publishAdminBarang, sortAdminMarketingRowsByRecency } from "@/lib/services/admin-pemasaran.service";
+import {
+  publishAdminBarang,
+  resolveMarketingPerformanceInsights,
+  sortAdminMarketingRowsByRecency
+} from "@/lib/services/admin-pemasaran.service";
 
 describe("sortAdminMarketingRowsByRecency", () => {
   it("places an updated marketing session before older untouched sessions", () => {
@@ -60,6 +64,30 @@ describe("sortAdminMarketingRowsByRecency", () => {
     ]);
 
     expect(rows.map((row) => row.id)).toEqual(["repriced-fixed", "newly-created", "old-session"]);
+  });
+});
+
+describe("resolveMarketingPerformanceInsights", () => {
+  it("aggregates fixed price metrics across fixed price iterations and keeps vickrey metrics per session", () => {
+    const insights = resolveMarketingPerformanceInsights(
+      [
+        { id: "fixed-old", mode: "fixed_price" },
+        { id: "fixed-current", mode: "fixed_price" },
+        { id: "vickrey-old", mode: "vickrey" },
+        { id: "vickrey-current", mode: "vickrey" }
+      ],
+      new Map([
+        ["fixed-old", { views: 7, likes: 2, participants: 0 }],
+        ["fixed-current", { views: 11, likes: 3, participants: 0 }],
+        ["vickrey-old", { views: 19, likes: 4, participants: 5 }],
+        ["vickrey-current", { views: 6, likes: 1, participants: 2 }]
+      ])
+    );
+
+    expect(insights.get("fixed-old")).toEqual({ views: 18, likes: 5, participants: 0 });
+    expect(insights.get("fixed-current")).toEqual({ views: 18, likes: 5, participants: 0 });
+    expect(insights.get("vickrey-old")).toEqual({ views: 19, likes: 4, participants: 5 });
+    expect(insights.get("vickrey-current")).toEqual({ views: 6, likes: 1, participants: 2 });
   });
 });
 

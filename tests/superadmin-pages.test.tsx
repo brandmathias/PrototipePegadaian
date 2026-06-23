@@ -1203,6 +1203,11 @@ describe("superadmin pages", () => {
               participants: 3,
               revealedBidCount: 3,
               pendingRevealCount: 0,
+              insights: {
+                views: 45,
+                likes: 6,
+                participants: 3,
+              },
               basePrice: 18_000_000,
               finalPrice: 21_000_000,
               winner: "Buyer Ranotana",
@@ -1250,6 +1255,11 @@ describe("superadmin pages", () => {
                   mode: "VICKREY_AUCTION",
                   iteration: 2,
                   participants: 3,
+                  insights: {
+                    views: 45,
+                    likes: 6,
+                    participants: 3,
+                  },
                   finalPrice: 21_000_000,
                   winner: "Buyer Ranotana",
                   note: "Iterasi kedua selesai dan menghasilkan pemenang.",
@@ -1265,6 +1275,11 @@ describe("superadmin pages", () => {
                   mode: "FIXED_PRICE",
                   iteration: 1,
                   participants: 0,
+                  insights: {
+                    views: 12,
+                    likes: 1,
+                    participants: 0,
+                  },
                   price: 20_000_000,
                   note: "Iterasi pertama belum mendapatkan pembeli.",
                   createdAt: "2026-05-29T02:00:00.000Z",
@@ -1321,7 +1336,15 @@ describe("superadmin pages", () => {
     expect(screen.getByTestId("superadmin-vickrey-settlement-secondary-grid")).toHaveClass(
       "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
     );
-    expect(screen.getByTestId("superadmin-vickrey-settlement-handover")).toHaveTextContent(
+    const vickreyPerformancePanel = screen.getByTestId("superadmin-vickrey-settlement-performance-panel");
+    const vickreyHandover = screen.getByTestId("superadmin-vickrey-settlement-handover");
+    expect(vickreyPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(vickreyPerformancePanel).toHaveTextContent("45x");
+    expect(vickreyPerformancePanel).toHaveTextContent("6 Akun");
+    expect(vickreyPerformancePanel.compareDocumentPosition(vickreyHandover) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(vickreyHandover).toHaveTextContent(
       "Dokumentasi Serah Terima Barang Fisik",
     );
     expect(screen.getAllByText("30 Mei 2026, 09.00 WIB").length).toBeGreaterThan(0);
@@ -1337,13 +1360,21 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText("Rp 20.000.000").length).toBeGreaterThan(0);
     const fixedPriceLayout = screen.getByTestId("superadmin-fixed-price-settlement-layout");
     const fixedPricePrimaryGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
+    const fixedPricePerformancePanel = screen.getByTestId("superadmin-fixed-price-performance-panel");
     const fixedPriceHandover = screen.getByTestId("superadmin-fixed-price-settlement-handover");
     const fixedPriceHandoverPanel = within(fixedPriceHandover).getByLabelText(/panel bukti serah-terima barang/i);
     expect(fixedPriceLayout).toContainElement(fixedPricePrimaryGrid);
+    expect(fixedPriceLayout).toContainElement(fixedPricePerformancePanel);
     expect(fixedPriceLayout).toContainElement(fixedPriceHandover);
+    expect(fixedPricePerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(fixedPricePerformancePanel).toHaveTextContent("12x");
+    expect(fixedPricePerformancePanel).toHaveTextContent("1 Akun");
     expect(fixedPricePrimaryGrid.compareDocumentPosition(fixedPriceHandover) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
+    expect(
+      fixedPricePerformancePanel.compareDocumentPosition(fixedPriceHandover) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(fixedPriceHandover).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
     expect(fixedPriceHandoverPanel).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]");
     expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();

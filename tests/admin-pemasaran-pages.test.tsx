@@ -826,6 +826,11 @@ describe("admin pemasaran pages", () => {
               submittedAtLabel: "11 Jun 2026, 10.11 WIB"
             }
           ],
+          insights: {
+            views: 21,
+            likes: 2,
+            participants: 3
+          },
           specifications: {
             jenisEmas: "Cincin",
             kadarEmas: "24K",
@@ -843,6 +848,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/informasi jaminan utama/i)).toBeInTheDocument();
     expect(screen.getByText(/aktivitas lelang live/i)).toBeInTheDocument();
     expect(screen.getByText(/deskripsi barang/i)).toBeInTheDocument();
+    expect(screen.getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
+    expect(screen.getByText("21x")).toBeInTheDocument();
+    expect(screen.getByText("2 Akun")).toBeInTheDocument();
     expect(screen.getByText(/cincin emas dengan kondisi appraisal baik/i)).toBeInTheDocument();
     expect(screen.queryByText(/24K/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /lihat detail/i }));
@@ -1668,6 +1676,11 @@ describe("admin pemasaran pages", () => {
           reference: "PGD1029384",
           proofUrl: null,
           paymentDeadline: "2026-06-02T13:57:00.000Z",
+          insights: {
+            views: 34,
+            likes: 5,
+            participants: 3
+          },
           specifications: {
             kadarEmas: "22 Karat (91,6%)",
             berat: "25 gram"
@@ -1711,6 +1724,10 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText(/gagal \/ pelanggaran/i)).toBeInTheDocument();
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    const failurePerformancePanel = screen.getByTestId("admin-vickrey-failure-performance-panel");
+    expect(failurePerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(failurePerformancePanel).toHaveTextContent("34x");
+    expect(failurePerformancePanel).toHaveTextContent("5 Akun");
     expect(screen.getAllByText(/gagal bayar/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/belum tercapai/i)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
@@ -1745,6 +1762,11 @@ describe("admin pemasaran pages", () => {
           transactionId: null,
           transactionStatus: null,
           paymentDeadline: null,
+          insights: {
+            views: 8,
+            likes: 0,
+            participants: 0
+          },
           specifications: {
             merek: "Seiko",
             model: "Presage"
@@ -1765,6 +1787,10 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/tanpa peserta/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/tidak ada bid masuk/i)).toBeInTheDocument();
     expect(screen.getByText(/belum ada peserta yang mengirim penawaran/i)).toBeInTheDocument();
+    const noBidPerformancePanel = screen.getByTestId("admin-vickrey-failure-performance-panel");
+    expect(noBidPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(noBidPerformancePanel).toHaveTextContent("8x");
+    expect(noBidPerformancePanel).toHaveTextContent("0 Akun");
     const basePriceText = screen.getByText("Rp 8.000.000");
     expect(basePriceText).toBeInTheDocument();
     expect(basePriceText.className).not.toContain("text-ellipsis");
@@ -1882,6 +1908,11 @@ describe("admin pemasaran pages", () => {
           buyerName: "Buyer Satu",
           paymentMethod: "BAYAR_LANGSUNG",
           paymentDeadline: "2099-06-02T23:35:00.000Z",
+          insights: {
+            views: 19,
+            likes: 4,
+            participants: 2
+          },
           specifications: {
             merek: "Apple",
             model: "iPad Pro 11",
@@ -1911,6 +1942,10 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("iPad Pro 11")).toBeInTheDocument();
     expect(screen.getByText("Spesifikasi")).toBeInTheDocument();
     expect(screen.getByText("M2, 128GB, Wi-Fi")).toBeInTheDocument();
+    const settlementPerformancePanel = screen.getByTestId("admin-vickrey-settlement-performance-panel");
+    expect(settlementPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(settlementPerformancePanel).toHaveTextContent("19x");
+    expect(settlementPerformancePanel).toHaveTextContent("4 Akun");
     expect(screen.queryByText("Kadar")).not.toBeInTheDocument();
     expect(screen.queryByText("Berat")).not.toBeInTheDocument();
   });

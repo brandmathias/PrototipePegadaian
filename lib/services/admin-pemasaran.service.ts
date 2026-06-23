@@ -3,10 +3,11 @@ import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
+import type { LotInsights } from "@/lib/contracts/catalog";
 import { db } from "@/lib/db/client";
 import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, units, users } from "@/lib/db/schema";
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
-import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
+import { EMPTY_LOT_INSIGHTS, getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 const transactionHandoverUploader = alias(users, "marketing_transaction_handover_uploader");
@@ -45,6 +46,59 @@ export function sortAdminMarketingRowsByRecency<T extends MarketingRecencyRow>(r
     const rightIteration = Number.isFinite(right.marketing.iteration) ? Number(right.marketing.iteration) : 0;
     return rightIteration - leftIteration;
   });
+}
+
+type MarketingInsightRow = {
+  id: string;
+  mode?: string | null;
+};
+
+function normalizeMarketingInsights(insights?: LotInsights | null): LotInsights {
+  return {
+    likes: Number(insights?.likes ?? EMPTY_LOT_INSIGHTS.likes),
+    participants: Number(insights?.participants ?? EMPTY_LOT_INSIGHTS.participants),
+    views: Number(insights?.views ?? EMPTY_LOT_INSIGHTS.views)
+  };
+}
+
+function sumMarketingInsights(values: Array<LotInsights | null | undefined>): LotInsights {
+  return values.reduce<LotInsights>(
+    (total, insights) => {
+      const normalized = normalizeMarketingInsights(insights);
+
+      return {
+        likes: total.likes + normalized.likes,
+        participants: total.participants + normalized.participants,
+        views: total.views + normalized.views
+      };
+    },
+    { ...EMPTY_LOT_INSIGHTS }
+  );
+}
+
+function isFixedPriceMarketingMode(mode?: string | null) {
+  return mode === "fixed_price" || mode === "FIXED_PRICE";
+}
+
+export function resolveMarketingPerformanceInsights(
+  marketingRows: MarketingInsightRow[],
+  statsByPemasaranId: Map<string, LotInsights>
+) {
+  const uniqueRows = Array.from(new Map(marketingRows.filter((row) => row.id).map((row) => [row.id, row])).values());
+  const fixedPriceAggregate = sumMarketingInsights(
+    uniqueRows
+      .filter((row) => isFixedPriceMarketingMode(row.mode))
+      .map((row) => statsByPemasaranId.get(row.id))
+  );
+
+  return new Map(
+    uniqueRows.map((row) => [
+      row.id,
+      isFixedPriceMarketingMode(row.mode)
+        ? fixedPriceAggregate
+        : normalizeMarketingInsights(statsByPemasaranId.get(row.id))
+    ])
+  );
 }
 
 async function getBarangForUnit(barangId: string, unitId: string) {
@@ -429,10 +483,9 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     throw new Error("Sesi pemasaran tidak ditemukan.");
   }
 
-  const [mediaByBarangId, transactionByPemasaranId, statsByPemasaranId, participantPreviewsByPemasaranId, historyRows] = await Promise.all([
+  const [mediaByBarangId, transactionByPemasaranId, participantPreviewsByPemasaranId, historyRows] = await Promise.all([
     getMarketingMediaByBarangIds([row.item.id]),
     getLatestTransactionsByPemasaranIds([row.marketing.id]),
-    getLotStatsByIds([row.marketing.id]),
     getParticipantPreviewsByPemasaranIds([row.marketing.id]),
     db
       .select({
@@ -452,9 +505,16 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       )
   ]);
 
-  const historyTransactionByPemasaranId = await getLatestTransactionsByPemasaranIds(
-    historyRows.map((history) => history.marketing.id)
-  );
+  const marketingInsightRows = [
+    row.marketing,
+    ...historyRows.map((history) => history.marketing)
+  ];
+  const uniqueMarketingIds = Array.from(new Set(marketingInsightRows.map((marketing) => marketing.id).filter(Boolean)));
+  const [historyTransactionByPemasaranId, statsByPemasaranId] = await Promise.all([
+    getLatestTransactionsByPemasaranIds(historyRows.map((history) => history.marketing.id)),
+    getLotStatsByIds(uniqueMarketingIds)
+  ]);
+  const insightsByPemasaranId = resolveMarketingPerformanceInsights(marketingInsightRows, statsByPemasaranId);
 
   const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
   const bidRows = shouldRevealBids
@@ -491,6 +551,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     serializeAdminPemasaran(history.marketing, {
       ...baseExtra,
       bidCount: Number(history.bidCount ?? 0),
+      insights: insightsByPemasaranId.get(history.marketing.id) ?? null,
       winnerName: history.winnerName ?? null,
       transaction: historyTransactionByPemasaranId.get(history.marketing.id) ?? null
     })
@@ -501,7 +562,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       ...baseExtra,
       media: mediaByBarangId.get(row.item.id) ?? [],
       bidCount: Number(row.bidCount ?? 0),
-      insights: statsByPemasaranId.get(row.marketing.id) ?? null,
+      insights: insightsByPemasaranId.get(row.marketing.id) ?? null,
       winnerName: row.winnerName ?? null,
       transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
       participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? [],

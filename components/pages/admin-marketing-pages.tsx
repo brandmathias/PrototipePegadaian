@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
-  BarChart3,
   CalendarDays,
   Camera,
   CarFront,
@@ -17,12 +16,10 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock3,
-  Eye,
   FileText,
   Gavel,
   Gem,
   Hash,
-  Heart,
   Info,
   Landmark,
   LockKeyhole,
@@ -60,6 +57,7 @@ import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
+import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import {
   printReceiptElementInIsolatedFrame,
@@ -2398,7 +2396,6 @@ export function AdminFixedPriceDetailPage({
   const serverNow = useMemo(() => new Date().toISOString(), []);
   const media = auction.media ?? [];
   const buyerName = getFixedPriceVisibleBuyerName(auction);
-  const insights = normalizeFixedPriceInsights(auction.insights);
   const statusMeta = getFixedPriceCatalogStatusMeta(auction);
   const StatusIcon = statusMeta.icon;
   const unitLabel = auction.unitName || auction.unitAddress || "Unit belum tercatat";
@@ -2524,25 +2521,7 @@ export function AdminFixedPriceDetailPage({
 
           {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
 
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle icon={BarChart3} title="Performa & Aktivitas Sesi Publik" />
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <FixedPriceInsightCard
-                detail="Sejak dipublikasikan"
-                icon={Eye}
-                label="Total Tayangan"
-                tone="green"
-                value={`${insights.views.toLocaleString("id-ID")}x`}
-              />
-              <FixedPriceInsightCard
-                detail="Disimpan oleh pengguna unik"
-                icon={Heart}
-                label="Watchlist Nasabah"
-                tone="rose"
-                value={`${insights.likes.toLocaleString("id-ID")} Akun`}
-              />
-            </div>
-          </section>
+          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
 
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle
@@ -2632,14 +2611,6 @@ function getFixedPriceAmountClass(value?: number | null) {
   }
 
   return "text-[2.35rem] sm:text-[3.1rem] 2xl:text-[3.35rem]";
-}
-
-function normalizeFixedPriceInsights(insights?: LotInsights | null): LotInsights {
-  return {
-    likes: Number(insights?.likes ?? 0),
-    participants: Number(insights?.participants ?? 0),
-    views: Number(insights?.views ?? 0)
-  };
 }
 
 function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
@@ -2831,41 +2802,6 @@ function FixedPriceAuditGallery({
         ) : null}
       </div>
     </section>
-  );
-}
-
-function FixedPriceInsightCard({
-  detail,
-  icon: Icon,
-  label,
-  tone,
-  value
-}: {
-  detail: string;
-  icon: LucideIcon;
-  label: string;
-  tone: "green" | "rose";
-  value: string;
-}) {
-  const toneClass =
-    tone === "green"
-      ? "border-[#bde9d2] bg-[#eaf7f0] text-[#006747] [--dot-color:rgba(0,103,71,0.17)]"
-      : "border-[#ffd1d9] bg-[#fff0f2] text-[#e11d48] [--dot-color:rgba(225,29,72,0.16)]";
-
-  return (
-    <div className={`relative min-h-[8.4rem] overflow-hidden rounded-xl border p-4 ${toneClass}`}>
-      <div className="absolute inset-y-0 right-0 w-32 opacity-70 [background-image:radial-gradient(circle,var(--dot-color)_1.2px,transparent_1.2px)] [background-size:10px_10px]" />
-      <div className="relative flex h-full items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[0.72rem] font-black uppercase tracking-[0.13em]">{label}</p>
-          <p className="mt-2 font-headline text-[2.45rem] font-black leading-none text-[#070b16]">{value}</p>
-          <p className="mt-2 text-[0.75rem] font-semibold text-[#53655e]">{detail}</p>
-        </div>
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-white/80 bg-white/82 text-current shadow-[0_18px_36px_-28px_rgba(8,69,50,0.42)]">
-          <Icon className="size-7" strokeWidth={2.35} />
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -5180,6 +5116,7 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
         <div className="space-y-4 lg:sticky lg:top-4">
           <VickreyFailureAssetPanel auction={auction} />
           <VickreyFailureProgressPanel auction={auction} />
+          <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-failure-performance-panel" />
           <VickreyFailureActionFooter onRelist={() => setIsRelistModalOpen(true)} />
         </div>
       </div>
@@ -5268,6 +5205,8 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           </div>
         </div>
 
+        <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-settlement-performance-panel" />
+
         {auction.transactionId ? (
           <div aria-label="Area upload bukti serah-terima pemenang" className="w-full">
             <HandoverProofUploadForm
@@ -5355,6 +5294,7 @@ export function AdminVickreyAuctionDetailPage({
             <div className="space-y-4">
               <VickreyMediaManifest auction={auction} />
               <VickreySpecificationPanel auction={auction} />
+              <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-active-performance-panel" />
             </div>
           </div>
         </>
