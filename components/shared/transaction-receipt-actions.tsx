@@ -8,12 +8,40 @@ import { cn } from "@/lib/utils";
 export function TransactionReceiptActions({
   noteHref,
   className,
+  disabledReason,
   printControl
 }: {
   noteHref: string;
   className?: string;
+  disabledReason?: string | null;
   printControl?: ReactNode;
 }) {
+  if (disabledReason) {
+    return (
+      <div className={cn("flex max-w-full flex-wrap gap-3", className)}>
+        <button
+          className={cn(buttonVariants({ variant: "default" }), "cursor-not-allowed opacity-55")}
+          disabled
+          title={disabledReason}
+          type="button"
+        >
+          <Download className="size-4" />
+          Unduh PDF
+        </button>
+        <button
+          className={cn(buttonVariants({ size: "default", variant: "secondary" }), "cursor-not-allowed opacity-55")}
+          disabled
+          title={disabledReason}
+          type="button"
+        >
+          <Printer className="size-4" />
+          Cetak Nota
+        </button>
+        <p className="basis-full text-sm font-medium leading-6 text-muted-foreground">{disabledReason}</p>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-wrap gap-3", className)}>
       <Link

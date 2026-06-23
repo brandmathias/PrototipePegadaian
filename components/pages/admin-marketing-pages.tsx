@@ -122,6 +122,7 @@ export type MarketingSession = {
   buyerNationalId?: string | null;
   paymentMethod?: string | null;
   proofUrl?: string | null;
+  verifiedBy?: string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
@@ -2401,7 +2402,8 @@ export function AdminFixedPriceDetailPage({
   const unitLabel = auction.unitName || auction.unitAddress || "Unit belum tercatat";
   const specTiles = getFixedPriceSpecificationTiles(auction);
   const lastUpdated = dateLabel(auction.soldAt ?? auction.startsAt);
-  const canPrintReceipt = isFixedPriceReceiptPrintable(auction);
+  const canShowReceiptAction = isMarketingPaymentVerifiedForReceipt(auction);
+  const fixedPriceReceiptLockMessage = getMarketingReceiptLockMessage(auction);
   const fixedPriceAmount = currency.format(auction.price ?? 0);
   const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
   const canScheduleRemarketing = auction.status === "AKTIF" && !auction.transactionId;
@@ -2537,10 +2539,11 @@ export function AdminFixedPriceDetailPage({
                 <PencilLine className="size-4 text-[#526072]" />
                 Edit Data
               </Link>
-              {canPrintReceipt ? (
+              {canShowReceiptAction ? (
                 <FixedPriceReceiptInlinePrint
                   auction={auction}
-                  buttonClassName="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99]"
+                  buttonClassName="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55"
+                  disabledReason={fixedPriceReceiptLockMessage}
                   label="Cetak Nota"
                 />
               ) : (
@@ -3501,6 +3504,9 @@ function VickreyPaymentTotalPanel({
   const statusLabel = auction.transactionStatus ? humanize(auction.transactionStatus) : "Menunggu pembayaran";
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const receiptLockMessage = getMarketingReceiptLockMessage(auction);
+  const canPrintReceipt = Boolean(auction.transactionId && onPrintReceipt && !receiptLockMessage);
+  const handleReceiptPrint = onPrintReceipt ?? (async () => undefined);
 
   if (fulfilled) {
     return (
@@ -3530,17 +3536,25 @@ function VickreyPaymentTotalPanel({
             </div>
           </div>
           <div className="grid gap-3 print:hidden">
-            {auction.transactionId && onPrintReceipt ? (
+            {canPrintReceipt ? (
               <VickreyReceiptPrintButton
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
-                onPrint={onPrintReceipt}
+                onPrint={handleReceiptPrint}
               />
             ) : (
-              <Button className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]" disabled variant="secondary">
+              <Button
+                className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+                disabled
+                title={receiptLockMessage ?? undefined}
+                variant="secondary"
+              >
                 <Printer className="size-4" />
                 Cetak Nota
               </Button>
             )}
+            {receiptLockMessage ? (
+              <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+            ) : null}
             <Link
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
               href="/admin/pemasaran"
@@ -3582,17 +3596,24 @@ function VickreyPaymentTotalPanel({
             </div>
           </div>
           <div className="grid gap-3 print:hidden">
-            {auction.transactionId && onPrintReceipt ? (
+            {canPrintReceipt ? (
               <VickreyReceiptPrintButton
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-                onPrint={onPrintReceipt}
+                onPrint={handleReceiptPrint}
               />
             ) : (
-              <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled>
+              <Button
+                className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white"
+                disabled
+                title={receiptLockMessage ?? undefined}
+              >
                 <Printer className="size-4" />
                 Cetak Nota
               </Button>
             )}
+            {receiptLockMessage ? (
+              <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+            ) : null}
             <Button
               className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#6f83b6]"
               disabled
@@ -4454,12 +4475,14 @@ function getVickreyReceiptTerms(auction: MarketingSession) {
   ];
 }
 
-function isFixedPriceReceiptPrintable(auction: MarketingSession) {
-  return (
-    auction.mode === "FIXED_PRICE" &&
-    Boolean(auction.transactionId) &&
-    (auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI")
-  );
+function isMarketingPaymentVerifiedForReceipt(auction: MarketingSession) {
+  return auction.transactionStatus === "LUNAS" || auction.transactionStatus === "SELESAI";
+}
+
+function getMarketingReceiptLockMessage(auction: MarketingSession) {
+  return isMarketingPaymentVerifiedForReceipt(auction) && !auction.handoverProofUrl
+    ? "Nota belum tersedia. Unggah dokumentasi serah-terima barang fisik terlebih dahulu."
+    : null;
 }
 
 function getFixedPriceReceiptPrintRootId(auction: MarketingSession) {
@@ -4492,10 +4515,12 @@ function getMarketingPaymentMethodLabel(auction: MarketingSession) {
 function FixedPriceReceiptInlinePrint({
   auction,
   buttonClassName,
+  disabledReason,
   label = "Cetak Nota"
 }: {
   auction: MarketingSession;
   buttonClassName: string;
+  disabledReason?: string | null;
   label?: string;
 }) {
   const total = auction.price ?? auction.finalPrice ?? auction.basePrice ?? 0;
@@ -4508,6 +4533,7 @@ function FixedPriceReceiptInlinePrint({
   return (
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
+      disabledReason={disabledReason}
       label={label}
       rootId={getFixedPriceReceiptPrintRootId(auction)}
     >
@@ -4517,6 +4543,7 @@ function FixedPriceReceiptInlinePrint({
         buyerPhone={auction.buyerPhone ?? undefined}
         extraMeta={[{ label: "Jenis transaksi", value: "Harga Tetap" }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
+        handoverByName={auction.handoverProofUploadedBy ?? undefined}
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={auction.lot}
@@ -4529,6 +4556,8 @@ function FixedPriceReceiptInlinePrint({
         transactionId={auction.transactionId || auction.id}
         unitAddress={auction.unitAddress || "-"}
         unitName={auction.unitName || auction.unitAddress || "-"}
+        receiverName={auction.buyerName || auction.winner || "-"}
+        verifiedByName={auction.verifiedBy ?? undefined}
         verifiedAt={verifiedAt}
         outputLayout
       />
@@ -4562,6 +4591,7 @@ function VickreyReceiptPrintSheet({
         buyerPhone={auction.buyerPhone ?? undefined}
         extraMeta={[{ label: "Jenis transaksi", value: "Lelang" }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
+        handoverByName={auction.handoverProofUploadedBy ?? undefined}
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={auction.lot}
@@ -4574,6 +4604,8 @@ function VickreyReceiptPrintSheet({
         transactionId={auction.transactionId || auction.id}
         unitAddress={auction.unitAddress || "-"}
         unitName={auction.unitName || auction.unitAddress || "-"}
+        receiverName={auction.buyerName || auction.winner || "-"}
+        verifiedByName={auction.verifiedBy ?? undefined}
         verifiedAt={verifiedAt}
         outputLayout
       />
@@ -4655,20 +4687,31 @@ function VickreyWinnerActionFooter({
   auction: MarketingSession;
   onPrintReceipt: () => Promise<void>;
 }) {
+  const receiptLockMessage = getMarketingReceiptLockMessage(auction);
+  const canPrintReceipt = Boolean(auction.transactionId && !receiptLockMessage);
+
   if (isVickreyPaymentFulfilled(auction)) {
     return (
       <div className="grid gap-3 print:hidden">
-        {auction.transactionId ? (
+        {canPrintReceipt ? (
           <VickreyReceiptPrintButton
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
             onPrint={onPrintReceipt}
           />
         ) : (
-          <Button className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]" disabled variant="secondary">
+          <Button
+            className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+            disabled
+            title={receiptLockMessage ?? undefined}
+            variant="secondary"
+          >
             <Printer className="size-4" />
             Cetak Nota
           </Button>
         )}
+        {receiptLockMessage ? (
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+        ) : null}
         <Link
           className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
           href="/admin/pemasaran"
@@ -4683,17 +4726,24 @@ function VickreyWinnerActionFooter({
   if (isVickreyPaymentVerified(auction)) {
     return (
       <div className="grid gap-3 print:hidden">
-        {auction.transactionId ? (
+        {canPrintReceipt ? (
           <VickreyReceiptPrintButton
             className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
             onPrint={onPrintReceipt}
           />
         ) : (
-          <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled>
+          <Button
+            className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white"
+            disabled
+            title={receiptLockMessage ?? undefined}
+          >
             <Printer className="size-4" />
             Cetak Nota
           </Button>
         )}
+        {receiptLockMessage ? (
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+        ) : null}
         <Button
           className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
           disabled
@@ -5165,6 +5215,10 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
   }, [isPrintSheetReady]);
 
   const handlePrintReceipt = useCallback(async () => {
+    if (getMarketingReceiptLockMessage(auction)) {
+      return;
+    }
+
     flushSync(() => setIsPrintSheetReady(true));
     await new Promise((resolve) => window.requestAnimationFrame(() => resolve(undefined)));
 
@@ -5181,7 +5235,7 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
     }
 
     window.print();
-  }, [receiptPrintRootId]);
+  }, [auction, receiptPrintRootId]);
 
   return (
     <div className="space-y-4 print:space-y-0">

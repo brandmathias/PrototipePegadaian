@@ -418,10 +418,10 @@ describe("admin unit serializers", () => {
 
     expect(transaction.proofFile).toBe("/uploads/bukti.jpg");
     expect(transaction.reference).toBe("BRI-8888");
-    expect(transaction.printableReceipt).toBe(true);
+    expect(transaction.printableReceipt).toBe(false);
   });
 
-  it("treats buyer-completed transactions as printable final receipts", () => {
+  it("keeps buyer-completed transactions locked until handover proof exists", () => {
     const transaction = serializeAdminTransaction({
       id: "TRX-SELESAI",
       pemasaranId: "pm-1",
@@ -447,6 +447,39 @@ describe("admin unit serializers", () => {
     });
 
     expect(transaction.status).toBe("SELESAI");
+    expect(transaction.printableReceipt).toBe(false);
+  });
+
+  it("treats transactions with handover proof as printable final receipts", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-HANDOVER",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      buyerName: "Raras",
+      lotName: "Kalung Emas",
+      lotId: "barang-1",
+      type: "fixed_price",
+      amount: "100000000",
+      paymentMethod: "transfer",
+      status: "selesai",
+      proofUrl: "/uploads/bukti.jpg",
+      handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
+      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
+      handoverProofUploadedByUserId: "admin-2",
+      rejectionReason: null,
+      referenceNumber: "BRI-7777",
+      paymentDeadline: null,
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-05-04T14:11:00Z"),
+      createdAt: new Date("2026-05-04T14:07:00Z"),
+      updatedAt: new Date("2026-05-04T14:15:00Z"),
+      verifiedByName: "Admin Unit Ranotana",
+      handoverProofUploadedByName: "Petugas Serah Terima"
+    });
+
+    expect(transaction.status).toBe("SELESAI");
     expect(transaction.printableReceipt).toBe(true);
+    expect(transaction.verifiedBy).toBe("Admin Unit Ranotana");
+    expect(transaction.handoverProofUploadedBy).toBe("Petugas Serah Terima");
   });
 });

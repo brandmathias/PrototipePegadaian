@@ -12,6 +12,7 @@ type TransactionReceiptInlinePrintProps = {
   children: ReactNode;
   documentClassName?: string;
   documentTestId?: string;
+  disabledReason?: string | null;
   label?: string;
   rootId: string;
 };
@@ -201,11 +202,13 @@ export function TransactionReceiptInlinePrint({
   children,
   documentClassName = "transaction-receipt-print-document hidden bg-white text-[#10251c] print:block",
   documentTestId = "transaction-receipt-print-document",
+  disabledReason,
   label = "Cetak Nota",
   rootId
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isPrintReady, setIsPrintReady] = useState(false);
+  const disabledDescriptionId = disabledReason ? `${rootId}-disabled-reason` : undefined;
 
   const clearPrintSheet = useCallback(() => {
     disableReceiptPrintMode();
@@ -230,6 +233,10 @@ export function TransactionReceiptInlinePrint({
   }, [clearPrintSheet, isPrintReady]);
 
   const handlePrint = useCallback(async () => {
+    if (disabledReason) {
+      return;
+    }
+
     enableReceiptPrintMode();
     window.addEventListener("afterprint", clearPrintSheet, { once: true });
 
@@ -250,14 +257,28 @@ export function TransactionReceiptInlinePrint({
     }
 
     window.print();
-  }, [clearPrintSheet, rootId]);
+  }, [clearPrintSheet, disabledReason, rootId]);
 
   return (
     <>
-      <button className={buttonClassName} onClick={() => void handlePrint()} type="button">
-        <Printer className="size-4" />
-        {label}
-      </button>
+      <span className="inline-flex flex-col gap-1">
+        <button
+          aria-describedby={disabledDescriptionId}
+          className={buttonClassName}
+          disabled={Boolean(disabledReason)}
+          onClick={() => void handlePrint()}
+          title={disabledReason ?? undefined}
+          type="button"
+        >
+          <Printer className="size-4" />
+          {label}
+        </button>
+        {disabledReason ? (
+          <span className="max-w-[18rem] text-[0.72rem] font-semibold leading-5 text-muted-foreground" id={disabledDescriptionId}>
+            {disabledReason}
+          </span>
+        ) : null}
+      </span>
       {isMounted
         ? createPortal(
             <div

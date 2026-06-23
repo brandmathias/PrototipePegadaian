@@ -730,6 +730,12 @@ function getBuyerTransactionReceiptPrintRootId(transaction: BuyerTransaction, su
   return `buyer-receipt-print-root-${transaction.id.replace(/[^a-zA-Z0-9_-]/g, "-")}-${suffix}`;
 }
 
+function getReceiptHandoverLockMessage(transaction: BuyerTransaction) {
+  return transaction.handoverProof
+    ? null
+    : "Nota belum tersedia. Admin unit perlu mengunggah bukti serah-terima barang fisik terlebih dahulu.";
+}
+
 function BuyerTransactionInlineReceiptPrint({
   buyer,
   buttonClassName,
@@ -745,10 +751,12 @@ function BuyerTransactionInlineReceiptPrint({
 }) {
   const isCompleted = transaction.status === "SELESAI";
   const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
+  const disabledReason = getReceiptHandoverLockMessage(transaction);
 
   return (
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
+      disabledReason={disabledReason}
       documentClassName={getReceiptPrintDocumentClassName(transaction)}
       documentTestId={getReceiptPrintDocumentTestId(transaction)}
       label={label}
@@ -765,6 +773,7 @@ function BuyerTransactionInlineReceiptPrint({
           }
         ]}
         footerText={getReceiptFooterText(transaction)}
+        handoverByName={transaction.handoverProof?.uploadedBy}
         imageUrl={transaction.imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={transaction.title}
@@ -777,6 +786,8 @@ function BuyerTransactionInlineReceiptPrint({
         transactionId={transaction.id}
         unitAddress={transaction.unitAddress}
         unitName={transaction.unit}
+        receiverName={buyer.name}
+        verifiedByName={transaction.verifiedBy}
         verifiedAt={transaction.verifiedAt}
         outputLayout
       />
@@ -1513,7 +1524,7 @@ function VickreyPaymentSuccessDetail({
   const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
   const handoverLockMessage = transaction.handoverProof
     ? null
-    : "Menunggu admin unit mengunggah bukti serah-terima barang.";
+    : getReceiptHandoverLockMessage(transaction);
 
   return (
     <div className="flex flex-col gap-4 bg-white md:gap-5">
@@ -1722,7 +1733,7 @@ export function TransactionDetailPage({
     : null;
   const handoverLockMessage = transaction.handoverProof
     ? null
-    : "Menunggu admin unit mengunggah bukti serah-terima barang.";
+    : getReceiptHandoverLockMessage(transaction);
 
   if (isFailedVickreyPayment) {
     return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
@@ -2124,6 +2135,7 @@ export function TransactionDetailPage({
                 </div>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <TransactionReceiptActions
+                    disabledReason={handoverLockMessage}
                     noteHref={`/transaksi/${transaction.id}/nota`}
                     printControl={
                       <BuyerTransactionInlineReceiptPrint
@@ -2164,6 +2176,16 @@ export function TransactionReceiptPage({
         <p className="text-muted-foreground">
           Nota belum tersedia. Nota hanya bisa dibuka setelah pembayaran terverifikasi admin.
         </p>
+      </Card>
+    );
+  }
+
+  const handoverLockMessage = getReceiptHandoverLockMessage(transaction);
+
+  if (handoverLockMessage) {
+    return (
+      <Card className="border border-border/70 bg-white p-8">
+        <p className="text-muted-foreground">{handoverLockMessage}</p>
       </Card>
     );
   }
@@ -2216,6 +2238,7 @@ export function TransactionReceiptPage({
           }
         ]}
         footerText={getReceiptFooterText(transaction)}
+        handoverByName={transaction.handoverProof?.uploadedBy}
         imageUrl={transaction.imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={transaction.title}
@@ -2228,6 +2251,8 @@ export function TransactionReceiptPage({
         transactionId={transaction.id}
         unitAddress={transaction.unitAddress}
         unitName={transaction.unit}
+        receiverName={buyer.name}
+        verifiedByName={transaction.verifiedBy}
         verifiedAt={transaction.verifiedAt}
         outputLayout={isAutoOutput || isAuctionReceipt}
       />

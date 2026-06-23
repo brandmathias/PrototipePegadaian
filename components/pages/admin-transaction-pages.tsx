@@ -385,12 +385,24 @@ function getTransactionReceiptPrintRootId(transaction: AdminTransactionItem) {
   return `transaction-receipt-print-root-${String(transaction.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }
 
+function hasTransactionHandoverProof(transaction: AdminTransactionItem) {
+  return Boolean(transaction.handoverProofFile);
+}
+
+function getTransactionReceiptLockMessage(transaction: AdminTransactionItem) {
+  return isPaymentVerified(transaction) && !hasTransactionHandoverProof(transaction)
+    ? "Nota belum tersedia. Unggah dokumentasi serah-terima barang fisik terlebih dahulu."
+    : null;
+}
+
 function AdminTransactionInlineReceiptPrint({
   buttonClassName,
+  disabledReason,
   label,
   transaction
 }: {
   buttonClassName: string;
+  disabledReason?: string | null;
   label?: string;
   transaction: AdminTransactionItem;
 }) {
@@ -399,6 +411,7 @@ function AdminTransactionInlineReceiptPrint({
   return (
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
+      disabledReason={disabledReason}
       label={label}
       rootId={getTransactionReceiptPrintRootId(transaction)}
     >
@@ -408,6 +421,7 @@ function AdminTransactionInlineReceiptPrint({
         buyerPhone={transaction.buyerPhone}
         extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
+        handoverByName={transaction.handoverProofUploadedBy}
         imageUrl={transaction.imageUrl}
         itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}
         itemTitle={transaction.lot}
@@ -420,6 +434,8 @@ function AdminTransactionInlineReceiptPrint({
         transactionId={transaction.id}
         unitAddress={transaction.unitAddress}
         unitName={transaction.unit ?? "-"}
+        receiverName={transaction.buyer}
+        verifiedByName={transaction.verifiedBy}
         verifiedAt={transaction.verifiedAt}
         outputLayout
       />
@@ -885,7 +901,8 @@ function TransactionActionPanel({
 }) {
   const canVerifyTransfer = transaction.status === "BUKTI_DIUNGGAH" && transaction.method === "TRANSFER_BANK";
   const canConfirmDirect = transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG";
-  const canPrint = transaction.printableReceipt || transaction.status === "LUNAS" || transaction.status === "SELESAI";
+  const receiptLockMessage = getTransactionReceiptLockMessage(transaction);
+  const canPrint = isPaymentVerified(transaction);
   const baseClass = "h-12 rounded-2xl";
 
   return (
@@ -951,7 +968,8 @@ function TransactionActionPanel({
 
       {canPrint ? (
         <AdminTransactionInlineReceiptPrint
-          buttonClassName={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7] dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:bg-white/[0.1]`}
+          buttonClassName={`${baseClass} inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-black/12 bg-[#f4f4f1] px-4 py-3 text-sm font-semibold text-black/78 transition hover:bg-[#ecece7] disabled:pointer-events-none disabled:opacity-55 dark:border-white/10 dark:bg-white/[0.06] dark:text-slate-100 dark:hover:bg-white/[0.1]`}
+          disabledReason={receiptLockMessage}
           label="Cetak Nota"
           transaction={transaction}
         />
@@ -1144,6 +1162,15 @@ export function AdminTransactionReceiptPage({
   const noteHref = `/admin/transaksi/${transaction.id}/nota`;
   const isCompleted = transaction.status === "SELESAI";
   const isAutoOutput = outputMode === "print" || outputMode === "download";
+  const receiptLockMessage = getTransactionReceiptLockMessage(transaction);
+
+  if (receiptLockMessage) {
+    return (
+      <Card className="border border-border/70 bg-white p-8">
+        <p className="text-muted-foreground">{receiptLockMessage}</p>
+      </Card>
+    );
+  }
 
   return (
     <div
@@ -1187,6 +1214,7 @@ export function AdminTransactionReceiptPage({
         buyerPhone={transaction.buyerPhone}
         extraMeta={[{ label: "Jenis transaksi", value: receiptMarketingLabel(transaction.pemasaranMode) }]}
         footerText="Dokumen ini diterbitkan oleh admin unit Ruang Agunan."
+        handoverByName={transaction.handoverProofUploadedBy}
         imageUrl={transaction.imageUrl}
         itemSubtitle={transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung"}
         itemTitle={transaction.lot}
@@ -1199,6 +1227,8 @@ export function AdminTransactionReceiptPage({
         transactionId={transaction.id}
         unitAddress={transaction.unitAddress}
         unitName={transaction.unit ?? "-"}
+        receiverName={transaction.buyer}
+        verifiedByName={transaction.verifiedBy}
         verifiedAt={transaction.verifiedAt}
         outputLayout={isAutoOutput}
       />

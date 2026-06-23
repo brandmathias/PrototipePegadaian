@@ -50,6 +50,7 @@ type BuyerTransactionShape = {
   rejectionReason?: string | null;
   referenceNumber: string | null;
   paymentDeadline: Date | null;
+  verifiedBy?: string | null;
   verifiedAt: Date | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | null;
@@ -291,6 +292,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     paymentProof: proof.proofUrl,
     rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
+    verifiedBy: row.verifiedBy ?? undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
     completedAt:
       row.status === "selesai"

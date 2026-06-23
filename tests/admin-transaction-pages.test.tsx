@@ -228,12 +228,19 @@ describe("admin transaction pages", () => {
 
   it("prints the harga tetap receipt inline without opening a dedicated receipt tab", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    const printableTransaction = {
+      ...transactions[1],
+      handoverProofFile: "/uploads/serah-terima/trx-history.jpg",
+      handoverProofUploadedAt: "2 Mei 2026 16.00",
+      handoverProofUploadedBy: "Admin Unit Ranotana",
+      verifiedBy: "Admin Unit Ranotana"
+    };
 
     render(
       <AdminTransactionDetailWorkspacePage
         backHref="/admin/transaksi/riwayat"
         backLabel="Kembali ke riwayat"
-        transaction={transactions[1]}
+        transaction={printableTransaction}
       />
     );
 
@@ -257,6 +264,13 @@ describe("admin transaction pages", () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    const printableTransaction = {
+      ...transactions[1],
+      handoverProofFile: "/uploads/serah-terima/trx-history.jpg",
+      handoverProofUploadedAt: "2 Mei 2026 16.00",
+      handoverProofUploadedBy: "Admin Unit Ranotana",
+      verifiedBy: "Admin Unit Ranotana"
+    };
 
     Object.defineProperty(window.navigator, "userAgent", {
       configurable: true,
@@ -269,7 +283,7 @@ describe("admin transaction pages", () => {
         <AdminTransactionDetailWorkspacePage
           backHref="/admin/transaksi/riwayat"
           backLabel="Kembali ke riwayat"
-          transaction={transactions[1]}
+          transaction={printableTransaction}
         />
       );
 

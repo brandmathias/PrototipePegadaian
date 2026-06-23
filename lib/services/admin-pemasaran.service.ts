@@ -11,6 +11,7 @@ import { EMPTY_LOT_INSIGHTS, getLotStatsByIds } from "@/lib/services/public-lot-
 
 const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 const transactionHandoverUploader = alias(users, "marketing_transaction_handover_uploader");
+const transactionPaymentVerifier = alias(users, "marketing_transaction_payment_verifier");
 
 type ParticipantPreview = {
   bidderId: string;
@@ -184,6 +185,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         paymentMethod?: string | null;
         status?: string | null;
         proofUrl?: string | null;
+        verifiedBy?: string | null;
         handoverProofUrl?: string | null;
         handoverProofUploadedAt?: Date | null;
         handoverProofUploadedBy?: string | null;
@@ -203,6 +205,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       status: transaksi.status,
       paymentMethod: transaksi.paymentMethod,
       proofUrl: transaksi.proofUrl,
+      verifiedBy: transactionPaymentVerifier.name,
       handoverProofUrl: transaksi.handoverProofUrl,
       handoverProofUploadedAt: transaksi.handoverProofUploadedAt,
       handoverProofUploadedBy: transactionHandoverUploader.name,
@@ -218,6 +221,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
     })
     .from(transaksi)
     .innerJoin(users, eq(users.id, transaksi.userId))
+    .leftJoin(transactionPaymentVerifier, eq(transactionPaymentVerifier.id, transaksi.verifiedByUserId))
     .leftJoin(transactionHandoverUploader, eq(transactionHandoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .where(inArray(transaksi.pemasaranId, pemasaranIds))
     .orderBy(desc(transaksi.createdAt));
@@ -233,6 +237,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         paymentMethod: row.paymentMethod,
         status: row.status,
         proofUrl: row.proofUrl,
+        verifiedBy: row.verifiedBy,
         handoverProofUrl: row.handoverProofUrl,
         handoverProofUploadedAt: row.handoverProofUploadedAt,
         handoverProofUploadedBy: row.handoverProofUploadedBy,
@@ -255,6 +260,7 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       paymentMethod?: string | null;
       status?: string | null;
       proofUrl?: string | null;
+      verifiedBy?: string | null;
       handoverProofUrl?: string | null;
       handoverProofUploadedAt?: Date | null;
       handoverProofUploadedBy?: string | null;

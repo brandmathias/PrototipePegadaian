@@ -1836,8 +1836,12 @@ export function AdminTransactionDetailPage({
   transactionId?: string;
   transaction: AdminTransactionItem;
 }) {
-  const canPrint =
-    transaction.printableReceipt || transaction.status === "LUNAS";
+  const isReceiptPaymentVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
+  const receiptLockMessage =
+    isReceiptPaymentVerified && !transaction.handoverProofFile
+      ? "Nota baru dapat dicetak setelah dokumentasi serah-terima barang fisik diunggah."
+      : null;
+  const canPrint = Boolean(transaction.printableReceipt);
   const canVerifyTransfer =
     transaction.status === "BUKTI_DIUNGGAH" &&
     transaction.method === "TRANSFER_BANK";
@@ -2056,6 +2060,8 @@ export function AdminTransactionDetailPage({
                 <div className="rounded-2xl border border-dashed border-black/10 bg-[#fbfbfa] p-4 text-sm text-black/55">
                   {canTakePaymentAction
                     ? "Nota baru dapat dicetak setelah transaksi selesai diverifikasi."
+                    : receiptLockMessage
+                      ? receiptLockMessage
                     : "Tidak ada tindakan pembayaran yang tersedia untuk status transaksi saat ini."}
                 </div>
               )}

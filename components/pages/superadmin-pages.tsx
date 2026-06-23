@@ -233,6 +233,7 @@ export type SuperAdminUnitBarangMarketingSession = {
   buyerNationalId?: string | null;
   paymentMethod?: string | null;
   proofUrl?: string | null;
+  verifiedBy?: string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
@@ -3331,6 +3332,12 @@ function isSuperAdminVickreyPaymentFulfilled(session: SuperAdminUnitBarangMarket
   return session.transactionStatus === "SELESAI";
 }
 
+function getSuperAdminReceiptLockMessage(session: SuperAdminUnitBarangMarketingSession) {
+  return isSuperAdminVickreyPaymentVerified(session) && !session.handoverProofUrl
+    ? "Nota belum tersedia. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik terlebih dahulu."
+    : null;
+}
+
 const FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES = new Set([
   "GAGAL",
   "DIBATALKAN",
@@ -4033,6 +4040,7 @@ function SuperAdminVickreyReceiptInlinePrint({
           { label: "Kode aset", value: receiptContext.itemCode },
         ]}
         footerText="Dokumen ini diterbitkan sebagai salinan monitoring superadmin Ruang Agunan."
+        handoverByName={session.handoverProofUploadedBy ?? undefined}
         imageUrl={imageUrl}
         itemSubtitle={paymentMethodLabel}
         itemTitle={receiptContext.itemTitle}
@@ -4045,6 +4053,8 @@ function SuperAdminVickreyReceiptInlinePrint({
         transactionId={session.transactionId || session.id}
         unitAddress={receiptContext.unitAddress}
         unitName={receiptContext.unitName}
+        receiverName={session.buyerName || session.winner || "-"}
+        verifiedByName={session.verifiedBy ?? undefined}
         verifiedAt={verifiedAt}
         outputLayout
       />
@@ -4079,14 +4089,27 @@ function SuperAdminVickreyActionFooter({
   receiptContext: SuperAdminMarketingReceiptContext;
   session: SuperAdminUnitBarangMarketingSession;
 }) {
+  const receiptLockMessage = getSuperAdminReceiptLockMessage(session);
+  const canPrintReceipt = !receiptLockMessage;
+
   if (isSuperAdminVickreyPaymentFulfilled(session)) {
     return (
       <div className="grid gap-3 print:hidden">
-        <SuperAdminVickreyReceiptInlinePrint
-          buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
-          receiptContext={receiptContext}
-          session={session}
-        />
+        {canPrintReceipt ? (
+          <SuperAdminVickreyReceiptInlinePrint
+            buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+            receiptContext={receiptContext}
+            session={session}
+          />
+        ) : (
+          <Button className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]" disabled title={receiptLockMessage ?? undefined} variant="secondary">
+            <Printer className="size-4" />
+            Cetak Nota
+          </Button>
+        )}
+        {receiptLockMessage ? (
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+        ) : null}
         <SuperAdminPassiveActionButton className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]">
           <LockKeyhole className="size-4.5" />
           Tutup & Arsipkan Berkas Lelang
@@ -4098,11 +4121,21 @@ function SuperAdminVickreyActionFooter({
   if (isSuperAdminVickreyPaymentVerified(session)) {
     return (
       <div className="grid gap-3 print:hidden">
-        <SuperAdminVickreyReceiptInlinePrint
-          buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-          receiptContext={receiptContext}
-          session={session}
-        />
+        {canPrintReceipt ? (
+          <SuperAdminVickreyReceiptInlinePrint
+            buttonClassName="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
+            receiptContext={receiptContext}
+            session={session}
+          />
+        ) : (
+          <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled title={receiptLockMessage ?? undefined}>
+            <Printer className="size-4" />
+            Cetak Nota
+          </Button>
+        )}
+        {receiptLockMessage ? (
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+        ) : null}
         <Button
           className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
           disabled

@@ -27,6 +27,7 @@ type AdminPemasaranTransaction = {
   paymentMethod?: string | null;
   status?: string | null;
   proofUrl?: string | null;
+  verifiedBy?: string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | string | null;
   handoverProofUploadedBy?: string | null;
@@ -304,6 +305,7 @@ export function serializeAdminPemasaran(
     buyerNationalId: extra.transaction?.buyerNationalId ?? null,
     paymentMethod: formatPaymentMethod(extra.transaction?.paymentMethod),
     proofUrl: extra.transaction?.proofUrl ?? null,
+    verifiedBy: extra.transaction?.verifiedBy ?? null,
     handoverProofUrl: extra.transaction?.handoverProofUrl ?? null,
     handoverProofUploadedAt: toIsoOrNull(extra.transaction?.handoverProofUploadedAt),
     handoverProofUploadedBy: extra.transaction?.handoverProofUploadedBy ?? null,
@@ -343,11 +345,13 @@ export function serializeAdminTransaction(
     bankName?: string | null;
     accountNumber?: string | null;
     accountName?: string | null;
+    verifiedByName?: string | null;
     handoverProofUploadedByName?: string | null;
   }
 ) {
   const proof = splitLegacyProofValue(row.proofUrl);
-  const printableReceipt = row.status === "lunas" || row.status === "selesai";
+  const hasHandoverProof = Boolean(row.handoverProofUrl);
+  const printableReceipt = (row.status === "lunas" || row.status === "selesai") && hasHandoverProof;
 
   return {
     id: row.id,
@@ -370,7 +374,8 @@ export function serializeAdminTransaction(
     proofFile: proof.proofUrl,
     handoverProofFile: row.handoverProofUrl ?? "",
     handoverProofUploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
-    handoverProofUploadedBy: row.handoverProofUploadedByName ?? "Admin Unit",
+    handoverProofUploadedBy: hasHandoverProof ? row.handoverProofUploadedByName ?? "Admin Unit" : "-",
+    verifiedBy: row.verifiedByName ?? undefined,
     rejectionReason: row.rejectionReason,
     pemasaranMode: row.type === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup",
     bankName: row.bankName ?? "-",

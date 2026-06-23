@@ -24,6 +24,7 @@ import {
 import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
 
 const handoverUploader = alias(users, "transaction_handover_uploader");
+const paymentVerifier = alias(users, "transaction_payment_verifier");
 
 function primaryBarangPhotoUrl() {
   return sql<string | null>`(
@@ -45,6 +46,7 @@ async function getTransactionJoin(transactionId: string, unitId?: string) {
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
+      paymentVerifier,
       handoverUploader,
       account: unitAccounts
     })
@@ -54,6 +56,7 @@ async function getTransactionJoin(transactionId: string, unitId?: string) {
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
+    .leftJoin(paymentVerifier, eq(paymentVerifier.id, transaksi.verifiedByUserId))
     .leftJoin(handoverUploader, eq(handoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(unitId ? and(eq(transaksi.id, transactionId), eq(barang.unitId, unitId)) : eq(transaksi.id, transactionId))
@@ -98,6 +101,7 @@ function serializeTransactionJoin(row: Awaited<ReturnType<typeof getTransactionF
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
     accountName: row.account?.accountHolderName ?? null,
+    verifiedByName: row.paymentVerifier?.name ?? null,
     handoverProofUploadedByName: row.handoverUploader?.name ?? null
   });
 }
@@ -111,6 +115,7 @@ export async function listAdminTransactions(unitId: string) {
       unit: units,
       buyer: users,
       buyerProfile: buyerProfiles,
+      paymentVerifier,
       handoverUploader,
       account: unitAccounts
     })
@@ -120,6 +125,7 @@ export async function listAdminTransactions(unitId: string) {
     .innerJoin(units, eq(units.id, barang.unitId))
     .innerJoin(users, eq(users.id, transaksi.userId))
     .leftJoin(buyerProfiles, eq(buyerProfiles.userId, users.id))
+    .leftJoin(paymentVerifier, eq(paymentVerifier.id, transaksi.verifiedByUserId))
     .leftJoin(handoverUploader, eq(handoverUploader.id, transaksi.handoverProofUploadedByUserId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(eq(barang.unitId, unitId))
@@ -141,6 +147,7 @@ export async function listAdminTransactions(unitId: string) {
       bankName: row.account?.bankName ?? null,
       accountNumber: row.account?.accountNumber ?? null,
       accountName: row.account?.accountHolderName ?? null,
+      verifiedByName: row.paymentVerifier?.name ?? null,
       handoverProofUploadedByName: row.handoverUploader?.name ?? null
     })
   );
@@ -185,23 +192,7 @@ export async function uploadAdminTransactionHandoverProof(
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  return serializeAdminTransaction({
-    ...updated,
-    buyerName: row.buyer.name,
-    buyerEmail: row.buyer.email,
-    buyerPhone: row.buyer.phoneNumber,
-    buyerNationalId: row.buyer.nationalId,
-    buyerAddress: null,
-    lotName: row.item.name,
-    lotId: row.item.id,
-    imageUrl: row.imageUrl ?? null,
-    unitName: row.unit.name,
-    unitAddress: row.unit.address,
-    bankName: row.account?.bankName ?? null,
-    accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null,
-    handoverProofUploadedByName: row.handoverUploader?.name ?? null
-  });
+  return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
 }
 
 async function ensureTransactionMutable(status: string) {
@@ -266,23 +257,7 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     lotName: row.item.name
   });
 
-  return serializeAdminTransaction({
-    ...updated,
-    buyerName: row.buyer.name,
-    buyerEmail: row.buyer.email,
-    buyerPhone: row.buyer.phoneNumber,
-    buyerNationalId: row.buyer.nationalId,
-    buyerAddress: null,
-    lotName: row.item.name,
-    lotId: row.item.id,
-    imageUrl: row.imageUrl ?? null,
-    unitName: row.unit.name,
-    unitAddress: row.unit.address,
-    bankName: row.account?.bankName ?? null,
-    accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null,
-    handoverProofUploadedByName: row.handoverUploader?.name ?? null
-  });
+  return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
 }
 
 export async function rejectAdminTransactionProof(
@@ -345,6 +320,7 @@ export async function rejectAdminTransactionProof(
     bankName: row.account?.bankName ?? null,
     accountNumber: row.account?.accountNumber ?? null,
     accountName: row.account?.accountHolderName ?? null,
+    verifiedByName: row.paymentVerifier?.name ?? null,
     handoverProofUploadedByName: row.handoverUploader?.name ?? null
   });
 }

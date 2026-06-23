@@ -36,8 +36,15 @@ const transaction: BuyerTransaction = {
   bankAccountNumber: "0123-4567-8901-234",
   bankAccountHolder: "PT Pegadaian (Persero)",
   bankBranch: "Serpong",
+  verifiedBy: "Admin Unit Ranotana",
   verifiedAt: "5 Mei 2026 11.00 WIB",
-  receiptNumber: "PEG-20260518-001"
+  receiptNumber: "PEG-20260518-001",
+  handoverProof: {
+    fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
+    uploadedAt: "5 Mei 2026 11.30 WIB",
+    uploadedBy: "Petugas Serah Terima",
+    location: "Pegadaian UPC Gading Serpong"
+  }
 };
 
 const vickreyTransaction: BuyerTransaction = {
@@ -107,11 +114,34 @@ describe("transaction receipt page", () => {
     expect(screen.getByText(/total pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/metode pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/syarat & ketentuan/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran diverifikasi oleh/i)).toBeInTheDocument();
+    expect(screen.getByText(/admin unit ranotana - pegadaian upc gading serpong/i)).toBeInTheDocument();
+    expect(screen.getByText(/barang diserahkan oleh/i)).toBeInTheDocument();
+    expect(screen.getByText(/petugas serah terima - pegadaian upc gading serpong/i)).toBeInTheDocument();
+    expect(screen.getByText(/petugas unit/i)).toBeInTheDocument();
+    expect(screen.getByText(/penerima barang/i)).toBeInTheDocument();
     const receiptImage = screen.getByRole("img", { name: /foto barang jam tangan rolex submariner/i });
     expect(receiptImage).toBeInTheDocument();
     expect(receiptImage).toHaveAttribute("loading", "eager");
     expect(receiptImage).toHaveAttribute("decoding", "sync");
     expect(screen.getByText(/peg-20260518-001/i)).toBeInTheDocument();
+  });
+
+  it("keeps receipt locked until handover proof is uploaded", () => {
+    render(
+      <TransactionReceiptPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          handoverProof: undefined
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/nota belum tersedia/i)).toHaveTextContent(/bukti serah-terima/i);
+    expect(screen.queryByRole("link", { name: /unduh pdf/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
   });
 
   it("provides dedicated links for pdf download and print view", () => {

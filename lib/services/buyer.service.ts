@@ -194,6 +194,12 @@ function transactionSelection() {
     rejectionReason: transaksi.rejectionReason,
     referenceNumber: transaksi.referenceNumber,
     paymentDeadline: transaksi.paymentDeadline,
+    verifiedBy: sql<string | null>`(
+      select u.name
+      from "user" u
+      where u.id = ${transaksi.verifiedByUserId}
+      limit 1
+    )`,
     verifiedAt: transaksi.verifiedAt,
     handoverProofUrl: transaksi.handoverProofUrl,
     handoverProofUploadedAt: transaksi.handoverProofUploadedAt,

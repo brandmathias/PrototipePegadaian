@@ -249,6 +249,7 @@ describe("buyer serializers", () => {
       rejectionReason: null,
       referenceNumber: "BRI-2026-991",
       paymentDeadline: new Date("2026-05-05T02:30:00Z"),
+      verifiedBy: "Admin Unit Ranotana",
       verifiedAt: new Date("2026-05-04T14:11:00Z"),
       createdAt: new Date("2026-05-04T14:07:00Z"),
       handoverProofUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
@@ -263,6 +264,7 @@ describe("buyer serializers", () => {
     } as any);
 
     expect(transaction.paymentProof).toBe("/uploads/bukti/transfer.jpg");
+    expect(transaction.verifiedBy).toBe("Admin Unit Ranotana");
     expect(transaction.handoverProof).toEqual({
       fileUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
       uploadedAt: "4 Mei 2026, 22.30 WIB",

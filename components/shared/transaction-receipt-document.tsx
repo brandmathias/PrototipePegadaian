@@ -49,6 +49,8 @@ export function TransactionReceiptDocument({
   itemTitle,
   noteNumber,
   paymentMethodLabel,
+  handoverByName,
+  receiverName,
   statusLabel,
   subtotal,
   terms,
@@ -57,6 +59,7 @@ export function TransactionReceiptDocument({
   transactionId,
   unitAddress,
   unitName,
+  verifiedByName,
   verifiedAt,
   outputLayout = false
 }: {
@@ -70,6 +73,8 @@ export function TransactionReceiptDocument({
   itemTitle: string;
   noteNumber: string;
   paymentMethodLabel: string;
+  handoverByName?: string;
+  receiverName?: string;
   statusLabel: string;
   subtotal: number;
   terms: string[];
@@ -78,9 +83,15 @@ export function TransactionReceiptDocument({
   transactionId: string;
   unitAddress: string;
   unitName: string;
+  verifiedByName?: string;
   verifiedAt?: string;
   outputLayout?: boolean;
 }) {
+  const paymentVerifierName = verifiedByName?.trim() || "Admin Unit";
+  const handoverOfficerName = handoverByName?.trim() || paymentVerifierName;
+  const receiverDisplayName = receiverName?.trim() || buyerName;
+  const paymentVerifierLabel = `${paymentVerifierName} - ${unitName}`;
+  const handoverOfficerLabel = `${handoverOfficerName} - ${unitName}`;
   const headerClassName = outputLayout
     ? "receipt-output-header relative overflow-hidden rounded-t-[1.35rem] bg-[linear-gradient(135deg,#0a4a33_0%,#0b6a46_58%,#b88c1a_100%)] px-5 py-4 text-white print:break-inside-avoid print:rounded-t-[1.35rem] print:px-5 print:py-4"
     : "receipt-output-header relative overflow-hidden rounded-t-[1.65rem] bg-[linear-gradient(135deg,#0a4a33_0%,#0b6a46_58%,#b88c1a_100%)] px-4 py-4 text-white md:px-6 md:py-5 print:break-inside-avoid print:rounded-t-[1.35rem] print:px-5 print:py-4";
@@ -91,6 +102,9 @@ export function TransactionReceiptDocument({
     ? "rounded-[1.4rem] border border-[#dbe4da] bg-white px-3 py-3 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3"
     : "rounded-[1.4rem] border border-[#dbe4da] bg-white px-4 py-4 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3";
   const receiptSectionClassName = outputLayout ? "space-y-3" : "space-y-4 print:space-y-3";
+  const receiptAuditGridClassName = outputLayout
+    ? "receipt-output-audit-grid grid grid-cols-[0.95fr_1.05fr] gap-3"
+    : "receipt-output-audit-grid grid gap-4 md:grid-cols-[0.95fr_1.05fr] print:grid-cols-[0.95fr_1.05fr] print:gap-3";
 
   return (
     <article
@@ -385,6 +399,48 @@ export function TransactionReceiptDocument({
             <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#dbe4da] pt-3 text-[1rem] font-black text-[#0b6a46]">
               <span>Total</span>
               <span>{currency.format(total)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={receiptAuditGridClassName}>
+          <div className="rounded-[1.25rem] border border-[#dbe4da] bg-white px-4 py-3 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.18)] print:px-3 print:py-3">
+            <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#0f5136]">
+              Audit Petugas
+            </p>
+            <div className="mt-3 grid gap-2 text-[0.72rem] leading-5 text-[#4c5f50] print:text-[0.68rem]">
+              <div className="rounded-xl bg-[#f8faf7] px-3 py-2">
+                <p className="font-bold uppercase tracking-[0.14em] text-[#6e836f]">
+                  Pembayaran diverifikasi oleh
+                </p>
+                <p className="mt-1 font-semibold text-[#143325]">{paymentVerifierLabel}</p>
+              </div>
+              <div className="rounded-xl bg-[#f8faf7] px-3 py-2">
+                <p className="font-bold uppercase tracking-[0.14em] text-[#6e836f]">
+                  Barang diserahkan oleh
+                </p>
+                <p className="mt-1 font-semibold text-[#143325]">{handoverOfficerLabel}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[1.25rem] border border-[#dbe4da] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbf8_100%)] px-4 py-3 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.18)] print:px-3 print:py-3">
+            <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#0f5136]">
+              Tanda Tangan
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {[
+                { label: "Petugas Unit", name: handoverOfficerName },
+                { label: "Penerima Barang", name: receiverDisplayName }
+              ].map((entry) => (
+                <div className="rounded-xl border border-[#edf2ec] bg-white px-3 py-3 text-center" key={entry.label}>
+                  <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-[#6e836f]">
+                    {entry.label}
+                  </p>
+                  <div className="mx-auto mt-8 h-px w-full max-w-[9rem] bg-[#aab8ab]" />
+                  <p className="mt-2 truncate text-[0.74rem] font-black text-[#143325]">{entry.name}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
