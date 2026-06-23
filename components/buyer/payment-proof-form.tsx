@@ -83,11 +83,6 @@ export function BuyerPaymentProofForm({
   const isPdfPreview = file
     ? file.type === "application/pdf"
     : proofUrlMatchesExtension(displayPreviewUrl, /\.pdf$/i);
-  const previewBadgeLabel = locked
-    ? "Bukti Terkirim"
-    : requireNewProof && currentProof && !file
-      ? "Bukti Sebelumnya"
-      : "Preview Aktif";
 
   useEffect(() => {
     setIsHydrated(true);
@@ -243,10 +238,6 @@ export function BuyerPaymentProofForm({
                 </span>
               )}
               <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,18,0.02),transparent_36%,rgba(12,25,18,0.34))]" />
-              <span className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/88 px-3 py-1.5 font-body text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#0d573e] shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm">
-                <FileCheck2 className="size-3.5" />
-                {previewBadgeLabel}
-              </span>
               <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm transition duration-500 group-hover:scale-[1.04]">
                 <Expand className="size-4" />
               </span>

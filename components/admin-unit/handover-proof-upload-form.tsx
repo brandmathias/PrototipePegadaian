@@ -132,7 +132,6 @@ export function HandoverProofUploadForm({
         audience="admin"
         controls={controls}
         itemTitle={itemTitle}
-        previewBadgeLabel={file ? "Preview Aktif" : undefined}
         previewUrl={previewUrl}
         proof={proof ? { ...proof, location: proof.location ?? location } : { location }}
       />

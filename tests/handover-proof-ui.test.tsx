@@ -90,6 +90,7 @@ describe("handover proof UI", () => {
     );
     expect(previewImage).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-cover");
     expect(previewImage).not.toHaveClass("object-contain", "min-h-[13rem]");
+    expect(screen.queryByText(/preview aktif|bukti tersimpan/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeEnabled();
 
     unmount();
@@ -121,6 +122,7 @@ describe("handover proof UI", () => {
       "bg-[#f6faf7]",
     );
     expect(screen.getByRole("button", { name: /buka fullscreen bukti serah-terima barang/i })).toBeInTheDocument();
+    expect(screen.queryByText(/preview aktif|bukti tersimpan/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /unggah bukti/i })).not.toBeInTheDocument();
   });

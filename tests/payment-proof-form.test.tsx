@@ -49,6 +49,7 @@ describe("BuyerPaymentProofForm", () => {
     });
 
     expect(await screen.findByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByText(/preview aktif|bukti terkirim|bukti sebelumnya/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
     expect(screen.queryByText("bukti-transfer.png")).not.toBeInTheDocument();
 
