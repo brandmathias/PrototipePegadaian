@@ -308,8 +308,8 @@ function InventoryHistoryList({
         <div className="px-3 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
         <div className="px-2 py-3.5">Kategori</div>
         <div className="px-2.5 py-3.5 text-center">Nasabah Pemilik</div>
-        <div className="px-2.5 py-3.5 text-center">Status</div>
-        <div className="px-2.5 py-3.5 text-center">Aktor Internal</div>
+        <div className="grid place-items-center px-0 py-3.5 text-center">Status</div>
+        <div className="grid place-items-center px-0 py-3.5 text-center">Aktor Internal</div>
         <div className="px-3.5 py-3.5">
           <button
             aria-label={`Urutkan Waktu Proses ${sortDirection === "desc" ? "terlama dulu" : "terbaru dulu"}`}
@@ -321,7 +321,7 @@ function InventoryHistoryList({
             <TimeSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
           </button>
         </div>
-        <div className="px-2.5 py-3.5 text-center">Aksi</div>
+        <div className="grid place-items-center px-0 py-3.5 text-center">Aksi</div>
       </div>
       {entries.length > 0 ? (
         entries.map((entry) => {
@@ -367,7 +367,7 @@ function InventoryHistoryList({
                 </div>
               </div>
 
-              <div className="flex min-w-0 items-start gap-3 lg:justify-center">
+              <div className="flex min-w-0 items-start gap-3 lg:grid lg:place-items-center">
                 <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
                   <ActionIcon className="size-4.5" />
                 </span>
@@ -384,9 +384,9 @@ function InventoryHistoryList({
                 </div>
               </div>
 
-              <div className="min-w-0 text-left lg:text-center">
+              <div className="min-w-0 text-left lg:grid lg:place-items-center lg:text-center">
                 <p
-                  className="truncate text-[0.78rem] font-black tracking-[-0.01em] text-[#13211c]"
+                  className="w-full max-w-[10rem] truncate text-[0.78rem] font-black tracking-[-0.01em] text-[#13211c]"
                   title={entry.actorName || "Admin Unit"}
                 >
                   {entry.actorName || "Admin Unit"}
@@ -398,7 +398,7 @@ function InventoryHistoryList({
                 <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
               </div>
 
-              <div className="flex justify-start lg:justify-center">
+              <div className="flex justify-start lg:grid lg:place-items-center">
                 <DetailActionLink
                   href={`/admin/barang/${entry.barangId}`}
                 />

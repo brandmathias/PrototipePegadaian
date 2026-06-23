@@ -495,12 +495,16 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(rowCells[4]).toHaveTextContent("Operator Arsip");
     expect(headerRow?.children[2]).toHaveClass("text-center");
     expect(headerRow?.children[3]).toHaveClass("text-center");
+    expect(headerRow?.children[3]).toHaveClass("place-items-center");
     expect(headerRow?.children[4]).toHaveClass("text-center");
+    expect(headerRow?.children[4]).toHaveClass("place-items-center");
     expect(headerRow?.children[6]).toHaveClass("text-center");
+    expect(headerRow?.children[6]).toHaveClass("place-items-center");
     expect(rowCells[2].firstElementChild).toHaveClass("lg:justify-center");
-    expect(rowCells[3]).toHaveClass("lg:justify-center");
+    expect(rowCells[3]).toHaveClass("lg:place-items-center");
+    expect(rowCells[4]).toHaveClass("lg:place-items-center");
     expect(rowCells[4]).toHaveClass("lg:text-center");
-    expect(rowCells[6]).toHaveClass("lg:justify-center");
+    expect(rowCells[6]).toHaveClass("lg:place-items-center");
 
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
       "hover:bg-[#006747]",
