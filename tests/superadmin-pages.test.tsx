@@ -1328,7 +1328,9 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("30 Mei 2026, 10:00 WIB")).not.toBeInTheDocument();
     expect(screen.getAllByText("Iterasi 2 (Terkini)").length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: /Iterasi 2 \(Terkini\)/i }));
-    fireEvent.click(screen.getAllByRole("option", { name: "Iterasi 1" })[1]);
+    const archivedIterationOption = screen.getAllByRole("option", { name: "Iterasi 1" })[1];
+    expect(archivedIterationOption.querySelector(".lucide-file-text")).toBeNull();
+    fireEvent.click(archivedIterationOption);
     expect(screen.getByText("Sesi Harga Tetap Diarsipkan")).toBeInTheDocument();
     expect(screen.getByText("Ringkasan Sesi Harga Tetap")).toBeInTheDocument();
     expect(screen.getByText("Harga Tetap")).toBeInTheDocument();

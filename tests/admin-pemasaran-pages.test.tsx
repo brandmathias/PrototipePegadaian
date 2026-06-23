@@ -937,6 +937,7 @@ describe("admin pemasaran pages", () => {
       .getAllByRole("option", { name: /iterasi 1/i })
       .find((element) => element.tagName.toLowerCase() === "button");
     expect(visualFirstIterationOption).toBeDefined();
+    expect(visualFirstIterationOption!.querySelector(".lucide-file-text")).toBeNull();
     fireEvent.click(visualFirstIterationOption!);
 
     expect(router.push).toHaveBeenCalledWith("/admin/pemasaran/vickrey-auction/pm-ipad-iteration-1");

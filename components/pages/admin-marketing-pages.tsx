@@ -1735,8 +1735,7 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
   const selectedActive = selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
   const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
     value: entry.id,
-    label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
-    icon: FileText
+    label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`
   }));
 
   return (

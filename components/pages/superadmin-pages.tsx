@@ -4800,7 +4800,6 @@ function SuperAdminMarketingAuditPanel({
   const iterationOptions: AdminSelectOption[] = iterationHistory.map((entry, index) => ({
     value: entry.id,
     label: `Iterasi ${entry.iteration ?? iterationHistory.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
-    icon: FileText,
   }));
 
   return (
