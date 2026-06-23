@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { Printer } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 const RECEIPT_PRINTING_BODY_CLASS = "transaction-receipt-printing";
 const RECEIPT_PRINT_TARGET_CLASS = "transaction-receipt-print-target";
 
@@ -208,6 +210,7 @@ export function TransactionReceiptInlinePrint({
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isPrintReady, setIsPrintReady] = useState(false);
+  const isDisabled = Boolean(disabledReason);
   const disabledDescriptionId = disabledReason ? `${rootId}-disabled-reason` : undefined;
 
   const clearPrintSheet = useCallback(() => {
@@ -264,8 +267,12 @@ export function TransactionReceiptInlinePrint({
       <span className="inline-flex flex-col gap-1">
         <button
           aria-describedby={disabledDescriptionId}
-          className={buttonClassName}
-          disabled={Boolean(disabledReason)}
+          className={cn(
+            buttonClassName,
+            isDisabled &&
+              "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 shadow-none saturate-[0.82] blur-[0.65px] hover:bg-slate-100 hover:text-slate-400 active:scale-100"
+          )}
+          disabled={isDisabled}
           onClick={() => void handlePrint()}
           title={disabledReason ?? undefined}
           type="button"

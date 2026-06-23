@@ -74,20 +74,24 @@ export function CompletePurchaseButton({
 
   return (
     <div className="space-y-3">
-      <Button className="w-full" disabled={!isHydrated || isPending || Boolean(disabledReason)} onClick={handleComplete}>
+      <Button
+        className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none disabled:saturate-[0.82] disabled:blur-[0.65px]"
+        disabled={!isHydrated || isPending || Boolean(disabledReason)}
+        onClick={handleComplete}
+      >
         {disabledReason ? (
           <>
-            <LockKeyhole className="size-4" />
+            <LockKeyhole className="size-[1.05rem]" />
             Pembelian Selesai
           </>
         ) : isPending ? (
           <>
-            <LoaderCircle aria-hidden="true" className="button-spinner size-4" />
+            <LoaderCircle aria-hidden="true" className="button-spinner size-[1.05rem]" />
             Menyelesaikan...
           </>
         ) : (
           <>
-            <CheckCircle2 className="size-4" />
+            <CheckCircle2 className="size-[1.05rem]" />
             Pembelian Selesai
           </>
         )}

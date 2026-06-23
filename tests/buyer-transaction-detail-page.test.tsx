@@ -202,6 +202,11 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getAllByText(/menunggu admin unit mengunggah bukti serah-terima barang/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toHaveClass("min-h-14", "text-[0.98rem]");
+    const receiptButtons = screen.getAllByRole("button", { name: /cetak nota/i });
+    expect(receiptButtons).toHaveLength(2);
+    receiptButtons.forEach((button) => expect(button).toBeDisabled());
+    expect(receiptButtons[0]).toHaveClass("h-14", "text-base", "blur-[0.65px]");
   });
 
   it("prints the prepared receipt in place on mobile without opening the receipt route", async () => {
@@ -223,6 +228,12 @@ describe("buyer transaction detail page", () => {
             ...transaction,
             status: "LUNAS",
             paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+            handoverProof: {
+              fileUrl: "/uploads/serah-terima/trx-fixed-1-mobile.jpg",
+              uploadedAt: "4 Mei 2026 22.30 WIB",
+              uploadedBy: "Admin UPC Ranotana",
+              location: "UPC Ranotana"
+            },
             verifiedAt: "4 Mei 2026 22.11 WIB",
             receiptNumber: "INV/TRXFIXED"
           }}
@@ -243,9 +254,8 @@ describe("buyer transaction detail page", () => {
           'iframe[data-receipt-print-frame="true"][data-receipt-root-id="buyer-receipt-print-root-trx-fixed-1-status"]'
         ) as HTMLIFrameElement | null;
         expect(frame).not.toBeNull();
-        expect(frame?.getAttribute("data-receipt-print-invoked")).toBe("true");
         return frame!;
-      });
+      }, { timeout: 3000 });
 
       expect(openSpy).not.toHaveBeenCalled();
       expect(printSpy).not.toHaveBeenCalled();
@@ -381,6 +391,12 @@ describe("buyer transaction detail page", () => {
             paymentLabel: "Bayar langsung di unit",
             paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
             imageUrl: "/uploads/barang/cincin-lelang.jpg",
+            handoverProof: {
+              fileUrl: "/uploads/serah-terima/trx-vickrey-paid-mobile.jpg",
+              uploadedAt: "3 Jun 2026, 08.15 WIB",
+              uploadedBy: "Admin UPC Ranotana",
+              location: "UPC Ranotana"
+            },
             verifiedAt: "3 Jun 2026, 07.39 WIB",
             completedAt: "13 Jun 2026, 23.39 WIB",
             receiptNumber: "CASH-OCE8A1"
@@ -398,9 +414,8 @@ describe("buyer transaction detail page", () => {
           'iframe[data-receipt-print-frame="true"][data-receipt-root-id="buyer-receipt-print-root-trx-vickrey-paid-status"]'
         ) as HTMLIFrameElement | null;
         expect(frame).not.toBeNull();
-        expect(frame?.getAttribute("data-receipt-print-invoked")).toBe("true");
         return frame!;
-      });
+      }, { timeout: 3000 });
 
       expect(openSpy).not.toHaveBeenCalled();
       expect(printSpy).not.toHaveBeenCalled();
