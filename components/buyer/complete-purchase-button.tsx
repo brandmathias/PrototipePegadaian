@@ -96,13 +96,6 @@ export function CompletePurchaseButton({
           </>
         )}
       </Button>
-      {disabledReason ? (
-        <InlineFeedback
-          description={disabledReason}
-          title="Menunggu bukti serah-terima"
-          variant="info"
-        />
-      ) : null}
       {feedback ? (
         <InlineFeedback
           className="feedback-lift"

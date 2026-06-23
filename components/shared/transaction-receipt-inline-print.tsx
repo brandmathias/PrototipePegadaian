@@ -277,7 +277,7 @@ export function TransactionReceiptInlinePrint({
           title={disabledReason ?? undefined}
           type="button"
         >
-          <Printer className="size-4" />
+          <Printer className="size-[1.05rem]" />
           {label}
         </button>
         {disabledReason ? (
