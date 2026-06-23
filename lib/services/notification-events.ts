@@ -95,7 +95,7 @@ async function getBuyerRestrictionSnapshot(userId: string) {
     effectiveState.blockedUntil.getTime() > new Date().getTime();
 
   return {
-    active: policy.requiresManualReview || activeByDate,
+    active: policy.level > 0 && (policy.requiresManualReview || activeByDate),
     blockedUntil: effectiveState.blockedUntil,
     occurredAt: latestMilestone?.occurredAt ?? rows[0]?.paymentDeadline ?? rows[0]?.createdAt ?? null,
     sourceTransactionId: latestMilestone?.trace.transactionId ?? rows[0]?.transactionId ?? null,

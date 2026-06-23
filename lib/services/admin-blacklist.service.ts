@@ -31,7 +31,7 @@ function serializeBlacklist(row: {
     !effectiveBlockedUntil ||
     effectiveBlockedUntil.getTime() > now.getTime();
   const isCurrentlyActive =
-    row.blacklist.isActive && (policy.requiresManualReview || activeByDate);
+    row.blacklist.isActive && policy.level > 0 && (policy.requiresManualReview || activeByDate);
 
   return {
     userId: row.user.id,

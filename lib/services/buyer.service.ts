@@ -296,7 +296,7 @@ async function getEffectiveBuyerBlacklistState(userId: string) {
   const activeByDate =
     !effectiveState.blockedUntil ||
     effectiveState.blockedUntil.getTime() > new Date().getTime();
-  const active = Boolean(blacklist) && (policy.requiresManualReview || activeByDate);
+  const active = Boolean(blacklist) && policy.level > 0 && (policy.requiresManualReview || activeByDate);
 
   return {
     active,

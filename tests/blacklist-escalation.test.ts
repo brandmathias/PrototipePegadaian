@@ -72,6 +72,28 @@ describe("blacklist escalation sequence", () => {
     ]);
   });
 
+  it("does not show stale stored totals when no counted violation milestone exists", () => {
+    const effectiveState = deriveEffectiveBlacklistState({
+      storedBlockedUntil: new Date("2026-06-30T00:00:00.000Z"),
+      storedTotalViolations: 1,
+      traces: []
+    });
+
+    expect(effectiveState).toEqual({
+      blockedUntil: null,
+      milestones: [],
+      totalViolations: 0
+    });
+    expect(
+      isBlacklistRestrictionActive({
+        blockedUntil: effectiveState.blockedUntil,
+        isActive: true,
+        now: new Date("2026-06-24T00:00:00.000Z"),
+        totalViolations: effectiveState.totalViolations
+      })
+    ).toBe(false);
+  });
+
   it("uses the same effective deadline rule for dashboard and blacklist ledger", () => {
     const now = new Date("2026-06-20T10:00:00.000Z");
 

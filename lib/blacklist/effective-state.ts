@@ -12,10 +12,6 @@ export type EffectiveBlacklistState<T extends BlacklistViolationTraceLike> = {
   totalViolations: number;
 };
 
-function normalizeStoredTotal(value: number | null | undefined) {
-  return Math.max(0, Math.floor(Number(value ?? 0)));
-}
-
 export function isBlacklistRestrictionActive({
   blockedUntil,
   isActive,
@@ -32,6 +28,10 @@ export function isBlacklistRestrictionActive({
   }
 
   const policy = getBlacklistRestrictionPolicy(totalViolations);
+  if (policy.level === 0) {
+    return false;
+  }
+
   if (policy.requiresManualReview) {
     return true;
   }
@@ -52,9 +52,9 @@ export function deriveEffectiveBlacklistState<T extends BlacklistViolationTraceL
 
   if (milestones.length === 0) {
     return {
-      blockedUntil: storedBlockedUntil ?? null,
+      blockedUntil: null,
       milestones,
-      totalViolations: normalizeStoredTotal(storedTotalViolations)
+      totalViolations: 0
     };
   }
 
