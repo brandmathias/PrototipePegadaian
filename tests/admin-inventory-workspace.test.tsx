@@ -164,17 +164,17 @@ describe("AdminInventoryHistoryWorkspace", () => {
     const historyRow = screen.getByText("Motor Racing").closest('[class*="lg:grid-cols-"]');
     const infoCell = screen.getByText("Motor Racing").closest('[class*="lg:pl-2"]');
     const headerRow = screen.getByText("Informasi Barang").closest('[class*="lg:grid-cols-"]');
-    const infoHeader = screen.getByText("Informasi Barang").closest("div.px-3\\.5");
+    const infoHeader = screen.getByText("Informasi Barang").closest("div.px-3");
 
     expect(statusBadge).toHaveClass("whitespace-nowrap");
-    expect(statusBadge).toHaveClass("min-w-[8.5rem]");
-    expect(headerRow).toHaveClass("gap-3.5");
+    expect(statusBadge).toHaveClass("min-w-[7.5rem]");
+    expect(headerRow).toHaveClass("gap-2.5");
     expect(headerRow).toHaveClass(
-      "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
     );
     expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
     expect(historyRow).toHaveClass(
-      "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]"
+      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
     );
     expect(infoCell).toHaveClass("lg:pl-2");
 
@@ -333,6 +333,112 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(screen.queryByText("Cincin Terjual")).not.toBeInTheDocument();
   });
 
+  it("uses distinct operational badge colors for each item history status", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-market",
+            barangId: "barang-market",
+            barangCode: "BRG-MKT",
+            barangName: "Kalung Dipasarkan",
+            category: "perhiasan",
+            condition: "baik",
+            description: "Barang dipasarkan.",
+            specifications: { jenis: "kalung" },
+            ownerName: "Andi",
+            customerNumber: "NSB-MKT",
+            actionKey: "dipasarkan",
+            actionLabel: "Dipasarkan",
+            actionTone: "success",
+            note: "Barang dipublikasikan ke katalog.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T01:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 09.00 WIB"
+          },
+          {
+            id: "hist-sold-tone",
+            barangId: "barang-sold-tone",
+            barangCode: "BRG-SLD",
+            barangName: "Cincin Terjual",
+            category: "perhiasan",
+            condition: "baik",
+            description: "Barang terjual.",
+            specifications: { jenis: "cincin" },
+            ownerName: "Budi",
+            customerNumber: "NSB-SLD",
+            actionKey: "terjual",
+            actionLabel: "Terjual",
+            actionTone: "success",
+            note: "Barang tercatat terjual.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T02:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 10.00 WIB"
+          },
+          {
+            id: "hist-redeemed-tone",
+            barangId: "barang-redeemed-tone",
+            barangCode: "BRG-RDM",
+            barangName: "Gelang Ditebus",
+            category: "perhiasan",
+            condition: "baik",
+            description: "Barang ditebus.",
+            specifications: { jenis: "gelang" },
+            ownerName: "Dina",
+            customerNumber: "NSB-RDM",
+            actionKey: "ditebus",
+            actionLabel: "Ditebus",
+            actionTone: "warning",
+            note: "Nasabah menebus barang.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T03:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 11.00 WIB"
+          },
+          {
+            id: "hist-failed-tone",
+            barangId: "barang-failed-tone",
+            barangCode: "BRG-FLD",
+            barangName: "Ipad Gagal",
+            category: "elektronik",
+            condition: "baik",
+            description: "Barang gagal.",
+            specifications: { jenis: "tablet" },
+            ownerName: "Siti",
+            customerNumber: "NSB-FLD",
+            actionKey: "gagal",
+            actionLabel: "Gagal",
+            actionTone: "danger",
+            note: "Barang gagal diproses.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-03T04:00:00.000Z",
+            createdAtLabel: "3 Jun 2026, 12.00 WIB"
+          }
+        ]}
+      />
+    );
+
+    const getBadgeClasses = (label: string) =>
+      screen
+        .getAllByText(label)
+        .find((element) => element.tagName.toLowerCase() === "div")
+        ?.getAttribute("class") ?? "";
+
+    expect(getBadgeClasses("Dipasarkan")).toContain("bg-[#ecfdfa]");
+    expect(getBadgeClasses("Terjual")).toContain("bg-[#f0fdf4]");
+    expect(getBadgeClasses("Ditebus")).toContain("bg-[#f5f3ff]");
+    expect(getBadgeClasses("Gagal")).toContain("bg-[#fff1f2]");
+    expect(new Set([
+      getBadgeClasses("Dipasarkan"),
+      getBadgeClasses("Terjual"),
+      getBadgeClasses("Ditebus"),
+      getBadgeClasses("Gagal")
+    ]).size).toBe(4);
+  });
+
   it("renders the history ledger with compact public-facing columns", () => {
     render(
       <AdminInventoryHistoryWorkspace
@@ -387,6 +493,14 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(rowCells[0]).toHaveTextContent("Ipad Terbaru");
     expect(rowCells[3]).toHaveTextContent("Barang Masuk");
     expect(rowCells[4]).toHaveTextContent("Operator Arsip");
+    expect(headerRow?.children[2]).toHaveClass("text-center");
+    expect(headerRow?.children[3]).toHaveClass("text-center");
+    expect(headerRow?.children[4]).toHaveClass("text-center");
+    expect(headerRow?.children[6]).toHaveClass("text-center");
+    expect(rowCells[2].firstElementChild).toHaveClass("lg:justify-center");
+    expect(rowCells[3]).toHaveClass("lg:justify-center");
+    expect(rowCells[4]).toHaveClass("lg:text-center");
+    expect(rowCells[6]).toHaveClass("lg:justify-center");
 
     expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
       "hover:bg-[#006747]",

@@ -113,6 +113,19 @@ const historyToneClasses: Record<AdminBarangHistoryEntry["actionTone"], string> 
   danger: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]"
 };
 
+const historyActionToneClasses: Partial<Record<AdminBarangHistoryEntry["actionKey"], string>> = {
+  input_baru: "border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]",
+  perpanjangan: "border-[#fde68a] bg-[#fffbeb] text-[#a16207]",
+  ditebus: "border-[#ddd6fe] bg-[#f5f3ff] text-[#6d28d9]",
+  dipasarkan: "border-[#99f6e4] bg-[#ecfdfa] text-[#0f766e]",
+  terjual: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
+  gagal: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]"
+};
+
+function getHistoryStatusClasses(entry: AdminBarangHistoryEntry) {
+  return historyActionToneClasses[entry.actionKey] ?? historyToneClasses[entry.actionTone];
+}
+
 const historyIconMap: Record<AdminBarangHistoryEntry["actionKey"], typeof FilePlus2> = {
   input_baru: FilePlus2,
   perpanjangan: CalendarClock,
@@ -282,21 +295,21 @@ function InventoryHistoryList({
 }) {
   const TimeSortIcon = sortDirection === "desc" ? ArrowDown : ArrowUp;
   const historyGridTemplate =
-    "lg:grid-cols-[minmax(14rem,1.4fr)_8.8rem_minmax(9.8rem,0.85fr)_8.6rem_minmax(9.2rem,0.72fr)_minmax(12.4rem,0.95fr)_6.2rem]";
+    "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]";
 
   return (
     <div>
       <div
         className={cn(
-          "hidden gap-3.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid",
+          "hidden gap-2.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid",
           historyGridTemplate
         )}
       >
-        <div className="px-3.5 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
-        <div className="px-3.5 py-3.5">Kategori</div>
-        <div className="px-3.5 py-3.5">Nasabah Pemilik</div>
-        <div className="px-3.5 py-3.5">Status</div>
-        <div className="px-3.5 py-3.5">Aktor Internal</div>
+        <div className="px-3 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
+        <div className="px-2 py-3.5">Kategori</div>
+        <div className="px-2.5 py-3.5 text-center">Nasabah Pemilik</div>
+        <div className="px-2.5 py-3.5 text-center">Status</div>
+        <div className="px-2.5 py-3.5 text-center">Aktor Internal</div>
         <div className="px-3.5 py-3.5">
           <button
             aria-label={`Urutkan Waktu Proses ${sortDirection === "desc" ? "terlama dulu" : "terbaru dulu"}`}
@@ -308,7 +321,7 @@ function InventoryHistoryList({
             <TimeSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
           </button>
         </div>
-        <div className="px-3.5 py-3.5 text-right">Aksi</div>
+        <div className="px-2.5 py-3.5 text-center">Aksi</div>
       </div>
       {entries.length > 0 ? (
         entries.map((entry) => {
@@ -320,7 +333,7 @@ function InventoryHistoryList({
           return (
             <div
               className={cn(
-                "grid gap-3.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:items-center",
+                "grid gap-2.5 border-b border-[#e4ece7] px-3.5 py-4 text-[0.82rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#fbfaf6] lg:items-center",
                 historyGridTemplate
               )}
               key={entry.id}
@@ -332,7 +345,7 @@ function InventoryHistoryList({
                 </p>
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 lg:-ml-1">
                 <div className="flex items-center gap-2">
                   <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-[#d8e7de] bg-[#f5f8f6] text-[#0a6a49]">
                     <CategoryIcon className="size-4" />
@@ -345,24 +358,24 @@ function InventoryHistoryList({
               </div>
 
               <div className="min-w-0">
-                <div className="flex min-w-0 items-start gap-2">
+                <div className="flex min-w-0 items-start gap-2 lg:justify-center">
                   <UserRound className="mt-0.5 size-4 shrink-0 text-[#0a6a49]" />
-                  <div className="min-w-0">
+                  <div className="min-w-0 lg:max-w-[8.6rem]">
                     <p className="truncate font-black text-[#13211c]">{entry.ownerName}</p>
                     <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-[#52655d]">{entry.customerNumber || "-"}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex min-w-0 items-start gap-3 lg:block">
+              <div className="flex min-w-0 items-start gap-3 lg:justify-center">
                 <span className="grid size-10 shrink-0 place-items-center rounded-[0.95rem] bg-[#f0f5f0] text-[#0a6a49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] lg:hidden">
                   <ActionIcon className="size-4.5" />
                 </span>
                 <div className="min-w-0 lg:min-w-0 lg:pt-0.5">
                   <div
                     className={cn(
-                      "inline-flex min-w-[8.5rem] max-w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.06em]",
-                      historyToneClasses[entry.actionTone]
+                      "inline-flex min-w-[7.5rem] max-w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.06em]",
+                      getHistoryStatusClasses(entry)
                     )}
                   >
                     <span className="size-1.5 shrink-0 rounded-full bg-current" />
@@ -371,7 +384,7 @@ function InventoryHistoryList({
                 </div>
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 text-left lg:text-center">
                 <p
                   className="truncate text-[0.78rem] font-black tracking-[-0.01em] text-[#13211c]"
                   title={entry.actorName || "Admin Unit"}
@@ -385,7 +398,7 @@ function InventoryHistoryList({
                 <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
               </div>
 
-              <div className="flex justify-start lg:justify-end">
+              <div className="flex justify-start lg:justify-center">
                 <DetailActionLink
                   href={`/admin/barang/${entry.barangId}`}
                 />
@@ -590,7 +603,7 @@ function HistoryPrintDocument({
                     <span
                       className={cn(
                         "admin-history-print-status inline-flex whitespace-normal break-words rounded-full border px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.08em]",
-                        historyToneClasses[entry.actionTone]
+                        getHistoryStatusClasses(entry)
                       )}
                     >
                       {entry.actionLabel}
