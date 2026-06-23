@@ -88,8 +88,8 @@ describe("handover proof UI", () => {
       "src",
       "blob:handover-preview",
     );
-    expect(previewImage).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-contain");
-    expect(previewImage).not.toHaveClass("object-cover", "min-h-[13rem]");
+    expect(previewImage).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-cover");
+    expect(previewImage).not.toHaveClass("object-contain", "min-h-[13rem]");
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeEnabled();
 
     unmount();

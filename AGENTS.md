@@ -2,8 +2,9 @@
 
 # Persistent Communication
 
-- Always use the `caveman` skill for this workspace:
-  `C:\Users\Asus\.agents\skills\caveman\SKILL.md`
+- Always use the `ponytail` skill for this workspace:
+  `C:\Users\Asus\.codex\skills\ponytail\SKILL.md`
 - Default intensity: `full`.
-- Keep caveman active across turns unless user explicitly says `stop caveman` or `normal mode`.
+- `ponytail` replaces the previous `caveman` communication mode.
+- Keep ponytail active across turns unless user explicitly says `stop ponytail` or `normal mode`.
 - Keep technical terms exact. Code, commits, and PR text stay normal.

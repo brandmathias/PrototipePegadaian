@@ -169,13 +169,13 @@ export function HandoverProofCard({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       alt={imageAlt}
-                      className="absolute inset-0 h-full w-full object-contain transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       src={fileUrl}
                     />
                   ) : (
                     <Image
                       alt={imageAlt}
-                      className="object-contain transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      className="object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       fill
                       sizes={compact ? "(max-width: 768px) 100vw, 420px" : "(max-width: 1024px) 100vw, 58vw"}
                       src={fileUrl}
