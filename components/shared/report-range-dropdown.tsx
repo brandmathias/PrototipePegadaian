@@ -53,12 +53,15 @@ function buildCalendarDays(month: Date) {
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
   const leadingBlankDays = new Date(year, monthIndex, 1).getDay();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 
-  return [
-    ...Array.from({ length: leadingBlankDays }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => new Date(year, monthIndex, index + 1)),
-  ];
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(year, monthIndex, index + 1 - leadingBlankDays);
+
+    return {
+      date,
+      isCurrentMonth: date.getMonth() === monthIndex,
+    };
+  });
 }
 
 function normalizeRange(startDate: string, endDate: string): ReportCustomRange {
@@ -241,12 +244,12 @@ export function ReportRangeDropdown<TValue extends string>({
               </button>
             </div>
 
-            <div className="mt-5 grid flex-1 items-start gap-7 md:grid-cols-2">
+            <div className="mt-5 grid flex-1 gap-7 md:grid-cols-2">
               {visibleMonths.map((month) => {
                 const days = buildCalendarDays(month);
 
                 return (
-                  <div className="flex min-h-[14.75rem] flex-col" key={month.toISOString()}>
+                  <div className="flex min-h-[18.25rem] flex-col" key={month.toISOString()}>
                     <p className="rounded-full px-3 py-1.5 text-center text-[0.86rem] font-black text-black/78">
                       {monthNames[month.getMonth()]} {month.getFullYear()}
                     </p>
@@ -255,16 +258,24 @@ export function ReportRangeDropdown<TValue extends string>({
                         <span className="grid h-6 place-items-center" key={day}>{day}</span>
                       ))}
                     </div>
-                    <div className="mt-1.5 grid flex-1 grid-cols-7 content-between gap-x-1">
-                      {days.map((date, index) => {
-                        if (!date) {
-                          return <span aria-hidden="true" className="mx-auto size-8" key={`blank-${index}`} />;
-                        }
-
+                    <div className="mt-1.5 grid flex-1 grid-cols-7 content-between gap-x-1 gap-y-1.5">
+                      {days.map(({ date, isCurrentMonth }, index) => {
                         const isoDate = toIsoDate(date);
                         const inRange = isoDate >= draftStart && isoDate <= draftEnd;
                         const isEdge = isoDate === draftStart || isoDate === draftEnd;
                         const isToday = isoDate === todayIso;
+
+                        if (!isCurrentMonth) {
+                          return (
+                            <span
+                              aria-hidden="true"
+                              className="mx-auto grid size-8 place-items-center rounded-full text-[0.8rem] font-bold text-black/16"
+                              key={`${isoDate}-outside-${index}`}
+                            >
+                              {date.getDate()}
+                            </span>
+                          );
+                        }
 
                         return (
                           <button
