@@ -258,7 +258,7 @@ export async function getAdminDashboardData(unitId: string) {
       totalItems: unitItems.length,
       readyForMarketing: inventoryMetrics.readyForMarketing,
       dueSoon: inventoryMetrics.dueSoon,
-      soldItems: unitItems.filter((item) => item.status === "terjual").length || verifiedTransactions.length,
+      soldItems: verifiedTransactions.length,
       redeemedItems: unitItems.filter((item) => item.status === "ditebus").length,
       activeAuctions: catalogMetrics.total,
       activeParticipants: uniqueBuyerCount,

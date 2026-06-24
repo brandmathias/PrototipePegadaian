@@ -146,6 +146,30 @@ describe("AdminDashboardPage", () => {
     expect(screen.queryByText(/^Urgent$/i)).not.toBeInTheDocument();
   });
 
+  it("uses verified transactions instead of raw sold inventory status for fallback sales count", () => {
+    const fallbackData = {
+      ...baseDashboardData,
+      metrics: undefined,
+      inventory: [
+        { id: "barang-1", status: "TERJUAL", dueDate: "2026-07-01" },
+        { id: "barang-2", status: "TERJUAL", dueDate: "2026-07-01" },
+        { id: "barang-3", status: "DIPASARKAN", marketingMode: "Harga Tetap", dueDate: "2026-07-01" },
+      ],
+      transactions: [
+        { id: "trx-1", status: "LUNAS", total: 7_500_000, buyer: "Buyer A" },
+        { id: "trx-2", status: "MENUNGGU_PEMBAYARAN", total: 6_500_000, buyer: "Buyer B" },
+      ],
+    } as any;
+
+    render(<AdminDashboardPage data={fallbackData} />);
+
+    const soldMetric = screen.getByRole("heading", { name: /barang terjual/i }).closest("article");
+
+    expect(soldMetric).not.toBeNull();
+    expect(within(soldMetric as HTMLElement).getByText("1")).toBeInTheDocument();
+    expect(within(soldMetric as HTMLElement).queryByText("2")).not.toBeInTheDocument();
+  });
+
   it("renders the daily checklist without a separate attention card", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 

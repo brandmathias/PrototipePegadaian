@@ -51,5 +51,6 @@ describe("superadmin monitoring query", () => {
     expect(rendered).toContain("locked_t.status in");
     expect(rendered).toContain("coalesce(sum(t.amount), 0)");
     expect(rendered).toContain("t.status in ($");
+    expect(rendered).not.toContain("b.status = 'terjual' or");
   }, 15000);
 });

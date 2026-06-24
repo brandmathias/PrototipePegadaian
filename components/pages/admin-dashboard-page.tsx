@@ -182,7 +182,7 @@ function getDashboardMetrics(data: AdminDashboardData): AdminDashboardMetrics {
     totalItems: data.inventory.length,
     readyForMarketing: inventoryMetrics.readyForMarketing,
     dueSoon: inventoryMetrics.dueSoon,
-    soldItems: data.inventory.filter((item) => getStatus(item.status) === "TERJUAL").length || verifiedTransactions.length,
+    soldItems: verifiedTransactions.length,
     redeemedItems: data.inventory.filter((item) => getStatus(item.status) === "DITEBUS").length,
     activeAuctions: data.inventory.filter((item) => Boolean(item.marketingMode)).length,
     activeParticipants: new Set(data.transactions.map((transaction) => transaction.buyer).filter(Boolean)).size,

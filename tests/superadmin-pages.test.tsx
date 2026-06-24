@@ -952,7 +952,7 @@ describe("superadmin pages", () => {
   it("keeps superadmin item status helper synchronized with due date", async () => {
     process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
 
-    const { getUnitItemOperationalState, resolveUnitMarketingModeLabel } = await import("@/lib/services/unit.service");
+    const { getUnitItemOperationalState, resolveUnitItemValue, resolveUnitMarketingModeLabel } = await import("@/lib/services/unit.service");
     const now = new Date("2026-06-06T00:00:00.000Z");
 
     expect(
@@ -990,6 +990,22 @@ describe("superadmin pages", () => {
         transactionType: null,
       }),
     ).toBe("Belum dipasarkan");
+
+    expect(
+      resolveUnitItemValue({
+        appraisalValue: "6500000",
+        transactionAmount: "7500000",
+        transactionStatus: "lunas",
+      }),
+    ).toBe(7_500_000);
+
+    expect(
+      resolveUnitItemValue({
+        appraisalValue: "6500000",
+        transactionAmount: "7500000",
+        transactionStatus: "bukti_diunggah",
+      }),
+    ).toBe(6_500_000);
 
     expect(
       getUnitItemOperationalState({

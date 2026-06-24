@@ -394,11 +394,14 @@ export function buildSuperAdminUnitRowsQuery() {
       )`,
       soldItems: sql<number>`(
         select count(distinct b.id)::int
-        from barang b
-        left join pemasaran p on p.barang_id = b.id
-        left join transaksi t on t.pemasaran_id = p.id
+        from transaksi t
+        inner join pemasaran p on p.id = t.pemasaran_id
+        inner join barang b on b.id = p.barang_id
         where b.unit_id = ${outerUnitId}
-          and (b.status = 'terjual' or t.status in ('lunas', 'selesai'))
+          and t.status in (${sql.join(
+            VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+            sql`, `,
+          )})
       )`,
       validatedTransactionValue: sql<number>`(
         select coalesce(sum(t.amount), 0)
@@ -583,10 +586,13 @@ export async function getSuperAdminMonitoring() {
       )`,
       soldItems: sql<number>`(
         select count(distinct b.id)::int
-        from barang b
-        left join pemasaran p on p.barang_id = b.id
-        left join transaksi t on t.pemasaran_id = p.id
-        where b.status = 'terjual' or t.status in ('lunas', 'selesai')
+        from transaksi t
+        inner join pemasaran p on p.id = t.pemasaran_id
+        inner join barang b on b.id = p.barang_id
+        where t.status in (${sql.join(
+          VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+          sql`, `,
+        )})
       )`,
       followUpItems: sql<number>`(
         select count(distinct b.id)::int

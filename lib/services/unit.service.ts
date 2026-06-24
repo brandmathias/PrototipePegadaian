@@ -48,6 +48,22 @@ function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
 }
 
+const VALIDATED_UNIT_TRANSACTION_STATUSES = new Set(["lunas", "selesai"]);
+
+export function resolveUnitItemValue(input: {
+  appraisalValue?: string | number | null;
+  transactionAmount?: string | number | null;
+  transactionStatus?: string | null;
+}) {
+  const transactionStatus = String(input.transactionStatus ?? "").toLowerCase();
+
+  if (VALIDATED_UNIT_TRANSACTION_STATUSES.has(transactionStatus) && input.transactionAmount != null) {
+    return toNumber(input.transactionAmount);
+  }
+
+  return toNumber(input.appraisalValue);
+}
+
 function formatUnitMarketingMode(value: string | null | undefined) {
   if (!value) {
     return "Belum dipasarkan";
@@ -336,6 +352,15 @@ export async function getUnitById(unitId: string) {
         where p.barang_id = ${outerBarangId}
         order by t.created_at desc
         limit 1
+      )`,
+      transactionAmount: sql<string | null>`(
+        select t.amount
+        from transaksi t
+        inner join pemasaran p on p.id = t.pemasaran_id
+        where p.barang_id = ${outerBarangId}
+          and t.status in ('lunas', 'selesai')
+        order by coalesce(t.completed_at, t.verified_at, t.updated_at, t.created_at) desc
+        limit 1
       )`
     })
     .from(unitBarang)
@@ -374,7 +399,11 @@ export async function getUnitById(unitId: string) {
         transactionStatus: item.transactionStatus,
         transactionType: item.transactionType
       }),
-      value: toNumber(item.appraisalValue),
+      value: resolveUnitItemValue({
+        appraisalValue: item.appraisalValue,
+        transactionAmount: item.transactionAmount,
+        transactionStatus: item.transactionStatus
+      }),
       ...getUnitItemOperationalState({
         itemStatus: item.status,
         activeMarketingMode: item.activeMarketingMode,
