@@ -269,7 +269,7 @@ export function ReportRangeDropdown<TValue extends string>({
                           return (
                             <span
                               aria-hidden="true"
-                              className="mx-auto grid size-8 place-items-center rounded-full text-[0.8rem] font-bold text-black/16"
+                              className="mx-auto grid size-8 select-none place-items-center rounded-full text-[0.8rem] font-bold text-[#96a39c]/35"
                               key={`${isoDate}-outside-${index}`}
                             >
                               {date.getDate()}
