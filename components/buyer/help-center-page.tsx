@@ -21,7 +21,7 @@ const faqItems = [
     question:
       "Mengapa saya harus berani memasang penawaran tertinggi dan jujur-jujurnya sejak awal jika ingin memenangkan aset impian di Ruang Agunan?",
     answer:
-      "Kuncinya sederhana: Anda cukup memasang penawaran terbaik sesuai batas aman yang benar-benar Anda sanggupi. Di Ruang Agunan, nominal yang Anda kirim tidak dibuka selama lelang masih berjalan, sehingga peserta lain tidak bisa menebak atau menyesuaikan penawarannya dari angka Anda. Admin unit dan superadmin juga tidak mengetahui nominal bid peserta sebelum lelang berakhir. Karena itu, strategi paling aman adalah menawar secara jujur sesuai nilai terbaik versi Anda sendiri agar peluang menang tetap kuat tanpa perlu ikut arus atau terpancing suasana."
+      "Kuncinya sederhana, karena Anda dijamin akan membawa pulang keuntungan berupa \"diskon otomatis\" yang membuat harga akhir menjadi jauh lebih murah saat dinyatakan menang. Di Ruang Agunan, Anda justru harus memasang penawaran setinggi dan sejujur-jujurnya sesuai batas kemampuan maksimal, sebab nominal tinggi yang Anda masukkan tidak akan pernah membuat Anda membayar kemahalan di atas harga pasar. Ketika Anda keluar sebagai pemenang, harga final yang wajib Anda bayar akan otomatis disesuaikan ke nilai terbaik yang jauh lebih hemat dan menguntungkan, sehingga Anda sukses mengamankan barang impian tanpa perlu khawatir merusak rencana finansial Anda. Anda tidak perlu lagi pusing memata-matai lawan atau takut kehilangan properti dan kendaraan idaman akibat ragu-ragu, jadi mari pasang harga terbaik Anda di lelang online terpercaya Ruang Agunan sekarang juga dan nikmati sensasi menang dengan harga paling adil."
   },
   {
     question: "Bagaimana mekanisme Lelang Tertutup dari awal sampai akhir?",
