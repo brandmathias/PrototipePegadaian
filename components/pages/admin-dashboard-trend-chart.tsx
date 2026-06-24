@@ -31,7 +31,7 @@ type DashboardStripMetric = {
   icon: LucideIcon;
 };
 
-const chartAxisFontFamily = 'var(--font-manrope), "Trebuchet MS", "Segoe UI", system-ui, sans-serif';
+const chartAxisFontFamily = 'var(--font-manrope), "Segoe UI", system-ui, sans-serif';
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
 const numberFormatter = new Intl.NumberFormat("id-ID");
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -108,7 +108,7 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     return {
       ...point,
       isActiveData: Number(point.amount ?? 0) > 0 || Number(point.value ?? 0) > 0,
-      labelWidth: Math.max(48, point.label.length * 7.6 + 20),
+      labelWidth: Math.max(54, point.label.length * 8.4 + 24),
       leftPercent: (x / 980) * 100,
       plotValue,
       topPercent: (y / 300) * 100,
@@ -352,7 +352,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative h-[16.5rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] p-1 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:p-2">
+        <div className="relative h-[18rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
           <svg className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 980 300">
             <defs>
               <linearGradient id="admin-dashboard-area" x1="0" x2="0" y1="0" y2="1">
@@ -389,8 +389,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     )}
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="12.6"
-                    fontWeight={index === chart.axisTicks.length - 1 ? 900 : 760}
+                    fontSize="13.8"
+                    fontWeight={index === chart.axisTicks.length - 1 ? 900 : 800}
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="end"
@@ -484,8 +484,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     )}
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize={point.isActiveData ? "12.8" : "12.2"}
-                    fontWeight={point.isActiveData ? 900 : 760}
+                    fontSize={point.isActiveData ? "13.8" : "13.2"}
+                    fontWeight={point.isActiveData ? 900 : 800}
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"

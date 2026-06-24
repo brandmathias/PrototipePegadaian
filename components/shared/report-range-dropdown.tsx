@@ -169,13 +169,13 @@ export function ReportRangeDropdown<TValue extends string>({
         <div
           aria-label={ariaLabel}
           className={cn(
-            "absolute top-[calc(100%+0.6rem)] z-[95] grid w-[min(42rem,calc(100vw-2rem))] overflow-hidden rounded-[1.55rem] border border-[#dcebe3] bg-white shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:grid-cols-[13.5rem_minmax(0,1fr)]",
+            "absolute top-[calc(100%+0.6rem)] z-[95] grid w-[min(45rem,calc(100vw-2rem))] overflow-hidden rounded-[1.55rem] border border-[#dcebe3] bg-white shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:grid-cols-[13.25rem_minmax(0,1fr)]",
             align === "right" ? "right-0" : "left-0",
           )}
           role="dialog"
         >
-          <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-2 sm:border-b-0 sm:border-r">
-            <div className="flex items-center justify-between gap-2 px-2 py-1">
+          <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-3 sm:border-b-0 sm:border-r">
+            <div className="flex items-center justify-between gap-2 px-1.5 py-1">
               <p className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
                 Shortcut Periode
               </p>
@@ -194,7 +194,7 @@ export function ReportRangeDropdown<TValue extends string>({
               return (
                 <button
                   className={cn(
-                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14 active:scale-[0.99]",
+                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-[0.76rem] font-bold outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14 active:scale-[0.99]",
                     active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white",
                   )}
                   key={option.value}
@@ -218,7 +218,7 @@ export function ReportRangeDropdown<TValue extends string>({
             })}
           </div>
 
-          <div className="p-4">
+          <div className="flex min-h-full flex-col p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3 border-b border-[#edf2ef] pb-3">
               <button
                 aria-label="Bulan sebelumnya"
@@ -241,24 +241,24 @@ export function ReportRangeDropdown<TValue extends string>({
               </button>
             </div>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 grid flex-1 content-start gap-6 md:grid-cols-2">
               {visibleMonths.map((month) => {
                 const days = buildCalendarDays(month);
 
                 return (
                   <div key={month.toISOString()}>
-                    <p className="rounded-full px-3 py-1.5 text-center text-[0.84rem] font-black text-black/78">
+                    <p className="rounded-full px-3 py-1.5 text-center text-[0.86rem] font-black text-black/78">
                       {monthNames[month.getMonth()]} {month.getFullYear()}
                     </p>
-                    <div className="mt-2 grid grid-cols-7 gap-0.5 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/38">
+                    <div className="mt-2.5 grid grid-cols-7 gap-x-1 gap-y-1 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/46">
                       {dayNames.map((day) => (
-                        <span className="py-1" key={day}>{day}</span>
+                        <span className="grid h-6 place-items-center" key={day}>{day}</span>
                       ))}
                     </div>
-                    <div className="mt-1 grid grid-cols-7 gap-0.5">
+                    <div className="mt-1 grid grid-cols-7 gap-x-1 gap-y-1.5">
                       {days.map((date, index) => {
                         if (!date) {
-                          return <span aria-hidden="true" className="aspect-square" key={`blank-${index}`} />;
+                          return <span aria-hidden="true" className="mx-auto size-7" key={`blank-${index}`} />;
                         }
 
                         const isoDate = toIsoDate(date);
@@ -270,7 +270,7 @@ export function ReportRangeDropdown<TValue extends string>({
                           <button
                             aria-pressed={inRange}
                             className={cn(
-                              "grid aspect-square place-items-center rounded-full text-[0.78rem] font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95",
+                              "mx-auto grid size-7 place-items-center rounded-full text-[0.78rem] font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95",
                               inRange && "bg-[#ecf8f1] text-[#006747]",
                               isToday && !inRange && "bg-[#f4fbf7] text-[#006747]",
                               isEdge && "bg-[#006747] text-white shadow-[0_12px_22px_-14px_rgba(0,103,71,0.78)] hover:bg-[#006747] hover:text-white",
@@ -289,7 +289,7 @@ export function ReportRangeDropdown<TValue extends string>({
               })}
             </div>
 
-            <div className="mt-4 flex flex-col gap-3 border-t border-[#edf2ef] pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-auto flex flex-col gap-3 border-t border-[#edf2ef] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[0.72rem] font-bold text-[#52655d]">
                 Range: <span className="font-black text-[#13211c]">{formatShortDate(draftStart)} - {formatShortDate(draftEnd)}</span>
               </p>
