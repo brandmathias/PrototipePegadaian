@@ -36,6 +36,38 @@ Aplikasi ini dikembangkan sebagai project tugas akhir akademik. Ruang Agunan buk
 - Lelang Tertutup dibuat untuk simulasi akademik, bukan layanan lelang resmi.
 - Deploy production bersifat demonstrasi dan dapat berubah sesuai kebutuhan tugas akhir.
 
+### 1.3 Keunggulan Aplikasi
+
+Ruang Agunan memiliki beberapa keunggulan utama yang menjadi pembeda dibanding katalog transaksi biasa:
+
+| Keunggulan | Penjelasan |
+| --- | --- |
+| Mekanisme Lelang Tertutup berbasis Vickrey Auction | Buyer memasukkan penawaran terbaik secara privat. Sistem menentukan pemenang setelah deadline, sehingga proses tidak bergantung pada negosiasi manual atau perang harga terbuka. |
+| Privasi nominal bid | Nominal bid tidak terlihat oleh peserta lain, Admin Unit, maupun Superadmin sebelum lelang selesai. Hal ini menjaga strategi buyer dan mengurangi peluang intervensi selama lelang berjalan. |
+| Encrypted escrow | Nominal bid disimpan dalam payload terenkripsi, sehingga data sensitif tidak dibuka sebelum waktu settlement. |
+| Bid integrity | Setiap bid memiliki hash integrity berbasis pemasaran, user, nominal, dan salt. Hash ini dipakai untuk memastikan isi bid tidak berubah. |
+| Settlement otomatis | Setelah deadline, backend membuka escrow, memvalidasi hash, menentukan pemenang, dan membuat transaksi pemenang secara otomatis. |
+| Pembatasan akun bertingkat | Buyer yang menang tetapi tidak menyelesaikan pembayaran mendapat pelanggaran dan pembatasan fitur secara bertahap. |
+| Role isolation | Guest, Buyer, Admin Unit, dan Superadmin memiliki cakupan akses berbeda. Admin Unit hanya mengelola data unitnya, sedangkan Superadmin mengawasi lintas unit. |
+| Dashboard operasional | Admin Unit dan Superadmin mendapat chart nilai transaksi, filter periode, tooltip detail, dan ringkasan performa untuk mendukung pengambilan keputusan. |
+| Audit trail | Perubahan barang, transaksi, blacklist, dan notifikasi memiliki catatan data yang dapat ditelusuri. |
+| Dokumentasi tugas akhir | PRD dan README disusun agar penguji dapat memahami konteks produk, fitur, arsitektur, mekanisme unggulan, dan batasan akademik. |
+
+### 1.4 Ringkasan Mekanisme End-to-End
+
+Ruang Agunan menghubungkan seluruh proses dalam satu alur:
+
+1. Admin Unit mencatat barang agunan beserta data pemilik, kategori, kondisi, estimasi, dan media.
+2. Barang yang siap dipasarkan dipublikasikan sebagai Harga Tetap atau Lelang Tertutup.
+3. Guest dan Buyer melihat katalog, filter barang, membaca detail, dan melihat statistik lot.
+4. Buyer dapat menyimpan wishlist, membeli Harga Tetap, atau mengirim bid Lelang Tertutup.
+5. Transaksi Harga Tetap berjalan melalui transfer atau bayar langsung.
+6. Lelang Tertutup berjalan privat sampai deadline, lalu settlement otomatis menentukan hasil.
+7. Admin Unit memverifikasi pembayaran dan serah terima.
+8. Buyer menerima notifikasi, melihat status transaksi, dan mencetak nota.
+9. Jika pemenang Lelang Tertutup tidak membayar, sistem mencatat pelanggaran dan menerapkan pembatasan akun.
+10. Superadmin memantau performa nasional, unit, admin, blacklist, dan kebijakan pelanggaran.
+
 ---
 
 ## 2. Persona dan Hak Akses
@@ -188,7 +220,7 @@ Aturan:
 
 ### 3.5 Lelang Tertutup
 
-Lelang Tertutup adalah alur penawaran tertutup yang menjaga nominal bid tetap privat selama lelang berjalan.
+Lelang Tertutup adalah alur penawaran privat yang menggunakan konsep Vickrey Auction. Pada konsep ini, buyer didorong memasukkan penawaran terbaik sesuai nilai yang benar-benar ia sanggupi, karena proses pemenang dan harga akhir dihitung oleh sistem setelah periode lelang selesai. Mekanisme ini membuat buyer tidak perlu menebak strategi peserta lain selama lelang berjalan.
 
 Alur buyer:
 
@@ -202,6 +234,36 @@ Alur buyer:
 8. Setelah deadline, backend menentukan hasil lelang secara otomatis.
 9. Jika menang, sistem membuat transaksi bayar langsung di unit.
 10. Jika tidak menang, buyer dapat membuka halaman hasil bukan pemenang.
+
+Konsep Vickrey Auction:
+
+- Semua peserta mengirim bid secara tertutup.
+- Pemenang ditentukan dari bid valid tertinggi.
+- Harga akhir dihitung saat settlement selesai: jika ada lebih dari satu bid valid, harga akhir mengacu pada bid valid tertinggi kedua; jika hanya ada satu bid valid, harga akhir memakai harga dasar.
+- Jika terdapat nilai tertinggi yang sama, sistem memakai waktu bid paling awal sebagai tie-breaker.
+- Pada kondisi nilai tertinggi sama, harga akhir mengikuti nilai bid yang sama tersebut karena bid runner-up memiliki nominal setara.
+- Jika tidak ada bid valid, sesi dinyatakan gagal dan barang dapat dipasarkan ulang.
+
+Mekanisme encrypted escrow:
+
+1. Saat buyer mengirim bid, client menyiapkan nominal dan salt.
+2. Sistem membuat `bidHash` menggunakan SHA-256 dari kombinasi `pemasaranId:userId:nominal:salt`.
+3. Backend memvalidasi hash tersebut sebelum menyimpan bid.
+4. Nominal bid dan salt disimpan sebagai encrypted escrow menggunakan AES-256-GCM.
+5. AAD atau Additional Authenticated Data mengikat payload terenkripsi ke `pemasaranId`, `userId`, dan `bidHash`.
+6. Sebelum deadline, kolom nominal terbuka tidak diisi, sehingga Admin Unit dan Superadmin tidak membaca angka bid.
+7. Setelah deadline, cron/backend membuka escrow menggunakan secret server.
+8. Payload hasil decrypt diverifikasi ulang dengan hash integrity.
+9. Bid yang valid dipakai untuk menentukan pemenang, harga akhir, dan transaksi pemenang.
+
+Keunggulan mekanisme ini:
+
+- Privasi peserta lebih kuat karena nominal bid tidak tampil selama lelang aktif.
+- Admin Unit dan Superadmin tetap bisa mengawasi sesi tanpa mengetahui angka bid sebelum waktunya.
+- Hash integrity membantu membuktikan bahwa nominal dan salt tidak berubah.
+- AES-256-GCM memberi perlindungan confidentiality dan authenticity pada payload bid.
+- Settlement dilakukan otomatis, mengurangi keputusan manual yang berpotensi tidak konsisten.
+- Buyer mendapat alur hasil yang jelas: menang, tidak menang, atau sesi gagal.
 
 Aturan:
 
@@ -428,9 +490,57 @@ Fitur:
 
 ---
 
-## 5. State Machine
+## 5. Mekanisme Teknis Lelang Tertutup
 
-### 5.1 Status Barang
+### 5.1 Komponen Keamanan Bid
+
+| Komponen | Fungsi |
+| --- | --- |
+| `salt` | Nilai acak dari client agar hash bid tidak mudah ditebak. |
+| `bidHash` | SHA-256 dari `pemasaranId:userId:nominal:salt` untuk mengecek integritas bid. |
+| `encrypted_bid_payload` | Payload terenkripsi yang berisi nominal dan salt. |
+| AES-256-GCM | Algoritma enkripsi untuk menjaga isi escrow tetap rahasia dan terautentikasi. |
+| AAD | Data tambahan yang mengikat escrow ke konteks pemasaran, user, dan hash. |
+| `VICKREY_ESCROW_SECRET` | Secret server untuk membuka escrow saat settlement. |
+
+### 5.2 Alur Submit Bid
+
+```text
+Buyer memasukkan nominal
+  -> client membuat salt
+  -> client/backend membuat bidHash
+  -> backend memvalidasi hash
+  -> nominal + salt dienkripsi sebagai escrow
+  -> database menyimpan bidHash dan encrypted payload
+  -> nominal plaintext tidak dibuka sebelum deadline
+```
+
+### 5.3 Alur Settlement
+
+```text
+Deadline lelang tercapai
+  -> cron/backend mengambil sesi yang selesai
+  -> setiap escrow bid dibuka
+  -> hash integrity diverifikasi ulang
+  -> bid valid diurutkan berdasarkan nominal tertinggi
+  -> jika nominal sama, bid paling awal menang
+  -> sistem membuat transaksi untuk pemenang
+  -> buyer dan admin menerima status hasil
+```
+
+### 5.4 Nilai Unggul Settlement Otomatis
+
+- Keputusan pemenang tidak dilakukan manual oleh admin.
+- Nominal bid baru terbuka setelah waktu yang ditetapkan.
+- Hasil dapat diaudit melalui data bid, hash, waktu submit, transaksi, dan notifikasi.
+- Jika pemenang tidak membayar, sistem mencatat pelanggaran dan memproses blacklist bertingkat.
+- Buyer tidak perlu melakukan reveal manual pada alur escrow baru, karena backend dapat membuka escrow otomatis setelah deadline.
+
+---
+
+## 6. State Machine
+
+### 6.1 Status Barang
 
 ```text
 gadai
@@ -451,7 +561,7 @@ dipasarkan + Lelang Tertutup
   -> terjual setelah selesai
 ```
 
-### 5.2 Status Transaksi
+### 6.2 Status Transaksi
 
 ```text
 Harga Tetap transfer:
@@ -466,7 +576,7 @@ menunggu_konfirmasi_langsung -> lunas -> selesai
 menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 ```
 
-### 5.3 Level Pembatasan
+### 6.3 Level Pembatasan
 
 | Level | Dampak | Durasi |
 | --- | --- | --- |
@@ -476,9 +586,9 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 6. Route Utama
+## 7. Route Utama
 
-### 6.1 Public dan Buyer
+### 7.1 Public dan Buyer
 
 | Route | Fungsi |
 | --- | --- |
@@ -502,7 +612,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 | `/profil` | Profil buyer. |
 | `/bantuan` | Pusat Bantuan. |
 
-### 6.2 Admin Unit
+### 7.2 Admin Unit
 
 | Route | Fungsi |
 | --- | --- |
@@ -531,7 +641,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 | `/admin/blacklist/[userId]` | Detail blacklist. |
 | `/admin/profil` | Profil Admin Unit. |
 
-### 6.3 Superadmin
+### 7.3 Superadmin
 
 | Route | Fungsi |
 | --- | --- |
@@ -551,7 +661,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 7. API Utama
+## 8. API Utama
 
 | Area | Endpoint |
 | --- | --- |
@@ -564,7 +674,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 8. Security, Privacy, dan Integrity
+## 9. Security, Privacy, dan Integrity
 
 | Area | Kebutuhan |
 | --- | --- |
@@ -573,6 +683,10 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 | Isolasi unit | Admin Unit hanya boleh membaca dan memutasi data unitnya. |
 | Lelang Tertutup | Nominal bid tidak tampil sebelum deadline. |
 | Privasi admin | Admin Unit dan Superadmin tidak mengetahui nominal bid peserta sebelum lelang selesai. |
+| Encrypted escrow | Nominal dan salt disimpan dalam payload terenkripsi AES-256-GCM. |
+| Bid integrity | SHA-256 dipakai untuk membuktikan nominal, user, pemasaran, dan salt tetap konsisten. |
+| AAD escrow | Payload terenkripsi diikat ke konteks pemasaran, user, dan bidHash agar tidak bisa dipindah ke konteks lain. |
+| Settlement | Escrow hanya dibuka setelah deadline oleh proses backend/cron. |
 | Upload | File media, bukti pembayaran, dan bukti serah terima perlu validasi tipe dan ukuran. |
 | Cron | Endpoint cron dilindungi secret. |
 | Notifikasi | User hanya dapat membaca/mutasi notifikasinya sendiri. |
@@ -581,9 +695,9 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 9. UI/UX Requirements
+## 10. UI/UX Requirements
 
-### 9.1 Prinsip Umum
+### 10.1 Prinsip Umum
 
 - Visual mengikuti brand Ruang Agunan dengan nuansa hijau, putih, dan aksen emas.
 - Layout admin harus operasional, padat, dan mudah dipindai.
@@ -593,7 +707,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 - Chart laporan harus bersih, tidak penuh label, dan mendukung tooltip.
 - Kontrol filter periode harus stabil dan tidak menggeser layout secara ekstrem.
 
-### 9.2 Dashboard dan Chart
+### 10.2 Dashboard dan Chart
 
 - Chart Admin Unit dan Superadmin memakai dua seri Harga Tetap dan Lelang Tertutup.
 - Legend menggunakan marker bulat.
@@ -602,7 +716,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 - Tooltip dapat dibaca saat area chart disorot, termasuk tanggal dengan nilai 0.
 - Tanggal di luar bulan pada date range picker tampil lebih transparan.
 
-### 9.3 Pusat Bantuan
+### 10.3 Pusat Bantuan
 
 - FAQ dapat dicari.
 - Jawaban rata kiri-kanan.
@@ -611,7 +725,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 10. Non-Functional Requirements
+## 11. Non-Functional Requirements
 
 | Aspek | Target |
 | --- | --- |
@@ -626,7 +740,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 11. Acceptance Criteria
+## 12. Acceptance Criteria
 
 ### Buyer
 
@@ -665,7 +779,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 12. Out of Scope
+## 13. Out of Scope
 
 - Payment gateway production.
 - Integrasi sistem resmi pihak ketiga.
@@ -679,7 +793,7 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 ---
 
-## 13. Glosarium
+## 14. Glosarium
 
 | Istilah | Definisi |
 | --- | --- |
@@ -687,6 +801,13 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 | Aset agunan | Barang yang dikelola dan dipasarkan di aplikasi. |
 | Harga Tetap | Mekanisme pembelian langsung dengan harga yang sudah ditentukan. |
 | Lelang Tertutup | Mekanisme penawaran privat sampai periode lelang selesai. |
+| Vickrey Auction | Konsep lelang tertutup: pemenang ditentukan dari bid valid tertinggi, dan harga akhir dihitung saat settlement sesuai aturan sistem. |
+| Encrypted Escrow | Penyimpanan sementara nominal bid dalam bentuk terenkripsi sampai deadline lelang tercapai. |
+| AES-256-GCM | Algoritma enkripsi yang menjaga payload bid tetap rahasia dan terautentikasi. |
+| SHA-256 | Algoritma hash yang dipakai untuk membuat bid integrity hash. |
+| Salt | Nilai tambahan agar hash bid lebih unik dan tidak mudah ditebak. |
+| AAD | Additional Authenticated Data, data konteks yang mengikat escrow ke pemasaran, user, dan hash tertentu. |
+| Settlement | Proses backend setelah deadline untuk membuka escrow, memvalidasi bid, menentukan pemenang, dan membuat transaksi. |
 | Buyer | Pengguna yang dapat membeli atau mengikuti lelang. |
 | Admin Unit | Operator unit pelaksana. |
 | Superadmin | Pengelola lintas unit. |
