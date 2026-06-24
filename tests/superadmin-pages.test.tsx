@@ -482,7 +482,7 @@ describe("superadmin pages", () => {
         name: /filter tren transaksi tervalidasi: bulan berlangsung/i,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Rp 130.000.000")).toBeInTheDocument();
+    expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
     expect(container.querySelector("path[fill='#005626']")).toBeInTheDocument();
     const chartTexts = Array.from(container.querySelectorAll("svg text")).map(
       (node) => node.textContent,
@@ -490,10 +490,10 @@ describe("superadmin pages", () => {
     expect(chartTexts).toEqual(
       expect.arrayContaining([
         "Nilai (Rp Juta)",
-        "25",
-        "50",
-        "75",
-        "100",
+        "20",
+        "40",
+        "60",
+        "80",
       ]),
     );
     expect(chartTexts).not.toEqual(expect.arrayContaining(["Volume (Unit)"]));
@@ -510,7 +510,7 @@ describe("superadmin pages", () => {
     expect(vickreyToggle).toHaveAttribute("aria-pressed", "false");
 
     const aprilHotspot = screen.getByRole("button", {
-      name: /Apr: Lelang Tertutup Rp 36.000.000/i,
+      name: /Pekan 4: Lelang Tertutup Rp 36.000.000/i,
     });
     fireEvent.mouseEnter(aprilHotspot);
 
@@ -528,7 +528,7 @@ describe("superadmin pages", () => {
         screen.getByRole("dialog", {
           name: /filter tren transaksi tervalidasi/i,
         }),
-      ).getByRole("button", { name: /^30 hari terakhir$/i }),
+      ).getByRole("button", { name: /30 hari terakhir/i }),
     );
 
     expect(

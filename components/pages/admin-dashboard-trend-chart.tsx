@@ -303,14 +303,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
   const [activeRange, setActiveRange] = useState<DashboardSalesTimeframeKey | "custom">(metrics.salesTrend.defaultRange);
   const [customRange, setCustomRange] = useState<ReportCustomRange | null>(null);
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
+  const activePresetRange: DashboardSalesTimeframeKey =
+    activeRange === "custom" ? "month" : activeRange;
   const range =
     activeRange === "custom" && customRange
       ? makeCustomTrendRange(metrics.salesTrend.events ?? [], customRange)
-      : metrics.salesTrend.ranges[activeRange] ?? metrics.salesTrend.ranges.month ?? metrics.salesTrend.ranges.week;
+      : metrics.salesTrend.ranges[activePresetRange] ?? metrics.salesTrend.ranges.month ?? metrics.salesTrend.ranges.week;
   const chart = useMemo(() => buildChartModel(range.points), [range.points]);
   const stripMetrics = useMemo(
-    () => buildStripMetrics(range, activeRange === "custom" ? "month" : activeRange),
-    [activeRange, range]
+    () => buildStripMetrics(range, activePresetRange),
+    [activePresetRange, range]
   );
   const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 

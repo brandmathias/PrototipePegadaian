@@ -1249,10 +1249,12 @@ export function SuperAdminDashboardPage({
       SuperAdminValidatedTrendRangeKey,
       SuperAdminValidatedTrendRange
     >);
+  const activePresetTrendRange: SuperAdminValidatedTrendRangeKey =
+    activeTrendRange === "custom" ? "month" : activeTrendRange;
   const activeTrendRangeData =
     activeTrendRange === "custom" && customTrendRange
       ? buildCustomDashboardTrendRange(governance?.validatedTrendEvents ?? [], customTrendRange)
-      : trendRanges[activeTrendRange] ?? trendRanges.month ?? trendRanges.year ?? fallbackTrendRange;
+      : trendRanges[activePresetTrendRange] ?? trendRanges.month ?? trendRanges.year ?? fallbackTrendRange;
   const trendPoints = activeTrendRangeData.points;
   const trendSummary =
     activeTrendRangeData.summary ?? summarizeDashboardTrend(trendPoints);

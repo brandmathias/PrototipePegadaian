@@ -243,7 +243,7 @@ describe("AdminDashboardPage", () => {
     fireEvent.click(
       within(
         screen.getByRole("dialog", { name: /filter laporan tren penjualan/i }),
-      ).getByRole("button", { name: /^hari ini$/i }),
+      ).getByRole("button", { name: /hari ini/i }),
     );
     expect(screen.getByText(/rata-rata slot/i)).toBeInTheDocument();
     expect(screen.getByText(/2 transaksi lunas tercatat pada hari ini/i)).toBeInTheDocument();
@@ -257,7 +257,7 @@ describe("AdminDashboardPage", () => {
     fireEvent.click(
       within(
         screen.getByRole("dialog", { name: /filter laporan tren penjualan/i }),
-      ).getByRole("button", { name: /^bulan berlangsung$/i }),
+      ).getByRole("button", { name: /bulan berlangsung/i }),
     );
     expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
     expect(
@@ -273,16 +273,16 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText("25")).toBeInTheDocument();
     expect(screen.getAllByText("5").length).toBeGreaterThan(0);
 
-    const trendPoint = screen.getByRole("button", { name: /28 Mei: 2 transaksi lunas, Rp 8 jt/i });
-    expect(trendPoint).toHaveStyle({ top: "77.06666666666666%" });
+    const trendPoint = screen.getByRole("button", { name: /22-28 Mei: 3 transaksi lunas, Rp 9 jt/i });
+    expect(trendPoint).toHaveStyle({ top: "74.76666666666667%" });
 
     fireEvent.mouseEnter(trendPoint);
 
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip).toHaveClass("-translate-x-1/2");
-    expect(within(tooltip).getByText(/^28 Mei$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^2 transaksi lunas$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^Nilai penjualan Rp 8 jt$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^22-28 Mei$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^3 transaksi lunas$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Nilai penjualan Rp 9 jt$/i)).toBeInTheDocument();
   });
 
   it("falls back to live transaction data when precomputed metrics are unavailable", () => {
