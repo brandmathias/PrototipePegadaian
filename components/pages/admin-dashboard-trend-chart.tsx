@@ -431,11 +431,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
         <div className="relative h-[21rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
           <div className="pointer-events-none absolute right-4 top-3 z-[1] hidden items-center gap-4 text-[0.68rem] font-black text-[#3f4f48] dark:text-slate-300/78 sm:flex">
             <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+              <span className="size-2.5 rounded-full bg-[#005626]" />
               Lelang Tertutup
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+              <span className="size-2.5 rounded-full bg-[#9bd191]" />
               Harga Tetap
             </span>
           </div>
@@ -699,7 +699,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               <div className="mt-3 grid gap-2 text-[0.75rem] font-bold text-[#52615d] dark:text-slate-300/78">
                 <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2 dark:bg-emerald-300/8">
                   <span className="inline-flex items-center gap-2">
-                    <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+                    <span className="size-2.5 rounded-full bg-[#005626]" />
                     Lelang Tertutup
                   </span>
                   <span className="font-black text-[#00563b] dark:text-emerald-200">
@@ -708,7 +708,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2 dark:bg-emerald-300/8">
                   <span className="inline-flex items-center gap-2">
-                    <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+                    <span className="size-2.5 rounded-full bg-[#9bd191]" />
                     Harga Tetap
                   </span>
                   <span className="font-black text-[#3f8d42] dark:text-emerald-100">

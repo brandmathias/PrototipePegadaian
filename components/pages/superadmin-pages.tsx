@@ -1446,7 +1446,7 @@ export function SuperAdminDashboardPage({
               }
               type="button"
             >
-              <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+              <span className="size-2.5 rounded-full bg-[#005626]" />
               Lelang Tertutup (Rp)
             </button>
             <button
@@ -1462,7 +1462,7 @@ export function SuperAdminDashboardPage({
               }
               type="button"
             >
-              <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+              <span className="size-2.5 rounded-full bg-[#9bd191]" />
               Harga Tetap (Rp)
             </button>
           </div>
@@ -1765,7 +1765,7 @@ export function SuperAdminDashboardPage({
                   <div className="mt-3 grid gap-2 text-[0.75rem] font-bold text-[#52615d]">
                     <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2">
                       <span className="inline-flex items-center gap-2">
-                        <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+                        <span className="size-2.5 rounded-full bg-[#005626]" />
                         Lelang Tertutup
                       </span>
                       <span className="font-black text-[#00563b]">
@@ -1774,7 +1774,7 @@ export function SuperAdminDashboardPage({
                     </div>
                     <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2">
                       <span className="inline-flex items-center gap-2">
-                        <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+                        <span className="size-2.5 rounded-full bg-[#9bd191]" />
                         Harga Tetap
                       </span>
                       <span className="font-black text-[#3f8d42]">
