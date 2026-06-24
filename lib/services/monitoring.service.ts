@@ -206,6 +206,22 @@ function addDays(value: Date, days: number) {
   return next;
 }
 
+function makeDayKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+}
+
+function makeDayLabel(value: Date) {
+  return `${value.getDate()} ${MONTH_LABELS[value.getMonth()]}`;
+}
+
+function makeMonthKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function makeMonthLabel(value: Date) {
+  return `${MONTH_LABELS[value.getMonth()]} ${value.getFullYear()}`;
+}
+
 function startOfWeek(value: Date) {
   const date = startOfDay(value);
   const day = date.getDay();
@@ -299,13 +315,125 @@ function buildValidatedTrendRanges(
   const weekEnd = addDays(weekStart, 7);
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const buildRollingDays = (days: number, label: string) => {
+    const today = startOfDay(now);
+    const points = Array.from({ length: days }, (_, index) => {
+      const date = addDays(today, -(days - 1 - index));
+      return {
+        key: makeDayKey(date),
+        point: createTrendPoint(makeDayLabel(date)),
+      };
+    });
+    const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
+
+    for (const row of rows) {
+      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const point = pointByKey.get(makeDayKey(eventAt));
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
+    }
+
+    const trendPoints = points.map((entry) => entry.point);
+    return {
+      label,
+      points: trendPoints,
+      summary: summarizeTrendPoints(trendPoints),
+    };
+  };
+  const buildRecentMonths = (months: number, label: string) => {
+    const startMonth = new Date(currentYear, currentMonth - (months - 1), 1);
+    const points = Array.from({ length: months }, (_, index) => {
+      const date = new Date(startMonth.getFullYear(), startMonth.getMonth() + index, 1);
+      return {
+        key: makeMonthKey(date),
+        point: createTrendPoint(makeMonthLabel(date)),
+      };
+    });
+    const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
+
+    for (const row of rows) {
+      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const point = pointByKey.get(makeMonthKey(eventAt));
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
+    }
+
+    const trendPoints = points.map((entry) => entry.point);
+    return {
+      label,
+      points: trendPoints,
+      summary: summarizeTrendPoints(trendPoints),
+    };
+  };
+  const buildYearToDate = () => {
+    const points = Array.from({ length: currentMonth + 1 }, (_, monthIndex) => ({
+      key: `${currentYear}-${String(monthIndex + 1).padStart(2, "0")}`,
+      point: createTrendPoint(MONTH_LABELS[monthIndex]),
+    }));
+    const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
+
+    for (const row of rows) {
+      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      if (eventAt.getFullYear() !== currentYear) {
+        continue;
+      }
+
+      const point = pointByKey.get(makeMonthKey(eventAt));
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
+    }
+
+    const trendPoints = points.map((entry) => entry.point);
+    return {
+      label: "Tahun Berjalan",
+      points: trendPoints,
+      summary: summarizeTrendPoints(trendPoints),
+    };
+  };
+  const buildAllTime = () => {
+    if (rows.length === 0) {
+      return buildRecentMonths(12, "Semua Waktu");
+    }
+
+    const eventTimes = rows.map((row) => (row.verifiedAt ?? row.updatedAt ?? row.createdAt).getTime());
+    const first = new Date(Math.min(...eventTimes));
+    const last = new Date(Math.max(...eventTimes, now.getTime()));
+    const totalMonths =
+      (last.getFullYear() - first.getFullYear()) * 12 + last.getMonth() - first.getMonth() + 1;
+    const points = Array.from({ length: totalMonths }, (_, index) => {
+      const date = new Date(first.getFullYear(), first.getMonth() + index, 1);
+      return {
+        key: makeMonthKey(date),
+        point: createTrendPoint(makeMonthLabel(date)),
+      };
+    });
+    const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
+
+    for (const row of rows) {
+      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const point = pointByKey.get(makeMonthKey(eventAt));
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
+    }
+
+    const trendPoints = points.map((entry) => entry.point);
+    return {
+      label: "Semua Waktu",
+      points: trendPoints,
+      summary: summarizeTrendPoints(trendPoints),
+    };
+  };
   const ranges = {
     week: {
       label: "Minggu Ini",
       points: WEEK_DAY_LABELS.map(createTrendPoint),
     },
     month: {
-      label: "Bulan Ini",
+      label: "Bulan Berlangsung",
       points: MONTH_WEEK_LABELS.map(createTrendPoint),
     },
     year: {
@@ -355,6 +483,12 @@ function buildValidatedTrendRanges(
       ...ranges.year,
       summary: summarizeTrendPoints(ranges.year.points),
     },
+    last7: buildRollingDays(7, "7 Hari Terakhir"),
+    last30: buildRollingDays(30, "30 Hari Terakhir"),
+    last3Months: buildRecentMonths(3, "3 Bulan Terakhir"),
+    last12Months: buildRecentMonths(12, "12 Bulan Terakhir"),
+    yearToDate: buildYearToDate(),
+    allTime: buildAllTime(),
   };
 }
 
@@ -982,6 +1116,12 @@ export async function getSuperAdminMonitoring() {
       }),
       lifecycle,
       validatedTrend: buildValidatedTrend(validatedTransactionRows, now),
+      validatedTrendEvents: validatedTransactionRows.map((row) => ({
+        amount: Number(row.amount ?? 0),
+        occurredAt: (row.verifiedAt ?? row.updatedAt ?? row.createdAt).toISOString(),
+        marketingMode: row.marketingMode,
+        transactionType: row.transactionType,
+      })),
       validatedTrendRanges: buildValidatedTrendRanges(
         validatedTransactionRows,
         now,

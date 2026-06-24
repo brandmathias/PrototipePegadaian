@@ -259,7 +259,7 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Pelanggaran Aktif")).toBeInTheDocument();
     expect(screen.getByText("Barang Terjual")).toBeInTheDocument();
     expect(screen.getByText("Total Tervalidasi")).toBeInTheDocument();
-    expect(screen.getByText("Performa Tahun Ini")).toBeInTheDocument();
+    expect(screen.getByText("Performa Bulan Berlangsung")).toBeInTheDocument();
     expect(
       screen.getByText("Tren Nilai Transaksi Tervalidasi"),
     ).toBeInTheDocument();
@@ -433,6 +433,15 @@ describe("superadmin pages", () => {
     const weeklyTrend = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map(
       (label) => makeDashboardTrendPoint(label),
     );
+    const last30Trend = ["31 Mar", "7 Apr", "14 Apr", "21 Apr", "28 Apr"].map(
+      (label, index) =>
+        makeDashboardTrendPoint(label, {
+          amount: index === 4 ? 48000000 : 0,
+          fixedPriceAmount: index === 4 ? 12000000 : 0,
+          vickreyAmount: index === 4 ? 36000000 : 0,
+          volume: index === 4 ? 6 : 0,
+        }),
+    );
 
     const { container } = render(
       <SuperAdminDashboardPage
@@ -447,9 +456,10 @@ describe("superadmin pages", () => {
           ],
           validatedTrend: yearlyTrend,
           validatedTrendRanges: {
-            month: makeDashboardTrendRange("Bulan Ini", monthlyTrend),
+            month: makeDashboardTrendRange("Bulan Berlangsung", monthlyTrend),
             week: makeDashboardTrendRange("Minggu Ini", weeklyTrend),
             year: makeDashboardTrendRange("Tahun Ini", yearlyTrend),
+            last30: makeDashboardTrendRange("30 Hari Terakhir", last30Trend),
           },
           complianceLevels: [],
           validatedTransactionValueLabel: "Rp 130 jt",
@@ -467,12 +477,11 @@ describe("superadmin pages", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /tahun ini/i })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", {
+        name: /filter tren transaksi tervalidasi: bulan berlangsung/i,
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Rp 130.000.000")).toBeInTheDocument();
     expect(container.querySelector("path[fill='#005626']")).toBeInTheDocument();
     const chartTexts = Array.from(container.querySelectorAll("svg text")).map(
@@ -509,13 +518,25 @@ describe("superadmin pages", () => {
     expect(screen.getByRole("tooltip")).toHaveTextContent("Volume");
     expect(screen.getByRole("tooltip")).toHaveTextContent("6 transaksi");
 
-    fireEvent.click(screen.getByRole("button", { name: /bulan ini/i }));
-
-    expect(screen.getByRole("button", { name: /bulan ini/i })).toHaveAttribute(
-      "aria-pressed",
-      "true",
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /filter tren transaksi tervalidasi: bulan berlangsung/i,
+      }),
     );
-    expect(screen.getByText("Performa Bulan Ini")).toBeInTheDocument();
+    fireEvent.click(
+      within(
+        screen.getByRole("dialog", {
+          name: /filter tren transaksi tervalidasi/i,
+        }),
+      ).getByRole("button", { name: /^30 hari terakhir$/i }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: /filter tren transaksi tervalidasi: 30 hari terakhir/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Performa 30 Hari Terakhir")).toBeInTheDocument();
     expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
   });
 
@@ -609,6 +630,11 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Monitoring sedang tenang")).not.toBeInTheDocument();
     expect(
       screen.getByRole("img", { name: "Grafik barang pada tiap unit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /filter grafik barang tiap unit: bulan berlangsung/i,
+      }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("combobox", { name: "Filter status unit" }),

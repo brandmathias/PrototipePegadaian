@@ -96,6 +96,11 @@ import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
+import {
+  ReportRangeDropdown,
+  type ReportCustomRange,
+  type ReportRangeOption,
+} from "@/components/shared/report-range-dropdown";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -412,7 +417,23 @@ export type SuperAdminValidatedTrendPoint = {
   volume?: number;
 };
 
-export type SuperAdminValidatedTrendRangeKey = "week" | "month" | "year";
+export type SuperAdminValidatedTrendRangeKey =
+  | "week"
+  | "month"
+  | "year"
+  | "last7"
+  | "last30"
+  | "last3Months"
+  | "last12Months"
+  | "yearToDate"
+  | "allTime";
+
+export type SuperAdminValidatedTrendEvent = {
+  amount: number;
+  occurredAt: string;
+  marketingMode: string | null;
+  transactionType: string | null;
+};
 
 export type SuperAdminValidatedTrendRange = {
   label: string;
@@ -455,10 +476,9 @@ export type SuperAdminMonitoringData = {
     snapshot: SuperAdminGovernanceSnapshotItem[];
     lifecycle: SuperAdminLifecycleItem[];
     validatedTrend: SuperAdminValidatedTrendPoint[];
-    validatedTrendRanges?: Record<
-      SuperAdminValidatedTrendRangeKey,
-      SuperAdminValidatedTrendRange
-    >;
+    validatedTrendEvents?: SuperAdminValidatedTrendEvent[];
+    validatedTrendRanges?: Partial<Record<SuperAdminValidatedTrendRangeKey, SuperAdminValidatedTrendRange>> &
+      Record<"week" | "month" | "year", SuperAdminValidatedTrendRange>;
     complianceLevels?: SuperAdminComplianceLevel[];
     validatedTransactionValueLabel?: string;
   };
@@ -498,6 +518,7 @@ const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
 ];
 
 const DAY_MS = 86_400_000;
+const dashboardMonthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
 function getSuperadminInitials(name: string) {
   return name
@@ -872,13 +893,14 @@ const dashboardChartFrame = {
   left: 76,
 };
 const dashboardChartTickCount = 4;
-const dashboardTrendRangeOptions: Array<{
-  key: SuperAdminValidatedTrendRangeKey;
-  label: string;
-}> = [
-  { key: "week", label: "Minggu Ini" },
-  { key: "month", label: "Bulan Ini" },
-  { key: "year", label: "Tahun Ini" },
+const dashboardTrendRangeOptions: Array<ReportRangeOption<SuperAdminValidatedTrendRangeKey>> = [
+  { value: "last7", label: "7 Hari Terakhir", helper: "Rentang mingguan berjalan" },
+  { value: "last30", label: "30 Hari Terakhir", helper: "Pergerakan harian" },
+  { value: "last3Months", label: "3 Bulan Terakhir", helper: "Ringkasan bulanan" },
+  { value: "last12Months", label: "12 Bulan Terakhir", helper: "Satu tahun ke belakang" },
+  { value: "month", label: "Bulan Berlangsung", helper: "Default dashboard" },
+  { value: "yearToDate", label: "Tahun Berjalan", helper: "Januari hingga bulan ini" },
+  { value: "allTime", label: "Semua Waktu", helper: "Seluruh transaksi tervalidasi" },
 ];
 
 type SuperAdminDashboardCard = {
@@ -950,6 +972,99 @@ function getTrendFixedPriceAmount(point: SuperAdminValidatedTrendPoint) {
 
 function getTrendVolume(point: SuperAdminValidatedTrendPoint) {
   return Number(point.volume ?? point.count ?? 0);
+}
+
+function toDashboardDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseDashboardDateKey(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+}
+
+function formatDashboardDayLabel(date: Date) {
+  return `${date.getDate()} ${dashboardMonthLabels[date.getMonth()]}`;
+}
+
+function formatDashboardMonthLabel(date: Date) {
+  return `${dashboardMonthLabels[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function createDashboardTrendPoint(label: string): SuperAdminValidatedTrendPoint {
+  return {
+    amount: 0,
+    count: 0,
+    fixedPriceAmount: 0,
+    label,
+    vickreyAmount: 0,
+    volume: 0,
+  };
+}
+
+function addEventToDashboardPoint(
+  point: SuperAdminValidatedTrendPoint,
+  event: SuperAdminValidatedTrendEvent,
+) {
+  const amount = Number(event.amount ?? 0);
+  const mode = String(event.transactionType ?? event.marketingMode ?? "").toLowerCase();
+
+  if (mode.includes("fixed")) {
+    point.fixedPriceAmount = Number(point.fixedPriceAmount ?? 0) + amount;
+  } else {
+    point.vickreyAmount = Number(point.vickreyAmount ?? 0) + amount;
+  }
+
+  point.amount += amount;
+  point.count += 1;
+  point.volume = point.count;
+}
+
+function buildCustomDashboardTrendRange(
+  events: SuperAdminValidatedTrendEvent[],
+  range: ReportCustomRange,
+): SuperAdminValidatedTrendRange {
+  const start = parseDashboardDateKey(range.startDate);
+  const end = parseDashboardDateKey(range.endDate);
+  end.setHours(23, 59, 59, 999);
+  const dayCount = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS));
+  const points =
+    dayCount <= 31
+      ? Array.from({ length: dayCount }, (_, index) => {
+          const date = new Date(start);
+          date.setDate(start.getDate() + index);
+
+          return createDashboardTrendPoint(formatDashboardDayLabel(date));
+        })
+      : Array.from(
+          { length: (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1 },
+          (_, index) => {
+            const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+            return createDashboardTrendPoint(formatDashboardMonthLabel(date));
+          },
+        );
+
+  for (const event of events) {
+    const occurredAt = new Date(event.occurredAt);
+    if (occurredAt < start || occurredAt > end) {
+      continue;
+    }
+
+    const pointIndex =
+      dayCount <= 31
+        ? Math.floor((parseDashboardDateKey(toDashboardDateKey(occurredAt)).getTime() - start.getTime()) / DAY_MS)
+        : (occurredAt.getFullYear() - start.getFullYear()) * 12 + occurredAt.getMonth() - start.getMonth();
+    const point = points[pointIndex];
+    if (point) {
+      addEventToDashboardPoint(point, event);
+    }
+  }
+
+  return {
+    label: "Rentang Kustom",
+    points,
+    summary: summarizeDashboardTrend(points),
+  };
 }
 
 function summarizeDashboardTrend(points: SuperAdminValidatedTrendPoint[]) {
@@ -1104,7 +1219,9 @@ export function SuperAdminDashboardPage({
     fixedPrice: true,
   });
   const [activeTrendRange, setActiveTrendRange] =
-    useState<SuperAdminValidatedTrendRangeKey>("year");
+    useState<SuperAdminValidatedTrendRangeKey | "custom">("month");
+  const [customTrendRange, setCustomTrendRange] =
+    useState<ReportCustomRange | null>(null);
   const [activeTrendIndex, setActiveTrendIndex] = useState<number | null>(null);
   const snapshotItems = governance?.snapshot ?? [];
   const yearTrendPoints =
@@ -1120,14 +1237,22 @@ export function SuperAdminDashboardPage({
     governance?.validatedTrendRanges ??
     ({
       week: { ...fallbackTrendRange, label: "Minggu Ini" },
-      month: { ...fallbackTrendRange, label: "Bulan Ini" },
+      month: { ...fallbackTrendRange, label: "Bulan Berlangsung" },
       year: fallbackTrendRange,
+      last7: { ...fallbackTrendRange, label: "7 Hari Terakhir" },
+      last30: { ...fallbackTrendRange, label: "30 Hari Terakhir" },
+      last3Months: { ...fallbackTrendRange, label: "3 Bulan Terakhir" },
+      last12Months: { ...fallbackTrendRange, label: "12 Bulan Terakhir" },
+      yearToDate: { ...fallbackTrendRange, label: "Tahun Berjalan" },
+      allTime: { ...fallbackTrendRange, label: "Semua Waktu" },
     } satisfies Record<
       SuperAdminValidatedTrendRangeKey,
       SuperAdminValidatedTrendRange
     >);
   const activeTrendRangeData =
-    trendRanges[activeTrendRange] ?? trendRanges.year ?? fallbackTrendRange;
+    activeTrendRange === "custom" && customTrendRange
+      ? buildCustomDashboardTrendRange(governance?.validatedTrendEvents ?? [], customTrendRange)
+      : trendRanges[activeTrendRange] ?? trendRanges.month ?? trendRanges.year ?? fallbackTrendRange;
   const trendPoints = activeTrendRangeData.points;
   const trendSummary =
     activeTrendRangeData.summary ?? summarizeDashboardTrend(trendPoints);
@@ -1368,29 +1493,23 @@ export function SuperAdminDashboardPage({
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-            {dashboardTrendRangeOptions.map((option) => {
-              const active = activeTrendRange === option.key;
-
-              return (
-                <button
-                  aria-pressed={active}
-                  className={`inline-flex min-w-[5.9rem] items-center justify-center rounded-[0.82rem] border px-3 py-2 text-[0.76rem] font-black transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] ${
-                    active
-                      ? "border-[#179353] bg-[linear-gradient(180deg,#1a9b56,#13844a)] text-white shadow-[0_16px_32px_-22px_rgba(19,132,74,0.65)]"
-                      : "border-[#ebeeea] bg-white text-[#2a352f] shadow-[0_10px_24px_-22px_rgba(15,23,42,0.34)] hover:border-[#d7e4da] hover:bg-[#fbfcfb]"
-                  }`}
-                  key={option.key}
-                  onClick={() => {
-                    setActiveTrendRange(option.key);
-                    setActiveTrendIndex(null);
-                  }}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+          <div className="flex xl:justify-end">
+            <ReportRangeDropdown
+              ariaLabel="Filter tren transaksi tervalidasi"
+              customRange={customTrendRange}
+              onApplyCustomRange={(nextRange) => {
+                setCustomTrendRange(nextRange);
+                setActiveTrendRange("custom");
+                setActiveTrendIndex(null);
+              }}
+              onChange={(nextRange) => {
+                setActiveTrendRange(nextRange);
+                setCustomTrendRange(null);
+                setActiveTrendIndex(null);
+              }}
+              options={dashboardTrendRangeOptions}
+              value={activeTrendRange}
+            />
           </div>
         </div>
 
@@ -6006,20 +6125,6 @@ function getCompactUnitName(name: string) {
   return name.replace(/^Pegadaian\s+/i, "");
 }
 
-function getMonitoringPeriodLabel(serverNow?: string) {
-  const date = serverNow ? new Date(serverNow) : new Date();
-
-  if (Number.isNaN(date.getTime())) {
-    return "Data aktif";
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    month: "long",
-    timeZone: "Asia/Makassar",
-    year: "numeric",
-  }).format(date);
-}
-
 export function SuperAdminMonitoringPage({
   data,
   serverNow,
@@ -6033,8 +6138,11 @@ export function SuperAdminMonitoringPage({
   const [activeMetricIndex, setActiveMetricIndex] = useState<number | null>(null);
   const [activeChartTooltip, setActiveChartTooltip] =
     useState<MonitoringChartTooltip | null>(null);
+  const [monitoringRange, setMonitoringRange] =
+    useState<SuperAdminValidatedTrendRangeKey | "custom">("month");
+  const [monitoringCustomRange, setMonitoringCustomRange] =
+    useState<ReportCustomRange | null>(null);
   const chartPlotRef = useRef<HTMLDivElement | null>(null);
-  const periodLabel = getMonitoringPeriodLabel(serverNow);
   const filteredUnitRows = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -6297,10 +6405,20 @@ export function SuperAdminMonitoringPage({
             </span>
             <CardTitle>Grafik Barang pada Tiap Unit</CardTitle>
           </div>
-          <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-white px-3 text-xs font-bold text-[#273954]">
-            <CalendarDays className="size-4 text-primary" />
-            Periode: {periodLabel}
-          </div>
+          <ReportRangeDropdown
+            ariaLabel="Filter grafik barang tiap unit"
+            customRange={monitoringCustomRange}
+            onApplyCustomRange={(nextRange) => {
+              setMonitoringCustomRange(nextRange);
+              setMonitoringRange("custom");
+            }}
+            onChange={(nextRange) => {
+              setMonitoringRange(nextRange);
+              setMonitoringCustomRange(null);
+            }}
+            options={dashboardTrendRangeOptions}
+            value={monitoringRange}
+          />
         </CardHeader>
         <CardContent className="relative space-y-4 pt-5">
           {filteredUnitRows.length === 0 ? (

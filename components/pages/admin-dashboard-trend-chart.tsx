@@ -4,17 +4,22 @@ import { useMemo, useState } from "react";
 import {
   BarChart3,
   ChartNoAxesCombined,
-  MoreVertical,
   ShoppingCart,
   Tag,
   TrendingUp,
   type LucideIcon
 } from "lucide-react";
 
+import {
+  ReportRangeDropdown,
+  type ReportCustomRange,
+  type ReportRangeOption
+} from "@/components/shared/report-range-dropdown";
 import { cn } from "@/lib/utils";
 import type {
   AdminDashboardMetrics,
   DashboardSalesTimeframeKey,
+  DashboardTrendEvent,
   DashboardTrendPoint,
   DashboardTrendRange
 } from "@/components/pages/admin-dashboard-page";
@@ -29,6 +34,7 @@ type DashboardStripMetric = {
 const chartAxisFontFamily = 'var(--font-manrope), "Trebuchet MS", "Segoe UI", system-ui, sans-serif';
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
 const numberFormatter = new Intl.NumberFormat("id-ID");
+const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
 function formatCount(value: number) {
   return numberFormatter.format(value);
@@ -127,13 +133,21 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
     ? Math.round(range.summary.totalRevenue / range.summary.verifiedTransactions)
     : 0;
   const averageTitle =
-    timeframe === "day" ? "Rata-rata Slot" : timeframe === "month" ? "Rata-rata Pekanan" : "Rata-rata Harian";
+    timeframe === "day"
+      ? "Rata-rata Slot"
+      : timeframe === "month"
+        ? "Rata-rata Pekanan"
+        : ["last3Months", "last12Months", "yearToDate", "allTime"].includes(timeframe)
+          ? "Rata-rata Bulanan"
+          : "Rata-rata Harian";
   const averageSubtitle =
     timeframe === "day"
       ? `rata-rata nilai penjualan per slot waktu sepanjang ${range.label.toLowerCase()}`
       : timeframe === "month"
         ? `rata-rata nilai penjualan per pekan aktif sepanjang ${range.label.toLowerCase()}`
-        : `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`;
+        : ["last3Months", "last12Months", "yearToDate", "allTime"].includes(timeframe)
+          ? `rata-rata nilai penjualan per bulan sepanjang ${range.label.toLowerCase()}`
+          : `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`;
 
   return [
     {
@@ -163,22 +177,145 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
   ];
 }
 
-const timeframeOptions: Array<{ key: DashboardSalesTimeframeKey; label: string }> = [
-  { key: "day", label: "Hari Ini" },
-  { key: "week", label: "Minggu Ini" },
-  { key: "month", label: "Bulan Ini" }
+const timeframeOptions: Array<ReportRangeOption<DashboardSalesTimeframeKey>> = [
+  { value: "day", label: "Hari Ini", helper: "Slot waktu hari ini" },
+  { value: "last7", label: "7 Hari Terakhir", helper: "Rentang mingguan berjalan" },
+  { value: "last30", label: "30 Hari Terakhir", helper: "Pergerakan harian" },
+  { value: "last3Months", label: "3 Bulan Terakhir", helper: "Ringkasan bulanan" },
+  { value: "last12Months", label: "12 Bulan Terakhir", helper: "Satu tahun ke belakang" },
+  { value: "month", label: "Bulan Berlangsung", helper: "Default laporan" },
+  { value: "yearToDate", label: "Tahun Berjalan", helper: "Januari hingga bulan ini" },
+  { value: "allTime", label: "Semua Waktu", helper: "Seluruh transaksi tervalidasi" }
 ];
 
+function toDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseDateKey(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, (month || 1) - 1, day || 1);
+}
+
+function formatDayLabel(date: Date) {
+  return `${date.getDate()} ${monthLabels[date.getMonth()]}`;
+}
+
+function formatMonthLabel(date: Date) {
+  return `${monthLabels[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustomRange): DashboardTrendRange {
+  const start = parseDateKey(range.startDate);
+  const end = parseDateKey(range.endDate);
+  end.setHours(23, 59, 59, 999);
+  const dayCount = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86_400_000));
+
+  if (dayCount <= 31) {
+    const buckets = Array.from({ length: dayCount }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+
+      return {
+        key: toDateKey(date),
+        label: formatDayLabel(date),
+        value: 0,
+        amount: 0
+      };
+    });
+    const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+    for (const event of events) {
+      const occurredAt = new Date(event.occurredAt);
+      if (occurredAt < start || occurredAt > end) {
+        continue;
+      }
+
+      const bucket = bucketByKey.get(toDateKey(occurredAt));
+      if (!bucket) {
+        continue;
+      }
+      bucket.value += 1;
+      bucket.amount += Number(event.amount ?? 0);
+    }
+
+    return makeRangeFromPoints(
+      buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+      "Rentang Kustom"
+    );
+  }
+
+  const monthCount = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1;
+  const buckets = Array.from({ length: monthCount }, (_, index) => {
+    const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+
+    return {
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: formatMonthLabel(date),
+      value: 0,
+      amount: 0
+    };
+  });
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+  for (const event of events) {
+    const occurredAt = new Date(event.occurredAt);
+    if (occurredAt < start || occurredAt > end) {
+      continue;
+    }
+
+    const bucket = bucketByKey.get(`${occurredAt.getFullYear()}-${occurredAt.getMonth()}`);
+    if (!bucket) {
+      continue;
+    }
+    bucket.value += 1;
+    bucket.amount += Number(event.amount ?? 0);
+  }
+
+  return makeRangeFromPoints(
+    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    "Rentang Kustom"
+  );
+}
+
+function makeRangeFromPoints(points: DashboardTrendPoint[], label: string): DashboardTrendRange {
+  const totalRevenue = points.reduce((sum, point) => sum + point.amount, 0);
+  const verifiedTransactions = points.reduce((sum, point) => sum + point.value, 0);
+  const peakPoint = points.reduce(
+    (highest, point) => (point.amount > highest.amount ? point : highest),
+    points[0] ?? { label: "-", value: 0, amount: 0 }
+  );
+
+  return {
+    label,
+    points,
+    summary: {
+      totalRevenue,
+      verifiedTransactions,
+      averageRevenue: points.length ? Math.round(totalRevenue / points.length) : 0,
+      peakRevenue: peakPoint.amount,
+      peakLabel: peakPoint.label
+    }
+  };
+}
+
 export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardMetrics }) {
-  const [activeRange, setActiveRange] = useState<DashboardSalesTimeframeKey>(metrics.salesTrend.defaultRange);
+  const [activeRange, setActiveRange] = useState<DashboardSalesTimeframeKey | "custom">(metrics.salesTrend.defaultRange);
+  const [customRange, setCustomRange] = useState<ReportCustomRange | null>(null);
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
-  const range = metrics.salesTrend.ranges[activeRange] ?? metrics.salesTrend.ranges.week;
+  const range =
+    activeRange === "custom" && customRange
+      ? makeCustomTrendRange(metrics.salesTrend.events ?? [], customRange)
+      : metrics.salesTrend.ranges[activeRange] ?? metrics.salesTrend.ranges.month ?? metrics.salesTrend.ranges.week;
   const chart = useMemo(() => buildChartModel(range.points), [range.points]);
-  const stripMetrics = useMemo(() => buildStripMetrics(range, activeRange), [activeRange, range]);
+  const stripMetrics = useMemo(
+    () => buildStripMetrics(range, activeRange === "custom" ? "month" : activeRange),
+    [activeRange, range]
+  );
   const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 
   return (
-    <div className="relative overflow-hidden rounded-[1.65rem] border border-[#ebeeea] bg-white p-4 shadow-[0_20px_48px_-40px_rgba(15,23,42,0.2)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5">
+    <div className="relative overflow-visible rounded-[1.65rem] border border-[#ebeeea] bg-white p-4 shadow-[0_20px_48px_-40px_rgba(15,23,42,0.2)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5">
       <div className="relative flex flex-col gap-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex items-start gap-3">
@@ -186,47 +323,31 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               <ChartNoAxesCombined className="size-10" strokeWidth={1.8} />
             </span>
             <div>
-              <h2 className="font-headline text-[1.35rem] font-black tracking-[-0.035em] text-[#121a16] dark:text-slate-100 sm:text-[1.55rem]">
+              <h2 className="font-headline text-[1.25rem] font-black tracking-[-0.02em] text-[#17221d] dark:text-slate-100 sm:text-[1.42rem]">
                 Laporan Tren Penjualan
               </h2>
-              <p className="mt-1 max-w-xl text-sm leading-6 text-[#5f6d67] dark:text-slate-300/72">
-                Performa penjualan barang lelang dalam periode waktu pilihan.
+              <p className="mt-1 max-w-xl text-[0.9rem] font-semibold leading-6 text-[#647067] dark:text-slate-300/72">
+                Performa penjualan tervalidasi berdasarkan rentang waktu pilihan.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 self-start">
-            {timeframeOptions.map((option) => {
-              const active = option.key === activeRange;
-              return (
-                <button
-                  aria-pressed={active}
-                  className={cn(
-                    "inline-flex min-w-[6.6rem] items-center justify-center rounded-[0.82rem] border px-4 py-3 text-[0.9rem] font-black tracking-[-0.015em] transition duration-300",
-                    active
-                      ? "border-[#179353] bg-[linear-gradient(180deg,#1a9b56,#13844a)] text-white shadow-[0_16px_32px_-22px_rgba(19,132,74,0.65)]"
-                      : "border-[#ebeeea] bg-white text-[#2a352f] shadow-[0_10px_24px_-22px_rgba(15,23,42,0.34)] hover:border-[#d7e4da] hover:bg-[#fbfcfb] dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-100 dark:hover:border-emerald-300/18 dark:hover:bg-white/[0.05]"
-                  )}
-                  key={option.key}
-                  onClick={() => {
-                    setActiveRange(option.key);
-                    setActivePointIndex(null);
-                  }}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-
-            <button
-              aria-label="Opsi tren penjualan"
-              className="inline-flex size-11 items-center justify-center rounded-[0.82rem] border border-transparent text-[#425466] transition duration-300 hover:bg-[#f6f8f7] dark:text-slate-300 dark:hover:bg-white/[0.04]"
-              type="button"
-            >
-              <MoreVertical className="size-5" strokeWidth={2} />
-            </button>
-          </div>
+          <ReportRangeDropdown
+            ariaLabel="Filter laporan tren penjualan"
+            customRange={customRange}
+            onApplyCustomRange={(nextRange) => {
+              setCustomRange(nextRange);
+              setActiveRange("custom");
+              setActivePointIndex(null);
+            }}
+            onChange={(nextRange) => {
+              setActiveRange(nextRange);
+              setCustomRange(null);
+              setActivePointIndex(null);
+            }}
+            options={timeframeOptions}
+            value={activeRange}
+          />
         </div>
 
         <div className="relative h-[16.5rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] p-1 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:p-2">

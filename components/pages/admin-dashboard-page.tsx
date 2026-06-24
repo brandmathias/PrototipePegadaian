@@ -21,7 +21,21 @@ export type DashboardTrendPoint = {
   amount: number;
 };
 
-export type DashboardSalesTimeframeKey = "day" | "week" | "month";
+export type DashboardSalesTimeframeKey =
+  | "day"
+  | "week"
+  | "month"
+  | "last7"
+  | "last30"
+  | "last3Months"
+  | "last12Months"
+  | "yearToDate"
+  | "allTime";
+
+export type DashboardTrendEvent = {
+  amount: number;
+  occurredAt: string;
+};
 
 export type DashboardTrendRange = {
   label: string;
@@ -55,7 +69,9 @@ export type AdminDashboardMetrics = {
   averageTransaction: number;
   salesTrend: {
     defaultRange: DashboardSalesTimeframeKey;
-    ranges: Record<DashboardSalesTimeframeKey, DashboardTrendRange>;
+    events?: DashboardTrendEvent[];
+    ranges: Partial<Record<DashboardSalesTimeframeKey, DashboardTrendRange>> &
+      Record<"day" | "week" | "month", DashboardTrendRange>;
   };
 };
 
@@ -155,11 +171,11 @@ function makeFallbackRange(label: string, labels: string[]): DashboardTrendRange
 
 function makeFallbackTrend() {
   return {
-    defaultRange: "week" as const,
+    defaultRange: "month" as const,
     ranges: {
       day: makeFallbackRange("Hari Ini", ["00.00", "04.00", "08.00", "12.00", "16.00", "20.00"]),
       week: makeFallbackRange("Minggu Ini", ["Hari 1", "Hari 2", "Hari 3", "Hari 4", "Hari 5", "Hari 6", "Hari 7"]),
-      month: makeFallbackRange("Bulan Ini", ["Pekan 1", "Pekan 2", "Pekan 3", "Pekan 4", "Pekan 5"])
+      month: makeFallbackRange("Bulan Berlangsung", ["Pekan 1", "Pekan 2", "Pekan 3", "Pekan 4", "Pekan 5"])
     }
   };
 }

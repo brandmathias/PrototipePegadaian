@@ -1104,7 +1104,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
             </button>
 
             {datePickerOpen ? (
-              <div className="absolute left-1/2 top-full z-[90] mt-2 grid w-[min(36.25rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.15rem] border border-[#dfe8e3] bg-white shadow-[0_26px_72px_-40px_rgba(8,69,50,0.42)] sm:left-1/2 sm:right-auto sm:grid-cols-[15rem_minmax(0,1fr)] xl:left-0 xl:translate-x-0">
+              <div className="absolute left-1/2 top-full z-[90] mt-2 grid w-[min(36.25rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.55rem] border border-[#dcebe3] bg-white shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:left-1/2 sm:right-auto sm:grid-cols-[15rem_minmax(0,1fr)] xl:left-0 xl:translate-x-0">
                 <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-2 sm:border-b-0 sm:border-r">
                   <p className="px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
                     Shortcut Periode
@@ -1138,35 +1138,35 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
                 </div>
 
                 <div className="p-4">
-                  <div className="flex items-center justify-between border-b border-[#edf2ef] pb-3">
+                  <div className="flex items-center justify-between gap-4 border-b border-[#edf2ef] pb-3">
                     <button
                       aria-label="Bulan sebelumnya"
-                      className="grid size-8 place-items-center rounded-xl text-[#52655d] outline-none transition duration-500 hover:bg-[#f4f8f6] hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                      className="grid size-9 place-items-center rounded-full text-[#006747] outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
                       type="button"
                       onClick={() =>
                         setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
                       }
                     >
-                      <ChevronLeft className="size-4" />
+                      <ChevronLeft className="size-4.5" strokeWidth={2} />
                     </button>
-                    <p className="font-headline text-sm font-black tracking-[-0.02em] text-[#13211c]">{monthLabel}</p>
+                    <p className="rounded-full px-4 py-2 text-center font-black tracking-[-0.01em] text-black/78">{monthLabel}</p>
                     <button
                       aria-label="Bulan berikutnya"
-                      className="grid size-8 place-items-center rounded-xl text-[#52655d] outline-none transition duration-500 hover:bg-[#f4f8f6] hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                      className="grid size-9 place-items-center rounded-full text-[#006747] outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
                       type="button"
                       onClick={() =>
                         setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))
                       }
                     >
-                      <ChevronRight className="size-4" />
+                      <ChevronRight className="size-4.5" strokeWidth={2} />
                     </button>
                   </div>
-                  <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[0.64rem] font-black text-[#64756e]">
+                  <div className="mt-4 grid grid-cols-7 gap-0.5 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/38">
                     {dayLabels.map((day) => (
-                      <span key={day}>{day}</span>
+                      <span className="py-1" key={day}>{day}</span>
                     ))}
                   </div>
-                  <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[0.75rem] font-bold">
+                  <div className="mt-1.5 grid grid-cols-7 gap-0.5 text-center text-[0.78rem] font-bold">
                     {calendarCells.map((day, index) => {
                       if (!day) {
                         return <span aria-hidden="true" key={`empty-${index}`} />;
@@ -1178,7 +1178,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
                       return (
                         <button
                           className={cn(
-                            "mx-auto grid size-8 place-items-center rounded-full font-mono outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                            "mx-auto grid size-9 place-items-center rounded-full font-mono outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
                             active && "bg-[#006747] text-white shadow-[0_14px_24px_-14px_rgba(0,103,71,0.72)] hover:bg-[#006747] hover:text-white"
                           )}
                           key={`${calendarMonth.toISOString()}-${day}`}

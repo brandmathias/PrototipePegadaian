@@ -36,7 +36,7 @@ const baseDashboardData = {
     totalRevenue: 20_000_000,
     averageTransaction: 10_000_000,
     salesTrend: {
-      defaultRange: "week" as const,
+      defaultRange: "month" as const,
       ranges: {
         day: {
           label: "Hari Ini",
@@ -76,7 +76,7 @@ const baseDashboardData = {
           }
         },
         month: {
-          label: "Bulan Ini",
+          label: "Bulan Berlangsung",
           points: [
             { label: "1-7 Mei", value: 1, amount: 2_000_000 },
             { label: "8-14 Mei", value: 0, amount: 0 },
@@ -124,14 +124,16 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("heading", { name: /barang dipasarkan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /laporan tren penjualan/i })).toBeInTheDocument();
     expect(screen.getByText("Rp 20 jt")).toBeInTheDocument();
-    expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
+    expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
     expect(screen.getByText(/^Puncak Penjualan$/i)).toBeInTheDocument();
-    expect(screen.getByText(/5 transaksi lunas/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 transaksi lunas/i)).toBeInTheDocument();
     expect(screen.getByText(/total periode/i)).toBeInTheDocument();
     expect(screen.getByText(/^Transaksi Lunas$/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /hari ini/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /minggu ini/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /bulan ini/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /filter laporan tren penjualan: bulan berlangsung/i,
+      }),
+    ).toBeInTheDocument();
 
     const marketedMetric = screen.getByRole("heading", { name: /barang dipasarkan/i }).closest("article");
     expect(marketedMetric).not.toBeNull();
@@ -230,17 +232,37 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText("12:14 PM")).toBeInTheDocument();
   });
 
-  it("switches the trend chart summary when timeframe buttons are pressed", () => {
+  it("switches the trend chart summary when range options are chosen from the dropdown", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /hari ini/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /filter laporan tren penjualan: bulan berlangsung/i,
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole("dialog", { name: /filter laporan tren penjualan/i }),
+      ).getByRole("button", { name: /^hari ini$/i }),
+    );
     expect(screen.getByText(/rata-rata slot/i)).toBeInTheDocument();
     expect(screen.getByText(/2 transaksi lunas tercatat pada hari ini/i)).toBeInTheDocument();
     expect(screen.getByText("Rp 10 jt")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /bulan ini/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /filter laporan tren penjualan: hari ini/i,
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole("dialog", { name: /filter laporan tren penjualan/i }),
+      ).getByRole("button", { name: /^bulan berlangsung$/i }),
+    );
     expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
-    expect(screen.getByText(/7 transaksi lunas tercatat pada bulan ini/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/7 transaksi lunas tercatat pada bulan berlangsung/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22-28 Mei/i)).toBeInTheDocument();
   });
 

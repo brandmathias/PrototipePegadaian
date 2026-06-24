@@ -15,7 +15,17 @@ const ACTIONABLE_TRANSACTION_STATUSES = new Set([
 ]);
 const VERIFIED_TRANSACTION_STATUSES = new Set(["lunas", "selesai"]);
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-const SALES_TIMEFRAME_KEYS = ["day", "week", "month"] as const;
+const SALES_TIMEFRAME_KEYS = [
+  "day",
+  "week",
+  "month",
+  "last7",
+  "last30",
+  "last3Months",
+  "last12Months",
+  "yearToDate",
+  "allTime"
+] as const;
 
 type SalesTimeframeKey = (typeof SALES_TIMEFRAME_KEYS)[number];
 
@@ -52,6 +62,14 @@ function makeDayKey(value: Date) {
 
 function makeDayLabel(value: Date) {
   return `${value.getDate()} ${MONTH_LABELS[value.getMonth()]}`;
+}
+
+function makeMonthKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function makeMonthLabel(value: Date) {
+  return `${MONTH_LABELS[value.getMonth()]} ${value.getFullYear()}`;
 }
 
 function makeSalesEventAt(row: TransactionMetricRow) {
@@ -141,6 +159,38 @@ function buildWeekTrend(rows: TransactionMetricRow[], now = new Date()) {
   );
 }
 
+function buildRollingDayTrend(rows: TransactionMetricRow[], now: Date, days: number, label: string) {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const buckets = Array.from({ length: days }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (days - 1 - index));
+
+    return {
+      key: makeDayKey(date),
+      label: makeDayLabel(date),
+      value: 0,
+      amount: 0
+    };
+  });
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+  for (const row of rows) {
+    const bucket = bucketByKey.get(makeDayKey(makeSalesEventAt(row)));
+    if (!bucket) {
+      continue;
+    }
+
+    bucket.value += 1;
+    bucket.amount += Number(row.amount ?? 0);
+  }
+
+  return makeTrendRange(
+    buckets.map(({ label: bucketLabel, value, amount }) => ({ label: bucketLabel, value, amount })),
+    label
+  );
+}
+
 function buildMonthTrend(rows: TransactionMetricRow[], now = new Date()) {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
@@ -179,7 +229,107 @@ function buildMonthTrend(rows: TransactionMetricRow[], now = new Date()) {
 
   return makeTrendRange(
     buckets.map(({ label, value, amount }) => ({ label, value, amount })),
-    "Bulan Ini"
+    "Bulan Berlangsung"
+  );
+}
+
+function buildRecentMonthsTrend(rows: TransactionMetricRow[], now: Date, monthCount: number, label: string) {
+  const startMonth = new Date(now.getFullYear(), now.getMonth() - (monthCount - 1), 1);
+  const buckets = Array.from({ length: monthCount }, (_, index) => {
+    const date = new Date(startMonth.getFullYear(), startMonth.getMonth() + index, 1);
+
+    return {
+      key: makeMonthKey(date),
+      label: makeMonthLabel(date),
+      value: 0,
+      amount: 0
+    };
+  });
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+  for (const row of rows) {
+    const eventAt = makeSalesEventAt(row);
+    const bucket = bucketByKey.get(makeMonthKey(eventAt));
+    if (!bucket) {
+      continue;
+    }
+
+    bucket.value += 1;
+    bucket.amount += Number(row.amount ?? 0);
+  }
+
+  return makeTrendRange(
+    buckets.map(({ label: bucketLabel, value, amount }) => ({ label: bucketLabel, value, amount })),
+    label
+  );
+}
+
+function buildYearToDateTrend(rows: TransactionMetricRow[], now = new Date()) {
+  const monthCount = now.getMonth() + 1;
+  const buckets = Array.from({ length: monthCount }, (_, monthIndex) => ({
+    key: `${now.getFullYear()}-${String(monthIndex + 1).padStart(2, "0")}`,
+    label: MONTH_LABELS[monthIndex],
+    value: 0,
+    amount: 0
+  }));
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+  for (const row of rows) {
+    const eventAt = makeSalesEventAt(row);
+    if (eventAt.getFullYear() !== now.getFullYear()) {
+      continue;
+    }
+
+    const bucket = bucketByKey.get(makeMonthKey(eventAt));
+    if (!bucket) {
+      continue;
+    }
+
+    bucket.value += 1;
+    bucket.amount += Number(row.amount ?? 0);
+  }
+
+  return makeTrendRange(
+    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    "Tahun Berjalan"
+  );
+}
+
+function buildAllTimeTrend(rows: TransactionMetricRow[], now = new Date()) {
+  if (rows.length === 0) {
+    return buildRecentMonthsTrend(rows, now, 12, "Semua Waktu");
+  }
+
+  const eventTimes = rows.map((row) => makeSalesEventAt(row).getTime());
+  const first = new Date(Math.min(...eventTimes));
+  const last = new Date(Math.max(...eventTimes, now.getTime()));
+  const totalMonths =
+    (last.getFullYear() - first.getFullYear()) * 12 + last.getMonth() - first.getMonth() + 1;
+  const buckets = Array.from({ length: totalMonths }, (_, index) => {
+    const date = new Date(first.getFullYear(), first.getMonth() + index, 1);
+
+    return {
+      key: makeMonthKey(date),
+      label: makeMonthLabel(date),
+      value: 0,
+      amount: 0
+    };
+  });
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
+
+  for (const row of rows) {
+    const bucket = bucketByKey.get(makeMonthKey(makeSalesEventAt(row)));
+    if (!bucket) {
+      continue;
+    }
+
+    bucket.value += 1;
+    bucket.amount += Number(row.amount ?? 0);
+  }
+
+  return makeTrendRange(
+    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    "Semua Waktu"
   );
 }
 
@@ -187,11 +337,21 @@ function buildSalesTrendRanges(rows: TransactionMetricRow[], now = new Date()) {
   const verifiedRows = rows.filter((row) => VERIFIED_TRANSACTION_STATUSES.has(row.status));
 
   return {
-    defaultRange: "week" as const,
+    defaultRange: "month" as const,
+    events: verifiedRows.map((row) => ({
+      amount: Number(row.amount ?? 0),
+      occurredAt: makeSalesEventAt(row).toISOString()
+    })),
     ranges: {
       day: buildDayTrend(verifiedRows, now),
       week: buildWeekTrend(verifiedRows, now),
-      month: buildMonthTrend(verifiedRows, now)
+      month: buildMonthTrend(verifiedRows, now),
+      last7: buildRollingDayTrend(verifiedRows, now, 7, "7 Hari Terakhir"),
+      last30: buildRollingDayTrend(verifiedRows, now, 30, "30 Hari Terakhir"),
+      last3Months: buildRecentMonthsTrend(verifiedRows, now, 3, "3 Bulan Terakhir"),
+      last12Months: buildRecentMonthsTrend(verifiedRows, now, 12, "12 Bulan Terakhir"),
+      yearToDate: buildYearToDateTrend(verifiedRows, now),
+      allTime: buildAllTimeTrend(verifiedRows, now)
     }
   };
 }
