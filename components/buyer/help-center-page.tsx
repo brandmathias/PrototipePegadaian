@@ -18,9 +18,15 @@ const faqItems = [
       "Fitur penawaran dapat terkunci karena dua kondisi: masih ada bid aktif pada Lelang Tertutup lain, atau akun sedang berada dalam masa pembatasan akibat pelanggaran pembayaran. Jika penyebabnya bid aktif, tunggu hasil lelang tersebut; setelah kalah, Anda dapat mengikuti lelang lain. Jika Anda menang, selesaikan pembayaran sampai diverifikasi admin unit. Jika penyebabnya pembatasan akun, fitur akan aktif otomatis setelah hitung mundur di halaman Pelanggaran selesai."
   },
   {
+    question:
+      "Mengapa saya harus berani memasang penawaran tertinggi dan jujur-jujurnya sejak awal jika ingin memenangkan aset impian di Ruang Agunan?",
+    answer:
+      "Kuncinya sederhana: Anda cukup memasang penawaran terbaik sesuai batas aman yang benar-benar Anda sanggupi. Di Ruang Agunan, nominal yang Anda kirim tidak dibuka selama lelang masih berjalan, sehingga peserta lain tidak bisa menebak atau menyesuaikan penawarannya dari angka Anda. Admin unit dan superadmin juga tidak mengetahui nominal bid peserta sebelum lelang berakhir. Karena itu, strategi paling aman adalah menawar secara jujur sesuai nilai terbaik versi Anda sendiri agar peluang menang tetap kuat tanpa perlu ikut arus atau terpancing suasana."
+  },
+  {
     question: "Bagaimana mekanisme Lelang Tertutup dari awal sampai akhir?",
     answer:
-      "Pilih barang berlabel Lelang Tertutup, baca detail barang, media, harga dasar, unit pelaksana, dan batas akhir lelang. Kirim nominal bid minimal sama dengan harga dasar. Selama lelang berjalan, bid disimpan tertutup dan tidak terlihat oleh peserta lain. Setelah deadline, sistem membuka escrow untuk menghitung hasil: bid tertinggi menjadi pemenang, sedangkan harga akhir mengikuti penawaran tertinggi kedua; jika hanya ada satu penawar, pembayaran mengikuti harga dasar. Pemenang wajib menyelesaikan pembayaran langsung di unit maksimal 24 jam, lalu admin unit memverifikasi pembayaran sebelum proses serah terima barang selesai."
+      "Pilih barang berlabel Lelang Tertutup, lalu baca detail barang, media, harga dasar, unit pelaksana, dan batas akhir lelang. Setelah itu, kirim nominal penawaran minimal sama dengan harga dasar. Selama lelang berlangsung, nominal bid setiap peserta tetap tertutup dan tidak terlihat oleh peserta lain. Admin unit dan superadmin juga tidak mengetahui nominal bid peserta sebelum lelang berakhir, sehingga prosesnya lebih fair dan menjaga strategi setiap peserta. Setelah waktu lelang habis, sistem menentukan pemenang secara otomatis berdasarkan penawaran yang masuk. Jika Anda menang, pembayaran wajib diselesaikan langsung di unit maksimal 24 jam, lalu admin unit memverifikasi pembayaran sebelum proses serah terima barang dilanjutkan."
   },
   {
     question: "Apakah saya boleh mengikuti lebih dari satu Lelang Tertutup sekaligus?",
@@ -198,9 +204,10 @@ export function BuyerHelpCenterPage() {
                     <div className="min-h-0 overflow-hidden">
                       <p
                         className={cn(
-                          "max-w-5xl px-5 pb-6 pt-1 text-sm font-medium leading-7 text-[#24365f] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:px-7 md:pl-14 md:text-base",
+                          "max-w-5xl px-5 pb-6 pt-1 text-left text-sm font-medium leading-7 text-[#24365f] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none md:px-7 md:pl-14 md:text-base",
                           expanded ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
                         )}
+                        style={{ textAlign: "justify", textJustify: "inter-word" }}
                       >
                         {item.answer}
                       </p>
