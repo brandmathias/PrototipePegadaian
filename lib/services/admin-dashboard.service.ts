@@ -33,6 +33,8 @@ type DashboardTrendPoint = {
   label: string;
   value: number;
   amount: number;
+  fixedPriceAmount: number;
+  vickreyAmount: number;
 };
 
 type DashboardTrendRange = {
@@ -52,6 +54,8 @@ type TransactionMetricRow = {
   userId: string;
   amount: string | null;
   status: string;
+  transactionType: string | null;
+  marketingMode: string | null;
   createdAt: Date;
   verifiedAt: Date | null;
 };
@@ -76,12 +80,30 @@ function makeSalesEventAt(row: TransactionMetricRow) {
   return row.verifiedAt ?? row.createdAt;
 }
 
+function makeBucketPoint(label: string): DashboardTrendPoint {
+  return { label, value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 };
+}
+
+function addRowToBucket(point: DashboardTrendPoint, row: TransactionMetricRow) {
+  const amount = Number(row.amount ?? 0);
+  const mode = String(row.transactionType ?? row.marketingMode ?? "").toLowerCase();
+
+  if (mode.includes("fixed")) {
+    point.fixedPriceAmount += amount;
+  } else {
+    point.vickreyAmount += amount;
+  }
+
+  point.value += 1;
+  point.amount += amount;
+}
+
 function makeTrendRange(points: DashboardTrendPoint[], label: string): DashboardTrendRange {
   const totalRevenue = points.reduce((sum, point) => sum + point.amount, 0);
   const verifiedTransactions = points.reduce((sum, point) => sum + point.value, 0);
   const peakPoint = points.reduce(
     (highest, point) => (point.amount > highest.amount ? point : highest),
-    points[0] ?? { label: "-", value: 0, amount: 0 }
+    points[0] ?? makeBucketPoint("-")
   );
 
   return {
@@ -103,9 +125,7 @@ function buildDayTrend(rows: TransactionMetricRow[], now = new Date()) {
   const buckets = Array.from({ length: 6 }, (_, index) => ({
     startHour: index * 4,
     endHour: index * 4 + 3,
-    label: `${String(index * 4).padStart(2, "0")}.00`,
-    value: 0,
-    amount: 0
+    ...makeBucketPoint(`${String(index * 4).padStart(2, "0")}.00`)
   }));
 
   for (const row of rows) {
@@ -117,12 +137,11 @@ function buildDayTrend(rows: TransactionMetricRow[], now = new Date()) {
     const hour = eventAt.getHours();
     const bucketIndex = Math.min(Math.floor(hour / 4), buckets.length - 1);
     const bucket = buckets[bucketIndex];
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Hari Ini"
   );
 }
@@ -136,9 +155,7 @@ function buildWeekTrend(rows: TransactionMetricRow[], now = new Date()) {
 
     return {
       key: makeDayKey(date),
-      label: makeDayLabel(date),
-      value: 0,
-      amount: 0
+      ...makeBucketPoint(makeDayLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -149,12 +166,11 @@ function buildWeekTrend(rows: TransactionMetricRow[], now = new Date()) {
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Minggu Ini"
   );
 }
@@ -168,9 +184,7 @@ function buildRollingDayTrend(rows: TransactionMetricRow[], now: Date, days: num
 
     return {
       key: makeDayKey(date),
-      label: makeDayLabel(date),
-      value: 0,
-      amount: 0
+      ...makeBucketPoint(makeDayLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -181,12 +195,11 @@ function buildRollingDayTrend(rows: TransactionMetricRow[], now: Date, days: num
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label: bucketLabel, value, amount }) => ({ label: bucketLabel, value, amount })),
+    buckets.map(({ label: bucketLabel, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label: bucketLabel, value, amount, fixedPriceAmount, vickreyAmount })),
     label
   );
 }
@@ -200,9 +213,7 @@ function buildMonthTrend(rows: TransactionMetricRow[], now = new Date()) {
 
     return {
       key: makeDayKey(date),
-      label: makeDayLabel(date),
-      value: 0,
-      amount: 0
+      ...makeBucketPoint(makeDayLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -214,12 +225,11 @@ function buildMonthTrend(rows: TransactionMetricRow[], now = new Date()) {
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Bulan Berlangsung"
   );
 }
@@ -231,9 +241,7 @@ function buildRecentMonthsTrend(rows: TransactionMetricRow[], now: Date, monthCo
 
     return {
       key: makeMonthKey(date),
-      label: makeMonthLabel(date),
-      value: 0,
-      amount: 0
+      ...makeBucketPoint(makeMonthLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -245,12 +253,11 @@ function buildRecentMonthsTrend(rows: TransactionMetricRow[], now: Date, monthCo
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label: bucketLabel, value, amount }) => ({ label: bucketLabel, value, amount })),
+    buckets.map(({ label: bucketLabel, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label: bucketLabel, value, amount, fixedPriceAmount, vickreyAmount })),
     label
   );
 }
@@ -259,9 +266,7 @@ function buildYearToDateTrend(rows: TransactionMetricRow[], now = new Date()) {
   const monthCount = now.getMonth() + 1;
   const buckets = Array.from({ length: monthCount }, (_, monthIndex) => ({
     key: `${now.getFullYear()}-${String(monthIndex + 1).padStart(2, "0")}`,
-    label: MONTH_LABELS[monthIndex],
-    value: 0,
-    amount: 0
+    ...makeBucketPoint(MONTH_LABELS[monthIndex])
   }));
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
 
@@ -276,12 +281,11 @@ function buildYearToDateTrend(rows: TransactionMetricRow[], now = new Date()) {
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Tahun Berjalan"
   );
 }
@@ -301,9 +305,7 @@ function buildAllTimeTrend(rows: TransactionMetricRow[], now = new Date()) {
 
     return {
       key: makeMonthKey(date),
-      label: makeMonthLabel(date),
-      value: 0,
-      amount: 0
+      ...makeBucketPoint(makeMonthLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -314,12 +316,11 @@ function buildAllTimeTrend(rows: TransactionMetricRow[], now = new Date()) {
       continue;
     }
 
-    bucket.value += 1;
-    bucket.amount += Number(row.amount ?? 0);
+    addRowToBucket(bucket, row);
   }
 
   return makeTrendRange(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Semua Waktu"
   );
 }
@@ -331,7 +332,9 @@ function buildSalesTrendRanges(rows: TransactionMetricRow[], now = new Date()) {
     defaultRange: "month" as const,
     events: verifiedRows.map((row) => ({
       amount: Number(row.amount ?? 0),
-      occurredAt: makeSalesEventAt(row).toISOString()
+      marketingMode: row.marketingMode,
+      occurredAt: makeSalesEventAt(row).toISOString(),
+      transactionType: row.transactionType
     })),
     ranges: {
       day: buildDayTrend(verifiedRows, now),
@@ -381,6 +384,8 @@ export async function getAdminDashboardData(unitId: string) {
         id: transaksi.id,
         userId: transaksi.userId,
         amount: transaksi.amount,
+        transactionType: transaksi.type,
+        marketingMode: pemasaran.mode,
         status: transaksi.status,
         createdAt: transaksi.createdAt,
         verifiedAt: transaksi.verifiedAt

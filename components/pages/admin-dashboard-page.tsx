@@ -19,6 +19,8 @@ export type DashboardTrendPoint = {
   label: string;
   value: number;
   amount: number;
+  fixedPriceAmount?: number;
+  vickreyAmount?: number;
 };
 
 export type DashboardSalesTimeframeKey =
@@ -34,7 +36,9 @@ export type DashboardSalesTimeframeKey =
 
 export type DashboardTrendEvent = {
   amount: number;
+  marketingMode?: string | null;
   occurredAt: string;
+  transactionType?: string | null;
 };
 
 export type DashboardTrendRange = {

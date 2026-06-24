@@ -61,6 +61,10 @@ function formatCurrencyCompact(value: number) {
   return `Rp ${formatShortNumber(value)}`;
 }
 
+function formatCurrencyFull(value: number) {
+  return `Rp ${Math.round(value).toLocaleString("id-ID")}`;
+}
+
 function formatAxisNumber(value: number) {
   if (Number.isInteger(value)) {
     return numberFormatter.format(value);
@@ -80,16 +84,25 @@ function shouldShowXAxisLabel(index: number, total: number) {
   return index === 0 || index === total - 1 || index % step === 0;
 }
 
+function getTrendVickreyAmount(point: DashboardTrendPoint) {
+  const hasSplit = point.vickreyAmount !== undefined || point.fixedPriceAmount !== undefined;
+  return hasSplit ? Number(point.vickreyAmount ?? 0) : Number(point.amount ?? 0);
+}
+
+function getTrendFixedPriceAmount(point: DashboardTrendPoint) {
+  return Number(point.fixedPriceAmount ?? 0);
+}
+
 function buildChartModel(series: DashboardTrendPoint[]) {
   const fallback = series.length
     ? series
     : [
-        { label: "00.00", value: 0, amount: 0 },
-        { label: "04.00", value: 0, amount: 0 },
-        { label: "08.00", value: 0, amount: 0 },
-        { label: "12.00", value: 0, amount: 0 },
-        { label: "16.00", value: 0, amount: 0 },
-        { label: "20.00", value: 0, amount: 0 }
+        { label: "00.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+        { label: "04.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+        { label: "08.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+        { label: "12.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+        { label: "16.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+        { label: "20.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 }
       ];
   const chart = {
     left: 70,
@@ -107,7 +120,14 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       y: chart.bottom - (chart.bottom - chart.top) * ratio
     };
   });
+  const getY = (amount: number) => {
+    const plotValue = amount / 1_000_000;
+    const ratio = Math.min(plotValue / maxAxisValue, 1);
+    return chart.bottom - ratio * (chart.bottom - chart.top);
+  };
   const points = fallback.map((point, index) => {
+    const fixedPriceAmount = getTrendFixedPriceAmount(point);
+    const vickreyAmount = getTrendVickreyAmount(point);
     const plotValue = Number(point.amount ?? 0) / 1_000_000;
     const ratio = Math.min(plotValue / maxAxisValue, 1);
     const x = chart.left + step * index;
@@ -124,40 +144,48 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       hitWidthPercent: ((hitRight - hitLeft) / 980) * 100,
       labelWidth: Math.max(54, point.label.length * 8.4 + 24),
       leftPercent: (x / 980) * 100,
+      fixedPriceAmount,
+      fixedPriceY: getY(fixedPriceAmount),
       plotValue,
       topPercent: (y / chartViewBoxHeight) * 100,
+      vickreyAmount,
+      vickreyY: getY(vickreyAmount),
       x,
       y
     };
   });
-  const linePaths: string[] = [];
-  const areaPaths: string[] = [];
-  let segment: typeof points = [];
-  const flushSegment = () => {
-    if (segment.length > 1) {
-      const linePath = segment
-        .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
-        .join(" ");
-      linePaths.push(linePath);
-      areaPaths.push(
-        `${linePath} L${segment[segment.length - 1].x.toFixed(1)} ${chart.bottom} L${segment[0].x.toFixed(1)} ${chart.bottom} Z`
-      );
-    }
-    segment = [];
-  };
+  const buildSeriesPaths = (getAmount: (point: (typeof points)[number]) => number, getYValue: (point: (typeof points)[number]) => number) => {
+    const paths: string[] = [];
+    let segment: typeof points = [];
+    const flushSegment = () => {
+      if (segment.length > 1) {
+        paths.push(
+          segment
+            .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${getYValue(point).toFixed(1)}`)
+            .join(" ")
+        );
+      }
+      segment = [];
+    };
 
-  for (const point of points) {
-    if (point.plotValue > 0) {
-      segment.push(point);
-    } else {
-      flushSegment();
+    for (const point of points) {
+      if (getAmount(point) > 0) {
+        segment.push(point);
+      } else {
+        flushSegment();
+      }
     }
-  }
-  flushSegment();
+    flushSegment();
+
+    return paths;
+  };
+  const linePaths = {
+    fixedPrice: buildSeriesPaths((point) => point.fixedPriceAmount, (point) => point.fixedPriceY),
+    vickrey: buildSeriesPaths((point) => point.vickreyAmount, (point) => point.vickreyY)
+  };
 
   return {
     axisTicks,
-    areaPaths,
     chart,
     linePaths,
     points
@@ -241,6 +269,24 @@ function formatMonthLabel(date: Date) {
   return `${monthLabels[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+function createTrendPoint(label: string): DashboardTrendPoint {
+  return { label, value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 };
+}
+
+function addEventToTrendPoint(point: DashboardTrendPoint, event: DashboardTrendEvent) {
+  const amount = Number(event.amount ?? 0);
+  const mode = String(event.transactionType ?? event.marketingMode ?? "").toLowerCase();
+
+  if (mode.includes("fixed")) {
+    point.fixedPriceAmount = Number(point.fixedPriceAmount ?? 0) + amount;
+  } else {
+    point.vickreyAmount = Number(point.vickreyAmount ?? 0) + amount;
+  }
+
+  point.value += 1;
+  point.amount += amount;
+}
+
 function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustomRange): DashboardTrendRange {
   const start = parseDateKey(range.startDate);
   const end = parseDateKey(range.endDate);
@@ -254,9 +300,7 @@ function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustom
 
       return {
         key: toDateKey(date),
-        label: formatDayLabel(date),
-        value: 0,
-        amount: 0
+        ...createTrendPoint(formatDayLabel(date))
       };
     });
     const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -271,12 +315,11 @@ function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustom
       if (!bucket) {
         continue;
       }
-      bucket.value += 1;
-      bucket.amount += Number(event.amount ?? 0);
+      addEventToTrendPoint(bucket, event);
     }
 
     return makeRangeFromPoints(
-      buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+      buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
       "Rentang Kustom"
     );
   }
@@ -287,9 +330,7 @@ function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustom
 
     return {
       key: `${date.getFullYear()}-${date.getMonth()}`,
-      label: formatMonthLabel(date),
-      value: 0,
-      amount: 0
+      ...createTrendPoint(formatMonthLabel(date))
     };
   });
   const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
@@ -304,12 +345,11 @@ function makeCustomTrendRange(events: DashboardTrendEvent[], range: ReportCustom
     if (!bucket) {
       continue;
     }
-    bucket.value += 1;
-    bucket.amount += Number(event.amount ?? 0);
+    addEventToTrendPoint(bucket, event);
   }
 
   return makeRangeFromPoints(
-    buckets.map(({ label, value, amount }) => ({ label, value, amount })),
+    buckets.map(({ label, value, amount, fixedPriceAmount, vickreyAmount }) => ({ label, value, amount, fixedPriceAmount, vickreyAmount })),
     "Rentang Kustom"
   );
 }
@@ -319,7 +359,7 @@ function makeRangeFromPoints(points: DashboardTrendPoint[], label: string): Dash
   const verifiedTransactions = points.reduce((sum, point) => sum + point.value, 0);
   const peakPoint = points.reduce(
     (highest, point) => (point.amount > highest.amount ? point : highest),
-    points[0] ?? { label: "-", value: 0, amount: 0 }
+    points[0] ?? createTrendPoint("-")
   );
 
   return {
@@ -389,6 +429,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
         </div>
 
         <div className="relative h-[21rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
+          <div className="pointer-events-none absolute right-4 top-3 z-[1] hidden items-center gap-4 text-[0.68rem] font-black text-[#3f4f48] dark:text-slate-300/78 sm:flex">
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+              Lelang Tertutup
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+              Harga Tetap
+            </span>
+          </div>
           <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
             <defs>
               <linearGradient id="admin-dashboard-area" x1="0" x2="0" y1="0" y2="1">
@@ -458,19 +508,30 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             </g>
             <line className="stroke-[#cfdcd4] dark:stroke-white/12" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.15" />
 
-            {chart.areaPaths.map((areaPath, index) => (
-              <path d={areaPath} fill="url(#admin-dashboard-area)" key={`area-${index}`} />
-            ))}
-            {chart.linePaths.map((linePath, index) => (
+            {chart.linePaths.fixedPrice.map((linePath, index) => (
               <path
+                className="transition-[opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                 d={linePath}
                 fill="none"
                 filter="url(#admin-dashboard-line-shadow)"
-                key={`line-${index}`}
-                stroke="#0ea34e"
+                key={`fixed-line-${index}`}
+                stroke="#9bd191"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="3"
+                strokeWidth="3.1"
+              />
+            ))}
+            {chart.linePaths.vickrey.map((linePath, index) => (
+              <path
+                className="transition-[opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                d={linePath}
+                fill="none"
+                filter="url(#admin-dashboard-line-shadow)"
+                key={`vickrey-line-${index}`}
+                stroke="#005626"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3.2"
               />
             ))}
 
@@ -486,8 +547,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 />
-                {activePoint.plotValue > 0 ? (
-                  <circle cx={activePoint.x} cy={activePoint.y} fill="rgba(30,185,95,0.14)" r="22" />
+                {activePoint.vickreyAmount > 0 ? (
+                  <circle cx={activePoint.x} cy={activePoint.vickreyY} fill="rgba(0,86,38,0.13)" r="19" />
+                ) : null}
+                {activePoint.fixedPriceAmount > 0 ? (
+                  <circle cx={activePoint.x} cy={activePoint.fixedPriceY} fill="rgba(155,209,145,0.2)" r="18" />
                 ) : null}
               </g>
             ) : null}
@@ -495,28 +559,52 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             {chart.points.map((point, index) => {
               const active = index === activePointIndex;
 
-              if (point.plotValue <= 0) {
+              if (point.vickreyAmount <= 0 && point.fixedPriceAmount <= 0) {
                 return null;
               }
 
               return (
                 <g key={`${point.label}-marker-${index}`}>
-                  <circle
-                    className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
-                    cx={point.x}
-                    cy={point.y}
-                    fill="rgba(30,185,95,0.13)"
-                    r={active ? 17 : 12}
-                  />
-                  <circle
-                    className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
-                    cx={point.x}
-                    cy={point.y}
-                    fill="#ffffff"
-                    r={active ? 7.4 : 6.2}
-                    stroke="#10a24f"
-                    strokeWidth="3.2"
-                  />
+                  {point.vickreyAmount > 0 ? (
+                    <>
+                      <circle
+                        className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                        cx={point.x}
+                        cy={point.vickreyY}
+                        fill="rgba(0,86,38,0.12)"
+                        r={active ? 15 : 10}
+                      />
+                      <circle
+                        className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                        cx={point.x}
+                        cy={point.vickreyY}
+                        fill="#ffffff"
+                        r={active ? 6.6 : 5.4}
+                        stroke="#005626"
+                        strokeWidth="3"
+                      />
+                    </>
+                  ) : null}
+                  {point.fixedPriceAmount > 0 ? (
+                    <>
+                      <circle
+                        className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                        cx={point.x}
+                        cy={point.fixedPriceY}
+                        fill="rgba(155,209,145,0.18)"
+                        r={active ? 14 : 9.5}
+                      />
+                      <circle
+                        className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                        cx={point.x}
+                        cy={point.fixedPriceY}
+                        fill="#ffffff"
+                        r={active ? 6.2 : 5}
+                        stroke="#9bd191"
+                        strokeWidth="3"
+                      />
+                    </>
+                  ) : null}
                 </g>
               );
             })}
@@ -568,7 +656,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
           {chart.points.map((point, index) => (
             <button
-              aria-label={`${point.label}: ${formatCount(point.value)} transaksi lunas, ${formatCurrencyCompact(point.amount)}`}
+              aria-label={`${point.label}: Lelang Tertutup ${formatCurrencyFull(point.vickreyAmount)}, Harga Tetap ${formatCurrencyFull(point.fixedPriceAmount)}, Volume ${formatCount(point.value)} transaksi`}
               className="absolute rounded-lg outline-none transition-[background-color,box-shadow] duration-150 ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               key={`${point.label}-hotspot-${index}`}
               onBlur={() => setActivePointIndex(null)}
@@ -587,7 +675,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
           {activePoint ? (
             <div
-              className="pointer-events-none absolute w-[13.4rem] -translate-x-1/2 -translate-y-full rounded-[1rem] border border-[#cfe7d8] bg-white/98 px-4 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.2,0,0,1)] dark:border-emerald-300/18 dark:bg-[#102019]/98 dark:shadow-[0_22px_54px_-28px_rgba(0,0,0,0.72)] dark:ring-white/8"
+              className="pointer-events-none absolute z-[3] w-[16.25rem] -translate-x-1/2 -translate-y-full rounded-[0.95rem] border border-[#cfe7d8] bg-white px-3.5 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.2,0,0,1)] dark:border-emerald-300/18 dark:bg-[#102019] dark:shadow-[0_22px_54px_-28px_rgba(0,0,0,0.72)] dark:ring-white/8"
               role="tooltip"
               style={{
                 left: `clamp(7rem, ${activePoint.leftPercent}%, calc(100% - 7rem))`,
@@ -595,15 +683,48 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               }}
             >
               <div className="absolute left-1/2 top-full size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#cfe7d8] bg-white dark:border-emerald-300/18 dark:bg-[#102019]" />
-              <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#6a7d73] dark:text-slate-300/68">
-                {activePoint.label}
-              </p>
-              <p className="mt-1 font-headline text-[1.35rem] font-black leading-none tracking-[-0.035em] text-[#08633b] dark:text-emerald-200">
-                {formatCurrencyCompact(activePoint.amount)}
-              </p>
-              <p className="mt-1 text-[0.78rem] font-semibold text-[#60736a] dark:text-slate-300/72">
-                {formatCount(activePoint.value)} transaksi lunas
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6a7d73] dark:text-slate-300/68">
+                    {activePoint.label}
+                  </p>
+                  <p className="mt-1 font-headline text-[1.15rem] font-black leading-none text-[#00563b] dark:text-emerald-200">
+                    {formatCurrencyFull(activePoint.amount)}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#fff7e6] px-2.5 py-1 text-[0.68rem] font-black text-[#c97900] dark:bg-amber-300/12 dark:text-amber-100">
+                  {formatCount(activePoint.value)} trx
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2 text-[0.75rem] font-bold text-[#52615d] dark:text-slate-300/78">
+                <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f5faf7] px-2.5 py-2 dark:bg-emerald-300/8">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-2.5 rounded-[0.18rem] bg-[#005626]" />
+                    Lelang Tertutup
+                  </span>
+                  <span className="font-black text-[#00563b] dark:text-emerald-200">
+                    {formatCurrencyFull(activePoint.vickreyAmount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2 dark:bg-emerald-300/8">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-2.5 rounded-[0.18rem] bg-[#9bd191]" />
+                    Harga Tetap
+                  </span>
+                  <span className="font-black text-[#3f8d42] dark:text-emerald-100">
+                    {formatCurrencyFull(activePoint.fixedPriceAmount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#fff9ef] px-2.5 py-2 dark:bg-amber-300/8">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-2.5 rounded-full border-2 border-[#f59e0b] bg-white dark:bg-[#102019]" />
+                    Volume
+                  </span>
+                  <span className="font-black text-[#c97900] dark:text-amber-100">
+                    {formatCount(activePoint.value)} transaksi
+                  </span>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>

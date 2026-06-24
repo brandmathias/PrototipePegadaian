@@ -41,12 +41,12 @@ const baseDashboardData = {
         day: {
           label: "Hari Ini",
           points: [
-            { label: "00.00", value: 0, amount: 0 },
-            { label: "04.00", value: 1, amount: 4_000_000 },
-            { label: "08.00", value: 0, amount: 0 },
-            { label: "12.00", value: 1, amount: 6_000_000 },
-            { label: "16.00", value: 0, amount: 0 },
-            { label: "20.00", value: 0, amount: 0 }
+            { label: "00.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "04.00", value: 1, amount: 4_000_000, fixedPriceAmount: 0, vickreyAmount: 4_000_000 },
+            { label: "08.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "12.00", value: 1, amount: 6_000_000, fixedPriceAmount: 6_000_000, vickreyAmount: 0 },
+            { label: "16.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "20.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 }
           ],
           summary: {
             totalRevenue: 10_000_000,
@@ -59,13 +59,13 @@ const baseDashboardData = {
         week: {
           label: "Minggu Ini",
           points: [
-            { label: "23 Mei", value: 0, amount: 0 },
-            { label: "24 Mei", value: 1, amount: 2_000_000 },
-            { label: "25 Mei", value: 0, amount: 0 },
-            { label: "26 Mei", value: 1, amount: 5_000_000 },
-            { label: "27 Mei", value: 0, amount: 0 },
-            { label: "28 Mei", value: 2, amount: 8_000_000 },
-            { label: "29 Mei", value: 1, amount: 5_000_000 }
+            { label: "23 Mei", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "24 Mei", value: 1, amount: 2_000_000, fixedPriceAmount: 2_000_000, vickreyAmount: 0 },
+            { label: "25 Mei", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "26 Mei", value: 1, amount: 5_000_000, fixedPriceAmount: 0, vickreyAmount: 5_000_000 },
+            { label: "27 Mei", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "28 Mei", value: 2, amount: 8_000_000, fixedPriceAmount: 3_000_000, vickreyAmount: 5_000_000 },
+            { label: "29 Mei", value: 1, amount: 5_000_000, fixedPriceAmount: 0, vickreyAmount: 5_000_000 }
           ],
           summary: {
             totalRevenue: 20_000_000,
@@ -78,11 +78,11 @@ const baseDashboardData = {
         month: {
           label: "Bulan Berlangsung",
           points: [
-            { label: "1 Mei", value: 1, amount: 2_000_000 },
-            { label: "8 Mei", value: 0, amount: 0 },
-            { label: "15 Mei", value: 2, amount: 7_000_000 },
-            { label: "22 Mei", value: 3, amount: 9_000_000 },
-            { label: "29 Mei", value: 1, amount: 2_000_000 }
+            { label: "1 Mei", value: 1, amount: 2_000_000, fixedPriceAmount: 0, vickreyAmount: 2_000_000 },
+            { label: "8 Mei", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 },
+            { label: "15 Mei", value: 2, amount: 7_000_000, fixedPriceAmount: 4_000_000, vickreyAmount: 3_000_000 },
+            { label: "22 Mei", value: 3, amount: 9_000_000, fixedPriceAmount: 6_000_000, vickreyAmount: 3_000_000 },
+            { label: "29 Mei", value: 1, amount: 2_000_000, fixedPriceAmount: 0, vickreyAmount: 2_000_000 }
           ],
           summary: {
             totalRevenue: 20_000_000,
@@ -277,21 +277,30 @@ describe("AdminDashboardPage", () => {
     );
     expect(chartTexts).not.toContain("30");
 
-    const trendPoint = screen.getByRole("button", { name: /22 Mei: 3 transaksi lunas, Rp 9 jt/i });
-    const emptyTrendPoint = screen.getByRole("button", { name: /8 Mei: 0 transaksi lunas, Rp 0/i });
+    const trendPoint = screen.getByRole("button", {
+      name: /22 Mei: Lelang Tertutup Rp 3\.000\.000, Harga Tetap Rp 6\.000\.000, Volume 3 transaksi/i,
+    });
+    const emptyTrendPoint = screen.getByRole("button", {
+      name: /8 Mei: Lelang Tertutup Rp 0, Harga Tetap Rp 0, Volume 0 transaksi/i,
+    });
 
     fireEvent.mouseEnter(emptyTrendPoint);
 
     expect(screen.getByRole("tooltip")).toHaveTextContent("8 Mei");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("0 transaksi lunas");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("0 transaksi");
 
     fireEvent.mouseEnter(trendPoint);
 
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip).toHaveClass("-translate-x-1/2");
     expect(within(tooltip).getByText(/^22 Mei$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^Rp 9 jt$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^3 transaksi lunas$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Rp 9\.000\.000$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Lelang Tertutup$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Rp 3\.000\.000$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Harga Tetap$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Rp 6\.000\.000$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Volume$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^3 transaksi$/i)).toBeInTheDocument();
   });
 
   it("falls back to live transaction data when precomputed metrics are unavailable", () => {
