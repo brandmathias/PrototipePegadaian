@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate:handover-proof": "tsx scripts/apply-handover-proof-migration.ts",
+    "db:migrate:handover-auto-completion": "tsx scripts/apply-handover-auto-completion-migration.ts",
     "db:backfill:blacklist": "tsx scripts/backfill-blacklist-violation-totals.ts",
     "test": "vitest run",
     "test:watch": "vitest"
