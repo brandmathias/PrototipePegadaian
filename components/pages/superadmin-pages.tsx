@@ -892,7 +892,8 @@ const dashboardChartFrame = {
   bottom: 184,
   left: 76,
 };
-const dashboardChartTickCount = 4;
+const dashboardAmountAxisMax = 25_000_000;
+const dashboardAmountTickValues = [5_000_000, 10_000_000, 15_000_000, 20_000_000, 25_000_000];
 const dashboardTrendRangeOptions: Array<ReportRangeOption<SuperAdminValidatedTrendRangeKey>> = [
   { value: "last7", label: "7 Hari Terakhir", helper: "Rentang mingguan berjalan" },
   { value: "last30", label: "30 Hari Terakhir", helper: "Pergerakan harian" },
@@ -1105,39 +1106,13 @@ function clampChartValue(value: number, maxValue: number) {
   return Math.min(Math.max(value, 0), maxValue);
 }
 
-function getNiceAmountAxisMax(value: number) {
-  const valueInMillions = Math.max(value / 1_000_000, 1);
-  const rawStep = valueInMillions / dashboardChartTickCount;
-  const exponent = Math.floor(Math.log10(rawStep));
-  const base = 10 ** exponent;
-  const ratio = rawStep / base;
-  const factor =
-    ratio <= 1
-      ? 1
-      : ratio <= 2
-        ? 2
-        : ratio <= 2.5
-          ? 2.5
-          : ratio <= 5
-            ? 5
-            : ratio <= 7.5
-              ? 7.5
-              : 10;
-  const stepInMillions = factor * base;
-
-  return stepInMillions * dashboardChartTickCount * 1_000_000;
-}
-
 function buildChartTicks({
   formatter,
-  maxValue,
 }: {
   formatter: (value: number) => string;
-  maxValue: number;
 }) {
-  return Array.from({ length: dashboardChartTickCount + 1 }, (_, index) => {
-    const value = (maxValue / dashboardChartTickCount) * index;
-    const ratio = value / maxValue;
+  return dashboardAmountTickValues.map((value) => {
+    const ratio = value / dashboardAmountAxisMax;
     const y =
       dashboardChartFrame.bottom -
       ratio * (dashboardChartFrame.bottom - dashboardChartFrame.top);
@@ -1292,23 +1267,9 @@ export function SuperAdminDashboardPage({
     snapshotItems,
     "Nilai Transaksi Tervalidasi",
   );
-  const maxVisibleAmount = Math.max(
-    ...trendPoints.map((point) => {
-      const vickreyAmount = chartVisibility.vickrey
-        ? getTrendVickreyAmount(point)
-        : 0;
-      const fixedPriceAmount = chartVisibility.fixedPrice
-        ? getTrendFixedPriceAmount(point)
-        : 0;
-
-      return vickreyAmount + fixedPriceAmount;
-    }),
-    1,
-  );
-  const amountAxisMax = getNiceAmountAxisMax(maxVisibleAmount);
+  const amountAxisMax = dashboardAmountAxisMax;
   const amountTicks = buildChartTicks({
     formatter: formatAmountTick,
-    maxValue: amountAxisMax,
   });
   const slotWidth =
     (dashboardChartFrame.right - dashboardChartFrame.left) /
@@ -1601,9 +1562,10 @@ export function SuperAdminDashboardPage({
                 {amountTicks.map((tick) => (
                   <g key={`amount-${tick.value}`}>
                     <line
-                      stroke="#e5ebe7"
+                      stroke="#cbd8d0"
                       strokeDasharray="4 7"
-                      strokeWidth="1"
+                      strokeOpacity="0.78"
+                      strokeWidth="1.15"
                       x1={dashboardChartFrame.left}
                       x2={dashboardChartFrame.right}
                       y1={tick.y}
@@ -1675,6 +1637,7 @@ export function SuperAdminDashboardPage({
                     <g key={point.label}>
                       {fixedHeight > 0 ? (
                         <rect
+                          className="transition-[fill,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                           fill={active ? "#87ca7f" : "#9bd191"}
                           height={hasStackedSegments ? totalHeight : fixedHeight}
                           opacity={active ? 1 : 0.96}
@@ -1687,6 +1650,7 @@ export function SuperAdminDashboardPage({
                       {vickreyHeight > 0 ? (
                         hasStackedSegments ? (
                           <path
+                            className="transition-[fill,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                             d={makeBottomRoundedRectPath({
                               height: darkSegmentHeight,
                               radius: 6,
@@ -1699,6 +1663,7 @@ export function SuperAdminDashboardPage({
                           />
                         ) : (
                           <rect
+                            className="transition-[fill,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                             fill={active ? "#00451f" : "#005626"}
                             height={vickreyHeight}
                             opacity={active ? 1 : 0.96}
@@ -1744,7 +1709,7 @@ export function SuperAdminDashboardPage({
                     <line
                       stroke="#f59e0b"
                       strokeDasharray="4 6"
-                      strokeOpacity="0.32"
+                      strokeOpacity="0.4"
                       strokeWidth="1.5"
                       x1={activeTrendPoint.x}
                       x2={activeTrendPoint.x}
@@ -1776,7 +1741,7 @@ export function SuperAdminDashboardPage({
 
               {activeTrendPoint ? (
                 <div
-                  className="pointer-events-none absolute z-[3] w-[16.25rem] -translate-x-1/2 -translate-y-full rounded-[0.95rem] border border-[#cfe7d8] bg-white px-3.5 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                  className="pointer-events-none absolute z-[3] w-[16.25rem] -translate-x-1/2 -translate-y-full rounded-[0.95rem] border border-[#cfe7d8] bg-white px-3.5 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.2,0,0,1)]"
                   role="tooltip"
                   style={{
                     left: `clamp(7rem, ${activeTrendPoint.leftPercent}%, calc(100% - 7rem))`,

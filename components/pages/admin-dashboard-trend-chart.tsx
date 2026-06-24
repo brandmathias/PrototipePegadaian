@@ -33,6 +33,8 @@ type DashboardStripMetric = {
 
 const chartAxisFontFamily = 'var(--font-manrope), "Segoe UI", system-ui, sans-serif';
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
+const chartAxisMaxValue = 25;
+const chartAxisTickValues = [5, 10, 15, 20, 25];
 const numberFormatter = new Intl.NumberFormat("id-ID");
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -66,10 +68,6 @@ function formatAxisNumber(value: number) {
   return numberFormatter.format(Number(value.toFixed(1)));
 }
 
-function resolveAxisMax(value: number) {
-  return Math.max(30, Math.ceil(value / 5) * 5);
-}
-
 function shouldShowXAxisLabel(index: number, total: number) {
   if (total <= 8) {
     return true;
@@ -98,16 +96,14 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     top: 38,
     bottom: 245
   };
-  const maxPlotValue = Math.max(...fallback.map((point) => Number(point.value ?? 0)));
-  const maxAxisValue = resolveAxisMax(maxPlotValue);
+  const maxAxisValue = chartAxisMaxValue;
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
-  const axisTicks = Array.from({ length: 7 }, (_, index) => {
-    const ratio = index / 6;
-    const value = maxAxisValue - maxAxisValue * ratio;
+  const axisTicks = [...chartAxisTickValues].reverse().map((value) => {
+    const ratio = value / maxAxisValue;
 
     return {
       label: formatAxisNumber(value),
-      y: chart.top + (chart.bottom - chart.top) * ratio
+      y: chart.bottom - (chart.bottom - chart.top) * ratio
     };
   });
   const points = fallback.map((point, index) => {
@@ -115,10 +111,16 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     const ratio = Math.min(plotValue / maxAxisValue, 1);
     const x = chart.left + step * index;
     const y = chart.bottom - ratio * (chart.bottom - chart.top);
+    const hitLeft = fallback.length <= 1 ? chart.left : index === 0 ? chart.left : x - step / 2;
+    const hitRight = fallback.length <= 1 ? chart.right : index === fallback.length - 1 ? chart.right : x + step / 2;
 
     return {
       ...point,
       isActiveData: Number(point.amount ?? 0) > 0 || Number(point.value ?? 0) > 0,
+      hitHeightPercent: ((chart.bottom - chart.top) / 300) * 100,
+      hitLeftPercent: (hitLeft / 980) * 100,
+      hitTopPercent: (chart.top / 300) * 100,
+      hitWidthPercent: ((hitRight - hitLeft) / 980) * 100,
       labelWidth: Math.max(54, point.label.length * 8.4 + 24),
       leftPercent: (x / 980) * 100,
       plotValue,
@@ -127,14 +129,36 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       y
     };
   });
-  const linePath = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
-  const areaPath = `${linePath} L${points[points.length - 1].x.toFixed(1)} ${chart.bottom} L${points[0].x.toFixed(1)} ${chart.bottom} Z`;
+  const linePaths: string[] = [];
+  const areaPaths: string[] = [];
+  let segment: typeof points = [];
+  const flushSegment = () => {
+    if (segment.length > 1) {
+      const linePath = segment
+        .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+        .join(" ");
+      linePaths.push(linePath);
+      areaPaths.push(
+        `${linePath} L${segment[segment.length - 1].x.toFixed(1)} ${chart.bottom} L${segment[0].x.toFixed(1)} ${chart.bottom} Z`
+      );
+    }
+    segment = [];
+  };
+
+  for (const point of points) {
+    if (point.plotValue > 0) {
+      segment.push(point);
+    } else {
+      flushSegment();
+    }
+  }
+  flushSegment();
 
   return {
     axisTicks,
-    areaPath,
+    areaPaths,
     chart,
-    linePath,
+    linePaths,
     points
   };
 }
@@ -414,23 +438,28 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               ))}
             </g>
 
-            <g className="stroke-[#dfe5de] dark:stroke-white/10" strokeDasharray="3 5" strokeWidth="1.1">
-              {chart.axisTicks.slice(0, -1).map((tick) => (
+            <g className="stroke-[#c3d2c9] dark:stroke-white/16" strokeDasharray="4 6" strokeWidth="1.2">
+              {chart.axisTicks.map((tick) => (
                 <line key={tick.label} x1={chart.chart.left} x2={chart.chart.right} y1={tick.y} y2={tick.y} />
               ))}
             </g>
-            <line className="stroke-[#dfe5de] dark:stroke-white/10" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.1" />
+            <line className="stroke-[#cfdcd4] dark:stroke-white/12" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.15" />
 
-            <path d={chart.areaPath} fill="url(#admin-dashboard-area)" />
-            <path
-              d={chart.linePath}
-              fill="none"
-              filter="url(#admin-dashboard-line-shadow)"
-              stroke="#0ea34e"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="3"
-            />
+            {chart.areaPaths.map((areaPath, index) => (
+              <path d={areaPath} fill="url(#admin-dashboard-area)" key={`area-${index}`} />
+            ))}
+            {chart.linePaths.map((linePath, index) => (
+              <path
+                d={linePath}
+                fill="none"
+                filter="url(#admin-dashboard-line-shadow)"
+                key={`line-${index}`}
+                stroke="#0ea34e"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="3"
+              />
+            ))}
 
             {activePoint ? (
               <g>
@@ -444,31 +473,36 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 />
-                <circle cx={activePoint.x} cy={activePoint.y} fill="rgba(30,185,95,0.14)" r="22" />
+                {activePoint.plotValue > 0 ? (
+                  <circle cx={activePoint.x} cy={activePoint.y} fill="rgba(30,185,95,0.14)" r="22" />
+                ) : null}
               </g>
             ) : null}
 
             {chart.points.map((point, index) => {
               const active = index === activePointIndex;
-              const visibleDataPoint = point.isActiveData || index === 0 || index === chart.points.length - 1;
+
+              if (point.plotValue <= 0) {
+                return null;
+              }
 
               return (
                 <g key={`${point.label}-marker-${index}`}>
-                  {visibleDataPoint ? (
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      fill={point.isActiveData ? "rgba(30,185,95,0.13)" : "rgba(30,185,95,0.08)"}
-                      r={active ? 17 : point.isActiveData ? 12 : 9}
-                    />
-                  ) : null}
                   <circle
+                    className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                    cx={point.x}
+                    cy={point.y}
+                    fill="rgba(30,185,95,0.13)"
+                    r={active ? 17 : 12}
+                  />
+                  <circle
+                    className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                     cx={point.x}
                     cy={point.y}
                     fill="#ffffff"
-                    r={active ? 7.4 : point.isActiveData ? 6.2 : 4.2}
-                    stroke={point.isActiveData ? "#10a24f" : "#b9d8c4"}
-                    strokeWidth={point.isActiveData ? 3.2 : 2.2}
+                    r={active ? 7.4 : 6.2}
+                    stroke="#10a24f"
+                    strokeWidth="3.2"
                   />
                 </g>
               );
@@ -522,15 +556,17 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           {chart.points.map((point, index) => (
             <button
               aria-label={`${point.label}: ${formatCount(point.value)} transaksi lunas, ${formatCurrencyCompact(point.amount)}`}
-              className="absolute size-11 -translate-x-1/2 -translate-y-1/2 rounded-full outline-none transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="absolute rounded-lg outline-none transition-[background-color,box-shadow] duration-150 ease-[cubic-bezier(0.2,0,0,1)] focus-visible:ring-2 focus-visible:ring-[#18a65a] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               key={`${point.label}-hotspot-${index}`}
               onBlur={() => setActivePointIndex(null)}
               onFocus={() => setActivePointIndex(index)}
               onMouseEnter={() => setActivePointIndex(index)}
               onMouseLeave={() => setActivePointIndex(null)}
               style={{
-                left: `${point.leftPercent}%`,
-                top: `${point.topPercent}%`
+                height: `${point.hitHeightPercent}%`,
+                left: `${point.hitLeftPercent}%`,
+                top: `${point.hitTopPercent}%`,
+                width: `${point.hitWidthPercent}%`
               }}
               type="button"
             />
@@ -538,11 +574,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
           {activePoint ? (
             <div
-              className="pointer-events-none absolute w-[13.4rem] -translate-x-1/2 -translate-y-full rounded-[1rem] border border-[#cfe7d8] bg-white/98 px-4 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] dark:border-emerald-300/18 dark:bg-[#102019]/98 dark:shadow-[0_22px_54px_-28px_rgba(0,0,0,0.72)] dark:ring-white/8"
+              className="pointer-events-none absolute w-[13.4rem] -translate-x-1/2 -translate-y-full rounded-[1rem] border border-[#cfe7d8] bg-white/98 px-4 py-3 text-left shadow-[0_22px_50px_-30px_rgba(0,82,45,0.45)] ring-1 ring-white/70 transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.2,0,0,1)] dark:border-emerald-300/18 dark:bg-[#102019]/98 dark:shadow-[0_22px_54px_-28px_rgba(0,0,0,0.72)] dark:ring-white/8"
               role="tooltip"
               style={{
                 left: `clamp(7rem, ${activePoint.leftPercent}%, calc(100% - 7rem))`,
-                top: `calc(${activePoint.topPercent}% - 0.9rem)`
+                top: `clamp(7rem, calc(${activePoint.topPercent}% - 0.9rem), calc(100% - 0.5rem))`
               }}
             >
               <div className="absolute left-1/2 top-full size-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#cfe7d8] bg-white dark:border-emerald-300/18 dark:bg-[#102019]" />

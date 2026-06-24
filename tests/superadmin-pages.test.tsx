@@ -498,12 +498,14 @@ describe("superadmin pages", () => {
     expect(chartTexts).toEqual(
       expect.arrayContaining([
         "Nilai (Rp Juta)",
+        "5",
+        "10",
+        "15",
         "20",
-        "40",
-        "60",
-        "80",
+        "25",
       ]),
     );
+    expect(chartTexts).not.toEqual(expect.arrayContaining(["30"]));
     expect(chartTexts).not.toEqual(expect.arrayContaining(["Volume (Unit)"]));
     expect(chartTexts).not.toEqual(expect.arrayContaining(["55"]));
 

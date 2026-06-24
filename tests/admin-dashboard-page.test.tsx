@@ -267,14 +267,23 @@ describe("AdminDashboardPage", () => {
   });
 
   it("shows the completed transaction count when a trend point is hovered", () => {
-    render(<AdminDashboardPage data={baseDashboardData} />);
+    const { container } = render(<AdminDashboardPage data={baseDashboardData} />);
 
-    expect(screen.getByText("30")).toBeInTheDocument();
-    expect(screen.getByText("25")).toBeInTheDocument();
-    expect(screen.getAllByText("5").length).toBeGreaterThan(0);
+    const chartTexts = Array.from(container.querySelectorAll("svg text")).map(
+      (node) => node.textContent,
+    );
+    expect(chartTexts).toEqual(
+      expect.arrayContaining(["25", "20", "15", "10", "5"]),
+    );
+    expect(chartTexts).not.toContain("30");
 
     const trendPoint = screen.getByRole("button", { name: /22 Mei: 3 transaksi lunas, Rp 9 jt/i });
-    expect(trendPoint).toHaveStyle({ top: "74.76666666666667%" });
+    const emptyTrendPoint = screen.getByRole("button", { name: /8 Mei: 0 transaksi lunas, Rp 0/i });
+
+    fireEvent.mouseEnter(emptyTrendPoint);
+
+    expect(screen.getByRole("tooltip")).toHaveTextContent("8 Mei");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("0 transaksi lunas");
 
     fireEvent.mouseEnter(trendPoint);
 
