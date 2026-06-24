@@ -37,6 +37,7 @@ import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
+import { HandoverComplaintButton } from "@/components/buyer/handover-complaint-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countdown-tiles";
@@ -779,7 +780,7 @@ function BuyerTransactionInlineReceiptPrint({
         itemTitle={transaction.title}
         noteNumber={transaction.receiptNumber ?? transaction.id}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getBuyerTransactionCompletionLabel(transaction) : "Terverifikasi admin"}
         subtotal={transaction.amount}
         terms={getReceiptTerms(transaction)}
         total={transaction.amount}
@@ -793,6 +794,30 @@ function BuyerTransactionInlineReceiptPrint({
       />
     </TransactionReceiptInlinePrint>
   );
+}
+
+function getBuyerTransactionCompletionLabel(transaction: BuyerTransaction) {
+  return transaction.completionSource === "AUTO_HANDOVER_GRACE" ? "Selesai otomatis" : "Selesai oleh buyer";
+}
+
+function HandoverAutoCompleteNotice({ transaction }: { transaction: BuyerTransaction }) {
+  if (transaction.status !== "LUNAS" || !transaction.handoverProof) {
+    return null;
+  }
+
+  if (transaction.handoverComplaint) {
+    return (
+      <p className="rounded-[1rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-800">
+        Komplain serah-terima sudah dikirim. Auto-selesai ditahan sampai bukti ditindaklanjuti admin unit.
+      </p>
+    );
+  }
+
+  return transaction.handoverAutoCompleteAt ? (
+    <p className="rounded-[1rem] border border-primary/15 bg-primary/[0.04] px-4 py-3 text-sm font-semibold leading-6 text-primary">
+      Jika buyer tidak menekan Pembelian Selesai atau mengajukan komplain, sistem akan menyelesaikan otomatis pada {transaction.handoverAutoCompleteAt}.
+    </p>
+  ) : null;
 }
 
 export function UserDashboardPage({
@@ -1675,6 +1700,12 @@ function VickreyPaymentSuccessDetail({
                 transaction={transaction}
               />
             </div>
+            <div className="mt-3 space-y-3">
+              <HandoverAutoCompleteNotice transaction={transaction} />
+              {!isCompleted && transaction.handoverProof ? (
+                <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
+              ) : null}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -2002,6 +2033,10 @@ export function TransactionDetailPage({
                   )}
                 </div>
               ) : null}
+              <HandoverAutoCompleteNotice transaction={transaction} />
+              {!isCompleted && transaction.handoverProof ? (
+                <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
+              ) : null}
               <BuyerTransactionInlineReceiptPrint
                 buyer={buyer}
                 buttonClassName="inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 font-body text-base font-semibold text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors hover:bg-primary/90"
@@ -2248,7 +2283,7 @@ export function TransactionReceiptPage({
         itemTitle={transaction.title}
         noteNumber={transaction.receiptNumber ?? transaction.id}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getBuyerTransactionCompletionLabel(transaction) : "Terverifikasi admin"}
         subtotal={transaction.amount}
         terms={getReceiptTerms(transaction)}
         total={transaction.amount}

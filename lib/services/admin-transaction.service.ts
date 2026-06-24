@@ -179,6 +179,8 @@ export async function uploadAdminTransactionHandoverProof(
     handoverProofUrl: payload.fileName,
     handoverProofUploadedAt: uploadedAt,
     handoverProofUploadedByUserId: adminId,
+    handoverComplaintAt: null,
+    handoverComplaintNote: null,
     updatedAt: uploadedAt
   };
 

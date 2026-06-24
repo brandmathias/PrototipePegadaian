@@ -126,6 +126,10 @@ export type MarketingSession = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
+  handoverComplaintAt?: string | null;
+  handoverComplaintNote?: string | null;
+  handoverAutoCompleteAt?: string | null;
+  completionSource?: string | null;
   reference?: string | null;
   soldAt?: string | null;
   completedAt?: string | null;
@@ -1017,8 +1021,10 @@ function getVickreyStage(auction: MarketingSession) {
 
   if (transactionStatus === "SELESAI") {
     return {
-      label: "Selesai",
-      detail: "Buyer sudah menekan Pembelian Selesai dan arsip transaksi tersedia.",
+      label: isAutoCompletedMarketing(auction) ? "Selesai otomatis" : "Selesai",
+      detail: isAutoCompletedMarketing(auction)
+        ? "Sistem menutup transaksi otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
+        : "Buyer sudah menekan Pembelian Selesai dan arsip transaksi tersedia.",
       tone: "green" as const,
       icon: BadgeCheck
     };
@@ -1027,7 +1033,7 @@ function getVickreyStage(auction: MarketingSession) {
   if (transactionStatus === "LUNAS") {
     return {
       label: "Terverifikasi",
-      detail: "Pembayaran pemenang sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
+      detail: getMarketingVerifiedDetail(auction),
       tone: "green" as const,
       icon: BadgeCheck
     };
@@ -1070,6 +1076,30 @@ const MARKETING_STATUS_FILTERS = ["Semua", "Aktif", "Menunggu Bayar", "Menunggu 
 
 type MarketingMethodFilter = (typeof MARKETING_METHOD_FILTERS)[number]["value"];
 type MarketingStatusFilter = (typeof MARKETING_STATUS_FILTERS)[number];
+
+function isAutoCompletedMarketing(auction: Pick<MarketingSession, "completionSource">) {
+  return auction.completionSource === "auto_handover_grace";
+}
+
+function getMarketingCompletionLabel(auction: Pick<MarketingSession, "completionSource">) {
+  return isAutoCompletedMarketing(auction) ? "Selesai otomatis" : "Selesai oleh buyer";
+}
+
+function getMarketingProgressCompletionLabel(auction: Pick<MarketingSession, "completionSource">) {
+  return isAutoCompletedMarketing(auction) ? "Selesai otomatis" : "Selesai";
+}
+
+function getMarketingVerifiedDetail(auction: Pick<MarketingSession, "handoverAutoCompleteAt" | "handoverComplaintAt">) {
+  if (auction.handoverComplaintAt) {
+    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin menindaklanjuti bukti.";
+  }
+
+  if (auction.handoverAutoCompleteAt) {
+    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${dateLabel(auction.handoverAutoCompleteAt)}.`;
+  }
+
+  return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
+}
 
 function isPaymentQueue(auction: MarketingSession) {
   return auction.mode === "VICKREY_AUCTION" && VICKREY_PAYMENT_STATUSES.has(auction.transactionStatus ?? "");
@@ -2359,7 +2389,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
     },
     {
       label: "Selesai",
-      status: fulfilled ? "Selesai" : verified ? "Menunggu buyer" : "Belum terjadi",
+      status: fulfilled ? getMarketingProgressCompletionLabel(auction) : verified ? "Menunggu buyer" : "Belum terjadi",
       occurredAt: fulfilled ? dateLabel(auction.completedAt) : null,
       icon: CheckCircle2,
       tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const)
@@ -2620,16 +2650,18 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
   if (isMarketingSold(auction)) {
     return {
       badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
-      detail: "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi.",
+      detail: isAutoCompletedMarketing(auction)
+        ? "Penjualan harga tetap selesai otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
+        : "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi.",
       icon: BadgeCheck,
-      label: "Selesai"
+      label: isAutoCompletedMarketing(auction) ? "Selesai Otomatis" : "Selesai"
     };
   }
 
   if (auction.transactionStatus === "LUNAS") {
     return {
       badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
-      detail: "Pembayaran harga tetap sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.",
+      detail: getMarketingVerifiedDetail(auction),
       icon: BadgeCheck,
       label: "Terverifikasi"
     };
@@ -3476,7 +3508,7 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
     ? [
         { label: "Pembayaran", status: "Selesai", occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
         { label: "Verifikasi", status: "Selesai", occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
-        { label: "Selesai", status: "Selesai", occurredAt: dateLabel(auction.completedAt), icon: CheckCircle2, tone: "done" as const }
+        { label: "Selesai", status: getMarketingProgressCompletionLabel(auction), occurredAt: dateLabel(auction.completedAt), icon: CheckCircle2, tone: "done" as const }
       ]
     : verified
       ? [
@@ -4549,7 +4581,7 @@ function FixedPriceReceiptInlinePrint({
         itemTitle={auction.lot}
         noteNumber={reference}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getMarketingCompletionLabel(auction) : "Terverifikasi admin"}
         subtotal={total}
         terms={getFixedPriceReceiptTerms(auction)}
         total={total}
@@ -4597,7 +4629,7 @@ function VickreyReceiptPrintSheet({
         itemTitle={auction.lot}
         noteNumber={reference}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getMarketingCompletionLabel(auction) : "Terverifikasi admin"}
         subtotal={total}
         terms={getVickreyReceiptTerms(auction)}
         total={total}

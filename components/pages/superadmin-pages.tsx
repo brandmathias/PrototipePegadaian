@@ -237,6 +237,10 @@ export type SuperAdminUnitBarangMarketingSession = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
+  handoverComplaintAt?: string | null;
+  handoverComplaintNote?: string | null;
+  handoverAutoCompleteAt?: string | null;
+  completionSource?: string | null;
   reference?: string | null;
   soldAt?: string | null;
   completedAt?: string | null;
@@ -3332,6 +3336,32 @@ function isSuperAdminVickreyPaymentFulfilled(session: SuperAdminUnitBarangMarket
   return session.transactionStatus === "SELESAI";
 }
 
+function isSuperAdminAutoCompleted(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
+  return session.completionSource === "auto_handover_grace";
+}
+
+function getSuperAdminCompletionLabel(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
+  return isSuperAdminAutoCompleted(session) ? "Selesai otomatis" : "Selesai oleh buyer";
+}
+
+function getSuperAdminProgressCompletionLabel(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
+  return isSuperAdminAutoCompleted(session) ? "Selesai otomatis" : "Selesai";
+}
+
+function getSuperAdminVerifiedDetail(
+  session: Pick<SuperAdminUnitBarangMarketingSession, "handoverAutoCompleteAt" | "handoverComplaintAt">,
+) {
+  if (session.handoverComplaintAt) {
+    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin unit menindaklanjuti bukti.";
+  }
+
+  if (session.handoverAutoCompleteAt) {
+    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${formatSuperAdminDateTime(session.handoverAutoCompleteAt)}.`;
+  }
+
+  return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
+}
+
 function getSuperAdminReceiptLockMessage(session: SuperAdminUnitBarangMarketingSession) {
   return isSuperAdminVickreyPaymentVerified(session) && !session.handoverProofUrl
     ? "Nota belum tersedia. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik terlebih dahulu."
@@ -3895,7 +3925,7 @@ function SuperAdminVickreyProgressPanel({
     ? [
         { label: "Pembayaran", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
         { label: "Verifikasi", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
-        { label: "Selesai", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.completedAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Selesai", status: getSuperAdminProgressCompletionLabel(session), occurredAt: formatSuperAdminDateTime(session.completedAt), icon: CheckCircle2, tone: "done" as const },
       ]
     : verified
       ? [
@@ -3958,7 +3988,7 @@ function SuperAdminVickreyNotePanel({
           Nota & Konfirmasi Buyer
         </p>
         <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-          Nota sudah dapat dicetak, tetapi arsip final menunggu buyer menekan Pembelian Selesai.
+          {getSuperAdminVerifiedDetail(session)}
         </p>
 
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
@@ -4046,7 +4076,7 @@ function SuperAdminVickreyReceiptInlinePrint({
         itemTitle={receiptContext.itemTitle}
         noteNumber={noteNumber}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getSuperAdminCompletionLabel(session) : "Terverifikasi admin"}
         subtotal={paymentPrice}
         terms={getSuperAdminVickreyReceiptTerms(receiptContext.unitName)}
         total={paymentPrice}
@@ -4508,7 +4538,7 @@ function SuperAdminFixedPriceProgressPanel({
     },
     {
       label: "Selesai",
-      status: fulfilled ? "Selesai" : verified ? "Menunggu buyer" : "Belum terjadi",
+      status: fulfilled ? getSuperAdminProgressCompletionLabel(session) : verified ? "Menunggu buyer" : "Belum terjadi",
       occurredAt: fulfilled ? formatSuperAdminDateTime(session.completedAt) : null,
       icon: CheckCircle2,
       tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const),
@@ -4539,9 +4569,11 @@ function SuperAdminFixedPriceWorkspace({
   const statusDetail = isFailed
     ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
     : sold
-      ? "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
+      ? isSuperAdminAutoCompleted(session)
+        ? "Penjualan harga tetap selesai otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
+        : "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
       : verified
-        ? "Pembayaran harga tetap sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai."
+        ? getSuperAdminVerifiedDetail(session)
         : hasBuyer
           ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
           : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";

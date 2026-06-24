@@ -127,6 +127,13 @@
       "when": 1781865795530,
       "tag": "0017_puzzling_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1782259676551,
+      "tag": "0018_handover_auto_completion",
+      "breakpoints": true
     }
   ]
 }

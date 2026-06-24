@@ -240,11 +240,13 @@ function MarketingModeChip({ mode }: { mode?: string | null }) {
 
 function getAdminWorkspaceStatusText(transaction: AdminTransactionItem) {
   if (transaction.status === "SELESAI") {
-    return "Transaksi sudah ditutup buyer dan masuk arsip.";
+    return getAdminTransactionCompletionLabel(transaction) === "Selesai otomatis"
+      ? "Transaksi ditutup otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
+      : "Transaksi sudah ditutup buyer dan masuk arsip.";
   }
 
   if (transaction.status === "LUNAS") {
-    return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
+    return getAdminTransactionVerifiedDetail(transaction);
   }
 
   if (transaction.status === "BUKTI_DIUNGGAH") {
@@ -260,6 +262,22 @@ function getAdminWorkspaceStatusText(transaction: AdminTransactionItem) {
   }
 
   return "Transaksi masih menunggu pembayaran buyer.";
+}
+
+function getAdminTransactionCompletionLabel(transaction: AdminTransactionItem) {
+  return transaction.completionSource === "auto_handover_grace" ? "Selesai otomatis" : "Selesai oleh buyer";
+}
+
+function getAdminTransactionVerifiedDetail(transaction: AdminTransactionItem) {
+  if (transaction.handoverComplaintAt) {
+    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin menindaklanjuti bukti.";
+  }
+
+  if (transaction.handoverAutoCompleteAt) {
+    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${transaction.handoverAutoCompleteAt}.`;
+  }
+
+  return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
 }
 
 function TransactionSummaryDossier({
@@ -427,7 +445,7 @@ function AdminTransactionInlineReceiptPrint({
         itemTitle={transaction.lot}
         noteNumber={transaction.receiptNumber ?? `PEG-${String(transaction.id).slice(0, 8).toUpperCase()}`}
         paymentMethodLabel={paymentChannelLabel(transaction.method)}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getAdminTransactionCompletionLabel(transaction) : "Terverifikasi admin"}
         subtotal={transaction.total}
         terms={getReceiptTerms(transaction)}
         total={transaction.total}
@@ -469,9 +487,11 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       : "Konfirmasi hanya jika dana pembayaran langsung benar-benar sudah diterima.";
   const finishDetail =
     transaction.status === "SELESAI"
-      ? "Buyer sudah menekan Pembelian Selesai. Barang keluar dari katalog dan transaksi masuk arsip."
+      ? getAdminTransactionCompletionLabel(transaction) === "Selesai otomatis"
+        ? "Sistem menutup transaksi otomatis. Barang keluar dari katalog dan transaksi masuk arsip."
+        : "Buyer sudah menekan Pembelian Selesai. Barang keluar dari katalog dan transaksi masuk arsip."
       : isVerified
-        ? "Menunggu buyer menekan Pembelian Selesai setelah nota tersedia."
+        ? getAdminTransactionVerifiedDetail(transaction)
         : "Tahap selesai terbuka setelah admin memverifikasi pembayaran.";
   const steps: PaymentWorkflowStep[] = [
     {
@@ -494,8 +514,8 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
     },
     {
       id: "completed",
-      label: "Selesai Buyer",
-      headline: completed ? "Transaksi Selesai" : "Menunggu Buyer Selesai",
+      label: "Selesai",
+      headline: completed ? getAdminTransactionCompletionLabel(transaction) : "Menunggu Buyer Selesai",
       detail: finishDetail,
       meta: "Penutupan transaksi",
       occurredAt: transaction.completedAt,
@@ -1220,7 +1240,7 @@ export function AdminTransactionReceiptPage({
         itemTitle={transaction.lot}
         noteNumber={transaction.receiptNumber ?? `PEG-${transaction.id.slice(0, 8).toUpperCase()}`}
         paymentMethodLabel={paymentChannelLabel(transaction.method)}
-        statusLabel={isCompleted ? "Selesai oleh buyer" : "Terverifikasi admin"}
+        statusLabel={isCompleted ? getAdminTransactionCompletionLabel(transaction) : "Terverifikasi admin"}
         subtotal={transaction.total}
         terms={getReceiptTerms(transaction)}
         total={transaction.total}

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -16,6 +16,7 @@ import {
   units,
   users
 } from "@/lib/db/schema";
+import { isHandoverAutoCompleteDue } from "@/lib/transactions/handover-finalization";
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import {
   getBlacklistBlockedUntil,
@@ -88,6 +89,11 @@ type PaymentDeadlineSummary = {
 type BlacklistExpirySummary = {
   processed: number;
   expired: number;
+};
+
+type HandoverAutoCompletionSummary = {
+  processed: number;
+  completed: number;
 };
 
 type BlacklistNotificationPayload = {
@@ -823,18 +829,87 @@ export async function processExpiredBlacklistRestrictions(now = new Date()): Pro
   };
 }
 
+export async function processHandoverAutoCompletions(now = new Date()): Promise<HandoverAutoCompletionSummary> {
+  const rows = await db
+    .select({
+      transaction: transaksi,
+      item: barang,
+    })
+    .from(transaksi)
+    .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .where(
+      and(
+        eq(transaksi.status, "lunas"),
+        isNotNull(transaksi.handoverProofUrl),
+        isNotNull(transaksi.handoverProofUploadedAt),
+      ),
+    );
+  const dueRows = rows.filter((row) => isHandoverAutoCompleteDue(row.transaction, now));
+
+  let completed = 0;
+
+  for (const row of dueRows) {
+    await db.transaction(async (tx) => {
+      const [updatedTransaction] = await tx
+        .update(transaksi)
+        .set({
+          status: "selesai",
+          completedAt: now,
+          completionSource: "auto_handover_grace",
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(transaksi.id, row.transaction.id),
+            eq(transaksi.status, "lunas"),
+            isNotNull(transaksi.handoverProofUrl),
+            isNotNull(transaksi.handoverProofUploadedAt),
+            isNull(transaksi.handoverComplaintAt),
+          ),
+        )
+        .returning({ id: transaksi.id });
+
+      if (!updatedTransaction) {
+        return;
+      }
+
+      await tx.update(pemasaran).set({ status: "selesai", updatedAt: now }).where(eq(pemasaran.id, row.transaction.pemasaranId));
+      await tx.update(barang).set({ status: "terjual", updatedAt: now }).where(eq(barang.id, row.item.id));
+
+      await tx.insert(riwayatStatusBarang).values({
+        id: randomUUID(),
+        barangId: row.item.id,
+        oldStatus: row.item.status,
+        newStatus: "terjual",
+        changedByUserId: null,
+        note: "Transaksi selesai otomatis karena buyer tidak menekan Pembelian Selesai atau mengajukan komplain dalam 3 hari setelah bukti serah-terima diunggah.",
+      });
+
+      completed += 1;
+    });
+  }
+
+  return {
+    processed: rows.length,
+    completed,
+  };
+}
+
 export async function runAuctionSettlementCron(now = new Date()) {
-  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists] = await Promise.all([
+  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists, handoverAutoCompletions] = await Promise.all([
     processExpiredVickreyAuctions(now),
     processPaymentDeadlineNotifications(now),
     processOverdueVickreyPayments(now),
-    processExpiredBlacklistRestrictions(now)
+    processExpiredBlacklistRestrictions(now),
+    processHandoverAutoCompletions(now)
   ]);
 
   return {
     expiredAuctions,
     paymentDeadlineWarnings,
     overduePayments,
-    expiredBlacklists
+    expiredBlacklists,
+    handoverAutoCompletions
   };
 }

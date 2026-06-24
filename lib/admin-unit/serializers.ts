@@ -3,6 +3,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import type { barang, bids, pemasaran, transaksi } from "@/lib/db/schema/admin";
 import { formatAppDateTime } from "@/lib/timezone";
+import { getHandoverAutoCompleteDeadline } from "@/lib/transactions/handover-finalization";
 
 type BarangRow = InferSelectModel<typeof barang>;
 type PemasaranRow = InferSelectModel<typeof pemasaran>;
@@ -31,10 +32,13 @@ type AdminPemasaranTransaction = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | string | null;
   handoverProofUploadedBy?: string | null;
+  handoverComplaintAt?: Date | string | null;
+  handoverComplaintNote?: string | null;
   reference?: string | null;
   soldAt?: Date | string | null;
   paymentDeadline?: Date | string | null;
   completedAt?: Date | string | null;
+  completionSource?: string | null;
   transactionCreatedAt?: Date | string | null;
 };
 
@@ -309,10 +313,18 @@ export function serializeAdminPemasaran(
     handoverProofUrl: extra.transaction?.handoverProofUrl ?? null,
     handoverProofUploadedAt: toIsoOrNull(extra.transaction?.handoverProofUploadedAt),
     handoverProofUploadedBy: extra.transaction?.handoverProofUploadedBy ?? null,
+    handoverComplaintAt: toIsoOrNull(extra.transaction?.handoverComplaintAt),
+    handoverComplaintNote: extra.transaction?.handoverComplaintNote ?? null,
     reference: extra.transaction?.reference ?? null,
     soldAt: toIsoOrNull(extra.transaction?.soldAt),
     paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
     completedAt: toIsoOrNull(extra.transaction?.completedAt),
+    completionSource: extra.transaction?.completionSource ?? null,
+    handoverAutoCompleteAt: toIsoOrNull(
+      extra.transaction?.status === "lunas" && !extra.transaction?.handoverComplaintAt
+        ? getHandoverAutoCompleteDeadline(extra.transaction?.handoverProofUploadedAt)
+        : null,
+    ),
     transactionCreatedAt: toIsoOrNull(extra.transaction?.transactionCreatedAt),
     insights: extra.insights ?? null,
     basePrice: row.mode === "fixed_price" ? null : toNumber(row.basePrice ?? row.price),
@@ -352,6 +364,10 @@ export function serializeAdminTransaction(
   const proof = splitLegacyProofValue(row.proofUrl);
   const hasHandoverProof = Boolean(row.handoverProofUrl);
   const printableReceipt = (row.status === "lunas" || row.status === "selesai") && hasHandoverProof;
+  const handoverAutoCompleteAt =
+    row.status === "lunas" && !row.handoverComplaintAt
+      ? getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt)
+      : null;
 
   return {
     id: row.id,
@@ -375,6 +391,10 @@ export function serializeAdminTransaction(
     handoverProofFile: row.handoverProofUrl ?? "",
     handoverProofUploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
     handoverProofUploadedBy: hasHandoverProof ? row.handoverProofUploadedByName ?? "Admin Unit" : "-",
+    handoverComplaintAt: row.handoverComplaintAt ? toDateTimeLabel(row.handoverComplaintAt) : null,
+    handoverComplaintNote: row.handoverComplaintNote ?? null,
+    handoverAutoCompleteAt: handoverAutoCompleteAt ? toDateTimeLabel(handoverAutoCompleteAt) : null,
+    handoverAutoCompleteAtRaw: handoverAutoCompleteAt?.toISOString() ?? null,
     verifiedBy: row.verifiedByName ?? undefined,
     rejectionReason: row.rejectionReason,
     pemasaranMode: row.type === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup",
@@ -383,7 +403,8 @@ export function serializeAdminTransaction(
     accountName: row.accountName ?? "-",
     createdAt: toDateTimeLabel(row.createdAt),
     verifiedAt: toDateTimeLabel(row.verifiedAt),
-    completedAt: row.status === "selesai" ? toDateTimeLabel(row.updatedAt) : undefined,
+    completedAt: row.status === "selesai" ? toDateTimeLabel(row.completedAt ?? row.updatedAt) : undefined,
+    completionSource: row.completionSource ?? null,
     receiptNumber: printableReceipt ? `PEG-${row.createdAt.getFullYear()}${String(row.createdAt.getMonth() + 1).padStart(2, "0")}${String(row.createdAt.getDate()).padStart(2, "0")}-${row.id.slice(0, 3).toUpperCase()}` : undefined,
     printableReceipt
   };

@@ -50,6 +50,10 @@ function isJsdomRuntime() {
 }
 
 async function waitForTransactionReceiptPrintAssets(root: HTMLElement) {
+  if (isJsdomRuntime()) {
+    return;
+  }
+
   const ownerDocument = root.ownerDocument || document;
   const ownerWindow = ownerDocument.defaultView || window;
 

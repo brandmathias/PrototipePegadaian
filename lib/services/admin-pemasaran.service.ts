@@ -189,10 +189,13 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         handoverProofUrl?: string | null;
         handoverProofUploadedAt?: Date | null;
         handoverProofUploadedBy?: string | null;
+        handoverComplaintAt?: Date | null;
+        handoverComplaintNote?: string | null;
         reference?: string | null;
         soldAt?: Date | null;
         paymentDeadline?: Date | null;
         completedAt?: Date | null;
+        completionSource?: string | null;
         transactionCreatedAt?: Date | null;
       }
     >();
@@ -209,10 +212,13 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       handoverProofUrl: transaksi.handoverProofUrl,
       handoverProofUploadedAt: transaksi.handoverProofUploadedAt,
       handoverProofUploadedBy: transactionHandoverUploader.name,
+      handoverComplaintAt: transaksi.handoverComplaintAt,
+      handoverComplaintNote: transaksi.handoverComplaintNote,
       reference: transaksi.referenceNumber,
       paymentDeadline: transaksi.paymentDeadline,
       soldAt: transaksi.verifiedAt,
-      completedAt: transaksi.updatedAt,
+      completedAt: transaksi.completedAt,
+      completionSource: transaksi.completionSource,
       buyerName: users.name,
       buyerEmail: users.email,
       buyerPhone: users.phoneNumber,
@@ -241,10 +247,13 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
         handoverProofUrl: row.handoverProofUrl,
         handoverProofUploadedAt: row.handoverProofUploadedAt,
         handoverProofUploadedBy: row.handoverProofUploadedBy,
+        handoverComplaintAt: row.handoverComplaintAt,
+        handoverComplaintNote: row.handoverComplaintNote,
         reference: row.reference,
         soldAt: row.soldAt,
         paymentDeadline: row.paymentDeadline,
         completedAt: row.completedAt,
+        completionSource: row.completionSource,
         transactionCreatedAt: row.transactionCreatedAt
       });
     }
@@ -264,10 +273,13 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       handoverProofUrl?: string | null;
       handoverProofUploadedAt?: Date | null;
       handoverProofUploadedBy?: string | null;
+      handoverComplaintAt?: Date | null;
+      handoverComplaintNote?: string | null;
       reference?: string | null;
       soldAt?: Date | null;
       paymentDeadline?: Date | null;
       completedAt?: Date | null;
+      completionSource?: string | null;
       transactionCreatedAt?: Date | null;
     }
   >());

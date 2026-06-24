@@ -71,12 +71,16 @@ function mockNoUpdatedTransaction() {
   };
 }
 
-function mockUpdatedTransaction() {
+function mockUpdatedTransaction(onSet?: (value: Record<string, unknown>) => void) {
   return {
-    set: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([{ id: "trx-1" }])
-      })
+    set: vi.fn((value) => {
+      onSet?.(value);
+
+      return {
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: "trx-1" }])
+        })
+      };
     })
   };
 }
@@ -99,6 +103,18 @@ function mockExistingBlacklist(rows: Array<Record<string, unknown>>) {
       where: vi.fn().mockReturnValue({
         orderBy: vi.fn().mockReturnValue({
           limit: vi.fn().mockResolvedValue(rows)
+        })
+      })
+    })
+  };
+}
+
+function mockHandoverRows(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(rows)
         })
       })
     })
@@ -294,5 +310,102 @@ describe("overdue Lelang Tertutup payment settlement", () => {
       ])
     );
     expect(mocks.notifyBlacklistActivated).not.toHaveBeenCalled();
+  });
+});
+
+describe("handover auto-completion settlement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));
+  });
+
+  it("auto-completes due handover transactions and records an audit trail", async () => {
+    const updatePayloads: Array<Record<string, unknown>> = [];
+    const insertPayloads: Array<Record<string, unknown>> = [];
+    const now = new Date("2026-06-28T00:00:00.000Z");
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockHandoverRows([
+        {
+          item: {
+            id: "barang-1",
+            status: "dipasarkan"
+          },
+          transaction: {
+            id: "trx-1",
+            pemasaranId: "pemasaran-1",
+            status: "lunas",
+            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z"),
+            handoverComplaintAt: null
+          }
+        }
+      ])
+    );
+
+    mocks.tx.update
+      .mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)))
+      .mockImplementation(() => mockVoidUpdate((value) => updatePayloads.push(value)));
+    mocks.tx.insert.mockReturnValue({
+      values: vi.fn((value) => {
+        insertPayloads.push(value);
+        return Promise.resolve(undefined);
+      })
+    });
+
+    const { processHandoverAutoCompletions } = await import("@/lib/services/cron.service");
+    const summary = await processHandoverAutoCompletions(now);
+
+    expect(summary).toEqual({
+      processed: 1,
+      completed: 1
+    });
+    expect(updatePayloads).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          status: "selesai",
+          completedAt: now,
+          completionSource: "auto_handover_grace"
+        }),
+        expect.objectContaining({ status: "terjual" })
+      ])
+    );
+    expect(insertPayloads).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          barangId: "barang-1",
+          newStatus: "terjual",
+          changedByUserId: null
+        })
+      ])
+    );
+  });
+
+  it("does not auto-complete transactions with a buyer handover complaint", async () => {
+    mocks.db.select.mockImplementationOnce(() =>
+      mockHandoverRows([
+        {
+          item: {
+            id: "barang-1",
+            status: "dipasarkan"
+          },
+          transaction: {
+            id: "trx-1",
+            pemasaranId: "pemasaran-1",
+            status: "lunas",
+            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z"),
+            handoverComplaintAt: new Date("2026-06-25T00:00:00.000Z")
+          }
+        }
+      ])
+    );
+
+    const { processHandoverAutoCompletions } = await import("@/lib/services/cron.service");
+    const summary = await processHandoverAutoCompletions(new Date("2026-06-28T00:00:00.000Z"));
+
+    expect(summary).toEqual({
+      processed: 1,
+      completed: 0
+    });
+    expect(mocks.db.transaction).not.toHaveBeenCalled();
   });
 });

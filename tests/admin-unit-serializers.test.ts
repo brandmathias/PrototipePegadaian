@@ -50,6 +50,7 @@ describe("admin unit serializers", () => {
       durationSeconds: null,
       startsAt: new Date("2026-05-01T00:00:00Z"),
       endsAt: null,
+      revealEndsAt: null,
       winnerId: null,
       finalPrice: null,
       iteration: 1,
@@ -355,6 +356,46 @@ describe("admin unit serializers", () => {
     expect(auction.paymentDeadline).toBe("2026-04-09T00:00:00.000Z");
   });
 
+  it("passes handover deadline and completion source through marketing serializers", () => {
+    const auction = serializeAdminPemasaran(
+      {
+        id: "pm-fixed-handover",
+        barangId: "barang-1",
+        mode: "fixed_price",
+        price: "12500000",
+        basePrice: null,
+        durationDays: null,
+        durationSeconds: null,
+        startsAt: new Date("2026-05-01T00:00:00Z"),
+        endsAt: null,
+        revealEndsAt: null,
+        winnerId: null,
+        finalPrice: null,
+        iteration: 1,
+        status: "aktif",
+        createdByUserId: "admin-1",
+        createdAt: new Date("2026-05-01T00:00:00Z"),
+        updatedAt: new Date("2026-05-01T00:00:00Z")
+      },
+      {
+        lotName: "Kalung Emas",
+        transaction: {
+          id: "trx-fixed-handover",
+          buyerName: "Raras",
+          paymentMethod: "transfer",
+          status: "lunas",
+          handoverProofUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
+          handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
+          completionSource: null
+        }
+      }
+    );
+
+    expect(auction.handoverAutoCompleteAt).toBe("2026-05-07T15:30:00.000Z");
+    expect(auction.handoverComplaintAt).toBeNull();
+    expect(auction.completionSource).toBeNull();
+  });
+
   it("serializes transaction status labels", () => {
     const transaction = serializeAdminTransaction({
       id: "TRX-001",
@@ -371,6 +412,10 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
+      handoverComplaintAt: null,
+      handoverComplaintNote: null,
+      completedAt: null,
+      completionSource: null,
       rejectionReason: null,
       referenceNumber: null,
       paymentDeadline: new Date("2026-04-25T00:00:00Z"),
@@ -407,6 +452,10 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
+      handoverComplaintAt: null,
+      handoverComplaintNote: null,
+      completedAt: null,
+      completionSource: null,
       rejectionReason: null,
       referenceNumber: null,
       paymentDeadline: new Date("2026-04-25T00:00:00Z"),
@@ -437,6 +486,10 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
+      handoverComplaintAt: null,
+      handoverComplaintNote: null,
+      completedAt: null,
+      completionSource: null,
       rejectionReason: null,
       referenceNumber: "BRI-7777",
       paymentDeadline: null,
@@ -448,6 +501,75 @@ describe("admin unit serializers", () => {
 
     expect(transaction.status).toBe("SELESAI");
     expect(transaction.printableReceipt).toBe(false);
+  });
+
+  it("exposes handover auto-complete metadata for admin transaction views", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-LUNAS-HANDOVER",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      buyerName: "Raras",
+      lotName: "Kalung Emas",
+      lotId: "barang-1",
+      type: "fixed_price",
+      amount: "100000000",
+      paymentMethod: "transfer",
+      status: "lunas",
+      proofUrl: "/uploads/bukti.jpg",
+      handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
+      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
+      handoverProofUploadedByUserId: "admin-2",
+      handoverComplaintAt: null,
+      handoverComplaintNote: null,
+      completedAt: null,
+      completionSource: null,
+      rejectionReason: null,
+      referenceNumber: "BRI-7777",
+      paymentDeadline: null,
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-05-04T14:11:00Z"),
+      createdAt: new Date("2026-05-04T14:07:00Z"),
+      updatedAt: new Date("2026-05-04T14:15:00Z")
+    });
+
+    expect(transaction.handoverComplaintAt).toBeNull();
+    expect(transaction.handoverAutoCompleteAt).toBe("7 Mei 2026, 22.30 WIB");
+    expect(transaction.handoverAutoCompleteAtRaw).toBe("2026-05-07T15:30:00.000Z");
+  });
+
+  it("holds admin auto-complete metadata when buyer submits a handover complaint", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-COMPLAINED",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      buyerName: "Raras",
+      lotName: "Kalung Emas",
+      lotId: "barang-1",
+      type: "fixed_price",
+      amount: "100000000",
+      paymentMethod: "transfer",
+      status: "lunas",
+      proofUrl: "/uploads/bukti.jpg",
+      handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
+      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
+      handoverComplaintAt: new Date("2026-05-05T01:00:00Z"),
+      handoverComplaintNote: "Foto tidak sesuai.",
+      handoverProofUploadedByUserId: "admin-2",
+      completedAt: null,
+      completionSource: null,
+      rejectionReason: null,
+      referenceNumber: "BRI-7777",
+      paymentDeadline: null,
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-05-04T14:11:00Z"),
+      createdAt: new Date("2026-05-04T14:07:00Z"),
+      updatedAt: new Date("2026-05-04T14:15:00Z")
+    } as any);
+
+    expect(transaction.handoverComplaintAt).toBe("5 Mei 2026, 08.00 WIB");
+    expect(transaction.handoverComplaintNote).toBe("Foto tidak sesuai.");
+    expect(transaction.handoverAutoCompleteAt).toBeNull();
+    expect(transaction.handoverAutoCompleteAtRaw).toBeNull();
   });
 
   it("treats transactions with handover proof as printable final receipts", () => {
@@ -466,6 +588,10 @@ describe("admin unit serializers", () => {
       handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
       handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
       handoverProofUploadedByUserId: "admin-2",
+      handoverComplaintAt: null,
+      handoverComplaintNote: null,
+      completedAt: null,
+      completionSource: null,
       rejectionReason: null,
       referenceNumber: "BRI-7777",
       paymentDeadline: null,

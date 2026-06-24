@@ -176,6 +176,10 @@ export const transaksi = pgTable(
     handoverProofUrl: text("handover_proof_url"),
     handoverProofUploadedAt: timestamp("handover_proof_uploaded_at", { withTimezone: true }),
     handoverProofUploadedByUserId: text("handover_proof_uploaded_by_user_id").references(() => users.id, { onDelete: "set null" }),
+    handoverComplaintAt: timestamp("handover_complaint_at", { withTimezone: true }),
+    handoverComplaintNote: text("handover_complaint_note"),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    completionSource: text("completion_source"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },

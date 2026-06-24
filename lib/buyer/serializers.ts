@@ -4,6 +4,7 @@ import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
 import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot, LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
+import { getHandoverAutoCompleteDeadline } from "@/lib/transactions/handover-finalization";
 
 type AccountShape = {
   bankName: string | null;
@@ -55,6 +56,10 @@ type BuyerTransactionShape = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | null;
   handoverProofUploadedBy?: string | null;
+  handoverComplaintAt?: Date | null;
+  handoverComplaintNote?: string | null;
+  completedAt?: Date | null;
+  completionSource?: string | null;
   createdAt: Date;
   updatedAt?: Date;
   lotName: string;
@@ -131,6 +136,14 @@ function splitLegacyProofValue(value: string | null | undefined) {
 
 function getPaymentNotes(row: BuyerTransactionShape) {
   if (row.status === "selesai") {
+    if (row.completionSource === "auto_handover_grace") {
+      return [
+        "Pembelian selesai otomatis setelah masa konfirmasi serah-terima berakhir.",
+        "Nota digital tetap tersedia untuk dicetak atau disimpan.",
+        "Hubungi unit jika membutuhkan bantuan setelah transaksi selesai."
+      ];
+    }
+
     return [
       "Pembelian sudah ditandai selesai oleh pembeli.",
       "Nota digital tetap tersedia untuk dicetak atau disimpan.",
@@ -139,10 +152,15 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   }
 
   if (row.status === "lunas") {
+    const autoCompleteDeadline = getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt);
     return [
       "Pembayaran sudah diverifikasi admin unit.",
       row.handoverProofUrl
-        ? "Bukti serah-terima barang sudah tersedia. Tekan Pembelian Selesai setelah barang dan nota sudah Anda terima."
+        ? row.handoverComplaintAt
+          ? "Komplain serah-terima sudah dikirim. Transaksi tidak akan selesai otomatis sampai masalah ditindaklanjuti."
+          : autoCompleteDeadline
+            ? `Bukti serah-terima barang sudah tersedia. Tekan Pembelian Selesai atau ajukan komplain sebelum ${toDateTimeLabel(autoCompleteDeadline)}.`
+            : "Bukti serah-terima barang sudah tersedia. Tekan Pembelian Selesai setelah barang dan nota sudah Anda terima."
         : "Menunggu admin unit mengunggah bukti serah-terima barang sebelum Pembelian Selesai dapat dikonfirmasi.",
       "Nota digital tersedia selama transaksi menunggu penyelesaian buyer."
     ];
@@ -266,6 +284,16 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     status === "BUKTI_DIUNGGAH" || status === "DITOLAK_BUKTI" || hasFinalReceipt || isFixedPriceWaitingPayment
       ? undefined
       : row.paymentDeadline?.toISOString();
+  const handoverAutoCompleteDeadline =
+    row.status === "lunas" && !row.handoverComplaintAt
+      ? getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt)
+      : null;
+  const completionSource =
+    row.completionSource === "auto_handover_grace"
+      ? "AUTO_HANDOVER_GRACE"
+      : row.completionSource === "buyer"
+        ? "BUYER"
+        : undefined;
 
   return {
     id: row.id,
@@ -296,8 +324,9 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     verifiedAt: toDateTimeLabel(row.verifiedAt),
     completedAt:
       row.status === "selesai"
-        ? toDateTimeLabel(row.updatedAt ?? row.verifiedAt ?? row.createdAt)
+        ? toDateTimeLabel(row.completedAt ?? row.updatedAt ?? row.verifiedAt ?? row.createdAt)
         : undefined,
+    completionSource,
     receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined,
     handoverProof: row.handoverProofUrl
       ? {
@@ -305,6 +334,14 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
           uploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
           uploadedBy: row.handoverProofUploadedBy ?? "Admin Unit",
           location: row.unitName
+        }
+      : undefined,
+    handoverAutoCompleteAt: handoverAutoCompleteDeadline ? toDateTimeLabel(handoverAutoCompleteDeadline) : undefined,
+    handoverAutoCompleteAtRaw: handoverAutoCompleteDeadline?.toISOString(),
+    handoverComplaint: row.handoverComplaintAt
+      ? {
+          submittedAt: toDateTimeLabel(row.handoverComplaintAt),
+          note: row.handoverComplaintNote ?? "Komplain serah-terima dikirim buyer."
         }
       : undefined
   };

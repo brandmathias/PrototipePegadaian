@@ -210,6 +210,10 @@ function transactionSelection() {
       where u.id = ${transaksi.handoverProofUploadedByUserId}
       limit 1
     )`,
+    handoverComplaintAt: transaksi.handoverComplaintAt,
+    handoverComplaintNote: transaksi.handoverComplaintNote,
+    completedAt: transaksi.completedAt,
+    completionSource: transaksi.completionSource,
     createdAt: transaksi.createdAt,
     updatedAt: transaksi.updatedAt,
     lotName: barang.name,
@@ -1152,6 +1156,8 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 
   return serializeBuyerTransaction({
     ...updated,
+    verifiedBy: row.verifiedBy,
+    handoverProofUploadedBy: row.handoverProofUploadedBy,
     lotName: row.lotName,
     lotId: row.lotId,
     imageUrl: row.imageUrl,
@@ -1183,12 +1189,15 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
     throw new Error("Pembelian baru bisa diselesaikan setelah admin unit mengunggah bukti serah-terima barang.");
   }
 
+  const completedAt = new Date();
   const updated = await db.transaction(async (tx) => {
     const [updatedTransaction] = await tx
       .update(transaksi)
       .set({
         status: "selesai",
-        updatedAt: new Date()
+        completedAt,
+        completionSource: "buyer",
+        updatedAt: completedAt
       })
       .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
       .returning();
@@ -1197,14 +1206,70 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
       throw new Error("Transaksi tidak ditemukan.");
     }
 
-    await tx.update(pemasaran).set({ status: "selesai", updatedAt: new Date() }).where(eq(pemasaran.id, row.pemasaranId));
-    await tx.update(barang).set({ status: "terjual", updatedAt: new Date() }).where(eq(barang.id, row.lotId));
+    await tx.update(pemasaran).set({ status: "selesai", updatedAt: completedAt }).where(eq(pemasaran.id, row.pemasaranId));
+    await tx.update(barang).set({ status: "terjual", updatedAt: completedAt }).where(eq(barang.id, row.lotId));
 
     return updatedTransaction;
   });
 
   return serializeBuyerTransaction({
     ...updated,
+    verifiedBy: row.verifiedBy,
+    handoverProofUploadedBy: row.handoverProofUploadedBy,
+    lotName: row.lotName,
+    lotId: row.lotId,
+    imageUrl: row.imageUrl,
+    unitName: row.unitName,
+    unitAddress: row.unitAddress,
+    account: row.account
+  });
+}
+
+export async function submitBuyerHandoverComplaint(
+  userId: string,
+  transactionId: string,
+  input: { note?: unknown },
+) {
+  await refreshBuyerAuctionSettlementState();
+
+  const row = await getTransactionRowById(userId, transactionId);
+
+  if (!row) {
+    throw new Error("Transaksi tidak ditemukan.");
+  }
+
+  if (row.status !== "lunas") {
+    throw new Error("Komplain serah-terima hanya dapat dikirim saat transaksi menunggu penyelesaian buyer.");
+  }
+
+  if (!row.handoverProofUrl) {
+    throw new Error("Komplain baru dapat dikirim setelah bukti serah-terima barang tersedia.");
+  }
+
+  if (row.handoverComplaintAt) {
+    return serializeBuyerTransaction(row);
+  }
+
+  const note = String(input.note ?? "").trim().slice(0, 500);
+  const complainedAt = new Date();
+  const [updated] = await db
+    .update(transaksi)
+    .set({
+      handoverComplaintAt: complainedAt,
+      handoverComplaintNote: note || "Buyer mengajukan komplain serah-terima barang.",
+      updatedAt: complainedAt
+    })
+    .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
+    .returning();
+
+  if (!updated) {
+    throw new Error("Transaksi tidak ditemukan.");
+  }
+
+  return serializeBuyerTransaction({
+    ...updated,
+    verifiedBy: row.verifiedBy,
+    handoverProofUploadedBy: row.handoverProofUploadedBy,
     lotName: row.lotName,
     lotId: row.lotId,
     imageUrl: row.imageUrl,
