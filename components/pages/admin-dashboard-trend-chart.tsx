@@ -33,6 +33,7 @@ type DashboardStripMetric = {
 
 const chartAxisFontFamily = 'var(--font-manrope), "Segoe UI", system-ui, sans-serif';
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
+const chartViewBoxHeight = 350;
 const chartAxisMaxValue = 25;
 const chartAxisTickValues = [5, 10, 15, 20, 25];
 const numberFormatter = new Intl.NumberFormat("id-ID");
@@ -93,8 +94,8 @@ function buildChartModel(series: DashboardTrendPoint[]) {
   const chart = {
     left: 70,
     right: 930,
-    top: 38,
-    bottom: 245
+    top: 52,
+    bottom: 292
   };
   const maxAxisValue = chartAxisMaxValue;
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
@@ -107,7 +108,7 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     };
   });
   const points = fallback.map((point, index) => {
-    const plotValue = Number(point.value ?? 0);
+    const plotValue = Number(point.amount ?? 0) / 1_000_000;
     const ratio = Math.min(plotValue / maxAxisValue, 1);
     const x = chart.left + step * index;
     const y = chart.bottom - ratio * (chart.bottom - chart.top);
@@ -117,14 +118,14 @@ function buildChartModel(series: DashboardTrendPoint[]) {
     return {
       ...point,
       isActiveData: Number(point.amount ?? 0) > 0 || Number(point.value ?? 0) > 0,
-      hitHeightPercent: ((chart.bottom - chart.top) / 300) * 100,
+      hitHeightPercent: ((chart.bottom - chart.top) / chartViewBoxHeight) * 100,
       hitLeftPercent: (hitLeft / 980) * 100,
-      hitTopPercent: (chart.top / 300) * 100,
+      hitTopPercent: (chart.top / chartViewBoxHeight) * 100,
       hitWidthPercent: ((hitRight - hitLeft) / 980) * 100,
       labelWidth: Math.max(54, point.label.length * 8.4 + 24),
       leftPercent: (x / 980) * 100,
       plotValue,
-      topPercent: (y / 300) * 100,
+      topPercent: (y / chartViewBoxHeight) * 100,
       x,
       y
     };
@@ -387,8 +388,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative h-[18rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
-          <svg className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 980 300">
+        <div className="relative h-[21rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
+          <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
             <defs>
               <linearGradient id="admin-dashboard-area" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="#93dc9b" stopOpacity="0.48" />
@@ -399,6 +400,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 <feDropShadow dx="0" dy="10" stdDeviation="7" floodColor="#2cab68" floodOpacity="0.14" />
               </filter>
             </defs>
+
+            <text
+              className="fill-[#53635d] dark:fill-slate-300/76"
+              fontFamily={chartAxisFontFamily}
+              fontSize="12"
+              fontWeight="800"
+              letterSpacing="0"
+              x={chart.chart.left}
+              y="18"
+            >
+              Nilai (Rp Juta)
+            </text>
 
             <g>
               {chart.axisTicks.map((tick, index) => (
@@ -526,7 +539,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       rx="11"
                       width={point.labelWidth}
                       x={point.x - point.labelWidth / 2}
-                      y="266"
+                      y="318"
                     />
                   ) : null}
                   <text
@@ -543,7 +556,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
-                    y="277"
+                    y="329"
                   >
                     {point.label}
                   </text>
@@ -586,10 +599,10 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 {activePoint.label}
               </p>
               <p className="mt-1 font-headline text-[1.35rem] font-black leading-none tracking-[-0.035em] text-[#08633b] dark:text-emerald-200">
-                {formatCount(activePoint.value)} transaksi lunas
+                {formatCurrencyCompact(activePoint.amount)}
               </p>
               <p className="mt-1 text-[0.78rem] font-semibold text-[#60736a] dark:text-slate-300/72">
-                Nilai penjualan {formatCurrencyCompact(activePoint.amount)}
+                {formatCount(activePoint.value)} transaksi lunas
               </p>
             </div>
           ) : null}

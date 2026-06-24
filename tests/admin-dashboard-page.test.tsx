@@ -273,7 +273,7 @@ describe("AdminDashboardPage", () => {
       (node) => node.textContent,
     );
     expect(chartTexts).toEqual(
-      expect.arrayContaining(["25", "20", "15", "10", "5"]),
+      expect.arrayContaining(["Nilai (Rp Juta)", "25", "20", "15", "10", "5"]),
     );
     expect(chartTexts).not.toContain("30");
 
@@ -290,8 +290,8 @@ describe("AdminDashboardPage", () => {
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip).toHaveClass("-translate-x-1/2");
     expect(within(tooltip).getByText(/^22 Mei$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^Rp 9 jt$/i)).toBeInTheDocument();
     expect(within(tooltip).getByText(/^3 transaksi lunas$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^Nilai penjualan Rp 9 jt$/i)).toBeInTheDocument();
   });
 
   it("falls back to live transaction data when precomputed metrics are unavailable", () => {

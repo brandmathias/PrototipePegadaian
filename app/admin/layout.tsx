@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
 import { adminNavigation } from "@/components/layout/role-navigation";
-import { BRAND_NAME } from "@/components/shared/brand";
 import { getAdminSessionUser, getAppPathFromRequestHeaders } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { units } from "@/lib/db/schema";
@@ -20,7 +19,6 @@ function isAdminReceiptRoute(path: string) {
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const currentPath = await getAppPathFromRequestHeaders();
-  const isDashboardRoute = currentPath === "/admin";
   const currentUser = await getAdminSessionUser(currentPath);
 
   if (isAdminReceiptRoute(currentPath)) {
@@ -49,13 +47,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <DashboardShell
       currentUser={currentUser}
-      headerBrandLabel={isDashboardRoute ? null : BRAND_NAME}
       headerSubtitle="Pusat Kendali Operasional Unit"
       headerTitle={unit?.name ?? "Admin Unit"}
       hideHeaderIdentity={false}
       profileHref="/admin/profil"
-      searchPlaceholder={isDashboardRoute ? "Cari data, pengguna, atau laporan..." : "Cari transaksi atau barang..."}
-      searchShortcutHint={isDashboardRoute ? "Ctrl /" : undefined}
+      searchPlaceholder={currentPath === "/admin" ? "Cari data, pengguna, atau laporan..." : "Cari transaksi atau barang..."}
+      searchShortcutHint={currentPath === "/admin" ? "Ctrl /" : undefined}
       showHeaderSearch={false}
       sidebarMetrics={[
         { label: "Total Barang", value: inventoryMetrics.total },
