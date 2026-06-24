@@ -99,6 +99,10 @@ function makeDashboardTrendRange(label: string, points: ReturnType<typeof makeDa
   };
 }
 
+function makeDashboardDayLabel(date: Date) {
+  return `${date.getDate()} ${dashboardMonthFixture[date.getMonth()]}`;
+}
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: navigationMocks.push,
@@ -421,7 +425,7 @@ describe("superadmin pages", () => {
         volume: index === 3 ? 6 : index === 4 ? 4 : 0,
       }),
     );
-    const monthlyTrend = ["Pekan 1", "Pekan 2", "Pekan 3", "Pekan 4", "Pekan 5"].map(
+    const monthlyTrend = ["1 Apr", "8 Apr", "15 Apr", "22 Apr", "29 Apr"].map(
       (label, index) =>
         makeDashboardTrendPoint(label, {
           amount: index === 3 ? 48000000 : 0,
@@ -433,15 +437,19 @@ describe("superadmin pages", () => {
     const weeklyTrend = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map(
       (label) => makeDashboardTrendPoint(label),
     );
-    const last30Trend = ["31 Mar", "7 Apr", "14 Apr", "21 Apr", "28 Apr"].map(
-      (label, index) =>
+    const last30Trend = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date(2026, 2, 31 + index);
+      const label = makeDashboardDayLabel(date);
+
+      return (
         makeDashboardTrendPoint(label, {
-          amount: index === 4 ? 48000000 : 0,
-          fixedPriceAmount: index === 4 ? 12000000 : 0,
-          vickreyAmount: index === 4 ? 36000000 : 0,
-          volume: index === 4 ? 6 : 0,
-        }),
-    );
+          amount: index === 29 ? 48000000 : 0,
+          fixedPriceAmount: index === 29 ? 12000000 : 0,
+          vickreyAmount: index === 29 ? 36000000 : 0,
+          volume: index === 29 ? 6 : 0,
+        })
+      );
+    });
 
     const { container } = render(
       <SuperAdminDashboardPage
@@ -510,7 +518,7 @@ describe("superadmin pages", () => {
     expect(vickreyToggle).toHaveAttribute("aria-pressed", "false");
 
     const aprilHotspot = screen.getByRole("button", {
-      name: /Pekan 4: Lelang Tertutup Rp 36.000.000/i,
+      name: /22 Apr: Lelang Tertutup Rp 36.000.000/i,
     });
     fireEvent.mouseEnter(aprilHotspot);
 
@@ -538,6 +546,19 @@ describe("superadmin pages", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Performa 30 Hari Terakhir")).toBeInTheDocument();
     expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
+
+    const last30AxisTexts = Array.from(container.querySelectorAll("svg text")).map(
+      (node) => node.textContent,
+    );
+    expect(last30AxisTexts).toEqual(expect.arrayContaining(["31 Mar", "29 Apr"]));
+    expect(last30AxisTexts).not.toEqual(expect.arrayContaining(["1 Apr"]));
+
+    fireEvent.mouseEnter(
+      screen.getByRole("button", {
+        name: /^1 Apr: Lelang Tertutup Rp 0, Harga Tetap Rp 0, Volume 0 transaksi$/i,
+      }),
+    );
+    expect(screen.getByRole("tooltip")).toHaveTextContent("1 Apr");
   });
 
   it("renders monitoring unit as comparative table without risk heat indicator", () => {

@@ -78,18 +78,18 @@ const baseDashboardData = {
         month: {
           label: "Bulan Berlangsung",
           points: [
-            { label: "1-7 Mei", value: 1, amount: 2_000_000 },
-            { label: "8-14 Mei", value: 0, amount: 0 },
-            { label: "15-21 Mei", value: 2, amount: 7_000_000 },
-            { label: "22-28 Mei", value: 3, amount: 9_000_000 },
-            { label: "29-31 Mei", value: 1, amount: 2_000_000 }
+            { label: "1 Mei", value: 1, amount: 2_000_000 },
+            { label: "8 Mei", value: 0, amount: 0 },
+            { label: "15 Mei", value: 2, amount: 7_000_000 },
+            { label: "22 Mei", value: 3, amount: 9_000_000 },
+            { label: "29 Mei", value: 1, amount: 2_000_000 }
           ],
           summary: {
             totalRevenue: 20_000_000,
             verifiedTransactions: 7,
             averageRevenue: 4_000_000,
             peakRevenue: 9_000_000,
-            peakLabel: "22-28 Mei"
+            peakLabel: "22 Mei"
           }
         }
       }
@@ -124,7 +124,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByRole("heading", { name: /barang dipasarkan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /laporan tren penjualan/i })).toBeInTheDocument();
     expect(screen.getByText("Rp 20 jt")).toBeInTheDocument();
-    expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
+    expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
     expect(screen.getByText(/^Puncak Penjualan$/i)).toBeInTheDocument();
     expect(screen.getByText(/7 transaksi lunas/i)).toBeInTheDocument();
     expect(screen.getByText(/total periode/i)).toBeInTheDocument();
@@ -259,11 +259,11 @@ describe("AdminDashboardPage", () => {
         screen.getByRole("dialog", { name: /filter laporan tren penjualan/i }),
       ).getByRole("button", { name: /bulan berlangsung/i }),
     );
-    expect(screen.getByText(/rata-rata pekanan/i)).toBeInTheDocument();
+    expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
     expect(
       screen.getByText(/7 transaksi lunas tercatat pada bulan berlangsung/i),
     ).toBeInTheDocument();
-    expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22-28 Mei/i)).toBeInTheDocument();
+    expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22 Mei/i)).toBeInTheDocument();
   });
 
   it("shows the completed transaction count when a trend point is hovered", () => {
@@ -273,14 +273,14 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText("25")).toBeInTheDocument();
     expect(screen.getAllByText("5").length).toBeGreaterThan(0);
 
-    const trendPoint = screen.getByRole("button", { name: /22-28 Mei: 3 transaksi lunas, Rp 9 jt/i });
+    const trendPoint = screen.getByRole("button", { name: /22 Mei: 3 transaksi lunas, Rp 9 jt/i });
     expect(trendPoint).toHaveStyle({ top: "74.76666666666667%" });
 
     fireEvent.mouseEnter(trendPoint);
 
     const tooltip = screen.getByRole("tooltip");
     expect(tooltip).toHaveClass("-translate-x-1/2");
-    expect(within(tooltip).getByText(/^22-28 Mei$/i)).toBeInTheDocument();
+    expect(within(tooltip).getByText(/^22 Mei$/i)).toBeInTheDocument();
     expect(within(tooltip).getByText(/^3 transaksi lunas$/i)).toBeInTheDocument();
     expect(within(tooltip).getByText(/^Nilai penjualan Rp 9 jt$/i)).toBeInTheDocument();
   });

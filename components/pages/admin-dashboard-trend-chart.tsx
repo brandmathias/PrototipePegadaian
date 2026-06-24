@@ -70,6 +70,17 @@ function resolveAxisMax(value: number) {
   return Math.max(30, Math.ceil(value / 5) * 5);
 }
 
+function shouldShowXAxisLabel(index: number, total: number) {
+  if (total <= 8) {
+    return true;
+  }
+
+  const maxLabels = total <= 12 ? 5 : 6;
+  const step = Math.max(1, Math.ceil((total - 1) / (maxLabels - 1)));
+
+  return index === 0 || index === total - 1 || index % step === 0;
+}
+
 function buildChartModel(series: DashboardTrendPoint[]) {
   const fallback = series.length
     ? series
@@ -136,7 +147,7 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
     timeframe === "day"
       ? "Rata-rata Slot"
       : timeframe === "month"
-        ? "Rata-rata Pekanan"
+        ? "Rata-rata Harian"
         : ["last3Months", "last12Months", "yearToDate", "allTime"].includes(timeframe)
           ? "Rata-rata Bulanan"
           : "Rata-rata Harian";
@@ -144,7 +155,7 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
     timeframe === "day"
       ? `rata-rata nilai penjualan per slot waktu sepanjang ${range.label.toLowerCase()}`
       : timeframe === "month"
-        ? `rata-rata nilai penjualan per pekan aktif sepanjang ${range.label.toLowerCase()}`
+        ? `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`
         : ["last3Months", "last12Months", "yearToDate", "allTime"].includes(timeframe)
           ? `rata-rata nilai penjualan per bulan sepanjang ${range.label.toLowerCase()}`
           : `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`;
@@ -464,9 +475,17 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             })}
 
             <g>
-              {chart.points.map((point, index) => (
-                <g key={`${point.label}-${index}`}>
-                  {point.isActiveData ? (
+              {chart.points.map((point, index) => {
+                const active = index === activePointIndex;
+                const showLabel = active || shouldShowXAxisLabel(index, chart.points.length);
+
+                if (!showLabel) {
+                  return null;
+                }
+
+                return (
+                  <g key={`${point.label}-${index}`}>
+                  {active ? (
                     <rect
                       className="fill-[#ecf8f0] stroke-[#bfe7cc] dark:fill-emerald-300/10 dark:stroke-emerald-200/16"
                       height="22"
@@ -478,14 +497,14 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   ) : null}
                   <text
                     className={cn(
-                      point.isActiveData
+                      active
                         ? "fill-[#0a7b47] dark:fill-emerald-200"
                         : "fill-[#435768] dark:fill-slate-300/72"
                     )}
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize={point.isActiveData ? "13.8" : "13.2"}
-                    fontWeight={point.isActiveData ? 900 : 800}
+                    fontSize={active ? "13.8" : "13.2"}
+                    fontWeight={active ? 900 : 800}
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
@@ -495,7 +514,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     {point.label}
                   </text>
                 </g>
-              ))}
+                );
+              })}
             </g>
           </svg>
 

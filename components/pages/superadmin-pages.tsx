@@ -1150,6 +1150,17 @@ function buildChartTicks({
   });
 }
 
+function shouldShowDashboardAxisLabel(index: number, total: number) {
+  if (total <= 8) {
+    return true;
+  }
+
+  const maxLabels = total <= 12 ? 5 : 6;
+  const step = Math.max(1, Math.ceil((total - 1) / (maxLabels - 1)));
+
+  return index === 0 || index === total - 1 || index % step === 0;
+}
+
 function formatAmountTick(value: number) {
   return Math.round(value / 1_000_000).toLocaleString("id-ID");
 }
@@ -1655,6 +1666,10 @@ export function SuperAdminDashboardPage({
                   const darkSegmentHeight = hasStackedSegments
                     ? vickreyHeight + 0.35
                     : vickreyHeight;
+                  const showLabel =
+                    active ||
+                    shouldShowDashboardAxisLabel(index, chartPoints.length);
+                  const labelWidth = Math.max(42, point.label.length * 6.2 + 18);
 
                   return (
                     <g key={point.label}>
@@ -1694,16 +1709,32 @@ export function SuperAdminDashboardPage({
                           />
                         )
                       ) : null}
-                      <text
-                        fill={active ? "#00563b" : "#465850"}
-                        fontSize="11"
-                        fontWeight={active ? "900" : "760"}
-                        textAnchor="middle"
-                        x={xCenter}
-                        y="214"
-                      >
-                        {point.label}
-                      </text>
+                      {showLabel ? (
+                        <>
+                          {active ? (
+                            <rect
+                              fill="#ffffff"
+                              height="22"
+                              opacity="0.98"
+                              rx="11"
+                              stroke="#d7e7df"
+                              width={labelWidth}
+                              x={xCenter - labelWidth / 2}
+                              y="201"
+                            />
+                          ) : null}
+                          <text
+                            fill={active ? "#00563b" : "#465850"}
+                            fontSize="11"
+                            fontWeight={active ? "900" : "760"}
+                            textAnchor="middle"
+                            x={xCenter}
+                            y="216"
+                          >
+                            {point.label}
+                          </text>
+                        </>
+                      ) : null}
                     </g>
                   );
                 })}

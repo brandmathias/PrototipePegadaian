@@ -195,30 +195,21 @@ function buildMonthTrend(rows: TransactionMetricRow[], now = new Date()) {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
   const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const ranges = [
-    { startDay: 1, endDay: Math.min(7, lastDay) },
-    { startDay: 8, endDay: Math.min(14, lastDay) },
-    { startDay: 15, endDay: Math.min(21, lastDay) },
-    { startDay: 22, endDay: Math.min(28, lastDay) },
-    { startDay: 29, endDay: lastDay }
-  ].filter((range) => range.startDay <= range.endDay);
-  const buckets = ranges.map((range) => ({
-    ...range,
-    label: `${range.startDay}-${range.endDay} ${MONTH_LABELS[currentMonth]}`,
-    value: 0,
-    amount: 0
-  }));
+  const buckets = Array.from({ length: lastDay }, (_, index) => {
+    const date = new Date(currentYear, currentMonth, index + 1);
+
+    return {
+      key: makeDayKey(date),
+      label: makeDayLabel(date),
+      value: 0,
+      amount: 0
+    };
+  });
+  const bucketByKey = new Map(buckets.map((bucket) => [bucket.key, bucket]));
 
   for (const row of rows) {
     const eventAt = makeSalesEventAt(row);
-    if (eventAt.getFullYear() !== currentYear || eventAt.getMonth() !== currentMonth) {
-      continue;
-    }
-
-    const bucket = buckets.find((entry) => {
-      const day = eventAt.getDate();
-      return day >= entry.startDay && day <= entry.endDay;
-    });
+    const bucket = bucketByKey.get(makeDayKey(eventAt));
     if (!bucket) {
       continue;
     }

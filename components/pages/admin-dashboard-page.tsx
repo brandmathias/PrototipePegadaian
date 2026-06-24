@@ -175,7 +175,7 @@ function makeFallbackTrend() {
     ranges: {
       day: makeFallbackRange("Hari Ini", ["00.00", "04.00", "08.00", "12.00", "16.00", "20.00"]),
       week: makeFallbackRange("Minggu Ini", ["Hari 1", "Hari 2", "Hari 3", "Hari 4", "Hari 5", "Hari 6", "Hari 7"]),
-      month: makeFallbackRange("Bulan Berlangsung", ["Pekan 1", "Pekan 2", "Pekan 3", "Pekan 4", "Pekan 5"])
+      month: makeFallbackRange("Bulan Berlangsung", ["Tanggal 1", "Tanggal 8", "Tanggal 15", "Tanggal 22", "Tanggal 29"])
     }
   };
 }

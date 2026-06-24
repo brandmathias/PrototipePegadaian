@@ -59,14 +59,6 @@ const MONTH_LABELS = [
 ];
 
 const WEEK_DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-const MONTH_WEEK_LABELS = [
-  "Pekan 1",
-  "Pekan 2",
-  "Pekan 3",
-  "Pekan 4",
-  "Pekan 5",
-];
-
 function toNumber(value: unknown) {
   return Number(value ?? 0);
 }
@@ -315,6 +307,7 @@ function buildValidatedTrendRanges(
   const weekEnd = addDays(weekStart, 7);
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const currentMonthDayCount = new Date(currentYear, currentMonth + 1, 0).getDate();
   const buildRollingDays = (days: number, label: string) => {
     const today = startOfDay(now);
     const points = Array.from({ length: days }, (_, index) => {
@@ -427,6 +420,14 @@ function buildValidatedTrendRanges(
       summary: summarizeTrendPoints(trendPoints),
     };
   };
+  const monthPoints = Array.from({ length: currentMonthDayCount }, (_, index) => {
+    const date = new Date(currentYear, currentMonth, index + 1);
+    return {
+      key: makeDayKey(date),
+      point: createTrendPoint(makeDayLabel(date)),
+    };
+  });
+  const monthPointByKey = new Map(monthPoints.map((entry) => [entry.key, entry.point]));
   const ranges = {
     week: {
       label: "Minggu Ini",
@@ -434,7 +435,7 @@ function buildValidatedTrendRanges(
     },
     month: {
       label: "Bulan Berlangsung",
-      points: MONTH_WEEK_LABELS.map(createTrendPoint),
+      points: monthPoints.map((entry) => entry.point),
     },
     year: {
       label: "Tahun Ini",
@@ -461,8 +462,10 @@ function buildValidatedTrendRanges(
       eventAt.getFullYear() === currentYear &&
       eventAt.getMonth() === currentMonth
     ) {
-      const weekIndex = Math.min(Math.floor((eventAt.getDate() - 1) / 7), 4);
-      addRowToTrendPoint(ranges.month.points[weekIndex], row);
+      const point = monthPointByKey.get(makeDayKey(eventAt));
+      if (point) {
+        addRowToTrendPoint(point, row);
+      }
     }
 
     if (eventAt.getFullYear() === currentYear) {
