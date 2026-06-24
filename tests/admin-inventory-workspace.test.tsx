@@ -214,7 +214,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /linimasa/i }));
 
-    expect(screen.getByText("Shortcut Periode")).toBeInTheDocument();
+    expect(screen.getByText("Periode")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bulan sebelumnya" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bulan berikutnya" })).toBeInTheDocument();
   });

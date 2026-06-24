@@ -1107,7 +1107,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
               <div className="absolute left-1/2 top-full z-[90] mt-2 grid w-[min(36.25rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.55rem] border border-[#dcebe3] bg-white shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:left-1/2 sm:right-auto sm:grid-cols-[15rem_minmax(0,1fr)] xl:left-0 xl:translate-x-0">
                 <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-2 sm:border-b-0 sm:border-r">
                   <p className="px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
-                    Shortcut Periode
+                    Periode
                   </p>
                   {timelineFilterOptions.map((option) => {
                     const Icon = option.icon;

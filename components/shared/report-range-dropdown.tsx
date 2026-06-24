@@ -177,7 +177,7 @@ export function ReportRangeDropdown<TValue extends string>({
           <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-3 sm:border-b-0 sm:border-r">
             <div className="flex items-center justify-between gap-2 px-1.5 py-1">
               <p className="text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
-                Shortcut Periode
+                Periode
               </p>
               <button
                 aria-label="Tutup filter periode"
@@ -241,24 +241,24 @@ export function ReportRangeDropdown<TValue extends string>({
               </button>
             </div>
 
-            <div className="mt-5 grid flex-1 content-start gap-6 md:grid-cols-2">
+            <div className="mt-5 grid flex-1 items-start gap-7 md:grid-cols-2">
               {visibleMonths.map((month) => {
                 const days = buildCalendarDays(month);
 
                 return (
-                  <div key={month.toISOString()}>
+                  <div className="flex min-h-[14.75rem] flex-col" key={month.toISOString()}>
                     <p className="rounded-full px-3 py-1.5 text-center text-[0.86rem] font-black text-black/78">
                       {monthNames[month.getMonth()]} {month.getFullYear()}
                     </p>
-                    <div className="mt-2.5 grid grid-cols-7 gap-x-1 gap-y-1 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/46">
+                    <div className="mt-3 grid grid-cols-7 gap-x-1 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/46">
                       {dayNames.map((day) => (
                         <span className="grid h-6 place-items-center" key={day}>{day}</span>
                       ))}
                     </div>
-                    <div className="mt-1 grid grid-cols-7 gap-x-1 gap-y-1.5">
+                    <div className="mt-1.5 grid flex-1 grid-cols-7 content-between gap-x-1">
                       {days.map((date, index) => {
                         if (!date) {
-                          return <span aria-hidden="true" className="mx-auto size-7" key={`blank-${index}`} />;
+                          return <span aria-hidden="true" className="mx-auto size-8" key={`blank-${index}`} />;
                         }
 
                         const isoDate = toIsoDate(date);
@@ -270,7 +270,7 @@ export function ReportRangeDropdown<TValue extends string>({
                           <button
                             aria-pressed={inRange}
                             className={cn(
-                              "mx-auto grid size-7 place-items-center rounded-full text-[0.78rem] font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95",
+                              "mx-auto grid size-8 place-items-center rounded-full text-[0.8rem] font-bold transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95",
                               inRange && "bg-[#ecf8f1] text-[#006747]",
                               isToday && !inRange && "bg-[#f4fbf7] text-[#006747]",
                               isEdge && "bg-[#006747] text-white shadow-[0_12px_22px_-14px_rgba(0,103,71,0.78)] hover:bg-[#006747] hover:text-white",
