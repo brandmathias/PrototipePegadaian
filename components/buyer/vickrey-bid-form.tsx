@@ -276,7 +276,7 @@ export function VickreyBidForm({
       );
 
       toast({
-        title: "Penawaran berhasil direkam",
+        title: "Penawaran berhasil dikirimkan",
         description: "Nominal penawaran Anda dirahasiakan hingga sesi lelang berakhir. Sistem akan menentukan pemenang secara otomatis.",
         variant: "success",
         scope: "buyer"
