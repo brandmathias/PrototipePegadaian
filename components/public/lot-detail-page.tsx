@@ -261,7 +261,7 @@ export function LotDetailPage({
                     <p className="text-[1.05rem] font-bold tracking-tight text-[#f59e0b]">
                       Lelang masih berlangsung!
                     </p>
-                    <p className="mt-1.5 text-[0.92rem] font-medium leading-relaxed tracking-[-0.01em] text-[#334155]">
+                    <p className="mt-1 text-[0.875rem] font-medium tracking-tight text-[#334155] whitespace-nowrap">
                       Penawaran Anda sudah terkirim. Tunggu penutupan lelang dan pengumuman pemenang.
                     </p>
                   </div>
