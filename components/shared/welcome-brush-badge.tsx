@@ -105,21 +105,24 @@ export default function WelcomeBrushBadge({
         </span>
 
         {/* Springy animated amber underline accent under the text inside the brush */}
-        {/* Double-layered design: Outer div manages load-reveal, inner span does loop-breathe + hover bounce */}
-        <div className="absolute bottom-1.5 left-14 z-10 origin-left animate-brush-reveal">
-          <span className="block h-[3px] w-32 origin-left rounded-full shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] animate-line-glow-breathe group-hover:scale-x-115 group-hover:shadow-[0_2px_14px_rgba(251,191,36,0.9)]" />
+        {/* Double-layered design: Outer div manages load-reveal and hover bounce, inner span does continuous flow */}
+        <div className="absolute bottom-1.5 left-14 z-10 origin-left animate-brush-reveal transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-x-[1.15] group-hover:-translate-y-0.5">
+          <div className="relative h-[3.5px] w-[130px] overflow-hidden rounded-full shadow-[0_2px_10px_rgba(245,158,11,0.5)] transition-shadow duration-500 group-hover:shadow-[0_4px_16px_rgba(251,191,36,1)]">
+            <div className="absolute inset-0 bg-amber-400" />
+            <div className="absolute inset-0 w-[200%] animate-line-flow-breathe bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.9),transparent)] opacity-80" />
+          </div>
         </div>
 
         {/* Hand-drawn 3-stroke sparkle/burst icon sitting exactly on the outer top-right boundary line of the green brush */}
         {/* Outer wrapper manages the load pop-in, inner SVG manages infinite rotation/twinkle */}
-        <div className="absolute right-[18px] -top-2.5 z-20 animate-soft-pop">
+        <div className="absolute right-1 -top-3.5 z-20 animate-soft-pop origin-center">
           <svg
             width="26"
             height="26"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            className="animate-sparkle-twinkle text-amber-400 overflow-visible"
+            className="animate-sparkle-twinkle text-amber-400 overflow-visible origin-center"
           >
             <path
               d="M8 18 L2 10"
