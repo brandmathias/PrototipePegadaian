@@ -119,7 +119,7 @@ export function LotMediaGallery({
               fill
               className="object-cover transition duration-500 ease-out"
               fetchPriority={priority ? "high" : undefined}
-              loading={priority ? "eager" : undefined}
+              loading={priority ? undefined : "eager"}
               priority={priority}
               quality={72}
               sizes={PDP_ACTIVE_IMAGE_SIZES}
@@ -225,6 +225,7 @@ export function LotMediaGallery({
                         quality={60}
                         sizes={isPdp ? PDP_THUMBNAIL_IMAGE_SIZES : DEFAULT_THUMBNAIL_IMAGE_SIZES}
                         src={item.url}
+                        loading="eager"
                       />
                     )}
 

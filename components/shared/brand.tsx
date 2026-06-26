@@ -36,11 +36,11 @@ export function BrandMark({ className, title = "" }: BrandMarkProps) {
       aria-hidden={title ? undefined : true}
       className={cn("h-10 w-10 shrink-0 object-contain", className)}
       draggable={false}
-      height={BRAND_ICON_HEIGHT}
+      height={40}
       sizes="40px"
       src={BRAND_ICON_SRC}
-      unoptimized
-      width={BRAND_ICON_WIDTH}
+      priority
+      width={40}
     />
   );
 }
@@ -78,11 +78,11 @@ export function BrandLockup({
           aria-hidden="true"
           className={cn("h-7 w-auto max-w-[12rem] shrink object-contain", nameClassName)}
           draggable={false}
-          height={BRAND_NAME_IMAGE_HEIGHT}
+          height={28}
           sizes="192px"
           src={BRAND_NAME_IMAGE_SRC}
-          unoptimized
-          width={BRAND_NAME_IMAGE_WIDTH}
+          priority
+          width={118}
         />
       ) : null}
     </span>

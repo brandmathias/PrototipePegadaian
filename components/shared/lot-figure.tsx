@@ -102,7 +102,7 @@ export function LotFigure({
             fill
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             decoding="async"
-            loading="lazy"
+            loading="eager"
             quality={68}
             sizes="(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw"
             src={primaryMedia.url}
