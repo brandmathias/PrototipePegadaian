@@ -1508,6 +1508,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
   const media = toBuyerMedia(auction.media ?? []);
   const action = getMarketingAction(auction);
   const workflowStatus = getMarketingWorkflowStatus(auction);
+  const CategoryIcon = getMarketingCategoryIcon(auction.category);
   const visibleBuyerName = auction.mode === "FIXED_PRICE" ? getFixedPriceVisibleBuyerName(auction) : auction.buyerName;
   const failureReason = isFailedAuction(auction) ? getAuctionFailureReason(auction) : null;
   const statusDotClass =
@@ -1556,9 +1557,9 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           <h3 className="font-headline text-[1.4rem] font-black leading-tight tracking-[-0.035em] text-[#121c17] transition duration-500 group-hover:text-[#006747] dark:text-slate-100 dark:group-hover:text-emerald-200">
             {auction.lot}
           </h3>
-          <p className="mt-1 text-sm font-semibold text-black/52 dark:text-slate-300/68">
-            {auction.category ? humanize(auction.category) : "Kategori belum diisi"} -{" "}
-            {auction.condition ? humanize(auction.condition) : "Kondisi belum diisi"}
+          <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-black/52 dark:text-slate-300/68">
+            <CategoryIcon className="size-4 text-[#006747] dark:text-emerald-200" />
+            {auction.category ? humanize(auction.category) : "Kategori belum diisi"}
           </p>
         </div>
 
