@@ -104,33 +104,35 @@ export default function WelcomeBrushBadge({
           {text}
         </span>
 
-        {/* Animated amber underline accent under the text inside the brush */}
-        <span className="absolute bottom-1.5 left-14 z-10 h-[3px] w-32 origin-left rounded-full bg-amber-400/95 shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-transform duration-500 origin-left animate-brush-reveal group-hover:scale-x-110" />
+        {/* Animated amber underline accent under the text inside the brush (separated animation wrapper) */}
+        <div className="absolute bottom-1.5 left-14 z-10 origin-left animate-brush-reveal">
+          <span className="block h-[3px] w-32 origin-left rounded-full bg-amber-400/95 shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-transform duration-500 group-hover:scale-x-110" />
+        </div>
       </div>
 
       {/* Hand-drawn 3-stroke sparkle/burst icon at the top right corner of the brush */}
       <svg
-        width="24"
-        height="24"
+        width="28"
+        height="28"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        className="absolute right-1 -top-3 z-20 animate-soft-pop text-amber-400"
+        className="absolute -right-2.5 -top-3.5 z-20 animate-soft-pop text-amber-400 overflow-visible"
       >
         <path
-          d="M5 19 L5 11"
+          d="M8 18 L2 10"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
         />
         <path
-          d="M5 19 L13 11"
+          d="M9 17 L17 6"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
         />
         <path
-          d="M5 19 L15 17"
+          d="M10 19 L20 16"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
