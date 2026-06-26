@@ -36,6 +36,7 @@ export type BuyerTransaction = {
   unit: string;
   unitAddress: string;
   createdAt: string;
+  createdAtRaw?: string;
   deadline: string;
   deadlineAt?: string;
   reference: string;
@@ -75,6 +76,7 @@ export type BuyerBid = {
   status: BuyerBidStatus;
   closing: string;
   closingAt?: string;
+  createdAtRaw?: string;
   revealDeadline?: string;
   revealDeadlineAt?: string;
   bidAmount?: number;

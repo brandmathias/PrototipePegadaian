@@ -90,6 +90,7 @@ type BuyerBidShape = {
   winnerId: string | null;
   transactionId?: string | null;
   userId: string;
+  createdAt?: Date | null;
 };
 
 function toNumber(value: string | number | null | undefined) {
@@ -307,6 +308,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     unit: row.unitName,
     unitAddress: row.unitAddress,
     createdAt: toDateTimeLabel(row.createdAt),
+    createdAtRaw: row.createdAt ? row.createdAt.toISOString() : undefined,
     deadline: deadlineLabel,
     deadlineAt,
     reference: row.referenceNumber ?? proof.reference ?? "-",
@@ -397,6 +399,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
     status,
     closing: toDateTimeLabel(row.endsAt),
     closingAt: row.endsAt?.toISOString(),
+    createdAtRaw: row.createdAt ? row.createdAt.toISOString() : undefined,
     revealDeadline,
     revealDeadlineAt,
     ...(isRevealed ? { bidAmount: toNumber(row.bidAmount) } : {}),

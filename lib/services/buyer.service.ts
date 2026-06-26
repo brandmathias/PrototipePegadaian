@@ -506,7 +506,8 @@ export async function listBuyerBids(userId: string, options?: BuyerReadOptions) 
       marketingStatus: pemasaran.status,
       winnerId: pemasaran.winnerId,
       transactionId: transaksi.id,
-      userId: bids.userId
+      userId: bids.userId,
+      createdAt: bids.createdAt
     })
     .from(bids)
     .innerJoin(pemasaran, eq(pemasaran.id, bids.pemasaranId))

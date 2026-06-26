@@ -279,6 +279,30 @@ function getFilterToneMeta(tone: FilterTone) {
   }
 }
 
+const MONTH_MAP: Record<string, string> = {
+  jan: "Jan", peb: "Feb", feb: "Feb", mar: "Mar", apr: "Apr",
+  mei: "May", jun: "Jun", jul: "Jul", agu: "Aug", sep: "Sep", okt: "Oct",
+  nov: "Nov", des: "Dec", januari: "Jan", pebruari: "Feb", maret: "Mar",
+  april: "Apr", juni: "Jun", juli: "Jul", agustus: "Aug",
+  september: "Sep", oktober: "Oct", november: "Nov", desember: "Dec"
+};
+
+function parseIndonesianDate(dateStr?: string): number {
+  if (!dateStr) return 0;
+  try {
+    let cleanStr = dateStr.replace(/WIB|WITA|WIT/g, "").trim();
+    cleanStr = cleanStr.replace(/(\d{1,2})\.(\d{2})/, "$1:$2");
+    for (const [indo, eng] of Object.entries(MONTH_MAP)) {
+      const regex = new RegExp(`\\b${indo}\\b`, "i");
+      cleanStr = cleanStr.replace(regex, eng);
+    }
+    const parsed = Date.parse(cleanStr);
+    return isNaN(parsed) ? 0 : parsed;
+  } catch {
+    return 0;
+  }
+}
+
 function needsTransactionCountdown(status: BuyerTransactionStatus) {
   return ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_LANGSUNG"].includes(status);
 }
@@ -863,26 +887,50 @@ export function TransactionsWorkspace({
       (bid) => !bid.linkedTransactionId || !visibleTransactionIds.has(bid.linkedTransactionId)
     );
 
+    let items: Array<
+      | { id: string; kind: "transaction"; transaction: BuyerTransaction }
+      | { id: string; kind: "bid"; bid: BuyerBid }
+    > = [];
+
     if (transactionFilter !== "all") {
-      return visibleTransactions.map((transaction) => ({
+      items = visibleTransactions.map((transaction) => ({
         id: transaction.id,
         kind: "transaction" as const,
         transaction,
       }));
+    } else {
+      items = [
+        ...visibleTransactions.map((transaction) => ({
+          id: transaction.id,
+          kind: "transaction" as const,
+          transaction,
+        })),
+        ...standaloneBids.map((bid) => ({
+          id: `${bid.lotId}-${bid.status}-${bid.bidHash ?? bid.closingAt ?? bid.closing}`,
+          bid,
+          kind: "bid" as const,
+        })),
+      ];
     }
 
-    return [
-      ...visibleTransactions.map((transaction) => ({
-        id: transaction.id,
-        kind: "transaction" as const,
-        transaction,
-      })),
-      ...standaloneBids.map((bid) => ({
-        id: `${bid.lotId}-${bid.status}-${bid.bidHash ?? bid.closingAt ?? bid.closing}`,
-        bid,
-        kind: "bid" as const,
-      })),
-    ];
+    const getTimestamp = (item: typeof items[number]) => {
+      if (item.kind === "transaction") {
+        if (item.transaction.createdAtRaw) {
+          return new Date(item.transaction.createdAtRaw).getTime();
+        }
+        return parseIndonesianDate(item.transaction.createdAt);
+      } else {
+        if (item.bid.createdAtRaw) {
+          return new Date(item.bid.createdAtRaw).getTime();
+        }
+        if (item.bid.closingAt) {
+          return new Date(item.bid.closingAt).getTime();
+        }
+        return parseIndonesianDate(item.bid.closing);
+      }
+    };
+
+    return [...items].sort((a, b) => getTimestamp(b) - getTimestamp(a));
   }, [bids, transactionFilter, visibleTransactions]);
   const hasEmptyState = tab === "transactions" ? combinedTransactionActivities.length === 0 : visibleBids.length === 0;
 
