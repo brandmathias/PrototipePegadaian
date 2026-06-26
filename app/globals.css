@@ -3255,3 +3255,18 @@
 .animate-soft-pop {
   animation: soft-pop 0.7s ease-out 0.55s both;
 }
+
+@keyframes sparkle-twinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2));
+  }
+  50% {
+    transform: scale(1.12) rotate(8deg);
+    filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.55));
+  }
+}
+
+.animate-sparkle-twinkle {
+  animation: sparkle-twinkle 2.6s ease-in-out infinite;
+}
