@@ -3181,7 +3181,7 @@
 }
 
 .font-handwritten {
-  font-family: "Kalam", "Caveat", cursive;
+  font-family: var(--font-kalam), "Kalam", "Caveat", cursive;
 }
 
 @keyframes fade-up {
