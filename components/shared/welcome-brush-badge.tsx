@@ -115,7 +115,7 @@ export default function WelcomeBrushBadge({
 
         {/* Hand-drawn 3-stroke sparkle/burst icon sitting exactly on the outer top-right boundary line of the green brush */}
         {/* Outer wrapper manages the load pop-in, inner SVG manages infinite rotation/twinkle */}
-        <div className="absolute right-1 -top-3.5 z-20 animate-soft-pop origin-center">
+        <div className="absolute -right-1 -top-2 z-20 animate-soft-pop origin-center">
           <svg
             width="26"
             height="26"
