@@ -11,7 +11,9 @@ import {
   CheckCircle2,
   Clock3,
   Info,
-  Trophy
+  Trophy,
+  ReceiptText,
+  FileText
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
@@ -116,7 +118,11 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
   }
 
   if (type === "admin_payment_proof_uploaded") {
-    return BadgeCheck;
+    return ReceiptText;
+  }
+
+  if (type === "admin_bid_submitted") {
+    return FileText;
   }
 
   if (type === "admin_vickrey_result") {

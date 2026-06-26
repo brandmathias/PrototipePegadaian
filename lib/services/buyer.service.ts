@@ -34,7 +34,10 @@ import {
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
 import {
   listActiveAdminUnitNotificationRecipientIds,
-  notifyAdminUnitPaymentProofUploaded
+  notifyAdminUnitBidSubmitted,
+  notifyAdminUnitPaymentProofUploaded,
+  notifyAdminUnitVickreyResult,
+  notifyBuyerFixedPricePurchase
 } from "@/lib/services/notification-events";
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
@@ -999,6 +1002,13 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
       revealedAt: null
     })
     .returning();
+
+  const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.unit.id);
+  await notifyAdminUnitBidSubmitted({
+    adminUserIds,
+    pemasaranId,
+    lotName: row.item.name
+  });
 
   return serializeBuyerBid({
     pemasaranId,

@@ -354,14 +354,29 @@ export async function notifyAdminUnitPaymentProofUploaded(input: {
   lotName: string;
 }) {
   return createForUsers(input.adminUserIds, {
-    title: `Bukti pembayaran harga tetap ${input.lotName} masuk`,
-    message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit.",
+    title: `Pembayaran Masuk: ${input.lotName}`,
+    message: "Pembeli telah mengunggah bukti pembayaran. Silakan lakukan verifikasi.",
     type: "admin_payment_proof_uploaded",
     entityType: "transaction",
     entityId: input.transactionId,
     actionHref: input.pemasaranId
       ? `/admin/pemasaran/fixed-price/${input.pemasaranId}`
       : `/admin/transaksi/${input.transactionId}`
+  });
+}
+
+export async function notifyAdminUnitBidSubmitted(input: {
+  adminUserIds: string[];
+  pemasaranId: string;
+  lotName: string;
+}) {
+  return createForUsers(input.adminUserIds, {
+    title: `Penawaran Baru: ${input.lotName}`,
+    message: "Terdapat penawaran masuk untuk barang lelang ini. Lelang masih berlangsung.",
+    type: "admin_bid_submitted",
+    entityType: "pemasaran",
+    entityId: input.pemasaranId,
+    actionHref: `/admin/pemasaran/vickrey-auction/${input.pemasaranId}`
   });
 }
 
@@ -374,13 +389,13 @@ export async function notifyAdminUnitVickreyResult(input: {
 }) {
   const message =
     input.result === "winner_selected"
-      ? "Sesi lelang tertutup sudah berakhir dan sistem telah menentukan pemenang. Tinjau transaksi pemenang untuk tindak lanjut pembayaran."
+      ? "Sesi lelang telah berakhir dan pemenang sudah ditentukan. Silakan tinjau transaksi untuk tindak lanjut."
       : input.result === "payment_overdue"
-        ? "Batas pembayaran pemenang sudah terlewati. Sistem menandai transaksi gagal dan mencatat pelanggaran."
-        : "Sesi lelang tertutup berakhir tanpa pemenang. Tinjau sesi untuk menentukan langkah pemasaran berikutnya.";
+        ? "Batas waktu pembayaran pemenang lelang telah lewat. Transaksi dibatalkan secara otomatis."
+        : "Sesi lelang telah berakhir tanpa pemenang. Silakan tinjau untuk menentukan langkah selanjutnya.";
 
   return createForUsers(input.adminUserIds, {
-    title: `Lelang ${input.lotName} berakhir`,
+    title: `Lelang Berakhir: ${input.lotName}`,
     message,
     type: input.result === "payment_overdue" ? "admin_payment_overdue" : "admin_vickrey_result",
     entityType: "pemasaran",
