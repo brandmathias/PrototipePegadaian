@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -3176,4 +3178,80 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.font-handwritten {
+  font-family: "Kalam", "Caveat", cursive;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brush-reveal {
+  from {
+    opacity: 0;
+    transform: scaleX(0.18) translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1) translateX(0);
+  }
+}
+
+@keyframes wave-hand {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  18% {
+    transform: rotate(13deg);
+  }
+  36% {
+    transform: rotate(-9deg);
+  }
+  54% {
+    transform: rotate(9deg);
+  }
+  72% {
+    transform: rotate(-4deg);
+  }
+}
+
+@keyframes soft-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.75) translateY(4px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-brush-reveal {
+  animation: brush-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-wave-hand {
+  animation: wave-hand 2.4s ease-in-out 0.55s infinite;
+}
+
+.animate-soft-pop {
+  animation: soft-pop 0.7s ease-out 0.55s both;
 }

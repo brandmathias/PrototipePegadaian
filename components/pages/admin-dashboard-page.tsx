@@ -14,6 +14,7 @@ import {
 } from "@/components/pages/admin-dashboard-checklist-card";
 import { AdminDashboardTrendChart } from "@/components/pages/admin-dashboard-trend-chart";
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
+import WelcomeBrushBadge from "@/components/shared/welcome-brush-badge";
 
 export type DashboardTrendPoint = {
   label: string;
@@ -364,9 +365,9 @@ function AdminDashboardHero({
                 <p className="text-[0.72rem] font-black uppercase tracking-[0.26em] text-[#6d887a] dark:text-emerald-100/52 sm:text-[0.76rem]">
                   Dashboard Admin Unit
                 </p>
-                <p className="text-[1.02rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[#233c31] dark:text-emerald-50/88 sm:text-[1.12rem]">
-                  Selamat datang kembali,
-                </p>
+                <div className="pt-1">
+                  <WelcomeBrushBadge />
+                </div>
               </div>
               <h1 className="max-w-[14ch] text-balance font-headline text-[2.58rem] font-black leading-[0.94] tracking-[-0.07em] text-[#0b6847] dark:text-white sm:text-[3.12rem] lg:text-[3.46rem]">
                 Halo, {operatorLabel}

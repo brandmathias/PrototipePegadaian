@@ -102,6 +102,7 @@ import {
   type ReportRangeOption,
 } from "@/components/shared/report-range-dropdown";
 import { SectionHeading } from "@/components/shared/section-heading";
+import WelcomeBrushBadge from "@/components/shared/welcome-brush-badge";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
 import { Badge } from "@/components/ui/badge";
@@ -1370,9 +1371,7 @@ export function SuperAdminDashboardPage({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_86%,#ffffff_100%)]" />
           <div className="relative z-[1] flex h-full items-start px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
             <div className="max-w-[45rem]">
-              <p className="text-[0.84rem] font-black leading-none text-[#17221d] sm:text-[0.9rem]">
-                Selamat datang kembali,
-              </p>
+              <WelcomeBrushBadge className="mb-4" />
               <h1 className="mt-2 font-headline text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
                 Halo, Superadmin Nasional
               </h1>

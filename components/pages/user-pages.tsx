@@ -44,6 +44,7 @@ import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countd
 import { TransactionsWorkspace } from "@/components/buyer/transactions-workspace";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
+import WelcomeBrushBadge from "@/components/shared/welcome-brush-badge";
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
 import { TransactionReceiptActions } from "@/components/shared/transaction-receipt-actions";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
@@ -959,7 +960,7 @@ export function UserDashboardPage({
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,249,0.98)_0%,rgba(255,255,249,0.86)_42%,rgba(255,255,249,0.18)_78%)]" />
         <div className="relative flex min-h-[340px] max-w-3xl flex-col justify-center px-6 py-8 md:min-h-[380px] md:px-10">
-          <p className="text-sm font-bold text-foreground">Selamat datang kembali,</p>
+          <WelcomeBrushBadge className="mb-4" />
           <h1 className="mt-2 font-headline text-4xl font-black tracking-tight text-primary md:text-5xl">
             Halo, {buyer.name}
           </h1>
