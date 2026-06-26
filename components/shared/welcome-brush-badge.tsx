@@ -108,38 +108,38 @@ export default function WelcomeBrushBadge({
         <div className="absolute bottom-1.5 left-14 z-10 origin-left animate-brush-reveal">
           <span className="block h-[3px] w-32 origin-left rounded-full bg-amber-400 shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-x-115 group-hover:bg-amber-300 group-hover:shadow-[0_2px_12px_rgba(251,191,36,0.6)]" />
         </div>
+      </div>
 
-        {/* Hand-drawn 3-stroke sparkle/burst icon positioned relative to brush container */}
-        {/* Outer wrapper manages the load pop-in, inner SVG manages infinite rotation/twinkle */}
-        <div className="absolute right-7 -top-2 z-20 animate-soft-pop">
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 24 24"
-            fill="none"
+      {/* Hand-drawn 3-stroke sparkle/burst icon placed at root level, completely outside the green brush tip */}
+      {/* Outer wrapper manages the load pop-in, inner SVG manages infinite rotation/twinkle */}
+      <div className="absolute -right-4 -top-2.5 z-20 animate-soft-pop">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          className="animate-sparkle-twinkle text-amber-400 overflow-visible"
+        >
+          <path
+            d="M8 18 L2 10"
             stroke="currentColor"
-            className="animate-sparkle-twinkle text-amber-400 overflow-visible"
-          >
-            <path
-              d="M8 18 L2 10"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M9 17 L17 6"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M10 19 L20 16"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M9 17 L17 6"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M10 19 L20 16"
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
     </div>
   );
