@@ -105,8 +105,9 @@ export default function WelcomeBrushBadge({
         </span>
 
         {/* Springy animated amber underline accent under the text inside the brush */}
+        {/* Double-layered design: Outer div manages load-reveal, inner span does loop-breathe + hover bounce */}
         <div className="absolute bottom-1.5 left-14 z-10 origin-left animate-brush-reveal">
-          <span className="block h-[3px] w-32 origin-left rounded-full bg-amber-400 shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-x-115 group-hover:bg-amber-300 group-hover:shadow-[0_2px_12px_rgba(251,191,36,0.6)]" />
+          <span className="block h-[3px] w-32 origin-left rounded-full shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] animate-line-glow-breathe group-hover:scale-x-115 group-hover:shadow-[0_2px_14px_rgba(251,191,36,0.9)]" />
         </div>
 
         {/* Hand-drawn 3-stroke sparkle/burst icon sitting exactly on the outer top-right boundary line of the green brush */}
