@@ -12,8 +12,9 @@ import {
   Clock3,
   Info,
   Trophy,
-  ReceiptText,
-  FileText
+  Banknote,
+  HandCoins,
+  Flag
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
@@ -118,15 +119,15 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
   }
 
   if (type === "admin_payment_proof_uploaded") {
-    return ReceiptText;
+    return Banknote;
   }
 
   if (type === "admin_bid_submitted") {
-    return FileText;
+    return HandCoins;
   }
 
   if (type === "admin_vickrey_result") {
-    return GavelIcon;
+    return Flag;
   }
 
   if (type === "superadmin_policy_alert") {
