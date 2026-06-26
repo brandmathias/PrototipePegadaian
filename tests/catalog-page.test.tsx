@@ -69,7 +69,7 @@ describe("CatalogPage", () => {
       />
     );
 
-    expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
+    expect(screen.getByText(/katalog ruang agunan/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
     expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Lelang Tertutup")[0]).toBeInTheDocument();

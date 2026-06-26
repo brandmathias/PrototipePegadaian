@@ -996,7 +996,7 @@ export function CatalogPage({
         <div className="absolute inset-x-0 bottom-0 h-14 rounded-t-[2.4rem] border-t border-black/6 bg-white" />
         <div className="container grid gap-8 pb-20 pt-12 lg:grid-cols-[0.82fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
           <div className="max-w-3xl">
-            <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">Katalog Premium</p>
+            <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">Katalog Ruang Agunan</p>
             <h1 className="mt-4 max-w-4xl font-headline text-4xl font-black leading-[1.03] text-[#075f42] md:text-5xl lg:text-[2.85rem]">
               Pilih cara pembelian yang tepat untuk Anda
             </h1>
