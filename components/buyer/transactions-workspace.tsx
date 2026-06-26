@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   ShieldCheck,
   Trophy,
+  FileText,
 } from "lucide-react";
 
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -383,7 +384,7 @@ function getBidStatusPill(status: BuyerBidStatus) {
       return { icon: null, label: "Gagal", className: "bg-red-50 text-red-600" };
     case "BID_TERCATAT":
     default:
-      return { icon: null, label: "Bid Tercatat", className: "bg-slate-100 text-slate-600" };
+      return { icon: <FileText className="size-3.5" data-testid="buyer-bid-status-BID_TERCATAT-icon" strokeWidth={1.9} />, label: "Penawaran Terekam", className: "bg-blue-50 text-blue-600" };
   }
 }
 
@@ -499,7 +500,7 @@ function TransactionBadge({
   label,
 }: {
   className: string;
-  label: string;
+  label: ReactNode;
 }) {
   return <span className={cn("rounded-xl px-3 py-1.5 text-[0.92rem] font-medium tracking-[-0.01em]", className)}>{label}</span>;
 }
@@ -664,7 +665,19 @@ function BidRow({ item }: { item: BuyerBid }) {
           </p>
 
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-            <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
+            {item.status === "BID_TERCATAT" ? (
+              <TransactionBadge
+                className="bg-[#eaf7ef] text-[#0b7a4a]"
+                label={
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#0b7a4a]" />
+                    Sesi Berlangsung
+                  </span>
+                }
+              />
+            ) : (
+              <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
+            )}
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[0.92rem] font-medium tracking-[-0.01em]",
@@ -691,16 +704,23 @@ function BidRow({ item }: { item: BuyerBid }) {
             <p className="mt-1 text-[0.94rem] font-medium leading-6 text-slate-800">
               {item.closingAt ? formatAppDateTime(item.closingAt) : item.closing}
             </p>
+            {item.status === "BID_TERCATAT" && (
+              <p className="mt-1 text-[0.88rem] font-medium text-orange-500">
+                (Menunggu Pengumuman Pemenang)
+              </p>
+            )}
           </div>
         </div>
 
         <div className="space-y-3.5">
-          <Link href={actionHref}>
-            <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
-              {actionLabel}
-              <ArrowRight className="size-5" />
-            </span>
-          </Link>
+          {item.status !== "BID_TERCATAT" && (
+            <Link href={actionHref}>
+              <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
+                {actionLabel}
+                <ArrowRight className="size-5" />
+              </span>
+            </Link>
+          )}
 
           <TransactionNotice
             className="bg-[#f9fbf8] text-[#4f5d56]"

@@ -380,7 +380,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   } else if (canReveal) {
     note = `Deadline lewat. Reveal nominal sebelum ${revealDeadline ?? "batas reveal"} agar bid ikut penentuan pemenang.`;
   } else if (isEscrowed && !ended) {
-    note = "Bid terenkripsi tersimpan. Sistem akan membuka escrow otomatis saat deadline lelang berakhir.";
+    note = "Sesi lelang sementara berlangsung. Penawaran Anda telah berhasil direkam oleh sistem. Mohon tunggu pengumuman pemenang resmi setelah batas waktu penutupan lelang berakhir.";
   } else if (isEscrowed) {
     note = "Deadline sudah lewat. Sistem sedang membuka escrow dan menghitung hasil Lelang Tertutup otomatis.";
   } else if (isRevealed) {
