@@ -276,8 +276,8 @@ export function VickreyBidForm({
       );
 
       toast({
-        title: "Bid tertutup tersimpan",
-        description: "Nominal dikunci sebagai escrow terenkripsi. Sistem akan membuka otomatis setelah deadline.",
+        title: "Penawaran berhasil direkam",
+        description: "Nominal penawaran Anda dirahasiakan hingga sesi lelang berakhir. Sistem akan menentukan pemenang secara otomatis.",
         variant: "success",
         scope: "buyer"
       });
