@@ -35,9 +35,7 @@ import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/con
 import {
   listActiveAdminUnitNotificationRecipientIds,
   notifyAdminUnitBidSubmitted,
-  notifyAdminUnitPaymentProofUploaded,
-  notifyAdminUnitVickreyResult,
-  notifyBuyerFixedPricePurchase
+  notifyAdminUnitPaymentProofUploaded
 } from "@/lib/services/notification-events";
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";

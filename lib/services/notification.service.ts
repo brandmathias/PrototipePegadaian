@@ -14,6 +14,7 @@ export type NotificationType =
   | "blacklist_active"
   | "transaction_created"
   | "admin_payment_proof_uploaded"
+  | "admin_bid_submitted"
   | "admin_vickrey_result"
   | "admin_payment_overdue"
   | "superadmin_policy_alert"
