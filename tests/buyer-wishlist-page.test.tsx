@@ -130,7 +130,7 @@ describe("WishlistPage", () => {
       "href",
       "/katalog/lot-vickrey-1"
     );
-    expect(screen.getByText("Aksi Tidak Tersedia")).toBeInTheDocument();
+    expect(screen.getAllByText("Beli Sekarang")).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("combobox", { name: /urutkan wishlist/i }));
     expect(screen.queryByRole("option", { name: /lelang berakhir dekat/i })).not.toBeInTheDocument();

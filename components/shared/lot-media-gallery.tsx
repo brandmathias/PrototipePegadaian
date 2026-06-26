@@ -119,7 +119,7 @@ export function LotMediaGallery({
               fill
               className="object-cover transition duration-500 ease-out"
               fetchPriority={priority ? "high" : undefined}
-              loading={priority ? undefined : "eager"}
+              loading="eager"
               priority={priority}
               quality={72}
               sizes={PDP_ACTIVE_IMAGE_SIZES}

@@ -698,7 +698,7 @@ function WishlistCard({
           {unavailable ? (
             <div className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-sm font-black text-[#77736b]">
               <CircleOff className="size-4" />
-              Aksi Tidak Tersedia
+              {actionLabel}
             </div>
           ) : (
             <Link
