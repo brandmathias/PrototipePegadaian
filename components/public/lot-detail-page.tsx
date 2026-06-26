@@ -23,7 +23,7 @@ import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
-import { formatAppDate } from "@/lib/timezone";
+import { formatAppDate, formatAppDateTime } from "@/lib/timezone";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -66,7 +66,7 @@ function formatOptionalDate(value?: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
-  return formatAppDate(date);
+  return formatAppDateTime(date);
 }
 
 type DetailInfoItem = {
@@ -245,7 +245,7 @@ export function LotDetailPage({
                         targetAt={lot.endsAt}
                       />
                       {auctionEndLabel ? (
-                        <p className="text-center text-xs font-semibold text-[#8b7b74]">{auctionEndLabel}</p>
+                        <p className="mt-1 text-center text-sm font-bold text-[#8b7b74]">{auctionEndLabel}</p>
                       ) : null}
                     </div>
                   ) : null}
@@ -253,25 +253,17 @@ export function LotDetailPage({
               </div>
 
               {bidState ? (
-                <div className="relative rounded-[1.35rem] bg-[#f8faf8] p-5 ring-1 ring-[#e8e2d6]">
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#9d7b2f]">
-                    Aktivitas akun Anda
-                  </p>
-                  <p className="mt-3 text-lg font-black text-[#0f4735]">Bid sudah terkunci</p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#617068]">
-                    {bidState.note}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-[#9d7b2f]">
-                    <span className="rounded-full bg-[#f7f2e8] px-3 py-1.5">
-                      {typeof bidState.bidAmount === "number"
-                        ? `Bid ${currency.format(bidState.bidAmount)}`
-                        : "Hash bid tersimpan"}
-                    </span>
-                    {bidState.paymentAmount ? (
-                      <span className="rounded-full bg-[#f7f2e8] px-3 py-1.5">
-                        Harga akhir lelang {currency.format(bidState.paymentAmount)}
-                      </span>
-                    ) : null}
+                <div className="mb-2 flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[2.5px] border-[#f59e0b] text-[#f59e0b]">
+                    <span className="text-[22px] font-bold leading-none">!</span>
+                  </div>
+                  <div className="pt-0.5">
+                    <p className="text-[1.05rem] font-bold tracking-tight text-[#f59e0b]">
+                      Lelang masih berlangsung!
+                    </p>
+                    <p className="mt-1.5 text-[0.92rem] font-medium leading-relaxed tracking-[-0.01em] text-[#334155]">
+                      Penawaran Anda sudah terkirim. Tunggu penutupan lelang dan pengumuman pemenang.
+                    </p>
                   </div>
                 </div>
               ) : null}
