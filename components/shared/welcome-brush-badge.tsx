@@ -103,30 +103,34 @@ export default function WelcomeBrushBadge({
         <span className="relative z-10 whitespace-nowrap font-handwritten text-[22px] font-medium leading-none tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.18)] md:text-[25px]">
           {text}
         </span>
+
+        {/* Animated amber underline accent under the text inside the brush */}
+        <span className="absolute bottom-1.5 left-14 z-10 h-[3px] w-32 origin-left rounded-full bg-amber-400/95 shadow-[0_2px_8px_rgba(245,158,11,0.35)] transition-transform duration-500 origin-left animate-brush-reveal group-hover:scale-x-110" />
       </div>
 
-      {/* Hand-drawn 3-stroke sparkle/burst icon at the top right of the badge */}
+      {/* Hand-drawn 3-stroke sparkle/burst icon at the top right corner of the brush */}
       <svg
-        width="20"
-        height="20"
+        width="24"
+        height="24"
         viewBox="0 0 24 24"
         fill="none"
-        className="absolute -right-4 -top-3.5 z-20 animate-soft-pop text-amber-400"
+        stroke="currentColor"
+        className="absolute right-1 -top-3 z-20 animate-soft-pop text-amber-400"
       >
         <path
-          d="M6 18 L3 11"
+          d="M5 19 L5 11"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
         />
         <path
-          d="M8 17 L14 7"
+          d="M5 19 L13 11"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
         />
         <path
-          d="M10 19 L19 16"
+          d="M5 19 L15 17"
           stroke="currentColor"
           strokeWidth="3.5"
           strokeLinecap="round"
