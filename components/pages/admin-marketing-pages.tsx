@@ -5316,11 +5316,9 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
         {hasIntegratedNoteActions ? (
           <VickreyPaymentTotalPanel auction={auction} onPrintReceipt={handlePrintReceipt} />
         ) : (
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-            <div className="space-y-4 lg:col-start-2">
-              <VickreyPaymentTotalPanel auction={auction} />
-              <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
-            </div>
+          <div className="space-y-4">
+            <VickreyPaymentTotalPanel auction={auction} />
+            <VickreyWinnerActionFooter auction={auction} onPrintReceipt={handlePrintReceipt} />
           </div>
         )}
       </div>
