@@ -106,7 +106,7 @@ type DashboardStripMetric = {
 };
 
 const ADMIN_DASHBOARD_HERO_ILLUSTRATION =
-  "/assets/hero-illustration-placeholder.svg";
+  "/assets/hero-admin-unit-illustration.png";
 
 const ACTIONABLE_TRANSACTION_STATUSES = new Set([
   "BUKTI_DIUNGGAH",
@@ -378,8 +378,31 @@ function AdminDashboardHero({
       </div>
 
       <div className="admin-hero__visual" aria-hidden="true">
-        <img src={ADMIN_DASHBOARD_HERO_ILLUSTRATION} alt="Ilustrasi operasional dashboard admin unit" />
+        <Image
+          src={ADMIN_DASHBOARD_HERO_ILLUSTRATION}
+          alt="Ilustrasi operasional dashboard admin unit"
+          width={520}
+          height={400}
+          quality={75}
+          priority
+          sizes="(max-width: 1100px) 80vw, 400px"
+          style={{ width: '100%', height: 'auto' }}
+        />
       </div>
+
+      {/* SVG connector lines between illustration and action cards */}
+      <svg className="admin-hero__connectors" aria-hidden="true" viewBox="0 0 60 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 35 Q30 35, 55 35" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+        <path d="M0 110 Q30 110, 55 110" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+        <path d="M0 185 Q30 185, 55 185" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+        {/* Dots at endpoints */}
+        <circle cx="2" cy="35" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="2" cy="110" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="2" cy="185" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="55" cy="35" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="55" cy="110" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="55" cy="185" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+      </svg>
 
       <div className="admin-hero__actions">
         {actions.map((action) => (

@@ -3349,10 +3349,11 @@
     radial-gradient(circle at 80% 30%, rgba(0, 103, 71, 0.08), transparent 28%),
     linear-gradient(90deg, #ffffff 0%, #f6fbf8 100%);
   box-shadow: var(--ra-shadow-soft);
-  padding: 34px 42px;
+  padding: 34px 28px 34px 42px;
   display: grid;
-  grid-template-columns: minmax(360px, 43%) 1fr;
-  column-gap: 24px;
+  grid-template-columns: minmax(320px, 40%) 1fr 48px 160px;
+  align-items: center;
+  column-gap: 0;
   font-family: var(--ra-font-ui);
 }
 
@@ -3400,14 +3401,15 @@
   line-height: 0.86;
   letter-spacing: -0.045em;
   color: var(--ra-green-900);
+  text-align: center;
 }
 
 .admin-hero__display-sub {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  margin-top: 4px;
-  margin-left: 54px;
+  margin-top: 6px;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.34em;
@@ -3476,11 +3478,10 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-right: 170px;
 }
 
 .admin-hero__visual img {
-  width: min(520px, 100%);
+  width: min(420px, 100%);
   height: auto;
   display: block;
   object-fit: contain;
@@ -3491,13 +3492,22 @@
   filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.6));
 }
 
+/* Connector lines between illustration and action cards */
+.admin-hero__connectors {
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 220px;
+  align-self: center;
+}
+
 .admin-hero__actions {
-  position: absolute;
-  top: 50px;
-  right: 28px;
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 16px;
-  width: 180px;
+  width: 160px;
+  align-self: center;
 }
 
 .admin-hero__action {
@@ -3566,13 +3576,15 @@
   }
 
   .admin-hero__visual {
-    padding-right: 0;
     justify-content: flex-start;
     margin-top: 20px;
   }
 
+  .admin-hero__connectors {
+    display: none;
+  }
+
   .admin-hero__actions {
-    position: static;
     width: 100%;
     grid-template-columns: repeat(3, 1fr);
     margin-top: 20px;
