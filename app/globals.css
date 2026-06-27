@@ -3345,8 +3345,8 @@
 .admin-hero {
   position: relative;
   overflow: hidden;
-  min-height: 330px;
-  border-radius: var(--ra-radius-xl);
+  min-height: 340px;
+  border-radius: 2rem;
   border: 1px solid var(--ra-border);
   background:
     radial-gradient(circle at 67% 48%, rgba(0, 103, 71, 0.12), transparent 35%),
@@ -3359,6 +3359,12 @@
   align-items: center;
   column-gap: 24px;
   font-family: var(--ra-font-ui);
+}
+
+@media (min-width: 768px) {
+  .admin-hero {
+    min-height: 380px;
+  }
 }
 
 .dark .admin-hero {
