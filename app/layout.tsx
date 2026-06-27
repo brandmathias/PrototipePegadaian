@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Kalam } from "next/font/google";
+import { Kalam, Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 
 import { UiProviders } from "@/components/providers/ui-providers";
 import {
@@ -21,6 +21,19 @@ const kalam = Kalam({
   subsets: ["latin"],
   weight: ["400", "700"],
   variable: "--font-kalam",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["italic"],
+  variable: "--font-cormorant",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta",
 });
 
 export const metadata: Metadata = {
@@ -89,7 +102,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={kalam.variable}>
+    <html lang="id" className={`${kalam.variable} ${cormorantGaramond.variable} ${plusJakartaSans.variable}`}>
       <body>
         <UiProviders>{children}</UiProviders>
       </body>

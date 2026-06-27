@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import {
   Megaphone,
@@ -352,47 +353,56 @@ function AdminDashboardHero({
 }) {
   const operatorLabel = resolveDashboardOperatorLabel(summary);
 
+  const actions = [
+    { title: "Kelola Barang", href: "/admin/barang", icon: "/icons/package.svg" },
+    { title: "Kelola Pemasaran", href: "/admin/pemasaran", icon: "/icons/megaphone.svg" },
+    { title: "Kelola Transaksi", href: "/admin/transaksi", icon: "/icons/receipt.svg" },
+  ];
+
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-[#bfe7c4] bg-[linear-gradient(135deg,#ffffff_0%,#f7fbf8_46%,#eef8f1_100%)] shadow-[0_30px_90px_-66px_rgba(8,69,50,0.36)] dark:border-emerald-300/18 dark:bg-[linear-gradient(135deg,#101a15_0%,#0f1814_52%,#12211a_100%)] dark:shadow-[0_30px_90px_-52px_rgba(0,0,0,0.72)]">
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-[32rem] bg-[radial-gradient(circle_at_top_left,rgba(154,241,198,0.34),transparent_62%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(52,211,153,0.12),transparent_62%)]" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[34rem] bg-[radial-gradient(circle_at_center,rgba(18,112,77,0.08),transparent_64%)] dark:block" />
-
-      <div className="relative px-5 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(20rem,0.96fr)] lg:items-center">
-          <div className="max-w-2xl space-y-5 lg:space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2.5">
-                <p className="text-[0.72rem] font-black uppercase tracking-[0.26em] text-[#6d887a] dark:text-emerald-100/52 sm:text-[0.76rem]">
-                  Dashboard Admin Unit
-                </p>
-                <div className="pt-1">
-                  <WelcomeBrushBadge />
-                </div>
-              </div>
-              <h1 className="max-w-[14ch] text-balance font-headline text-[2.58rem] font-black leading-[0.94] tracking-[-0.07em] text-[#0b6847] dark:text-white sm:text-[3.12rem] lg:text-[3.46rem]">
-                Halo, {operatorLabel}
-              </h1>
-              <p className="max-w-[43rem] text-[1.02rem] leading-[1.88] tracking-[-0.012em] text-[#40564c] dark:text-emerald-50/74 sm:text-[1.08rem]">
-                Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional {summary.unitName} dari satu ruang admin yang lebih ringkas.
-              </p>
-            </div>
-
-          </div>
-
-          <div className="relative flex min-h-[12.5rem] items-end justify-center lg:min-h-[15rem] lg:justify-end">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(18,112,77,0.12),transparent_58%)] dark:bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.16),transparent_60%)]" />
-            <div className="relative h-[12.65rem] w-full max-w-[24rem] sm:h-[14.2rem] lg:h-[17.4rem] lg:max-w-[30.5rem]">
-              <Image
-                alt="Ilustrasi operasional dashboard admin unit"
-                className="object-contain object-bottom drop-shadow-[0_20px_42px_rgba(8,69,50,0.12)] dark:drop-shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
-                fill
-                priority
-                sizes="(min-width: 1024px) 30rem, 100vw"
-                src={ADMIN_DASHBOARD_HERO_ILLUSTRATION}
-              />
-            </div>
-          </div>
+    <section className="admin-hero" aria-label="Hero dashboard admin unit">
+      <div className="admin-hero__content">
+        <div className="admin-hero__eyebrow">
+          <div className="admin-hero__display-title">Dashboard</div>
+          <div className="admin-hero__display-sub">Admin Unit</div>
         </div>
+
+        <div className="mb-4">
+          <WelcomeBrushBadge />
+        </div>
+
+        <h1 className="admin-hero__title">Halo, {operatorLabel}</h1>
+        <p className="admin-hero__description">
+          Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional {summary.unitName} dari satu ruang admin yang lebih ringkas.
+        </p>
+      </div>
+
+      <div className="admin-hero__visual" aria-hidden="true">
+        <div className="relative w-full h-[265px] lg:h-full">
+          <Image
+            alt="Ilustrasi operasional dashboard admin unit"
+            className="object-contain object-bottom drop-shadow-[0_20px_42px_rgba(8,69,50,0.12)] dark:drop-shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
+            fill
+            priority
+            sizes="(min-width: 1024px) 30rem, 100vw"
+            src={ADMIN_DASHBOARD_HERO_ILLUSTRATION}
+          />
+        </div>
+      </div>
+
+      <div className="admin-hero__actions">
+        {actions.map((action) => (
+          <Link
+            className="admin-hero__action"
+            key={action.title}
+            href={action.href}
+          >
+            <span className="admin-hero__action-icon">
+              <Image src={action.icon} alt="" width={24} height={24} className="dark:brightness-0 dark:invert" />
+            </span>
+            <span className="admin-hero__action-title">{action.title}</span>
+          </Link>
+        ))}
       </div>
     </section>
   );
