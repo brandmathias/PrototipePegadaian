@@ -353,12 +353,6 @@ function AdminDashboardHero({
 }) {
   const operatorLabel = resolveDashboardOperatorLabel(summary);
 
-  const actions = [
-    { title: "Kelola Barang", href: "/admin/barang", icon: "/icons/package.svg" },
-    { title: "Kelola Pemasaran", href: "/admin/pemasaran", icon: "/icons/megaphone.svg" },
-    { title: "Kelola Transaksi", href: "/admin/transaksi", icon: "/icons/receipt.svg" },
-  ];
-
   return (
     <section className="admin-hero" aria-label="Hero dashboard admin unit">
       <div className="admin-hero__content">
@@ -388,35 +382,6 @@ function AdminDashboardHero({
           sizes="(max-width: 1100px) 80vw, 400px"
           style={{ width: '100%', height: 'auto' }}
         />
-      </div>
-
-      {/* SVG connector lines between illustration and action cards */}
-      <svg className="admin-hero__connectors" aria-hidden="true" viewBox="0 0 60 242" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 35 Q30 35, 55 35" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
-        <path d="M0 121 Q30 121, 55 121" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
-        <path d="M0 207 Q30 207, 55 207" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
-        {/* Dots at endpoints */}
-        <circle cx="2" cy="35" r="3" fill="var(--ra-green-600)" />
-        <circle cx="2" cy="121" r="3" fill="var(--ra-green-600)" />
-        <circle cx="2" cy="207" r="3" fill="var(--ra-green-600)" />
-        <circle cx="55" cy="35" r="3" fill="var(--ra-green-600)" />
-        <circle cx="55" cy="121" r="3" fill="var(--ra-green-600)" />
-        <circle cx="55" cy="207" r="3" fill="var(--ra-green-600)" />
-      </svg>
-
-      <div className="admin-hero__actions">
-        {actions.map((action) => (
-          <Link
-            className="admin-hero__action"
-            key={action.title}
-            href={action.href}
-          >
-            <span className="admin-hero__action-icon">
-              <Image src={action.icon} alt="" width={24} height={24} className="dark:brightness-0 dark:invert" />
-            </span>
-            <span className="admin-hero__action-title">{action.title}</span>
-          </Link>
-        ))}
       </div>
     </section>
   );
