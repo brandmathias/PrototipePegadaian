@@ -3407,7 +3407,7 @@
   align-items: center;
   gap: 12px;
   margin-top: 4px;
-  margin-left: 88px;
+  margin-left: 54px;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.34em;
@@ -3418,7 +3418,7 @@
 .admin-hero__display-sub::before,
 .admin-hero__display-sub::after {
   content: "";
-  width: 52px;
+  width: 96px;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--ra-gold-300), transparent);
 }
