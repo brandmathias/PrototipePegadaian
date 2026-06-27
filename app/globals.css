@@ -3401,15 +3401,14 @@
   line-height: 0.86;
   letter-spacing: -0.045em;
   color: var(--ra-green-900);
-  text-align: center;
 }
 
 .admin-hero__display-sub {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   margin-top: 6px;
+  margin-left: 48px;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.34em;
