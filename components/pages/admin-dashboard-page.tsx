@@ -106,7 +106,7 @@ type DashboardStripMetric = {
 };
 
 const ADMIN_DASHBOARD_HERO_ILLUSTRATION =
-  "/uploads/Assets%20Hero%20Section%20Dashboard%20Admin%20Unit/Asset%20Gambar%20Hero%20Section%20Admin%20Unit.png";
+  "/assets/hero-illustration-placeholder.svg";
 
 const ACTIONABLE_TRANSACTION_STATUSES = new Set([
   "BUKTI_DIUNGGAH",
@@ -378,16 +378,7 @@ function AdminDashboardHero({
       </div>
 
       <div className="admin-hero__visual" aria-hidden="true">
-        <div className="relative w-full h-[265px] lg:h-full">
-          <Image
-            alt="Ilustrasi operasional dashboard admin unit"
-            className="object-contain object-bottom drop-shadow-[0_20px_42px_rgba(8,69,50,0.12)] dark:drop-shadow-[0_22px_48px_rgba(0,0,0,0.38)]"
-            fill
-            priority
-            sizes="(min-width: 1024px) 30rem, 100vw"
-            src={ADMIN_DASHBOARD_HERO_ILLUSTRATION}
-          />
-        </div>
+        <img src={ADMIN_DASHBOARD_HERO_ILLUSTRATION} alt="Ilustrasi operasional dashboard admin unit" />
       </div>
 
       <div className="admin-hero__actions">

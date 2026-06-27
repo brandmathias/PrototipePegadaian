@@ -1,0 +1,35 @@
+<svg width="680" height="360" viewBox="0 0 680 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="wash" cx="50%" cy="48%" r="55%">
+      <stop offset="0%" stop-color="#DDEFE2" stop-opacity="0.95"/>
+      <stop offset="65%" stop-color="#EAF7EF" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <ellipse cx="335" cy="185" rx="265" ry="145" fill="url(#wash)" filter="url(#soft)"/>
+  <g stroke="#244D3D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.82">
+    <path d="M205 110c-32 12-48 48-41 86 8 45 39 76 77 86"/>
+    <path d="M226 94c29 14 34 48 23 76-9 24-33 37-58 28"/>
+    <path d="M185 282c18 10 52 16 85 9"/>
+    <path d="M365 105c38 10 59 42 58 83-1 45-28 82-68 98"/>
+    <path d="M386 92c-30 16-34 49-20 76 11 22 36 33 61 20"/>
+    <path d="M337 284c31 12 71 9 96-10"/>
+    <path d="M270 192c29 16 55 18 83 2"/>
+    <path d="M306 191c5-19 28-22 37-7 7 13-3 28-17 30-15 2-25-8-20-23Z" fill="#F8E7A8"/>
+    <path d="M315 194c5-8 14-9 19-2"/>
+    <path d="M122 302c70-19 150-19 225 0 76 19 149 18 211-2" opacity="0.45"/>
+  </g>
+  <g stroke="#244D3D" stroke-width="2" opacity="0.45">
+    <rect x="80" y="245" width="220" height="45" rx="9"/>
+    <rect x="380" y="245" width="160" height="70" rx="10"/>
+    <path d="M420 245v-35h80v35"/>
+  </g>
+  <g fill="#C9A24A" opacity="0.9">
+    <circle cx="300" cy="213" r="5"/>
+    <circle cx="340" cy="218" r="5"/>
+    <circle cx="322" cy="230" r="5"/>
+  </g>
+</svg>
