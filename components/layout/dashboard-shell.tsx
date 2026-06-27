@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
+import { PageTransition } from "@/components/shared/page-transition";
 import { usePathname } from "next/navigation";
 import {
   Ban,
@@ -533,7 +534,7 @@ export function DashboardShell({
         </header>
 
         <main className="mx-auto w-full max-w-[1460px] px-4 py-5 print:max-w-none print:px-0 print:py-0 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>

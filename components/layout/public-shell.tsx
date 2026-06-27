@@ -12,6 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import type { AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
+import { PageTransition } from "@/components/shared/page-transition";
 
 type PublicShellProps = {
   children: ReactNode;
@@ -174,7 +175,9 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
         </header>
       )}
 
-      <main className={cn("min-w-0", isBuyerCatalogSurface && "buyer-motion-main")}>{children}</main>
+      <main className={cn("min-w-0", isBuyerCatalogSurface && "buyer-motion-main")}>
+        <PageTransition>{children}</PageTransition>
+      </main>
 
       {showFooter ? (
         <footer

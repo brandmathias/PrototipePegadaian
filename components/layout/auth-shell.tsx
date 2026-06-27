@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { cn } from "@/lib/utils";
+import { PageTransition } from "@/components/shared/page-transition";
 
 type AuthShellProps = {
   children: ReactNode;
@@ -22,7 +23,11 @@ export function AuthShell({ children }: AuthShellProps) {
   const isStandaloneAuthPage = pathname === "/login" || pathname === "/register";
 
   if (isStandaloneAuthPage) {
-    return <div className="app-responsive-shell min-h-dvh bg-[#04150d]">{children}</div>;
+    return (
+      <div className="app-responsive-shell min-h-dvh bg-[#04150d]">
+        <PageTransition>{children}</PageTransition>
+      </div>
+    );
   }
 
   return (
@@ -110,7 +115,9 @@ export function AuthShell({ children }: AuthShellProps) {
               </div>
             </section>
 
-            <section className="mx-auto w-full max-w-xl">{children}</section>
+            <section className="mx-auto w-full max-w-xl">
+              <PageTransition>{children}</PageTransition>
+            </section>
           </div>
         </main>
       </div>

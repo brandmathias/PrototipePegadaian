@@ -12,6 +12,8 @@ import {
 } from "@/lib/brand";
 import { resolvePublicSiteUrl } from "@/lib/site-url";
 
+import { GlobalScrollReveal } from "@/components/shared/page-transition";
+
 import "./globals.css";
 
 const siteUrl = resolvePublicSiteUrl();
@@ -104,7 +106,10 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${kalam.variable} ${cormorantGaramond.variable} ${plusJakartaSans.variable}`}>
       <body>
-        <UiProviders>{children}</UiProviders>
+        <UiProviders>
+          {children}
+          <GlobalScrollReveal />
+        </UiProviders>
       </body>
     </html>
   );
