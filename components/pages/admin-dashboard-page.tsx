@@ -391,17 +391,17 @@ function AdminDashboardHero({
       </div>
 
       {/* SVG connector lines between illustration and action cards */}
-      <svg className="admin-hero__connectors" aria-hidden="true" viewBox="0 0 60 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 35 Q30 35, 55 35" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
-        <path d="M0 110 Q30 110, 55 110" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
-        <path d="M0 185 Q30 185, 55 185" stroke="var(--ra-green-300)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" />
+      <svg className="admin-hero__connectors" aria-hidden="true" viewBox="0 0 60 242" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 35 Q30 35, 55 35" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
+        <path d="M0 121 Q30 121, 55 121" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
+        <path d="M0 207 Q30 207, 55 207" stroke="var(--ra-green-400)" strokeWidth="2" strokeDasharray="5 4" opacity="0.85" />
         {/* Dots at endpoints */}
-        <circle cx="2" cy="35" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
-        <circle cx="2" cy="110" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
-        <circle cx="2" cy="185" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
-        <circle cx="55" cy="35" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
-        <circle cx="55" cy="110" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
-        <circle cx="55" cy="185" r="2.5" fill="var(--ra-green-500)" opacity="0.6" />
+        <circle cx="2" cy="35" r="3" fill="var(--ra-green-600)" />
+        <circle cx="2" cy="121" r="3" fill="var(--ra-green-600)" />
+        <circle cx="2" cy="207" r="3" fill="var(--ra-green-600)" />
+        <circle cx="55" cy="35" r="3" fill="var(--ra-green-600)" />
+        <circle cx="55" cy="121" r="3" fill="var(--ra-green-600)" />
+        <circle cx="55" cy="207" r="3" fill="var(--ra-green-600)" />
       </svg>
 
       <div className="admin-hero__actions">
