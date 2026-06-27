@@ -1372,10 +1372,10 @@ export function SuperAdminDashboardPage({
           <div className="relative z-[1] flex h-full items-start px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
             <div className="max-w-[45rem]">
               <WelcomeBrushBadge className="mb-4" />
-              <h1 className="mt-2 font-headline text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
+              <h1 className="mt-2 font-sans text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
                 Halo, Superadmin Nasional
               </h1>
-              <p className="mt-4 max-w-[39rem] text-[0.98rem] font-semibold leading-7 text-[#647067] sm:text-[1.05rem]">
+              <p className="mt-4 max-w-[39rem] font-sans text-[0.98rem] font-semibold leading-7 text-[#647067] sm:text-[1.05rem]">
                 Anda siap memantau kinerja unit, meninjau pelanggaran, dan
                 mengendalikan keputusan lintas cabang dari satu pusat kendali
                 yang ringkas.

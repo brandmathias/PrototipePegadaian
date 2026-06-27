@@ -961,10 +961,10 @@ export function UserDashboardPage({
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,249,0.98)_0%,rgba(255,255,249,0.86)_42%,rgba(255,255,249,0.18)_78%)]" />
         <div className="relative flex min-h-[340px] max-w-3xl flex-col justify-center px-6 py-8 md:min-h-[380px] md:px-10">
           <WelcomeBrushBadge className="mb-4" />
-          <h1 className="mt-2 font-headline text-4xl font-black tracking-tight text-primary md:text-5xl">
+          <h1 className="mt-2 font-sans text-4xl font-black tracking-tight text-primary md:text-5xl">
             Halo, {buyer.name}
           </h1>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
+          <p className="mt-4 max-w-xl font-sans text-sm leading-7 text-muted-foreground md:text-base">
             Kami siap membantu Anda menemukan aset terbaik, memantau pembayaran, dan membuka nota
             transaksi dari satu ruang pembeli yang lebih ringkas.
           </p>
