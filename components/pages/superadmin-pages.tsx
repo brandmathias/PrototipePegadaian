@@ -1372,7 +1372,15 @@ export function SuperAdminDashboardPage({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_86%,#ffffff_100%)]" />
           <div className="relative z-[1] px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
             <div className="max-w-[45rem]">
-              <WelcomeBrushBadge className="mb-4" />
+              <div className="admin-hero__eyebrow">
+                <div className="admin-hero__display-title">Dashboard</div>
+                <div className="admin-hero__display-sub">Superadmin</div>
+              </div>
+
+              <div className="mb-4">
+                <WelcomeBrushBadge />
+              </div>
+
               <h1 className="mt-2 font-sans text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
                 Halo, {superAdminName ?? "Superadmin Nasional"}
               </h1>
