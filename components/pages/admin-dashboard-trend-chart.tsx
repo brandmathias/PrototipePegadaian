@@ -154,66 +154,26 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       y
     };
   });
-  const buildSeriesPaths = (getAmount: (point: (typeof points)[number]) => number, getYValue: (point: (typeof points)[number]) => number) => {
-    const paths: string[] = [];
-    let segment: typeof points = [];
-    const flushSegment = () => {
-      if (segment.length > 1) {
-        paths.push(
-          segment
-            .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${getYValue(point).toFixed(1)}`)
-            .join(" ")
-        );
-      }
-      segment = [];
-    };
+  const firstX = points.length ? points[0].x.toFixed(1) : "0";
+  const lastX = points.length ? points[points.length - 1].x.toFixed(1) : "0";
+  const bottomY = chart.bottom.toFixed(1);
 
-    for (const point of points) {
-      if (getAmount(point) > 0) {
-        segment.push(point);
-      } else {
-        flushSegment();
-      }
-    }
-    flushSegment();
-
-    return paths;
-  };
-  const buildAreaPaths = (getAmount: (point: (typeof points)[number]) => number, getYValue: (point: (typeof points)[number]) => number) => {
-    const paths: string[] = [];
-    let segment: typeof points = [];
-    const flushSegment = () => {
-      if (segment.length > 1) {
-        const linePart = segment
-          .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${getYValue(point).toFixed(1)}`)
-          .join(" ");
-        const firstX = segment[0].x.toFixed(1);
-        const lastX = segment[segment.length - 1].x.toFixed(1);
-        const bottomY = chart.bottom.toFixed(1);
-        
-        paths.push(`${linePart} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`);
-      }
-      segment = [];
-    };
-
-    for (const point of points) {
-      if (getAmount(point) > 0) {
-        segment.push(point);
-      } else {
-        flushSegment();
-      }
-    }
-    flushSegment();
-
-    return paths;
-  };
   const linePaths = {
-    fixedPrice: buildSeriesPaths((point) => point.fixedPriceAmount, (point) => point.fixedPriceY),
-    vickrey: buildSeriesPaths((point) => point.vickreyAmount, (point) => point.vickreyY)
+    fixedPrice: points.length
+      ? [points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.fixedPriceY.toFixed(1)}`).join(" ")]
+      : [],
+    vickrey: points.length
+      ? [points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.vickreyY.toFixed(1)}`).join(" ")]
+      : []
   };
+
   const areaPaths = {
-    fixedPrice: buildAreaPaths((point) => point.fixedPriceAmount, (point) => point.fixedPriceY),
-    vickrey: buildAreaPaths((point) => point.vickreyAmount, (point) => point.vickreyY)
+    fixedPrice: linePaths.fixedPrice.length
+      ? [`${linePaths.fixedPrice[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
+      : [],
+    vickrey: linePaths.vickrey.length
+      ? [`${linePaths.vickrey[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
+      : []
   };
 
   return {
