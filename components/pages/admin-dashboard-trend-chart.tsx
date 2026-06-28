@@ -158,13 +158,40 @@ function buildChartModel(series: DashboardTrendPoint[]) {
   const lastX = points.length ? points[points.length - 1].x.toFixed(1) : "0";
   const bottomY = chart.bottom.toFixed(1);
 
+  const getCurvePath = (pts: { x: number; y: number }[]) => {
+    if (pts.length === 0) return "";
+    if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    if (pts.length === 2) {
+      return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
+    }
+
+    let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    const tension = 0.16;
+
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) * tension;
+      const cp1y = p1.y + (p2.y - p0.y) * tension;
+      const cp2x = p2.x - (p3.x - p1.x) * tension;
+      const cp2y = p2.y - (p3.y - p1.y) * tension;
+
+      const clampY = (val: number) => Math.max(chart.top, Math.min(chart.bottom, val));
+
+      path += ` C ${cp1x.toFixed(1)} ${clampY(cp1y).toFixed(1)}, ${cp2x.toFixed(1)} ${clampY(cp2y).toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return path;
+  };
+
+  const fixedPoints = points.map((p) => ({ x: p.x, y: p.fixedPriceY }));
+  const vickreyPoints = points.map((p) => ({ x: p.x, y: p.vickreyY }));
+
   const linePaths = {
-    fixedPrice: points.length
-      ? [points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.fixedPriceY.toFixed(1)}`).join(" ")]
-      : [],
-    vickrey: points.length
-      ? [points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.vickreyY.toFixed(1)}`).join(" ")]
-      : []
+    fixedPrice: points.length ? [getCurvePath(fixedPoints)] : [],
+    vickrey: points.length ? [getCurvePath(vickreyPoints)] : []
   };
 
   const areaPaths = {
