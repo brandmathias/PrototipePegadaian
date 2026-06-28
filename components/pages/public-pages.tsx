@@ -651,27 +651,8 @@ export function RegisterPage() {
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[680px] space-y-7">
           <h2 className="font-headline text-[clamp(3.05rem,5vw,5.35rem)] font-black leading-[0.96] tracking-[-0.055em]">
-            Akses katalog, transaksi, dan nota dalam satu tempat.
+            Akses katalog lengkap dan kelola transaksi dalam satu tempat.
           </h2>
-          <div className="grid max-w-2xl grid-cols-3 gap-4">
-            {[
-              { label: "Harga tetap", value: "Beli" },
-              { label: "Lelang Tertutup", value: "Bid" },
-              { label: "Nota", value: "Arsip" }
-            ].map((item) => (
-              <div
-                className="rounded-3xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md"
-                key={item.label}
-              >
-                <div className="font-headline text-2xl font-black tracking-tight text-amber-200">
-                  {item.value}
-                </div>
-                <div className="mt-1 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-white/62">
-                  {item.label}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </main>

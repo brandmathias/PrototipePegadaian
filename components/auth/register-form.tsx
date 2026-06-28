@@ -274,8 +274,8 @@ export function RegisterForm() {
         <div className="flex items-start gap-3">
           <FileText className="mt-1 size-4 shrink-0 text-amber-100" />
           <span>
-            Data identitas dipakai untuk menjaga keamanan transaksi dan memastikan
-            riwayat katalog, pembelian, bid, serta nota tercatat pada akun yang benar.
+            Data identitas Anda digunakan secara aman untuk memverifikasi akun dan menjaga
+            transparansi seluruh aktivitas transaksi Anda.
           </span>
         </div>
       </div>
