@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Building2,
@@ -130,10 +131,13 @@ function TimelineItem({
         <div className="grid gap-4 pr-10 md:grid-cols-[13rem_minmax(0,1fr)] md:items-center xl:grid-cols-[13rem_minmax(0,1.05fr)_minmax(11rem,0.55fr)_minmax(11rem,0.55fr)_minmax(12rem,0.62fr)_auto]">
           <div className="relative h-24 overflow-hidden rounded-[0.85rem] bg-slate-100 md:h-20">
             {entry.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 alt={`Foto ${entry.itemName}`}
-                className="h-full w-full object-cover"
+                className="object-cover"
+                fill
+                loading="eager"
+                quality={68}
+                sizes="(max-width: 768px) 100vw, 13rem"
                 src={entry.imageUrl}
               />
             ) : (
@@ -211,10 +215,13 @@ function TimelineItem({
       <div className="grid gap-4 pr-10 lg:grid-cols-[13rem_minmax(0,1fr)_1px_minmax(25rem,0.95fr)] lg:items-center">
         <div className="relative h-32 overflow-hidden rounded-[0.85rem] bg-slate-100">
           {entry.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Foto ${entry.itemName}`}
-              className="h-full w-full object-cover"
+              className="object-cover"
+              fill
+              loading="eager"
+              quality={68}
+              sizes="(max-width: 768px) 100vw, 13rem"
               src={entry.imageUrl}
             />
           ) : (
@@ -285,13 +292,13 @@ function TimelineItem({
   );
 }
 
-export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps) {
-  const { summary, blacklistUntilAt, violations } = data;
-  const policy = getBlacklistRestrictionPolicy(summary.blacklist.violations);
-  const hasRestriction = summary.blacklist.active;
-  const [expandedViolationId, setExpandedViolationId] = useState<string | null>(
-    () => violations[0]?.id ?? null
-  );
+function ViolationCountdown({
+  serverNow,
+  untilAt
+}: {
+  serverNow: string;
+  untilAt: string | null;
+}) {
   const syncedNow = useMemo(() => {
     const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
     const clientStartMs = Date.now();
@@ -305,7 +312,37 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
     };
   }, [serverNow]);
   const [now, setNow] = useState(() => syncedNow());
-  const countdown = getCountdownParts(blacklistUntilAt, now);
+  const countdown = getCountdownParts(untilAt, now);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(syncedNow()), 1000);
+    return () => window.clearInterval(intervalId);
+  }, [syncedNow]);
+
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-2">
+      {countdown.map((part, index) => (
+        <div className="contents" key={part.label}>
+          <div className="rounded-[1.1rem] border border-black/10 bg-white px-3 py-3 text-center shadow-sm">
+            <p className="font-headline text-3xl font-black text-orange-500">{part.value}</p>
+            <p className="mt-1 text-xs font-semibold text-[#516078]">{part.label}</p>
+          </div>
+          {index < countdown.length - 1 ? (
+            <span className="text-2xl font-black text-[#516078]">:</span>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps) {
+  const { summary, blacklistUntilAt, violations } = data;
+  const policy = getBlacklistRestrictionPolicy(summary.blacklist.violations);
+  const hasRestriction = summary.blacklist.active;
+  const [expandedViolationId, setExpandedViolationId] = useState<string | null>(
+    () => violations[0]?.id ?? null
+  );
   const restrictionTitle = hasRestriction
     ? "Sedang Dibatasi Sementara"
     : "Akun Dalam Kondisi Baik";
@@ -352,15 +389,6 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
   const restrictionSummary = hasRestriction
     ? `${restrictedFeatures.length} fitur dibatasi pada Level ${policy.level} sampai masa pembatasan selesai.`
     : "Akun dapat memakai fitur pembelian dan lelang sesuai aturan layanan.";
-
-  useEffect(() => {
-    const update = () => setNow(syncedNow());
-
-    update();
-    const intervalId = window.setInterval(update, 1000);
-
-    return () => window.clearInterval(intervalId);
-  }, [syncedNow]);
 
   useEffect(() => {
     if (expandedViolationId === null) {
@@ -414,19 +442,7 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
                 <p className="mb-3 text-sm font-semibold text-[#34435a]">
                   {hasRestriction ? "Fitur akan aktif kembali dalam:" : "Status pembatasan saat ini:"}
                 </p>
-                <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-2">
-                  {countdown.map((part, index) => (
-                    <div className="contents" key={part.label}>
-                      <div className="rounded-[1.1rem] border border-black/10 bg-white px-3 py-3 text-center shadow-sm">
-                        <p className="font-headline text-3xl font-black text-orange-500">{part.value}</p>
-                        <p className="mt-1 text-xs font-semibold text-[#516078]">{part.label}</p>
-                      </div>
-                      {index < countdown.length - 1 ? (
-                        <span className="text-2xl font-black text-[#516078]">:</span>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
+                <ViolationCountdown serverNow={serverNow} untilAt={blacklistUntilAt} />
               </div>
               <div className="flex flex-wrap items-center gap-3 rounded-[1.2rem] border border-orange-100 bg-orange-50/55 px-4 py-3 text-sm font-semibold text-[#34435a]">
                 <CalendarClock className="size-4 text-orange-600" />

@@ -26,9 +26,11 @@ const LOSER_X_ASSET = `${LOSER_ASSET_BASE}/Tanda%20X%20Bukan%20Pemenang%20Lelang
 
 function ProductImage({
   imageUrl,
+  priority = false,
   title,
 }: {
   imageUrl?: string;
+  priority?: boolean;
   title: string;
 }) {
   if (!imageUrl) {
@@ -44,6 +46,8 @@ function ProductImage({
       alt={`Foto barang ${title}`}
       className="object-cover object-center transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.045]"
       fill
+      loading="eager"
+      priority={priority}
       sizes="(max-width: 768px) 80vw, 260px"
       src={imageUrl}
     />
@@ -185,7 +189,7 @@ export function AuctionLoserPageContent({
         <section className="section-reveal rounded-[1.4rem] border border-[#e7e9e7] bg-white p-5 shadow-[0_20px_55px_-38px_rgba(16,24,40,0.28)] md:p-6">
           <div className="grid gap-6 lg:grid-cols-[minmax(14rem,0.58fr)_minmax(0,1.1fr)_minmax(18rem,0.72fr)] lg:items-center">
             <div className="relative min-h-[13.5rem] overflow-hidden rounded-[1.15rem] bg-[#f8faf9]">
-              <ProductImage imageUrl={imageUrl} title={bid.lot} />
+              <ProductImage imageUrl={imageUrl} priority title={bid.lot} />
             </div>
 
             <div className="min-w-0">

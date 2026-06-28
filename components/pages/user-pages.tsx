@@ -502,6 +502,8 @@ function DashboardThumb({
           alt={alt}
           className="object-cover"
           height={64}
+          loading="eager"
+          sizes="64px"
           src={src}
           width={64}
         />
@@ -1169,6 +1171,7 @@ export function UserDashboardPage({
                         alt={`Foto ${latestViolation.itemName}`}
                         className="object-cover"
                         fill
+                        loading="eager"
                         sizes="88px"
                         src={latestViolation.imageUrl}
                       />
@@ -1235,6 +1238,7 @@ export function UserDashboardPage({
           aria-hidden="true"
           className="object-cover object-right opacity-80"
           fill
+          loading="eager"
           sizes="(max-width: 768px) 100vw, 1280px"
           src={BUYER_NOTES_BACKGROUND_IMAGE}
         />
@@ -1425,6 +1429,8 @@ function VickreyPaymentFailedDetail({
                   alt={`Foto barang ${transaction.title}`}
                   className="h-48 w-full rounded-lg bg-[#eef0ed] object-cover md:h-52"
                   height={260}
+                  loading="eager"
+                  sizes="(max-width: 768px) 100vw, 220px"
                   src={transaction.imageUrl}
                   width={320}
                 />
@@ -1610,6 +1616,8 @@ function VickreyPaymentSuccessDetail({
                   alt={`Foto barang ${transaction.title}`}
                   className="h-48 w-full rounded-lg bg-[#eef0ed] object-cover md:h-52"
                   height={260}
+                  loading="eager"
+                  sizes="(max-width: 768px) 100vw, 220px"
                   src={transaction.imageUrl}
                   width={320}
                 />
@@ -1877,6 +1885,8 @@ export function TransactionDetailPage({
                     alt={`Foto barang ${transaction.title}`}
                     className="size-20 shrink-0 rounded-md bg-[#efefec] object-cover"
                     height={160}
+                    loading="eager"
+                    sizes="80px"
                     src={transaction.imageUrl}
                     width={160}
                   />

@@ -220,6 +220,7 @@ export function LotDetailPage({
                     labelClassName="text-sm font-medium text-[#617068]"
                     lotId={lot.id}
                     mode={lot.mode}
+                    pollIntervalMs={30_000}
                     separatorClassName="h-5 w-px bg-[#e8c36a]/45"
                     showSeparators
                     trackView

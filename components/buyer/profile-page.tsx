@@ -101,6 +101,8 @@ export function ProfilePage({
           alt=""
           className="h-full w-full object-fill"
           fill
+          loading="eager"
+          priority
           quality={60}
           sizes="100vw"
           src={BUYER_PROFILE_BACKGROUND_IMAGE}

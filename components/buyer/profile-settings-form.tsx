@@ -300,6 +300,7 @@ export function BuyerProfileSettingsForm({
                     alt=""
                     className="object-cover"
                     fill
+                    loading="eager"
                     sizes="(max-width: 768px) 7rem, 8rem"
                     src={avatarImage}
                     unoptimized={shouldSkipImageOptimization(avatarImage)}

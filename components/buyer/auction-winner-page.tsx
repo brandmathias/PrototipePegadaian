@@ -80,6 +80,8 @@ function ProductVisual({
           alt={`Foto barang ${title}`}
           className="object-cover object-center"
           fill
+          loading="eager"
+          priority
           sizes="(max-width: 1024px) 100vw, 500px"
           src={imageUrl}
         />

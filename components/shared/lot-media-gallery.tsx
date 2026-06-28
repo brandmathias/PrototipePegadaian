@@ -110,7 +110,7 @@ export function LotMediaGallery({
               muted
               onLoadedMetadata={revealVideoPreviewFrame}
               playsInline
-              preload={showVideoControls ? "metadata" : "none"}
+              preload="metadata"
               src={activeMedia.url}
             />
           ) : (
@@ -307,6 +307,7 @@ export function LotMediaGallery({
                         <img
                           alt={`Preview penuh ${activeMediaLabel}`}
                           className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                          loading="eager"
                           src={activeMedia.url}
                         />
                       )}

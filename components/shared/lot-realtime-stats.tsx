@@ -23,7 +23,7 @@ type LotRealtimeStatsProps = {
   labelClassName?: string;
   lotId: string;
   mode: AuctionMode;
-  pollIntervalMs?: number;
+  pollIntervalMs?: number | null;
   separatorClassName?: string;
   showFixedStatus?: boolean;
   showSeparators?: boolean;
@@ -90,7 +90,7 @@ export function LotRealtimeStats({
   labelClassName,
   lotId,
   mode,
-  pollIntervalMs = 15000,
+  pollIntervalMs = null,
   separatorClassName,
   showFixedStatus = false,
   showSeparators = false,
@@ -135,29 +135,58 @@ export function LotRealtimeStats({
   useEffect(() => {
     let mounted = true;
 
-    void refreshStats(trackView ? "POST" : "GET")
-      .then((nextStats) => {
-        if (mounted && nextStats) {
-          setStats(nextStats);
-        }
-      })
-      .catch(() => undefined);
-
-    const intervalId = window.setInterval(() => {
-      void refreshStats("GET")
+    if (trackView || !initialStats) {
+      void refreshStats(trackView ? "POST" : "GET")
         .then((nextStats) => {
           if (mounted && nextStats) {
             setStats(nextStats);
           }
         })
         .catch(() => undefined);
-    }, pollIntervalMs);
+    }
+
+    const intervalId =
+      pollIntervalMs && pollIntervalMs > 0
+        ? window.setInterval(() => {
+            void refreshStats("GET")
+              .then((nextStats) => {
+                if (mounted && nextStats) {
+                  setStats(nextStats);
+                }
+              })
+              .catch(() => undefined);
+          }, pollIntervalMs)
+        : null;
 
     return () => {
       mounted = false;
-      window.clearInterval(intervalId);
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
     };
-  }, [pollIntervalMs, refreshStats, trackView]);
+  }, [initialStats, pollIntervalMs, refreshStats, trackView]);
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      void refreshStats("GET")
+        .then((nextStats) => {
+          if (nextStats) {
+            setStats(nextStats);
+          }
+        })
+        .catch(() => undefined);
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshStats]);
 
   useEffect(() => {
     function handleRefresh(event: Event) {

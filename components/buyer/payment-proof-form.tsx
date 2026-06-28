@@ -212,6 +212,7 @@ export function BuyerPaymentProofForm({
                 <img
                   alt="Preview bukti transfer"
                   className="h-full min-h-[18rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                  loading="eager"
                   src={displayPreviewUrl ?? undefined}
                 />
               ) : isPdfPreview ? (
@@ -378,6 +379,7 @@ export function BuyerPaymentProofForm({
                         <img
                           alt="Preview bukti transfer"
                           className="media-preview-frame w-full object-contain bg-[#f8f8f5]"
+                          loading="eager"
                           src={displayPreviewUrl ?? undefined}
                         />
                       ) : isPdfPreview ? (

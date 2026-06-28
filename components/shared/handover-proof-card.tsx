@@ -167,6 +167,7 @@ export function HandoverProofCard({
                     <img
                       alt={imageAlt}
                       className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+                      loading="eager"
                       src={fileUrl}
                     />
                   ) : (
@@ -174,6 +175,7 @@ export function HandoverProofCard({
                       alt={imageAlt}
                       className="object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
                       fill
+                      loading="eager"
                       sizes={compact ? "(max-width: 768px) 100vw, 420px" : "(max-width: 1024px) 100vw, 58vw"}
                       src={fileUrl}
                     />
@@ -245,6 +247,7 @@ export function HandoverProofCard({
                         <img
                           alt={imageAlt}
                           className="media-preview-frame-fixed w-full object-contain bg-[#f8f8f5]"
+                          loading="eager"
                           src={fileUrl}
                         />
                       ) : (
@@ -252,6 +255,7 @@ export function HandoverProofCard({
                           alt={imageAlt}
                           className="object-contain"
                           fill
+                          loading="eager"
                           sizes="100vw"
                           src={fileUrl}
                         />

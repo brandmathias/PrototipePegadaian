@@ -12,8 +12,6 @@ import {
 } from "@/lib/brand";
 import { resolvePublicSiteUrl } from "@/lib/site-url";
 
-import { GlobalScrollReveal } from "@/components/shared/page-transition";
-
 import "./globals.css";
 
 const siteUrl = resolvePublicSiteUrl();
@@ -108,7 +106,6 @@ export default function RootLayout({
       <body>
         <UiProviders>
           {children}
-          <GlobalScrollReveal />
         </UiProviders>
       </body>
     </html>
