@@ -3605,3 +3605,20 @@
   color: #f59e0b !important;
   transform: translateY(-50%) scale(1.22) rotate(-8deg);
 }
+
+/* Premium Chart Trend Area Entrance Rise & Fade Animation */
+@keyframes chart-area-rise {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.animate-chart-fade-in {
+  transform-origin: bottom;
+  animation: chart-area-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

@@ -179,15 +179,48 @@ function buildChartModel(series: DashboardTrendPoint[]) {
 
     return paths;
   };
+  const buildAreaPaths = (getAmount: (point: (typeof points)[number]) => number, getYValue: (point: (typeof points)[number]) => number) => {
+    const paths: string[] = [];
+    let segment: typeof points = [];
+    const flushSegment = () => {
+      if (segment.length > 1) {
+        const linePart = segment
+          .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${getYValue(point).toFixed(1)}`)
+          .join(" ");
+        const firstX = segment[0].x.toFixed(1);
+        const lastX = segment[segment.length - 1].x.toFixed(1);
+        const bottomY = chart.bottom.toFixed(1);
+        
+        paths.push(`${linePart} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`);
+      }
+      segment = [];
+    };
+
+    for (const point of points) {
+      if (getAmount(point) > 0) {
+        segment.push(point);
+      } else {
+        flushSegment();
+      }
+    }
+    flushSegment();
+
+    return paths;
+  };
   const linePaths = {
     fixedPrice: buildSeriesPaths((point) => point.fixedPriceAmount, (point) => point.fixedPriceY),
     vickrey: buildSeriesPaths((point) => point.vickreyAmount, (point) => point.vickreyY)
+  };
+  const areaPaths = {
+    fixedPrice: buildAreaPaths((point) => point.fixedPriceAmount, (point) => point.fixedPriceY),
+    vickrey: buildAreaPaths((point) => point.vickreyAmount, (point) => point.vickreyY)
   };
 
   return {
     axisTicks,
     chart,
     linePaths,
+    areaPaths,
     points
   };
 }
@@ -441,10 +474,15 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           </div>
           <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
             <defs>
-              <linearGradient id="admin-dashboard-area" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#93dc9b" stopOpacity="0.48" />
-                <stop offset="72%" stopColor="#d3efd5" stopOpacity="0.24" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.04" />
+              <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#005626" stopOpacity="0.45" />
+                <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.18" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#9bd191" stopOpacity="0.42" />
+                <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
               </linearGradient>
               <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
                 <feDropShadow dx="0" dy="10" stdDeviation="7" floodColor="#2cab68" floodOpacity="0.14" />
@@ -507,6 +545,24 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               ))}
             </g>
             <line className="stroke-[#cfdcd4] dark:stroke-white/12" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.15" />
+
+            {/* Area Gradient Fills */}
+            {chart.areaPaths.fixedPrice.map((areaPath, index) => (
+              <path
+                className="transition-[opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-chart-fade-in"
+                d={areaPath}
+                fill="url(#admin-fixed-area-grad)"
+                key={`fixed-area-${index}`}
+              />
+            ))}
+            {chart.areaPaths.vickrey.map((areaPath, index) => (
+              <path
+                className="transition-[opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-chart-fade-in"
+                d={areaPath}
+                fill="url(#admin-vickrey-area-grad)"
+                key={`vickrey-area-${index}`}
+              />
+            ))}
 
             {chart.linePaths.fixedPrice.map((linePath, index) => (
               <path
