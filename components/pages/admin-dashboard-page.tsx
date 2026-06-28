@@ -347,11 +347,13 @@ function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: n
 }
 
 function AdminDashboardHero({
-  summary
+  summary,
+  adminName
 }: {
   summary: AdminDashboardData["summary"];
+  adminName?: string;
 }) {
-  const operatorLabel = resolveDashboardOperatorLabel(summary);
+  const operatorLabel = adminName ?? resolveDashboardOperatorLabel(summary);
 
   return (
     <section className="admin-hero" aria-label="Hero dashboard admin unit">
@@ -446,7 +448,7 @@ function buildDashboardTasks(metrics: AdminDashboardMetrics): DashboardChecklist
   ];
 }
 
-export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
+export function AdminDashboardPage({ data, adminName }: { data: AdminDashboardData; adminName?: string }) {
   const metrics = getDashboardMetrics(data);
   const cards = buildDashboardCards(metrics);
   const tasks = buildDashboardTasks(metrics);
@@ -457,7 +459,7 @@ export function AdminDashboardPage({ data }: { data: AdminDashboardData }) {
     <div className="space-y-4 lg:space-y-5">
       <p className="sr-only">{operationalSummary}</p>
 
-      <AdminDashboardHero summary={data.summary} />
+      <AdminDashboardHero summary={data.summary} adminName={adminName} />
 
       <section className="grid gap-4 lg:grid-cols-3">
         {cards.map((card, index) => (
