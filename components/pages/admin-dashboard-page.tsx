@@ -369,7 +369,7 @@ function AdminDashboardHero({
 
         <h1 className="admin-hero__title">Halo, {operatorLabel}</h1>
         <p className="admin-hero__description">
-          Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional {summary.unitName} dari satu ruang admin yang lebih ringkas.
+          Kami siap membantu Anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional unit dari satu ruang admin yang lebih ringkas.
         </p>
       </div>
 

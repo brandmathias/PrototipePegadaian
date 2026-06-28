@@ -115,7 +115,7 @@ describe("AdminDashboardPage", () => {
 
     expect(screen.getByText(/selamat datang kembali/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /halo, admin unit/i })).toBeInTheDocument();
-    expect(screen.getByText(/kami siap membantu anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional upc ranotana/i)).toBeInTheDocument();
+    expect(screen.getByText(/kami siap membantu anda memantau barang unit, pemasaran, pembayaran, dan prioritas operasional unit dari satu ruang admin/i)).toBeInTheDocument();
     expect(screen.queryByText(/^unit aktif$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/rekening unit aktif/i)).not.toBeInTheDocument();
     expect(screen.getByAltText(/ilustrasi operasional dashboard admin unit/i)).toBeInTheDocument();
