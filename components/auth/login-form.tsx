@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail, MailOpen, UnlockKeyhole } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
@@ -24,6 +24,7 @@ export function LoginForm() {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const rawNext = searchParams.get("next");
   const nextPath = getSafeBuyerNextPath(rawNext);
   const registerHref = rawNext ? `/register?next=${encodeURIComponent(nextPath)}` : "/register";
@@ -123,17 +124,23 @@ export function LoginForm() {
           Email akun
         </label>
         <div className="auth-input-group relative">
-          <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          {focusedField === "email" ? (
+            <MailOpen className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          ) : (
+            <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          )}
           <Input
             autoComplete="email"
             className="auth-input-field h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
             disabled={isPending || isSuccess}
             id="buyer-login-email"
             name="email"
+            onBlur={() => setFocusedField(null)}
             onChange={(event) => {
               setEmail(event.target.value);
               if (error) setError(null);
             }}
+            onFocus={() => setFocusedField("email")}
             placeholder="nama@email.com"
             type="email"
             value={email}
@@ -148,17 +155,23 @@ export function LoginForm() {
           Kata sandi
         </label>
         <div className="auth-input-group relative">
-          <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          {focusedField === "password" ? (
+            <UnlockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          ) : (
+            <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          )}
           <Input
             autoComplete="current-password"
             className="auth-input-field h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 pr-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
             disabled={isPending || isSuccess}
             id="buyer-login-password"
             name="password"
+            onBlur={() => setFocusedField(null)}
             onChange={(event) => {
               setPassword(event.target.value);
               if (error) setError(null);
             }}
+            onFocus={() => setFocusedField("password")}
             placeholder="Masukkan kata sandi"
             type={showPassword ? "text" : "password"}
             value={password}

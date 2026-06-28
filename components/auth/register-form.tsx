@@ -12,7 +12,12 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
+  MailOpen,
   Phone,
+  PhoneCall,
+  ShieldCheck,
+  UnlockKeyhole,
+  UserCheck,
   UserRound
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
@@ -58,6 +63,7 @@ export function RegisterForm() {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const rawNext = searchParams.get("next");
   const nextPath = getSafeBuyerNextPath(rawNext);
   const loginHref = rawNext ? `/login?next=${encodeURIComponent(nextPath)}` : "/login";
@@ -160,14 +166,20 @@ export function RegisterForm() {
             Nama lengkap
           </label>
           <div className="auth-input-group relative">
-            <UserRound className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            {focusedField === "name" ? (
+              <UserCheck className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            ) : (
+              <UserRound className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            )}
             <Input
               autoComplete="name"
               className={inputClass}
               disabled={isPending || isSuccess}
               id="buyer-register-name"
               name="name"
+              onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("name", event.target.value)}
+              onFocus={() => setFocusedField("name")}
               placeholder="Nama sesuai identitas"
               value={form.name}
             />
@@ -181,14 +193,20 @@ export function RegisterForm() {
             Email
           </label>
           <div className="auth-input-group relative">
-            <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            {focusedField === "email" ? (
+              <MailOpen className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            ) : (
+              <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            )}
             <Input
               autoComplete="email"
               className={inputClass}
               disabled={isPending || isSuccess}
               id="buyer-register-email"
               name="email"
+              onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("email", event.target.value)}
+              onFocus={() => setFocusedField("email")}
               placeholder="nama@email.com"
               type="email"
               value={form.email}
@@ -203,14 +221,20 @@ export function RegisterForm() {
             Nomor telepon
           </label>
           <div className="auth-input-group relative">
-            <Phone className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            {focusedField === "phoneNumber" ? (
+              <PhoneCall className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            ) : (
+              <Phone className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            )}
             <Input
               autoComplete="tel"
               className={inputClass}
               disabled={isPending || isSuccess}
               id="buyer-register-phone"
               name="phoneNumber"
+              onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("phoneNumber", event.target.value)}
+              onFocus={() => setFocusedField("phoneNumber")}
               placeholder="08 atau 62"
               value={form.phoneNumber}
             />
@@ -224,14 +248,20 @@ export function RegisterForm() {
             Nomor KTP
           </label>
           <div className="auth-input-group relative">
-            <IdCard className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            {focusedField === "nationalId" ? (
+              <ShieldCheck className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            ) : (
+              <IdCard className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            )}
             <Input
               className={inputClass}
               disabled={isPending || isSuccess}
               id="buyer-register-national-id"
               inputMode="numeric"
               name="nationalId"
+              onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("nationalId", event.target.value)}
+              onFocus={() => setFocusedField("nationalId")}
               placeholder="16 digit NIK"
               value={form.nationalId}
             />
@@ -245,14 +275,20 @@ export function RegisterForm() {
             Kata sandi
           </label>
           <div className="auth-input-group relative">
-            <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            {focusedField === "password" ? (
+              <UnlockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            ) : (
+              <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+            )}
             <Input
               autoComplete="new-password"
               className={passwordInputClass}
               disabled={isPending || isSuccess}
               id="buyer-register-password"
               name="password"
+              onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("password", event.target.value)}
+              onFocus={() => setFocusedField("password")}
               placeholder="Minimal 8 karakter"
               type={showPassword ? "text" : "password"}
               value={form.password}
