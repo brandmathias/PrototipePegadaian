@@ -1358,7 +1358,7 @@ export function SuperAdminDashboardPage({
       <section className="-mx-4 -mt-5 overflow-visible border-b border-[#eef3f0] bg-white sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8">
         <p className="sr-only">Dashboard Nasional</p>
         <p className="sr-only">Superadmin Nasional</p>
-        <div className="relative h-[16.5rem] overflow-hidden bg-[#f8fbfc] sm:h-[17.75rem] lg:h-[18.5rem]">
+        <div className="relative min-h-[19.5rem] overflow-hidden bg-[#f8fbfc] sm:min-h-[21rem] lg:min-h-[22.5rem] pb-12 sm:pb-16 lg:pb-20">
           <Image
             alt="Gedung kantor untuk Dashboard Nasional Superadmin"
             className="pointer-events-none object-cover object-center"
@@ -1369,7 +1369,7 @@ export function SuperAdminDashboardPage({
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#ffffff_0%,rgba(255,255,255,0.96)_24%,rgba(255,255,255,0.58)_49%,rgba(255,255,255,0.05)_100%)]" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_86%,#ffffff_100%)]" />
-          <div className="relative z-[1] flex h-full items-start px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
+          <div className="relative z-[1] px-4 pt-6 sm:px-6 sm:pt-7 lg:px-8 lg:pt-8">
             <div className="max-w-[45rem]">
               <WelcomeBrushBadge className="mb-4" />
               <h1 className="mt-2 font-sans text-[2.25rem] font-black leading-[0.98] tracking-tight text-[#07593f] sm:text-[3.05rem] lg:text-[3.55rem]">
