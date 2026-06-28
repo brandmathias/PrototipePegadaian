@@ -122,11 +122,11 @@ export function LoginForm() {
         >
           Email akun
         </label>
-        <div className="relative">
-          <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+        <div className="auth-input-group relative">
+          <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
           <Input
             autoComplete="email"
-            className="h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
+            className="auth-input-field h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
             disabled={isPending || isSuccess}
             id="buyer-login-email"
             name="email"
@@ -141,22 +141,17 @@ export function LoginForm() {
         </div>
       </div>
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <label
-            className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68"
-            htmlFor="buyer-login-password"
-          >
-            Kata sandi
-          </label>
-          <span className="text-xs font-semibold text-amber-100/70">
-            Hubungi unit jika lupa akses
-          </span>
-        </div>
-        <div className="relative">
-          <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+        <label
+          className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68"
+          htmlFor="buyer-login-password"
+        >
+          Kata sandi
+        </label>
+        <div className="auth-input-group relative">
+          <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
           <Input
             autoComplete="current-password"
-            className="h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 pr-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
+            className="auth-input-field h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 pr-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20"
             disabled={isPending || isSuccess}
             id="buyer-login-password"
             name="password"
@@ -210,10 +205,6 @@ export function LoginForm() {
           )}
         </span>
       </Button>
-      <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 text-sm leading-7 text-emerald-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-        Kelola pembelian harga tetap, pantau sesi Lelang Tertutup, cek status pembayaran,
-        dan buka nota transaksi dari satu area akun pembeli.
-      </div>
       <div className="text-center text-sm text-emerald-50/62">
         Belum punya akun?{" "}
         <Link className="font-semibold text-amber-100 hover:text-white" href={registerHref}>

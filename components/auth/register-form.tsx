@@ -62,7 +62,7 @@ export function RegisterForm() {
   const nextPath = getSafeBuyerNextPath(rawNext);
   const loginHref = rawNext ? `/login?next=${encodeURIComponent(nextPath)}` : "/login";
   const labelClass = "text-[0.68rem] font-black uppercase tracking-[0.22em] text-emerald-50/68";
-  const inputClass = "h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20";
+  const inputClass = "auth-input-field h-14 rounded-2xl border-white/10 bg-white/[0.09] pl-12 text-base text-white placeholder:text-emerald-50/38 focus-visible:border-emerald-200/40 focus-visible:ring-emerald-200/20";
   const passwordInputClass = `${inputClass} pr-12`;
 
   useEffect(() => {
@@ -159,8 +159,8 @@ export function RegisterForm() {
           >
             Nama lengkap
           </label>
-          <div className="relative">
-            <UserRound className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <div className="auth-input-group relative">
+            <UserRound className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
             <Input
               autoComplete="name"
               className={inputClass}
@@ -180,8 +180,8 @@ export function RegisterForm() {
           >
             Email
           </label>
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <div className="auth-input-group relative">
+            <Mail className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
             <Input
               autoComplete="email"
               className={inputClass}
@@ -202,8 +202,8 @@ export function RegisterForm() {
           >
             Nomor telepon
           </label>
-          <div className="relative">
-            <Phone className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <div className="auth-input-group relative">
+            <Phone className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
             <Input
               autoComplete="tel"
               className={inputClass}
@@ -223,8 +223,8 @@ export function RegisterForm() {
           >
             Nomor KTP
           </label>
-          <div className="relative">
-            <IdCard className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <div className="auth-input-group relative">
+            <IdCard className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
             <Input
               className={inputClass}
               disabled={isPending || isSuccess}
@@ -244,8 +244,8 @@ export function RegisterForm() {
           >
             Kata sandi
           </label>
-          <div className="relative">
-            <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
+          <div className="auth-input-group relative">
+            <LockKeyhole className="auth-input-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-emerald-50/42" />
             <Input
               autoComplete="new-password"
               className={passwordInputClass}

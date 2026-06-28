@@ -563,22 +563,6 @@ export function LoginPage() {
               atau ikuti Lelang Tertutup dengan penawaran tertutup yang aman.
             </p>
           </div>
-
-          <div className="grid max-w-2xl grid-cols-3 gap-4">
-            {loginStats.map((item) => (
-              <div
-                className="rounded-3xl border border-white/12 bg-white/[0.08] px-5 py-4 backdrop-blur-md"
-                key={item.label}
-              >
-                <div className="font-headline text-3xl font-black tracking-tight text-amber-200">
-                  {item.value}
-                </div>
-                <div className="mt-1 text-[0.68rem] font-bold uppercase tracking-[0.13em] text-white/62">
-                  {item.label}
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -595,17 +579,13 @@ export function LoginPage() {
                 Masuk ke akun Anda
               </h2>
               <p className="mt-4 max-w-xl text-base leading-8 text-emerald-50/66">
-                Lanjutkan ke katalog, transaksi, riwayat bid, dan nota dengan
-                akun pembeli yang sudah terdaftar.
+                Masuk untuk menjelajahi katalog aset pilihan, memantau proses penawaran lelang, dan mengelola seluruh transaksi secara aman.
               </p>
             </div>
           </div>
           <Suspense fallback={<div className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-emerald-50/70">Menyiapkan formulir masuk...</div>}>
             <LoginForm />
           </Suspense>
-          <div className="mt-5 rounded-[1.15rem] border border-amber-200/18 bg-amber-200/10 p-4 text-sm leading-6 text-emerald-50/72">
-            Akun sedang terkunci karena blacklist? Hubungi admin unit terkait untuk pengecekan manual.
-          </div>
         </div>
       </section>
     </main>

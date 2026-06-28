@@ -3548,3 +3548,32 @@
     animation: none !important;
   }
 }
+
+/* Custom Auth Form Inputs Interactive Effects */
+.auth-input-group {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-input-group:focus-within {
+  transform: translateY(-2px);
+}
+
+.auth-input-field {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.auth-input-field:focus {
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 25px -10px rgba(16, 185, 129, 0.35) !important;
+}
+
+.auth-input-icon {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.auth-input-group:focus-within .auth-input-icon {
+  color: #34d399 !important;
+  transform: translateY(-50%) scale(1.18);
+}
