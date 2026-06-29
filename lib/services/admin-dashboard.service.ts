@@ -51,6 +51,7 @@ type DashboardTrendRange = {
 
 type TransactionMetricRow = {
   id: string;
+  itemId: string;
   userId: string;
   amount: string | null;
   status: string;
@@ -59,6 +60,16 @@ type TransactionMetricRow = {
   createdAt: Date;
   verifiedAt: Date | null;
 };
+
+export function summarizeAdminDashboardTransactions(rows: TransactionMetricRow[]) {
+  const verifiedTransactions = rows.filter((row) => VERIFIED_TRANSACTION_STATUSES.has(row.status));
+
+  return {
+    soldItems: new Set(verifiedTransactions.map((row) => row.itemId)).size,
+    totalRevenue: verifiedTransactions.reduce((sum, row) => sum + Number(row.amount ?? 0), 0),
+    verifiedTransactions
+  };
+}
 
 function makeDayKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
@@ -382,6 +393,7 @@ export async function getAdminDashboardData(unitId: string) {
     db
       .select({
         id: transaksi.id,
+        itemId: barang.id,
         userId: transaksi.userId,
         amount: transaksi.amount,
         transactionType: transaksi.type,
@@ -395,9 +407,12 @@ export async function getAdminDashboardData(unitId: string) {
       .innerJoin(barang, eq(barang.id, pemasaran.barangId))
       .where(eq(barang.unitId, unitId))
   ]);
-  const verifiedTransactions = transactionMetrics.filter((row) => VERIFIED_TRANSACTION_STATUSES.has(row.status));
+  const {
+    soldItems,
+    totalRevenue,
+    verifiedTransactions
+  } = summarizeAdminDashboardTransactions(transactionMetrics);
   const actionableTransactions = transactionMetrics.filter((row) => ACTIONABLE_TRANSACTION_STATUSES.has(row.status));
-  const totalRevenue = verifiedTransactions.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
   const uniqueBuyerCount = new Set(transactionMetrics.map((row) => row.userId)).size;
   const now = new Date();
   const inventoryMetrics = getAdminInventoryMetrics(unitItems, now);
@@ -414,7 +429,7 @@ export async function getAdminDashboardData(unitId: string) {
       totalItems: unitItems.length,
       readyForMarketing: inventoryMetrics.readyForMarketing,
       dueSoon: inventoryMetrics.dueSoon,
-      soldItems: verifiedTransactions.length,
+      soldItems,
       redeemedItems: unitItems.filter((item) => item.status === "ditebus").length,
       activeAuctions: catalogMetrics.total,
       activeParticipants: uniqueBuyerCount,

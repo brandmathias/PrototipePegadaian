@@ -1,11 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import {
   Megaphone,
   ShoppingCart,
   Tag,
-  TrendingUp,
   type LucideIcon
 } from "lucide-react";
 
@@ -94,15 +92,7 @@ type DashboardMetricCard = {
   value: string;
   subtext: string;
   icon: LucideIcon;
-  tone?: "green" | "teal" | "red";
-  pill?: string;
-};
-
-type DashboardStripMetric = {
-  title: string;
-  value: string;
-  subtext: string;
-  icon: LucideIcon;
+  tone: "green" | "blue" | "cyan";
 };
 
 const ADMIN_DASHBOARD_HERO_ILLUSTRATION =
@@ -198,13 +188,18 @@ function getDashboardMetrics(data: AdminDashboardData): AdminDashboardMetrics {
     ACTIONABLE_TRANSACTION_STATUSES.has(getStatus(transaction.status))
   );
   const totalRevenue = verifiedTransactions.reduce((sum, transaction) => sum + Number(transaction.total ?? 0), 0);
+  const soldItems = new Set(
+    verifiedTransactions.map((transaction) =>
+      String(transaction.itemId ?? transaction.barangId ?? transaction.item?.id ?? transaction.id)
+    )
+  ).size;
   const inventoryMetrics = getAdminInventoryMetrics(data.inventory);
 
   return {
     totalItems: data.inventory.length,
     readyForMarketing: inventoryMetrics.readyForMarketing,
     dueSoon: inventoryMetrics.dueSoon,
-    soldItems: verifiedTransactions.length,
+    soldItems,
     redeemedItems: data.inventory.filter((item) => getStatus(item.status) === "DITEBUS").length,
     activeAuctions: data.inventory.filter((item) => Boolean(item.marketingMode)).length,
     activeParticipants: new Set(data.transactions.map((transaction) => transaction.buyer).filter(Boolean)).size,
@@ -224,124 +219,96 @@ function getDashboardMetrics(data: AdminDashboardData): AdminDashboardMetrics {
 
 function DashboardGlyph({
   icon: Icon,
-  tone = "green"
+  tone
 }: {
   icon: LucideIcon;
-  tone?: "green" | "teal" | "red" | "amber";
+  tone: DashboardMetricCard["tone"];
 }) {
   return (
     <span
       className={cx(
-        "admin-kpi-icon grid size-[5.15rem] shrink-0 place-items-center rounded-[1.15rem] border shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-300 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+        "admin-kpi-icon grid size-[3.4rem] shrink-0 place-items-center shadow-[0_14px_28px_-20px_rgba(15,23,42,0.5),inset_0_1px_0_rgba(255,255,255,0.16)]",
         tone === "green" &&
-          "border-[#dcefe2] bg-[linear-gradient(180deg,#f5fbf6,#ebf7ef)] text-[#0c6a42] dark:border-emerald-300/12 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.26),rgba(14,73,52,0.22))] dark:text-emerald-200",
-        tone === "teal" &&
-          "border-[#d6eef0] bg-[linear-gradient(180deg,#f3fbfc,#e9f7f8)] text-[#0b6b71] dark:border-cyan-300/12 dark:bg-[linear-gradient(180deg,rgba(22,103,112,0.26),rgba(13,67,77,0.22))] dark:text-cyan-200",
-        tone === "red" &&
-          "border-[#f7d8dc] bg-[linear-gradient(180deg,#fff8f8,#fff0f2)] text-[#ef2d2d] dark:border-rose-300/14 dark:bg-[linear-gradient(180deg,rgba(127,39,55,0.28),rgba(83,24,35,0.24))] dark:text-rose-200",
-        tone === "amber" &&
-          "border-[#f7e0bd] bg-[linear-gradient(180deg,#fffaf1,#fff3df)] text-[#c87a00] dark:border-amber-300/14 dark:bg-[linear-gradient(180deg,rgba(139,92,24,0.3),rgba(86,58,18,0.22))] dark:text-amber-200"
+          "rounded-full bg-[linear-gradient(145deg,#00623e,#003c25)] text-[#f1ce68]",
+        tone === "blue" &&
+          "rounded-full bg-[linear-gradient(145deg,#1264e5,#0640ad)] text-white",
+        tone === "cyan" &&
+          "rounded-[0.9rem] bg-[linear-gradient(145deg,#e7f9fb,#d9f4f7)] text-[#12abc0] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]"
       )}
     >
-      <Icon className="size-10" strokeWidth={1.8} />
+      <Icon className="size-7" strokeWidth={1.9} />
     </span>
   );
 }
 
 function DashboardKpiCard({ card, index }: { card: DashboardMetricCard; index: number }) {
   const Icon = card.icon;
-  const tone = card.tone ?? "green";
-  const isCritical = tone === "red";
-  const isTeal = tone === "teal";
+  const sparkPaths = [
+    "M3 44 C16 43 18 35 29 37 C40 39 46 25 58 27 C70 29 76 18 88 19 C101 20 102 10 114 13 C127 16 133 5 147 6",
+    "M3 46 C16 46 19 41 30 42 C42 43 48 34 60 36 C72 38 78 22 91 23 C104 24 107 14 119 17 C132 20 136 10 147 8",
+    "M3 45 C16 44 20 36 31 39 C43 42 48 30 60 32 C72 34 78 21 91 25 C103 29 109 15 121 18 C134 21 139 11 147 7"
+  ];
+  const sparkPath = sparkPaths[index] ?? sparkPaths[0];
 
   return (
     <article
       className={cx(
-        "admin-kpi-card relative min-h-[11.1rem] overflow-hidden rounded-[1.25rem] border bg-white px-5 py-5 shadow-[0_22px_54px_-42px_rgba(15,23,42,0.22)] dark:bg-[#101a15] dark:shadow-[0_22px_58px_-36px_rgba(0,0,0,0.68)] sm:px-6",
-        isCritical
-          ? "border-[#ffbfc5] dark:border-rose-300/20"
-          : isTeal
-            ? "border-[#bfe8ee] dark:border-cyan-300/18"
-            : "border-[#bfe7c4] dark:border-emerald-300/18"
+        "admin-kpi-card relative min-h-[9rem] overflow-hidden rounded-[0.95rem] border border-[#e0e7e3] bg-white px-4 py-4 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.26)] dark:border-white/10 dark:bg-[#101a15] dark:shadow-[0_22px_58px_-36px_rgba(0,0,0,0.68)] sm:px-5",
+        card.tone === "green" && "text-[#078244]",
+        card.tone === "blue" && "text-[#125de0]",
+        card.tone === "cyan" && "text-[#11afbd]"
       )}
-      style={{ "--admin-kpi-index": index } as CSSProperties}
     >
-      <div
+      <span
         className={cx(
-          "pointer-events-none absolute inset-0",
-          isCritical
-            ? "bg-[radial-gradient(circle_at_14%_20%,rgba(239,45,45,0.06),transparent_30%)] dark:bg-[radial-gradient(circle_at_14%_20%,rgba(251,113,133,0.08),transparent_32%)]"
-            : isTeal
-              ? "bg-[radial-gradient(circle_at_14%_20%,rgba(11,107,113,0.07),transparent_30%)] dark:bg-[radial-gradient(circle_at_14%_20%,rgba(103,232,249,0.08),transparent_32%)]"
-              : "bg-[radial-gradient(circle_at_14%_20%,rgba(17,145,79,0.07),transparent_30%)] dark:bg-[radial-gradient(circle_at_14%_20%,rgba(52,211,153,0.08),transparent_32%)]"
+          "absolute inset-y-0 left-0 w-1.5",
+          card.tone === "green" && "bg-[#087a43]",
+          card.tone === "blue" && "bg-[#1761e8]",
+          card.tone === "cyan" && "bg-[#18bec9]"
+        )}
+      />
+      <span
+        className={cx(
+          "absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full",
+          card.tone === "green" && "bg-[#10924f]",
+          card.tone === "blue" && "bg-[#1761e8]",
+          card.tone === "cyan" && "bg-[#13b3bd]"
         )}
       />
       <svg
         aria-hidden="true"
         className={cx(
-          "admin-kpi-wave pointer-events-none absolute -bottom-5 left-0 right-0 h-20 w-full",
-          isCritical
-            ? "text-rose-300/60 dark:text-rose-300/34"
-            : isTeal
-              ? "text-cyan-300/68 dark:text-cyan-300/38"
-              : "text-emerald-300/50 dark:text-emerald-300/28"
+          "pointer-events-none absolute bottom-4 right-4 hidden h-[3.15rem] w-[8.75rem] sm:block",
+          card.tone === "green" && "text-[#83df64]",
+          card.tone === "blue" && "text-[#4285f4]",
+          card.tone === "cyan" && "text-[#24cad4]"
         )}
-        preserveAspectRatio="none"
-        viewBox="0 0 420 92"
+        viewBox="0 0 150 52"
       >
-        {Array.from({ length: 8 }, (_, waveIndex) => (
-          <path
-            d="M-20 62 C 60 12, 140 105, 226 58 S 353 22, 448 54"
-            fill="none"
-            key={waveIndex}
-            stroke="currentColor"
-            strokeOpacity={0.72 - waveIndex * 0.075}
-            strokeWidth="1.15"
-            transform={`translate(${waveIndex * 8} ${waveIndex * 5})`}
-          />
-        ))}
+        <defs>
+          <linearGradient id={`admin-kpi-spark-${index}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={`${sparkPath} L147 52 L3 52 Z`} fill={`url(#admin-kpi-spark-${index})`} />
+        <path d={sparkPath} fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+        <circle cx="147" cy={index === 0 ? "6" : index === 1 ? "8" : "7"} fill="currentColor" r="3.4" />
       </svg>
-      {card.pill ? (
-        <span
-          className={cx(
-            "absolute right-5 top-5 z-[1] shrink-0 rounded-full px-2.5 py-1.5 text-[0.66rem] font-black leading-none sm:right-6 sm:top-6 sm:px-3 sm:text-[0.7rem]",
-            isCritical
-              ? "bg-[#fff0f2] text-[#ef2d2d] dark:bg-rose-300/10 dark:text-rose-200"
-              : isTeal
-                ? "bg-[#edf9fa] text-[#0c7b84] dark:bg-cyan-300/10 dark:text-cyan-200"
-                : "bg-[#ecf8ee] text-[#11874b] dark:bg-emerald-300/10 dark:text-emerald-200"
-          )}
-        >
-          {card.pill}
-        </span>
-      ) : null}
-      <div className="relative grid h-full grid-cols-[5.15rem_minmax(0,1fr)] items-start gap-5 pr-0 sm:pr-16">
-        <DashboardGlyph icon={Icon} tone={isCritical ? "red" : isTeal ? "teal" : "green"} />
-        <div className={cx("min-w-0 pt-2", isCritical && card.pill && "pr-[4.85rem] sm:pr-[5.35rem]")}>
-          <h2
-            className={cx(
-              "pr-16 text-[0.98rem] font-black leading-tight tracking-[-0.02em] text-[#111a16] dark:text-slate-100 sm:pr-0 sm:text-[1.05rem]",
-              isCritical
-                ? "max-w-none whitespace-nowrap pr-0 text-[1.05rem] tracking-[-0.035em] sm:text-[1.05rem]"
-                : "max-w-[13rem]"
-            )}
-          >
+      <div className="relative flex items-start gap-3.5">
+        <DashboardGlyph icon={Icon} tone={card.tone} />
+        <div className="min-w-0 pt-0.5">
+          <h2 className="text-[0.82rem] font-extrabold leading-4 text-[#151d19] dark:text-slate-100">
             {card.title}
           </h2>
-
-          <p className="mt-3 font-headline text-[2.45rem] font-black leading-none tracking-[-0.055em] text-[#101916] dark:text-white sm:text-[2.7rem]">
+          <p className="mt-1 text-[2.05rem] font-extrabold leading-none [font-variant-numeric:tabular-nums] dark:text-white">
             {card.value}
-          </p>
-          <p
-            className={cx(
-              "mt-2 max-w-[17rem] text-[0.88rem] leading-5 text-[#52615d] dark:text-slate-300/72",
-              isCritical && "max-w-none whitespace-nowrap text-[0.84rem] leading-none"
-            )}
-          >
-            {card.subtext}
           </p>
         </div>
       </div>
+      <p className="relative z-[1] mt-2 pl-[4.25rem] text-[0.72rem] font-medium leading-4 text-[#59677a] dark:text-slate-300/72 sm:pr-[8.25rem]">
+        {card.subtext}
+      </p>
     </article>
   );
 }
@@ -396,22 +363,21 @@ function buildDashboardCards(metrics: AdminDashboardMetrics): DashboardMetricCar
       value: formatCount(metrics.soldItems),
       subtext: `${formatCurrencyCompact(metrics.totalRevenue)} dari transaksi terverifikasi`,
       icon: ShoppingCart,
-      tone: "green",
-      pill: `${formatCount(metrics.verifiedTransactions)} lunas`
+      tone: "green"
     },
     {
       title: "Barang Ditebus",
       value: formatCount(metrics.redeemedItems),
       subtext: `${formatCount(metrics.readyForMarketing)} barang siap dipasarkan di unit`,
       icon: Tag,
-      tone: "teal"
+      tone: "blue"
     },
     {
       title: "Barang Dipasarkan",
       value: formatCount(metrics.activeAuctions),
       subtext: "Produk dalam sesi pemasaran aktif",
       icon: Megaphone,
-      tone: "green"
+      tone: "cyan"
     }
   ];
 }
@@ -461,7 +427,10 @@ export function AdminDashboardPage({ data, adminName }: { data: AdminDashboardDa
 
       <AdminDashboardHero summary={data.summary} adminName={adminName} />
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <section
+        className="grid gap-3.5 [font-family:var(--font-plus-jakarta)] lg:grid-cols-3"
+        data-testid="admin-dashboard-metrics"
+      >
         {cards.map((card, index) => (
           <DashboardKpiCard card={card} index={index} key={card.title} />
         ))}

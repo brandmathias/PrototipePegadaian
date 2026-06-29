@@ -510,14 +510,14 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 Lelang Tertutup
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full bg-[#9ed47a]" />
+                <span className="size-2.5 rounded-full bg-[#68d957]" />
                 Harga Tetap
               </span>
             </div>
           </div>
           
-          <div className="relative flex-1">
-            <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
+          <div className="relative min-h-0 flex-1">
+            <svg className="block h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
               <defs>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
@@ -527,9 +527,9 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#0b6b4b" stopOpacity="0.28" />
-                  <stop offset="56%" stopColor="#0b6b4b" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#0b6b4b" stopOpacity="0.06" />
+                  <stop offset="0%" stopColor="#20c997" stopOpacity="0.38" />
+                  <stop offset="54%" stopColor="#68ddb4" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#d9f7ea" stopOpacity="0.08" />
                 </linearGradient>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
@@ -539,12 +539,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#9ed47a" stopOpacity="0.34" />
-                  <stop offset="56%" stopColor="#9ed47a" stopOpacity="0.17" />
-                  <stop offset="100%" stopColor="#9ed47a" stopOpacity="0.05" />
+                  <stop offset="0%" stopColor="#76e660" stopOpacity="0.3" />
+                  <stop offset="54%" stopColor="#a9ee90" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#e9f9e4" stopOpacity="0.04" />
                 </linearGradient>
                 <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
+                  <feDropShadow dx="0" dy="3" stdDeviation="3.2" floodColor="#28c487" floodOpacity="0.16" />
                 </filter>
               </defs>
 
@@ -555,11 +555,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               {chart.axisTicks.map((tick) => (
                 <g key={tick.label}>
                   <text
-                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
+                    className="fill-[#334155] font-bold antialiased transition-all duration-150 dark:fill-slate-100"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="14"
-                    fontWeight="600"
+                    fontSize="14.5"
+                    fontWeight="700"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="end"
@@ -606,7 +606,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 fill="none"
                 filter="url(#admin-dashboard-line-shadow)"
                 key={`fixed-line-${index}`}
-                stroke="#9ed47a"
+                stroke="#68d957"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth="2.65"
@@ -682,7 +682,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
                         cy={point.fixedPriceY}
-                        fill="#9ed47a"
+                        fill="#68d957"
                         r={active ? 6.2 : 5}
                         stroke="#ffffff"
                         strokeWidth="1.5"
@@ -704,11 +704,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 return (
                   <g key={`${point.label}-${index}`}>
                   <text
-                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
+                    className="fill-[#334155] font-bold antialiased transition-all duration-150 dark:fill-slate-100"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="14"
-                    fontWeight="600"
+                    fontSize="14.5"
+                    fontWeight="700"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
@@ -777,7 +777,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2 dark:bg-emerald-300/8">
                   <span className="inline-flex items-center gap-2">
-                    <span className="size-2.5 rounded-full bg-[#9bd191]" />
+                    <span className="size-2.5 rounded-full bg-[#68d957]" />
                     Harga Tetap
                   </span>
                   <span className="font-black text-[#3f8d42] dark:text-emerald-100">

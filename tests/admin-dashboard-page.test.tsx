@@ -148,6 +148,22 @@ describe("AdminDashboardPage", () => {
     expect(screen.queryByText(/^Urgent$/i)).not.toBeInTheDocument();
   });
 
+  it("uses the compact reference styling and semantic checklist progress", () => {
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByTestId("admin-dashboard-metrics")).toHaveClass(
+      "[font-family:var(--font-plus-jakarta)]"
+    );
+    expect(screen.getByTestId("admin-dashboard-checklist")).toHaveClass(
+      "[font-family:var(--font-plus-jakarta)]"
+    );
+    expect(screen.queryByText(/^2 lunas$/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: /progres checklist harian/i })).toHaveAttribute(
+      "aria-valuenow",
+      "2"
+    );
+  });
+
   it("uses verified transactions instead of raw sold inventory status for fallback sales count", () => {
     const fallbackData = {
       ...baseDashboardData,
@@ -158,8 +174,9 @@ describe("AdminDashboardPage", () => {
         { id: "barang-3", status: "DIPASARKAN", marketingMode: "Harga Tetap", dueDate: "2026-07-01" },
       ],
       transactions: [
-        { id: "trx-1", status: "LUNAS", total: 7_500_000, buyer: "Buyer A" },
-        { id: "trx-2", status: "MENUNGGU_PEMBAYARAN", total: 6_500_000, buyer: "Buyer B" },
+        { id: "trx-1", itemId: "barang-1", status: "LUNAS", total: 7_500_000, buyer: "Buyer A" },
+        { id: "trx-2", itemId: "barang-1", status: "SELESAI", total: 1_000_000, buyer: "Buyer A" },
+        { id: "trx-3", itemId: "barang-2", status: "MENUNGGU_PEMBAYARAN", total: 6_500_000, buyer: "Buyer B" },
       ],
     } as any;
 
@@ -179,7 +196,10 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/pastikan barang baru sudah tercatat lengkap/i)).toBeInTheDocument();
     expect(screen.getByText(/dahulukan barang yang mendekati jatuh tempo/i)).toBeInTheDocument();
     expect(screen.getByText(/pantau pemenang yang belum menyelesaikan pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: /progres checklist harian/i })).toHaveAttribute(
+      "aria-valuenow",
+      "2"
+    );
     expect(screen.queryByRole("heading", { name: /perhatian diperlukan/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /lihat pemasaran/i })).not.toBeInTheDocument();
   });
@@ -188,10 +208,11 @@ describe("AdminDashboardPage", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
     const dueSoonTask = screen.getByRole("button", { name: /dahulukan barang yang mendekati jatuh tempo/i });
-    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
+    const progress = screen.getByRole("progressbar", { name: /progres checklist harian/i });
+    expect(progress).toHaveAttribute("aria-valuenow", "2");
 
     fireEvent.click(dueSoonTask);
-    expect(screen.getByText(/3 \/ 5 selesai/i)).toBeInTheDocument();
+    expect(progress).toHaveAttribute("aria-valuenow", "3");
   });
 
   it("automatically resets the daily checklist when the 24 hour cycle expires", () => {
@@ -208,13 +229,14 @@ describe("AdminDashboardPage", () => {
 
     render(<AdminDashboardPage data={baseDashboardData} />);
 
-    expect(screen.getByText(/3 \/ 5 selesai/i)).toBeInTheDocument();
+    const progress = screen.getByRole("progressbar", { name: /progres checklist harian/i });
+    expect(progress).toHaveAttribute("aria-valuenow", "3");
 
     act(() => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(screen.getByText(/2 \/ 5 selesai/i)).toBeInTheDocument();
+    expect(progress).toHaveAttribute("aria-valuenow", "2");
   });
 
   it("updates the checklist clock in real time", () => {
@@ -320,7 +342,9 @@ describe("AdminDashboardPage", () => {
     );
 
     expect(screen.getByText(/Rp 7,5/i)).toBeInTheDocument();
-    expect(screen.getByText(/^1 lunas$/i)).toBeInTheDocument();
+    const soldMetric = screen.getByRole("heading", { name: /barang terjual/i }).closest("article");
+    expect(soldMetric).not.toBeNull();
+    expect(within(soldMetric as HTMLElement).getByText("1")).toBeInTheDocument();
     expect(screen.getByText(/1 barang siap dipasarkan di unit/i)).toBeInTheDocument();
   });
 });
