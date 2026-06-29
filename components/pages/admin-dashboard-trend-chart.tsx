@@ -1,21 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  CalendarClock,
-  BarChart3,
-  ShoppingCart,
-  Star,
-  Check,
-  type LucideIcon
-} from "lucide-react";
 
 import {
   ReportRangeDropdown,
   type ReportCustomRange,
   type ReportRangeOption
 } from "@/components/shared/report-range-dropdown";
-import { cn } from "@/lib/utils";
 import type {
   AdminDashboardMetrics,
   DashboardSalesTimeframeKey,
@@ -29,59 +20,66 @@ const TrendReportIcon = ({ className }: { className?: string }) => (
     aria-hidden="true"
     className={className}
     fill="none"
-    viewBox="0 0 56 56"
+    viewBox="0 0 48 48"
   >
     <path
-      d="M14 38V28M24 38V22M34 38V30M44 38V16"
+      d="M10 37V30M18 37V25M26 37V29M34 37V21"
       stroke="#f2d778"
       strokeLinecap="round"
-      strokeWidth="4"
+      strokeWidth="3.2"
     />
     <path
-      d="M12 24l10-8 10 7 12-13"
+      d="M9 24.5 17.5 17l7 6.2L37.5 10"
       stroke="#f2d778"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth="3.5"
+      strokeWidth="3"
     />
     <path
-      d="M37 10h7v7"
+      d="M31.5 10h6v6"
       stroke="#f2d778"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth="3.5"
+      strokeWidth="3"
     />
   </svg>
 );
 
 const TotalPeriodeIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.8" strokeLinecap="round" className={className}>
-    <path d="M 22 12 A 10 10 0 1 1 12 2" stroke="#0c6a42" />
-    <path d="M 12 2 A 10 10 0 0 1 22 12" stroke="#d4a345" />
-    <circle cx="12" cy="12" r="3.5" fill="#0c6a42" />
+  <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 32 32">
+    <path d="M16 4.5a11.5 11.5 0 0 1 8.15 3.37" stroke="#d6b63f" strokeLinecap="round" strokeWidth="3.5" />
+    <path d="M25.45 9.45A11.5 11.5 0 0 1 27.5 16" stroke="#79b858" strokeLinecap="round" strokeWidth="3.5" />
+    <path d="M27.5 16A11.5 11.5 0 0 1 16 27.5" stroke="#0c6a42" strokeLinecap="round" strokeWidth="3.5" />
+    <path d="M16 27.5A11.5 11.5 0 0 1 4.5 16" stroke="#0c6a42" strokeLinecap="round" strokeWidth="3.5" />
+    <path d="M4.5 16A11.5 11.5 0 0 1 13 4.85" stroke="#0c6a42" strokeLinecap="round" strokeWidth="3.5" />
+    <circle cx="16" cy="16" fill="white" r="6.5" />
   </svg>
 );
 
 const RataRataIcon = ({ className }: { className?: string }) => (
-  <CalendarClock className={className} strokeWidth={1.8} />
+  <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 32 32">
+    <path d="M7 9.5h18v15.25A2.25 2.25 0 0 1 22.75 27H7.25A2.25 2.25 0 0 1 5 24.75v-13A2.25 2.25 0 0 1 7.25 9.5Z" stroke="#0c6a42" strokeLinejoin="round" strokeWidth="2" />
+    <path d="M5 14h20M10 6.5v6M20 6.5v6" stroke="#0c6a42" strokeLinecap="round" strokeWidth="2.2" />
+    <circle cx="23.5" cy="23.5" fill="#edf6ef" r="5.25" stroke="#0c6a42" strokeWidth="1.8" />
+    <path d="M23.5 20.7v2.9l2 1.15" stroke="#0c6a42" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+  </svg>
 );
 
 const PuncakIcon = ({ className }: { className?: string }) => (
-  <div className={cn("relative flex items-center justify-center", className)}>
-    <BarChart3 className="size-full text-[#0c6a42] dark:text-emerald-200" strokeWidth={1.8} />
-    <span className="absolute -bottom-0.5 -right-0.5 flex size-2.5 items-center justify-center rounded-full bg-white dark:bg-[#101a15]">
-      <Star className="size-2.5 fill-[#d4a345] text-[#d4a345]" />
-    </span>
-  </div>
+  <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 32 32">
+    <path d="M5.5 26V17.5h5V26M14 26V11h5v15M22.5 21V6h5v15" stroke="#0c6a42" strokeLinejoin="round" strokeWidth="2" />
+    <path d="m24.5 19.4 1.65 3.35 3.7.54-2.68 2.61.63 3.69-3.3-1.74-3.3 1.74.63-3.69-2.68-2.61 3.7-.54Z" fill="#d6b63f" stroke="#d6b63f" strokeLinejoin="round" strokeWidth=".7" />
+  </svg>
 );
 
 const TransaksiLunasIcon = ({ className }: { className?: string }) => (
-  <div className={cn("relative flex items-center justify-center", className)}>
-    <ShoppingCart className="size-full text-[#0c6a42] dark:text-emerald-200" strokeWidth={1.8} />
-    <span className="absolute -top-0.5 -right-0.5 flex size-2.5 items-center justify-center rounded-full bg-[#d4a345] text-white">
-      <Check className="size-2" strokeWidth={4} />
-    </span>
-  </div>
+  <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 32 32">
+    <path d="M4 7h3l2.35 12.25h13.4l2.15-8.5H8.1M11.25 23.5h10.5" stroke="#0c6a42" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" />
+    <circle cx="12" cy="27" r="1.8" stroke="#0c6a42" strokeWidth="1.9" />
+    <circle cx="21.5" cy="27" r="1.8" stroke="#0c6a42" strokeWidth="1.9" />
+    <circle cx="25.5" cy="9" fill="#d6b63f" r="5" stroke="white" strokeWidth="1.1" />
+    <path d="m23.2 9 1.5 1.5 3-3" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+  </svg>
 );
 
 type DashboardStripMetric = {
@@ -91,9 +89,9 @@ type DashboardStripMetric = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const chartAxisFontFamily = "'Plus Jakarta Sans', var(--font-plus-jakarta), 'Segoe UI', system-ui, -apple-system, sans-serif";
+const chartAxisFontFamily = "var(--font-plus-jakarta), 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif";
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums", textRendering: "geometricPrecision", WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale" } as const;
-const chartViewBoxHeight = 362;
+const chartViewBoxHeight = 326;
 const chartAxisMaxValue = 25;
 const chartAxisTickValues = [0, 5, 10, 15, 20, 25];
 const numberFormatter = new Intl.NumberFormat("id-ID");
@@ -167,8 +165,8 @@ function buildChartModel(series: DashboardTrendPoint[]) {
   const chart = {
     left: 58,
     right: 952,
-    top: 42,
-    bottom: 304
+    top: 38,
+    bottom: 270
   };
   const maxAxisValue = chartAxisMaxValue;
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
@@ -465,18 +463,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
   const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 
   return (
-    <div className="relative overflow-visible rounded-[1.65rem] border border-[#e1e8e3] bg-white p-5 shadow-[0_22px_58px_-46px_rgba(15,23,42,0.34)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-7 xl:p-8">
-      <div className="relative flex flex-col gap-8">
+    <div className="relative overflow-visible rounded-[1.35rem] border border-[#e1e8e3] bg-white p-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5 xl:p-6">
+      <div className="relative flex flex-col gap-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex items-start gap-5">
-            <span className="grid size-[4.85rem] shrink-0 place-items-center rounded-[1.05rem] border border-[#00613d]/30 bg-[linear-gradient(145deg,#00623e_0%,#004a23_52%,#00391c_100%)] text-[#f2d778] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_18px_28px_-24px_rgba(0,74,35,0.62)] transition-colors duration-300 dark:border-emerald-300/20 sm:size-[5.4rem]">
-              <TrendReportIcon className="size-14 sm:size-16" />
+          <div className="flex items-start gap-4">
+            <span className="grid size-[3.5rem] shrink-0 place-items-center rounded-[0.8rem] border border-[#00613d]/30 bg-[linear-gradient(145deg,#00623e_0%,#004a23_52%,#00391c_100%)] text-[#f2d778] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_14px_24px_-22px_rgba(0,74,35,0.58)] transition-colors duration-300 dark:border-emerald-300/20">
+              <TrendReportIcon className="size-10" />
             </span>
-            <div className="min-w-0 pt-1">
-              <h2 className="font-body text-[1.7rem] font-extrabold leading-tight text-[#0f172a] dark:text-slate-100 sm:text-[2rem]">
+            <div className="min-w-0 pt-0.5">
+              <h2 className="font-body text-[1.45rem] font-extrabold leading-tight text-[#0f172a] dark:text-slate-100 sm:text-[1.65rem]">
                 Laporan Tren Penjualan
               </h2>
-              <p className="mt-2 max-w-2xl font-body text-[1rem] font-medium leading-7 text-[#566172] dark:text-slate-300/72">
+              <p className="mt-1 max-w-2xl font-body text-[0.82rem] font-medium leading-5 text-[#566172] dark:text-slate-300/72 sm:text-[0.88rem]">
                 Performa penjualan tervalidasi berdasarkan rentang waktu pilihan.
               </p>
             </div>
@@ -484,7 +482,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
           <ReportRangeDropdown
             ariaLabel="Filter laporan tren penjualan"
-            buttonClassName="h-12 rounded-[0.9rem] border-[#b6d5c6] px-4 text-[0.92rem] font-extrabold text-[#06472e] shadow-none sm:min-w-[16.75rem]"
+            buttonClassName="h-11 rounded-[0.75rem] border-[#b6d5c6] px-3.5 text-[0.82rem] font-extrabold text-[#06472e] shadow-none sm:min-w-[14rem]"
             customRange={customRange}
             onApplyCustomRange={(nextRange) => {
               setCustomRange(nextRange);
@@ -501,18 +499,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative flex h-[25rem] flex-col gap-4 dark:bg-transparent sm:h-[31rem]">
-          <div className="flex flex-col gap-3 px-0 font-body text-[0.98rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex h-[22rem] flex-col gap-3 dark:bg-transparent sm:h-[24rem]">
+          <div className="flex flex-col gap-2.5 px-0 font-body text-[0.84rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-extrabold text-[#0f172a] dark:text-slate-200">
               Nilai (Rp Juta)
             </span>
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-              <span className="inline-flex items-center gap-2">
-                <span className="size-3 rounded-full bg-[#005626]" />
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full bg-[#005626]" />
                 Lelang Tertutup
               </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="size-3 rounded-full bg-[#9ed47a]" />
+              <span className="inline-flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full bg-[#9ed47a]" />
                 Harga Tetap
               </span>
             </div>
@@ -546,8 +544,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="15"
-                    fontWeight="650"
+                    fontSize="14"
+                    fontWeight="600"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="end"
@@ -693,13 +691,13 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="15"
-                    fontWeight="650"
+                    fontSize="14"
+                    fontWeight="600"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
-                    y="342"
+                    y="308"
                   >
                     {point.label}
                   </text>
@@ -785,20 +783,20 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 rounded-[1.35rem] border border-[#e2e8e4] bg-white p-5 shadow-[0_14px_36px_-32px_rgba(15,23,42,0.24)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 sm:p-6 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#dfe7e1] dark:xl:divide-white/10">
+        <div className="grid grid-cols-1 gap-4 rounded-[1rem] border border-[#e2e8e4] bg-white p-3.5 shadow-[0_12px_30px_-28px_rgba(15,23,42,0.22)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 sm:p-4 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#dfe7e1] dark:xl:divide-white/10">
           {stripMetrics.map((metric) => {
             const Icon = metric.icon;
             return (
-              <div className="grid grid-cols-[4.6rem_minmax(0,1fr)] gap-5 rounded-[1rem] p-1 xl:px-6" key={metric.title}>
-                <span className="grid size-[4.6rem] shrink-0 place-items-center rounded-[1rem] border border-[#d9eadf] bg-[linear-gradient(180deg,#f0f8f2,#e8f3ec)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <Icon className="size-9" />
+              <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 rounded-[0.8rem] p-0.5 xl:px-4" key={metric.title}>
+                <span className="grid size-[3.5rem] shrink-0 place-items-center rounded-[0.8rem] border border-[#d9eadf] bg-[linear-gradient(180deg,#f0f8f2,#e8f3ec)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <Icon className="size-8" />
                 </span>
                 <div className="min-w-0">
-                  <p className="font-body text-[1rem] font-bold leading-5 text-[#566172] dark:text-slate-300/70">{metric.title}</p>
-                  <p className="mt-2 whitespace-nowrap font-body text-[1.85rem] font-extrabold leading-none text-[#0d7042] [font-variant-numeric:tabular-nums] dark:text-emerald-200">
+                  <p className="font-body text-[0.78rem] font-bold leading-4 text-[#566172] dark:text-slate-300/70">{metric.title}</p>
+                  <p className="mt-1.5 whitespace-nowrap font-body text-[1.42rem] font-extrabold leading-none text-[#0d7042] [font-variant-numeric:tabular-nums] dark:text-emerald-200">
                     {metric.value}
                   </p>
-                  <p className="mt-3 font-body text-[0.95rem] leading-6 text-[#566172] dark:text-slate-300/62">{metric.subtext}</p>
+                  <p className="mt-2 font-body text-[0.76rem] leading-5 text-[#566172] dark:text-slate-300/62">{metric.subtext}</p>
                 </div>
               </div>
             );
