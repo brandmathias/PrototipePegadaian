@@ -165,19 +165,40 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
     }
 
-    let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-    const tension = 0.16;
+    // 1. Calculate tangents (slopes) at each point, flatting extrema to prevent overshooting
+    const tangents = pts.map((p, i) => {
+      if (i === 0) {
+        return (pts[1].y - p.y) / (pts[1].x - p.x);
+      }
+      if (i === pts.length - 1) {
+        return (p.y - pts[i - 1].y) / (p.x - pts[i - 1].x);
+      }
+      const prev = pts[i - 1];
+      const next = pts[i + 1];
+      
+      const slope1 = (p.y - prev.y) / (p.x - prev.x);
+      const slope2 = (next.y - p.y) / (next.x - p.x);
+      
+      // If it's a local maximum or minimum, set tangent to 0 to prevent overshooting
+      if (slope1 * slope2 <= 0) {
+        return 0;
+      }
+      
+      return (slope1 + slope2) / 2;
+    });
 
+    // 2. Build Cubic Bezier segments using calculated tangents
+    let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
     for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] || pts[i];
       const p1 = pts[i];
       const p2 = pts[i + 1];
-      const p3 = pts[i + 2] || p2;
+      const dx = (p2.x - p1.x) / 3;
 
-      const cp1x = p1.x + (p2.x - p0.x) * tension;
-      const cp1y = p1.y + (p2.y - p0.y) * tension;
-      const cp2x = p2.x - (p3.x - p1.x) * tension;
-      const cp2y = p2.y - (p3.y - p1.y) * tension;
+      const cp1x = p1.x + dx;
+      const cp1y = p1.y + dx * tangents[i];
+
+      const cp2x = p2.x - dx;
+      const cp2y = p2.y - dx * tangents[i + 1];
 
       const clampY = (val: number) => Math.max(chart.top, Math.min(chart.bottom, val));
 
