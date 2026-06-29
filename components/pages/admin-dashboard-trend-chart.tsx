@@ -225,6 +225,7 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
           ? `rata-rata nilai penjualan per bulan sepanjang ${range.label.toLowerCase()}`
           : `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`;
 
+  return [
     {
       title: "Total Periode",
       value: formatCurrencyCompact(range.summary.totalRevenue),
