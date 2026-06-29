@@ -386,7 +386,7 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
           <ProfileCard icon={<ShieldCheck className="size-5" />} id="panduan" title="Keamanan & Akses">
             <div className="space-y-3">
               <div className="rounded-[1.35rem] border border-[#0a6a49]/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
                       <LockKeyhole className="size-4" />
@@ -395,7 +395,7 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                       <p className="text-sm font-semibold text-[#122018]">Password</p>
                     </div>
                   </div>
-                  <p className="text-right text-sm font-medium text-black/54">
+                  <p className="text-sm font-medium text-black/54 pl-[3.25rem] sm:pl-0 sm:text-right">
                     {profile.passwordUpdatedAt === "-" ? "Belum ada riwayat perubahan" : `Terakhir diubah ${profile.passwordUpdatedAt}`}
                   </p>
                 </div>

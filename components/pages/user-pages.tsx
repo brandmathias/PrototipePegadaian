@@ -2656,7 +2656,7 @@ export function ProfilePage({
           <ProfileDetailCard icon={<ShieldCheck className="size-5" />} title="Keamanan & Akses">
             <div className="space-y-3">
               <div className="rounded-[1.35rem] border border-primary/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/[0.08] text-primary">
                       <LockKeyhole className="size-4" />
@@ -2665,7 +2665,7 @@ export function ProfilePage({
                       <p className="text-sm font-semibold text-foreground">Password</p>
                     </div>
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className="text-sm font-medium text-muted-foreground pl-[3.25rem] sm:pl-0 sm:text-right">
                     {summary.security.passwordUpdatedAt === "-"
                       ? "Belum ada riwayat perubahan"
                       : `Terakhir diubah ${summary.security.passwordUpdatedAt}`}

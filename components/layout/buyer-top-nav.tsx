@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Grid2X2, Headphones, Heart, Home, ReceiptText, ShieldAlert } from "lucide-react";
@@ -70,6 +71,7 @@ function getCatalogSearchValue(pathname: string, searchParams: URLSearchParams) 
 }
 
 export function BuyerTopNav({ currentPath = "", image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const livePathname = usePathname();
   const searchParams = useSearchParams();
   const pathname = livePathname || currentPath.split(/[?#]/, 1)[0] || "/dashboard";
@@ -173,55 +175,99 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             ) : null}
           </Link>
           <BuyerProfileMenu className="max-w-[3.25rem] min-[390px]:max-w-[3.75rem] sm:max-w-none" image={image} name={name} profileHref="/profil" />
+
+          {/* Morphing Hamburger Menu Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={cn(
+              "interactive-tap relative flex size-10 shrink-0 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 lg:hidden sm:size-12 sm:rounded-2xl focus:outline-none focus:ring-2",
+              isLuxury
+                ? "border-[#eadfcb] bg-white/[0.82] text-[#8a661e] focus:ring-[#d4af37]/35"
+                : "text-primary focus:ring-[#0f7a57]"
+            )}
+            aria-expanded={isOpen}
+            aria-label="Navigasi Menu Utama"
+            type="button"
+          >
+            <div className="relative size-5 flex flex-col items-center justify-center">
+              <span
+                className={cn(
+                  "absolute h-0.5 w-5 bg-current transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                  isOpen ? "rotate-45 translate-y-0" : "-translate-y-1.5"
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute h-0.5 w-5 bg-current transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                  isOpen ? "opacity-0 scale-0" : "opacity-100 scale-100"
+                )}
+              />
+              <span
+                className={cn(
+                  "absolute h-0.5 w-5 bg-current transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                  isOpen ? "-rotate-45 translate-y-0" : "translate-y-1.5"
+                )}
+              />
+            </div>
+          </button>
         </div>
       </div>
-      <div className="container grid gap-3 pb-3 lg:hidden">
-        <CatalogSearchInput
-          defaultValue={catalogSearchValue}
-          inputClassName={cn(
-            "h-11 w-full text-sm",
-            isLuxury &&
-              "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
-          )}
-          placeholder="Cari barang, unit, kategori..."
-          submitLabel="Telusuri"
-          wrapperClassName="w-full"
-        />
-        <nav
-          aria-label="Navigasi mobile pembeli"
-          className={cn(
-            "grid grid-cols-2 gap-2 rounded-2xl border p-1 min-[520px]:grid-cols-5",
-            isLuxury ? "border-[#eadfcb] bg-[#f7f1e6]" : "border-black/10 bg-[#f4f3ef]"
-          )}
-        >
-          {buyerNav.map((item) => {
-            const active = isBuyerNavigationActive(pathname, item);
-            const Icon = item.icon;
 
-            return (
-              <Link
-                aria-current={active ? "page" : undefined}
-                aria-label={`Buka ${item.label}`}
-                className={cn(
-                  "interactive-tap inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 text-xs font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  isLuxury
-                    ? active
-                      ? "bg-white text-[#9b6f22] shadow-[0_12px_24px_-20px_rgba(74,54,24,0.34)]"
-                      : "text-[#6e665b] hover:bg-white/72 hover:text-[#174e3b]"
-                    : active
-                      ? "bg-white text-primary shadow-[0_12px_24px_-20px_rgba(8,69,50,0.42)]"
-                      : "text-black/58 hover:bg-white/72 hover:text-primary"
-                )}
-                href={item.href}
-                key={item.href}
-              >
-                <Icon className="size-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+      {/* Mobile Menu Dropdown with Backdrop Blur and Staggered Entry */}
+      {isOpen && (
+        <div className="fixed inset-0 top-16 z-30 flex flex-col bg-black/60 backdrop-blur-2xl animate-fade-in lg:hidden">
+          <div
+            className={cn(
+              "flex flex-col gap-4 p-5 shadow-2xl animate-slide-down border-b",
+              isLuxury ? "bg-[#fcfaf7] border-[#eadfcb]" : "bg-white border-black/5"
+            )}
+          >
+            <CatalogSearchInput
+              defaultValue={catalogSearchValue}
+              inputClassName={cn(
+                "h-11 w-full text-sm",
+                isLuxury &&
+                  "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
+              )}
+              placeholder="Cari barang, unit, kategori..."
+              submitLabel="Telusuri"
+              wrapperClassName="w-full"
+            />
+            
+            <nav className="flex flex-col gap-1.5">
+              {buyerNav.map((item, index) => {
+                const active = isBuyerNavigationActive(pathname, item);
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-stagger-fade-in",
+                      isLuxury
+                        ? active
+                          ? "bg-[#9b6f22]/10 text-[#9b6f22]"
+                          : "text-[#6e665b] hover:bg-black/[0.03] hover:text-[#174e3b]"
+                        : active
+                          ? "bg-primary/[0.08] text-primary"
+                          : "text-black/58 hover:bg-black/[0.03] hover:text-primary"
+                    )}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    href={item.href}
+                    key={item.href}
+                  >
+                    <Icon className="size-5 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+          {/* Tap outside area to close */}
+          <div className="flex-1 cursor-pointer" onClick={() => setIsOpen(false)} />
+        </div>
+      )}
     </header>
   );
 }
