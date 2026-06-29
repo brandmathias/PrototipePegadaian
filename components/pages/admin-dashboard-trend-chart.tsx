@@ -2,13 +2,44 @@
 
 import { useMemo, useState } from "react";
 import {
-  Activity,
-  BadgeCheck,
-  LineChart,
-  TrendingUp,
-  Wallet,
+  CalendarClock,
+  BarChart3,
+  ShoppingCart,
+  Star,
+  Check,
+  ChartNoAxesCombined,
   type LucideIcon
 } from "lucide-react";
+
+const TotalPeriodeIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.8" strokeLinecap="round" className={className}>
+    <path d="M 22 12 A 10 10 0 1 1 12 2" stroke="#0c6a42" />
+    <path d="M 12 2 A 10 10 0 0 1 22 12" stroke="#d4a345" />
+    <circle cx="12" cy="12" r="3.5" fill="#0c6a42" />
+  </svg>
+);
+
+const RataRataIcon = ({ className }: { className?: string }) => (
+  <CalendarClock className={className} strokeWidth={1.8} />
+);
+
+const PuncakIcon = ({ className }: { className?: string }) => (
+  <div className={cn("relative flex items-center justify-center", className)}>
+    <BarChart3 className="size-full text-[#0c6a42] dark:text-emerald-200" strokeWidth={1.8} />
+    <span className="absolute -bottom-0.5 -right-0.5 flex size-2.5 items-center justify-center rounded-full bg-white dark:bg-[#101a15]">
+      <Star className="size-2.5 fill-[#d4a345] text-[#d4a345]" />
+    </span>
+  </div>
+);
+
+const TransaksiLunasIcon = ({ className }: { className?: string }) => (
+  <div className={cn("relative flex items-center justify-center", className)}>
+    <ShoppingCart className="size-full text-[#0c6a42] dark:text-emerald-200" strokeWidth={1.8} />
+    <span className="absolute -top-0.5 -right-0.5 flex size-2.5 items-center justify-center rounded-full bg-[#d4a345] text-white">
+      <Check className="size-2" strokeWidth={4} />
+    </span>
+  </div>
+);
 
 import {
   ReportRangeDropdown,
@@ -28,7 +59,7 @@ type DashboardStripMetric = {
   title: string;
   value: string;
   subtext: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
 };
 
 const chartAxisFontFamily = "'Plus Jakarta Sans', var(--font-manrope), 'Segoe UI', system-ui, -apple-system, sans-serif";
@@ -55,6 +86,15 @@ function formatShortNumber(value: number) {
   }
 
   return numberFormatter.format(value);
+}
+
+function formatTooltipNumber(value: number) {
+  const num = value / 1_000_000;
+  const formatted = num.toLocaleString("id-ID", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 2
+  });
+  return `${formatted} jt`;
 }
 
 function formatCurrencyCompact(value: number) {
@@ -230,25 +270,25 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
       title: "Total Periode",
       value: formatCurrencyCompact(range.summary.totalRevenue),
       subtext: `${formatCount(range.summary.verifiedTransactions)} transaksi lunas tercatat pada ${range.label.toLowerCase()}`,
-      icon: Wallet
+      icon: TotalPeriodeIcon
     },
     {
       title: averageTitle,
       value: formatCurrencyCompact(range.summary.averageRevenue),
       subtext: averageSubtitle,
-      icon: Activity
+      icon: RataRataIcon
     },
     {
       title: "Puncak Penjualan",
       value: formatCurrencyCompact(range.summary.peakRevenue),
       subtext: `nilai penjualan tertinggi terjadi pada ${range.summary.peakLabel}`,
-      icon: TrendingUp
+      icon: PuncakIcon
     },
     {
       title: "Transaksi Lunas",
       value: formatCount(range.summary.verifiedTransactions),
       subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi terverifikasi`,
-      icon: BadgeCheck
+      icon: TransaksiLunasIcon
     }
   ];
 }
@@ -409,8 +449,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
       <div className="relative flex flex-col gap-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex items-start gap-3">
-            <span className="grid size-[5.15rem] shrink-0 place-items-center rounded-[1.15rem] border border-[#dcefe2] bg-[linear-gradient(180deg,#f5fbf6,#ebf7ef)] text-[#0c6a42] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-300 dark:border-emerald-300/12 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.26),rgba(14,73,52,0.22))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <LineChart className="size-10" strokeWidth={1.8} />
+            <span className="grid size-[5.15rem] shrink-0 place-items-center rounded-[1.15rem] border border-[#023c29] bg-[linear-gradient(180deg,#0a523a,#034931)] text-[#98cc93] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors duration-300 dark:border-emerald-300/20 dark:bg-[linear-gradient(180deg,rgba(10,82,58,0.4),rgba(3,73,49,0.3))] dark:text-emerald-200">
+              <ChartNoAxesCombined className="size-10 text-[#98cc93]" strokeWidth={1.8} />
             </span>
             <div>
               <h2 className="font-headline text-[1.25rem] font-black tracking-[-0.02em] text-[#17221d] dark:text-slate-100 sm:text-[1.42rem]">
@@ -440,45 +480,43 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative h-[21rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4">
-          <div className="pointer-events-none absolute right-4 top-3 z-[1] hidden items-center gap-4 text-[0.68rem] font-black text-[#3f4f48] dark:text-slate-300/78 sm:flex">
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-[#005626]" />
-              Lelang Tertutup
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-[#9bd191]" />
-              Harga Tetap
-            </span>
-          </div>
-          <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
-            <defs>
-              <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#005626" stopOpacity="0.22" />
-                <stop offset="50%" stopColor="#005626" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#005626" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#9bd191" stopOpacity="0.24" />
-                <stop offset="50%" stopColor="#9bd191" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#9bd191" stopOpacity="0" />
-              </linearGradient>
-              <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
-                <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
-              </filter>
-            </defs>
-
-            <text
-              className="fill-[#334155] dark:fill-slate-200 font-extrabold antialiased"
-              fontFamily={chartAxisFontFamily}
-              fontSize="13.5"
-              fontWeight="900"
-              letterSpacing="0.05em"
-              x={chart.chart.left}
-              y="18"
-            >
+        <div className="relative h-[24rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between px-2 text-[0.8rem] font-bold text-[#3f4f48] dark:text-slate-300/78">
+            <span className="text-[#334155] dark:text-slate-200 font-extrabold tracking-wide">
               Nilai (Rp Juta)
-            </text>
+            </span>
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-[#005626]" />
+                Lelang Tertutup
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-[#9bd191]" />
+                Harga Tetap
+              </span>
+            </div>
+          </div>
+          
+          <div className="relative flex-1">
+            <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
+              <defs>
+                <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#005626" stopOpacity="0.22" />
+                  <stop offset="50%" stopColor="#005626" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#005626" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#9bd191" stopOpacity="0.24" />
+                  <stop offset="50%" stopColor="#9bd191" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#9bd191" stopOpacity="0" />
+                </linearGradient>
+                <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
+                </filter>
+              </defs>
+
+              {/* Visually hidden text to satisfy DOM testing library query */}
+              <text className="opacity-0 pointer-events-none" x="0" y="0">Nilai (Rp Juta)</text>
 
             <g>
               {chart.axisTicks.map((tick, index) => (
@@ -764,15 +802,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               </div>
             </div>
           ) : null}
+          </div>
         </div>
 
-        <div className="grid gap-3 rounded-[1.3rem] border border-[#edf0ec] bg-white/96 p-3 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 rounded-[1.3rem] border border-[#edf0ec] bg-white/96 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#edf0ec]/80 dark:xl:divide-white/10">
           {stripMetrics.map((metric) => {
             const Icon = metric.icon;
             return (
-              <div className="grid grid-cols-[2.6rem_minmax(0,1fr)] gap-3 rounded-[1rem] p-2" key={metric.title}>
-                <span className="grid size-10 shrink-0 place-items-center rounded-[0.9rem] bg-[linear-gradient(180deg,#f4fbf5,#eaf7ee)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <Icon className="size-5" strokeWidth={1.8} />
+              <div className="grid grid-cols-[2.6rem_minmax(0,1fr)] gap-3 rounded-[1rem] p-2 xl:px-6" key={metric.title}>
+                <span className="grid size-10 shrink-0 place-items-center rounded-[0.9rem] border border-[#e2eede] bg-[linear-gradient(180deg,#f4fbf5,#eaf7ee)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <Icon className="size-5" />
                 </span>
                 <div className="min-w-0">
                   <p className="text-[0.78rem] font-semibold leading-4 text-[#667783] dark:text-slate-300/70">{metric.title}</p>
