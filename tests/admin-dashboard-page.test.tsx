@@ -216,6 +216,23 @@ describe("AdminDashboardPage", () => {
     expect(progress).toHaveAttribute("aria-valuenow", "3");
   });
 
+  it("stores the next Asia/Makassar midnight as the checklist 24 hour reset deadline", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T04:13:00.000Z"));
+
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    const dueSoonTask = screen.getByRole("button", { name: /dahulukan barang yang mendekati jatuh tempo/i });
+    fireEvent.click(dueSoonTask);
+
+    const stored = JSON.parse(
+      window.localStorage.getItem("pegadaian:admin-dashboard-checklist:v1") ?? "{}"
+    );
+
+    expect(stored.dateKey).toBe("2026-05-29");
+    expect(stored.resetAtIso).toBe("2026-05-29T16:00:00.000Z");
+  });
+
   it("automatically resets the daily checklist when the 24 hour cycle expires", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-06-03T15:59:59.000Z"));

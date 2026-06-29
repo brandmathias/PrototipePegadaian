@@ -17,31 +17,34 @@ type DashboardChecklistCardProps = {
 
 type StoredDashboardChecklist = {
   dateKey: string;
+  resetAtIso?: string;
   taskTitles: string[];
   checked: boolean[];
 };
 
 const CHECKLIST_STORAGE_KEY = "pegadaian:admin-dashboard-checklist:v1";
+const CHECKLIST_TIME_ZONE = "Asia/Makassar";
+const CHECKLIST_TIME_ZONE_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 const checklistDateFormatter = new Intl.DateTimeFormat("id-ID", {
   weekday: "long",
   day: "2-digit",
   month: "long",
   year: "numeric",
-  timeZone: "Asia/Makassar"
+  timeZone: CHECKLIST_TIME_ZONE
 });
 
 const checklistTimeFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   hour12: true,
-  timeZone: "Asia/Makassar"
+  timeZone: CHECKLIST_TIME_ZONE
 });
 
 const checklistDateKeyFormatter = new Intl.DateTimeFormat("en-US", {
   day: "2-digit",
   month: "2-digit",
-  timeZone: "Asia/Makassar",
+  timeZone: CHECKLIST_TIME_ZONE,
   year: "numeric"
 });
 
@@ -63,6 +66,13 @@ function getChecklistDateKey(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function getChecklistResetAtIso(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const nextLocalMidnightUtc = Date.UTC(year, month - 1, day + 1) - CHECKLIST_TIME_ZONE_OFFSET_MS;
+
+  return new Date(nextLocalMidnightUtc).toISOString();
+}
+
 function getChecklistTaskTitles(tasks: DashboardChecklistTask[]) {
   return tasks.map((task) => task.title);
 }
@@ -76,6 +86,7 @@ function matchesChecklistTasks(stored: StoredDashboardChecklist, tasks: Dashboar
 function createStoredChecklist(tasks: DashboardChecklistTask[], dateKey: string): StoredDashboardChecklist {
   return {
     dateKey,
+    resetAtIso: getChecklistResetAtIso(dateKey),
     taskTitles: getChecklistTaskTitles(tasks),
     checked: tasks.map((task) => task.checked)
   };
@@ -89,8 +100,23 @@ function writeStoredChecklist(tasks: DashboardChecklistTask[], dateKey: string) 
   window.localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(createStoredChecklist(tasks, dateKey)));
 }
 
+function isStoredChecklistExpired(stored: StoredDashboardChecklist, dateKey: string, now: Date) {
+  if (stored.dateKey !== dateKey) {
+    return true;
+  }
+
+  if (!stored.resetAtIso) {
+    return false;
+  }
+
+  const resetAt = Date.parse(stored.resetAtIso);
+
+  return !Number.isFinite(resetAt) || now.getTime() >= resetAt;
+}
+
 function loadStoredChecklist(tasks: DashboardChecklistTask[]) {
-  const dateKey = getChecklistDateKey(new Date());
+  const currentNow = new Date();
+  const dateKey = getChecklistDateKey(currentNow);
 
   if (typeof window === "undefined") {
     return { tasks, dateKey };
@@ -105,7 +131,7 @@ function loadStoredChecklist(tasks: DashboardChecklistTask[]) {
   try {
     const stored = JSON.parse(rawValue) as StoredDashboardChecklist;
     if (
-      stored.dateKey !== dateKey ||
+      isStoredChecklistExpired(stored, dateKey, currentNow) ||
       !Array.isArray(stored.checked) ||
       !matchesChecklistTasks(stored, tasks)
     ) {
@@ -154,7 +180,9 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
 
   useEffect(() => {
     const currentDateKey = getChecklistDateKey(now);
-    if (currentDateKey === dateKey) {
+    const resetAt = Date.parse(getChecklistResetAtIso(dateKey));
+
+    if (currentDateKey === dateKey && now.getTime() < resetAt) {
       return;
     }
 
