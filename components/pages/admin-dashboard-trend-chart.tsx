@@ -548,7 +548,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               ))}
             </g>
 
-            <g className="stroke-[#c3d2c9]/34 dark:stroke-white/8" strokeDasharray="4 6" strokeWidth="1.0">
+            <g className="stroke-[#c3d2c9]/80 dark:stroke-white/25" strokeDasharray="4 4" strokeWidth="1.15">
               {chart.axisTicks.map((tick) => (
                 <line key={tick.label} x1={chart.chart.left} x2={chart.chart.right} y1={tick.y} y2={tick.y} />
               ))}

@@ -151,13 +151,13 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             submitLabel="Telusuri"
             wrapperClassName="hidden lg:block"
           />
-          <AlertCenter className="shrink-0" scope="buyer" />
+           <AlertCenter className="hidden sm:block shrink-0" scope="buyer" />
           <Link
             aria-label={
               wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"
             }
             className={cn(
-              "interactive-tap relative inline-flex size-10 shrink-0 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12 sm:rounded-2xl",
+              "interactive-tap relative hidden sm:inline-flex size-10 shrink-0 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12 sm:rounded-2xl",
               isLuxury &&
                 "border-[#eadfcb] bg-white/[0.82] text-[#8a661e] shadow-[0_14px_32px_rgba(74,54,24,0.08)] hover:bg-[#fff8ec] hover:text-[#17633f] focus-visible:ring-[#d4af37]/35",
               pathname === "/wishlist" &&
@@ -174,7 +174,9 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               </span>
             ) : null}
           </Link>
-          <BuyerProfileMenu className="max-w-[3.25rem] min-[390px]:max-w-[3.75rem] sm:max-w-none" image={image} name={name} profileHref="/profil" />
+          <div className="hidden sm:block">
+            <BuyerProfileMenu className="max-w-[3.25rem] min-[390px]:max-w-[3.75rem] sm:max-w-none" image={image} name={name} profileHref="/profil" />
+          </div>
 
           {/* Morphing Hamburger Menu Button */}
           <button
@@ -222,6 +224,44 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               isLuxury ? "bg-[#fcfaf7] border-[#eadfcb]" : "bg-white border-black/5"
             )}
           >
+            {/* User Profile Card for Mobile */}
+            {name ? (
+              <div className="flex flex-col gap-3 rounded-[1.4rem] border border-black/5 bg-[#085a41]/[0.03] p-4 dark:border-white/5 dark:bg-white/[0.02]">
+                <div className="flex items-center gap-3">
+                  <div className="relative size-11 overflow-hidden rounded-full border-2 border-[#0a6a49]/20">
+                    {image ? (
+                      <img src={image} alt={name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center bg-[#0a6a49] text-sm font-black text-white">
+                        {name.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-[#122018] truncate">{name}</p>
+                    <p className="text-[0.68rem] font-bold text-[#0a6a49]">Akun Terverifikasi</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <Link
+                    href="/profil"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
+                  >
+                    Profil Saya
+                  </Link>
+                  <Link
+                    href="/wishlist"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
+                  >
+                    <Heart className="size-3.5 fill-[#d99900] text-[#d99900]" />
+                    Wishlist ({wishlistCount})
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+
             <CatalogSearchInput
               defaultValue={catalogSearchValue}
               inputClassName={cn(

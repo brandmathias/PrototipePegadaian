@@ -490,18 +490,18 @@ export function DashboardShell({
                 ) : null}
               </div>
 
-              <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center xl:w-auto">
+              <div className="flex min-w-0 flex-row items-center gap-2.5 w-full xl:w-auto">
                 {showHeaderSearch ? (
                   <div className="relative min-w-0 flex-1 xl:w-[32rem]">
                     <label className="sr-only" htmlFor="admin-search">
                       Cari transaksi atau barang
                     </label>
-                    <Search aria-hidden="true" className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-foreground/45" />
+                    <Search aria-hidden="true" className="absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-foreground/45 sm:left-4 sm:size-5" />
                     <input
                       autoComplete="off"
                       className={cn(
-                        "h-14 w-full rounded-[1.35rem] border border-black/5 bg-[#eceae7] pl-12 text-base outline-none transition focus:border-[#0b704f]/30 focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0f7a57]/30 dark:border-white/8 dark:bg-white/8 dark:text-slate-100 dark:placeholder:text-slate-300/45 dark:focus:border-emerald-300/28 dark:focus:bg-white/10",
-                        searchShortcutHint ? "pr-20" : "pr-4"
+                        "h-11 sm:h-14 w-full rounded-xl sm:rounded-[1.35rem] border border-black/5 bg-[#eceae7] pl-10 sm:pl-12 text-sm sm:text-base outline-none transition focus:border-[#0b704f]/30 focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0f7a57]/30 dark:border-white/8 dark:bg-white/8 dark:text-slate-100 dark:placeholder:text-slate-300/45 dark:focus:border-emerald-300/28 dark:focus:bg-white/10",
+                        searchShortcutHint ? "pr-4 sm:pr-20" : "pr-4"
                       )}
                       id="admin-search"
                       name="adminSearch"
@@ -509,14 +509,14 @@ export function DashboardShell({
                       type="search"
                     />
                     {searchShortcutHint ? (
-                      <span className="pointer-events-none absolute right-4 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded-[0.8rem] border border-black/8 bg-white px-2.5 text-[0.7rem] font-bold tracking-[0.1em] text-[#475569] shadow-[0_8px_18px_-16px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-white/10 dark:text-slate-200">
+                      <span className="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 items-center rounded-[0.8rem] border border-black/8 bg-white px-2.5 text-[0.7rem] font-bold tracking-[0.1em] text-[#475569] shadow-[0_8px_18px_-16px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-white/10 dark:text-slate-200 sm:inline-flex h-8">
                         {searchShortcutHint}
                       </span>
                     ) : null}
                   </div>
                 ) : null}
 
-                <div className="flex min-w-0 items-center justify-end gap-2">
+                <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
                   {profileHref && currentUser ? (
                     <AdminProfileMenu
