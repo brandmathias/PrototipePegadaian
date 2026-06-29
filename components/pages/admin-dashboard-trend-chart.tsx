@@ -31,8 +31,8 @@ type DashboardStripMetric = {
   icon: LucideIcon;
 };
 
-const chartAxisFontFamily = 'var(--font-manrope), "Segoe UI", system-ui, sans-serif';
-const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums" } as const;
+const chartAxisFontFamily = "'Plus Jakarta Sans', var(--font-manrope), 'Segoe UI', system-ui, -apple-system, sans-serif";
+const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums", textRendering: "geometricPrecision", WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale" } as const;
 const chartViewBoxHeight = 350;
 const chartAxisMaxValue = 25;
 const chartAxisTickValues = [5, 10, 15, 20, 25];
@@ -498,11 +498,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             </defs>
 
             <text
-              className="fill-[#53635d] dark:fill-slate-300/76"
+              className="fill-[#334155] dark:fill-slate-200 font-extrabold antialiased"
               fontFamily={chartAxisFontFamily}
-              fontSize="12"
-              fontWeight="800"
-              letterSpacing="0"
+              fontSize="13.5"
+              fontWeight="900"
+              letterSpacing="0.05em"
               x={chart.chart.left}
               y="18"
             >
@@ -516,7 +516,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     className={cn(
                       index === chart.axisTicks.length - 1
                         ? "stroke-[#95c5a8] dark:stroke-emerald-200/34"
-                        : "stroke-[#cbd8d1] dark:stroke-slate-300/20"
+                        : "stroke-[#cbd8d1]/54 dark:stroke-slate-300/20"
                     )}
                     strokeLinecap="round"
                     strokeWidth="1.35"
@@ -527,15 +527,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   />
                   <text
                     className={cn(
+                      "antialiased transition-all duration-150",
                       index === chart.axisTicks.length - 1
-                        ? "fill-[#0d824b] dark:fill-emerald-200"
-                        : "fill-[#50665b] dark:fill-slate-300/76"
+                        ? "fill-[#0d824b] dark:fill-emerald-400 font-black"
+                        : "fill-[#334155]/90 dark:fill-slate-200 font-bold"
                     )}
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="13.8"
-                    fontWeight={index === chart.axisTicks.length - 1 ? 900 : 800}
-                    letterSpacing="0"
+                    fontSize="14.5"
+                    fontWeight={index === chart.axisTicks.length - 1 ? 950 : 800}
+                    letterSpacing="0.02em"
                     style={chartAxisTextStyle}
                     textAnchor="end"
                     x={chart.chart.left - 18}
@@ -689,22 +690,23 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       className="fill-[#ecf8f0] stroke-[#bfe7cc] dark:fill-emerald-300/10 dark:stroke-emerald-200/16"
                       height="22"
                       rx="11"
-                      width={point.labelWidth}
-                      x={point.x - point.labelWidth / 2}
+                      width={point.labelWidth + 8}
+                      x={point.x - (point.labelWidth + 8) / 2}
                       y="318"
                     />
                   ) : null}
                   <text
                     className={cn(
+                      "antialiased transition-all duration-150",
                       active
-                        ? "fill-[#0a7b47] dark:fill-emerald-200"
-                        : "fill-[#435768] dark:fill-slate-300/72"
+                        ? "fill-[#0a7b47] dark:fill-emerald-400 font-extrabold"
+                        : "fill-[#3f4f48] dark:fill-slate-200 font-bold"
                     )}
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize={active ? "13.8" : "13.2"}
+                    fontSize={active ? "14.5" : "14"}
                     fontWeight={active ? 900 : 800}
-                    letterSpacing="0"
+                    letterSpacing="0.01em"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
