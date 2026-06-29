@@ -483,17 +483,17 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
             <defs>
               <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#005626" stopOpacity="0.45" />
-                <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.18" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="0%" stopColor="#005626" stopOpacity="0.22" />
+                <stop offset="50%" stopColor="#005626" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#005626" stopOpacity="0" />
               </linearGradient>
               <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#9bd191" stopOpacity="0.42" />
-                <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="0%" stopColor="#9bd191" stopOpacity="0.24" />
+                <stop offset="50%" stopColor="#9bd191" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#9bd191" stopOpacity="0" />
               </linearGradient>
               <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
-                <feDropShadow dx="0" dy="10" stdDeviation="7" floodColor="#2cab68" floodOpacity="0.14" />
+                <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
               </filter>
             </defs>
 
@@ -547,7 +547,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               ))}
             </g>
 
-            <g className="stroke-[#c3d2c9] dark:stroke-white/16" strokeDasharray="4 6" strokeWidth="1.2">
+            <g className="stroke-[#c3d2c9]/34 dark:stroke-white/8" strokeDasharray="4 6" strokeWidth="1.0">
               {chart.axisTicks.map((tick) => (
                 <line key={tick.label} x1={chart.chart.left} x2={chart.chart.right} y1={tick.y} y2={tick.y} />
               ))}
@@ -582,7 +582,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 stroke="#9bd191"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="3.1"
+                strokeWidth="2.5"
               />
             ))}
             {chart.linePaths.vickrey.map((linePath, index) => (
@@ -595,7 +595,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 stroke="#005626"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="3.2"
+                strokeWidth="2.5"
               />
             ))}
 
