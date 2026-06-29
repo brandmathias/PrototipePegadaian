@@ -463,18 +463,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
   const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 
   return (
-    <div className="relative overflow-visible rounded-[1.35rem] border border-[#e1e8e3] bg-white p-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5 xl:p-6">
-      <div className="relative flex flex-col gap-5">
+    <div className="relative overflow-visible rounded-[1.25rem] border border-[#e1e8e3] bg-white p-3.5 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-4 xl:p-5">
+      <div className="relative flex flex-col gap-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex items-start gap-4">
-            <span className="grid size-[3.5rem] shrink-0 place-items-center rounded-[0.8rem] border border-[#00613d]/30 bg-[linear-gradient(145deg,#00623e_0%,#004a23_52%,#00391c_100%)] text-[#f2d778] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_14px_24px_-22px_rgba(0,74,35,0.58)] transition-colors duration-300 dark:border-emerald-300/20">
-              <TrendReportIcon className="size-10" />
+          <div className="flex items-start gap-3.5">
+            <span className="grid size-[3.25rem] shrink-0 place-items-center rounded-[0.75rem] border border-[#00613d]/30 bg-[linear-gradient(145deg,#00623e_0%,#004a23_52%,#00391c_100%)] text-[#f2d778] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_14px_24px_-22px_rgba(0,74,35,0.58)] transition-colors duration-300 dark:border-emerald-300/20">
+              <TrendReportIcon className="size-9" />
             </span>
             <div className="min-w-0 pt-0.5">
-              <h2 className="font-body text-[1.45rem] font-extrabold leading-tight text-[#0f172a] dark:text-slate-100 sm:text-[1.65rem]">
+              <h2 className="font-body text-[1.35rem] font-extrabold leading-tight text-[#0f172a] dark:text-slate-100 sm:text-[1.55rem]">
                 Laporan Tren Penjualan
               </h2>
-              <p className="mt-1 max-w-2xl font-body text-[0.82rem] font-medium leading-5 text-[#566172] dark:text-slate-300/72 sm:text-[0.88rem]">
+              <p className="mt-1 max-w-2xl font-body text-[0.8rem] font-medium leading-5 text-[#566172] dark:text-slate-300/72 sm:text-[0.84rem]">
                 Performa penjualan tervalidasi berdasarkan rentang waktu pilihan.
               </p>
             </div>
@@ -499,7 +499,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative flex h-[22rem] flex-col gap-3 dark:bg-transparent sm:h-[24rem]">
+        <div className="relative flex h-[19rem] flex-col gap-2.5 dark:bg-transparent sm:h-[20rem]">
           <div className="flex flex-col gap-2.5 px-0 font-body text-[0.84rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-extrabold text-[#0f172a] dark:text-slate-200">
               Nilai (Rp Juta)
@@ -697,7 +697,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
-                    y="308"
+                    y="300"
                   >
                     {point.label}
                   </text>
@@ -783,13 +783,13 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 rounded-[1rem] border border-[#e2e8e4] bg-white p-3.5 shadow-[0_12px_30px_-28px_rgba(15,23,42,0.22)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 sm:p-4 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#dfe7e1] dark:xl:divide-white/10">
+        <div className="grid grid-cols-1 gap-3.5 rounded-[0.9rem] border border-[#e2e8e4] bg-white p-3 shadow-[0_12px_30px_-28px_rgba(15,23,42,0.22)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 sm:p-3.5 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#dfe7e1] dark:xl:divide-white/10">
           {stripMetrics.map((metric) => {
             const Icon = metric.icon;
             return (
-              <div className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-3 rounded-[0.8rem] p-0.5 xl:px-4" key={metric.title}>
-                <span className="grid size-[3.5rem] shrink-0 place-items-center rounded-[0.8rem] border border-[#d9eadf] bg-[linear-gradient(180deg,#f0f8f2,#e8f3ec)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <Icon className="size-8" />
+              <div className="grid grid-cols-[3.25rem_minmax(0,1fr)] gap-2.5 rounded-[0.75rem] p-0.5 xl:px-3" key={metric.title}>
+                <span className="grid size-[3.25rem] shrink-0 place-items-center rounded-[0.75rem] border border-[#d9eadf] bg-[linear-gradient(180deg,#f0f8f2,#e8f3ec)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <Icon className="size-7" />
                 </span>
                 <div className="min-w-0">
                   <p className="font-body text-[0.78rem] font-bold leading-4 text-[#566172] dark:text-slate-300/70">{metric.title}</p>
