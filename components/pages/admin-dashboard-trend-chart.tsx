@@ -238,18 +238,13 @@ function buildChartModel(series: DashboardTrendPoint[]) {
 
   const fixedPoints = points.map((p) => ({ x: p.x, y: p.fixedPriceY }));
   const vickreyPoints = points.map((p) => ({ x: p.x, y: p.vickreyY }));
-  const combinedPoints = points.map((p) => ({ x: p.x, y: Math.min(p.fixedPriceY, p.vickreyY) }));
 
   const linePaths = {
-    combined: points.length ? [getCurvePath(combinedPoints)] : [],
     fixedPrice: points.length ? [getCurvePath(fixedPoints)] : [],
     vickrey: points.length ? [getCurvePath(vickreyPoints)] : []
   };
 
   const areaPaths = {
-    combined: linePaths.combined.length
-      ? [`${linePaths.combined[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
-      : [],
     fixedPrice: linePaths.fixedPrice.length
       ? [`${linePaths.fixedPrice[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
       : [],
@@ -526,28 +521,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               <defs>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
-                  id="admin-combined-area-grad"
-                  x1="0"
-                  x2="0"
-                  y1={chart.chart.top}
-                  y2={chart.chart.bottom}
-                >
-                  <stop offset="0%" stopColor="#08b383" stopOpacity="0.5" />
-                  <stop offset="42%" stopColor="#6fdcc3" stopOpacity="0.34" />
-                  <stop offset="76%" stopColor="#d8f6ec" stopOpacity="0.12" />
-                  <stop offset="100%" stopColor="#f7fcf9" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient
-                  gradientUnits="userSpaceOnUse"
                   id="admin-vickrey-area-grad"
                   x1="0"
                   x2="0"
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#008b66" stopOpacity="0.34" />
-                  <stop offset="48%" stopColor="#43cba8" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#e7f8ef" stopOpacity="0.02" />
+                  <stop offset="0%" stopColor="#007a5b" stopOpacity="0.86" />
+                  <stop offset="42%" stopColor="#0fbb91" stopOpacity="0.66" />
+                  <stop offset="74%" stopColor="#78e1c7" stopOpacity="0.46" />
+                  <stop offset="100%" stopColor="#c8f4e5" stopOpacity="0.26" />
                 </linearGradient>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
@@ -557,12 +540,16 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#7ee158" stopOpacity="0.22" />
-                  <stop offset="42%" stopColor="#bff2a8" stopOpacity="0.11" />
-                  <stop offset="100%" stopColor="#f3fbef" stopOpacity="0.01" />
+                  <stop offset="0%" stopColor="#6cdf4f" stopOpacity="0.7" />
+                  <stop offset="42%" stopColor="#9bea73" stopOpacity="0.52" />
+                  <stop offset="74%" stopColor="#c4f5a8" stopOpacity="0.36" />
+                  <stop offset="100%" stopColor="#e1fad1" stopOpacity="0.22" />
                 </linearGradient>
+                <filter id="admin-dashboard-area-soften" x="-8%" y="-18%" width="116%" height="138%">
+                  <feGaussianBlur stdDeviation="3.2" />
+                </filter>
                 <filter id="admin-dashboard-line-shadow" x="-10%" y="-28%" width="130%" height="180%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="4.1" floodColor="#20c98a" floodOpacity="0.3" />
+                  <feDropShadow dx="0" dy="4" stdDeviation="4.3" floodColor="#13b98a" floodOpacity="0.34" />
                 </filter>
               </defs>
 
@@ -598,13 +585,22 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             <line className="stroke-[#7d8791] dark:stroke-white/22" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.2" />
 
             {/* Area Gradient Fills */}
-            {chart.areaPaths.combined.map((areaPath, index) => (
+            {chart.areaPaths.fixedPrice.map((areaPath, index) => (
               <path
-                className="transition-[opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-chart-fade-in"
                 d={areaPath}
-                fill="url(#admin-combined-area-grad)"
-                key={`combined-area-${index}`}
-                opacity={activePoint ? 0.98 : 1}
+                fill="url(#admin-fixed-area-grad)"
+                filter="url(#admin-dashboard-area-soften)"
+                key={`fixed-area-glow-${index}`}
+                opacity={activePoint ? 0.6 : 0.54}
+              />
+            ))}
+            {chart.areaPaths.vickrey.map((areaPath, index) => (
+              <path
+                d={areaPath}
+                fill="url(#admin-vickrey-area-grad)"
+                filter="url(#admin-dashboard-area-soften)"
+                key={`vickrey-area-glow-${index}`}
+                opacity={activePoint ? 0.68 : 0.62}
               />
             ))}
             {chart.areaPaths.fixedPrice.map((areaPath, index) => (
@@ -613,7 +609,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-fixed-area-grad)"
                 key={`fixed-area-${index}`}
-                opacity={activePoint ? 0.82 : 0.74}
+                opacity={activePoint ? 1 : 0.94}
               />
             ))}
             {chart.areaPaths.vickrey.map((areaPath, index) => (
@@ -622,7 +618,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-vickrey-area-grad)"
                 key={`vickrey-area-${index}`}
-                opacity={activePoint ? 0.88 : 0.82}
+                opacity={activePoint ? 1 : 0.96}
               />
             ))}
 
@@ -689,8 +685,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       <circle
                         cx={point.x}
                         cy={point.vickreyY}
-                        fill={active ? "rgba(0,169,121,0.22)" : "rgba(0,169,121,0.13)"}
-                        r={active ? 13 : 9}
+                        fill={active ? "rgba(0,122,91,0.3)" : "rgba(0,122,91,0.18)"}
+                        r={active ? 14 : 10}
                       />
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
@@ -708,8 +704,8 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       <circle
                         cx={point.x}
                         cy={point.fixedPriceY}
-                        fill={active ? "rgba(101,220,79,0.25)" : "rgba(101,220,79,0.15)"}
-                        r={active ? 12.5 : 8.5}
+                        fill={active ? "rgba(108,223,79,0.32)" : "rgba(108,223,79,0.2)"}
+                        r={active ? 13.5 : 9.5}
                       />
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"

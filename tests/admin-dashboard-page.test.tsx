@@ -297,6 +297,13 @@ describe("AdminDashboardPage", () => {
       expect.arrayContaining(["Nilai (Rp Juta)", "25", "20", "15", "10", "5"]),
     );
     expect(chartTexts).not.toContain("30");
+    expect(container.querySelector("#admin-combined-area-grad")).toBeNull();
+    expect(
+      container.querySelector('#admin-vickrey-area-grad stop[offset="100%"]'),
+    ).toHaveAttribute("stop-opacity", "0.26");
+    expect(
+      container.querySelector('#admin-fixed-area-grad stop[offset="100%"]'),
+    ).toHaveAttribute("stop-opacity", "0.22");
 
     const trendPoint = screen.getByRole("button", {
       name: /22 Mei: Lelang Tertutup Rp 3\.000\.000, Harga Tetap Rp 6\.000\.000, Volume 3 transaksi/i,
