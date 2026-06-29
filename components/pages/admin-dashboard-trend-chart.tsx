@@ -519,15 +519,29 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           <div className="relative flex-1">
             <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
               <defs>
-                <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#064e3b" stopOpacity="0.18" />
-                  <stop offset="54%" stopColor="#064e3b" stopOpacity="0.055" />
-                  <stop offset="100%" stopColor="#064e3b" stopOpacity="0" />
+                <linearGradient
+                  gradientUnits="userSpaceOnUse"
+                  id="admin-vickrey-area-grad"
+                  x1="0"
+                  x2="0"
+                  y1={chart.chart.top}
+                  y2={chart.chart.bottom}
+                >
+                  <stop offset="0%" stopColor="#0b6b4b" stopOpacity="0.28" />
+                  <stop offset="56%" stopColor="#0b6b4b" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#0b6b4b" stopOpacity="0.06" />
                 </linearGradient>
-                <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#9ed47a" stopOpacity="0.2" />
-                  <stop offset="54%" stopColor="#9ed47a" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#9ed47a" stopOpacity="0" />
+                <linearGradient
+                  gradientUnits="userSpaceOnUse"
+                  id="admin-fixed-area-grad"
+                  x1="0"
+                  x2="0"
+                  y1={chart.chart.top}
+                  y2={chart.chart.bottom}
+                >
+                  <stop offset="0%" stopColor="#9ed47a" stopOpacity="0.34" />
+                  <stop offset="56%" stopColor="#9ed47a" stopOpacity="0.17" />
+                  <stop offset="100%" stopColor="#9ed47a" stopOpacity="0.05" />
                 </linearGradient>
                 <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
                   <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
@@ -572,6 +586,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-fixed-area-grad)"
                 key={`fixed-area-${index}`}
+                opacity={activePoint ? 1 : 0.88}
               />
             ))}
             {chart.areaPaths.vickrey.map((areaPath, index) => (
@@ -580,6 +595,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-vickrey-area-grad)"
                 key={`vickrey-area-${index}`}
+                opacity={activePoint ? 1 : 0.88}
               />
             ))}
 
