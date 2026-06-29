@@ -499,7 +499,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative flex h-[19rem] flex-col gap-2.5 dark:bg-transparent sm:h-[20rem]">
+        <div className="relative flex h-[22rem] flex-col gap-3 dark:bg-transparent sm:h-[24rem]">
           <div className="flex flex-col gap-2.5 px-0 font-body text-[0.84rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-extrabold text-[#0f172a] dark:text-slate-200">
               Nilai (Rp Juta)
@@ -527,9 +527,9 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#20c997" stopOpacity="0.38" />
-                  <stop offset="54%" stopColor="#68ddb4" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="#d9f7ea" stopOpacity="0.08" />
+                  <stop offset="0%" stopColor="#00a979" stopOpacity="0.52" />
+                  <stop offset="48%" stopColor="#35d6a5" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#dff9ef" stopOpacity="0.04" />
                 </linearGradient>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
@@ -539,12 +539,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#76e660" stopOpacity="0.3" />
-                  <stop offset="54%" stopColor="#a9ee90" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#e9f9e4" stopOpacity="0.04" />
+                  <stop offset="0%" stopColor="#69e64d" stopOpacity="0.28" />
+                  <stop offset="48%" stopColor="#b6f4a0" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#edfbe9" stopOpacity="0.02" />
                 </linearGradient>
                 <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="3.2" floodColor="#28c487" floodOpacity="0.16" />
+                  <feDropShadow dx="0" dy="3" stdDeviation="3.4" floodColor="#20c98a" floodOpacity="0.24" />
                 </filter>
               </defs>
 
@@ -555,11 +555,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               {chart.axisTicks.map((tick) => (
                 <g key={tick.label}>
                   <text
-                    className="fill-[#334155] font-bold antialiased transition-all duration-150 dark:fill-slate-100"
+                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="14.5"
-                    fontWeight="700"
+                    fontSize="14"
+                    fontWeight="600"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="end"
@@ -586,7 +586,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-fixed-area-grad)"
                 key={`fixed-area-${index}`}
-                opacity={activePoint ? 1 : 0.88}
+                opacity={activePoint ? 1 : 0.96}
               />
             ))}
             {chart.areaPaths.vickrey.map((areaPath, index) => (
@@ -595,7 +595,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-vickrey-area-grad)"
                 key={`vickrey-area-${index}`}
-                opacity={activePoint ? 1 : 0.88}
+                opacity={activePoint ? 1 : 0.96}
               />
             ))}
 
@@ -659,9 +659,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 <g key={`${point.label}-marker-${index}`}>
                   {point.vickreyAmount > 0 ? (
                     <>
-                      {active ? (
-                        <circle cx={point.x} cy={point.vickreyY} fill="rgba(6,78,59,0.13)" r="13" />
-                      ) : null}
+                      <circle
+                        cx={point.x}
+                        cy={point.vickreyY}
+                        fill={active ? "rgba(0,169,121,0.22)" : "rgba(0,169,121,0.13)"}
+                        r={active ? 13 : 9}
+                      />
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
@@ -675,9 +678,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   ) : null}
                   {point.fixedPriceAmount > 0 ? (
                     <>
-                      {active ? (
-                        <circle cx={point.x} cy={point.fixedPriceY} fill="rgba(158,212,122,0.2)" r="12.5" />
-                      ) : null}
+                      <circle
+                        cx={point.x}
+                        cy={point.fixedPriceY}
+                        fill={active ? "rgba(105,230,77,0.24)" : "rgba(105,230,77,0.15)"}
+                        r={active ? 12.5 : 8.5}
+                      />
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
@@ -704,11 +710,11 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 return (
                   <g key={`${point.label}-${index}`}>
                   <text
-                    className="fill-[#334155] font-bold antialiased transition-all duration-150 dark:fill-slate-100"
+                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="14.5"
-                    fontWeight="700"
+                    fontSize="14"
+                    fontWeight="600"
                     letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
