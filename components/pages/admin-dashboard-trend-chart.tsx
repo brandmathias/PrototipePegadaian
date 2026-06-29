@@ -91,7 +91,7 @@ type DashboardStripMetric = {
 
 const chartAxisFontFamily = "var(--font-plus-jakarta), 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif";
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums", textRendering: "geometricPrecision", WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale" } as const;
-const chartViewBoxHeight = 326;
+const chartViewBoxHeight = 358;
 const chartAxisMaxValue = 25;
 const chartAxisTickValues = [0, 5, 10, 15, 20, 25];
 const numberFormatter = new Intl.NumberFormat("id-ID");
@@ -163,10 +163,10 @@ function buildChartModel(series: DashboardTrendPoint[]) {
         { label: "20.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 }
       ];
   const chart = {
-    left: 58,
-    right: 952,
-    top: 38,
-    bottom: 270
+    left: 66,
+    right: 944,
+    top: 34,
+    bottom: 296
   };
   const maxAxisValue = chartAxisMaxValue;
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
@@ -238,13 +238,18 @@ function buildChartModel(series: DashboardTrendPoint[]) {
 
   const fixedPoints = points.map((p) => ({ x: p.x, y: p.fixedPriceY }));
   const vickreyPoints = points.map((p) => ({ x: p.x, y: p.vickreyY }));
+  const combinedPoints = points.map((p) => ({ x: p.x, y: Math.min(p.fixedPriceY, p.vickreyY) }));
 
   const linePaths = {
+    combined: points.length ? [getCurvePath(combinedPoints)] : [],
     fixedPrice: points.length ? [getCurvePath(fixedPoints)] : [],
     vickrey: points.length ? [getCurvePath(vickreyPoints)] : []
   };
 
   const areaPaths = {
+    combined: linePaths.combined.length
+      ? [`${linePaths.combined[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
+      : [],
     fixedPrice: linePaths.fixedPrice.length
       ? [`${linePaths.fixedPrice[0]} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`]
       : [],
@@ -499,7 +504,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative flex h-[22rem] flex-col gap-3 dark:bg-transparent sm:h-[24rem]">
+        <div className="relative flex h-[24rem] flex-col gap-3 dark:bg-transparent sm:h-[26rem]">
           <div className="flex flex-col gap-2.5 px-0 font-body text-[0.84rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-extrabold text-[#0f172a] dark:text-slate-200">
               Nilai (Rp Juta)
@@ -510,7 +515,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 Lelang Tertutup
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2.5 rounded-full bg-[#68d957]" />
+                <span className="size-2.5 rounded-full bg-[#65dc4f]" />
                 Harga Tetap
               </span>
             </div>
@@ -521,15 +526,28 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               <defs>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
+                  id="admin-combined-area-grad"
+                  x1="0"
+                  x2="0"
+                  y1={chart.chart.top}
+                  y2={chart.chart.bottom}
+                >
+                  <stop offset="0%" stopColor="#08b383" stopOpacity="0.5" />
+                  <stop offset="42%" stopColor="#6fdcc3" stopOpacity="0.34" />
+                  <stop offset="76%" stopColor="#d8f6ec" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#f7fcf9" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient
+                  gradientUnits="userSpaceOnUse"
                   id="admin-vickrey-area-grad"
                   x1="0"
                   x2="0"
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#00a979" stopOpacity="0.52" />
-                  <stop offset="48%" stopColor="#35d6a5" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#dff9ef" stopOpacity="0.04" />
+                  <stop offset="0%" stopColor="#008b66" stopOpacity="0.34" />
+                  <stop offset="48%" stopColor="#43cba8" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#e7f8ef" stopOpacity="0.02" />
                 </linearGradient>
                 <linearGradient
                   gradientUnits="userSpaceOnUse"
@@ -539,12 +557,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 >
-                  <stop offset="0%" stopColor="#69e64d" stopOpacity="0.28" />
-                  <stop offset="48%" stopColor="#b6f4a0" stopOpacity="0.12" />
-                  <stop offset="100%" stopColor="#edfbe9" stopOpacity="0.02" />
+                  <stop offset="0%" stopColor="#7ee158" stopOpacity="0.22" />
+                  <stop offset="42%" stopColor="#bff2a8" stopOpacity="0.11" />
+                  <stop offset="100%" stopColor="#f3fbef" stopOpacity="0.01" />
                 </linearGradient>
-                <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="3.4" floodColor="#20c98a" floodOpacity="0.24" />
+                <filter id="admin-dashboard-line-shadow" x="-10%" y="-28%" width="130%" height="180%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4.1" floodColor="#20c98a" floodOpacity="0.3" />
                 </filter>
               </defs>
 
@@ -580,13 +598,22 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             <line className="stroke-[#7d8791] dark:stroke-white/22" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.2" />
 
             {/* Area Gradient Fills */}
+            {chart.areaPaths.combined.map((areaPath, index) => (
+              <path
+                className="transition-[opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-chart-fade-in"
+                d={areaPath}
+                fill="url(#admin-combined-area-grad)"
+                key={`combined-area-${index}`}
+                opacity={activePoint ? 0.98 : 1}
+              />
+            ))}
             {chart.areaPaths.fixedPrice.map((areaPath, index) => (
               <path
                 className="transition-[opacity] duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-chart-fade-in"
                 d={areaPath}
                 fill="url(#admin-fixed-area-grad)"
                 key={`fixed-area-${index}`}
-                opacity={activePoint ? 1 : 0.96}
+                opacity={activePoint ? 0.82 : 0.74}
               />
             ))}
             {chart.areaPaths.vickrey.map((areaPath, index) => (
@@ -595,7 +622,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 d={areaPath}
                 fill="url(#admin-vickrey-area-grad)"
                 key={`vickrey-area-${index}`}
-                opacity={activePoint ? 1 : 0.96}
+                opacity={activePoint ? 0.88 : 0.82}
               />
             ))}
 
@@ -606,10 +633,10 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 fill="none"
                 filter="url(#admin-dashboard-line-shadow)"
                 key={`fixed-line-${index}`}
-                stroke="#68d957"
+                stroke="#65dc4f"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2.65"
+                strokeWidth="2.85"
               />
             ))}
             {chart.linePaths.vickrey.map((linePath, index) => (
@@ -622,7 +649,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 stroke="#064e3b"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2.65"
+                strokeWidth="2.85"
               />
             ))}
 
@@ -681,14 +708,14 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                       <circle
                         cx={point.x}
                         cy={point.fixedPriceY}
-                        fill={active ? "rgba(105,230,77,0.24)" : "rgba(105,230,77,0.15)"}
+                        fill={active ? "rgba(101,220,79,0.25)" : "rgba(101,220,79,0.15)"}
                         r={active ? 12.5 : 8.5}
                       />
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
                         cy={point.fixedPriceY}
-                        fill="#68d957"
+                        fill="#65dc4f"
                         r={active ? 6.2 : 5}
                         stroke="#ffffff"
                         strokeWidth="1.5"
@@ -719,7 +746,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
-                    y="300"
+                    y={chart.chart.bottom + 32}
                   >
                     {point.label}
                   </text>
@@ -783,7 +810,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2 dark:bg-emerald-300/8">
                   <span className="inline-flex items-center gap-2">
-                    <span className="size-2.5 rounded-full bg-[#68d957]" />
+                    <span className="size-2.5 rounded-full bg-[#65dc4f]" />
                     Harga Tetap
                   </span>
                   <span className="font-black text-[#3f8d42] dark:text-emerald-100">

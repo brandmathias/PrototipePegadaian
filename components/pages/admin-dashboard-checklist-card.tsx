@@ -186,28 +186,54 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
 
   return (
     <section
-      className="admin-checklist-card relative overflow-hidden rounded-[1.25rem] border border-[#e3e9e5] bg-white p-4 shadow-[0_18px_46px_-38px_rgba(15,23,42,0.2)] [font-family:var(--font-plus-jakarta)] dark:border-emerald-300/[0.09] dark:bg-[#0c1713] dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.72)] sm:p-5"
+      className="admin-checklist-card relative overflow-hidden rounded-[1.55rem] border border-[#e2e8e4] bg-[#fdfefe] p-0 shadow-[0_22px_58px_-46px_rgba(15,23,42,0.24)] [font-family:var(--font-plus-jakarta)] dark:border-emerald-300/[0.09] dark:bg-[#0c1713] dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.72)]"
       data-testid="admin-dashboard-checklist"
     >
-      <div className="relative">
-        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-center gap-3.5">
-            <span className="grid size-[3.35rem] shrink-0 place-items-center rounded-[0.9rem] border border-[#e1e8e3] bg-white text-[#14794e] shadow-[0_12px_28px_-22px_rgba(15,23,42,0.32),inset_0_1px_0_rgba(255,255,255,0.95)] dark:border-emerald-300/12 dark:bg-emerald-300/[0.06] dark:text-emerald-200">
-              <ClipboardCheck className="size-7" strokeWidth={1.85} />
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[9.75rem] w-full text-[#e6ece8] dark:text-emerald-300/10"
+        data-testid="admin-checklist-wave"
+        preserveAspectRatio="none"
+        viewBox="0 0 1000 210"
+      >
+        <defs>
+          <linearGradient id="admin-checklist-wave-fill" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="64%" stopColor="#fbfdfb" />
+            <stop offset="100%" stopColor="#f6faf7" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M0 0H1000V0C930 22 885 64 812 69C724 75 700 30 624 31C507 33 498 99 374 119C260 137 137 115 0 129V0Z"
+          fill="url(#admin-checklist-wave-fill)"
+        />
+        <path
+          d="M0 129C137 115 260 137 374 119C498 99 507 33 624 31C700 30 724 75 812 69C885 64 930 22 1000 0"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.15"
+        />
+      </svg>
+
+      <div className="relative px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5 xl:px-6 xl:pb-6">
+        <header className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+          <div className="flex items-center gap-4">
+            <span className="grid size-[4.05rem] shrink-0 place-items-center rounded-[1.08rem] border border-[#e4ebe6] bg-white text-[#14794e] shadow-[0_18px_36px_-27px_rgba(15,23,42,0.34),inset_0_1px_0_rgba(255,255,255,0.95)] dark:border-emerald-300/12 dark:bg-emerald-300/[0.06] dark:text-emerald-200">
+              <ClipboardCheck className="size-8" strokeWidth={1.75} />
             </span>
             <div>
-              <h2 className="text-[1.35rem] font-extrabold leading-tight text-[#17372d] dark:text-slate-100 sm:text-[1.55rem]">
+              <h2 className="text-[1.7rem] font-extrabold leading-none text-[#17372d] [letter-spacing:0] dark:text-slate-100 sm:text-[2.05rem]">
                 Checklist Harian
               </h2>
-              <span className="mt-2 flex items-center">
-                <span className="h-0.5 w-16 rounded-full bg-[#11844e]" />
-                <span className="mx-1 size-2 rotate-45 bg-[#d0ad48]" />
-                <span className="h-0.5 w-10 rounded-full bg-[#b7ca7c]" />
+              <span className="mt-3 flex items-center pl-10 sm:pl-14">
+                <span className="h-0.5 w-14 rounded-full bg-[#11844e]" />
+                <span className="mx-1.5 size-2 rotate-45 bg-[#d0ad48]" />
+                <span className="h-0.5 w-11 rounded-full bg-[#b7ca7c]" />
               </span>
             </div>
           </div>
 
-          <div className="inline-flex w-full flex-wrap items-center gap-3 self-start rounded-full border border-[#e2e8e4] bg-white px-4 py-2.5 text-[0.76rem] font-semibold text-[#53615d] shadow-[0_12px_30px_-26px_rgba(15,23,42,0.2)] dark:border-emerald-300/[0.1] dark:bg-white/[0.04] dark:text-[#d8e7df] sm:w-auto sm:flex-nowrap">
+          <div className="inline-flex w-full flex-wrap items-center gap-3 self-start rounded-full border border-[#e0e8e4] bg-white/95 px-4 py-2.5 text-[0.8rem] font-semibold text-[#53615d] shadow-[0_14px_32px_-27px_rgba(15,23,42,0.22)] dark:border-emerald-300/[0.1] dark:bg-white/[0.04] dark:text-[#d8e7df] sm:w-auto sm:flex-nowrap">
             <span className="inline-flex items-center gap-2 whitespace-nowrap">
               <CalendarDays className="size-4 text-[#687672] dark:text-emerald-200/78" strokeWidth={1.8} />
               {formatChecklistDate(now)}
@@ -220,8 +246,8 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
           </div>
         </header>
 
-        <div className="mt-4 flex justify-start md:justify-end">
-          <div className="inline-flex min-w-[15rem] items-center gap-4 rounded-full border border-[#e2e9e4] bg-[linear-gradient(180deg,#f8fbf9,#f3f8f5)] px-4 py-2 text-[0.78rem] font-semibold text-[#253a31] dark:border-emerald-300/[0.12] dark:bg-emerald-300/[0.06] dark:text-slate-100">
+        <div className="mt-5 flex justify-start md:justify-end">
+          <div className="inline-flex min-w-[17rem] items-center gap-5 rounded-full border border-[#e1e9e4] bg-[linear-gradient(180deg,#f8fbf9,#f2f8f5)] px-5 py-2.5 text-[0.95rem] font-semibold text-[#1f3329] shadow-[inset_0_1px_0_rgba(255,255,255,0.74)] dark:border-emerald-300/[0.12] dark:bg-emerald-300/[0.06] dark:text-slate-100">
             <span className="whitespace-nowrap">
               <strong className="font-extrabold text-[#14794e] dark:text-emerald-200">{completedCount}</strong>
               {" / "}
@@ -232,25 +258,25 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
               aria-valuemax={interactiveTasks.length}
               aria-valuemin={0}
               aria-valuenow={completedCount}
-              className="h-2 flex-1 overflow-hidden rounded-full bg-[#e7ece9] dark:bg-white/10"
+              className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#e7ece9] dark:bg-white/10"
               role="progressbar"
             >
               <span
-                className="block h-full rounded-full bg-[linear-gradient(90deg,#11844e,#4fc888)] transition-[width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
+                className="block h-full rounded-full bg-[linear-gradient(90deg,#1a8e5f,#54c48a)] transition-[width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                 style={{ width: `${completionPercent}%` }}
               />
             </span>
           </div>
         </div>
 
-        <div className="mt-3 overflow-hidden rounded-[1rem] border border-[#e7ece8] bg-white dark:border-emerald-300/[0.08] dark:bg-white/[0.025]">
+        <div className="mt-5 overflow-hidden rounded-[1.18rem] border border-[#e5ece8] bg-white shadow-[0_16px_36px_-34px_rgba(15,23,42,0.28)] dark:border-emerald-300/[0.08] dark:bg-white/[0.025]">
           {interactiveTasks.map((task, index) => (
             <button
               aria-pressed={task.checked}
               className={cn(
-                "admin-checklist-row group grid min-h-[3.5rem] w-full grid-cols-[1.85rem_minmax(0,1fr)_1.85rem] items-center gap-3 px-3.5 py-2.5 text-left transition-colors duration-200 sm:px-4",
+                "admin-checklist-row group grid min-h-[3.9rem] w-full grid-cols-[2.15rem_minmax(0,1fr)_2.15rem] items-center gap-4 px-4 py-2.5 text-left transition-colors duration-200 sm:px-5",
                 index !== interactiveTasks.length - 1 && "border-b border-[#edf1ee] dark:border-emerald-300/[0.08]",
-                task.checked && "bg-[linear-gradient(90deg,#f0f8f3,#f8fcf9)] dark:bg-emerald-300/[0.055]"
+                task.checked && "bg-[linear-gradient(90deg,#eef8f2_0%,#f7fcf9_100%)] dark:bg-emerald-300/[0.055]"
               )}
               key={task.title}
               onClick={() => toggleTask(index)}
@@ -258,7 +284,7 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
             >
               <span
                 className={cn(
-                  "grid size-7 place-items-center rounded-full text-[0.76rem] font-extrabold transition-[background-color,color,border-color] duration-200",
+                  "grid size-8 place-items-center rounded-full text-[0.78rem] font-extrabold transition-[background-color,color,border-color] duration-200",
                   task.checked
                     ? "bg-[linear-gradient(180deg,#1f8758,#126e45)] text-white shadow-[0_10px_22px_-16px_rgba(18,110,69,0.65)]"
                     : "border border-[#d9e1dc] bg-white text-[#33413b] dark:border-emerald-300/[0.16] dark:bg-white/[0.04] dark:text-[#ebf6ef]"
@@ -266,12 +292,12 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
               >
                 {index + 1}
               </span>
-              <p className="pr-2 text-[0.78rem] font-medium leading-5 text-[#273a32] dark:text-[#dceadf] sm:text-[0.82rem]">
+              <p className="pr-2 text-[0.82rem] font-medium leading-6 text-[#1e2c27] dark:text-[#dceadf] sm:text-[0.9rem]">
                 {task.title}
               </p>
               <span
                 className={cn(
-                  "admin-checklist-toggle grid size-7 place-items-center rounded-full border transition-[background-color,color,border-color] duration-200",
+                  "admin-checklist-toggle grid size-8 place-items-center rounded-full border transition-[background-color,color,border-color] duration-200",
                   task.checked
                     ? "border-[#197c50] bg-[linear-gradient(180deg,#1f8758,#126e45)] text-white"
                     : "border-[#d8dfdb] bg-white text-transparent dark:border-emerald-300/[0.16] dark:bg-white/[0.04]"

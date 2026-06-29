@@ -157,6 +157,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByTestId("admin-dashboard-checklist")).toHaveClass(
       "[font-family:var(--font-plus-jakarta)]"
     );
+    expect(screen.getByTestId("admin-checklist-wave")).toBeInTheDocument();
     expect(screen.queryByText(/^2 lunas$/i)).not.toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: /progres checklist harian/i })).toHaveAttribute(
       "aria-valuenow",
