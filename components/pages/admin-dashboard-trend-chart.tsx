@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import {
-  BarChart3,
-  ChartNoAxesCombined,
-  ShoppingCart,
-  Tag,
+  Activity,
+  BadgeCheck,
+  LineChart,
   TrendingUp,
+  Wallet,
   type LucideIcon
 } from "lucide-react";
 
@@ -161,48 +161,19 @@ function buildChartModel(series: DashboardTrendPoint[]) {
   const getCurvePath = (pts: { x: number; y: number }[]) => {
     if (pts.length === 0) return "";
     if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-    if (pts.length === 2) {
-      return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
-    }
-
-    // 1. Calculate tangents (slopes) at each point, flatting extrema to prevent overshooting
-    const tangents = pts.map((p, i) => {
-      if (i === 0) {
-        return (pts[1].y - p.y) / (pts[1].x - p.x);
-      }
-      if (i === pts.length - 1) {
-        return (p.y - pts[i - 1].y) / (p.x - pts[i - 1].x);
-      }
-      const prev = pts[i - 1];
-      const next = pts[i + 1];
-      
-      const slope1 = (p.y - prev.y) / (p.x - prev.x);
-      const slope2 = (next.y - p.y) / (next.x - p.x);
-      
-      // If it's a local maximum or minimum, set tangent to 0 to prevent overshooting
-      if (slope1 * slope2 <= 0) {
-        return 0;
-      }
-      
-      return (slope1 + slope2) / 2;
-    });
-
-    // 2. Build Cubic Bezier segments using calculated tangents
+    
     let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
     for (let i = 0; i < pts.length - 1; i++) {
       const p1 = pts[i];
       const p2 = pts[i + 1];
-      const dx = (p2.x - p1.x) / 3;
-
-      const cp1x = p1.x + dx;
-      const cp1y = p1.y + dx * tangents[i];
-
-      const cp2x = p2.x - dx;
-      const cp2y = p2.y - dx * tangents[i + 1];
-
-      const clampY = (val: number) => Math.max(chart.top, Math.min(chart.bottom, val));
-
-      path += ` C ${cp1x.toFixed(1)} ${clampY(cp1y).toFixed(1)}, ${cp2x.toFixed(1)} ${clampY(cp2y).toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+      
+      const cp1x = p1.x + (p2.x - p1.x) / 2;
+      const cp1y = p1.y;
+      
+      const cp2x = p1.x + (p2.x - p1.x) / 2;
+      const cp2y = p2.y;
+      
+      path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
     }
     return path;
   };
@@ -254,30 +225,29 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
           ? `rata-rata nilai penjualan per bulan sepanjang ${range.label.toLowerCase()}`
           : `rata-rata nilai penjualan per hari sepanjang ${range.label.toLowerCase()}`;
 
-  return [
     {
       title: "Total Periode",
       value: formatCurrencyCompact(range.summary.totalRevenue),
       subtext: `${formatCount(range.summary.verifiedTransactions)} transaksi lunas tercatat pada ${range.label.toLowerCase()}`,
-      icon: TrendingUp
+      icon: Wallet
     },
     {
       title: averageTitle,
       value: formatCurrencyCompact(range.summary.averageRevenue),
       subtext: averageSubtitle,
-      icon: ShoppingCart
+      icon: Activity
     },
     {
       title: "Puncak Penjualan",
       value: formatCurrencyCompact(range.summary.peakRevenue),
       subtext: `nilai penjualan tertinggi terjadi pada ${range.summary.peakLabel}`,
-      icon: BarChart3
+      icon: TrendingUp
     },
     {
       title: "Transaksi Lunas",
       value: formatCount(range.summary.verifiedTransactions),
       subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi terverifikasi`,
-      icon: Tag
+      icon: BadgeCheck
     }
   ];
 }
@@ -439,7 +409,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
         <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex items-start gap-3">
             <span className="grid size-[5.15rem] shrink-0 place-items-center rounded-[1.15rem] border border-[#dcefe2] bg-[linear-gradient(180deg,#f5fbf6,#ebf7ef)] text-[#0c6a42] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-300 dark:border-emerald-300/12 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.26),rgba(14,73,52,0.22))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <ChartNoAxesCombined className="size-10" strokeWidth={1.8} />
+              <LineChart className="size-10" strokeWidth={1.8} />
             </span>
             <div>
               <h2 className="font-headline text-[1.25rem] font-black tracking-[-0.02em] text-[#17221d] dark:text-slate-100 sm:text-[1.42rem]">
