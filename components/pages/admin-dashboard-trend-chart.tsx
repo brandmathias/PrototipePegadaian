@@ -7,9 +7,52 @@ import {
   ShoppingCart,
   Star,
   Check,
-  ChartNoAxesCombined,
   type LucideIcon
 } from "lucide-react";
+
+import {
+  ReportRangeDropdown,
+  type ReportCustomRange,
+  type ReportRangeOption
+} from "@/components/shared/report-range-dropdown";
+import { cn } from "@/lib/utils";
+import type {
+  AdminDashboardMetrics,
+  DashboardSalesTimeframeKey,
+  DashboardTrendEvent,
+  DashboardTrendPoint,
+  DashboardTrendRange
+} from "@/components/pages/admin-dashboard-page";
+
+const TrendReportIcon = ({ className }: { className?: string }) => (
+  <svg
+    aria-hidden="true"
+    className={className}
+    fill="none"
+    viewBox="0 0 56 56"
+  >
+    <path
+      d="M14 38V28M24 38V22M34 38V30M44 38V16"
+      stroke="#f2d778"
+      strokeLinecap="round"
+      strokeWidth="4"
+    />
+    <path
+      d="M12 24l10-8 10 7 12-13"
+      stroke="#f2d778"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="3.5"
+    />
+    <path
+      d="M37 10h7v7"
+      stroke="#f2d778"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="3.5"
+    />
+  </svg>
+);
 
 const TotalPeriodeIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.8" strokeLinecap="round" className={className}>
@@ -41,20 +84,6 @@ const TransaksiLunasIcon = ({ className }: { className?: string }) => (
   </div>
 );
 
-import {
-  ReportRangeDropdown,
-  type ReportCustomRange,
-  type ReportRangeOption
-} from "@/components/shared/report-range-dropdown";
-import { cn } from "@/lib/utils";
-import type {
-  AdminDashboardMetrics,
-  DashboardSalesTimeframeKey,
-  DashboardTrendEvent,
-  DashboardTrendPoint,
-  DashboardTrendRange
-} from "@/components/pages/admin-dashboard-page";
-
 type DashboardStripMetric = {
   title: string;
   value: string;
@@ -62,11 +91,11 @@ type DashboardStripMetric = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const chartAxisFontFamily = "'Plus Jakarta Sans', var(--font-manrope), 'Segoe UI', system-ui, -apple-system, sans-serif";
+const chartAxisFontFamily = "'Plus Jakarta Sans', var(--font-plus-jakarta), 'Segoe UI', system-ui, -apple-system, sans-serif";
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums", textRendering: "geometricPrecision", WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale" } as const;
-const chartViewBoxHeight = 350;
+const chartViewBoxHeight = 362;
 const chartAxisMaxValue = 25;
-const chartAxisTickValues = [5, 10, 15, 20, 25];
+const chartAxisTickValues = [0, 5, 10, 15, 20, 25];
 const numberFormatter = new Intl.NumberFormat("id-ID");
 const monthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -86,15 +115,6 @@ function formatShortNumber(value: number) {
   }
 
   return numberFormatter.format(value);
-}
-
-function formatTooltipNumber(value: number) {
-  const num = value / 1_000_000;
-  const formatted = num.toLocaleString("id-ID", {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 2
-  });
-  return `${formatted} jt`;
 }
 
 function formatCurrencyCompact(value: number) {
@@ -145,10 +165,10 @@ function buildChartModel(series: DashboardTrendPoint[]) {
         { label: "20.00", value: 0, amount: 0, fixedPriceAmount: 0, vickreyAmount: 0 }
       ];
   const chart = {
-    left: 70,
-    right: 930,
-    top: 52,
-    bottom: 292
+    left: 58,
+    right: 952,
+    top: 42,
+    bottom: 304
   };
   const maxAxisValue = chartAxisMaxValue;
   const step = (chart.right - chart.left) / Math.max(fallback.length - 1, 1);
@@ -157,6 +177,7 @@ function buildChartModel(series: DashboardTrendPoint[]) {
 
     return {
       label: formatAxisNumber(value),
+      value,
       y: chart.bottom - (chart.bottom - chart.top) * ratio
     };
   });
@@ -182,7 +203,6 @@ function buildChartModel(series: DashboardTrendPoint[]) {
       hitLeftPercent: (hitLeft / 980) * 100,
       hitTopPercent: (chart.top / chartViewBoxHeight) * 100,
       hitWidthPercent: ((hitRight - hitLeft) / 980) * 100,
-      labelWidth: Math.max(54, point.label.length * 8.4 + 24),
       leftPercent: (x / 980) * 100,
       fixedPriceAmount,
       fixedPriceY: getY(fixedPriceAmount),
@@ -269,7 +289,7 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
     {
       title: "Total Periode",
       value: formatCurrencyCompact(range.summary.totalRevenue),
-      subtext: `${formatCount(range.summary.verifiedTransactions)} transaksi lunas tercatat pada ${range.label.toLowerCase()}`,
+      subtext: "Total nilai penjualan pada periode ini",
       icon: TotalPeriodeIcon
     },
     {
@@ -281,13 +301,13 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
     {
       title: "Puncak Penjualan",
       value: formatCurrencyCompact(range.summary.peakRevenue),
-      subtext: `nilai penjualan tertinggi terjadi pada ${range.summary.peakLabel}`,
+      subtext: `Nilai penjualan tertinggi terjadi pada ${range.summary.peakLabel}`,
       icon: PuncakIcon
     },
     {
       title: "Transaksi Lunas",
       value: formatCount(range.summary.verifiedTransactions),
-      subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi terverifikasi`,
+      subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi tervalidasi`,
       icon: TransaksiLunasIcon
     }
   ];
@@ -445,18 +465,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
   const activePoint = activePointIndex !== null ? chart.points[activePointIndex] : null;
 
   return (
-    <div className="relative overflow-visible rounded-[1.65rem] border border-[#ebeeea] bg-white p-4 shadow-[0_20px_48px_-40px_rgba(15,23,42,0.2)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-5">
-      <div className="relative flex flex-col gap-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex items-start gap-3">
-            <span className="grid size-[5.15rem] shrink-0 place-items-center rounded-[1.15rem] border border-[#023c29] bg-[linear-gradient(180deg,#0a523a,#034931)] text-[#98cc93] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors duration-300 dark:border-emerald-300/20 dark:bg-[linear-gradient(180deg,rgba(10,82,58,0.4),rgba(3,73,49,0.3))] dark:text-emerald-200">
-              <ChartNoAxesCombined className="size-10 text-[#98cc93]" strokeWidth={1.8} />
+    <div className="relative overflow-visible rounded-[1.65rem] border border-[#e1e8e3] bg-white p-5 shadow-[0_22px_58px_-46px_rgba(15,23,42,0.34)] transition-colors duration-300 dark:border-emerald-300/10 dark:bg-[#101a15] dark:shadow-[0_20px_54px_-34px_rgba(0,0,0,0.64)] sm:p-7 xl:p-8">
+      <div className="relative flex flex-col gap-8">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="flex items-start gap-5">
+            <span className="grid size-[4.85rem] shrink-0 place-items-center rounded-[1.05rem] border border-[#00613d]/30 bg-[linear-gradient(145deg,#00623e_0%,#004a23_52%,#00391c_100%)] text-[#f2d778] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_18px_28px_-24px_rgba(0,74,35,0.62)] transition-colors duration-300 dark:border-emerald-300/20 sm:size-[5.4rem]">
+              <TrendReportIcon className="size-14 sm:size-16" />
             </span>
-            <div>
-              <h2 className="font-headline text-[1.25rem] font-black tracking-[-0.02em] text-[#17221d] dark:text-slate-100 sm:text-[1.42rem]">
+            <div className="min-w-0 pt-1">
+              <h2 className="font-body text-[1.7rem] font-extrabold leading-tight text-[#0f172a] dark:text-slate-100 sm:text-[2rem]">
                 Laporan Tren Penjualan
               </h2>
-              <p className="mt-1 max-w-xl text-[0.9rem] font-semibold leading-6 text-[#647067] dark:text-slate-300/72">
+              <p className="mt-2 max-w-2xl font-body text-[1rem] font-medium leading-7 text-[#566172] dark:text-slate-300/72">
                 Performa penjualan tervalidasi berdasarkan rentang waktu pilihan.
               </p>
             </div>
@@ -464,6 +484,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
           <ReportRangeDropdown
             ariaLabel="Filter laporan tren penjualan"
+            buttonClassName="h-12 rounded-[0.9rem] border-[#b6d5c6] px-4 text-[0.92rem] font-extrabold text-[#06472e] shadow-none sm:min-w-[16.75rem]"
             customRange={customRange}
             onApplyCustomRange={(nextRange) => {
               setCustomRange(nextRange);
@@ -480,18 +501,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           />
         </div>
 
-        <div className="relative h-[24rem] rounded-[1.25rem] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] px-2 py-3 dark:bg-[linear-gradient(180deg,#101a15_0%,#0c1511_100%)] sm:px-3 sm:py-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between px-2 text-[0.8rem] font-bold text-[#3f4f48] dark:text-slate-300/78">
-            <span className="text-[#334155] dark:text-slate-200 font-extrabold tracking-wide">
+        <div className="relative flex h-[25rem] flex-col gap-4 dark:bg-transparent sm:h-[31rem]">
+          <div className="flex flex-col gap-3 px-0 font-body text-[0.98rem] font-semibold text-[#26323f] dark:text-slate-300/78 sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-extrabold text-[#0f172a] dark:text-slate-200">
               Nilai (Rp Juta)
             </span>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
               <span className="inline-flex items-center gap-2">
-                <span className="size-2.5 rounded-full bg-[#005626]" />
+                <span className="size-3 rounded-full bg-[#005626]" />
                 Lelang Tertutup
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="size-2.5 rounded-full bg-[#9bd191]" />
+                <span className="size-3 rounded-full bg-[#9ed47a]" />
                 Harga Tetap
               </span>
             </div>
@@ -501,14 +522,14 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
             <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 980 ${chartViewBoxHeight}`}>
               <defs>
                 <linearGradient id="admin-vickrey-area-grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#005626" stopOpacity="0.22" />
-                  <stop offset="50%" stopColor="#005626" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#005626" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#064e3b" stopOpacity="0.18" />
+                  <stop offset="54%" stopColor="#064e3b" stopOpacity="0.055" />
+                  <stop offset="100%" stopColor="#064e3b" stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="admin-fixed-area-grad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#9bd191" stopOpacity="0.24" />
-                  <stop offset="50%" stopColor="#9bd191" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#9bd191" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#9ed47a" stopOpacity="0.2" />
+                  <stop offset="54%" stopColor="#9ed47a" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#9ed47a" stopOpacity="0" />
                 </linearGradient>
                 <filter id="admin-dashboard-line-shadow" x="-10%" y="-25%" width="130%" height="170%">
                   <feDropShadow dx="0" dy="4" stdDeviation="2.5" floodColor="#2cab68" floodOpacity="0.06" />
@@ -519,36 +540,18 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               <text className="opacity-0 pointer-events-none" x="0" y="0">Nilai (Rp Juta)</text>
 
             <g>
-              {chart.axisTicks.map((tick, index) => (
+              {chart.axisTicks.map((tick) => (
                 <g key={tick.label}>
-                  <line
-                    className={cn(
-                      index === chart.axisTicks.length - 1
-                        ? "stroke-[#95c5a8] dark:stroke-emerald-200/34"
-                        : "stroke-[#cbd8d1]/54 dark:stroke-slate-300/20"
-                    )}
-                    strokeLinecap="round"
-                    strokeWidth="1.35"
-                    x1={chart.chart.left - 9}
-                    x2={chart.chart.left - 3}
-                    y1={tick.y}
-                    y2={tick.y}
-                  />
                   <text
-                    className={cn(
-                      "antialiased transition-all duration-150",
-                      index === chart.axisTicks.length - 1
-                        ? "fill-[#0d824b] dark:fill-emerald-400 font-black"
-                        : "fill-[#334155]/90 dark:fill-slate-200 font-bold"
-                    )}
+                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize="14.5"
-                    fontWeight={index === chart.axisTicks.length - 1 ? 950 : 800}
-                    letterSpacing="0.02em"
+                    fontSize="15"
+                    fontWeight="650"
+                    letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="end"
-                    x={chart.chart.left - 18}
+                    x={chart.chart.left - 16}
                     y={tick.y}
                   >
                     {tick.label}
@@ -557,12 +560,12 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
               ))}
             </g>
 
-            <g className="stroke-[#c3d2c9]/80 dark:stroke-white/25" strokeDasharray="4 4" strokeWidth="1.15">
-              {chart.axisTicks.map((tick) => (
+            <g className="stroke-[#d7e0dc] dark:stroke-white/20" strokeDasharray="5 5" strokeWidth="1.1">
+              {chart.axisTicks.filter((tick) => tick.value > 0).map((tick) => (
                 <line key={tick.label} x1={chart.chart.left} x2={chart.chart.right} y1={tick.y} y2={tick.y} />
               ))}
             </g>
-            <line className="stroke-[#cfdcd4] dark:stroke-white/12" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.15" />
+            <line className="stroke-[#7d8791] dark:stroke-white/22" x1={chart.chart.left} x2={chart.chart.right} y1={chart.chart.bottom} y2={chart.chart.bottom} strokeWidth="1.2" />
 
             {/* Area Gradient Fills */}
             {chart.areaPaths.fixedPrice.map((areaPath, index) => (
@@ -589,10 +592,10 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 fill="none"
                 filter="url(#admin-dashboard-line-shadow)"
                 key={`fixed-line-${index}`}
-                stroke="#9bd191"
+                stroke="#9ed47a"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2.5"
+                strokeWidth="2.65"
               />
             ))}
             {chart.linePaths.vickrey.map((linePath, index) => (
@@ -602,25 +605,26 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 fill="none"
                 filter="url(#admin-dashboard-line-shadow)"
                 key={`vickrey-line-${index}`}
-                stroke="#005626"
+                stroke="#064e3b"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2.5"
+                strokeWidth="2.65"
               />
             ))}
 
             {activePoint ? (
               <g>
                 <line
-                  className="stroke-[#0d824b]/30 dark:stroke-emerald-200/34"
-                  strokeDasharray="4 6"
+                  className="stroke-[#63b37e]/70 dark:stroke-emerald-200/34"
+                  strokeDasharray="5 5"
                   strokeLinecap="round"
-                  strokeWidth="1.6"
+                  strokeWidth="1.25"
                   x1={activePoint.x}
                   x2={activePoint.x}
                   y1={chart.chart.top}
                   y2={chart.chart.bottom}
                 />
+                <circle cx={activePoint.x} cy={chart.chart.bottom} fill="#064e3b" r="4.2" />
                 {activePoint.vickreyAmount > 0 ? (
                   <circle cx={activePoint.x} cy={activePoint.vickreyY} fill="rgba(0,86,38,0.13)" r="19" />
                 ) : null}
@@ -641,41 +645,33 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                 <g key={`${point.label}-marker-${index}`}>
                   {point.vickreyAmount > 0 ? (
                     <>
-                      <circle
-                        className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
-                        cx={point.x}
-                        cy={point.vickreyY}
-                        fill="rgba(0,86,38,0.12)"
-                        r={active ? 15 : 10}
-                      />
+                      {active ? (
+                        <circle cx={point.x} cy={point.vickreyY} fill="rgba(6,78,59,0.13)" r="13" />
+                      ) : null}
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
                         cy={point.vickreyY}
-                        fill="#ffffff"
+                        fill="#064e3b"
                         r={active ? 6.6 : 5.4}
-                        stroke="#005626"
-                        strokeWidth="3"
+                        stroke="#ffffff"
+                        strokeWidth="1.5"
                       />
                     </>
                   ) : null}
                   {point.fixedPriceAmount > 0 ? (
                     <>
-                      <circle
-                        className="transition-[r,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
-                        cx={point.x}
-                        cy={point.fixedPriceY}
-                        fill="rgba(155,209,145,0.18)"
-                        r={active ? 14 : 9.5}
-                      />
+                      {active ? (
+                        <circle cx={point.x} cy={point.fixedPriceY} fill="rgba(158,212,122,0.2)" r="12.5" />
+                      ) : null}
                       <circle
                         className="transition-[r,stroke-width] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                         cx={point.x}
                         cy={point.fixedPriceY}
-                        fill="#ffffff"
+                        fill="#9ed47a"
                         r={active ? 6.2 : 5}
-                        stroke="#9bd191"
-                        strokeWidth="3"
+                        stroke="#ffffff"
+                        strokeWidth="1.5"
                       />
                     </>
                   ) : null}
@@ -685,8 +681,7 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
             <g>
               {chart.points.map((point, index) => {
-                const active = index === activePointIndex;
-                const showLabel = active || shouldShowXAxisLabel(index, chart.points.length);
+                const showLabel = index === activePointIndex || shouldShowXAxisLabel(index, chart.points.length);
 
                 if (!showLabel) {
                   return null;
@@ -694,32 +689,17 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
 
                 return (
                   <g key={`${point.label}-${index}`}>
-                  {active ? (
-                    <rect
-                      className="fill-[#ecf8f0] stroke-[#bfe7cc] dark:fill-emerald-300/10 dark:stroke-emerald-200/16"
-                      height="22"
-                      rx="11"
-                      width={point.labelWidth + 8}
-                      x={point.x - (point.labelWidth + 8) / 2}
-                      y="318"
-                    />
-                  ) : null}
                   <text
-                    className={cn(
-                      "antialiased transition-all duration-150",
-                      active
-                        ? "fill-[#0a7b47] dark:fill-emerald-400 font-extrabold"
-                        : "fill-[#3f4f48] dark:fill-slate-200 font-bold"
-                    )}
+                    className="fill-[#2f3a46] font-semibold antialiased transition-all duration-150 dark:fill-slate-200"
                     dominantBaseline="middle"
                     fontFamily={chartAxisFontFamily}
-                    fontSize={active ? "14.5" : "14"}
-                    fontWeight={active ? 900 : 800}
-                    letterSpacing="0.01em"
+                    fontSize="15"
+                    fontWeight="650"
+                    letterSpacing="0"
                     style={chartAxisTextStyle}
                     textAnchor="middle"
                     x={point.x}
-                    y="329"
+                    y="342"
                   >
                     {point.label}
                   </text>
@@ -805,20 +785,20 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 rounded-[1.3rem] border border-[#edf0ec] bg-white/96 p-4 shadow-[0_14px_28px_-24px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#edf0ec]/80 dark:xl:divide-white/10">
+        <div className="grid grid-cols-1 gap-5 rounded-[1.35rem] border border-[#e2e8e4] bg-white p-5 shadow-[0_14px_36px_-32px_rgba(15,23,42,0.24)] dark:border-white/8 dark:bg-white/[0.035] dark:shadow-[0_14px_32px_-24px_rgba(0,0,0,0.5)] sm:grid-cols-2 sm:p-6 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-[#dfe7e1] dark:xl:divide-white/10">
           {stripMetrics.map((metric) => {
             const Icon = metric.icon;
             return (
-              <div className="grid grid-cols-[2.6rem_minmax(0,1fr)] gap-3 rounded-[1rem] p-2 xl:px-6" key={metric.title}>
-                <span className="grid size-10 shrink-0 place-items-center rounded-[0.9rem] border border-[#e2eede] bg-[linear-gradient(180deg,#f4fbf5,#eaf7ee)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <Icon className="size-5" />
+              <div className="grid grid-cols-[4.6rem_minmax(0,1fr)] gap-5 rounded-[1rem] p-1 xl:px-6" key={metric.title}>
+                <span className="grid size-[4.6rem] shrink-0 place-items-center rounded-[1rem] border border-[#d9eadf] bg-[linear-gradient(180deg,#f0f8f2,#e8f3ec)] text-[#0d824b] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] dark:border-emerald-300/10 dark:bg-[linear-gradient(180deg,rgba(32,120,83,0.24),rgba(14,73,52,0.18))] dark:text-emerald-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                  <Icon className="size-9" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[0.78rem] font-semibold leading-4 text-[#667783] dark:text-slate-300/70">{metric.title}</p>
-                  <p className="mt-1 whitespace-nowrap font-headline text-[1.25rem] font-black leading-none tracking-[-0.035em] text-[#10874c] dark:text-emerald-200">
+                  <p className="font-body text-[1rem] font-bold leading-5 text-[#566172] dark:text-slate-300/70">{metric.title}</p>
+                  <p className="mt-2 whitespace-nowrap font-body text-[1.85rem] font-extrabold leading-none text-[#0d7042] [font-variant-numeric:tabular-nums] dark:text-emerald-200">
                     {metric.value}
                   </p>
-                  <p className="mt-1 text-[0.74rem] leading-5 text-[#667783] dark:text-slate-300/62">{metric.subtext}</p>
+                  <p className="mt-3 font-body text-[0.95rem] leading-6 text-[#566172] dark:text-slate-300/62">{metric.subtext}</p>
                 </div>
               </div>
             );

@@ -126,7 +126,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText("Rp 20 jt")).toBeInTheDocument();
     expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
     expect(screen.getByText(/^Puncak Penjualan$/i)).toBeInTheDocument();
-    expect(screen.getByText(/7 transaksi lunas/i)).toBeInTheDocument();
+    expect(screen.getByText(/total nilai penjualan pada periode ini/i)).toBeInTheDocument();
     expect(screen.getByText(/total periode/i)).toBeInTheDocument();
     expect(screen.getByText(/^Transaksi Lunas$/i)).toBeInTheDocument();
     expect(
@@ -246,7 +246,7 @@ describe("AdminDashboardPage", () => {
       ).getByRole("button", { name: /hari ini/i }),
     );
     expect(screen.getByText(/rata-rata slot/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 transaksi lunas tercatat pada hari ini/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rp 5 jt rata-rata per transaksi tervalidasi/i)).toBeInTheDocument();
     expect(screen.getByText("Rp 10 jt")).toBeInTheDocument();
 
     fireEvent.click(
@@ -260,9 +260,7 @@ describe("AdminDashboardPage", () => {
       ).getByRole("button", { name: /bulan berlangsung/i }),
     );
     expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/7 transaksi lunas tercatat pada bulan berlangsung/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Rp 2,86 jt rata-rata per transaksi tervalidasi/i)).toBeInTheDocument();
     expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22 Mei/i)).toBeInTheDocument();
   });
 
