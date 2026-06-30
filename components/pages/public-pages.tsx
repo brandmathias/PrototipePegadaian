@@ -568,7 +568,7 @@ export function RegisterPage() {
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(255,207,91,0.22),transparent_26%),radial-gradient(circle_at_20%_14%,rgba(5,67,40,0.36),transparent_28%)]" />
         <div className="absolute left-12 top-12 xl:left-16 xl:top-16">
-          <AuthBrandCluster accentLabel="Registrasi Pembeli" mode="hero" />
+          <AuthBrandCluster mode="hero" />
         </div>
         <div className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(0deg,rgba(0,14,8,0.96)_0%,rgba(0,18,10,0.78)_46%,transparent_100%)]" />
         <div className="relative max-w-[680px] space-y-7">
