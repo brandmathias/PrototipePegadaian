@@ -52,7 +52,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const search = searchParams.toString();
   const currentPath = search ? `${pathname}?${search}` : pathname;
   const catalogSearchValue = pathname.startsWith("/katalog") ? searchParams.get("q") ?? "" : "";
-  const showFooter = !pathname.startsWith("/katalog");
+  const showFooter = !pathname.startsWith("/katalog") && !pathname.startsWith("/bantuan");
 
   return (
     <div
