@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
-import { LoginPage } from "@/components/pages/public-pages";
+import { LoginPage } from "@/components/pages/login-page";
 import { getAuthenticatedLoginRedirectPath } from "@/lib/auth/guards";
 import { getServerSession } from "@/lib/auth/session";
 

@@ -20,6 +20,7 @@ const metadataBase = new URL(siteUrl);
 const kalam = Kalam({
   subsets: ["latin"],
   weight: ["400", "700"],
+  preload: false,
   variable: "--font-kalam",
 });
 
@@ -27,12 +28,14 @@ const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   style: ["italic"],
+  preload: false,
   variable: "--font-cormorant",
 });
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
+  preload: false,
   variable: "--font-plus-jakarta",
 });
 

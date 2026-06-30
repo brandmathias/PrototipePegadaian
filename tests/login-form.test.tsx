@@ -33,8 +33,8 @@ vi.mock("@/lib/auth-client", () => ({
 import { LoginForm } from "@/components/auth/login-form";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { RegisterForm } from "@/components/auth/register-form";
-import { AuthShell } from "@/components/layout/auth-shell";
 import { ToastProvider } from "@/components/ui/toast";
+import AuthLayout from "@/app/(auth)/layout";
 
 function renderWithToast(ui: ReactElement) {
   return render(<ToastProvider>{ui}</ToastProvider>);
@@ -60,28 +60,14 @@ describe("LoginForm", () => {
     );
   });
 
-  it("uses the dedicated fullscreen login shell without the old auth navigation", () => {
+  it("uses the dedicated fullscreen auth layout without the old auth navigation", () => {
     render(
-      <AuthShell>
-        <div>Login canvas</div>
-      </AuthShell>
+      <AuthLayout>
+        <div>Auth canvas</div>
+      </AuthLayout>
     );
 
-    expect(screen.getByText("Login canvas")).toBeInTheDocument();
-    expect(screen.queryByText("Kembali ke beranda")).not.toBeInTheDocument();
-    expect(screen.queryByText("Akses aman untuk pembeli")).not.toBeInTheDocument();
-  });
-
-  it("uses the dedicated fullscreen register shell without the old auth navigation", () => {
-    navigationMocks.pathname = "/register";
-
-    render(
-      <AuthShell>
-        <div>Register canvas</div>
-      </AuthShell>
-    );
-
-    expect(screen.getByText("Register canvas")).toBeInTheDocument();
+    expect(screen.getByText("Auth canvas")).toBeInTheDocument();
     expect(screen.queryByText("Kembali ke beranda")).not.toBeInTheDocument();
     expect(screen.queryByText("Akses aman untuk pembeli")).not.toBeInTheDocument();
   });
