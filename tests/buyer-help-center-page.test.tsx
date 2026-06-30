@@ -41,9 +41,17 @@ describe("BuyerHelpCenterPage", () => {
   it("explains the auction flow, fixed price flow, and transaction disclaimer", () => {
     render(<BuyerHelpCenterPage />);
 
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /mengapa saya harus berani memasang penawaran tertinggi/i
+      })
+    );
+    expect(screen.getByText(/sistem membantu menjaga harga akhir tetap fair dan proporsional/i)).toBeInTheDocument();
+    expect(screen.queryByText(/diskon otomatis/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/penawaran tertinggi kedua/i)).not.toBeInTheDocument();
+
     fireEvent.click(screen.getByRole("button", { name: /bagaimana mekanisme Lelang Tertutup/i }));
-    expect(screen.getByText(/harga akhir mengikuti penawaran tertinggi kedua/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembayaran langsung di unit maksimal 24 jam/i)).toBeInTheDocument();
+    expect(screen.getByText(/langsung di unit maksimal 24 jam/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /bagaimana alur pembelian barang Harga Tetap/i }));
     expect(screen.getByText(/unggah bukti pembayaran dan nomor referensi/i)).toBeInTheDocument();
