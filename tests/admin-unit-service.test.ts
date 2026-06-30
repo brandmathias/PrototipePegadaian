@@ -80,6 +80,38 @@ describe("admin unit identity cleanup", () => {
         email: "deleted-admin-lama@admin-unit.local",
         phoneNumber: null,
         unitId: null,
+        isActive: false,
+      }),
+    ]);
+  });
+
+  it("releases phone held by a detached admin hidden from active unit data", async () => {
+    const updatePayloads: Array<Record<string, unknown>> = [];
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockSelectRows([{ id: "admin-terlepas" }]),
+    );
+    mocks.tx.update.mockImplementation(() => ({
+      set: vi.fn((payload) => {
+        updatePayloads.push(payload);
+        return {
+          where: vi.fn().mockResolvedValue(undefined),
+        };
+      }),
+    }));
+
+    await releaseInactiveAdminIdentityConflicts(
+      "admin.baru@example.com",
+      "082217460191",
+    );
+
+    expect(mocks.tx.delete).toHaveBeenCalledTimes(2);
+    expect(updatePayloads).toEqual([
+      expect.objectContaining({
+        email: "deleted-admin-terlepas@admin-unit.local",
+        phoneNumber: null,
+        unitId: null,
+        isActive: false,
       }),
     ]);
   });

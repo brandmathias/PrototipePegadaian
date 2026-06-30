@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { hashPassword } from "@better-auth/utils/password";
 
 import { db } from "@/lib/db/client";
@@ -47,7 +47,7 @@ export async function releaseInactiveAdminIdentityConflicts(
     .where(
       and(
         eq(users.role, "admin_unit"),
-        eq(users.isActive, false),
+        or(eq(users.isActive, false), isNull(users.unitId), eq(users.unitId, "")),
         identityConflict
       )
     );
@@ -66,6 +66,7 @@ export async function releaseInactiveAdminIdentityConflicts(
           email: getArchivedAdminEmail(staleAdmin.id),
           phoneNumber: null,
           unitId: null,
+          isActive: false,
           updatedAt: new Date()
         })
         .where(and(eq(users.id, staleAdmin.id), eq(users.role, "admin_unit")));
@@ -230,6 +231,8 @@ export async function updateAdminUnit(
   if (isHiddenOperationalUnit(unit)) {
     throw new Error("Unit belum ditemukan.");
   }
+
+  await releaseInactiveAdminIdentityConflicts(email, phoneNumber);
 
   const [existingEmail] = await db
     .select()
