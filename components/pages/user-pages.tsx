@@ -1864,10 +1864,59 @@ export function TransactionDetailPage({
   const handoverLockMessage = transaction.handoverProof
     ? null
     : getReceiptHandoverLockMessage(transaction);
+  const fixedPriceActionLockMessage = settlementLockMessage ?? handoverLockMessage;
   const transactionSpecificationRows = [
     ...(transaction.category ? [{ label: "Kategori", value: transaction.category }] : []),
     ...(transaction.specs ?? [])
   ];
+  const fixedPriceHandoverControls =
+    showReceipt && isFixedPrice ? (
+      <div className="mt-4 space-y-3 rounded-[1.05rem] border border-[#dfe8e3] bg-white/92 p-3 shadow-[0_18px_36px_-34px_rgba(8,69,50,0.24)]">
+        <div className="flex items-center justify-between gap-3 border-b border-[#edf2ee] px-1 pb-3">
+          <div>
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#8aa39a]">Aksi Penyelesaian</p>
+            <p className="mt-1 text-sm font-black text-slate-900">
+              {isCompleted ? "Pembelian selesai tercatat" : "Selesaikan pengambilan dan nota"}
+            </p>
+          </div>
+          <span className="rounded-full border border-[#d7e3dd] bg-[#f8faf9] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#52625b]">
+            {isCompleted ? "Final" : "Siap diproses"}
+          </span>
+        </div>
+
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {!isCompleted ? (
+            <CompletePurchaseButton
+              className="min-h-11 rounded-[0.95rem] px-4 text-sm font-black"
+              disabledReason={fixedPriceActionLockMessage}
+              transactionId={transaction.id}
+            />
+          ) : (
+            <Button
+              className="min-h-11 w-full rounded-[0.95rem] px-4 text-sm font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              disabled
+              type="button"
+            >
+              <CheckCircle2 className="size-4" />
+              Pembelian Selesai
+            </Button>
+          )}
+          <BuyerTransactionInlineReceiptPrint
+            buyer={buyer}
+            buttonClassName="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] border border-primary bg-white px-4 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
+            label="Cetak Nota"
+            rootSuffix="status"
+            transaction={transaction}
+          />
+        </div>
+
+        {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
+        <HandoverAutoCompleteNotice transaction={transaction} />
+        {!isCompleted && transaction.handoverProof ? (
+          <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
+        ) : null}
+      </div>
+    ) : null;
 
   if (isFailedVickreyPayment) {
     return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
@@ -2145,29 +2194,6 @@ export function TransactionDetailPage({
                   {isCompleted ? "Pembelian sudah selesai" : "Nota digital tersedia"}
                 </p>
               </div>
-              {!isCompleted ? (
-                <div>
-                  {settlementLockMessage ? (
-                    <BuyerSettlementLockNotice message={settlementLockMessage} />
-                  ) : (
-                    <CompletePurchaseButton
-                      disabledReason={handoverLockMessage}
-                      transactionId={transaction.id}
-                    />
-                  )}
-                </div>
-              ) : null}
-              <HandoverAutoCompleteNotice transaction={transaction} />
-              {!isCompleted && transaction.handoverProof ? (
-                <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
-              ) : null}
-              <BuyerTransactionInlineReceiptPrint
-                buyer={buyer}
-                buttonClassName="inline-flex h-14 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 font-body text-base font-semibold text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors hover:bg-primary/90"
-                label="Cetak Nota"
-                rootSuffix="status"
-                transaction={transaction}
-              />
             </div>
           ) : isTransfer ? (
             <>
@@ -2213,108 +2239,10 @@ export function TransactionDetailPage({
       {showReceipt ? (
         <HandoverProofCard
           audience="buyer"
+          controls={fixedPriceHandoverControls}
           itemTitle={transaction.title}
           proof={transaction.handoverProof ?? { location: transaction.unit }}
         />
-      ) : null}
-
-      {showReceipt && transaction.kind !== "VICKREY_WIN" ? (
-        <Card className="overflow-hidden border border-border/70 bg-white">
-          <CardHeader className="border-b border-border/70 bg-surface-low/60">
-            <CardTitle>Nota transaksi</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-              <div className="space-y-4">
-                <div className="rounded-[1.5rem] border border-primary/15 bg-primary/[0.03] p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    Status saat ini
-                  </p>
-                  <p className="mt-3 text-2xl font-extrabold text-primary">
-                    {isCompleted ? "Transaksi selesai" : "Terverifikasi admin"}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {isCompleted
-                      ? "Buyer sudah menutup pembelian sebagai selesai."
-                      : "Menunggu konfirmasi pembelian selesai dari buyer."}
-                  </p>
-                </div>
-                <div className="rounded-[1.5rem] border border-border/70 p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                    Pembeli
-                  </p>
-                  <p className="mt-3 font-semibold text-foreground">{buyer.name}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{buyer.email}</p>
-                  <p className="text-sm text-muted-foreground">{getBuyerPhone(buyer, "-")}</p>
-                </div>
-              </div>
-
-              <div className="rounded-[1.75rem] border border-border/70 bg-white p-6 shadow-ambient">
-                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/70 pb-6">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Ruang Agunan
-                    </p>
-                    <h3 className="mt-2 text-2xl font-extrabold text-primary">
-                      Bukti penyelesaian transaksi
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Nomor nota
-                    </p>
-                    <p className="mt-2 font-semibold text-foreground">{transaction.receiptNumber}</p>
-                  </div>
-                </div>
-                <div className="grid gap-5 py-6 md:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Unit penjual
-                    </p>
-                    <p className="mt-2 font-semibold text-foreground">{transaction.unit}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{transaction.unitAddress}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                      Metode pembayaran
-                    </p>
-                    <p className="mt-2 font-semibold text-foreground">
-                      {isTransfer ? "Transfer Bank" : "Bayar Langsung"}
-                    </p>
-                  </div>
-                </div>
-                <div className="rounded-[1.5rem] bg-surface-low p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-semibold text-foreground">{transaction.title}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Ref {transaction.reference}
-                      </p>
-                    </div>
-                    <p className="text-xl font-extrabold text-primary">
-                      {currency.format(transaction.amount)}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <TransactionReceiptActions
-                    disabledReason={handoverLockMessage}
-                    noteHref={`/transaksi/${transaction.id}/nota`}
-                    printControl={
-                      <BuyerTransactionInlineReceiptPrint
-                        buyer={buyer}
-                        buttonClassName="inline-flex min-h-11 items-center justify-center gap-2 rounded-[0.95rem] border border-input bg-background px-4 py-2.5 text-sm font-semibold text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-accent hover:text-accent-foreground hover:shadow-[0_14px_24px_-20px_rgba(15,23,42,0.24)] active:scale-[0.99]"
-                        label="Cetak Nota"
-                        rootSuffix="actions"
-                        transaction={transaction}
-                      />
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       ) : null}
     </div>
   );

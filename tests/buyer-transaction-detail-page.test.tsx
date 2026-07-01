@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -242,11 +242,14 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/transfer-lunas.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^pilih file$/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
+    const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
+    expect(within(handoverPanel).getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();
+    expect(within(handoverPanel).getByRole("button", { name: /cetak nota/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /buka nota/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /nota transaksi/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /cetak nota/i })).toHaveLength(1);
 
-    fireEvent.click(screen.getAllByRole("button", { name: /cetak nota/i })[0]);
+    fireEvent.click(within(handoverPanel).getByRole("button", { name: /cetak nota/i }));
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 3000 });
 
     const receiptPrintRoot = document.getElementById("buyer-receipt-print-root-trx-fixed-1-status");
@@ -278,13 +281,14 @@ describe("buyer transaction detail page", () => {
 
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getAllByText(/menunggu admin unit mengunggah bukti serah-terima barang/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toHaveClass("min-h-14", "text-[0.98rem]");
-    const receiptButtons = screen.getAllByRole("button", { name: /cetak nota/i });
-    expect(receiptButtons).toHaveLength(2);
-    receiptButtons.forEach((button) => expect(button).toBeDisabled());
-    expect(receiptButtons[0]).toHaveClass("h-14", "text-base");
-    expect(receiptButtons[0]).not.toHaveClass("blur-[0.65px]");
+    const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
+    expect(within(handoverPanel).getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
+    expect(within(handoverPanel).getByRole("button", { name: /pembelian selesai/i })).toHaveClass("min-h-11", "text-sm");
+    const receiptButton = within(handoverPanel).getByRole("button", { name: /cetak nota/i });
+    expect(receiptButton).toBeDisabled();
+    expect(receiptButton).toHaveClass("min-h-11", "text-sm");
+    expect(receiptButton).not.toHaveClass("blur-[0.65px]");
+    expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();
   });
 
   it("prints the prepared receipt in place on mobile without opening the receipt route", async () => {
@@ -609,7 +613,8 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/transaksi belum dapat diselesaikan/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
+    const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
+    expect(within(handoverPanel).getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
   it("blocks proof upload while the buyer has an active blacklist", () => {

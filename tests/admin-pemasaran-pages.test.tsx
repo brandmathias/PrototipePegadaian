@@ -405,10 +405,14 @@ describe("admin pemasaran pages", () => {
     expect(within(dialog).getByText(/kewajiban nominal harga tetap/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
-    expect(within(dialog).getByRole("link", { name: /buka bukti pembayaran/i })).toHaveAttribute(
-      "href",
-      "/uploads/bukti-fixed-price.jpg"
-    );
+    const fullscreenButton = within(dialog).getByRole("button", { name: /buka fullscreen bukti pembayaran/i });
+    expect(fullscreenButton).toHaveClass("absolute", "right-4", "top-4");
+    expect(within(dialog).queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
+
+    fireEvent.click(fullscreenButton);
+
+    const previewDialog = screen.getByRole("dialog", { name: /preview bukti pembayaran/i });
+    expect(within(previewDialog).getByRole("img", { name: /preview bukti pembayaran buyer demo 13 b/i })).toBeInTheDocument();
 
     const reasonSelect = within(dialog).getByLabelText(/alasan penolakan pembayaran harga tetap/i);
     const options = within(reasonSelect).getAllByRole("option");
@@ -777,6 +781,39 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(relistButton);
     expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("keeps fixed-price video media inside the same gallery preview frame", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-video-frame",
+          lotId: "barang-fixed-video-frame",
+          lot: "Kalung Emas",
+          code: "BRG-999",
+          category: "perhiasan",
+          condition: "baik",
+          status: "SELESAI",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-04T12:00:00.000Z",
+          price: 100000000,
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          media: [
+            { id: "m1", type: "foto", url: "/uploads/kalung-utama.jpg", fileName: "kalung-utama.jpg" },
+            { id: "m2", type: "video", url: "/uploads/kalung-preview.mp4", fileName: "kalung-preview.mp4" }
+          ],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/kalung-utama.jpg", fileName: "kalung-utama.jpg" },
+          note: "Pembayaran selesai."
+        }}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /lihat video 2/i }));
+
+    const activeVideo = screen.getByLabelText(/kalung emas video 2/i);
+    expect(activeVideo.parentElement).toHaveClass("relative", "aspect-[16/10]", "min-h-[19rem]");
+    expect(activeVideo).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-cover");
   });
 
   it("places fixed price handover proof after description and management panels", () => {

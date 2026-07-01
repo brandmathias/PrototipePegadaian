@@ -2772,20 +2772,20 @@ function FixedPriceAuditGallery({
       <FixedPricePanelTitle icon={Camera} title="Galeri Media Barang" />
       <div className="mt-3">
         <div className="relative overflow-hidden rounded-2xl border border-[#dfe9e3] bg-[#f5f7f4]" data-testid="lot-media-active">
-          {activeMedia ? (
-            activeMedia.type === "video" ? (
-              <video
-                aria-label={`${auction.lot} video ${activeIndex + 1}`}
-                className="h-full min-h-[19rem] w-full object-cover"
-                controls
-                key={activeMedia.id}
-                muted
-                playsInline
-                preload="metadata"
-                src={activeMedia.url}
-              />
-            ) : (
-              <div className="relative min-h-[19rem]">
+          <div className="relative aspect-[16/10] min-h-[19rem] w-full">
+            {activeMedia ? (
+              activeMedia.type === "video" ? (
+                <video
+                  aria-label={`${auction.lot} video ${activeIndex + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  controls
+                  key={activeMedia.id}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  src={activeMedia.url}
+                />
+              ) : (
                 <Image
                   alt={`${auction.lot} foto ${activeIndex + 1}`}
                   fill
@@ -2793,16 +2793,18 @@ function FixedPriceAuditGallery({
                   sizes="(min-width: 1536px) 44vw, (min-width: 1280px) 54vw, (min-width: 768px) 82vw, 100vw"
                   src={activeMedia.url}
                 />
+              )
+            ) : (
+              <div className="absolute inset-0">
+                <LotFigure
+                  category={auction.category || "Lainnya"}
+                  className="h-full w-full"
+                  showCategoryBadge={false}
+                  variant="pdp"
+                />
               </div>
-            )
-          ) : (
-            <LotFigure
-              category={auction.category || "Lainnya"}
-              className="min-h-[19rem]"
-              showCategoryBadge={false}
-              variant="pdp"
-            />
-          )}
+            )}
+          </div>
 
           <span className="absolute right-3 top-3 rounded-lg bg-[#006747] px-3 py-1 text-[0.72rem] font-black text-white shadow-[0_14px_28px_-18px_rgba(0,103,71,0.74)]">
             Utama
@@ -4137,6 +4139,7 @@ function FixedPricePaymentVerificationModal({
 }) {
   const action = getFixedPriceVerificationAction(auction);
   const isReadOnly = isMarketingPaymentVerifiedForReceipt(auction);
+  const [isProofPreviewOpen, setIsProofPreviewOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const paymentPrice = auction.price ?? 0;
   const reference = buildMarketingPaymentReference(auction);
@@ -4170,6 +4173,7 @@ function FixedPricePaymentVerificationModal({
   useEffect(() => {
     if (!open) {
       setRejectionReason("");
+      setIsProofPreviewOpen(false);
     }
   }, [open]);
 
@@ -4180,6 +4184,10 @@ function FixedPricePaymentVerificationModal({
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        if (isProofPreviewOpen) {
+          setIsProofPreviewOpen(false);
+          return;
+        }
         onOpenChange(false);
       }
     }
@@ -4187,7 +4195,7 @@ function FixedPricePaymentVerificationModal({
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onOpenChange, open]);
+  }, [isProofPreviewOpen, onOpenChange, open]);
 
   if (!open || typeof document === "undefined") {
     return null;
@@ -4306,17 +4314,15 @@ function FixedPricePaymentVerificationModal({
                         src={auction.proofUrl}
                         unoptimized
                       />
-                      <div className="absolute inset-0 grid place-items-center bg-[#111827]/32">
-                        <Link
-                          className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-[0.85rem] bg-white px-5 text-[0.9rem] font-black text-[#111827] shadow-[0_18px_38px_-24px_rgba(3,7,18,0.55)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 active:scale-[0.99]"
-                          href={auction.proofUrl}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <Maximize2 className="size-4.5 text-[#006747]" />
-                          Buka Bukti Pembayaran
-                        </Link>
-                      </div>
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.08),transparent_34%,rgba(17,24,39,0.28))]" />
+                      <button
+                        aria-label="Buka fullscreen bukti pembayaran"
+                        className="absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/55 bg-white/90 text-[#006747] shadow-[0_18px_34px_-24px_rgba(3,7,18,0.58)] backdrop-blur-sm transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-white active:scale-[0.99]"
+                        onClick={() => setIsProofPreviewOpen(true)}
+                        type="button"
+                      >
+                        <Maximize2 className="size-4.5" />
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -4517,6 +4523,52 @@ function FixedPricePaymentVerificationModal({
         </div>
         </div>
       </section>
+      {isProofPreviewOpen && auction.proofUrl ? (
+        <div
+          aria-label="Preview bukti pembayaran"
+          aria-modal="true"
+          className="fixed inset-0 z-[170] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
+          onClick={() => setIsProofPreviewOpen(false)}
+          role="dialog"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
+          <div
+            className="modal-viewport relative z-[171] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
+              <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
+                <div className="min-w-0">
+                  <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
+                    Bukti Pembayaran
+                  </p>
+                  <h3 className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]">
+                    {auction.buyerName || auction.lot}
+                  </h3>
+                </div>
+                <button
+                  aria-label="Tutup preview bukti pembayaran"
+                  className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
+                  onClick={() => setIsProofPreviewOpen(false)}
+                  type="button"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+
+              <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                  <img
+                    alt={`Preview bukti pembayaran ${auction.buyerName || auction.lot}`}
+                    className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                    src={auction.proofUrl}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>,
     document.body
   );
