@@ -1898,7 +1898,7 @@ export function TransactionDetailPage({
 
           {!isCompleted ? (
             <CompletePurchaseButton
-              className="h-12 min-h-12 rounded-[0.78rem] bg-[#006747] px-5 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98] disabled:bg-[#86aa96] disabled:text-white disabled:opacity-100 disabled:saturate-[0.9]"
+              className="h-12 min-h-12 rounded-[0.78rem] bg-[#006747] px-5 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98] disabled:border disabled:border-[#c8d7cf] disabled:bg-[#dce8e1] disabled:text-[#71867b] disabled:shadow-none disabled:opacity-100 disabled:saturate-[0.72]"
               disabledReason={fixedPriceActionLockMessage}
               transactionId={transaction.id}
             />

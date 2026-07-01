@@ -324,6 +324,7 @@ describe("buyer transaction detail page", () => {
     const completeButton = screen.getByRole("button", { name: /pembelian selesai/i });
     expect(completeButton).toBeDisabled();
     expect(completeButton).toHaveClass("h-12", "min-h-12", "text-sm");
+    expect(completeButton).toHaveClass("disabled:bg-[#dce8e1]", "disabled:text-[#71867b]", "disabled:shadow-none");
     expect(within(handoverPanel).queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
     const receiptButton = screen.getByRole("button", { name: /cetak nota/i });
     expect(receiptButton).toBeDisabled();
