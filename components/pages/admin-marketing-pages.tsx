@@ -2563,27 +2563,40 @@ export function AdminFixedPriceDetailPage({
               title="Konsol Manajemen"
             />
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link
-                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
-                href={`/admin/barang/${auction.lotId}/edit`}
-              >
-                <PencilLine className="size-4 text-[#526072]" />
-                Edit Data
-              </Link>
               {canShowReceiptAction ? (
-                <FixedPriceReceiptInlinePrint
-                  auction={auction}
-                  buttonClassName="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55"
-                  disabledReason={fixedPriceReceiptLockMessage}
-                  label="Cetak Nota"
-                />
+                <Button
+                  className="h-12 rounded-xl border border-[#d9e1dc] bg-[#f5f7f6] px-4 text-sm font-black text-[#8a9891]"
+                  disabled
+                  title="Data barang tidak dapat diedit setelah pembayaran diverifikasi."
+                  variant="secondary"
+                >
+                  <PencilLine className="size-4" />
+                  Edit Data
+                </Button>
               ) : (
-                <FixedPricePaymentVerificationButton
-                  auction={auction}
-                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
-                  label="Verifikasi Pembayaran"
-                />
+                <Link
+                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
+                  href={`/admin/barang/${auction.lotId}/edit`}
+                >
+                  <PencilLine className="size-4 text-[#526072]" />
+                  Edit Data
+                </Link>
               )}
+              <FixedPricePaymentVerificationButton
+                auction={auction}
+                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
+                label={canShowReceiptAction ? "Lihat Pembayaran" : "Verifikasi Pembayaran"}
+              />
+              {canShowReceiptAction ? (
+                <div className="sm:col-span-2 [&>span]:w-full">
+                  <FixedPriceReceiptInlinePrint
+                    auction={auction}
+                    buttonClassName="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 sm:col-span-2"
+                    disabledReason={fixedPriceReceiptLockMessage}
+                    label="Cetak Nota"
+                  />
+                </div>
+              ) : null}
               {canScheduleRemarketing ? (
                 <button
                   className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] sm:col-span-2"
@@ -4123,6 +4136,7 @@ function FixedPricePaymentVerificationModal({
   open: boolean;
 }) {
   const action = getFixedPriceVerificationAction(auction);
+  const isReadOnly = isMarketingPaymentVerifiedForReceipt(auction);
   const [rejectionReason, setRejectionReason] = useState("");
   const paymentPrice = auction.price ?? 0;
   const reference = buildMarketingPaymentReference(auction);
@@ -4131,7 +4145,11 @@ function FixedPricePaymentVerificationModal({
   const categoryLabel = humanize(auction.category);
   const paymentMethodLabel = auction.paymentMethod ? humanize(auction.paymentMethod) : "Transfer Bank";
   const statusLabel = humanize(auction.transactionStatus).toUpperCase();
-  const verificationStatusLabel = auction.transactionStatus === "BUKTI_DIUNGGAH" ? "MENUNGGU VERIFIKASI STAF" : statusLabel;
+  const verificationStatusLabel = isReadOnly
+    ? "PEMBAYARAN DISETUJUI"
+    : auction.transactionStatus === "BUKTI_DIUNGGAH"
+      ? "MENUNGGU VERIFIKASI STAF"
+      : statusLabel;
   const serverNow = new Date().toISOString();
   const rejectEndpoint = auction.transactionId ? `/api/admin/transaksi/${auction.transactionId}/tolak-bukti` : undefined;
   const hasRejectionReason = rejectionReason.length > 0;
@@ -4210,10 +4228,12 @@ function FixedPricePaymentVerificationModal({
                 className="mx-auto max-w-[42rem] font-headline text-[1.55rem] font-black leading-tight tracking-tight text-[#15231d] sm:text-[1.78rem]"
                 id="fixed-price-payment-verification-title"
               >
-                Verifikasi Pelunasan Dana Harga Tetap
+                {isReadOnly ? "Detail Pembayaran Terverifikasi" : "Verifikasi Pelunasan Dana Harga Tetap"}
               </h2>
               <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
-                Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap.
+                {isReadOnly
+                  ? "Informasi verifikasi sebelumnya hanya dapat dilihat dan tidak dapat diubah."
+                  : "Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap."}
               </p>
             </div>
           </div>
@@ -4330,21 +4350,44 @@ function FixedPricePaymentVerificationModal({
             </div>
 
             <div className="flex min-h-full flex-col gap-4 rounded-[1.05rem] border border-[#f4c979] bg-[linear-gradient(180deg,#fffdf9_0%,#fff7f7_58%,#fffefe_100%)] p-4 shadow-[0_20px_54px_-44px_rgba(120,53,15,0.35)]">
-              <div className="rounded-[0.95rem] border border-[#fde3b2] bg-[#fff8eb] px-4 py-4 shadow-[0_16px_34px_-30px_rgba(214,126,22,0.7)]">
+              <div
+                className={cn(
+                  "rounded-[0.95rem] border px-4 py-4",
+                  isReadOnly
+                    ? "border-[#b9dec9] bg-[#eff9f3] shadow-[0_16px_34px_-30px_rgba(0,103,71,0.5)]"
+                    : "border-[#fde3b2] bg-[#fff8eb] shadow-[0_16px_34px_-30px_rgba(214,126,22,0.7)]"
+                )}
+              >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.78rem] font-black uppercase leading-4 tracking-[0.045em] text-[#b45309]">
-                    <span className="size-3 shrink-0 rounded-full bg-[#f59e0b] ring-4 ring-[#fff0cf]" />
+                  <div
+                    className={cn(
+                      "inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.78rem] font-black uppercase leading-4 tracking-[0.045em]",
+                      isReadOnly ? "text-[#006747]" : "text-[#b45309]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-3 shrink-0 rounded-full ring-4",
+                        isReadOnly ? "bg-[#16a36a] ring-[#d7f2e3]" : "bg-[#f59e0b] ring-[#fff0cf]"
+                      )}
+                    />
                     <span className="min-w-0 whitespace-normal break-words">{verificationStatusLabel}</span>
                   </div>
-                  <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
+                  {isReadOnly ? (
+                    <CheckCircle2 className="size-7 shrink-0 text-[#087a50]" />
+                  ) : (
+                    <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
+                  )}
                 </div>
                 <p className="mt-4 text-[0.88rem] font-semibold leading-6 text-[#47564f]">
-                  Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap
-                  dicairkan.
+                  {isReadOnly
+                    ? "Pembayaran disetujui admin unit. Bukti, nominal, dan rekening tujuan berikut disimpan sebagai catatan verifikasi."
+                    : "Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap dicairkan."}
                 </p>
               </div>
 
-              <div className="rounded-[0.95rem] border border-[#fecaca] bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f2_100%)] px-4 py-4 shadow-[0_18px_34px_-28px_rgba(190,24,93,0.2)]">
+              {!isReadOnly ? (
+                <div className="rounded-[0.95rem] border border-[#fecaca] bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f2_100%)] px-4 py-4 shadow-[0_18px_34px_-28px_rgba(190,24,93,0.2)]">
                 <label
                   className="block font-headline text-[0.88rem] font-black leading-tight text-[#991b1b]"
                   htmlFor="fixed-price-rejection-reason"
@@ -4363,8 +4406,24 @@ function FixedPricePaymentVerificationModal({
                   />
                 </div>
               </div>
+              ) : (
+                <div className="rounded-[0.95rem] border border-[#cfe3d7] bg-white p-4 text-[0.84rem] leading-6 text-[#456057]">
+                  <div className="flex items-start gap-3">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] bg-[#e9f7ef] text-[#006747] ring-1 ring-[#c7e5d4]">
+                      <ShieldCheck className="size-6" />
+                    </span>
+                    <div>
+                      <p className="font-headline text-[0.92rem] font-black text-[#164b38]">Data verifikasi terkunci</p>
+                      <p className="mt-1 font-semibold">
+                        Hasil persetujuan ini hanya dapat dilihat untuk menjaga konsistensi riwayat transaksi.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <div className="rounded-[0.95rem] border border-[#f5d48e] bg-[#fffbf2] p-4 text-[0.84rem] leading-6 text-[#6f4c16]">
+              {!isReadOnly ? (
+                <div className="rounded-[0.95rem] border border-[#f5d48e] bg-[#fffbf2] p-4 text-[0.84rem] leading-6 text-[#6f4c16]">
                 <div className="flex items-start gap-3">
                   <span className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] bg-[#fff5db] text-[#a16207] ring-1 ring-[#f4d08b]">
                     <AlertTriangle className="size-7" />
@@ -4378,6 +4437,7 @@ function FixedPricePaymentVerificationModal({
                   </div>
                 </div>
               </div>
+              ) : null}
 
               <div className="rounded-[0.95rem] border border-[#e5ebee] bg-white p-4 text-[0.82rem] font-semibold leading-6 text-[#52625b]">
                 <div className="flex items-start gap-3">

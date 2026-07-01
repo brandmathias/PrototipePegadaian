@@ -523,6 +523,59 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
   });
 
+  it("locks editing and exposes the approved fixed-price payment as read-only", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-verified-readonly",
+          lotId: "barang-fixed-verified-readonly",
+          lot: "Cincin Emas 2",
+          code: "BRG-32807700",
+          category: "perhiasan",
+          condition: "baik",
+          status: "SELESAI",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-04T12:00:00.000Z",
+          price: 100000000,
+          transactionId: "trx-fixed-verified-readonly",
+          transactionStatus: "LUNAS",
+          buyerName: "Dewi Lestari",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: "/uploads/bukti-fixed-price.jpg",
+          reference: "FP-32807700",
+          soldAt: "2026-05-04T13:11:00.000Z",
+          unitName: "UPC Ranotana",
+          unitAddress: "Jl. Sam Ratulangi",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Pembayaran sudah diverifikasi admin unit."
+        }}
+      />
+    );
+
+    const managementConsole = screen.getByText("Konsol Manajemen").closest("section");
+    expect(managementConsole).not.toBeNull();
+
+    const editButton = within(managementConsole!).getByRole("button", { name: /edit data/i });
+    const paymentButton = within(managementConsole!).getByRole("button", { name: /lihat pembayaran/i });
+    const receiptButton = within(managementConsole!).getByRole("button", { name: /cetak nota/i });
+
+    expect(editButton).toBeDisabled();
+    expect(within(managementConsole!).queryByRole("link", { name: /edit data/i })).not.toBeInTheDocument();
+    expect(paymentButton).toBeEnabled();
+    expect(receiptButton).toBeDisabled();
+    expect(receiptButton).toHaveClass("w-full", "sm:col-span-2");
+
+    fireEvent.click(paymentButton);
+
+    const dialog = screen.getByRole("dialog", { name: /detail pembayaran terverifikasi/i });
+    expect(within(dialog).getByText(/pembayaran disetujui/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/hanya dapat dilihat/i)).toBeInTheDocument();
+    expect(within(dialog).queryByLabelText(/alasan penolakan pembayaran harga tetap/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: /tolak pembayaran/i })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: /setujui pembayaran/i })).not.toBeInTheDocument();
+  });
+
   it("prints a harga tetap receipt inline after admin verifies payment", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
