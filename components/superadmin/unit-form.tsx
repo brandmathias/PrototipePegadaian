@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AdminSelect } from "@/components/admin/admin-select";
+import { unitBankOptions } from "@/components/superadmin/bank-options";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,17 +70,6 @@ type AdminDraft = {
   temporaryPassword: string;
   showPassword: boolean;
 };
-
-const bankOptions = [
-  "Mandiri",
-  "BNI",
-  "BRI",
-  "BCA",
-  "BTN",
-  "BSI",
-  "Danamon",
-  "CIMB Niaga",
-] as const;
 
 function createDraftId(prefix: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -224,7 +214,7 @@ function UnitFormSelect({
         id={id}
         options={[
           { value: "", label: "Pilih bank" },
-          ...bankOptions.map((bank) => ({ value: bank, label: bank })),
+          ...unitBankOptions,
         ]}
         size="compact"
         onValueChange={onChange}
