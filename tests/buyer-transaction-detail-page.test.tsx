@@ -87,7 +87,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
     const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
-    expect(accountList).toHaveClass("max-h-[14.75rem]", "overflow-y-auto");
+    expect(accountList).toHaveClass("max-h-[16rem]", "overflow-y-auto");
     expect(screen.getByLabelText(/rekening tujuan bni/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/rekening tujuan bca/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/rekening tujuan bri/i)).toBeInTheDocument();

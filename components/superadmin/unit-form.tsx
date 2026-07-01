@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { AdminSelect } from "@/components/admin/admin-select";
+import { BankLogoMark, getBankDisplayName } from "@/components/shared/bank-logo";
 import { unitBankOptions } from "@/components/superadmin/bank-options";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
@@ -103,43 +104,6 @@ function getInitials(value: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-}
-
-function getBankMark(bankName: string) {
-  const normalized = bankName.toLowerCase();
-
-  if (normalized.includes("mandiri")) {
-    return {
-      label: "mandiri",
-      className: "border-blue-100 bg-blue-50 text-blue-700",
-    };
-  }
-
-  if (normalized.includes("bni")) {
-    return {
-      label: "BNI",
-      className: "border-orange-100 bg-orange-50 text-orange-700",
-    };
-  }
-
-  if (normalized.includes("bri")) {
-    return {
-      label: "BRI",
-      className: "border-sky-100 bg-sky-50 text-sky-700",
-    };
-  }
-
-  if (normalized.includes("bca")) {
-    return {
-      label: "BCA",
-      className: "border-indigo-100 bg-indigo-50 text-indigo-700",
-    };
-  }
-
-  return {
-    label: bankName.slice(0, 4).toUpperCase(),
-    className: "border-emerald-100 bg-emerald-50 text-emerald-700",
-  };
 }
 
 function SectionNumber({ value }: { value: string }) {
@@ -672,18 +636,20 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                 ) : (
                   <div className="divide-y divide-[#edf2ee]">
                     {accounts.map((account, index) => {
-                      const bankMark = getBankMark(account.bankName);
-
                       return (
                         <div
                           className="grid gap-3 px-4 py-3 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[1fr_1fr_1.35fr_4rem] md:items-center md:gap-3"
                           key={account.id}
                         >
                           <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
-                            <span className={cn("inline-flex min-w-12 items-center justify-center rounded-md border px-1.5 py-1 text-[0.64rem] font-black", bankMark.className)}>
-                              {bankMark.label}
-                            </span>
-                            <span className="truncate">{account.bankName}</span>
+                            <BankLogoMark
+                              bankName={account.bankName}
+                              className="h-7 w-10 justify-start rounded-none bg-transparent"
+                              imageClassName="max-h-5 max-w-10"
+                              loading="lazy"
+                              sizes="40px"
+                            />
+                            <span className="truncate">{getBankDisplayName(account.bankName)}</span>
                           </div>
                           <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/58 md:block md:rounded-none md:bg-transparent md:p-0">
                             <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Rekening</span>

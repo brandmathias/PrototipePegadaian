@@ -933,6 +933,9 @@ describe("superadmin pages", () => {
       />,
     );
 
+    expect(decodeURIComponent(screen.getByRole("img", { name: /logo bri/i }).getAttribute("src") ?? "")).toContain(
+      "/uploads/bank-logos/bri.png",
+    );
     fireEvent.click(screen.getByRole("button", { name: /lihat detail rekening bri/i }));
 
     const accountDialog = screen.getByRole("dialog", { name: "Detail Rekening Unit" });
@@ -1996,7 +1999,10 @@ describe("superadmin pages", () => {
     expect(screen.queryByLabelText(/cabang bank/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /tambah rekening/i }));
 
-    expect(screen.getByText("mandiri")).toBeInTheDocument();
+    expect(screen.getByText("Mandiri")).toBeInTheDocument();
+    expect(decodeURIComponent(screen.getByRole("img", { name: /logo bank mandiri/i }).getAttribute("src") ?? "")).toContain(
+      "/uploads/bank-logos/mandiri.png",
+    );
     expect(screen.getByText("Utama")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/nama lengkap/i), {

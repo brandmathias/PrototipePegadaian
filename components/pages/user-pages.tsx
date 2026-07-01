@@ -46,6 +46,7 @@ import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { SectionHeading } from "@/components/shared/section-heading";
 import WelcomeBrushBadge from "@/components/shared/welcome-brush-badge";
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
+import { BankLogoMark, getBankDisplayName } from "@/components/shared/bank-logo";
 import { TransactionReceiptActions } from "@/components/shared/transaction-receipt-actions";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
@@ -412,187 +413,49 @@ function getTransactionBankAccounts(transaction: BuyerTransaction): BuyerBankAcc
   ];
 }
 
-type BankLogoAsset = {
-  code: string;
-  height: number;
-  label: string;
-  patterns: string[];
-  src: string;
-  width: number;
-};
-
-const BANK_LOGO_ASSETS: BankLogoAsset[] = [
-  {
-    code: "BNI",
-    height: 69,
-    label: "BNI",
-    patterns: ["bni", "negara indonesia"],
-    src: "/uploads/bank-logos/bni.png",
-    width: 240
-  },
-  {
-    code: "BCA",
-    height: 73,
-    label: "BCA",
-    patterns: ["bca", "central asia"],
-    src: "/uploads/bank-logos/bca.png",
-    width: 240
-  },
-  {
-    code: "BRI",
-    height: 91,
-    label: "BRI",
-    patterns: ["bri", "rakyat indonesia"],
-    src: "/uploads/bank-logos/bri.png",
-    width: 240
-  },
-  {
-    code: "Mandiri",
-    height: 70,
-    label: "Bank Mandiri",
-    patterns: ["mandiri"],
-    src: "/uploads/bank-logos/mandiri.png",
-    width: 240
-  },
-  {
-    code: "BSI",
-    height: 120,
-    label: "Bank Syariah Indonesia",
-    patterns: ["bsi", "syariah"],
-    src: "/uploads/bank-logos/bsi.png",
-    width: 137
-  },
-  {
-    code: "CIMB",
-    height: 35,
-    label: "CIMB Niaga",
-    patterns: ["cimb"],
-    src: "/uploads/bank-logos/cimb-niaga.png",
-    width: 240
-  },
-  {
-    code: "Permata",
-    height: 59,
-    label: "Bank Permata",
-    patterns: ["permata"],
-    src: "/uploads/bank-logos/permata.png",
-    width: 240
-  },
-  {
-    code: "Danamon",
-    height: 60,
-    label: "Bank Danamon",
-    patterns: ["danamon"],
-    src: "/uploads/bank-logos/danamon.png",
-    width: 240
-  },
-  {
-    code: "BTN",
-    height: 50,
-    label: "BTN",
-    patterns: ["btn", "tabungan negara"],
-    src: "/uploads/bank-logos/btn.png",
-    width: 240
-  },
-  {
-    code: "Mega",
-    height: 120,
-    label: "Bank Mega",
-    patterns: ["mega"],
-    src: "/uploads/bank-logos/mega.png",
-    width: 211
-  },
-  {
-    code: "Maybank",
-    height: 120,
-    label: "Maybank",
-    patterns: ["maybank"],
-    src: "/uploads/bank-logos/maybank.png",
-    width: 216
-  },
-  {
-    code: "Muamalat",
-    height: 72,
-    label: "Bank Muamalat",
-    patterns: ["muamalat"],
-    src: "/uploads/bank-logos/muamalat.png",
-    width: 240
-  }
-];
-
-function getBankLogoAsset(bankName: string) {
-  const normalized = bankName.toLowerCase();
-
-  return BANK_LOGO_ASSETS.find((asset) => asset.patterns.some((pattern) => normalized.includes(pattern)));
-}
-
-function getBankDisplayName(bankName: string) {
-  return getBankLogoAsset(bankName)?.code ?? bankName;
-}
-
-function BankLogoMark({ bankName }: { bankName: string }) {
-  const asset = getBankLogoAsset(bankName);
-  const label = (asset?.label ?? bankName) || "Bank";
-
-  return (
-    <span
-      className="flex h-9 w-11 shrink-0 items-center justify-center rounded-[0.45rem] bg-white"
-      role={asset ? undefined : "img"}
-      aria-label={asset ? undefined : `Logo ${label}`}
-    >
-      {asset ? (
-        <Image
-          alt={`Logo ${label}`}
-          className="h-auto max-h-7 w-auto max-w-[2.65rem] object-contain"
-          height={asset.height}
-          loading="eager"
-          sizes="44px"
-          src={asset.src}
-          width={asset.width}
-        />
-      ) : (
-        <span className="text-[0.55rem] font-black uppercase tracking-[0.08em] text-primary">Bank</span>
-      )}
-    </span>
-  );
-}
-
 function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
   const bankDisplayName = getBankDisplayName(account.bankName);
 
   return (
     <div
       aria-label={`Rekening tujuan ${bankDisplayName}`}
-      className="grid min-h-[4.25rem] grid-cols-[2.9rem_minmax(0,1fr)_1.8rem] items-center gap-x-2.5 gap-y-2 rounded-[0.82rem] border border-[#dde5df] bg-white px-3 py-2.5 shadow-[0_10px_24px_-23px_rgba(0,74,35,0.36)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cfdcd4] hover:bg-[#fbfdfb] hover:shadow-[0_18px_34px_-27px_rgba(0,74,35,0.38)] sm:grid-cols-[3.05rem_minmax(3.5rem,0.56fr)_minmax(7.4rem,1fr)_minmax(5.7rem,0.78fr)_1.8rem]"
+      className="min-h-[7.35rem] rounded-[0.92rem] border border-[#dce6df] bg-white px-4 py-3.5 shadow-[0_14px_34px_-28px_rgba(0,74,35,0.38)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cadbd0] hover:bg-[#fbfdfb] hover:shadow-[0_22px_42px_-31px_rgba(0,74,35,0.42)]"
       role="listitem"
     >
-      <BankLogoMark bankName={account.bankName} />
+      <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(3.1rem,0.58fr)_minmax(7.4rem,1fr)_2rem]">
+        <BankLogoMark
+          bankName={account.bankName}
+          className="h-11 w-[4.6rem] justify-start rounded-none bg-transparent"
+          imageClassName="max-h-8 max-w-[4.45rem]"
+          sizes="74px"
+        />
 
-      <div className="min-w-0">
-        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">Bank</p>
-        <p className="mt-1 truncate font-headline text-[1.02rem] font-black leading-none text-[#151a17]">
-          {bankDisplayName}
-        </p>
+        <div className="min-w-0">
+          <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Bank</p>
+          <p className="mt-1.5 truncate font-headline text-[1.08rem] font-black leading-none text-[#151a17]">
+            {bankDisplayName}
+          </p>
+        </div>
+
+        <div className="col-span-2 min-w-0 sm:col-span-1">
+          <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">
+            Nomor Rekening
+          </p>
+          <p className="mt-1.5 truncate font-headline text-[1.08rem] font-black leading-none tracking-[0.04em] text-primary">
+            {account.accountNumber}
+          </p>
+        </div>
+
+        <div className="row-start-1 flex justify-end sm:row-auto">
+          <AccountCopyButton compact value={account.accountNumber} />
+        </div>
       </div>
 
-      <div className="col-span-2 min-w-0 sm:col-span-1">
-        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">
-          Nomor Rekening
-        </p>
-        <p className="mt-1 truncate font-headline text-[1rem] font-black leading-none tracking-[0.03em] text-primary">
-          {account.accountNumber}
-        </p>
-      </div>
-
-      <div className="col-span-2 min-w-0 sm:col-span-1">
-        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">Atas Nama</p>
-        <p className="mt-1 line-clamp-1 text-[0.65rem] font-black uppercase leading-4 tracking-[0.02em] text-[#202421]">
+      <div className="mt-3 border-t border-[#edf2ee] pt-3">
+        <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Atas Nama</p>
+        <p className="mt-1.5 line-clamp-1 text-[0.82rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
           {account.accountHolder}
         </p>
-      </div>
-
-      <div className="row-start-1 flex justify-end sm:row-auto">
-        <AccountCopyButton compact value={account.accountNumber} />
       </div>
     </div>
   );
@@ -2167,7 +2030,7 @@ export function TransactionDetailPage({
                 {transferAccounts.length > 0 ? (
                   <div
                     aria-label="Daftar rekening tujuan"
-                    className="max-h-[14.75rem] space-y-2 overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-width:thin]"
+                    className="max-h-[16rem] space-y-3 overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-width:thin]"
                     role="list"
                   >
                     {transferAccounts.map((account) => (

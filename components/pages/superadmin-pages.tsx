@@ -93,6 +93,7 @@ import {
   UnitForm,
 } from "@/components/superadmin/unit-form";
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
+import { BankLogoMark, getBankDisplayName } from "@/components/shared/bank-logo";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
@@ -2526,8 +2527,14 @@ function SuperAdminUnitDetailAccountLedger({
                 key={account.id}
               >
                 <div className="flex min-w-0 items-center gap-2 font-black text-[#13211c]">
-                  <Landmark className="size-4 shrink-0 text-[#006747]" />
-                  <span className="truncate">{account.bankName}</span>
+                  <BankLogoMark
+                    bankName={account.bankName}
+                    className="h-7 w-10 justify-start rounded-none bg-transparent"
+                    imageClassName="max-h-5 max-w-10"
+                    loading="lazy"
+                    sizes="40px"
+                  />
+                  <span className="truncate">{getBankDisplayName(account.bankName)}</span>
                 </div>
                 <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/58 md:block md:rounded-none md:bg-transparent md:p-0">
                   <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Rekening</span>
