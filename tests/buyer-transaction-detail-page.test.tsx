@@ -288,11 +288,11 @@ describe("buyer transaction detail page", () => {
     const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
     const completeButton = screen.getByRole("button", { name: /pembelian selesai/i });
     expect(completeButton).toBeDisabled();
-    expect(completeButton).toHaveClass("h-10", "min-h-10", "text-sm");
+    expect(completeButton).toHaveClass("h-12", "min-h-12", "text-sm");
     expect(within(handoverPanel).queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
     const receiptButton = screen.getByRole("button", { name: /cetak nota/i });
     expect(receiptButton).toBeDisabled();
-    expect(receiptButton).toHaveClass("h-10", "min-h-10", "text-sm");
+    expect(receiptButton).toHaveClass("h-12", "min-h-12", "text-sm");
     expect(receiptButton).not.toHaveClass("blur-[0.65px]");
     expect(within(handoverPanel).queryByRole("button", { name: /cetak nota/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();

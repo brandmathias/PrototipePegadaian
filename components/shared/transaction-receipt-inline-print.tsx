@@ -17,6 +17,7 @@ type TransactionReceiptInlinePrintProps = {
   disabledReason?: string | null;
   label?: string;
   rootId: string;
+  showDisabledReason?: boolean;
 };
 
 function enableReceiptPrintMode() {
@@ -210,12 +211,13 @@ export function TransactionReceiptInlinePrint({
   documentTestId = "transaction-receipt-print-document",
   disabledReason,
   label = "Cetak Nota",
-  rootId
+  rootId,
+  showDisabledReason = true
 }: TransactionReceiptInlinePrintProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isPrintReady, setIsPrintReady] = useState(false);
   const isDisabled = Boolean(disabledReason);
-  const disabledDescriptionId = disabledReason ? `${rootId}-disabled-reason` : undefined;
+  const disabledDescriptionId = disabledReason && showDisabledReason ? `${rootId}-disabled-reason` : undefined;
 
   const clearPrintSheet = useCallback(() => {
     disableReceiptPrintMode();
@@ -284,7 +286,7 @@ export function TransactionReceiptInlinePrint({
           <Printer className="size-[1.05rem]" />
           {label}
         </button>
-        {disabledReason ? (
+        {disabledReason && showDisabledReason ? (
           <span className="max-w-[18rem] text-[0.72rem] font-semibold leading-5 text-muted-foreground" id={disabledDescriptionId}>
             {disabledReason}
           </span>

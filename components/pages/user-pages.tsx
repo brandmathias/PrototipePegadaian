@@ -831,12 +831,14 @@ function BuyerTransactionInlineReceiptPrint({
   buttonClassName,
   label,
   rootSuffix,
+  showDisabledReason,
   transaction
 }: {
   buyer: BuyerSessionUser;
   buttonClassName: string;
   label?: string;
   rootSuffix: string;
+  showDisabledReason?: boolean;
   transaction: BuyerTransaction;
 }) {
   const isCompleted = transaction.status === "SELESAI";
@@ -851,6 +853,7 @@ function BuyerTransactionInlineReceiptPrint({
       documentTestId={getReceiptPrintDocumentTestId(transaction)}
       label={label}
       rootId={getBuyerTransactionReceiptPrintRootId(transaction, rootSuffix)}
+      showDisabledReason={showDisabledReason}
     >
       <TransactionReceiptDocument
         buyerEmail={buyer.email}
@@ -1872,14 +1875,14 @@ export function TransactionDetailPage({
   const fixedPriceHandoverActions =
     showReceipt && isFixedPrice ? (
       <div className="space-y-3">
-        <div className="grid gap-4 rounded-[1.05rem] border border-[#dfe8e3] bg-white/96 px-4 py-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.24)] md:grid-cols-[minmax(0,1fr)_220px_220px] md:items-center md:px-5">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-[#ead28b] bg-[#fffaf0] text-[#d4a51c] shadow-[0_12px_24px_-20px_rgba(212,165,28,0.55)]">
+        <div className="grid gap-4 rounded-[1rem] border border-[#dfe8e3] bg-white px-4 py-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.24)] md:grid-cols-[minmax(0,1fr)_1px_240px_240px] md:items-center md:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#ead28b] bg-[#fffaf0] text-[#d4a51c] shadow-[0_12px_24px_-20px_rgba(212,165,28,0.55)]">
               <CheckCircle2 className="size-4" />
             </span>
             <div className="min-w-0">
               <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#8aa39a]">Aksi Penyelesaian</p>
-              <p className="mt-1 text-sm font-black leading-5 text-slate-950">
+              <p className="mt-1 text-[0.9rem] font-black leading-5 text-slate-950">
                 {isCompleted ? "Pembelian selesai tercatat" : "Selesaikan pengambilan dan nota"}
               </p>
               <p className="mt-1 text-xs font-semibold leading-5 text-[#64748b]">
@@ -1887,28 +1890,31 @@ export function TransactionDetailPage({
               </p>
             </div>
           </div>
+          <span aria-hidden="true" className="hidden h-16 w-px bg-[#edf1ed] md:block" />
 
           {!isCompleted ? (
             <CompletePurchaseButton
-              className="h-10 min-h-10 rounded-[0.8rem] bg-[#006747] px-4 text-sm font-black text-white shadow-[0_16px_28px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98] disabled:bg-[#86aa96] disabled:text-white disabled:opacity-100 disabled:saturate-[0.9]"
+              className="h-12 min-h-12 rounded-[0.78rem] bg-[#006747] px-5 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98] disabled:bg-[#86aa96] disabled:text-white disabled:opacity-100 disabled:saturate-[0.9]"
               disabledReason={fixedPriceActionLockMessage}
               transactionId={transaction.id}
             />
           ) : (
             <Button
-              className="h-10 min-h-10 w-full rounded-[0.8rem] bg-[#006747] px-4 text-sm font-black text-white shadow-[0_16px_28px_-22px_rgba(0,103,71,0.74),inset_0_1px_0_rgba(255,255,255,0.16)] disabled:bg-[#006747] disabled:text-white disabled:opacity-100"
+              className="h-12 min-h-12 w-full rounded-[0.78rem] bg-[#006747] px-5 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74),inset_0_1px_0_rgba(255,255,255,0.16)] disabled:bg-[#006747] disabled:text-white disabled:opacity-100"
               disabled
               type="button"
             >
               <CheckCircle2 className="size-4" />
               Pembelian Selesai
+              <span aria-hidden="true" className="ml-auto size-2 rotate-45 rounded-[1px] bg-[#d9ab22] shadow-[0_0_14px_rgba(217,171,34,0.42)]" />
             </Button>
           )}
           <BuyerTransactionInlineReceiptPrint
             buyer={buyer}
-            buttonClassName="inline-flex h-10 min-h-10 w-full items-center justify-center gap-2 rounded-[0.8rem] border border-[#b9d1c5] bg-white px-4 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_14px_24px_-22px_rgba(8,69,50,0.28)] active:scale-[0.98]"
+            buttonClassName="inline-flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-[0.78rem] border border-[#b9d1c5] bg-white px-5 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_14px_24px_-22px_rgba(8,69,50,0.28)] active:scale-[0.98]"
             label="Cetak Nota"
             rootSuffix="status"
+            showDisabledReason={false}
             transaction={transaction}
           />
         </div>
