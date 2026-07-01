@@ -406,7 +406,7 @@ describe("admin pemasaran pages", () => {
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
     const fullscreenButton = within(dialog).getByRole("button", { name: /buka fullscreen bukti pembayaran/i });
-    expect(fullscreenButton).toHaveClass("absolute", "right-4", "top-4");
+    expect(fullscreenButton).toHaveClass("absolute", "right-4", "top-4", "size-10", "bg-white/94");
     expect(within(dialog).queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
 
     fireEvent.click(fullscreenButton);
@@ -809,11 +809,20 @@ describe("admin pemasaran pages", () => {
       />
     );
 
+    expect(screen.queryByText(/^Utama$/i)).not.toBeInTheDocument();
+    const galleryFullscreenButton = screen.getByRole("button", { name: /buka preview penuh media barang/i });
+    expect(galleryFullscreenButton).toHaveClass("absolute", "right-4", "top-4", "size-10");
+
     fireEvent.click(screen.getByRole("button", { name: /lihat video 2/i }));
 
     const activeVideo = screen.getByLabelText(/kalung emas video 2/i);
     expect(activeVideo.parentElement).toHaveClass("relative", "aspect-[16/10]", "min-h-[19rem]");
     expect(activeVideo).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-cover");
+
+    fireEvent.click(galleryFullscreenButton);
+
+    const previewDialog = screen.getByRole("dialog", { name: /preview media barang/i });
+    expect(within(previewDialog).getByLabelText(/preview penuh video barang/i)).toBeInTheDocument();
   });
 
   it("places fixed price handover proof after description and management panels", () => {

@@ -2760,12 +2760,14 @@ function FixedPriceAuditGallery({
 }) {
   const galleryMedia = toBuyerMedia(media).slice(0, 5);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   useEffect(() => {
     setActiveIndex(0);
   }, [media]);
 
   const activeMedia = galleryMedia[activeIndex] ?? null;
+  const activeIsVideo = activeMedia?.type === "video";
 
   return (
     <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
@@ -2774,7 +2776,17 @@ function FixedPriceAuditGallery({
         <div className="relative overflow-hidden rounded-2xl border border-[#dfe9e3] bg-[#f5f7f4]" data-testid="lot-media-active">
           <div className="relative aspect-[16/10] min-h-[19rem] w-full">
             {activeMedia ? (
-              activeMedia.type === "video" ? (
+              <button
+                aria-label="Buka preview penuh media barang"
+                className="absolute right-4 top-4 z-[2] grid size-10 place-items-center rounded-full bg-white/94 text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] sm:right-5 sm:top-5 md:right-6 md:top-6"
+                onClick={() => setIsFullscreenOpen(true)}
+                type="button"
+              >
+                <Maximize2 className="size-4" />
+              </button>
+            ) : null}
+            {activeMedia ? (
+              activeIsVideo ? (
                 <video
                   aria-label={`${auction.lot} video ${activeIndex + 1}`}
                   className="absolute inset-0 h-full w-full object-cover"
@@ -2805,10 +2817,6 @@ function FixedPriceAuditGallery({
               </div>
             )}
           </div>
-
-          <span className="absolute right-3 top-3 rounded-lg bg-[#006747] px-3 py-1 text-[0.72rem] font-black text-white shadow-[0_14px_28px_-18px_rgba(0,103,71,0.74)]">
-            Utama
-          </span>
         </div>
 
         {galleryMedia.length > 1 ? (
@@ -2851,6 +2859,67 @@ function FixedPriceAuditGallery({
             })}
           </div>
         ) : null}
+
+        {isFullscreenOpen && activeMedia
+          ? createPortal(
+              <div
+                aria-label="Preview media barang"
+                aria-modal="true"
+                className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
+                onClick={() => setIsFullscreenOpen(false)}
+                role="dialog"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
+                <div
+                  className="modal-viewport relative z-[141] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
+                    <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
+                      <div className="min-w-0">
+                        <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
+                          Media Barang
+                        </p>
+                        <h3 className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]">
+                          {activeMedia.fileName || fixedPriceMediaLabel(activeMedia, activeIndex)}
+                        </h3>
+                      </div>
+                      <button
+                        aria-label="Tutup preview media barang"
+                        className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
+                        onClick={() => setIsFullscreenOpen(false)}
+                        type="button"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+
+                    <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                      <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                        {activeIsVideo ? (
+                          <video
+                            aria-label="Preview penuh video barang"
+                            className="media-preview-frame w-full bg-[#0d1712] object-contain"
+                            controls
+                            key={activeMedia.id}
+                            playsInline
+                            src={activeMedia.url}
+                          />
+                        ) : (
+                          <img
+                            alt="Preview penuh media barang"
+                            className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                            src={activeMedia.url}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )
+          : null}
       </div>
     </section>
   );
@@ -4317,11 +4386,11 @@ function FixedPricePaymentVerificationModal({
                       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.08),transparent_34%,rgba(17,24,39,0.28))]" />
                       <button
                         aria-label="Buka fullscreen bukti pembayaran"
-                        className="absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/55 bg-white/90 text-[#006747] shadow-[0_18px_34px_-24px_rgba(3,7,18,0.58)] backdrop-blur-sm transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-white active:scale-[0.99]"
+                        className="absolute right-4 top-4 z-[2] grid size-10 place-items-center rounded-full bg-white/94 text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] sm:right-5 sm:top-5"
                         onClick={() => setIsProofPreviewOpen(true)}
                         type="button"
                       >
-                        <Maximize2 className="size-4.5" />
+                        <Maximize2 className="size-4" />
                       </button>
                     </div>
                   </div>
@@ -4556,16 +4625,16 @@ function FixedPricePaymentVerificationModal({
                 </button>
               </div>
 
-              <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
-                <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
-                  <img
-                    alt={`Preview bukti pembayaran ${auction.buyerName || auction.lot}`}
-                    className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
-                    src={auction.proofUrl}
-                  />
+                  <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
+                      <img
+                        alt={`Preview bukti pembayaran ${auction.buyerName || auction.lot}`}
+                        className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
+                        src={auction.proofUrl}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
           </div>
         </div>
       ) : null}

@@ -1869,9 +1869,9 @@ export function TransactionDetailPage({
     ...(transaction.category ? [{ label: "Kategori", value: transaction.category }] : []),
     ...(transaction.specs ?? [])
   ];
-  const fixedPriceHandoverControls =
+  const fixedPriceHandoverActions =
     showReceipt && isFixedPrice ? (
-      <div className="mt-4 space-y-3 rounded-[1.05rem] border border-[#dfe8e3] bg-white/92 p-3 shadow-[0_18px_36px_-34px_rgba(8,69,50,0.24)]">
+      <div className="space-y-3 rounded-[1.05rem] border border-[#dfe8e3] bg-white/92 p-3 shadow-[0_18px_36px_-34px_rgba(8,69,50,0.24)]">
         <div className="flex items-center justify-between gap-3 border-b border-[#edf2ee] px-1 pb-3">
           <div>
             <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#8aa39a]">Aksi Penyelesaian</p>
@@ -2182,18 +2182,13 @@ export function TransactionDetailPage({
                   : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
               </p>
               {hasSubmittedTransferProof ? (
-                <BuyerPaymentProofForm
+              <BuyerPaymentProofForm
                   currentProof={transaction.paymentProof}
                   locked
                   readOnlyPreview
                   transactionId={transaction.id}
                 />
               ) : null}
-              <div className="rounded-lg bg-[#f6f7f2] p-5">
-                <p className="font-body text-base font-semibold text-[#1a1c1c]">
-                  {isCompleted ? "Pembelian sudah selesai" : "Nota digital tersedia"}
-                </p>
-              </div>
             </div>
           ) : isTransfer ? (
             <>
@@ -2237,12 +2232,14 @@ export function TransactionDetailPage({
       </div>
 
       {showReceipt ? (
-        <HandoverProofCard
-          audience="buyer"
-          controls={fixedPriceHandoverControls}
-          itemTitle={transaction.title}
-          proof={transaction.handoverProof ?? { location: transaction.unit }}
-        />
+        <div className="space-y-4">
+          <HandoverProofCard
+            audience="buyer"
+            itemTitle={transaction.title}
+            proof={transaction.handoverProof ?? { location: transaction.unit }}
+          />
+          {fixedPriceHandoverActions}
+        </div>
       ) : null}
     </div>
   );
