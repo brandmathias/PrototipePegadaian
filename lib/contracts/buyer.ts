@@ -39,6 +39,9 @@ export type BuyerTransaction = {
   kind: BuyerTransactionKind;
   title: string;
   imageUrl?: string;
+  category?: string;
+  condition?: string;
+  specs?: Array<{ label: string; value: string }>;
   amount: number;
   status: BuyerTransactionStatus;
   method: BuyerPaymentMethod;

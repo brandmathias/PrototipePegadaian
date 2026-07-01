@@ -67,12 +67,29 @@ const transaction: BuyerTransaction = {
   ]
 };
 
+const transactionWithSpecifications = {
+  ...transaction,
+  category: "Perhiasan",
+  condition: "Baik",
+  specs: [
+    { label: "Jenis Emas", value: "Kalung" },
+    { label: "Kadar Emas", value: "22K / 91,6%" },
+    { label: "Berat", value: "8,52 gram" },
+    { label: "Bentuk", value: "Perhiasan kalung" },
+    { label: "Sertifikat", value: "Appraisal unit Pegadaian" }
+  ]
+} as BuyerTransaction & {
+  category: string;
+  condition: string;
+  specs: Array<{ label: string; value: string }>;
+};
+
 describe("buyer transaction detail page", () => {
   it("renders the harga tetap payment flow as transaction details, destination account, and proof upload", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
-        transaction={transaction}
+        transaction={transactionWithSpecifications}
         transactionId={transaction.id}
       />
     );
@@ -84,6 +101,12 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/bukti diunggah/i)).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang kalung emas 18k/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /rincian transaksi/i })).toBeInTheDocument();
+    expect(screen.getByText(/^spesifikasi barang$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^perhiasan$/i)).toBeInTheDocument();
+    expect(screen.getByText(/22k \/ 91,6%/i)).toBeInTheDocument();
+    expect(screen.getByText(/8,52 gram/i)).toBeInTheDocument();
+    expect(screen.getByText(/appraisal unit pegadaian/i)).toBeInTheDocument();
+    expect(screen.getByText(/nota diterbitkan setelah pembayaran diverifikasi admin unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
     const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
@@ -95,8 +118,16 @@ describe("buyer transaction detail page", () => {
       "[grid-auto-rows:minmax(8.75rem,1fr)]"
     );
     const firstAccount = screen.getByLabelText(/rekening tujuan bni/i);
-    expect(firstAccount).toHaveClass("h-full", "min-h-[8.75rem]", "ring-1", "ring-primary/20");
+    expect(firstAccount).toHaveClass(
+      "relative",
+      "overflow-hidden",
+      "border-[#d8b24c]",
+      "shadow-[0_16px_30px_-22px_rgba(73,54,8,0.38)]"
+    );
     expect(firstAccount).not.toHaveClass("hover:-translate-y-0.5", "transition-[border-color,background-color,box-shadow,transform]");
+    expect(firstAccount.querySelector("[data-account-accent]")).toHaveClass(
+      "bg-[linear-gradient(90deg,#087642_0%,#087642_64%,#e2ad19_73%,transparent_73%)]"
+    );
     expect(screen.getByLabelText(/rekening tujuan bca/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/rekening tujuan bri/i)).toBeInTheDocument();
     expect(decodeURIComponent(screen.getByRole("img", { name: /logo bni/i }).getAttribute("src") ?? "")).toContain(
@@ -111,7 +142,9 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/0115489623/i)).toBeInTheDocument();
     expect(screen.getByText(/1234567890/i)).toBeInTheDocument();
     expect(screen.getByText(/98765432109876/i)).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /salin nomor rekening/i })).toHaveLength(3);
+    const accountCopyButtons = screen.getAllByRole("button", { name: /salin nomor rekening/i });
+    expect(accountCopyButtons).toHaveLength(3);
+    expect(accountCopyButtons[0]).toHaveClass("size-10", "border-[#e4c66f]");
     expect(screen.getByRole("button", { name: /kembali ke detail barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });

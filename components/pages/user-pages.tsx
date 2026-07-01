@@ -419,10 +419,16 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
   return (
     <div
       aria-label={`Rekening tujuan ${bankDisplayName}`}
-      className="flex h-full min-h-[8.75rem] flex-col justify-center rounded-[0.92rem] border border-primary/30 bg-white px-4 py-4 shadow-[0_14px_34px_-28px_rgba(0,74,35,0.38)] ring-1 ring-inset ring-primary/20"
+      className="relative flex h-full min-h-[8.75rem] flex-col justify-center overflow-hidden rounded-[0.92rem] border border-[#d8b24c] bg-white px-4 py-4 shadow-[0_16px_30px_-22px_rgba(73,54,8,0.38)]"
       role="listitem"
     >
-      <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(3.1rem,0.58fr)_minmax(7.4rem,1fr)_2rem]">
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,#087642_0%,#087642_64%,#e2ad19_73%,transparent_73%)]"
+        data-account-accent
+      />
+
+      <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2.5rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(3.1rem,0.58fr)_minmax(7.4rem,1fr)_2.5rem]">
         <BankLogoMark
           bankName={account.bankName}
           className="h-11 w-[4.6rem] justify-start rounded-none bg-transparent"
@@ -447,11 +453,11 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
         </div>
 
         <div className="row-start-1 flex justify-end sm:row-auto">
-          <AccountCopyButton compact value={account.accountNumber} />
+          <AccountCopyButton value={account.accountNumber} />
         </div>
       </div>
 
-      <div className="mt-3 border-t border-[#edf2ee] pt-3">
+      <div className="mt-3 border-t border-[#eadfbe] pt-3">
         <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Atas Nama</p>
         <p className="mt-1.5 line-clamp-1 text-[0.82rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
           {account.accountHolder}
@@ -1637,7 +1643,6 @@ function VickreyPaymentSuccessDetail({
   const handoverLockMessage = transaction.handoverProof
     ? null
     : getReceiptHandoverLockMessage(transaction);
-
   return (
     <div className="flex flex-col gap-4 bg-white md:gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1859,6 +1864,10 @@ export function TransactionDetailPage({
   const handoverLockMessage = transaction.handoverProof
     ? null
     : getReceiptHandoverLockMessage(transaction);
+  const transactionSpecificationRows = [
+    ...(transaction.category ? [{ label: "Kategori", value: transaction.category }] : []),
+    ...(transaction.specs ?? [])
+  ];
 
   if (isFailedVickreyPayment) {
     return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
@@ -1945,12 +1954,12 @@ export function TransactionDetailPage({
       <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]">
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
-          <div className="relative z-10">
+          <div className="relative z-10 flex h-full flex-col">
             <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
               <ReceiptText className="size-5" />
               Rincian Transaksi
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
                 <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                   ID Transaksi
@@ -1995,6 +2004,28 @@ export function TransactionDetailPage({
                 </p>
               </div>
 
+              {transactionSpecificationRows.length > 0 ? (
+                <section className="border-y border-primary/10 py-4" aria-labelledby="transaction-specifications">
+                  <p
+                    className="mb-3 font-body text-[0.68rem] font-bold uppercase tracking-[0.12em] text-[#6e716c]"
+                    id="transaction-specifications"
+                  >
+                    Spesifikasi Barang
+                  </p>
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    {transactionSpecificationRows.map((specification) => (
+                      <div className="min-w-0" key={`${specification.label}-${specification.value}`}>
+                        <dt className="text-[0.62rem] font-medium text-[#777b75]">{specification.label}</dt>
+                        <dd className="mt-1 flex items-start gap-1.5 text-[0.72rem] font-bold leading-5 text-primary">
+                          <span aria-hidden="true" className="mt-[0.45rem] size-1 shrink-0 rounded-full bg-[#d7ad2f]" />
+                          <span className="break-words">{specification.value}</span>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ) : null}
+
               <div>
                 <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
                   Metode Pembayaran
@@ -2010,6 +2041,13 @@ export function TransactionDetailPage({
                   {transaction.winnerContext}
                 </div>
               ) : null}
+            </div>
+
+            <div className="mt-auto pt-5">
+              <div className="flex items-start gap-2.5 rounded-[0.8rem] border border-primary/10 bg-[#f7f9f6] px-3.5 py-3 text-[0.72rem] leading-5 text-[#62655f]">
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                <p>Nota diterbitkan setelah pembayaran diverifikasi admin unit.</p>
+              </div>
             </div>
           </div>
         </div>

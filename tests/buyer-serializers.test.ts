@@ -129,6 +129,15 @@ describe("buyer serializers", () => {
       createdAt: new Date("2026-05-04T02:30:00Z"),
       lotName: "Kalung Emas 18K",
       lotId: "barang-1",
+      lotCategory: "perhiasan",
+      lotCondition: "baik",
+      lotSpecifications: {
+        jenisEmas: "Kalung",
+        kadarEmas: "22K / 91,6%",
+        berat: "8,52 gram",
+        bentuk: "Perhiasan kalung",
+        sertifikat: "Appraisal unit Pegadaian"
+      },
       imageUrl: "/uploads/barang/kalung.jpg",
       unitName: "UPC Ranotana",
       unitAddress: "Jl. Sam Ratulangi, Manado",
@@ -143,6 +152,15 @@ describe("buyer serializers", () => {
     expect(transaction.paymentProof).toBe("/uploads/bukti/transfer.jpg");
     expect(transaction.reference).toBe("BRI-2026-001");
     expect(transaction.imageUrl).toBe("/uploads/barang/kalung.jpg");
+    expect(transaction.category).toBe("Perhiasan");
+    expect(transaction.condition).toBe("Baik");
+    expect(transaction.specs).toEqual([
+      { label: "Jenis Emas", value: "Kalung" },
+      { label: "Kadar Emas", value: "22K / 91,6%" },
+      { label: "Berat", value: "8,52 gram" },
+      { label: "Bentuk", value: "Perhiasan kalung" },
+      { label: "Sertifikat", value: "Appraisal unit Pegadaian" }
+    ]);
     expect(transaction.status).toBe("BUKTI_DIUNGGAH");
     expect(transaction.deadline).toBe("Menunggu verifikasi admin");
     expect(transaction.deadlineAt).toBeUndefined();

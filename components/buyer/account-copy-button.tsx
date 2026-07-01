@@ -100,8 +100,8 @@ export function AccountCopyButton({ compact = false, value }: { compact?: boolea
         <button
           aria-label={copied ? "Nomor rekening tersalin" : "Salin nomor rekening"}
           className={cn(
-            "relative inline-flex items-center justify-center overflow-hidden border border-transparent text-[#9d750c] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-            compact ? "size-7 rounded-[0.72rem]" : "size-10 rounded-[1rem]",
+            "relative inline-flex items-center justify-center overflow-hidden border border-[#e4c66f] text-[#bd8600] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            compact ? "size-7 rounded-[0.72rem]" : "size-10 rounded-[0.72rem]",
             copied
               ? "scale-[1.05] border-[#ead9a6] bg-[linear-gradient(145deg,#fff7dd,#f3e3a8)] shadow-[0_18px_40px_-20px_rgba(181,141,20,0.68)]"
               : "bg-white/75 hover:-translate-y-0.5 hover:border-[#efe3bc] hover:bg-[#f8f2df] hover:shadow-[0_16px_32px_-24px_rgba(181,141,20,0.48)] active:scale-[0.98]"

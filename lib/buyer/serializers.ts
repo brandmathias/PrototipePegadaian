@@ -66,6 +66,9 @@ type BuyerTransactionShape = {
   updatedAt?: Date;
   lotName: string;
   lotId: string;
+  lotCategory?: string;
+  lotCondition?: string;
+  lotSpecifications?: unknown;
   imageUrl?: string | null;
   unitName: string;
   unitAddress: string;
@@ -336,6 +339,19 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     kind: isVickrey ? "VICKREY_WIN" : "FIXED_PRICE",
     title: row.lotName,
     imageUrl: row.imageUrl ?? undefined,
+    category: row.lotCategory
+      ? resolveAdminUnitCategoryLabel({
+          category: row.lotCategory,
+          itemName: row.lotName,
+          specifications: row.lotSpecifications
+        })
+      : undefined,
+    condition: row.lotCondition
+      ? row.lotCondition.replace(/\b\w/g, (character) => character.toUpperCase())
+      : undefined,
+    specs: row.lotCategory
+      ? getBarangSpecificationRows(row.lotCategory, row.lotSpecifications, row.lotName)
+      : [],
     amount: toNumber(row.amount),
     status,
     method,
