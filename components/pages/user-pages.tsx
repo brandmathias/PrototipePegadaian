@@ -419,7 +419,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
   return (
     <div
       aria-label={`Rekening tujuan ${bankDisplayName}`}
-      className="min-h-[7.35rem] rounded-[0.92rem] border border-[#dce6df] bg-white px-4 py-3.5 shadow-[0_14px_34px_-28px_rgba(0,74,35,0.38)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cadbd0] hover:bg-[#fbfdfb] hover:shadow-[0_22px_42px_-31px_rgba(0,74,35,0.42)]"
+      className="flex h-full min-h-[8.75rem] flex-col justify-center rounded-[0.92rem] border border-[#dce6df] bg-white px-4 py-4 shadow-[0_14px_34px_-28px_rgba(0,74,35,0.38)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cadbd0] hover:bg-[#fbfdfb] hover:shadow-[0_22px_42px_-31px_rgba(0,74,35,0.42)]"
       role="listitem"
     >
       <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(3.1rem,0.58fr)_minmax(7.4rem,1fr)_2rem]">
@@ -2030,7 +2030,7 @@ export function TransactionDetailPage({
                 {transferAccounts.length > 0 ? (
                   <div
                     aria-label="Daftar rekening tujuan"
-                    className="max-h-[16rem] space-y-3 overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-width:thin]"
+                    className="grid min-h-[18rem] flex-1 gap-3 overflow-y-auto pr-1 [grid-auto-rows:minmax(8.75rem,1fr)] [scrollbar-gutter:stable] [scrollbar-width:thin]"
                     role="list"
                   >
                     {transferAccounts.map((account) => (
