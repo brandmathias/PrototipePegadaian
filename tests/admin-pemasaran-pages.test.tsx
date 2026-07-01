@@ -569,8 +569,8 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(paymentButton);
 
     const dialog = screen.getByRole("dialog", { name: /detail pembayaran terverifikasi/i });
-    expect(within(dialog).getByText(/pembayaran disetujui/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/hanya dapat dilihat/i)).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/pembayaran disetujui/i).length).toBeGreaterThan(0);
+    expect(within(dialog).getAllByText(/hanya dapat dilihat/i).length).toBeGreaterThan(0);
     expect(within(dialog).queryByLabelText(/alasan penolakan pembayaran harga tetap/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /tolak pembayaran/i })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /setujui pembayaran/i })).not.toBeInTheDocument();

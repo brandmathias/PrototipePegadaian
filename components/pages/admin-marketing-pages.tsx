@@ -4452,8 +4452,13 @@ function FixedPricePaymentVerificationModal({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-3 border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
-          {hasRejectionReason && rejectEndpoint ? (
+        <div
+          className={cn(
+            "flex shrink-0 flex-col gap-3 border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:px-7",
+            isReadOnly ? "sm:justify-end" : "sm:justify-between"
+          )}
+        >
+          {!isReadOnly ? (hasRejectionReason && rejectEndpoint ? (
             <AdminUnitActionButton
               className="min-h-12 w-full rounded-[0.82rem] border border-[#dc2626] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] shadow-[0_18px_34px_-28px_rgba(185,28,28,0.46)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99] sm:w-auto"
               endpoint={rejectEndpoint}
@@ -4477,7 +4482,7 @@ function FixedPricePaymentVerificationModal({
               <X className="size-4.5" />
               Tolak Pembayaran
             </Button>
-          )}
+          )) : null}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <Button
@@ -4489,7 +4494,7 @@ function FixedPricePaymentVerificationModal({
               Kembali
             </Button>
 
-            {action && !hasRejectionReason ? (
+            {!isReadOnly ? (action && !hasRejectionReason ? (
               <AdminUnitActionButton
                 className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] sm:w-auto"
                 endpoint={action.endpoint}
@@ -4507,7 +4512,7 @@ function FixedPricePaymentVerificationModal({
                 <CheckCircle2 className="size-4.5" />
                 {action?.label ?? "Setujui Pembayaran"}
               </Button>
-            )}
+            )) : null}
           </div>
         </div>
         </div>
@@ -4528,8 +4533,9 @@ function FixedPricePaymentVerificationButton({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const isReady = hasFixedPriceVerificationReady(auction);
+  const isReadOnly = isMarketingPaymentVerifiedForReceipt(auction);
 
-  if (!isReady) {
+  if (!isReady && !isReadOnly) {
     return (
       <Button className={className} disabled>
         <ReceiptText className="size-5" />

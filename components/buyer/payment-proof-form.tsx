@@ -61,6 +61,7 @@ export function BuyerPaymentProofForm({
   const [fileName, setFileName] = useState(currentProof ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -83,6 +84,10 @@ export function BuyerPaymentProofForm({
   const isPdfPreview = file
     ? file.type === "application/pdf"
     : proofUrlMatchesExtension(displayPreviewUrl, /\.pdf$/i);
+
+  useEffect(() => {
+    setPreviewMediaFailed(false);
+  }, [displayPreviewUrl]);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -199,50 +204,83 @@ export function BuyerPaymentProofForm({
           </div>
         </div>
       ) : null}
-      <div className="rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6] p-4 sm:p-5">
-        <div className="flex min-h-[26rem] flex-col">
+      <div
+        className={cn(
+          "rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6]",
+          hasPreview ? "p-1.5 sm:p-2" : "p-4 sm:p-5"
+        )}
+      >
+        <div className={cn("flex flex-col", hasPreview ? "min-h-[30rem]" : "min-h-[26rem]")}>
           {hasPreview ? (
-            <button
-              aria-label="Buka preview bukti transfer"
-              className="group relative block flex-1 overflow-hidden rounded-[1.35rem] border border-[#d9ddd7] bg-white text-left shadow-[0_24px_48px_-30px_rgba(8,69,50,0.22)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_28px_54px_-28px_rgba(8,69,50,0.26)] active:scale-[0.995]"
-              onClick={() => setIsPreviewOpen(true)}
-              type="button"
-            >
-              {isImagePreview ? (
-                <img
-                  alt="Preview bukti transfer"
-                  className="h-full min-h-[18rem] w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
-                  loading="eager"
-                  src={displayPreviewUrl ?? undefined}
-                />
-              ) : isPdfPreview ? (
-                <iframe
-                  className="h-full min-h-[18rem] w-full bg-white"
-                  src={displayPreviewUrl ? `${displayPreviewUrl}#toolbar=0&navpanes=0&scrollbar=0` : undefined}
-                  title="Preview PDF bukti transfer"
-                />
-              ) : (
-                <span className="flex h-full min-h-[18rem] items-center justify-center bg-[linear-gradient(180deg,#fafaf7,#f1f2ed)]">
-                  <span className="flex items-center gap-3 rounded-[1.1rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_38px_-28px_rgba(8,69,50,0.24)]">
-                    <span className="grid size-11 place-items-center rounded-[0.95rem] bg-[#f1f3ee] text-primary">
-                      <FileText className="size-5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate font-body text-sm font-semibold text-[#1a1c1c]">
-                        {proofDisplayName}
-                      </span>
-                      <span className="block text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
-                        File Tersimpan
-                      </span>
-                    </span>
+            <div className="relative flex-1 overflow-hidden rounded-[1.15rem] bg-[linear-gradient(180deg,#fafaf7,#f1f2ed)]">
+              {previewMediaFailed ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center">
+                  <span className="grid size-16 place-items-center rounded-[1.2rem] border border-[#dde1d9] bg-white text-primary shadow-[0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+                    <FileText className="size-6" />
                   </span>
-                </span>
+                  <p className="mt-4 font-body text-base font-semibold text-[#1a1c1c]">
+                    Bukti pembayaran tidak dapat ditampilkan di preview.
+                  </p>
+                  <p className="mt-2 max-w-[18rem] font-body text-sm leading-6 text-[#6e716c]">
+                    File sudah tercatat. Buka file asli untuk membaca bukti pembayaran yang diunggah.
+                  </p>
+                  {displayPreviewUrl ? (
+                    <a
+                      className="mt-5 inline-flex h-11 items-center justify-center rounded-[0.95rem] border border-[#c8cec5] bg-white px-5 font-body text-sm font-semibold text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary/[0.03] active:scale-[0.98]"
+                      href={displayPreviewUrl}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Buka file asli
+                    </a>
+                  ) : null}
+                </div>
+              ) : (
+                <button
+                  aria-label="Buka preview bukti transfer"
+                  className="group absolute inset-0 block h-full w-full overflow-hidden bg-white text-left active:scale-[0.995]"
+                  onClick={() => setIsPreviewOpen(true)}
+                  type="button"
+                >
+                  {isImagePreview ? (
+                    <img
+                      alt="Preview bukti transfer"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading="eager"
+                      onError={() => setPreviewMediaFailed(true)}
+                      src={displayPreviewUrl ?? undefined}
+                    />
+                  ) : isPdfPreview ? (
+                    <iframe
+                      className="absolute inset-0 h-full w-full bg-white"
+                      onError={() => setPreviewMediaFailed(true)}
+                      src={displayPreviewUrl ? `${displayPreviewUrl}#toolbar=0&navpanes=0&scrollbar=0` : undefined}
+                      title="Preview PDF bukti transfer"
+                    />
+                  ) : (
+                    <span className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(180deg,#fafaf7,#f1f2ed)]">
+                      <span className="flex items-center gap-3 rounded-[1.1rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_38px_-28px_rgba(8,69,50,0.24)]">
+                        <span className="grid size-11 place-items-center rounded-[0.95rem] bg-[#f1f3ee] text-primary">
+                          <FileText className="size-5" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate font-body text-sm font-semibold text-[#1a1c1c]">
+                            {proofDisplayName}
+                          </span>
+                          <span className="block text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
+                            File Tersimpan
+                          </span>
+                        </span>
+                      </span>
+                    </span>
+                  )}
+                  <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,18,0.02),transparent_36%,rgba(12,25,18,0.34))]" />
+                  <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm">
+                    <Expand className="size-4" />
+                  </span>
+                </button>
               )}
-              <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(12,25,18,0.02),transparent_36%,rgba(12,25,18,0.34))]" />
-              <span className="pointer-events-none absolute right-4 top-4 grid size-11 place-items-center rounded-full border border-white/50 bg-white/86 text-primary shadow-[0_18px_32px_-24px_rgba(8,69,50,0.38)] backdrop-blur-sm transition duration-500 group-hover:scale-[1.04]">
-                <Expand className="size-4" />
-              </span>
-            </button>
+            </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center rounded-[1.35rem] bg-[linear-gradient(180deg,#fbfbf8,#f3f4ef)] px-5 py-10 text-center">
               <span className="grid size-24 place-items-center rounded-[1.5rem] bg-[#ececea] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] transition duration-500 group-hover:scale-[1.04]">
@@ -375,33 +413,43 @@ export function BuyerPaymentProofForm({
 
                   <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
                     <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
-                      {isImagePreview ? (
+                      {isImagePreview && !previewMediaFailed ? (
                         <img
                           alt="Preview bukti transfer"
                           className="media-preview-frame w-full object-contain bg-[#f8f8f5]"
                           loading="eager"
+                          onError={() => setPreviewMediaFailed(true)}
                           src={displayPreviewUrl ?? undefined}
                         />
-                      ) : isPdfPreview ? (
+                      ) : isPdfPreview && !previewMediaFailed ? (
                         <iframe
                           className="media-preview-frame-fixed w-full bg-white"
+                          onError={() => setPreviewMediaFailed(true)}
                           src={displayPreviewUrl ? `${displayPreviewUrl}#toolbar=1&navpanes=0` : undefined}
                           title="Preview penuh PDF bukti transfer"
                         />
                       ) : (
-                        <div className="media-preview-frame-fixed flex items-center justify-center bg-[#f8f8f5]">
-                          <div className="flex items-center gap-3 rounded-[1.15rem] border border-[#dde1d9] bg-white px-5 py-4 shadow-[0_18px_40px_-30px_rgba(8,69,50,0.28)]">
+                        <div className="media-preview-frame-fixed flex items-center justify-center bg-[#f8f8f5] px-4 text-center">
+                          <div className="max-w-sm rounded-[1.15rem] border border-[#dde1d9] bg-white px-5 py-5 shadow-[0_18px_40px_-30px_rgba(8,69,50,0.28)]">
                             <span className="grid size-12 place-items-center rounded-[1rem] bg-[#f1f3ee] text-primary">
                               <FileText className="size-5" />
                             </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-body text-sm font-semibold text-[#1a1c1c]">
-                                {proofDisplayName}
-                              </p>
-                              <p className="text-[0.74rem] uppercase tracking-[0.08em] text-[#6e716c]">
-                                File siap ditinjau
-                              </p>
-                            </div>
+                            <p className="mt-3 break-words font-body text-sm font-semibold text-[#1a1c1c]">
+                              {proofDisplayName}
+                            </p>
+                            <p className="mt-1 text-[0.78rem] leading-5 text-[#6e716c]">
+                              Bukti pembayaran tidak dapat ditampilkan di preview.
+                            </p>
+                            {displayPreviewUrl ? (
+                              <a
+                                className="mt-4 inline-flex h-10 items-center justify-center rounded-[0.85rem] border border-[#c8cec5] bg-white px-4 font-body text-sm font-semibold text-primary"
+                                href={displayPreviewUrl}
+                                rel="noreferrer"
+                                target="_blank"
+                              >
+                                Buka file asli
+                              </a>
+                            ) : null}
                           </div>
                         </div>
                       )}
