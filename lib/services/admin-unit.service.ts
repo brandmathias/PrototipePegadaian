@@ -171,7 +171,11 @@ export async function createAdminUnit(input: {
 
   if (payload.phoneNumber) {
     const phoneVariants = getIndonesianPhoneNumberVariants(payload.phoneNumber);
-    const [existingPhone] = await db.select().from(users).where(inArray(users.phoneNumber, phoneVariants)).limit(1);
+    const [existingPhone] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.role, "admin_unit"), inArray(users.phoneNumber, phoneVariants)))
+      .limit(1);
     if (existingPhone) {
       throw new Error("Nomor telepon admin sudah dipakai.");
     }
@@ -248,7 +252,7 @@ export async function updateAdminUnit(
     const [existingPhone] = await db
       .select()
       .from(users)
-      .where(and(inArray(users.phoneNumber, phoneVariants), sql`${users.id} <> ${adminId}`))
+      .where(and(eq(users.role, "admin_unit"), inArray(users.phoneNumber, phoneVariants), sql`${users.id} <> ${adminId}`))
       .limit(1);
 
     if (existingPhone) {

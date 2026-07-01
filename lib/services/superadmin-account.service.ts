@@ -253,8 +253,8 @@ async function assertPhoneAvailable(executor: DbExecutor, phoneNumber: string, i
   }
 
   const whereClause = ignoreUserId
-    ? and(inArray(users.phoneNumber, phoneVariants), ne(users.id, ignoreUserId))
-    : inArray(users.phoneNumber, phoneVariants);
+    ? and(eq(users.role, "super_admin"), inArray(users.phoneNumber, phoneVariants), ne(users.id, ignoreUserId))
+    : and(eq(users.role, "super_admin"), inArray(users.phoneNumber, phoneVariants));
   const [existing] = await executor.select({ id: users.id }).from(users).where(whereClause).limit(1);
 
   if (existing) {

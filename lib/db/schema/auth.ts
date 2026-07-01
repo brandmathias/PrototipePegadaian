@@ -7,6 +7,7 @@ import {
   timestamp,
   uniqueIndex
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const users = pgTable(
   "user",
@@ -27,7 +28,15 @@ export const users = pgTable(
   },
   (table) => ({
     emailIdx: uniqueIndex("user_email_unique").on(table.email),
-    phoneIdx: uniqueIndex("user_phone_number_unique").on(table.phoneNumber),
+    buyerPhoneIdx: uniqueIndex("user_buyer_phone_number_unique")
+      .on(table.phoneNumber)
+      .where(sql`${table.role} = 'buyer' and ${table.phoneNumber} is not null`),
+    adminUnitPhoneIdx: uniqueIndex("user_admin_unit_phone_number_unique")
+      .on(table.phoneNumber)
+      .where(sql`${table.role} = 'admin_unit' and ${table.phoneNumber} is not null`),
+    superAdminPhoneIdx: uniqueIndex("user_super_admin_phone_number_unique")
+      .on(table.phoneNumber)
+      .where(sql`${table.role} = 'super_admin' and ${table.phoneNumber} is not null`),
     nationalIdIdx: uniqueIndex("user_national_id_unique").on(table.nationalId),
     unitIdIdx: index("user_unit_id_idx").on(table.unitId)
   })

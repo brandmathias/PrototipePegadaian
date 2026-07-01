@@ -1346,7 +1346,7 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
     const [existingUserPhone] = await tx
       .select({ id: users.id })
       .from(users)
-      .where(and(inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
+      .where(and(eq(users.role, "buyer"), inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
       .limit(1);
 
     if (existingUserPhone) {
@@ -1366,7 +1366,7 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
     const [existingUserNationalId] = await tx
       .select({ id: users.id })
       .from(users)
-      .where(and(eq(users.nationalId, payload.nationalId), ne(users.id, userId)))
+      .where(and(eq(users.role, "buyer"), eq(users.nationalId, payload.nationalId), ne(users.id, userId)))
       .limit(1);
 
     if (existingUserNationalId) {

@@ -1,0 +1,4 @@
+DROP INDEX "user_phone_number_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "user_buyer_phone_number_unique" ON "user" USING btree ("phone_number") WHERE "user"."role" = 'buyer' and "user"."phone_number" is not null;--> statement-breakpoint
+CREATE UNIQUE INDEX "user_admin_unit_phone_number_unique" ON "user" USING btree ("phone_number") WHERE "user"."role" = 'admin_unit' and "user"."phone_number" is not null;--> statement-breakpoint
+CREATE UNIQUE INDEX "user_super_admin_phone_number_unique" ON "user" USING btree ("phone_number") WHERE "user"."role" = 'super_admin' and "user"."phone_number" is not null;

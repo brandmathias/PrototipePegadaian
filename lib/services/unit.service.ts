@@ -593,7 +593,11 @@ async function ensureAdminIdentityAvailable(admins: ReturnType<typeof validateMa
   }
 
   if (phoneVariants.length > 0) {
-    const [existingPhone] = await db.select({ id: users.id }).from(users).where(inArray(users.phoneNumber, phoneVariants)).limit(1);
+    const [existingPhone] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, "admin_unit"), inArray(users.phoneNumber, phoneVariants)))
+      .limit(1);
     if (existingPhone) {
       throw new Error("Nomor telepon admin sudah dipakai.");
     }

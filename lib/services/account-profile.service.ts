@@ -92,7 +92,7 @@ export async function updateAccountProfile(userId: string, role: AccountProfileR
       const [existingUserPhone] = await tx
         .select({ id: users.id })
         .from(users)
-        .where(and(inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
+        .where(and(eq(users.role, role), inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
         .limit(1);
 
       if (existingUserPhone) {

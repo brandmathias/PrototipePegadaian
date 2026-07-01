@@ -36,8 +36,8 @@ export const auth = betterAuth({
                 .where(
                   or(
                     eq(schema.users.email, identity.email),
-                    inArray(schema.users.phoneNumber, phoneVariants),
-                    eq(schema.users.nationalId, identity.nationalId)
+                    and(eq(schema.users.role, "buyer"), inArray(schema.users.phoneNumber, phoneVariants)),
+                    and(eq(schema.users.role, "buyer"), eq(schema.users.nationalId, identity.nationalId))
                   )
                 )
                 .limit(1);
