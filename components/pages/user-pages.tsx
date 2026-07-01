@@ -1871,29 +1871,32 @@ export function TransactionDetailPage({
   ];
   const fixedPriceHandoverActions =
     showReceipt && isFixedPrice ? (
-      <div className="space-y-3 rounded-[1.05rem] border border-[#dfe8e3] bg-white/92 p-3 shadow-[0_18px_36px_-34px_rgba(8,69,50,0.24)]">
-        <div className="flex items-center justify-between gap-3 border-b border-[#edf2ee] px-1 pb-3">
-          <div>
-            <p className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#8aa39a]">Aksi Penyelesaian</p>
-            <p className="mt-1 text-sm font-black text-slate-900">
-              {isCompleted ? "Pembelian selesai tercatat" : "Selesaikan pengambilan dan nota"}
-            </p>
+      <div className="space-y-3">
+        <div className="grid gap-4 rounded-[1.05rem] border border-[#dfe8e3] bg-white/96 px-4 py-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.24)] md:grid-cols-[minmax(0,1fr)_220px_220px] md:items-center md:px-5">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-[#ead28b] bg-[#fffaf0] text-[#d4a51c] shadow-[0_12px_24px_-20px_rgba(212,165,28,0.55)]">
+              <CheckCircle2 className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#8aa39a]">Aksi Penyelesaian</p>
+              <p className="mt-1 text-sm font-black leading-5 text-slate-950">
+                {isCompleted ? "Pembelian selesai tercatat" : "Selesaikan pengambilan dan nota"}
+              </p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[#64748b]">
+                {handoverLockMessage ?? "Nota dapat dicetak setelah dokumentasi serah-terima tersimpan."}
+              </p>
+            </div>
           </div>
-          <span className="rounded-full border border-[#d7e3dd] bg-[#f8faf9] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#52625b]">
-            {isCompleted ? "Final" : "Siap diproses"}
-          </span>
-        </div>
 
-        <div className="grid gap-2.5 sm:grid-cols-2">
           {!isCompleted ? (
             <CompletePurchaseButton
-              className="min-h-11 rounded-[0.95rem] px-4 text-sm font-black"
+              className="h-10 min-h-10 rounded-[0.8rem] bg-[#006747] px-4 text-sm font-black text-white shadow-[0_16px_28px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98] disabled:bg-[#86aa96] disabled:text-white disabled:opacity-100 disabled:saturate-[0.9]"
               disabledReason={fixedPriceActionLockMessage}
               transactionId={transaction.id}
             />
           ) : (
             <Button
-              className="min-h-11 w-full rounded-[0.95rem] px-4 text-sm font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+              className="h-10 min-h-10 w-full rounded-[0.8rem] bg-[#006747] px-4 text-sm font-black text-white shadow-[0_16px_28px_-22px_rgba(0,103,71,0.74),inset_0_1px_0_rgba(255,255,255,0.16)] disabled:bg-[#006747] disabled:text-white disabled:opacity-100"
               disabled
               type="button"
             >
@@ -1903,7 +1906,7 @@ export function TransactionDetailPage({
           )}
           <BuyerTransactionInlineReceiptPrint
             buyer={buyer}
-            buttonClassName="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[0.95rem] border border-primary bg-white px-4 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
+            buttonClassName="inline-flex h-10 min-h-10 w-full items-center justify-center gap-2 rounded-[0.8rem] border border-[#b9d1c5] bg-white px-4 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_14px_24px_-22px_rgba(8,69,50,0.28)] active:scale-[0.98]"
             label="Cetak Nota"
             rootSuffix="status"
             transaction={transaction}
