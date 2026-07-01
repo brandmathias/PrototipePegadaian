@@ -334,6 +334,26 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();
   });
 
+  it("shows the completed action as disabled when handover proof is still missing", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "SELESAI",
+          paymentProof: "/uploads/bukti/transfer-selesai.jpg",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    const completeButton = screen.getByRole("button", { name: /pembelian selesai/i });
+    expect(completeButton).toBeDisabled();
+    expect(completeButton).toHaveClass("disabled:bg-[#dce8e1]", "disabled:text-[#71867b]", "disabled:shadow-none");
+  });
+
   it("prints the prepared receipt in place on mobile without opening the receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);

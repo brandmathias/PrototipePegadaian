@@ -1904,7 +1904,12 @@ export function TransactionDetailPage({
             />
           ) : (
             <Button
-              className="h-12 min-h-12 w-full rounded-[0.78rem] bg-[#006747] px-5 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74),inset_0_1px_0_rgba(255,255,255,0.16)] disabled:bg-[#006747] disabled:text-white disabled:opacity-100"
+              className={cn(
+                "h-12 min-h-12 w-full rounded-[0.78rem] px-5 text-sm font-black disabled:opacity-100",
+                handoverLockMessage
+                  ? "border border-[#c8d7cf] bg-[#dce8e1] text-[#71867b] shadow-none disabled:bg-[#dce8e1] disabled:text-[#71867b] disabled:shadow-none"
+                  : "bg-[#006747] text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74),inset_0_1px_0_rgba(255,255,255,0.16)] disabled:bg-[#006747] disabled:text-white"
+              )}
               disabled
               type="button"
             >
