@@ -829,6 +829,7 @@ function getReceiptHandoverLockMessage(transaction: BuyerTransaction) {
 function BuyerTransactionInlineReceiptPrint({
   buyer,
   buttonClassName,
+  disabledReason,
   label,
   rootSuffix,
   showDisabledReason,
@@ -836,6 +837,7 @@ function BuyerTransactionInlineReceiptPrint({
 }: {
   buyer: BuyerSessionUser;
   buttonClassName: string;
+  disabledReason?: string | null;
   label?: string;
   rootSuffix: string;
   showDisabledReason?: boolean;
@@ -843,12 +845,12 @@ function BuyerTransactionInlineReceiptPrint({
 }) {
   const isCompleted = transaction.status === "SELESAI";
   const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
-  const disabledReason = getReceiptHandoverLockMessage(transaction);
+  const receiptDisabledReason = disabledReason ?? getReceiptHandoverLockMessage(transaction);
 
   return (
     <TransactionReceiptInlinePrint
       buttonClassName={buttonClassName}
-      disabledReason={disabledReason}
+      disabledReason={receiptDisabledReason}
       documentClassName={getReceiptPrintDocumentClassName(transaction)}
       documentTestId={getReceiptPrintDocumentTestId(transaction)}
       label={label}
@@ -1868,6 +1870,8 @@ export function TransactionDetailPage({
     ? null
     : getReceiptHandoverLockMessage(transaction);
   const fixedPriceActionLockMessage = settlementLockMessage ?? handoverLockMessage;
+  const fixedPriceReceiptLockMessage =
+    handoverLockMessage ?? (!isCompleted ? "Nota dapat dicetak setelah buyer menekan Pembelian Selesai." : null);
   const transactionSpecificationRows = [
     ...(transaction.category ? [{ label: "Kategori", value: transaction.category }] : []),
     ...(transaction.specs ?? [])
@@ -1906,12 +1910,12 @@ export function TransactionDetailPage({
             >
               <CheckCircle2 className="size-4" />
               Pembelian Selesai
-              <span aria-hidden="true" className="ml-auto size-2 rotate-45 rounded-[1px] bg-[#d9ab22] shadow-[0_0_14px_rgba(217,171,34,0.42)]" />
             </Button>
           )}
           <BuyerTransactionInlineReceiptPrint
             buyer={buyer}
             buttonClassName="inline-flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-[0.78rem] border border-[#b9d1c5] bg-white px-5 text-center text-sm font-black text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.78)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-primary/45 hover:bg-primary/[0.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_14px_24px_-22px_rgba(8,69,50,0.28)] active:scale-[0.98]"
+            disabledReason={fixedPriceReceiptLockMessage}
             label="Cetak Nota"
             rootSuffix="status"
             showDisabledReason={false}

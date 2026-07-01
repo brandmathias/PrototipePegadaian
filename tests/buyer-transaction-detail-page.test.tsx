@@ -212,7 +212,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
   });
 
-  it("asks buyer to finish the purchase and prints the receipt inline after admin verification", async () => {
+  it("asks buyer to finish the purchase and keeps the receipt locked before completion", () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     render(
@@ -252,6 +252,41 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("link", { name: /buka nota/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /nota transaksi/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /cetak nota/i })).toHaveLength(1);
+    expect(completeButton).toBeEnabled();
+    expect(receiptButton).toBeDisabled();
+
+    fireEvent.click(receiptButton);
+    expect(printSpy).not.toHaveBeenCalled();
+
+    printSpy.mockRestore();
+  });
+
+  it("prints the receipt inline after buyer completes the fixed-price purchase", async () => {
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "SELESAI",
+          paymentProof: "/uploads/bukti/transfer-selesai.jpg",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
+            uploadedAt: "4 Mei 2026 22.30 WIB",
+            uploadedBy: "Admin UPC Ranotana",
+            location: "UPC Ranotana"
+          },
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    const receiptButton = screen.getByRole("button", { name: /cetak nota/i });
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
+    expect(receiptButton).toBeEnabled();
 
     fireEvent.click(receiptButton);
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 3000 });
@@ -315,7 +350,7 @@ describe("buyer transaction detail page", () => {
           buyer={buyer}
           transaction={{
             ...transaction,
-            status: "LUNAS",
+            status: "SELESAI",
             paymentProof: "/uploads/bukti/transfer-lunas.jpg",
             handoverProof: {
               fileUrl: "/uploads/serah-terima/trx-fixed-1-mobile.jpg",
