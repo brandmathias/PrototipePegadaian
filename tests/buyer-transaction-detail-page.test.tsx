@@ -94,7 +94,9 @@ describe("buyer transaction detail page", () => {
       "overflow-y-auto",
       "[grid-auto-rows:minmax(8.75rem,1fr)]"
     );
-    expect(screen.getByLabelText(/rekening tujuan bni/i)).toHaveClass("h-full", "min-h-[8.75rem]");
+    const firstAccount = screen.getByLabelText(/rekening tujuan bni/i);
+    expect(firstAccount).toHaveClass("h-full", "min-h-[8.75rem]", "ring-1", "ring-primary/20");
+    expect(firstAccount).not.toHaveClass("hover:-translate-y-0.5", "transition-[border-color,background-color,box-shadow,transform]");
     expect(screen.getByLabelText(/rekening tujuan bca/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/rekening tujuan bri/i)).toBeInTheDocument();
     expect(decodeURIComponent(screen.getByRole("img", { name: /logo bni/i }).getAttribute("src") ?? "")).toContain(
