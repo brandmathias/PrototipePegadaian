@@ -9,4 +9,6 @@ export const unitBankOptions = [
   { value: "Danamon", label: "Bank Danamon" },
   { value: "BTN", label: "Bank Tabungan Negara (BTN)" },
   { value: "Mega", label: "Bank Mega" },
+  { value: "Maybank", label: "Bank Maybank Indonesia" },
+  { value: "Muamalat", label: "Bank Muamalat Indonesia" },
 ] as const;

@@ -28,6 +28,8 @@ describe("RekeningForm", () => {
     expect(within(listbox).getByRole("option", { name: "Bank Danamon" })).toBeInTheDocument();
     expect(within(listbox).getByRole("option", { name: "Bank Tabungan Negara (BTN)" })).toBeInTheDocument();
     expect(within(listbox).getByRole("option", { name: "Bank Mega" })).toBeInTheDocument();
+    expect(within(listbox).getByRole("option", { name: "Bank Maybank Indonesia" })).toBeInTheDocument();
+    expect(within(listbox).getByRole("option", { name: "Bank Muamalat Indonesia" })).toBeInTheDocument();
 
     fireEvent.click(within(listbox).getByRole("option", { name: "Bank Mandiri" }));
     expect(screen.getByRole("button", { name: /bank mandiri/i })).toBeInTheDocument();

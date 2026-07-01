@@ -412,146 +412,187 @@ function getTransactionBankAccounts(transaction: BuyerTransaction): BuyerBankAcc
   ];
 }
 
-function getBankLogoMeta(bankName: string) {
+type BankLogoAsset = {
+  code: string;
+  height: number;
+  label: string;
+  patterns: string[];
+  src: string;
+  width: number;
+};
+
+const BANK_LOGO_ASSETS: BankLogoAsset[] = [
+  {
+    code: "BNI",
+    height: 69,
+    label: "BNI",
+    patterns: ["bni", "negara indonesia"],
+    src: "/uploads/bank-logos/bni.png",
+    width: 240
+  },
+  {
+    code: "BCA",
+    height: 73,
+    label: "BCA",
+    patterns: ["bca", "central asia"],
+    src: "/uploads/bank-logos/bca.png",
+    width: 240
+  },
+  {
+    code: "BRI",
+    height: 91,
+    label: "BRI",
+    patterns: ["bri", "rakyat indonesia"],
+    src: "/uploads/bank-logos/bri.png",
+    width: 240
+  },
+  {
+    code: "Mandiri",
+    height: 70,
+    label: "Bank Mandiri",
+    patterns: ["mandiri"],
+    src: "/uploads/bank-logos/mandiri.png",
+    width: 240
+  },
+  {
+    code: "BSI",
+    height: 120,
+    label: "Bank Syariah Indonesia",
+    patterns: ["bsi", "syariah"],
+    src: "/uploads/bank-logos/bsi.png",
+    width: 137
+  },
+  {
+    code: "CIMB",
+    height: 35,
+    label: "CIMB Niaga",
+    patterns: ["cimb"],
+    src: "/uploads/bank-logos/cimb-niaga.png",
+    width: 240
+  },
+  {
+    code: "Permata",
+    height: 59,
+    label: "Bank Permata",
+    patterns: ["permata"],
+    src: "/uploads/bank-logos/permata.png",
+    width: 240
+  },
+  {
+    code: "Danamon",
+    height: 60,
+    label: "Bank Danamon",
+    patterns: ["danamon"],
+    src: "/uploads/bank-logos/danamon.png",
+    width: 240
+  },
+  {
+    code: "BTN",
+    height: 50,
+    label: "BTN",
+    patterns: ["btn", "tabungan negara"],
+    src: "/uploads/bank-logos/btn.png",
+    width: 240
+  },
+  {
+    code: "Mega",
+    height: 120,
+    label: "Bank Mega",
+    patterns: ["mega"],
+    src: "/uploads/bank-logos/mega.png",
+    width: 211
+  },
+  {
+    code: "Maybank",
+    height: 120,
+    label: "Maybank",
+    patterns: ["maybank"],
+    src: "/uploads/bank-logos/maybank.png",
+    width: 216
+  },
+  {
+    code: "Muamalat",
+    height: 72,
+    label: "Bank Muamalat",
+    patterns: ["muamalat"],
+    src: "/uploads/bank-logos/muamalat.png",
+    width: 240
+  }
+];
+
+function getBankLogoAsset(bankName: string) {
   const normalized = bankName.toLowerCase();
 
-  if (normalized.includes("bni") || normalized.includes("negara indonesia")) {
-    return { code: "BNI", label: "BNI", primary: "#f15a24", secondary: "#006b45", variant: "bni" };
-  }
+  return BANK_LOGO_ASSETS.find((asset) => asset.patterns.some((pattern) => normalized.includes(pattern)));
+}
 
-  if (normalized.includes("bca") || normalized.includes("central asia")) {
-    return { code: "BCA", label: "BCA", primary: "#0d47a1", secondary: "#1976d2", variant: "bca" };
-  }
-
-  if (normalized.includes("bri") || normalized.includes("rakyat indonesia")) {
-    return { code: "BRI", label: "BRI", primary: "#005baa", secondary: "#0b6fc6", variant: "bri" };
-  }
-
-  if (normalized.includes("mandiri")) {
-    return { code: "mandiri", label: "Mandiri", primary: "#003d79", secondary: "#f5b400", variant: "mandiri" };
-  }
-
-  if (normalized.includes("bsi") || normalized.includes("syariah")) {
-    return { code: "BSI", label: "BSI", primary: "#00a39b", secondary: "#f0b323", variant: "wordmark" };
-  }
-
-  if (normalized.includes("cimb")) {
-    return { code: "CIMB", label: "CIMB Niaga", primary: "#c4161c", secondary: "#8b1014", variant: "wordmark" };
-  }
-
-  if (normalized.includes("permata")) {
-    return { code: "Permata", label: "Permata", primary: "#0067b1", secondary: "#00a859", variant: "wordmark" };
-  }
-
-  if (normalized.includes("danamon")) {
-    return { code: "Danamon", label: "Danamon", primary: "#f58220", secondary: "#00843d", variant: "wordmark" };
-  }
-
-  if (normalized.includes("btn") || normalized.includes("tabungan negara")) {
-    return { code: "BTN", label: "BTN", primary: "#005aa9", secondary: "#f47b20", variant: "wordmark" };
-  }
-
-  if (normalized.includes("mega")) {
-    return { code: "Mega", label: "Mega", primary: "#e30613", secondary: "#005baa", variant: "wordmark" };
-  }
-
-  return { code: "BANK", label: bankName || "Bank", primary: "#006747", secondary: "#d7ad2f", variant: "wordmark" };
+function getBankDisplayName(bankName: string) {
+  return getBankLogoAsset(bankName)?.code ?? bankName;
 }
 
 function BankLogoMark({ bankName }: { bankName: string }) {
-  const meta = getBankLogoMeta(bankName);
+  const asset = getBankLogoAsset(bankName);
+  const label = (asset?.label ?? bankName) || "Bank";
 
   return (
     <span
-      aria-label={`Logo ${meta.label}`}
-      className="grid size-11 shrink-0 place-items-center rounded-[0.85rem] bg-white"
-      role="img"
+      className="flex h-9 w-11 shrink-0 items-center justify-center rounded-[0.45rem] bg-white"
+      role={asset ? undefined : "img"}
+      aria-label={asset ? undefined : `Logo ${label}`}
     >
-      <svg aria-hidden="true" className="h-9 w-9" viewBox="0 0 44 44">
-        {meta.variant === "bca" ? (
-          <>
-            <rect fill="none" height="30" rx="6" stroke={meta.primary} strokeWidth="2.5" width="30" x="7" y="7" />
-            <circle cx="17" cy="18" fill={meta.secondary} r="3.1" />
-            <circle cx="25" cy="18" fill={meta.secondary} r="3.1" />
-            <circle cx="17" cy="26" fill={meta.secondary} r="3.1" />
-            <circle cx="25" cy="26" fill={meta.secondary} r="3.1" />
-            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="7" fontWeight="800" x="13" y="38">
-              BCA
-            </text>
-          </>
-        ) : meta.variant === "bri" ? (
-          <>
-            <rect fill="none" height="30" rx="5" stroke={meta.primary} strokeWidth="2.8" width="30" x="7" y="7" />
-            <path d="M17 15h7.8c3.5 0 5.7 1.8 5.7 4.7 0 2-1 3.4-2.7 4.1l3.2 5.9h-5.1l-2.6-5.1h-1.7v5.1H17V15Z" fill={meta.primary} />
-            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="7" fontWeight="900" x="13" y="38">
-              BRI
-            </text>
-          </>
-        ) : meta.variant === "bni" ? (
-          <>
-            <path d="M10 13h9v18h-9z" fill={meta.primary} />
-            <path d="M22 13h12l-7.2 8.4L34 31H22l5.8-9.2L22 13Z" fill={meta.secondary} />
-            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="10" fontWeight="900" x="8" y="39">
-              BNI
-            </text>
-          </>
-        ) : meta.variant === "mandiri" ? (
-          <>
-            <path d="M9 18c7-5.8 16.4-5.8 26 0" fill="none" stroke={meta.secondary} strokeLinecap="round" strokeWidth="3.4" />
-            <path d="M10 23c7.4-3.6 15.8-3.6 24 0" fill="none" stroke={meta.secondary} strokeLinecap="round" strokeWidth="2.8" />
-            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="8" fontWeight="900" x="6" y="35">
-              mandiri
-            </text>
-          </>
-        ) : (
-          <>
-            <rect fill={meta.primary} height="26" opacity="0.1" rx="7" width="32" x="6" y="9" />
-            <path d="M11 25h22" stroke={meta.secondary} strokeLinecap="round" strokeWidth="2.6" />
-            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize={meta.code.length > 5 ? "7" : "9"} fontWeight="900" textAnchor="middle" x="22" y="22">
-              {meta.code}
-            </text>
-          </>
-        )}
-      </svg>
+      {asset ? (
+        <Image
+          alt={`Logo ${label}`}
+          className="h-auto max-h-7 w-auto max-w-[2.65rem] object-contain"
+          height={asset.height}
+          loading="eager"
+          sizes="44px"
+          src={asset.src}
+          width={asset.width}
+        />
+      ) : (
+        <span className="text-[0.55rem] font-black uppercase tracking-[0.08em] text-primary">Bank</span>
+      )}
     </span>
   );
 }
 
 function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
+  const bankDisplayName = getBankDisplayName(account.bankName);
+
   return (
     <div
-      aria-label={`Rekening tujuan ${account.bankName}`}
-      className="grid gap-3 rounded-[0.95rem] border border-[#dfe8e3] bg-white px-3.5 py-3 shadow-[0_12px_28px_-24px_rgba(0,74,35,0.35)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cfe0d6] hover:bg-[#fbfdfb] hover:shadow-[0_18px_34px_-26px_rgba(0,74,35,0.36)] sm:grid-cols-[5.5rem_minmax(0,1.08fr)_minmax(0,0.92fr)] sm:items-center"
+      aria-label={`Rekening tujuan ${bankDisplayName}`}
+      className="grid min-h-[4.25rem] grid-cols-[2.9rem_minmax(0,1fr)_1.8rem] items-center gap-x-2.5 gap-y-2 rounded-[0.82rem] border border-[#dde5df] bg-white px-3 py-2.5 shadow-[0_10px_24px_-23px_rgba(0,74,35,0.36)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cfdcd4] hover:bg-[#fbfdfb] hover:shadow-[0_18px_34px_-27px_rgba(0,74,35,0.38)] sm:grid-cols-[3.05rem_minmax(3.5rem,0.56fr)_minmax(7.4rem,1fr)_minmax(5.7rem,0.78fr)_1.8rem]"
       role="listitem"
     >
-      <div className="flex min-w-0 items-center gap-2.5">
-        <BankLogoMark bankName={account.bankName} />
-        <div className="min-w-0 sm:hidden">
-          <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Bank</p>
-          <p className="truncate font-headline text-[1rem] font-black text-[#151a17]">{account.bankName}</p>
-        </div>
-      </div>
-
-      <div className="hidden min-w-0 sm:block">
-        <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Bank</p>
-        <p className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#151a17]">{account.bankName}</p>
-      </div>
+      <BankLogoMark bankName={account.bankName} />
 
       <div className="min-w-0">
-        <div className="flex min-h-10 items-center justify-between gap-2">
-          <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Nomor Rekening</p>
-          <AccountCopyButton value={account.accountNumber} />
-        </div>
-        <p className="break-all font-headline text-[1.02rem] font-black leading-tight tracking-[0.03em] text-primary">
+        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">Bank</p>
+        <p className="mt-1 truncate font-headline text-[1.02rem] font-black leading-none text-[#151a17]">
+          {bankDisplayName}
+        </p>
+      </div>
+
+      <div className="col-span-2 min-w-0 sm:col-span-1">
+        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">
+          Nomor Rekening
+        </p>
+        <p className="mt-1 truncate font-headline text-[1rem] font-black leading-none tracking-[0.03em] text-primary">
           {account.accountNumber}
         </p>
       </div>
 
-      <div className="min-w-0">
-        <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Atas Nama</p>
-        <p className="mt-1 line-clamp-2 text-[0.76rem] font-black uppercase leading-5 tracking-[0.02em] text-[#202421]">
+      <div className="col-span-2 min-w-0 sm:col-span-1">
+        <p className="text-[0.49rem] font-black uppercase leading-none tracking-[0.14em] text-black/45">Atas Nama</p>
+        <p className="mt-1 line-clamp-1 text-[0.65rem] font-black uppercase leading-4 tracking-[0.02em] text-[#202421]">
           {account.accountHolder}
         </p>
+      </div>
+
+      <div className="row-start-1 flex justify-end sm:row-auto">
+        <AccountCopyButton compact value={account.accountNumber} />
       </div>
     </div>
   );
@@ -2038,7 +2079,7 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div className="grid items-stretch gap-8 lg:grid-cols-3">
+      <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]">
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10">
@@ -2126,7 +2167,7 @@ export function TransactionDetailPage({
                 {transferAccounts.length > 0 ? (
                   <div
                     aria-label="Daftar rekening tujuan"
-                    className="max-h-[11.25rem] space-y-3 overflow-y-auto pr-1 [scrollbar-gutter:stable]"
+                    className="max-h-[14.75rem] space-y-2 overflow-y-auto pr-1 [scrollbar-gutter:stable] [scrollbar-width:thin]"
                     role="list"
                   >
                     {transferAccounts.map((account) => (

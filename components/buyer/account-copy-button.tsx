@@ -6,9 +6,10 @@ import { Check, Copy, CreditCard, Hash } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-export function AccountCopyButton({ value }: { value: string }) {
+export function AccountCopyButton({ compact = false, value }: { compact?: boolean; value: string }) {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pulseRadiusClass = compact ? "rounded-[0.72rem]" : "rounded-[1rem]";
 
   useEffect(() => {
     setMounted(true);
@@ -82,33 +83,40 @@ export function AccountCopyButton({ value }: { value: string }) {
           )
         : null}
       <span className="relative inline-flex items-center justify-center">
-      <span
-        className={cn(
-          "pointer-events-none absolute inset-0 rounded-[1rem] border border-[#d9b85d]/70 transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          copied ? "scale-[1.42] opacity-0" : "scale-100 opacity-0"
-        )}
-      />
-      <span
-        className={cn(
-          "pointer-events-none absolute inset-0 rounded-[1rem] bg-[radial-gradient(circle_at_center,rgba(217,184,93,0.26),transparent_68%)] transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          copied ? "scale-[1.25] opacity-100" : "scale-75 opacity-0"
-        )}
-      />
-      <button
-        aria-label={copied ? "Nomor rekening tersalin" : "Salin nomor rekening"}
-        className={cn(
-          "relative inline-flex size-10 items-center justify-center overflow-hidden rounded-[1rem] border border-transparent text-[#8d6c08] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          copied
-            ? "scale-[1.05] border-[#ead9a6] bg-[linear-gradient(145deg,#fff7dd,#f3e3a8)] shadow-[0_18px_40px_-20px_rgba(181,141,20,0.68)]"
-            : "bg-white/75 hover:-translate-y-0.5 hover:border-[#efe3bc] hover:bg-[#f8f2df] hover:shadow-[0_16px_32px_-24px_rgba(181,141,20,0.48)] active:scale-[0.98]"
-        )}
-        onClick={handleCopy}
-        type="button"
-      >
-        <span className="relative z-10">
-          {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-        </span>
-      </button>
+        <span
+          className={cn(
+            "pointer-events-none absolute inset-0 border border-[#d9b85d]/70 transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            pulseRadiusClass,
+            copied ? "scale-[1.42] opacity-0" : "scale-100 opacity-0"
+          )}
+        />
+        <span
+          className={cn(
+            "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,184,93,0.26),transparent_68%)] transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            pulseRadiusClass,
+            copied ? "scale-[1.25] opacity-100" : "scale-75 opacity-0"
+          )}
+        />
+        <button
+          aria-label={copied ? "Nomor rekening tersalin" : "Salin nomor rekening"}
+          className={cn(
+            "relative inline-flex items-center justify-center overflow-hidden border border-transparent text-[#9d750c] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            compact ? "size-7 rounded-[0.72rem]" : "size-10 rounded-[1rem]",
+            copied
+              ? "scale-[1.05] border-[#ead9a6] bg-[linear-gradient(145deg,#fff7dd,#f3e3a8)] shadow-[0_18px_40px_-20px_rgba(181,141,20,0.68)]"
+              : "bg-white/75 hover:-translate-y-0.5 hover:border-[#efe3bc] hover:bg-[#f8f2df] hover:shadow-[0_16px_32px_-24px_rgba(181,141,20,0.48)] active:scale-[0.98]"
+          )}
+          onClick={handleCopy}
+          type="button"
+        >
+          <span className="relative z-10">
+            {copied ? (
+              <Check className={compact ? "size-3.5" : "size-4"} />
+            ) : (
+              <Copy className={compact ? "size-3.5" : "size-4"} />
+            )}
+          </span>
+        </button>
       </span>
     </>
   );

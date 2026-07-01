@@ -50,6 +50,12 @@ export function normalizeUnitBankName(value: unknown) {
   if (normalized.includes("danamon")) {
     return "Danamon";
   }
+  if (normalized.includes("maybank")) {
+    return "Maybank";
+  }
+  if (normalized.includes("muamalat")) {
+    return "Muamalat";
+  }
 
   return bankName.replace(/^bank\s+/i, "");
 }
