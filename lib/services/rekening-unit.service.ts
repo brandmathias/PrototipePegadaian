@@ -31,7 +31,7 @@ export async function listUnitAccounts(unitId: string) {
   const accounts = await db
     .select()
     .from(unitAccounts)
-    .where(and(eq(unitAccounts.unitId, unitId), eq(unitAccounts.isActive, true)))
+    .where(eq(unitAccounts.unitId, unitId))
     .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
 
   return accounts.map(serializeUnitAccount);

@@ -217,7 +217,7 @@ export async function listUnits() {
       count: sql<number>`count(*)`
     })
     .from(unitAccounts)
-    .where(and(inArray(unitAccounts.unitId, unitIds), eq(unitAccounts.isActive, true)))
+    .where(inArray(unitAccounts.unitId, unitIds))
     .groupBy(unitAccounts.unitId);
 
   const activeAccounts = await db
@@ -275,7 +275,7 @@ export async function getUnitById(unitId: string) {
   const accounts = await db
     .select()
     .from(unitAccounts)
-    .where(and(eq(unitAccounts.unitId, unitId), eq(unitAccounts.isActive, true)))
+    .where(eq(unitAccounts.unitId, unitId))
     .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
 
   const admins = await db
