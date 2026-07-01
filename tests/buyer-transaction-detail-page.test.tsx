@@ -41,7 +41,30 @@ const transaction: BuyerTransaction = {
   bankName: "Bank Rakyat Indonesia (BRI)",
   bankAccountNumber: "0123-4567-8901-234",
   bankAccountHolder: "PT Pegadaian (Persero)",
-  bankBranch: "Manado"
+  bankBranch: "Manado",
+  bankAccounts: [
+    {
+      id: "rek-bni",
+      bankName: "BNI",
+      accountNumber: "0115489623",
+      accountHolder: "Hendra Wijaya",
+      isActive: true
+    },
+    {
+      id: "rek-bca",
+      bankName: "BCA",
+      accountNumber: "1234567890",
+      accountHolder: "Hendra Wijaya",
+      isActive: false
+    },
+    {
+      id: "rek-bri",
+      bankName: "BRI",
+      accountNumber: "98765432109876",
+      accountHolder: "Hendra Wijaya",
+      isActive: false
+    }
+  ]
 };
 
 describe("buyer transaction detail page", () => {
@@ -63,11 +86,15 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /rincian transaksi/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
-    const accountNumber = screen.getByText(/0123-4567-8901-234/i);
-    expect(accountNumber).toBeInTheDocument();
-    expect(accountNumber).toHaveClass("break-all");
-    expect(accountNumber).not.toHaveClass("whitespace-nowrap");
-    expect(accountNumber.closest("div")).not.toHaveClass("overflow-x-auto");
+    const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
+    expect(accountList).toHaveClass("max-h-[11.25rem]", "overflow-y-auto");
+    expect(screen.getByLabelText(/rekening tujuan bni/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/rekening tujuan bca/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/rekening tujuan bri/i)).toBeInTheDocument();
+    expect(screen.getByText(/0115489623/i)).toBeInTheDocument();
+    expect(screen.getByText(/1234567890/i)).toBeInTheDocument();
+    expect(screen.getByText(/98765432109876/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /salin nomor rekening/i })).toHaveLength(3);
     expect(screen.getByRole("button", { name: /kembali ke detail barang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });

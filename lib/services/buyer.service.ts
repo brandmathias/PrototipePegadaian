@@ -464,6 +464,18 @@ async function getTransactionRowById(userId: string, transactionId: string) {
   return row ?? null;
 }
 
+async function listUnitTransferAccounts(unitId?: string | null) {
+  if (!unitId) {
+    return [];
+  }
+
+  return db
+    .select()
+    .from(unitAccounts)
+    .where(eq(unitAccounts.unitId, unitId))
+    .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
+}
+
 export async function listBuyerTransactions(userId: string, options?: BuyerReadOptions) {
   await refreshBuyerAuctionSettlementState(options);
 
@@ -480,7 +492,9 @@ export async function getBuyerTransactionById(userId: string, transactionId: str
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  return serializeBuyerTransaction(row);
+  const accounts = await listUnitTransferAccounts(row.unitId);
+
+  return serializeBuyerTransaction({ ...row, accounts });
 }
 
 export async function listBuyerBids(userId: string, options?: BuyerReadOptions) {

@@ -63,7 +63,14 @@ import {
   getBuyerTransactionsHref,
   isBuyerWinnerAnnouncementTransaction
 } from "@/lib/buyer/transaction-links";
-import type { BuyerBid, BuyerBidStatus, BuyerBidVerification, BuyerTransaction, BuyerTransactionStatus } from "@/lib/contracts/buyer";
+import type {
+  BuyerBankAccount,
+  BuyerBid,
+  BuyerBidStatus,
+  BuyerBidVerification,
+  BuyerTransaction,
+  BuyerTransactionStatus
+} from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
@@ -120,6 +127,8 @@ const BUYER_SETTLEMENT_LOCKED_MESSAGE =
 const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png";
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
+const PAYMENT_DETAIL_CARD_CLASS =
+  "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -379,6 +388,173 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
 
 function getBuyerPhone(buyer: BuyerSessionUser, summaryPhone?: string) {
   return buyer.phoneNumber ?? summaryPhone ?? "-";
+}
+
+function getTransactionBankAccounts(transaction: BuyerTransaction): BuyerBankAccount[] {
+  const accounts = (transaction.bankAccounts ?? []).filter((account) => account.accountNumber);
+
+  if (accounts.length > 0) {
+    return accounts;
+  }
+
+  if (!transaction.bankAccountNumber) {
+    return [];
+  }
+
+  return [
+    {
+      bankName: transaction.bankName ?? "Bank Unit",
+      accountNumber: transaction.bankAccountNumber,
+      accountHolder: transaction.bankAccountHolder ?? "-",
+      branch: transaction.bankBranch,
+      isActive: true
+    }
+  ];
+}
+
+function getBankLogoMeta(bankName: string) {
+  const normalized = bankName.toLowerCase();
+
+  if (normalized.includes("bni") || normalized.includes("negara indonesia")) {
+    return { code: "BNI", label: "BNI", primary: "#f15a24", secondary: "#006b45", variant: "bni" };
+  }
+
+  if (normalized.includes("bca") || normalized.includes("central asia")) {
+    return { code: "BCA", label: "BCA", primary: "#0d47a1", secondary: "#1976d2", variant: "bca" };
+  }
+
+  if (normalized.includes("bri") || normalized.includes("rakyat indonesia")) {
+    return { code: "BRI", label: "BRI", primary: "#005baa", secondary: "#0b6fc6", variant: "bri" };
+  }
+
+  if (normalized.includes("mandiri")) {
+    return { code: "mandiri", label: "Mandiri", primary: "#003d79", secondary: "#f5b400", variant: "mandiri" };
+  }
+
+  if (normalized.includes("bsi") || normalized.includes("syariah")) {
+    return { code: "BSI", label: "BSI", primary: "#00a39b", secondary: "#f0b323", variant: "wordmark" };
+  }
+
+  if (normalized.includes("cimb")) {
+    return { code: "CIMB", label: "CIMB Niaga", primary: "#c4161c", secondary: "#8b1014", variant: "wordmark" };
+  }
+
+  if (normalized.includes("permata")) {
+    return { code: "Permata", label: "Permata", primary: "#0067b1", secondary: "#00a859", variant: "wordmark" };
+  }
+
+  if (normalized.includes("danamon")) {
+    return { code: "Danamon", label: "Danamon", primary: "#f58220", secondary: "#00843d", variant: "wordmark" };
+  }
+
+  if (normalized.includes("btn") || normalized.includes("tabungan negara")) {
+    return { code: "BTN", label: "BTN", primary: "#005aa9", secondary: "#f47b20", variant: "wordmark" };
+  }
+
+  if (normalized.includes("mega")) {
+    return { code: "Mega", label: "Mega", primary: "#e30613", secondary: "#005baa", variant: "wordmark" };
+  }
+
+  return { code: "BANK", label: bankName || "Bank", primary: "#006747", secondary: "#d7ad2f", variant: "wordmark" };
+}
+
+function BankLogoMark({ bankName }: { bankName: string }) {
+  const meta = getBankLogoMeta(bankName);
+
+  return (
+    <span
+      aria-label={`Logo ${meta.label}`}
+      className="grid size-11 shrink-0 place-items-center rounded-[0.85rem] bg-white"
+      role="img"
+    >
+      <svg aria-hidden="true" className="h-9 w-9" viewBox="0 0 44 44">
+        {meta.variant === "bca" ? (
+          <>
+            <rect fill="none" height="30" rx="6" stroke={meta.primary} strokeWidth="2.5" width="30" x="7" y="7" />
+            <circle cx="17" cy="18" fill={meta.secondary} r="3.1" />
+            <circle cx="25" cy="18" fill={meta.secondary} r="3.1" />
+            <circle cx="17" cy="26" fill={meta.secondary} r="3.1" />
+            <circle cx="25" cy="26" fill={meta.secondary} r="3.1" />
+            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="7" fontWeight="800" x="13" y="38">
+              BCA
+            </text>
+          </>
+        ) : meta.variant === "bri" ? (
+          <>
+            <rect fill="none" height="30" rx="5" stroke={meta.primary} strokeWidth="2.8" width="30" x="7" y="7" />
+            <path d="M17 15h7.8c3.5 0 5.7 1.8 5.7 4.7 0 2-1 3.4-2.7 4.1l3.2 5.9h-5.1l-2.6-5.1h-1.7v5.1H17V15Z" fill={meta.primary} />
+            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="7" fontWeight="900" x="13" y="38">
+              BRI
+            </text>
+          </>
+        ) : meta.variant === "bni" ? (
+          <>
+            <path d="M10 13h9v18h-9z" fill={meta.primary} />
+            <path d="M22 13h12l-7.2 8.4L34 31H22l5.8-9.2L22 13Z" fill={meta.secondary} />
+            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="10" fontWeight="900" x="8" y="39">
+              BNI
+            </text>
+          </>
+        ) : meta.variant === "mandiri" ? (
+          <>
+            <path d="M9 18c7-5.8 16.4-5.8 26 0" fill="none" stroke={meta.secondary} strokeLinecap="round" strokeWidth="3.4" />
+            <path d="M10 23c7.4-3.6 15.8-3.6 24 0" fill="none" stroke={meta.secondary} strokeLinecap="round" strokeWidth="2.8" />
+            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize="8" fontWeight="900" x="6" y="35">
+              mandiri
+            </text>
+          </>
+        ) : (
+          <>
+            <rect fill={meta.primary} height="26" opacity="0.1" rx="7" width="32" x="6" y="9" />
+            <path d="M11 25h22" stroke={meta.secondary} strokeLinecap="round" strokeWidth="2.6" />
+            <text fill={meta.primary} fontFamily="Arial, sans-serif" fontSize={meta.code.length > 5 ? "7" : "9"} fontWeight="900" textAnchor="middle" x="22" y="22">
+              {meta.code}
+            </text>
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
+
+function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
+  return (
+    <div
+      aria-label={`Rekening tujuan ${account.bankName}`}
+      className="grid gap-3 rounded-[0.95rem] border border-[#dfe8e3] bg-white px-3.5 py-3 shadow-[0_12px_28px_-24px_rgba(0,74,35,0.35)] transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#cfe0d6] hover:bg-[#fbfdfb] hover:shadow-[0_18px_34px_-26px_rgba(0,74,35,0.36)] sm:grid-cols-[5.5rem_minmax(0,1.08fr)_minmax(0,0.92fr)] sm:items-center"
+      role="listitem"
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <BankLogoMark bankName={account.bankName} />
+        <div className="min-w-0 sm:hidden">
+          <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Bank</p>
+          <p className="truncate font-headline text-[1rem] font-black text-[#151a17]">{account.bankName}</p>
+        </div>
+      </div>
+
+      <div className="hidden min-w-0 sm:block">
+        <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Bank</p>
+        <p className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#151a17]">{account.bankName}</p>
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex min-h-10 items-center justify-between gap-2">
+          <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Nomor Rekening</p>
+          <AccountCopyButton value={account.accountNumber} />
+        </div>
+        <p className="break-all font-headline text-[1.02rem] font-black leading-tight tracking-[0.03em] text-primary">
+          {account.accountNumber}
+        </p>
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-[0.56rem] font-black uppercase tracking-[0.16em] text-black/45">Atas Nama</p>
+        <p className="mt-1 line-clamp-2 text-[0.76rem] font-black uppercase leading-5 tracking-[0.02em] text-[#202421]">
+          {account.accountHolder}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function BuyerPaymentCountdown({
@@ -1750,6 +1926,7 @@ export function TransactionDetailPage({
   }
 
   const isTransfer = transaction.method === "TRANSFER_BANK";
+  const transferAccounts = isTransfer ? getTransactionBankAccounts(transaction) : [];
   const isVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
   const isCompleted = transaction.status === "SELESAI";
   const showReceipt = isVerified;
@@ -1861,8 +2038,8 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_1fr_0.9fr]">
-        <div className="relative h-fit rounded-xl bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+      <div className="grid items-stretch gap-8 lg:grid-cols-3">
+        <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10">
             <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
@@ -1933,9 +2110,8 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        <div className="relative h-fit overflow-hidden rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[2.9rem] bg-[#f9f1d8]" />
-          <div className="relative z-10">
+        <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")}>
+          <div className="relative z-10 flex h-full flex-col">
             <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
               {isTransfer ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
               {isTransfer ? "Rekening Tujuan" : "Bayar Langsung di Unit"}
@@ -1943,33 +2119,28 @@ export function TransactionDetailPage({
 
             {isTransfer ? (
               <>
-                <div className="rounded-lg border-l-4 border-[#735c00] bg-[#f3f3f1] p-5">
-                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
-                    Bank
-                  </p>
-                  <p className="mb-4 font-body text-[1.85rem] font-semibold leading-tight text-[#1a1c1c]">
-                    {transaction.bankName}
-                  </p>
+                <p className="-mt-2 mb-5 font-body text-sm leading-7 text-[#62655f]">
+                  Pilih salah satu rekening di bawah untuk melakukan transfer.
+                </p>
 
-                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
-                    Nomor Rekening
-                  </p>
-                  <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-black/10 bg-white px-4 py-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="break-all font-headline text-[clamp(1.18rem,6vw,1.8rem)] font-black leading-tight tracking-[0.04em] text-primary">
-                        {transaction.bankAccountNumber ?? "-"}
-                      </p>
-                    </div>
-                    <AccountCopyButton value={transaction.bankAccountNumber ?? "-"} />
+                {transferAccounts.length > 0 ? (
+                  <div
+                    aria-label="Daftar rekening tujuan"
+                    className="max-h-[11.25rem] space-y-3 overflow-y-auto pr-1 [scrollbar-gutter:stable]"
+                    role="list"
+                  >
+                    {transferAccounts.map((account) => (
+                      <DestinationAccountRow
+                        account={account}
+                        key={account.id ?? `${account.bankName}-${account.accountNumber}`}
+                      />
+                    ))}
                   </div>
-
-                  <p className="mb-1 font-body text-[0.74rem] font-medium uppercase tracking-[0.08em] text-[#6e716c]">
-                    Atas Nama
-                  </p>
-                  <p className="font-body text-[1rem] font-semibold uppercase tracking-[0.04em] text-[#1a1c1c]">
-                    {transaction.bankAccountHolder}
-                  </p>
-                </div>
+                ) : (
+                  <div className="rounded-[0.95rem] border border-dashed border-[#dfe8e3] bg-[#fbfdfb] p-5 text-sm font-semibold leading-7 text-[#62655f]">
+                    Rekening tujuan unit belum tersedia. Hubungi admin unit sebelum melakukan transfer.
+                  </div>
+                )}
 
                 <div className="mt-5 flex items-start gap-3 rounded-lg bg-[#f8eced] p-4">
                   <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#8f3a47]" />
@@ -2006,7 +2177,7 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        <div className="h-fit rounded-xl bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]">
+        <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <h2 className="mb-2 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
             <UploadCloud className="size-5" />
             {proofPanelTitle}

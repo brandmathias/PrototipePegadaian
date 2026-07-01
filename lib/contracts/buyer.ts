@@ -12,6 +12,15 @@ export type BuyerTransactionStatus =
 
 export type BuyerPaymentMethod = "TRANSFER_BANK" | "BAYAR_LANGSUNG";
 
+export type BuyerBankAccount = {
+  id?: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  branch?: string;
+  isActive?: boolean;
+};
+
 export type BuyerHandoverProof = {
   fileUrl: string;
   uploadedAt: string;
@@ -47,6 +56,7 @@ export type BuyerTransaction = {
   bankAccountNumber?: string;
   bankAccountHolder?: string;
   bankBranch?: string;
+  bankAccounts?: BuyerBankAccount[];
   paymentProof?: string;
   rejectionReason?: string;
   winnerContext?: string;

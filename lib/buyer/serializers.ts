@@ -1,16 +1,18 @@
 import { getCountdownState } from "@/lib/countdown";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
-import type { BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
+import type { BuyerBankAccount, BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot, LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 import { getHandoverAutoCompleteDeadline } from "@/lib/transactions/handover-finalization";
 
 type AccountShape = {
+  id?: string;
   bankName: string | null;
   accountNumber: string | null;
   accountHolderName: string | null;
   branchName?: string | null;
+  isActive?: boolean | null;
 } | null;
 
 type PublicLotShape = {
@@ -68,6 +70,7 @@ type BuyerTransactionShape = {
   unitName: string;
   unitAddress: string;
   account?: AccountShape;
+  accounts?: AccountShape[];
 };
 
 type BuyerBidShape = {
@@ -214,6 +217,35 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   ];
 }
 
+function serializeBuyerBankAccount(account: AccountShape): BuyerBankAccount | null {
+  if (!account?.bankName || !account.accountNumber || !account.accountHolderName) {
+    return null;
+  }
+
+  return {
+    id: account.id,
+    bankName: account.bankName,
+    accountNumber: account.accountNumber,
+    accountHolder: account.accountHolderName,
+    branch: account.branchName ?? undefined,
+    isActive: Boolean(account.isActive)
+  };
+}
+
+function getBuyerBankAccounts(row: BuyerTransactionShape) {
+  const accounts = (row.accounts ?? [])
+    .map(serializeBuyerBankAccount)
+    .filter((account): account is BuyerBankAccount => Boolean(account));
+
+  if (accounts.length > 0) {
+    return accounts;
+  }
+
+  const fallbackAccount = row.account ? serializeBuyerBankAccount(row.account) : null;
+
+  return fallbackAccount ? [fallbackAccount] : [];
+}
+
 export function serializePublicLot(row: PublicLotShape): Lot {
   const isVickrey = row.marketingMode === "vickrey";
   const price = toNumber(isVickrey ? row.marketingBasePrice : row.marketingPrice);
@@ -295,6 +327,8 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
       : row.completionSource === "buyer"
         ? "BUYER"
         : undefined;
+  const bankAccounts = getBuyerBankAccounts(row);
+  const primaryBankAccount = bankAccounts.find((account) => account.isActive) ?? bankAccounts[0];
 
   return {
     id: row.id,
@@ -315,10 +349,11 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
     paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",
     paymentNotes: getPaymentNotes(row),
-    bankName: row.account?.bankName ?? undefined,
-    bankAccountNumber: row.account?.accountNumber ?? undefined,
-    bankAccountHolder: row.account?.accountHolderName ?? undefined,
-    bankBranch: row.account?.branchName ?? undefined,
+    bankName: primaryBankAccount?.bankName ?? row.account?.bankName ?? undefined,
+    bankAccountNumber: primaryBankAccount?.accountNumber ?? row.account?.accountNumber ?? undefined,
+    bankAccountHolder: primaryBankAccount?.accountHolder ?? row.account?.accountHolderName ?? undefined,
+    bankBranch: primaryBankAccount?.branch ?? row.account?.branchName ?? undefined,
+    bankAccounts,
     paymentProof: proof.proofUrl,
     rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,

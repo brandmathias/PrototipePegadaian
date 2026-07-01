@@ -148,6 +148,71 @@ describe("buyer serializers", () => {
     expect(transaction.deadlineAt).toBeUndefined();
   });
 
+  it("exposes all transfer destination accounts for fixed price payment details", () => {
+    const transaction = serializeBuyerTransaction({
+      id: "trx-fixed-accounts",
+      pemasaranId: "pm-fixed",
+      type: "fixed_price",
+      amount: "12450000",
+      paymentMethod: "transfer",
+      status: "menunggu_pembayaran",
+      proofUrl: null,
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: null,
+      verifiedAt: null,
+      createdAt: new Date("2026-05-04T02:30:00Z"),
+      lotName: "Kalung Emas 18K",
+      lotId: "barang-1",
+      imageUrl: "/uploads/barang/kalung.jpg",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      account: {
+        bankName: "BRI",
+        accountNumber: "98765432109876",
+        accountHolderName: "Hendra Wijaya",
+        branchName: "Manado",
+        isActive: true
+      },
+      accounts: [
+        {
+          id: "rek-bri",
+          bankName: "BRI",
+          accountNumber: "98765432109876",
+          accountHolderName: "Hendra Wijaya",
+          branchName: "Manado",
+          isActive: true
+        },
+        {
+          id: "rek-bca",
+          bankName: "BCA",
+          accountNumber: "1234567890",
+          accountHolderName: "Hendra Wijaya",
+          branchName: null,
+          isActive: false
+        }
+      ]
+    });
+
+    expect(transaction.bankAccountNumber).toBe("98765432109876");
+    expect(transaction.bankAccounts).toEqual([
+      expect.objectContaining({
+        id: "rek-bri",
+        bankName: "BRI",
+        accountNumber: "98765432109876",
+        accountHolder: "Hendra Wijaya",
+        isActive: true
+      }),
+      expect.objectContaining({
+        id: "rek-bca",
+        bankName: "BCA",
+        accountNumber: "1234567890",
+        accountHolder: "Hendra Wijaya",
+        isActive: false
+      })
+    ]);
+  });
+
   it("keeps stale fixed price waiting-payment rows deadline-free if encountered", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-waiting",
