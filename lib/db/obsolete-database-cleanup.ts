@@ -18,8 +18,12 @@ where "type" = 'blacklist_review_submitted'
    or "action_href" ilike '%/review-pelanggaran%'
    or "action_href" ilike '%/bantuan/blacklist%';
 
+update "blacklist_action_log"
+set "action" = 'cabut_manual'
+where "action" = 'review_disetujui';
+
 delete from "blacklist_action_log"
-where "action" in ('review_diajukan', 'otomatis');
+where "action" in ('review_diajukan', 'review_ditolak', 'otomatis');
 
 update "blacklist_action_log"
 set "note" = replace(
@@ -28,6 +32,10 @@ set "note" = replace(
   'membutuhkan evaluasi manual'
 )
 where "note" like '%membutuhkan review manual%';
+
+update "pelanggaran_user"
+set "resolution_type" = 'cabut_manual'
+where "resolution_type" = 'review_disetujui';
 
 delete from "barang"
 where "id" like 'seed-level3-review-%';

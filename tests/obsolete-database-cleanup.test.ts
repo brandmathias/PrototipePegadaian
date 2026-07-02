@@ -44,7 +44,15 @@ describe("obsolete database cleanup", () => {
     expect(normalizedSql).toContain(`'superadmin_account_updated'`);
     expect(normalizedSql).toContain(`'superadmin_account_reset'`);
     expect(normalizedSql).toContain(`'superadmin_account_guardrail'`);
-    expect(normalizedSql).toContain(`"action" in ('review_diajukan', 'otomatis')`);
+    expect(normalizedSql).toContain(
+      `"action" in ('review_diajukan', 'review_ditolak', 'otomatis')`
+    );
+    expect(normalizedSql).toContain(`set "action" = 'cabut_manual'`);
+    expect(normalizedSql).toContain(`where "action" = 'review_disetujui'`);
+    expect(normalizedSql).toContain(`set "resolution_type" = 'cabut_manual'`);
+    expect(normalizedSql).toContain(
+      `where "resolution_type" = 'review_disetujui'`
+    );
     expect(normalizedSql).toMatch(
       /replace\(\s*"note", 'membutuhkan review manual', 'membutuhkan evaluasi manual'\s*\)/
     );
