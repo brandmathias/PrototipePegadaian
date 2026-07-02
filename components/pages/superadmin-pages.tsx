@@ -5644,7 +5644,7 @@ export function SuperAdminManagementPage({
 
       <Card className="overflow-hidden border border-[#dfe8e3] bg-white shadow-[0_28px_80px_-68px_rgba(8,69,50,0.32)]">
         <CardContent className="p-0">
-          <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_22rem]">
             <section className="min-w-0">
               <div className="grid gap-3 border-b border-[#e5eee9] bg-[#fbfcfa] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:px-5">
                 <div className="relative min-w-0">
@@ -5670,7 +5670,7 @@ export function SuperAdminManagementPage({
                 </div>
               </div>
 
-              <div className="hidden grid-cols-[minmax(13rem,1.05fr)_minmax(8rem,0.55fr)_minmax(15rem,1.05fr)_minmax(9rem,0.62fr)_8rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+              <div className="hidden grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] gap-3 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
                 <span>Unit</span>
                 <span>Admin Unit</span>
                 <span>Alamat</span>
@@ -5689,7 +5689,7 @@ export function SuperAdminManagementPage({
                 <div className="divide-y divide-[#edf2ee]">
                   {visibleUnits.map((unit) => (
                     <article
-                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(13rem,1.05fr)_minmax(8rem,0.55fr)_minmax(15rem,1.05fr)_minmax(9rem,0.62fr)_8rem] lg:items-center lg:px-5"
+                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] lg:items-start lg:gap-3 lg:px-5"
                       key={unit.id}
                     >
                       <div className="flex min-w-0 gap-3">
@@ -5711,13 +5711,13 @@ export function SuperAdminManagementPage({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                      <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c] lg:mt-0.5">
                         <UsersRound className="size-4 shrink-0 text-[#006747]" />
                         {unit.adminCount} Admin
                       </div>
 
-                      <div className="min-w-0">
-                        <p className="line-clamp-2 text-[0.78rem] font-semibold leading-5 text-black/58">
+                      <div className="min-w-0 text-left">
+                        <p className="whitespace-normal break-words text-[0.78rem] font-semibold leading-5 text-black/58">
                           {unit.address}
                         </p>
                         <p className="mt-1 text-[0.68rem] font-bold text-black/36 lg:hidden">
@@ -5725,14 +5725,14 @@ export function SuperAdminManagementPage({
                         </p>
                       </div>
 
-                      <div className="inline-flex min-w-0 items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                      <div className="inline-flex min-w-0 items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c] lg:mt-0.5">
                         <MapPin className="size-4 shrink-0 text-[#006747]" />
                         <span className="truncate">{unit.domicile}</span>
                       </div>
 
-                      <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                      <div className="flex min-w-0 flex-wrap justify-start gap-2 lg:justify-end">
                         <DetailActionLink
-                          className="w-full sm:w-auto"
+                          className="w-full min-w-[7.45rem] sm:w-auto"
                           href={`/superadmin/manajemen-unit/${unit.id}`}
                         />
                       </div>
