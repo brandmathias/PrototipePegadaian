@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => {
   const db = {
     select: vi.fn(),
+    transaction: vi.fn(),
     update: vi.fn()
   };
 
@@ -27,6 +28,7 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 }));
 
 import {
+  createAdminBarang,
   getAdminBarangById,
   listAdminBarang,
   listAdminBarangHistory,
@@ -48,6 +50,53 @@ const editPayload = {
     berat: "8 gram"
   }
 };
+
+describe("createAdminBarang", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("allocates an SBG code from the owning unit and PostgreSQL sequence", async () => {
+    const created = {
+      id: "barang-created",
+      code: "SBG-1178725010004741",
+      name: "Cincin Emas",
+      status: "jaminan",
+    };
+    const insertedValues = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([created]),
+    });
+    const tx = {
+      execute: vi.fn().mockResolvedValue({ rows: [{ value: "25010004741" }] }),
+      insert: vi
+        .fn()
+        .mockImplementationOnce(() => ({ values: insertedValues }))
+        .mockImplementationOnce(() => ({ values: vi.fn().mockResolvedValue(undefined) })),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ code: "CP-MND-11787" }]),
+          }),
+        }),
+      }),
+    };
+    mocks.db.transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+    await createAdminBarang("unit-wanea", "admin-1", {
+      ...editPayload,
+      name: "Cincin Emas",
+    });
+
+    expect(tx.execute).toHaveBeenCalledOnce();
+    expect(insertedValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        unitId: "unit-wanea",
+        code: "SBG-1178725010004741",
+        name: "Cincin Emas",
+      }),
+    );
+  });
+});
 
 describe("listAdminBarang", () => {
   beforeEach(() => {

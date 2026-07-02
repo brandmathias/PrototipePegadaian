@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { canEditMarketedBarang } from "@/lib/admin-unit/marketing-edit-policy";
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
+import { formatSbgCode } from "@/lib/barang/sbg-code";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
   validateAdminBarangPayload,
@@ -12,15 +13,11 @@ import {
 } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema/auth";
-import { barang, bids, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang, transaksi } from "@/lib/db/schema";
+import { barang, bids, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang, transaksi, units } from "@/lib/db/schema";
 import { formatAppDateTime } from "@/lib/timezone";
 
 function toUtcDate(value: string) {
   return new Date(`${value}T00:00:00.000Z`);
-}
-
-function makeBarangCode() {
-  return `BRG-${Date.now().toString().slice(-8)}`;
 }
 
 function isLikelyImageMedia(media: { type: string; url: string }) {
@@ -395,12 +392,33 @@ export async function createAdminBarang(
   const media = validateAdminBarangMediaList(input.media);
 
   const created = await db.transaction(async (tx) => {
+    const [unit] = await tx
+      .select({ code: units.code })
+      .from(units)
+      .where(eq(units.id, unitId))
+      .limit(1);
+
+    if (!unit) {
+      throw new Error("Unit barang belum ditemukan.");
+    }
+
+    const sequenceResult = await tx.execute<{ value: string }>(
+      sql`select nextval('barang_sbg_number_seq')::text as value`,
+    );
+    const sequenceValue = sequenceResult.rows[0]?.value;
+
+    if (!sequenceValue) {
+      throw new Error("Nomor SBG belum dapat dibuat.");
+    }
+
+    const code = formatSbgCode(unit.code, BigInt(sequenceValue));
+
     const [createdBarang] = await tx
       .insert(barang)
       .values({
         id: crypto.randomUUID(),
         unitId,
-        code: makeBarangCode(),
+        code,
         name: payload.name,
         category: payload.category,
         condition: payload.condition,
