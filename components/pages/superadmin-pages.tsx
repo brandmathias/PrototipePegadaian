@@ -5670,12 +5670,12 @@ export function SuperAdminManagementPage({
                 </div>
               </div>
 
-              <div className="hidden grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] gap-3 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+              <div className="hidden grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] gap-3 border-b border-[#edf2ee] px-5 py-3 text-center text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
                 <span>Unit</span>
                 <span>Admin Unit</span>
                 <span>Alamat</span>
                 <span>Domisili</span>
-                <span className="text-right">Aksi</span>
+                <span>Aksi</span>
               </div>
 
               {filteredUnits.length === 0 ? (
