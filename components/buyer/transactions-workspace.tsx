@@ -425,10 +425,10 @@ function TransactionsTabButton({
     <button
       aria-pressed={active}
       className={cn(
-        "group relative flex flex-1 sm:flex-none sm:min-w-[14.5rem] items-center justify-center rounded-xl sm:rounded-[1.75rem] px-4 py-3 sm:px-8 sm:py-6 text-sm sm:text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden active:scale-[0.98]",
+        "group relative flex flex-1 sm:flex-none sm:min-w-[14.5rem] items-center justify-center rounded-xl sm:rounded-[1.75rem] px-4 py-3.5 sm:px-8 sm:py-5 text-sm sm:text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden active:scale-[0.98]",
         active
-          ? "bg-white text-[#006747] shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
-          : "bg-transparent text-slate-500 hover:text-[#006747]"
+          ? "bg-white text-[#006747] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-200/50"
+          : "bg-transparent text-slate-500 hover:text-[#006747] border border-transparent"
       )}
       type="button"
       onClick={onClick}
@@ -983,7 +983,7 @@ export function TransactionsWorkspace({
 
   return (
     <div className="space-y-6 bg-[#FAFAFA]">
-      <div className="inline-flex w-full sm:w-auto p-1.5 bg-[#f5f5f2] rounded-2xl sm:rounded-[2.1rem] gap-1">
+      <div className="inline-flex w-full sm:w-auto p-1 bg-[#f5f5f2] border border-slate-200/60 rounded-[1rem] sm:rounded-[2rem] gap-1 shadow-[0_2px_12px_rgba(0,0,0,0.015)]">
         <TransactionsTabButton
           active={tab === "transactions"}
           label="Semua Transaksi"
