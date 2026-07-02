@@ -17,19 +17,14 @@ export type NotificationType =
   | "admin_bid_submitted"
   | "admin_vickrey_result"
   | "admin_payment_overdue"
-  | "superadmin_policy_alert"
-  | "superadmin_account_created"
-  | "superadmin_account_updated"
-  | "superadmin_account_reset"
-  | "superadmin_account_guardrail";
+  | "superadmin_policy_alert";
 
 export type NotificationEntityType =
   | "transaction"
   | "pemasaran"
   | "blacklist"
   | "barang"
-  | "superadmin_account"
-  | "superadmin_audit";
+  | "superadmin_account";
 
 export type NotificationInput = {
   userId: string;
