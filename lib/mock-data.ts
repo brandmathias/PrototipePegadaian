@@ -500,7 +500,7 @@ export function getBidHistoryByLotId(lotId: string) {
 export const adminSummary = {
   unitName: "Admin Unit Manado",
   subtitle: "Ringkasan workflow admin unit hari ini",
-  unitCode: "ADM-MND-01",
+  unitCode: "CP-MND-11793",
   activeBank: "BRI 0123-4567-8901-234",
   metrics: [
     { label: "Barang Gadai", value: "2", detail: "1 mendekati jatuh tempo" },

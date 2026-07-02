@@ -1151,7 +1151,7 @@ export function AdminInventoryEditPage({
     ? (item.media as AdminBarangMedia[])
     : [];
   const editFormId = `admin-barang-edit-${String(item.id)}`;
-  const auditCode = String(item.code ?? item.itemCode ?? `BRG-${String(item.id).slice(0, 8).toUpperCase()}`);
+  const auditCode = String(item.code ?? item.itemCode ?? "Kode SBG belum tersedia");
   const auditValue = Number(item.appraisalValue ?? item.price ?? 0);
 
   return (
