@@ -76,11 +76,6 @@ const LazyAdminBlacklistDetailPage = dynamic<AdminPageProps<"AdminBlacklistDetai
   { loading: AdminPageFallback, ssr: false }
 );
 
-const LazyAdminBlacklistExtendPage = dynamic<AdminPageProps<"AdminBlacklistExtendPage">>(
-  () => import("@/components/pages/admin-pages").then((module) => module.AdminBlacklistExtendPage),
-  { loading: AdminPageFallback, ssr: false }
-);
-
 const LazyAdminProfilePage = dynamic<AdminPageProps<"AdminProfilePage">>(
   () => import("@/components/pages/admin-pages").then((module) => module.AdminProfilePage),
   { loading: AdminPageFallback, ssr: false }
@@ -128,10 +123,6 @@ export function AdminBlacklistPage(props: AdminPageProps<"AdminBlacklistPage">) 
 
 export function AdminBlacklistDetailPage(props: AdminPageProps<"AdminBlacklistDetailPage">) {
   return <LazyAdminBlacklistDetailPage {...props} />;
-}
-
-export function AdminBlacklistExtendPage(props: AdminPageProps<"AdminBlacklistExtendPage">) {
-  return <LazyAdminBlacklistExtendPage {...props} />;
 }
 
 export function AdminProfilePage(props: AdminPageProps<"AdminProfilePage">) {

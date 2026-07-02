@@ -304,7 +304,7 @@ async function getEffectiveBuyerBlacklistState(userId: string) {
   const activeByDate =
     !effectiveState.blockedUntil ||
     effectiveState.blockedUntil.getTime() > new Date().getTime();
-  const active = Boolean(blacklist) && policy.level > 0 && (policy.requiresManualReview || activeByDate);
+  const active = Boolean(blacklist) && policy.level > 0 && activeByDate;
 
   return {
     active,
@@ -970,8 +970,8 @@ export async function submitVickreyBid(userId: string, pemasaranId: string, inpu
   if (blacklistState.active) {
     const restriction = blacklistState.policy;
     throw new Error(
-      restriction.requiresManualReview
-        ? "Akun Anda sedang dalam pembatasan level 3 dan perlu review admin sebelum ikut Lelang Tertutup."
+      restriction.suspendsLogin
+        ? "Akun Anda sedang ditangguhkan selama masa pembatasan Level 3."
         : "Akun Anda sedang dibatasi untuk mengikuti Lelang Tertutup."
     );
   }

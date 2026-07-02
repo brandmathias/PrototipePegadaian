@@ -75,9 +75,6 @@ function getRestrictionCopy(entry: AdminBlacklistItem) {
   if (!isActiveRestriction(entry)) {
     return "Pembatasan selesai";
   }
-  if (isPermanentBlacklist(entry)) {
-    return "Blacklist permanen";
-  }
   if (isDueSoon(entry)) {
     return "Berakhir dekat";
   }
@@ -87,7 +84,6 @@ function getRestrictionCopy(entry: AdminBlacklistItem) {
 
 function getRestrictionTone(entry: AdminBlacklistItem) {
   if (!isActiveRestriction(entry)) return "neutral";
-  if (isPermanentBlacklist(entry)) return "danger";
   if (isDueSoon(entry)) return "warning";
 
   return "success";
@@ -175,15 +171,6 @@ function formatShortDate(date: Date | null) {
   }).format(date);
 }
 
-function isPermanentBlacklist(entry: AdminBlacklistItem) {
-  return (
-    isActiveRestriction(entry) &&
-    (Boolean(entry.requiresManualReview) ||
-      getEntryLevel(entry) >= 3 ||
-      Number(entry.violations ?? 0) >= 3)
-  );
-}
-
 function getRestrictionLevelMeta(level: number) {
   if (level >= 3) {
     return {
@@ -230,7 +217,6 @@ function RestrictionPill({ entry }: { entry: AdminBlacklistItem }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.68rem] font-black uppercase tracking-[0.12em]",
-        tone === "danger" && "bg-rose-50 text-rose-700",
         tone === "warning" && "bg-amber-50 text-amber-700",
         tone === "success" && "bg-[#e9f6ef] text-[#0a6a49]",
         tone === "neutral" && "bg-[#f0f0ee] text-black/58",

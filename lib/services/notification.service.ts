@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, ilike, isNull, ne, not, or, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, ne, not, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { notifications } from "@/lib/db/schema";
@@ -45,13 +45,6 @@ export type NotificationListOptions = {
 
 type NotificationRow = typeof notifications.$inferSelect;
 
-const LEGACY_BUYER_NOTIFICATION_PATTERNS = [
-  "review insiden",
-  "pengajuan review insiden",
-  "permohonan anda sudah masuk antrean review",
-  "pembatasan untuk insiden ini"
-];
-
 function serializeNotification(row: NotificationRow) {
   return {
     id: row.id,
@@ -81,31 +74,16 @@ function canonicalBlacklistEntityId(userId: string) {
   return `blacklist-${userId}`;
 }
 
-function isLegacyBuyerNotification(row: NotificationRow) {
-  const haystack = `${row.type} ${row.title} ${row.message}`.toLowerCase();
-
-  return (
-    haystack.includes("blacklist_review") ||
-    LEGACY_BUYER_NOTIFICATION_PATTERNS.some((pattern) => haystack.includes(pattern))
-  );
-}
-
 function isStaleBlacklistNotification(row: NotificationRow, userId: string) {
   return row.type === "blacklist_active" && row.entityId !== canonicalBlacklistEntityId(userId);
 }
 
 function isDisplayableNotification(row: NotificationRow, userId: string) {
-  return !isLegacyBuyerNotification(row) && !isStaleBlacklistNotification(row, userId);
+  return !isStaleBlacklistNotification(row, userId);
 }
 
 function displayableNotificationWhere(userId: string) {
-  const legacyClauses = LEGACY_BUYER_NOTIFICATION_PATTERNS.flatMap((pattern) => [
-    ilike(notifications.title, `%${pattern}%`),
-    ilike(notifications.message, `%${pattern}%`)
-  ]);
   const hiddenNotificationClause = or(
-    ilike(notifications.type, "%blacklist_review%"),
-    ...legacyClauses,
     and(
       eq(notifications.type, "blacklist_active"),
       or(isNull(notifications.entityId), ne(notifications.entityId, canonicalBlacklistEntityId(userId)))

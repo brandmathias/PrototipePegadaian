@@ -931,7 +931,7 @@ export const adminBlacklist: Array<{
   reason: string;
   lastIncident: string;
   activeAuctionRestriction: string;
-  history: Array<{ date: string; action: string; actionLabel?: string; actorLabel?: string; actorType?: "manual" | "system"; note: string }>;
+  history: Array<{ date: string; action: string; actionLabel?: string; actorLabel?: string; actorType?: "system"; note: string }>;
 }> = [
   {
     userId: "usr-dimas",
@@ -975,11 +975,11 @@ export const adminBlacklist: Array<{
       },
       {
         date: "20 April 2026",
-        action: "perpanjang_manual",
-        actionLabel: "Perpanjangan manual",
-        actorLabel: "Admin internal",
-        actorType: "manual",
-        note: "Masa blokir diperpanjang 30 hari karena pelanggaran kedua."
+        action: "blokir_otomatis",
+        actionLabel: "Blokir otomatis",
+        actorLabel: "Sistem otomatis",
+        actorType: "system",
+        note: "Sistem meningkatkan pembatasan menjadi Level 2 karena pelanggaran kedua."
       }
     ]
   },
@@ -1233,16 +1233,6 @@ export const superAdminMonitoring = [
     status: "Selesai",
     time: "2 jam lalu",
     detail: "Unit berjalan stabil tanpa keterlambatan proses hasil lelang."
-  },
-  {
-    id: "mon-004",
-    unitId: "unit-beta-port",
-    unit: "Pegadaian CP Basuki Rahmat",
-    scope: "Blacklist",
-    activity: "2 akun diajukan untuk evaluasi blacklist lebih lanjut",
-    status: "Perlu Review",
-    time: "3 jam lalu",
-    detail: "Super admin perlu meninjau apakah blokir diperpanjang atau dicabut."
   }
 ];
 

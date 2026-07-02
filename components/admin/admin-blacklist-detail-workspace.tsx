@@ -59,9 +59,9 @@ const LEVEL_RULES: Record<
   3: {
     duration: "365 hari",
     durationDays: 365,
-    label: "Level 3: Evaluasi manual",
+    label: "Level 3: Ditangguhkan 365 hari",
     restriction:
-      "Tidak bisa membuat transaksi baru dan perlu evaluasi manual oleh Super Admin.",
+      "Tidak bisa membuat transaksi baru sampai masa pembatasan 365 hari selesai.",
     tone: "danger",
   },
 };

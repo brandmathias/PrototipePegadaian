@@ -35,13 +35,14 @@ describe("blacklist restriction policy", () => {
       blocksVickrey: true,
       blocksFixedPrice: true,
       blocksTransactionSettlement: true,
-      requiresManualReview: true
+      suspendsLogin: true
     });
     expect(getBlacklistRestrictionPolicy(9)).toMatchObject({
       level: 3,
       durationDays: 365,
-      requiresManualReview: true
+      suspendsLogin: true
     });
+    expect(getBlacklistRestrictionPolicy(3)).not.toHaveProperty("requiresManualReview");
   });
 
   it("can shorten blacklist duration to hours for demo testing without changing level rules", () => {
@@ -52,7 +53,7 @@ describe("blacklist restriction policy", () => {
     expect(getBlacklistDurationLabel(3, "hours")).toBe("365 jam");
   });
 
-  it("suspends login only when the blacklist reaches level 3 manual review", () => {
+  it("suspends login only during the finite level 3 restriction", () => {
     expect(shouldSuspendLoginForBlacklist(0)).toBe(false);
     expect(shouldSuspendLoginForBlacklist(1)).toBe(false);
     expect(shouldSuspendLoginForBlacklist(2)).toBe(false);

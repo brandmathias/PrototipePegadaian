@@ -283,7 +283,7 @@ describe("buyer vickrey pages", () => {
     expect(within(dialog).getByText(/tidak bisa membuat pembelian harga tetap baru/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 3\+/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/365 hari/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/review admin/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/pulih otomatis/i)).toBeInTheDocument();
     expect(within(dialog).queryByText(/escrow terenkripsi/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/admin unit tidak dapat melihat nominal bid/i)).not.toBeInTheDocument();
 

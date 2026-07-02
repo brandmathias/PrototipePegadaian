@@ -8,9 +8,7 @@ describe("blacklist history serializer", () => {
       serializeBlacklistHistoryEntry({
         action: "blokir_otomatis",
         createdAt: new Date("2026-04-29T08:00:00.000Z"),
-        note: "Buyer tidak membayar hasil lelang dalam 24 jam.",
-        performedByName: null,
-        performedByType: "system"
+        note: "Buyer tidak membayar hasil lelang dalam 24 jam."
       })
     ).toEqual({
       action: "blokir_otomatis",
@@ -22,22 +20,20 @@ describe("blacklist history serializer", () => {
     });
   });
 
-  it("keeps manual actions attributed to their operator", () => {
+  it("keeps automatic expiry actions attributed to the system", () => {
     expect(
       serializeBlacklistHistoryEntry({
-        action: "cabut_manual",
+        action: "selesai_otomatis",
         createdAt: new Date("2026-04-30T10:15:00.000Z"),
-        note: "Pembatasan dicabut setelah verifikasi.",
-        performedByName: "Rika Supervisor",
-        performedByType: "manual"
+        note: "Masa pembatasan berakhir otomatis."
       })
     ).toEqual({
-      action: "cabut_manual",
-      actionLabel: "Pencabutan manual",
-      actorLabel: "Rika Supervisor",
-      actorType: "manual",
+      action: "selesai_otomatis",
+      actionLabel: "Selesai otomatis",
+      actorLabel: "Sistem otomatis",
+      actorType: "system",
       date: "2026-04-30",
-      note: "Pembatasan dicabut setelah verifikasi."
+      note: "Masa pembatasan berakhir otomatis."
     });
   });
 });

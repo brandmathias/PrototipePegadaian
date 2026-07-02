@@ -170,11 +170,6 @@ function isBlacklistRestrictionWindowActive(
     return false;
   }
 
-  const restriction = getBlacklistRestrictionPolicy(blacklist.totalViolations ?? 0);
-  if (restriction.requiresManualReview) {
-    return true;
-  }
-
   return !blacklist.blockedUntil || blacklist.blockedUntil.getTime() > now.getTime();
 }
 
@@ -689,8 +684,6 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
             isActive: true,
             blockedAt: violationOccurredAt,
             blockedUntil,
-            revokedByUserId: null,
-            revokeReason: null,
             updatedAt: now
           })
           .where(eq(blacklists.id, existingBlacklist.id));
@@ -704,8 +697,6 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
           isActive: true,
           blockedAt: violationOccurredAt,
           blockedUntil,
-          revokedByUserId: null,
-          revokeReason: null,
           updatedAt: now
         });
       }
@@ -735,10 +726,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         blacklistId,
         targetUserId: row.transaction.userId,
         action: "blokir_otomatis",
-        performedByType: "system",
-        performedByUserId: null,
         note: shouldSuspendLogin
-          ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3 dan membutuhkan evaluasi manual.`
+          ? `Sistem otomatis menonaktifkan akun buyer selama ${getBlacklistDurationLabel(totalViolations)} karena mencapai Level 3.`
           : `Sistem otomatis memblokir buyer selama ${getBlacklistDurationLabel(totalViolations)} karena tidak membayar hasil Lelang Tertutup.`
       });
     });
@@ -796,28 +785,31 @@ export async function processExpiredBlacklistRestrictions(now = new Date()): Pro
         lte(blacklists.blockedUntil, now)
       )
     );
-  const autoExpiredRows = expiredRows.filter(
-    (row) => !getBlacklistRestrictionPolicy(row.totalViolations).requiresManualReview
-  );
-
-  for (const row of autoExpiredRows) {
+  for (const row of expiredRows) {
     await db.transaction(async (tx) => {
       await tx
         .update(blacklists)
         .set({
           isActive: false,
-          revokeReason: "Masa pembatasan berakhir sesuai durasi level pelanggaran.",
           updatedAt: now
         })
         .where(eq(blacklists.id, row.id));
+
+      if (shouldSuspendLoginForBlacklist(row.totalViolations)) {
+        await tx
+          .update(users)
+          .set({
+            isActive: true,
+            updatedAt: now
+          })
+          .where(eq(users.id, row.userId));
+      }
 
       await tx.insert(blacklistActionLogs).values({
         id: randomUUID(),
         blacklistId: row.id,
         targetUserId: row.userId,
         action: "selesai_otomatis",
-        performedByType: "system",
-        performedByUserId: null,
         note: "Masa pembatasan berakhir otomatis. Riwayat blacklist tetap tersimpan."
       });
     });
@@ -825,7 +817,7 @@ export async function processExpiredBlacklistRestrictions(now = new Date()): Pro
 
   return {
     processed: expiredRows.length,
-    expired: autoExpiredRows.length
+    expired: expiredRows.length
   };
 }
 

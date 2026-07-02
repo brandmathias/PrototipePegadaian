@@ -124,6 +124,6 @@ describe("blacklist escalation sequence", () => {
         now,
         totalViolations: 3
       })
-    ).toBe(true);
+    ).toBe(false);
   });
 });

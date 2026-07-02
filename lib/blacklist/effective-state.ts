@@ -32,13 +32,8 @@ export function isBlacklistRestrictionActive({
     return false;
   }
 
-  const policy = getBlacklistRestrictionPolicy(totalViolations);
-  if (policy.level === 0) {
+  if (getBlacklistRestrictionPolicy(totalViolations).level === 0) {
     return false;
-  }
-
-  if (policy.requiresManualReview) {
-    return true;
   }
 
   return !blockedUntil || blockedUntil.getTime() > now.getTime();

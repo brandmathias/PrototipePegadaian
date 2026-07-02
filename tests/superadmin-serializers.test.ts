@@ -92,7 +92,6 @@ describe("superadmin serializers", () => {
         isActive: true,
         totalViolations: 2,
         blockedUntil: new Date("2026-04-29T10:01:05+08:00"),
-        revokeReason: null,
         now: new Date("2026-04-29T10:00:00+08:00")
       })
     ).toMatchObject({
@@ -115,7 +114,6 @@ describe("superadmin serializers", () => {
         isActive: true,
         totalViolations: 2,
         blockedUntil: new Date("2026-06-13T16:42:23.866Z"),
-        revokeReason: null,
         now: new Date("2026-06-18T00:00:00.000Z")
       })
     ).toMatchObject({

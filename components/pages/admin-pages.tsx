@@ -46,7 +46,6 @@ import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminBlacklistList } from "@/components/admin/admin-blacklist-list";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
-import { AdminBlacklistExtendForm } from "@/components/admin-unit/admin-blacklist-extend-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import {
   AdminProfileWorkspace,
@@ -2107,54 +2106,6 @@ export function AdminBlacklistDetailPage({
       scope="admin-unit"
       serverNow={serverNow ?? new Date().toISOString()}
     />
-  );
-}
-
-export function AdminBlacklistExtendPage({
-  userId: _userId,
-  entry,
-}: {
-  userId?: string;
-  entry: AdminBlacklistItem;
-}) {
-  return (
-    <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Perpanjang Blacklist"
-        title={`Perpanjang masa pembatasan ${entry.name}`}
-        description="Perpanjang masa pembatasan bila masih ada alasan operasional yang kuat. Riwayat pelanggaran tetap disimpan sebagai catatan."
-        actions={
-          <AdminStatusBadge className="text-[0.95rem]" status={entry.status} />
-        }
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">
-              Ringkasan User
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <DetailTile label="Nama User" value={entry.name} />
-            <DetailTile
-              label="Status Saat Ini"
-              value={<AdminStatusBadge status={entry.status} />}
-            />
-            <DetailTile label="Pelanggaran" value={entry.violations} />
-            <DetailTile label="Blokir Sampai" value={entry.until} />
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl border border-black/10 bg-white">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-[1.45rem]">
-              Form Perpanjangan
-            </CardTitle>
-          </CardHeader>
-          <AdminBlacklistExtendForm defaultBlockedUntil={dateAfter(30)} userId={entry.userId} />
-        </Card>
-      </div>
-    </div>
   );
 }
 

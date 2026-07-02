@@ -6,7 +6,7 @@ export type BlacklistRestrictionPolicy = {
   blocksVickrey: boolean;
   blocksFixedPrice: boolean;
   blocksTransactionSettlement: boolean;
-  requiresManualReview: boolean;
+  suspendsLogin: boolean;
   label: string;
 };
 
@@ -25,7 +25,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       blocksVickrey: false,
       blocksFixedPrice: false,
       blocksTransactionSettlement: false,
-      requiresManualReview: false,
+      suspendsLogin: false,
       label: "Tidak ada pembatasan"
     };
   }
@@ -37,7 +37,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       blocksVickrey: true,
       blocksFixedPrice: false,
       blocksTransactionSettlement: true,
-      requiresManualReview: false,
+      suspendsLogin: false,
       label: "Level 1: Lelang Tertutup dibatasi"
     };
   }
@@ -49,7 +49,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       blocksVickrey: true,
       blocksFixedPrice: true,
       blocksTransactionSettlement: true,
-      requiresManualReview: false,
+      suspendsLogin: false,
       label: "Level 2: Transaksi baru dibatasi"
     };
   }
@@ -60,8 +60,8 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
     blocksVickrey: true,
     blocksFixedPrice: true,
     blocksTransactionSettlement: true,
-    requiresManualReview: true,
-    label: "Level 3: Evaluasi manual"
+    suspendsLogin: true,
+    label: "Level 3: Akun ditangguhkan 365 hari"
   };
 }
 
@@ -70,7 +70,7 @@ export function getBlacklistDurationDays(totalViolations: number) {
 }
 
 export function shouldSuspendLoginForBlacklist(totalViolations: number | null | undefined) {
-  return getBlacklistRestrictionPolicy(totalViolations).requiresManualReview;
+  return getBlacklistRestrictionPolicy(totalViolations).suspendsLogin;
 }
 
 export function getBlacklistDurationUnit(value = process.env.BLACKLIST_DURATION_UNIT): BlacklistDurationUnit {

@@ -256,15 +256,3 @@ export function validateSuperAdminPasswordResetPayload(input: {
 
   return { temporaryPassword };
 }
-
-export function validateBlacklistRevokePayload(input: { reason?: string; reasonCode?: string; note?: string }) {
-  const reasonCode = String(input.reasonCode ?? input.reason ?? "").trim();
-  const note = String(input.note ?? "").trim();
-  const reason = note || reasonCode;
-
-  if (!reasonCode) {
-    throw new Error("Alasan pencabutan blacklist wajib diisi.");
-  }
-
-  return { reason, reasonCode, note };
-}

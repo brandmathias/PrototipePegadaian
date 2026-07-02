@@ -64,7 +64,7 @@ const VIOLATION_LEVELS = [
   },
   {
     duration: "365 hari",
-    impact: "Akun dibatasi penuh dan memerlukan review admin untuk reaktivasi.",
+    impact: "Akun ditangguhkan penuh dan pulih otomatis setelah masa pembatasan selesai.",
     label: "Level 3+"
   }
 ];

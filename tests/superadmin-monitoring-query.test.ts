@@ -34,8 +34,8 @@ describe("superadmin monitoring query", () => {
     expect(summary).toEqual({
       levelOne: 1,
       levelTwo: 1,
-      levelThree: 1,
-      total: 3,
+      levelThree: 0,
+      total: 2,
     });
   });
 

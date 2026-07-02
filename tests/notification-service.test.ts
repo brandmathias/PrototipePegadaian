@@ -272,7 +272,7 @@ describe("notification service", () => {
     expect(chain.limit).toHaveBeenCalledWith(5);
   });
 
-  it("filters legacy review and stale transaction blacklist notifications from the buyer list", async () => {
+  it("filters stale transaction blacklist notifications from the buyer list", async () => {
     mockSelectRows([
       {
         ...notificationRow,
@@ -290,13 +290,6 @@ describe("notification service", () => {
         message: "Pelanggaran saat ini: 3x.",
         title: "Akun Anda dikenakan pembatasan",
         type: "blacklist_active"
-      },
-      {
-        ...notificationRow,
-        id: "notif-review-legacy",
-        message: "Superadmin menyetujui review insiden Anda.",
-        title: "Review insiden disetujui",
-        type: "blacklist_review_approved"
       }
     ]);
 

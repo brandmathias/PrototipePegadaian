@@ -6068,12 +6068,12 @@ export function SuperAdminPolicyPage() {
           </div>
           <div className="space-y-3">
             <h3 className="font-headline text-xl font-black uppercase tracking-[0.03em] text-[#00563b]">
-              Evaluasi Manual oleh Superadmin
+              Pemulihan Otomatis
             </h3>
             <p className="max-w-5xl text-sm font-semibold leading-7 text-[#42526b]">
-              Superadmin dapat mengevaluasi pembatasan level tinggi dari
-              dossier pelanggaran dan log sistem. Keputusan pencabutan manual
-              dicatat sebagai audit agar riwayat akun tetap lengkap.
+              Sistem mengakhiri pembatasan setiap level sesuai tanggal
+              berakhirnya. Akun Level 3 yang ditangguhkan akan diaktifkan
+              kembali otomatis setelah periode 365 hari selesai.
             </p>
           </div>
         </div>
@@ -7032,7 +7032,7 @@ export function SuperAdminBlacklistPage({
         </p>
         <p>
           Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru, dan level
-          3 memerlukan evaluasi manual.
+          3 menangguhkan akun selama 365 hari.
         </p>
         <p>
           Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk

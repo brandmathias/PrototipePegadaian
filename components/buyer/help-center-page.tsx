@@ -51,7 +51,7 @@ const faqItems = [
   {
     question: "Berapa lama masa pembatasan fitur bidding berlangsung?",
     answer:
-      "Durasi mengikuti level akumulasi pelanggaran pembayaran. Aturan sistem saat ini menetapkan Level 1 selama 7 hari, Level 2 selama 30 hari, dan Level 3 selama 365 hari dengan evaluasi manual. Tanggal pemulihan otomatis ditampilkan pada halaman Pelanggaran akun Anda."
+      "Durasi mengikuti level akumulasi pelanggaran pembayaran. Aturan sistem saat ini menetapkan Level 1 selama 7 hari, Level 2 selama 30 hari, dan Level 3 selama 365 hari. Tanggal pemulihan otomatis ditampilkan pada halaman Pelanggaran akun Anda."
   },
   {
     question: "Bagaimana cara mengetahui level sanksi pada akun saya?",

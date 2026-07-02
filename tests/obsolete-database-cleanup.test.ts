@@ -50,8 +50,8 @@ describe("obsolete database cleanup", () => {
       `"action" in ('review_diajukan', 'review_ditolak', 'review_disetujui', 'otomatis')`
     );
     expect(normalizedSql).not.toContain(`set "action" = 'cabut_manual'`);
-    expect(normalizedSql).toContain(`set "resolution_type" = null`);
-    expect(normalizedSql).toContain(`"resolution_type" in ('review_disetujui', 'cabut_manual')`);
+    expect(normalizedSql).not.toContain(`"resolution_type"`);
+    expect(normalizedSql).not.toContain(`"resolved_at"`);
     expect(normalizedSql).toContain(
       `delete from "barang" where "id" like 'seed-level3-review-%'`
     );
@@ -125,12 +125,11 @@ describe("obsolete database cleanup", () => {
   it("keeps blacklist action history automatic for cleaned report data", () => {
     expect(normalizedSql).toContain(`delete from "blacklist_action_log"`);
     expect(normalizedSql).toContain(`"action" in ('cabut_manual', 'perpanjang_manual')`);
-    expect(normalizedSql).toContain(`"performed_by_user_id" is not null`);
-    expect(normalizedSql).toContain(`"performed_by_type" <> 'system'`);
+    expect(normalizedSql).not.toContain(`"performed_by_user_id"`);
+    expect(normalizedSql).not.toContain(`"performed_by_type"`);
     expect(normalizedSql).toContain(`lower(trim(coalesce("note", ''))) in ('test', 'demo', 'mock', 'data uji')`);
-    expect(normalizedSql).toContain(`set "is_active" = true`);
-    expect(normalizedSql).toContain(`"revoked_by_user_id" = null`);
-    expect(normalizedSql).toContain(`"revoke_reason" = null`);
+    expect(normalizedSql).not.toContain(`"revoked_by_user_id"`);
+    expect(normalizedSql).not.toContain(`"revoke_reason"`);
     expect(normalizedSql).toContain(`insert into "blacklist_action_log"`);
     expect(normalizedSql).toContain(`'blokir_otomatis'`);
   });

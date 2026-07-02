@@ -208,11 +208,6 @@ export const pelanggaranUser = pgTable(
       .references(() => units.id, { onDelete: "cascade" }),
     note: text("note").notNull(),
     escalationEligible: boolean("escalation_eligible").notNull().default(true),
-    resolutionType: text("resolution_type"),
-    resolutionReasonCode: text("resolution_reason_code"),
-    resolutionNote: text("resolution_note"),
-    resolvedByUserId: text("resolved_by_user_id").references(() => users.id, { onDelete: "set null" }),
-    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },

@@ -55,8 +55,6 @@ export const blacklists = pgTable(
     isActive: boolean("is_active").notNull().default(true),
     blockedAt: timestamp("blocked_at", { withTimezone: true }).notNull().defaultNow(),
     blockedUntil: timestamp("blocked_until", { withTimezone: true }),
-    revokedByUserId: text("revoked_by_user_id").references(() => users.id, { onDelete: "set null" }),
-    revokeReason: text("revoke_reason"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
   },
   (table) => ({
@@ -83,8 +81,6 @@ export const blacklistActionLogs = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     action: text("action").notNull(),
-    performedByType: text("performed_by_type").notNull().default("manual"),
-    performedByUserId: text("performed_by_user_id").references(() => users.id, { onDelete: "set null" }),
     note: text("note").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },

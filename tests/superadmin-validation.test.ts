@@ -6,7 +6,6 @@ import {
   normalizeUnitCode,
   normalizeSuperAdminLevel,
   validateAdminUnitPayload,
-  validateBlacklistRevokePayload,
   validateManagedUnitCreatePayload,
   validateSuperAdminAccountCreatePayload,
   validateSuperAdminAccountUpdatePayload,
@@ -112,12 +111,6 @@ describe("superadmin validation", () => {
 
     expect(() => validateSuperAdminAccountUpdatePayload({ level: "viewer" })).toThrow(
       "Level superadmin belum valid."
-    );
-  });
-
-  it("requires a reason before revoking blacklist", () => {
-    expect(() => validateBlacklistRevokePayload({ reason: "   " })).toThrow(
-      "Alasan pencabutan blacklist wajib diisi."
     );
   });
 

@@ -5,7 +5,6 @@ import {
   validateAdminBarangPayload,
   validateAdminBarangMediaList,
   validateFixedPriceMarketingPricePayload,
-  validateBlacklistExtendPayload,
   validatePemasaranPayload,
   validatePerpanjanganPayload,
   validateTransactionVerificationPayload
@@ -227,7 +226,7 @@ describe("admin unit validation", () => {
     );
   });
 
-  it("validates transaction verification and blacklist extension", () => {
+  it("validates transaction verification", () => {
     expect(validateTransactionVerificationPayload({ reference: "REF-001" })).toEqual({
       reference: "REF-001"
     });
@@ -236,10 +235,6 @@ describe("admin unit validation", () => {
       "Nomor referensi wajib diisi."
     );
 
-    expect(validateBlacklistExtendPayload({ blockedUntil: "2026-07-01", reason: "Pelanggaran berulang." })).toEqual({
-      blockedUntil: "2026-07-01",
-      reason: "Pelanggaran berulang."
-    });
   });
 
   it("limits barang media uploads to five foto or video files", () => {

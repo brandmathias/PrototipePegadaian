@@ -289,10 +289,3 @@ export function validateTransactionHandoverProofPayload(input: { fileName?: unkn
 
   return { fileName };
 }
-
-export function validateBlacklistExtendPayload(input: { blockedUntil?: unknown; reason?: unknown }) {
-  return {
-    blockedUntil: normalizeDate(input.blockedUntil, "Tanggal selesai blokir belum valid."),
-    reason: requiredText(input.reason, "Alasan perpanjangan blacklist wajib diisi.")
-  };
-}

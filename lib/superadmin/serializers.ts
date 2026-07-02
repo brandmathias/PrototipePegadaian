@@ -97,7 +97,6 @@ export function serializeBlacklistEntry(input: {
   isActive: boolean;
   totalViolations: number;
   blockedUntil: Date | null;
-  revokeReason: string | null;
   now?: Date;
 }) {
   const now = input.now ?? new Date();
@@ -123,8 +122,8 @@ export function serializeBlacklistEntry(input: {
     total: input.totalViolations,
     until: input.blockedUntil
       ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(input.blockedUntil)
-      : "Sampai ditinjau ulang",
-    reason: input.revokeReason ?? "Pelanggaran pembayaran atau penyelesaian lelang.",
+      : "Tanggal berakhir tidak tersedia",
+    reason: "Pelanggaran pembayaran atau penyelesaian lelang.",
     status: isCurrentlyActive ? "Aktif" : "Nonaktif",
     countdownLabel: countdown?.label,
     countdownAt: input.blockedUntil?.toISOString(),

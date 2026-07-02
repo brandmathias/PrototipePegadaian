@@ -2151,7 +2151,7 @@ describe("superadmin pages", () => {
       screen.getByText(/ban total 360 hari/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/evaluasi manual oleh superadmin/i),
+      screen.getByText(/pemulihan otomatis/i),
     ).toBeInTheDocument();
     expect(screen.queryByText("Aturan Aktif Sistem")).not.toBeInTheDocument();
     expect(screen.queryByText("Masuk Perlu Tindak Lanjut")).not.toBeInTheDocument();

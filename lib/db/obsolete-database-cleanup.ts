@@ -110,20 +110,6 @@ where "type" = 'blacklist_review_submitted'
 delete from "blacklist_action_log"
 where "action" in ('review_diajukan', 'review_ditolak', 'review_disetujui', 'otomatis');
 
-update "pelanggaran_user"
-set "resolution_type" = null,
-    "resolution_reason_code" = null,
-    "resolution_note" = null,
-    "resolved_by_user_id" = null,
-    "resolved_at" = null,
-    "escalation_eligible" = true,
-    "updated_at" = now()
-where "resolution_type" in ('review_disetujui', 'cabut_manual')
-   or lower(trim(coalesce("resolution_note", ''))) in ('test', 'demo', 'mock', 'data uji')
-   or "resolution_note" ilike '%review%'
-   or "resolution_note" ilike '%manual%'
-   or "resolution_note" ilike '%uji%';
-
 do $cleanup$
 declare
   repair record;
@@ -285,8 +271,6 @@ begin
             "is_active",
             "blocked_at",
             "blocked_until",
-            "revoked_by_user_id",
-            "revoke_reason",
             "updated_at",
             "national_id"
           )
@@ -298,8 +282,6 @@ begin
             legacy_blacklist.is_active,
             legacy_blacklist.blocked_at,
             legacy_blacklist.blocked_until,
-            legacy_blacklist.revoked_by_user_id,
-            legacy_blacklist.revoke_reason,
             now(),
             legacy_blacklist.national_id
           );
@@ -338,34 +320,8 @@ where blacklist."user_id" = owner."id"
   and owner."national_id" is not null
   and blacklist."national_id" is distinct from owner."national_id";
 
-update "blacklist" as blacklist
-set "is_active" = true,
-    "revoked_by_user_id" = null,
-    "revoke_reason" = null,
-    "updated_at" = now()
-where (blacklist."revoked_by_user_id" is not null or blacklist."revoke_reason" is not null)
-  and not exists (
-    select 1
-    from "blacklist" as active_by_user
-    where active_by_user."id" <> blacklist."id"
-      and active_by_user."user_id" = blacklist."user_id"
-      and active_by_user."is_active" = true
-  )
-  and (
-    blacklist."national_id" is null
-    or not exists (
-      select 1
-      from "blacklist" as active_by_national_id
-      where active_by_national_id."id" <> blacklist."id"
-        and active_by_national_id."national_id" = blacklist."national_id"
-        and active_by_national_id."is_active" = true
-    )
-  );
-
 delete from "blacklist_action_log"
 where "action" in ('cabut_manual', 'perpanjang_manual')
-   or "performed_by_user_id" is not null
-   or "performed_by_type" <> 'system'
    or lower(trim(coalesce("note", ''))) in ('test', 'demo', 'mock', 'data uji')
    or "note" ilike '%review%'
    or "note" ilike '%manual%'
@@ -376,20 +332,16 @@ insert into "blacklist_action_log" (
   "blacklist_id",
   "target_user_id",
   "action",
-  "performed_by_user_id",
   "note",
-  "created_at",
-  "performed_by_type"
+  "created_at"
 )
 select
   concat('auto-log-', blacklist."id"),
   blacklist."id",
   blacklist."user_id",
   'blokir_otomatis',
-  null,
   'Sistem otomatis memblokir buyer karena pelanggaran pembayaran.',
-  blacklist."blocked_at",
-  'system'
+  blacklist."blocked_at"
 from "blacklist" as blacklist
 where not exists (
     select 1

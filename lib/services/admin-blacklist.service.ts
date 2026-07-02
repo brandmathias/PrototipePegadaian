@@ -1,5 +1,4 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
 
 import {
   deriveEffectiveBlacklistState,
@@ -7,7 +6,6 @@ import {
 } from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
-import { validateBlacklistExtendPayload } from "@/lib/admin-unit/validation";
 import { db } from "@/lib/db/client";
 import {
   barang,
@@ -34,7 +32,7 @@ function serializeBlacklist(row: {
     !effectiveBlockedUntil ||
     effectiveBlockedUntil.getTime() > now.getTime();
   const isCurrentlyActive =
-    row.blacklist.isActive && policy.level > 0 && (policy.requiresManualReview || activeByDate);
+    row.blacklist.isActive && policy.level > 0 && activeByDate;
 
   return {
     userId: row.user.id,
@@ -45,7 +43,7 @@ function serializeBlacklist(row: {
     until: effectiveBlockedUntil?.toISOString().slice(0, 10) ?? "-",
     blockedUntilAt: effectiveBlockedUntil?.toISOString() ?? null,
     status: isCurrentlyActive ? "AKTIF" : "TIDAK_AKTIF",
-    reason: row.blacklist.revokeReason ?? "Pelanggaran pembayaran lelang.",
+    reason: "Pelanggaran pembayaran lelang.",
     lastIncident: row.blacklist.updatedAt.toISOString().slice(0, 10),
     lastIncidentAt: row.blacklist.updatedAt.toISOString(),
     level: policy.level,
@@ -54,7 +52,7 @@ function serializeBlacklist(row: {
     blocksVickrey: policy.blocksVickrey,
     blocksFixedPrice: policy.blocksFixedPrice,
     blocksTransactionSettlement: policy.blocksTransactionSettlement,
-    requiresManualReview: policy.requiresManualReview,
+    suspendsLogin: policy.suspendsLogin,
     activeAuctionRestriction: isCurrentlyActive
       ? "User tidak dapat mengikuti Lelang Tertutup selama masa blokir aktif."
       : "Pembatasan Lelang Tertutup sudah tidak aktif.",
@@ -279,7 +277,6 @@ export async function getAdminBlacklistByUserId(
   unitId: string,
   userId: string,
 ) {
-  const performers = alias(users, "blacklist_log_performer");
   const [row] = await db
     .select({ blacklist: blacklists, unit: units, user: users })
     .from(blacklists)
@@ -297,14 +294,8 @@ export async function getAdminBlacklistByUserId(
       action: blacklistActionLogs.action,
       createdAt: blacklistActionLogs.createdAt,
       note: blacklistActionLogs.note,
-      performedByType: blacklistActionLogs.performedByType,
-      performedByName: performers.name,
     })
     .from(blacklistActionLogs)
-    .leftJoin(
-      performers,
-      eq(performers.id, blacklistActionLogs.performedByUserId),
-    )
     .where(eq(blacklistActionLogs.blacklistId, row.blacklist.id))
     .orderBy(desc(blacklistActionLogs.createdAt));
 
@@ -335,41 +326,5 @@ export async function getAdminBlacklistByUserId(
     unpaidAuctionCount: scopeContext.annotatedLocalTraces.length,
     unpaidAuctionTraces: scopeContext.annotatedLocalTraces,
     history: history.map(serializeBlacklistHistoryEntry),
-  };
-}
-
-export async function extendAdminBlacklist(
-  unitId: string,
-  adminId: string,
-  userId: string,
-  input: { blockedUntil?: unknown; reason?: unknown },
-) {
-  const row = await getAdminBlacklistByUserId(unitId, userId);
-  const payload = validateBlacklistExtendPayload(input);
-
-  const [updated] = await db
-    .update(blacklists)
-    .set({
-      isActive: true,
-      blockedUntil: new Date(`${payload.blockedUntil}T00:00:00.000Z`),
-      updatedAt: new Date(),
-    })
-    .where(and(eq(blacklists.unitId, unitId), eq(blacklists.userId, userId)))
-    .returning();
-
-  await db.insert(blacklistActionLogs).values({
-    id: crypto.randomUUID(),
-    blacklistId: updated.id,
-    targetUserId: userId,
-    action: "perpanjang_manual",
-    performedByType: "manual",
-    performedByUserId: adminId,
-    note: payload.reason,
-  });
-
-  return {
-    ...row,
-    until: payload.blockedUntil,
-    status: "AKTIF",
   };
 }

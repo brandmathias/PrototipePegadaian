@@ -1,7 +1,4 @@
-import { randomUUID } from "node:crypto";
-
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
 
 import {
   deriveEffectiveBlacklistState,
@@ -10,7 +7,6 @@ import {
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import {
   getBlacklistRestrictionPolicy,
-  shouldSuspendLoginForBlacklist,
 } from "@/lib/blacklist/restrictions";
 import { db } from "@/lib/db/client";
 import {
@@ -25,11 +21,7 @@ import {
   users
 } from "@/lib/db/schema";
 import { serializeBlacklistEntry } from "@/lib/superadmin/serializers";
-import { validateBlacklistRevokePayload } from "@/lib/superadmin/validation";
 import { formatAppDateTime } from "@/lib/timezone";
-
-type DbExecutor = Pick<typeof db, "insert" | "update">;
-type BlacklistRow = typeof blacklists.$inferSelect;
 
 async function listViolationEscalationFacts(userIds: string[]) {
   if (userIds.length === 0) return [];
@@ -84,7 +76,7 @@ function serializeSuperadminBlacklist(row: {
     !effectiveBlockedUntil ||
     effectiveBlockedUntil.getTime() > now.getTime();
   const isCurrentlyActive =
-    row.blacklist.isActive && policy.level > 0 && (policy.requiresManualReview || activeByDate);
+    row.blacklist.isActive && policy.level > 0 && activeByDate;
 
   return {
     userId: row.user.id,
@@ -95,7 +87,7 @@ function serializeSuperadminBlacklist(row: {
     until: effectiveBlockedUntil?.toISOString().slice(0, 10) ?? "-",
     blockedUntilAt: effectiveBlockedUntil?.toISOString() ?? null,
     status: isCurrentlyActive ? "AKTIF" : "TIDAK_AKTIF",
-    reason: row.blacklist.revokeReason ?? "Pelanggaran pembayaran lelang.",
+    reason: "Pelanggaran pembayaran lelang.",
     lastIncident: row.blacklist.updatedAt.toISOString().slice(0, 10),
     lastIncidentAt: row.blacklist.updatedAt.toISOString(),
     level: policy.level,
@@ -104,10 +96,10 @@ function serializeSuperadminBlacklist(row: {
     blocksVickrey: policy.blocksVickrey,
     blocksFixedPrice: policy.blocksFixedPrice,
     blocksTransactionSettlement: policy.blocksTransactionSettlement,
-    requiresManualReview: policy.requiresManualReview,
+    suspendsLogin: policy.suspendsLogin,
     activeAuctionRestriction: isCurrentlyActive
       ? "Pembatasan akun masih aktif secara nasional."
-      : "Pembatasan akun sudah selesai atau dicabut.",
+      : "Pembatasan akun sudah selesai.",
     unit: row.unit?.name ?? row.blacklist.unitId ?? "-"
   };
 }
@@ -183,8 +175,7 @@ export async function listBlacklists() {
       email: users.email,
       isActive: blacklists.isActive,
       totalViolations: blacklists.totalViolations,
-      blockedUntil: blacklists.blockedUntil,
-      revokeReason: blacklists.revokeReason
+      blockedUntil: blacklists.blockedUntil
     })
     .from(blacklists)
     .innerJoin(users, eq(users.id, blacklists.userId))
@@ -212,113 +203,12 @@ export async function listBlacklists() {
       unitName: row.unitName,
       isActive: row.isActive,
       totalViolations: effectiveState.totalViolations,
-      blockedUntil: row.isActive ? effectiveState.blockedUntil : row.blockedUntil,
-      revokeReason: row.revokeReason
+      blockedUntil: row.isActive ? effectiveState.blockedUntil : row.blockedUntil
     })];
   });
 }
 
-export async function revokeBlacklist(
-  userId: string,
-  actorUserId: string,
-  input: { reason?: string; reasonCode?: string; note?: string }
-) {
-  const payload = validateBlacklistRevokePayload(input);
-
-  const [activeBlacklist] = await db
-    .select()
-    .from(blacklists)
-    .where(and(eq(blacklists.userId, userId), eq(blacklists.isActive, true)))
-    .limit(1);
-
-  if (!activeBlacklist) {
-    throw new Error("Blacklist aktif untuk user ini tidak ditemukan.");
-  }
-
-  const [latestIncident] = await db
-    .select({ id: pelanggaranUser.id })
-    .from(pelanggaranUser)
-    .where(and(eq(pelanggaranUser.userId, userId), eq(pelanggaranUser.escalationEligible, true)))
-    .orderBy(desc(pelanggaranUser.createdAt))
-    .limit(1);
-
-  await db.transaction(async (tx) => {
-    await applyManualBlacklistRevokeEffect(tx, {
-      incidentId: latestIncident?.id ?? null,
-      userId,
-      actorUserId,
-      reasonCode: payload.reasonCode,
-      note: payload.note || payload.reason,
-      activeBlacklist
-    });
-  });
-
-  return {
-    success: true
-  };
-}
-
-async function applyManualBlacklistRevokeEffect(
-  executor: DbExecutor,
-  input: {
-    incidentId?: string | null;
-    userId: string;
-    actorUserId: string;
-    reasonCode: string;
-    note: string;
-    activeBlacklist: BlacklistRow;
-  }
-) {
-  const now = new Date();
-
-  if (input.incidentId) {
-    await executor
-      .update(pelanggaranUser)
-      .set({
-        escalationEligible: false,
-        resolutionType: "cabut_manual",
-        resolutionReasonCode: input.reasonCode,
-        resolutionNote: input.note,
-        resolvedByUserId: input.actorUserId,
-        resolvedAt: now,
-        updatedAt: now
-      })
-      .where(eq(pelanggaranUser.id, input.incidentId));
-  }
-
-  await executor
-    .update(blacklists)
-    .set({
-      isActive: false,
-      revokedByUserId: input.actorUserId,
-      revokeReason: input.note || input.reasonCode,
-      updatedAt: now
-    })
-    .where(eq(blacklists.id, input.activeBlacklist.id));
-
-  if (shouldSuspendLoginForBlacklist(input.activeBlacklist.totalViolations)) {
-    await executor
-      .update(users)
-      .set({
-        isActive: true,
-        updatedAt: now
-      })
-      .where(eq(users.id, input.userId));
-  }
-
-  await executor.insert(blacklistActionLogs).values({
-    id: randomUUID(),
-    blacklistId: input.activeBlacklist.id,
-    targetUserId: input.userId,
-    action: "cabut_manual",
-    performedByType: "manual",
-    performedByUserId: input.actorUserId,
-    note: input.note || input.reasonCode
-  });
-}
-
 export async function getSuperadminBlacklistByUserId(userId: string) {
-  const performers = alias(users, "superadmin_blacklist_log_performer");
   const [row] = await db
     .select({ blacklist: blacklists, user: users, unit: units })
     .from(blacklists)
@@ -336,15 +226,9 @@ export async function getSuperadminBlacklistByUserId(userId: string) {
     .select({
       action: blacklistActionLogs.action,
       createdAt: blacklistActionLogs.createdAt,
-      note: blacklistActionLogs.note,
-      performedByType: blacklistActionLogs.performedByType,
-      performedByName: performers.name
+      note: blacklistActionLogs.note
     })
     .from(blacklistActionLogs)
-    .leftJoin(
-      performers,
-      eq(performers.id, blacklistActionLogs.performedByUserId)
-    )
     .where(eq(blacklistActionLogs.blacklistId, row.blacklist.id))
     .orderBy(desc(blacklistActionLogs.createdAt));
 

@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, isNull, ne, or } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
@@ -18,35 +18,8 @@ type TransactionEventInput = {
 };
 
 const BUYER_RESTRICTION_NOTIFICATION_HREF = "/pelanggaran";
-const LEGACY_BUYER_RESTRICTION_PATTERNS = [
-  "review insiden",
-  "pengajuan review insiden",
-  "permohonan anda sudah masuk antrean review",
-  "pembatasan untuk insiden ini"
-];
-
 function buyerBlacklistEntityId(userId: string) {
   return `blacklist-${userId}`;
-}
-
-function legacyBuyerRestrictionWhere(userId: string) {
-  const legacyClauses = LEGACY_BUYER_RESTRICTION_PATTERNS.flatMap((pattern) => [
-    ilike(notifications.title, `%${pattern}%`),
-    ilike(notifications.message, `%${pattern}%`)
-  ]);
-
-  return and(
-    eq(notifications.userId, userId),
-    eq(notifications.isRead, false),
-    or(
-      ilike(notifications.type, "%blacklist_review%"),
-      ...legacyClauses,
-      and(
-        eq(notifications.type, "blacklist_active"),
-        or(isNull(notifications.entityId), ne(notifications.entityId, buyerBlacklistEntityId(userId)))
-      )
-    )
-  );
 }
 
 async function getBuyerRestrictionSnapshot(userId: string) {
@@ -95,7 +68,7 @@ async function getBuyerRestrictionSnapshot(userId: string) {
     effectiveState.blockedUntil.getTime() > new Date().getTime();
 
   return {
-    active: policy.level > 0 && (policy.requiresManualReview || activeByDate),
+    active: policy.level > 0 && activeByDate,
     blockedUntil: effectiveState.blockedUntil,
     occurredAt: latestMilestone?.occurredAt ?? rows[0]?.paymentDeadline ?? rows[0]?.createdAt ?? null,
     sourceTransactionId: latestMilestone?.trace.transactionId ?? rows[0]?.transactionId ?? null,
@@ -293,14 +266,6 @@ export async function notifyBlacklistActivated(
 
 export async function syncBuyerRestrictionNotifications(userId: string) {
   const readAt = new Date();
-  await db
-    .update(notifications)
-    .set({
-      isRead: true,
-      readAt
-    })
-    .where(legacyBuyerRestrictionWhere(userId));
-
   const snapshot = await getBuyerRestrictionSnapshot(userId);
   const entityId = buyerBlacklistEntityId(userId);
 

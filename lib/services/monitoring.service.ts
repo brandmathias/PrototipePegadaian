@@ -598,7 +598,6 @@ export function buildSuperAdminUnitRowsQuery() {
         from pelanggaran_user pu
         where pu.unit_id = ${outerUnitId}
           and pu.escalation_eligible = true
-          and pu.resolved_at is null
       )`,
       status: sql<string>`case
         when ${outerUnitIsActive} = false then 'Nonaktif'
