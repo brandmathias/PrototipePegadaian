@@ -20,12 +20,14 @@ describe("superadmin validation", () => {
       validateUnitPayload({
         code: " cp-mdn-01 ",
         name: " Pegadaian CP Manado ",
-        address: " Jl. Piere Tendean No. 88 "
+        address: " Jl. Piere Tendean No. 88 ",
+        domicile: "Nanggroe Aceh Darussalam"
       })
     ).toEqual({
       code: "CP-MDN-01",
       name: "Pegadaian CP Manado",
-      address: "Jl. Piere Tendean No. 88"
+      address: "Jl. Piere Tendean No. 88",
+      domicile: "Aceh"
     });
   });
 
@@ -120,6 +122,7 @@ describe("superadmin validation", () => {
         code: "CP-MND-02",
         name: "Pegadaian CP Boulevard",
         address: "Jl. Boulevard Manado",
+        domicile: "Sulawesi Utara",
         primaryAccount: {
           bankName: "BRI",
           accountNumber: "9876543210",
@@ -134,6 +137,7 @@ describe("superadmin validation", () => {
         code: "CP-MND-03",
         name: "Pegadaian CP Tikala",
         address: "Jl. Tikala Baru",
+        domicile: "Sulawesi Utara",
         primaryAccount: {
           bankName: "",
           accountNumber: "1234567890",

@@ -10,6 +10,7 @@ export const units = pgTable(
     code: text("code").notNull(),
     name: text("name").notNull(),
     address: text("address").notNull(),
+    domicile: text("domicile").notNull(),
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()

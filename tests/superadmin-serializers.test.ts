@@ -15,6 +15,7 @@ describe("superadmin serializers", () => {
         code: "CP-MND-01",
         name: "Pegadaian CP Manado",
         address: "Jl. Piere Tendean No. 88",
+        domicile: "Sulawesi Utara",
         isActive: true,
         adminCount: 2,
         accountCount: 1,
@@ -24,6 +25,7 @@ describe("superadmin serializers", () => {
       id: "unit-1",
       code: "CP-MND-01",
       name: "Pegadaian CP Manado",
+      domicile: "Sulawesi Utara",
       status: "Aktif"
     });
   });

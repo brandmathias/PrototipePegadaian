@@ -40,6 +40,7 @@ import {
   Landmark,
   ListChecks,
   Mail,
+  MapPin,
   Megaphone,
   Medal,
   MonitorSmartphone,
@@ -159,6 +160,7 @@ export type SuperAdminUnitListItem = {
   code: string;
   name: string;
   address: string;
+  domicile: string;
   status: string;
   adminCount: number;
   accountCount: number;
@@ -170,6 +172,7 @@ export type SuperAdminUnitDetail = {
   code: string;
   name: string;
   address: string;
+  domicile: string;
   status: string;
   isActive: boolean;
   adminCount: number;
@@ -3225,6 +3228,7 @@ export function SuperAdminManagementUnitDetailPage({
               initialValue={{
                 address: unit.address,
                 code: unit.code,
+                domicile: unit.domicile,
                 isActive: unit.isActive,
                 name: unit.name,
               }}
@@ -5599,7 +5603,8 @@ export function SuperAdminManagementPage({
         normalized.length === 0 ||
         unit.name.toLowerCase().includes(normalized) ||
         unit.code.toLowerCase().includes(normalized) ||
-        unit.address.toLowerCase().includes(normalized)
+        unit.address.toLowerCase().includes(normalized) ||
+        unit.domicile.toLowerCase().includes(normalized)
       );
     });
   }, [query, units]);
@@ -5648,7 +5653,7 @@ export function SuperAdminManagementPage({
                     className="h-11 rounded-[1.15rem] bg-white pl-10 text-[0.88rem] font-semibold shadow-[0_16px_34px_-30px_rgba(15,23,42,0.34)]"
                     name="managementSearch"
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Cari unit, kode, atau alamat..."
+                    placeholder="Cari unit, kode, domisili, atau alamat..."
                     value={query}
                   />
                 </div>
@@ -5665,10 +5670,11 @@ export function SuperAdminManagementPage({
                 </div>
               </div>
 
-              <div className="hidden grid-cols-[minmax(17rem,1.25fr)_minmax(13rem,0.85fr)_minmax(9rem,0.55fr)_9rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
-                <span>Unit & alamat</span>
-                <span>Rekening utama</span>
-                <span>Admin/Rekening</span>
+              <div className="hidden grid-cols-[minmax(13rem,1.05fr)_minmax(8rem,0.55fr)_minmax(15rem,1.05fr)_minmax(9rem,0.62fr)_8rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+                <span>Unit</span>
+                <span>Admin Unit</span>
+                <span>Alamat</span>
+                <span>Domisili</span>
                 <span className="text-right">Aksi</span>
               </div>
 
@@ -5683,7 +5689,7 @@ export function SuperAdminManagementPage({
                 <div className="divide-y divide-[#edf2ee]">
                   {visibleUnits.map((unit) => (
                     <article
-                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(17rem,1.25fr)_minmax(13rem,0.85fr)_minmax(9rem,0.55fr)_9rem] lg:items-center lg:px-5"
+                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(13rem,1.05fr)_minmax(8rem,0.55fr)_minmax(15rem,1.05fr)_minmax(9rem,0.62fr)_8rem] lg:items-center lg:px-5"
                       key={unit.id}
                     >
                       <div className="flex min-w-0 gap-3">
@@ -5702,44 +5708,26 @@ export function SuperAdminManagementPage({
                           <p className="mt-1 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
                             {unit.code}
                           </p>
-                          <p className="mt-1 line-clamp-2 text-[0.78rem] font-medium leading-5 text-black/50">
-                            {unit.address}
-                          </p>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                        <UsersRound className="size-4 shrink-0 text-[#006747]" />
+                        {unit.adminCount} Admin
                       </div>
 
                       <div className="min-w-0">
-                        {unit.activeAccount ? (
-                          <div className="w-full max-w-full rounded-[1rem] border border-[#dfe8e3] bg-[#f8faf9] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-                            <div className="flex min-w-0 items-center gap-2">
-                              <Landmark className="size-4 shrink-0 text-[#006747]" />
-                              <p className="truncate text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#13211c]">
-                                {unit.activeAccount.bankName}
-                              </p>
-                            </div>
-                            <p className="mt-1 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[0.78rem] font-bold text-black/62">
-                              {unit.activeAccount.accountNumber}
-                            </p>
-                            <p className="mt-0.5 truncate text-[0.72rem] font-semibold text-black/42">
-                              {unit.activeAccount.accountHolder}
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="rounded-[1rem] border border-dashed border-[#dfe8e3] bg-[#fbfcfa] px-3 py-3 text-[0.78rem] font-semibold text-black/45">
-                            Belum ada rekening utama aktif.
-                          </div>
-                        )}
+                        <p className="line-clamp-2 text-[0.78rem] font-semibold leading-5 text-black/58">
+                          {unit.address}
+                        </p>
+                        <p className="mt-1 text-[0.68rem] font-bold text-black/36 lg:hidden">
+                          {unit.domicile}
+                        </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-                        <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
-                          <UsersRound className="size-4 shrink-0 text-[#006747]" />
-                          {unit.adminCount} Admin
-                        </div>
-                        <div className="flex items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
-                          <CreditCard className="size-4 shrink-0 text-[#006747]" />
-                          {unit.accountCount} Rekening
-                        </div>
+                      <div className="inline-flex min-w-0 items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c]">
+                        <MapPin className="size-4 shrink-0 text-[#006747]" />
+                        <span className="truncate">{unit.domicile}</span>
                       </div>
 
                       <div className="flex flex-wrap justify-start gap-2 lg:justify-end">

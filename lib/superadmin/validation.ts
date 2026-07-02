@@ -1,3 +1,5 @@
+import { normalizeIndonesiaProvince } from "@/lib/locations/indonesia-provinces";
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SUPERADMIN_LEVELS = ["owner", "operator"] as const;
 export type SuperAdminLevel = (typeof SUPERADMIN_LEVELS)[number];
@@ -68,16 +70,18 @@ export function validateUnitPayload(input: {
   code?: string;
   name?: string;
   address?: string;
+  domicile?: string;
 }) {
   const code = normalizeUnitCode(String(input.code ?? ""));
   const name = String(input.name ?? "").trim();
   const address = String(input.address ?? "").trim();
+  const domicile = normalizeIndonesiaProvince(input.domicile);
 
-  if (!code || !name || !address) {
+  if (!code || !name || !address || !domicile) {
     throw new Error("Data unit belum lengkap.");
   }
 
-  return { code, name, address };
+  return { code, name, address, domicile };
 }
 
 export function validateUnitAccountPayload(input: {
@@ -109,6 +113,7 @@ export function validateManagedUnitCreatePayload(input: {
   code?: string;
   name?: string;
   address?: string;
+  domicile?: string;
   primaryAccount?: {
     bankName?: string;
     accountNumber?: string;

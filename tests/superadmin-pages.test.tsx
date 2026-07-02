@@ -843,6 +843,7 @@ describe("superadmin pages", () => {
           code: "CP-MND-13",
           name: "UPC Ranotana",
           address: "Jl. Sam Ratulangi",
+          domicile: "Sulawesi Utara",
           status: "Aktif",
           isActive: true,
           adminCount: 1,
@@ -898,6 +899,7 @@ describe("superadmin pages", () => {
           code: "CP-MND-13",
           name: "UPC Ranotana",
           address: "Jl. Sam Ratulangi",
+          domicile: "Sulawesi Utara",
           status: "Aktif",
           isActive: true,
           adminCount: 1,
@@ -970,6 +972,7 @@ describe("superadmin pages", () => {
             code: "CP-MND-13",
             name: "UPC Ranotana",
             address: "Jl. Sam Ratulangi",
+            domicile: "Sulawesi Utara",
           },
         }),
         { status: 200 },
@@ -983,6 +986,7 @@ describe("superadmin pages", () => {
           code: "CP-MND-13",
           name: "UPC Ranotana",
           address: "Jl. Sam Ratulangi",
+          domicile: "Sulawesi Utara",
           isActive: true,
         }}
         mode="update"
@@ -1904,6 +1908,7 @@ describe("superadmin pages", () => {
             code: "CP-MND-01",
             name: "Pegadaian CP Manado",
             address: "Jl. Sam Ratulangi",
+            domicile: "Sulawesi Utara",
             status: "Aktif",
             adminCount: 1,
             accountCount: 1,
@@ -1986,6 +1991,9 @@ describe("superadmin pages", () => {
     fireEvent.change(screen.getByLabelText(/alamat lengkap unit/i), {
       target: { value: "Jl. Sultan Iskandar Muda No.18" },
     });
+    fireEvent.change(screen.getByLabelText(/domisili/i), {
+      target: { value: "DKI Jakarta" },
+    });
 
     fireEvent.change(screen.getByLabelText(/nama bank/i), {
       target: { value: "Mandiri" },
@@ -2058,6 +2066,7 @@ describe("superadmin pages", () => {
     const unitBody = JSON.parse(String(unitRequest?.body ?? "{}"));
     const adminBody = unitBody.admins[0];
 
+    expect(unitBody.domicile).toBe("DKI Jakarta");
     expect(unitBody.primaryAccount).not.toHaveProperty("branchName");
     expect(adminBody).toMatchObject({
       name: "Andi Setiawan",
@@ -2076,6 +2085,7 @@ describe("superadmin pages", () => {
         code: `CP-MND-${String(number).padStart(2, "0")}`,
         name: `Pegadaian CP Unit ${String(number).padStart(2, "0")}`,
         address: `Jl. Sam Ratulangi No. ${number}`,
+        domicile: "Sulawesi Utara",
         status: number === 1 ? "Nonaktif" : number === 2 ? "Perlu Review" : "Aktif",
         adminCount: number % 3 === 0 ? 2 : 1,
         accountCount: 1,

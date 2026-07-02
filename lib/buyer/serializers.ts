@@ -31,6 +31,7 @@ type PublicLotShape = {
   specifications?: unknown;
   unitName: string;
   unitAddress: string;
+  unitDomicile?: string;
   updatedAt?: Date | null;
   account?: AccountShape;
   insights?: LotInsights;
@@ -267,6 +268,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
     price,
     location: row.unitAddress,
     unitName: row.unitName,
+    domicile: row.unitDomicile || row.unitName,
     city: row.unitName,
     condition: row.condition,
     status: isVickrey ? "Lelang aktif" : "Tersedia",
@@ -433,7 +435,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   } else if (canReveal) {
     note = `Deadline lewat. Reveal nominal sebelum ${revealDeadline ?? "batas reveal"} agar bid ikut penentuan pemenang.`;
   } else if (isEscrowed && !ended) {
-    note = "Sesi lelang sementara berlangsung. Penawaran Anda telah berhasil direkam oleh sistem. Mohon tunggu pengumuman pemenang resmi setelah batas waktu penutupan lelang berakhir.";
+    note = "Sesi lelang sementara berlangsung. Penawaran escrow otomatis Anda telah berhasil direkam oleh sistem. Mohon tunggu pengumuman pemenang resmi setelah batas waktu penutupan lelang berakhir.";
   } else if (isEscrowed) {
     note = "Deadline sudah lewat. Sistem sedang membuka escrow dan menghitung hasil Lelang Tertutup otomatis.";
   } else if (isRevealed) {

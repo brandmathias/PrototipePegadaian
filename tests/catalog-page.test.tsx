@@ -32,6 +32,7 @@ describe("CatalogPage", () => {
       price: 5_000_000 + index * 1_000_000,
       location: index % 2 === 0 ? "UPC Bandung" : "UPC Jakarta Pusat",
       unitName: index % 2 === 0 ? "UPC Bandung" : "UPC Jakarta Pusat",
+      domicile: index % 2 === 0 ? "Jawa Barat" : "DKI Jakarta",
       city: index % 2 === 0 ? "Bandung" : "Jakarta",
       condition: index % 3 === 0 ? "Bekas Like New" : "Baru",
       status: "Tersedia",
@@ -200,6 +201,7 @@ describe("CatalogPage", () => {
             price: 100000000,
             location: "Ranotana",
             unitName: "UPC Ranotana",
+            domicile: "Sulawesi Utara",
             city: "Manado",
             condition: "Baik",
             status: "Tersedia",
@@ -216,6 +218,7 @@ describe("CatalogPage", () => {
             price: 15000000,
             location: "Makassar",
             unitName: "UPC Makassar",
+            domicile: "Sulawesi Selatan",
             city: "Makassar",
             condition: "Baik",
             status: "Tersedia",
@@ -278,6 +281,34 @@ describe("CatalogPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /tampilkan 2 lainnya/i }));
 
     expect(screen.getByRole("button", { name: /unit prioritas 5/i })).toBeInTheDocument();
+  });
+
+  it("filters catalog by domicile with searchable province options", () => {
+    render(
+      <CatalogPage
+        lots={[
+          makeLot(1, { name: "Cincin Jakarta", domicile: "DKI Jakarta" }),
+          makeLot(2, { name: "Laptop Jakarta", domicile: "DKI Jakarta" }),
+          makeLot(3, { name: "Emas Barat", domicile: "Jawa Barat" }),
+          makeLot(4, { name: "Emas Timur", domicile: "Jawa Timur" }),
+          makeLot(5, { name: "Emas Utara", domicile: "Sulawesi Utara" }),
+          makeLot(6, { name: "Emas Bali", domicile: "Bali" }),
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /dki jakarta/i })).toHaveTextContent("2");
+
+    fireEvent.click(screen.getByRole("button", { name: /dki jakarta/i }));
+
+    expect(screen.getByText("Cincin Jakarta")).toBeInTheDocument();
+    expect(screen.getByText("Laptop Jakarta")).toBeInTheDocument();
+    expect(screen.queryByText("Emas Barat")).not.toBeInTheDocument();
+    expect(screen.getByText(/domisili: dki jakarta/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/cari domisili/i), { target: { value: "bali" } });
+
+    expect(screen.getByRole("button", { name: /bali/i })).toBeInTheDocument();
   });
 
   it("supports buyer price filters up to 10000000000", () => {

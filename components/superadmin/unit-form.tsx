@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { INDONESIA_PROVINCES } from "@/lib/locations/indonesia-provinces";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
 import {
   normalizeUnitAccountNumber,
@@ -44,6 +45,7 @@ type UnitFormProps = {
     code: string;
     name: string;
     address: string;
+    domicile: string;
     isActive?: boolean;
   };
 };
@@ -53,6 +55,7 @@ type ManagedUnitCreateResponse = {
   code: string;
   name: string;
   address: string;
+  domicile: string;
 };
 
 type AccountDraft = {
@@ -158,12 +161,16 @@ function UnitFormSelect({
   id,
   label,
   onChange,
+  options,
+  placeholder = "Pilih opsi",
   required,
   value,
 }: {
   id: string;
   label: string;
   onChange: (value: string) => void;
+  options: ReadonlyArray<{ label: string; value: string }>;
+  placeholder?: string;
   required?: boolean;
   value: string;
 }) {
@@ -177,8 +184,8 @@ function UnitFormSelect({
         className="[&_.admin-select-trigger]:h-10 [&_.admin-select-trigger]:rounded-[0.9rem] [&_.admin-select-trigger]:border-[#dce6df] [&_.admin-select-trigger]:bg-[#fbfcfb] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.78rem] [&_.admin-select-trigger]:font-bold [&_.admin-select-trigger]:text-[#13211c] [&_.admin-select-trigger]:shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#0a6a49]/35 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.42),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-option]:text-[0.82rem]"
         id={id}
         options={[
-          { value: "", label: "Pilih bank" },
-          ...unitBankOptions,
+          { value: "", label: placeholder },
+          ...options,
         ]}
         size="compact"
         onValueChange={onChange}
@@ -203,6 +210,7 @@ function UnitEditForm({
   const [code, setCode] = useState(initialValue?.code ?? "");
   const [name, setName] = useState(initialValue?.name ?? "");
   const [address, setAddress] = useState(initialValue?.address ?? "");
+  const [domicile, setDomicile] = useState(initialValue?.domicile ?? "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -220,6 +228,7 @@ function UnitEditForm({
           code,
           name,
           address,
+          domicile,
           isActive: true,
         }),
       });
@@ -269,7 +278,18 @@ function UnitEditForm({
           value={name}
         />
       </div>
-      <div className="space-y-1.5 lg:col-span-5">
+      <div className="lg:col-span-5">
+        <UnitFormSelect
+          id="unit-domicile-edit"
+          label="Domisili"
+          onChange={setDomicile}
+          options={INDONESIA_PROVINCES.map((province) => ({ label: province, value: province }))}
+          placeholder="Pilih domisili"
+          required
+          value={domicile}
+        />
+      </div>
+      <div className="space-y-1.5 lg:col-span-12">
         <FieldLabel htmlFor="unit-address-edit" required>
           Alamat Lengkap Unit
         </FieldLabel>
@@ -323,6 +343,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [domicile, setDomicile] = useState("");
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
@@ -341,11 +362,11 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
 
   const readyChecks = useMemo(
     () => [
-      { label: "Profil unit", done: Boolean(code.trim() && name.trim() && address.trim()) },
+      { label: "Profil unit", done: Boolean(code.trim() && name.trim() && address.trim() && domicile) },
       { label: "Rekening utama", done: accounts.length > 0 },
       { label: "Admin unit", done: admins.length > 0 },
     ],
-    [accounts.length, address, admins.length, code, name]
+    [accounts.length, address, admins.length, code, domicile, name]
   );
   const canSubmit = readyChecks.every((item) => item.done);
 
@@ -448,6 +469,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
           code,
           name,
           address,
+          domicile,
           accounts: secondaryAccounts.map((account) => ({
             bankName: account.bankName,
             accountNumber: account.accountNumber,
@@ -479,6 +501,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
       setCode("");
       setName("");
       setAddress("");
+      setDomicile("");
       setAccounts([]);
       setAdmins([]);
       resetAccountFields();
@@ -556,7 +579,18 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
                   value={name}
                 />
               </div>
-              <div className="space-y-1.5 lg:col-span-5">
+              <div className="lg:col-span-5">
+                <UnitFormSelect
+                  id="unit-domicile"
+                  label="Domisili"
+                  onChange={setDomicile}
+                  options={INDONESIA_PROVINCES.map((province) => ({ label: province, value: province }))}
+                  placeholder="Pilih domisili"
+                  required
+                  value={domicile}
+                />
+              </div>
+              <div className="space-y-1.5 lg:col-span-12">
                 <FieldLabel htmlFor="unit-address" required>
                   Alamat Lengkap Unit
                 </FieldLabel>
@@ -586,7 +620,15 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
             <div className="grid gap-5 pt-4 xl:grid-cols-12 xl:gap-7">
               <div className="space-y-4 xl:col-span-5">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <UnitFormSelect id="account-bank" label="Nama Bank" onChange={setBankName} required value={bankName} />
+                  <UnitFormSelect
+                    id="account-bank"
+                    label="Nama Bank"
+                    onChange={setBankName}
+                    options={unitBankOptions}
+                    placeholder="Pilih bank"
+                    required
+                    value={bankName}
+                  />
                   <UnitTextInput
                     id="account-number"
                     label="Nomor Rekening"

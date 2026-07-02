@@ -123,7 +123,7 @@ type BuyerDashboardViolation = {
 };
 
 const BUYER_SETTLEMENT_LOCKED_MESSAGE =
-  "Akun Anda sedang dalam masa pembatasan. Transaksi belum dapat diselesaikan sampai masa blacklist berakhir.";
+  "Akun Anda sedang dalam masa pembatasan. Transaksi baru dan upload pembayaran ditahan, tetapi transaksi yang sudah lunas tetap bisa diselesaikan setelah bukti serah-terima tersedia.";
 
 const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png";
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
@@ -1762,7 +1762,7 @@ function VickreyPaymentSuccessDetail({
                       <span className="block font-bold">Pembayaran Terverifikasi</span>
                       <span className="mt-1 block text-sm font-medium">
                         {settlementLockMessage
-                          ? "Pembayaran sudah sah. Pembatasan akun hanya menunda aksi penyelesaian transaksi."
+                          ? "Pembayaran sudah sah. Pembatasan akun tidak menghalangi finalisasi transaksi yang sudah diserahterimakan."
                           : "Pembayaran sah dan tidak memiliki kendala verifikasi."}
                       </span>
                     </span>
@@ -1773,14 +1773,10 @@ function VickreyPaymentSuccessDetail({
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {!isCompleted ? (
-                settlementLockMessage ? (
-                  <BuyerSettlementLockNotice message={settlementLockMessage} />
-                ) : (
-                  <CompletePurchaseButton
-                    disabledReason={handoverLockMessage}
-                    transactionId={transaction.id}
-                  />
-                )
+                <CompletePurchaseButton
+                  disabledReason={handoverLockMessage}
+                  transactionId={transaction.id}
+                />
               ) : (
                 <Button
                   className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-primary/10 disabled:bg-primary/45 disabled:text-white/95 disabled:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:saturate-[0.88]"
@@ -1800,6 +1796,7 @@ function VickreyPaymentSuccessDetail({
               />
             </div>
             <div className="mt-3 space-y-3">
+              {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
               <HandoverAutoCompleteNotice transaction={transaction} />
               {!isCompleted && transaction.handoverProof ? (
                 <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
@@ -1869,7 +1866,7 @@ export function TransactionDetailPage({
   const handoverLockMessage = transaction.handoverProof
     ? null
     : getReceiptHandoverLockMessage(transaction);
-  const fixedPriceActionLockMessage = settlementLockMessage ?? handoverLockMessage;
+  const fixedPriceActionLockMessage = handoverLockMessage;
   const fixedPriceReceiptLockMessage =
     handoverLockMessage ?? (!isCompleted ? "Nota dapat dicetak setelah buyer menekan Pembelian Selesai." : null);
   const transactionSpecificationRows = [

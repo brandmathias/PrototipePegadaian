@@ -749,8 +749,10 @@ export function CatalogPage({
   const [mode, setMode] = useState<SaleMode>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedDomiciles, setSelectedDomiciles] = useState<string[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [categoryQuery, setCategoryQuery] = useState("");
+  const [domicileQuery, setDomicileQuery] = useState("");
   const [unitQuery, setUnitQuery] = useState("");
   const [showAllUnits, setShowAllUnits] = useState(false);
   const [minPrice, setMinPrice] = useState("");
@@ -848,11 +850,23 @@ export function CatalogPage({
     return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
   }, [initialLots]);
 
+  const domiciles = useMemo(() => {
+    const map = new Map<string, number>();
+    initialLots.forEach((lot) => {
+      const domicile = String(lot.domicile ?? "").trim();
+      if (domicile) {
+        map.set(domicile, (map.get(domicile) ?? 0) + 1);
+      }
+    });
+    return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
+  }, [initialLots]);
+
   const priceUpperBound = useMemo(() => {
     return CATALOG_PRICE_FILTER_LIMIT;
   }, []);
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
+  const visibleDomiciles = domiciles.filter(([domicile]) => normalize(domicile).includes(normalize(domicileQuery)));
   const matchingUnits = units.filter(([unit]) => normalize(unit).includes(normalize(unitQuery)));
   const hiddenUnitCount = unitQuery.trim() ? 0 : Math.max(0, matchingUnits.length - 4);
   const visibleUnits = unitQuery.trim() || showAllUnits ? matchingUnits : matchingUnits.slice(0, 4);
@@ -866,6 +880,7 @@ export function CatalogPage({
       if (mode !== "all" && lot.mode !== mode) return false;
       if (selectedCategories.length > 0 && !selectedCategories.includes(lot.category)) return false;
       if (selectedConditions.length > 0 && !selectedConditions.includes(titleCase(lot.condition))) return false;
+      if (selectedDomiciles.length > 0 && !selectedDomiciles.includes(String(lot.domicile ?? ""))) return false;
       if (selectedUnits.length > 0 && !selectedUnits.includes(lot.unitName)) return false;
       if (parsedMinPrice !== null && Number.isFinite(parsedMinPrice) && lot.price < parsedMinPrice) return false;
       if (parsedMaxPrice !== null && Number.isFinite(parsedMaxPrice) && lot.price > parsedMaxPrice) return false;
@@ -878,6 +893,7 @@ export function CatalogPage({
         lot.category,
         lot.condition,
         lot.city,
+        lot.domicile,
         lot.unitName,
         lot.location,
         lot.description,
@@ -915,13 +931,14 @@ export function CatalogPage({
     mode,
     selectedCategories,
     selectedConditions,
+    selectedDomiciles,
     selectedUnits,
     sortBy
   ]);
 
   useEffect(() => {
     setPageIndex(0);
-  }, [filteredLots.length, mode, pageSize, deferredQuery, selectedCategories, selectedConditions, selectedUnits, minPrice, maxPrice, sortBy]);
+  }, [filteredLots.length, mode, pageSize, deferredQuery, selectedCategories, selectedConditions, selectedDomiciles, selectedUnits, minPrice, maxPrice, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLots.length / pageSize));
   const currentPage = Math.min(pageIndex, totalPages - 1);
@@ -948,6 +965,10 @@ export function CatalogPage({
       label: `Kondisi: ${condition}`,
       onRemove: () => setSelectedConditions((current) => current.filter((item) => item !== condition))
     })),
+    ...selectedDomiciles.map((domicile) => ({
+      label: `Domisili: ${domicile}`,
+      onRemove: () => setSelectedDomiciles((current) => current.filter((item) => item !== domicile))
+    })),
     ...selectedUnits.map((unit) => ({
       label: unit,
       onRemove: () => setSelectedUnits((current) => current.filter((item) => item !== unit))
@@ -971,8 +992,10 @@ export function CatalogPage({
     setMode("all");
     setSelectedCategories([]);
     setSelectedConditions([]);
+    setSelectedDomiciles([]);
     setSelectedUnits([]);
     setCategoryQuery("");
+    setDomicileQuery("");
     setUnitQuery("");
     setShowAllUnits(false);
     setMinPrice("");
@@ -1101,6 +1124,27 @@ export function CatalogPage({
                       key={condition}
                       label={condition}
                       onClick={() => toggleValue(condition, setSelectedConditions)}
+                    />
+                  ))}
+                </div>
+              </FilterSection>
+
+              <FilterSection title="Domisili">
+                <FilterSearch
+                  label="Cari domisili"
+                  placeholder="Cari domisili..."
+                  value={domicileQuery}
+                  onChange={setDomicileQuery}
+                />
+                <div className="max-h-[11.9rem] space-y-1 overflow-y-auto overscroll-contain pr-1">
+                  {visibleDomiciles.map(([domicile, count]) => (
+                    <CheckFilterButton
+                      active={selectedDomiciles.includes(domicile)}
+                      count={count}
+                      icon={<MapPin className="size-3.5" />}
+                      key={domicile}
+                      label={domicile}
+                      onClick={() => toggleValue(domicile, setSelectedDomiciles)}
                     />
                   ))}
                 </div>

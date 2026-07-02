@@ -24,6 +24,7 @@ function publicLotSelection() {
     updatedAt: barang.updatedAt,
     unitName: units.name,
     unitAddress: units.address,
+    unitDomicile: units.domicile,
     account: unitAccounts
   };
 }

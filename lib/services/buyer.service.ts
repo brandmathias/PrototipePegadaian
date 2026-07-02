@@ -1202,7 +1202,6 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
 export async function completeBuyerTransaction(userId: string, transactionId: string) {
   await refreshBuyerAuctionSettlementState();
 
-  await ensureCanSettleBuyerTransaction(userId);
   const row = await getTransactionRowById(userId, transactionId);
 
   if (!row) {

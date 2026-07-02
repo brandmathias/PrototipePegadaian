@@ -242,6 +242,7 @@ export async function listUnits() {
         code: unit.code,
         name: unit.name,
         address: unit.address,
+        domicile: unit.domicile,
         isActive: unit.isActive,
         adminCount,
         accountCount,
@@ -374,6 +375,7 @@ export async function getUnitById(unitId: string) {
     code: unit.code,
     name: unit.name,
     address: unit.address,
+    domicile: unit.domicile,
     status: getUnitStatus(unit, activeAccount ? 1 : 0, Number(adminCountRow?.count ?? 0)),
     isActive: unit.isActive,
     adminCount: Number(adminCountRow?.count ?? 0),
@@ -510,6 +512,7 @@ export async function getSuperAdminUnitBarangDetail(unitId: string, barangId: st
       code: unit.code,
       name: unit.name,
       address: unit.address,
+      domicile: unit.domicile,
       status: getUnitStatus(unit, activeAccount ? 1 : 0, Number(adminCountRow?.count ?? 0))
     },
     item,
@@ -610,6 +613,7 @@ export async function createUnit(input: {
   code?: string;
   name?: string;
   address?: string;
+  domicile?: string;
   primaryAccount?: {
     bankName?: string;
     accountNumber?: string;
@@ -636,7 +640,8 @@ export async function createUnit(input: {
         id: unitId,
         code: payload.code,
         name: payload.name,
-        address: payload.address
+        address: payload.address,
+        domicile: payload.domicile
       })
       .returning();
 
@@ -697,6 +702,7 @@ export async function updateUnit(
     code?: string;
     name?: string;
     address?: string;
+    domicile?: string;
     isActive?: boolean;
   }
 ) {
@@ -718,6 +724,7 @@ export async function updateUnit(
       code: payload.code,
       name: payload.name,
       address: payload.address,
+      domicile: payload.domicile,
       isActive: typeof input.isActive === "boolean" ? input.isActive : true,
       updatedAt: new Date()
     })

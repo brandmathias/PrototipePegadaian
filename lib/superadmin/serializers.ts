@@ -37,6 +37,7 @@ export function serializeUnitListItem(input: {
   code: string;
   name: string;
   address: string;
+  domicile: string;
   isActive: boolean;
   adminCount: number;
   accountCount: number;
@@ -47,6 +48,7 @@ export function serializeUnitListItem(input: {
     code: input.code,
     name: input.name,
     address: input.address,
+    domicile: input.domicile,
     status: input.isActive ? "Aktif" : "Nonaktif",
     adminCount: input.adminCount,
     accountCount: input.accountCount,

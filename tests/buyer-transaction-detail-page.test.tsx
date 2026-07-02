@@ -660,7 +660,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
-  it("blocks settlement actions while the buyer has an active blacklist", () => {
+  it("keeps the handover proof requirement while the buyer has an active blacklist", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -675,10 +675,36 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/transaksi belum dapat diselesaikan/i)).toBeInTheDocument();
+    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
     expect(within(handoverPanel).queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
+  });
+
+  it("allows a blacklisted buyer to finish a verified transaction after handover proof exists", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        buyerStatus={{ blacklist: { active: true, until: new Date("2026-05-28T00:00:00.000Z"), totalViolations: 1 } }}
+        transaction={{
+          ...transaction,
+          status: "LUNAS",
+          paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
+            uploadedAt: "4 Mei 2026 22.30 WIB",
+            uploadedBy: "Admin UPC Ranotana",
+            location: "UPC Ranotana"
+          },
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeEnabled();
   });
 
   it("blocks proof upload while the buyer has an active blacklist", () => {
@@ -691,7 +717,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/transaksi belum dapat diselesaikan/i)).toBeInTheDocument();
+    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 });

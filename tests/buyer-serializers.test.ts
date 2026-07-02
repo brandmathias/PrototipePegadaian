@@ -18,6 +18,7 @@ describe("buyer serializers", () => {
       description: "Lot dengan metrik realtime.",
       unitName: "UPC Ranotana",
       unitAddress: "Jl. Sam Ratulangi, Manado",
+      unitDomicile: "Sulawesi Utara",
       updatedAt: new Date("2026-05-22T03:30:00Z"),
       account: null,
       insights: {
@@ -34,6 +35,7 @@ describe("buyer serializers", () => {
       views: 42
     });
     expect(lot.category).toBe("Perhiasan");
+    expect(lot.domicile).toBe("Sulawesi Utara");
   });
 
   it("uses structured category specifications for public lot details without repeating generic metadata", () => {

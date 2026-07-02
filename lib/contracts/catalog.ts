@@ -15,6 +15,7 @@ export type Lot = {
   price: number;
   location: string;
   unitName: string;
+  domicile?: string;
   city: string;
   condition: string;
   status: string;
