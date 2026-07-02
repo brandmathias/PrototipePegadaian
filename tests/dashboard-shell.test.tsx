@@ -55,12 +55,14 @@ describe("DashboardShell", () => {
     window.localStorage.clear();
     document.documentElement.className = "";
     document.documentElement.removeAttribute("style");
+    vi.unstubAllEnvs();
   });
 
   afterEach(() => {
     window.localStorage.clear();
     document.documentElement.className = "";
     document.documentElement.removeAttribute("style");
+    vi.unstubAllEnvs();
   });
 
   it.each([
@@ -284,6 +286,50 @@ describe("DashboardShell", () => {
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/superadmin/profil");
     expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/superadmin/profil#panduan");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
+  });
+
+  it("does not render the old sidebar account panel for admin or superadmin in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    navigationMock.pathname = "/admin";
+
+    const { rerender } = render(
+      <DashboardShell
+        currentUser={{
+          image: null,
+          name: "Admin Unit Ranotana",
+          role: "admin_unit"
+        }}
+        nav={nav}
+        showHeaderSearch={false}
+        subtitle="Pusat kendali operasional unit"
+        title="UPC Ranotana"
+      >
+        <div>Konten admin</div>
+      </DashboardShell>
+    );
+
+    expect(screen.queryByText("Admin Unit Ranotana")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/keluar dari akun/i)).not.toBeInTheDocument();
+
+    navigationMock.pathname = "/superadmin";
+    rerender(
+      <DashboardShell
+        currentUser={{
+          image: null,
+          name: "Superadmin Operator Demo",
+          role: "super_admin"
+        }}
+        nav={[{ href: "/superadmin", label: "Dashboard Global", icon: "dashboard" }]}
+        showHeaderSearch={false}
+        subtitle="Control center lintas unit"
+        title="Superadmin Nasional"
+      >
+        <div>Konten superadmin</div>
+      </DashboardShell>
+    );
+
+    expect(screen.queryByText("Superadmin Operator Demo")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/keluar dari akun/i)).not.toBeInTheDocument();
   });
 
   it("cleans legacy global dark mode so buyer routes are not affected after leaving admin", () => {

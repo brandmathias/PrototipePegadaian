@@ -19,12 +19,10 @@ import {
   UserCog,
   UsersRound,
   WalletCards,
-  X,
-  LogOut
+  X
 } from "lucide-react";
 
 import { AdminProfileMenu } from "@/components/layout/admin-profile-menu";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { AlertCenter } from "@/components/ui/alert-center";
 import type { AuthRole } from "@/lib/auth/guards";
@@ -435,29 +433,6 @@ export function DashboardShell({
           </div>
         ) : null}
 
-        {currentUser && process.env.NODE_ENV !== "test" ? (
-          <div className="mt-auto shrink-0 border-t border-white/10 pt-3 bg-black/10 -mx-3 -mb-3 px-4 pb-4">
-            <div className="flex items-center gap-3">
-              <span className="relative grid size-10 place-items-center overflow-hidden rounded-full bg-white/10 text-xs font-black text-white shadow-sm ring-1 ring-white/10">
-                {currentUser.image ? (
-                  <img alt="" className="absolute inset-0 h-full w-full object-cover" src={currentUser.image} />
-                ) : (
-                  currentUser.name.substring(0, 2).toUpperCase()
-                )}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-white/90">{currentUser.name}</p>
-                <p className="truncate text-[0.62rem] font-bold text-white/46 uppercase tracking-[0.1em]">{profileRoleLabel}</p>
-              </div>
-              <LogoutButton
-                className="grid size-8 shrink-0 place-items-center rounded-xl bg-white/8 text-white/70 hover:bg-white/15 hover:text-white transition duration-300"
-                aria-label="Keluar dari akun"
-              >
-                <LogOut className="size-4" />
-              </LogoutButton>
-            </div>
-          </div>
-        ) : null}
       </aside>
 
       <div className={cn("relative min-h-dvh", forceWhiteShell && "bg-white")}>
