@@ -89,7 +89,7 @@ type DashboardStripMetric = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const chartAxisFontFamily = "var(--font-plus-jakarta), 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif";
+const chartAxisFontFamily = "var(--font-inter), 'Segoe UI', system-ui, sans-serif";
 const chartAxisTextStyle = { fontVariantNumeric: "tabular-nums", textRendering: "geometricPrecision", WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale" } as const;
 const chartViewBoxHeight = 358;
 const chartAxisMaxValue = 25;

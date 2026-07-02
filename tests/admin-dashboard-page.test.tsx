@@ -152,10 +152,10 @@ describe("AdminDashboardPage", () => {
     render(<AdminDashboardPage data={baseDashboardData} />);
 
     expect(screen.getByTestId("admin-dashboard-metrics")).toHaveClass(
-      "[font-family:var(--font-plus-jakarta)]"
+      "[font-family:var(--font-inter)]"
     );
     expect(screen.getByTestId("admin-dashboard-checklist")).toHaveClass(
-      "[font-family:var(--font-plus-jakarta)]"
+      "[font-family:var(--font-inter)]"
     );
     expect(screen.getByTestId("admin-checklist-wave")).toBeInTheDocument();
     expect(screen.queryByText(/^2 lunas$/i)).not.toBeInTheDocument();

@@ -3179,7 +3179,7 @@
 }
 
 .font-handwritten {
-  font-family: var(--font-kalam), "Kalam", "Caveat", cursive;
+  font-family: "Segoe Print", "Comic Sans MS", cursive;
 }
 
 @keyframes fade-up {
@@ -3321,8 +3321,8 @@
   --ra-border: #cfe8d8;
   --ra-radius-xl: 28px;
   --ra-shadow-soft: 0 18px 55px rgba(0, 74, 50, 0.08);
-  --ra-font-display: var(--font-cormorant), "Cormorant Garamond", serif;
-  --ra-font-ui: var(--font-plus-jakarta), "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --ra-font-display: Georgia, "Times New Roman", serif;
+  --ra-font-ui: var(--font-inter);
 }
 
 .dark {

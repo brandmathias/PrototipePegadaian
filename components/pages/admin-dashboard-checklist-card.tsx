@@ -221,7 +221,7 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
 
   return (
     <section
-      className="admin-checklist-card relative overflow-hidden rounded-[1.55rem] border border-[#e2e8e4] bg-[#fdfefe] p-0 shadow-[0_22px_58px_-46px_rgba(15,23,42,0.24)] [font-family:var(--font-plus-jakarta)] dark:border-emerald-300/[0.09] dark:bg-[#0c1713] dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.72)]"
+      className="admin-checklist-card relative overflow-hidden rounded-[1.55rem] border border-[#e2e8e4] bg-[#fdfefe] p-0 shadow-[0_22px_58px_-46px_rgba(15,23,42,0.24)] [font-family:var(--font-inter)] dark:border-emerald-300/[0.09] dark:bg-[#0c1713] dark:shadow-[0_24px_60px_-38px_rgba(0,0,0,0.72)]"
       data-testid="admin-dashboard-checklist"
     >
       <svg

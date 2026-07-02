@@ -428,7 +428,7 @@ export function AdminDashboardPage({ data, adminName }: { data: AdminDashboardDa
       <AdminDashboardHero summary={data.summary} adminName={adminName} />
 
       <section
-        className="grid gap-3.5 [font-family:var(--font-plus-jakarta)] lg:grid-cols-3"
+        className="grid gap-3.5 [font-family:var(--font-inter)] lg:grid-cols-3"
         data-testid="admin-dashboard-metrics"
       >
         {cards.map((card, index) => (

@@ -99,7 +99,7 @@ export default function WelcomeBrushBadge({
           />
         </svg>
 
-        {/* Text using the Kalam Google Font */}
+        {/* Text uses a local handwriting stack to avoid loading a global web font. */}
         <span className="relative z-10 whitespace-nowrap font-handwritten text-[22px] font-medium leading-none tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.18)] md:text-[25px]">
           {text}
         </span>
