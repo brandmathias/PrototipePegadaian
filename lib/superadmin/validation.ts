@@ -1,4 +1,10 @@
-import { normalizeIndonesiaProvince } from "@/lib/locations/indonesia-provinces";
+import {
+  extractUnitNumber,
+  formatUnitCode,
+  normalizeIndonesiaProvince
+} from "@/lib/locations/indonesia-provinces";
+
+export { extractUnitNumber, formatUnitCode, getProvinceRegionCode } from "@/lib/locations/indonesia-provinces";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const SUPERADMIN_LEVELS = ["owner", "operator"] as const;
@@ -68,20 +74,31 @@ export function normalizeUnitAccountNumber(value: unknown) {
 
 export function validateUnitPayload(input: {
   code?: string;
+  unitNumber?: string;
   name?: string;
   address?: string;
   domicile?: string;
 }) {
-  const code = normalizeUnitCode(String(input.code ?? ""));
   const name = String(input.name ?? "").trim();
   const address = String(input.address ?? "").trim();
   const domicile = normalizeIndonesiaProvince(input.domicile);
+  const unitNumber = String(input.unitNumber ?? extractUnitNumber(input.code) ?? "").trim();
 
-  if (!code || !name || !address || !domicile) {
+  if (!name || !address || !domicile) {
     throw new Error("Data unit belum lengkap.");
   }
 
-  return { code, name, address, domicile };
+  if (!/^\d{5}$/.test(unitNumber)) {
+    throw new Error("Kode unit harus terdiri dari tepat 5 angka.");
+  }
+
+  const code = formatUnitCode(domicile, unitNumber);
+
+  if (!code) {
+    throw new Error("Domisili unit belum memiliki kode wilayah.");
+  }
+
+  return { code, unitNumber, name, address, domicile };
 }
 
 export function validateUnitAccountPayload(input: {
@@ -111,6 +128,7 @@ export function validateUnitAccountPayload(input: {
 
 export function validateManagedUnitCreatePayload(input: {
   code?: string;
+  unitNumber?: string;
   name?: string;
   address?: string;
   domicile?: string;

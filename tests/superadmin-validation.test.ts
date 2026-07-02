@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractUnitNumber,
+  formatUnitCode,
+  getProvinceRegionCode,
   normalizeUnitAccountNumber,
   normalizeUnitBankName,
-  normalizeUnitCode,
   normalizeSuperAdminLevel,
   validateAdminUnitPayload,
   validateManagedUnitCreatePayload,
@@ -18,16 +20,17 @@ describe("superadmin validation", () => {
   it("normalizes unit payload values", () => {
     expect(
       validateUnitPayload({
-        code: " cp-mdn-01 ",
+        unitNumber: "11793",
         name: " Pegadaian CP Manado ",
         address: " Jl. Piere Tendean No. 88 ",
-        domicile: "Nanggroe Aceh Darussalam"
+        domicile: "Sulawesi Utara"
       })
     ).toEqual({
-      code: "CP-MDN-01",
+      code: "CP-MND-11793",
+      unitNumber: "11793",
       name: "Pegadaian CP Manado",
       address: "Jl. Piere Tendean No. 88",
-      domicile: "Aceh"
+      domicile: "Sulawesi Utara"
     });
   });
 
@@ -60,8 +63,21 @@ describe("superadmin validation", () => {
     });
   });
 
-  it("normalizes unit code helper", () => {
-    expect(normalizeUnitCode(" upc-mks-01 ")).toBe("UPC-MKS-01");
+  it("derives the canonical unit code from domicile and five-digit unit number", () => {
+    expect(getProvinceRegionCode("Sulawesi Utara")).toBe("MND");
+    expect(formatUnitCode("Sulawesi Utara", "11793")).toBe("CP-MND-11793");
+    expect(extractUnitNumber("CP-MND-11793")).toBe("11793");
+  });
+
+  it("rejects unit numbers that are not exactly five digits", () => {
+    expect(() =>
+      validateUnitPayload({
+        unitNumber: "13",
+        name: "UPC Ranotana",
+        address: "Manado",
+        domicile: "Sulawesi Utara"
+      })
+    ).toThrow("Kode unit harus terdiri dari tepat 5 angka.");
   });
 
   it("requires email, unit, and temporary password for admin unit", () => {
@@ -119,7 +135,7 @@ describe("superadmin validation", () => {
   it("requires an active primary account when creating a managed unit", () => {
     expect(() =>
       validateManagedUnitCreatePayload({
-        code: "CP-MND-02",
+        unitNumber: "11787",
         name: "Pegadaian CP Boulevard",
         address: "Jl. Boulevard Manado",
         domicile: "Sulawesi Utara",
@@ -134,7 +150,7 @@ describe("superadmin validation", () => {
 
     expect(() =>
       validateManagedUnitCreatePayload({
-        code: "CP-MND-03",
+        unitNumber: "11788",
         name: "Pegadaian CP Tikala",
         address: "Jl. Tikala Baru",
         domicile: "Sulawesi Utara",
