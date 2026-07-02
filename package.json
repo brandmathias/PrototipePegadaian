@@ -13,6 +13,7 @@
     "db:migrate:handover-proof": "tsx scripts/apply-handover-proof-migration.ts",
     "db:migrate:handover-auto-completion": "tsx scripts/apply-handover-auto-completion-migration.ts",
     "db:remove:handover-complaint": "tsx scripts/remove-handover-complaint.ts",
+    "db:migrate:canonical-codes": "tsx scripts/apply-canonical-codes-migration.ts",
     "db:cleanup:obsolete": "tsx scripts/cleanup-obsolete-database.ts",
     "db:backfill:blacklist": "tsx scripts/backfill-blacklist-violation-totals.ts",
     "test": "vitest run",

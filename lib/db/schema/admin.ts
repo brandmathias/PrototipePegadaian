@@ -1,8 +1,10 @@
-import { boolean, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, numeric, pgSequence, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { users } from "@/lib/db/schema/auth";
 import { units } from "@/lib/db/schema/superadmin";
+
+export const barangSbgNumberSequence = pgSequence("barang_sbg_number_seq");
 
 export const barang = pgTable(
   "barang",

@@ -47,6 +47,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/bundled-uploads ./bundled-uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/start-production.mjs ./start-production.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0023_canonical_unit_sbg_codes.sql ./canonical-code-migration.sql
 
 RUN mkdir -p /app/public/uploads/barang /app/public/uploads/bukti /app/public/uploads/blacklist-review /app/public/uploads/serah-terima \
   && mkdir -p /app/uploads/barang /app/uploads/bukti /app/uploads/blacklist-review /app/uploads/serah-terima \
