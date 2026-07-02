@@ -37,7 +37,6 @@ import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
-import { HandoverComplaintButton } from "@/components/buyer/handover-complaint-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countdown-tiles";
@@ -903,17 +902,9 @@ function HandoverAutoCompleteNotice({ transaction }: { transaction: BuyerTransac
     return null;
   }
 
-  if (transaction.handoverComplaint) {
-    return (
-      <p className="rounded-[1rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-800">
-        Komplain serah-terima sudah dikirim. Auto-selesai ditahan sampai bukti ditindaklanjuti admin unit.
-      </p>
-    );
-  }
-
   return transaction.handoverAutoCompleteAt ? (
     <p className="rounded-[1rem] border border-primary/15 bg-primary/[0.04] px-4 py-3 text-sm font-semibold leading-6 text-primary">
-      Jika buyer tidak menekan Pembelian Selesai atau mengajukan komplain, sistem akan menyelesaikan otomatis pada {transaction.handoverAutoCompleteAt}.
+      Jika buyer tidak menekan Pembelian Selesai, sistem akan menyelesaikan otomatis pada {transaction.handoverAutoCompleteAt}.
     </p>
   ) : null;
 }
@@ -1802,9 +1793,6 @@ function VickreyPaymentSuccessDetail({
             <div className="mt-3 space-y-3">
               {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
               <HandoverAutoCompleteNotice transaction={transaction} />
-              {!isCompleted && transaction.handoverProof ? (
-                <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
-              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -1931,9 +1919,6 @@ export function TransactionDetailPage({
 
         {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
         <HandoverAutoCompleteNotice transaction={transaction} />
-        {!isCompleted && transaction.handoverProof ? (
-          <HandoverComplaintButton complaint={transaction.handoverComplaint} transactionId={transaction.id} />
-        ) : null}
       </div>
     ) : null;
 

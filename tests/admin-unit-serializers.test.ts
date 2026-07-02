@@ -392,7 +392,6 @@ describe("admin unit serializers", () => {
     );
 
     expect(auction.handoverAutoCompleteAt).toBe("2026-05-07T15:30:00.000Z");
-    expect(auction.handoverComplaintAt).toBeNull();
     expect(auction.completionSource).toBeNull();
   });
 
@@ -412,8 +411,6 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
-      handoverComplaintAt: null,
-      handoverComplaintNote: null,
       completedAt: null,
       completionSource: null,
       rejectionReason: null,
@@ -452,8 +449,6 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
-      handoverComplaintAt: null,
-      handoverComplaintNote: null,
       completedAt: null,
       completionSource: null,
       rejectionReason: null,
@@ -486,8 +481,6 @@ describe("admin unit serializers", () => {
       handoverProofUrl: null,
       handoverProofUploadedAt: null,
       handoverProofUploadedByUserId: null,
-      handoverComplaintAt: null,
-      handoverComplaintNote: null,
       completedAt: null,
       completionSource: null,
       rejectionReason: null,
@@ -519,8 +512,6 @@ describe("admin unit serializers", () => {
       handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
       handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
       handoverProofUploadedByUserId: "admin-2",
-      handoverComplaintAt: null,
-      handoverComplaintNote: null,
       completedAt: null,
       completionSource: null,
       rejectionReason: null,
@@ -532,44 +523,8 @@ describe("admin unit serializers", () => {
       updatedAt: new Date("2026-05-04T14:15:00Z")
     });
 
-    expect(transaction.handoverComplaintAt).toBeNull();
     expect(transaction.handoverAutoCompleteAt).toBe("7 Mei 2026, 22.30 WIB");
     expect(transaction.handoverAutoCompleteAtRaw).toBe("2026-05-07T15:30:00.000Z");
-  });
-
-  it("holds admin auto-complete metadata when buyer submits a handover complaint", () => {
-    const transaction = serializeAdminTransaction({
-      id: "TRX-COMPLAINED",
-      pemasaranId: "pm-1",
-      userId: "buyer-1",
-      buyerName: "Raras",
-      lotName: "Kalung Emas",
-      lotId: "barang-1",
-      type: "fixed_price",
-      amount: "100000000",
-      paymentMethod: "transfer",
-      status: "lunas",
-      proofUrl: "/uploads/bukti.jpg",
-      handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
-      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
-      handoverComplaintAt: new Date("2026-05-05T01:00:00Z"),
-      handoverComplaintNote: "Foto tidak sesuai.",
-      handoverProofUploadedByUserId: "admin-2",
-      completedAt: null,
-      completionSource: null,
-      rejectionReason: null,
-      referenceNumber: "BRI-7777",
-      paymentDeadline: null,
-      verifiedByUserId: "admin-1",
-      verifiedAt: new Date("2026-05-04T14:11:00Z"),
-      createdAt: new Date("2026-05-04T14:07:00Z"),
-      updatedAt: new Date("2026-05-04T14:15:00Z")
-    } as any);
-
-    expect(transaction.handoverComplaintAt).toBe("5 Mei 2026, 08.00 WIB");
-    expect(transaction.handoverComplaintNote).toBe("Foto tidak sesuai.");
-    expect(transaction.handoverAutoCompleteAt).toBeNull();
-    expect(transaction.handoverAutoCompleteAtRaw).toBeNull();
   });
 
   it("treats transactions with handover proof as printable final receipts", () => {
@@ -588,8 +543,6 @@ describe("admin unit serializers", () => {
       handoverProofUrl: "/uploads/serah-terima/trx-handover.jpg",
       handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
       handoverProofUploadedByUserId: "admin-2",
-      handoverComplaintAt: null,
-      handoverComplaintNote: null,
       completedAt: null,
       completionSource: null,
       rejectionReason: null,

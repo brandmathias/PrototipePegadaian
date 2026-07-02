@@ -247,8 +247,6 @@ export type SuperAdminUnitBarangMarketingSession = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
-  handoverComplaintAt?: string | null;
-  handoverComplaintNote?: string | null;
   handoverAutoCompleteAt?: string | null;
   completionSource?: string | null;
   reference?: string | null;
@@ -3485,14 +3483,10 @@ function getSuperAdminProgressCompletionLabel(session: Pick<SuperAdminUnitBarang
 }
 
 function getSuperAdminVerifiedDetail(
-  session: Pick<SuperAdminUnitBarangMarketingSession, "handoverAutoCompleteAt" | "handoverComplaintAt">,
+  session: Pick<SuperAdminUnitBarangMarketingSession, "handoverAutoCompleteAt">,
 ) {
-  if (session.handoverComplaintAt) {
-    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin unit menindaklanjuti bukti.";
-  }
-
   if (session.handoverAutoCompleteAt) {
-    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${formatSuperAdminDateTime(session.handoverAutoCompleteAt)}.`;
+    return `Menunggu buyer menekan Pembelian Selesai. Auto-selesai pada ${formatSuperAdminDateTime(session.handoverAutoCompleteAt)}.`;
   }
 
   return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";

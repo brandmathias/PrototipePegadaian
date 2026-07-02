@@ -269,12 +269,8 @@ function getAdminTransactionCompletionLabel(transaction: AdminTransactionItem) {
 }
 
 function getAdminTransactionVerifiedDetail(transaction: AdminTransactionItem) {
-  if (transaction.handoverComplaintAt) {
-    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin menindaklanjuti bukti.";
-  }
-
   if (transaction.handoverAutoCompleteAt) {
-    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${transaction.handoverAutoCompleteAt}.`;
+    return `Menunggu buyer menekan Pembelian Selesai. Auto-selesai pada ${transaction.handoverAutoCompleteAt}.`;
   }
 
   return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";

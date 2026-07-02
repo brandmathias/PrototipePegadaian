@@ -211,8 +211,6 @@ function transactionSelection() {
       where u.id = ${transaksi.handoverProofUploadedByUserId}
       limit 1
     )`,
-    handoverComplaintAt: transaksi.handoverComplaintAt,
-    handoverComplaintNote: transaksi.handoverComplaintNote,
     completedAt: transaksi.completedAt,
     completionSource: transaksi.completionSource,
     createdAt: transaksi.createdAt,
@@ -1259,62 +1257,6 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
   });
 }
 
-export async function submitBuyerHandoverComplaint(
-  userId: string,
-  transactionId: string,
-  input: { note?: unknown },
-) {
-  await refreshBuyerAuctionSettlementState();
-
-  const row = await getTransactionRowById(userId, transactionId);
-
-  if (!row) {
-    throw new Error("Transaksi tidak ditemukan.");
-  }
-
-  if (row.status !== "lunas") {
-    throw new Error("Komplain serah-terima hanya dapat dikirim saat transaksi menunggu penyelesaian buyer.");
-  }
-
-  if (!row.handoverProofUrl) {
-    throw new Error("Komplain baru dapat dikirim setelah bukti serah-terima barang tersedia.");
-  }
-
-  if (row.handoverComplaintAt) {
-    return serializeBuyerTransaction(row);
-  }
-
-  const note = String(input.note ?? "").trim().slice(0, 500);
-  const complainedAt = new Date();
-  const [updated] = await db
-    .update(transaksi)
-    .set({
-      handoverComplaintAt: complainedAt,
-      handoverComplaintNote: note || "Buyer mengajukan komplain serah-terima barang.",
-      updatedAt: complainedAt
-    })
-    .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
-    .returning();
-
-  if (!updated) {
-    throw new Error("Transaksi tidak ditemukan.");
-  }
-
-  return serializeBuyerTransaction({
-    ...updated,
-    verifiedBy: row.verifiedBy,
-    handoverProofUploadedBy: row.handoverProofUploadedBy,
-    lotName: row.lotName,
-    lotId: row.lotId,
-    lotCategory: row.lotCategory,
-    lotCondition: row.lotCondition,
-    lotSpecifications: row.lotSpecifications,
-    imageUrl: row.imageUrl,
-    unitName: row.unitName,
-    unitAddress: row.unitAddress,
-    account: row.account
-  });
-}
 
 export async function getBuyerBidState(userId: string, pemasaranId: string) {
   const buyerBids = await listBuyerBids(userId);

@@ -17,17 +17,15 @@ export function getHandoverAutoCompleteDeadline(uploadedAt?: Date | string | nul
 
 export function isHandoverAutoCompleteDue(
   input: {
-    handoverComplaintAt?: Date | string | null;
     handoverProofUploadedAt?: Date | string | null;
     status?: string | null;
   },
   now = new Date(),
 ) {
-  if (input.status !== "lunas" || input.handoverComplaintAt) {
+  if (input.status !== "lunas") {
     return false;
   }
 
   const deadline = getHandoverAutoCompleteDeadline(input.handoverProofUploadedAt);
   return Boolean(deadline && deadline.getTime() <= now.getTime());
 }
-

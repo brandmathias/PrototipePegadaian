@@ -32,8 +32,6 @@ type AdminPemasaranTransaction = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | string | null;
   handoverProofUploadedBy?: string | null;
-  handoverComplaintAt?: Date | string | null;
-  handoverComplaintNote?: string | null;
   reference?: string | null;
   soldAt?: Date | string | null;
   paymentDeadline?: Date | string | null;
@@ -313,15 +311,13 @@ export function serializeAdminPemasaran(
     handoverProofUrl: extra.transaction?.handoverProofUrl ?? null,
     handoverProofUploadedAt: toIsoOrNull(extra.transaction?.handoverProofUploadedAt),
     handoverProofUploadedBy: extra.transaction?.handoverProofUploadedBy ?? null,
-    handoverComplaintAt: toIsoOrNull(extra.transaction?.handoverComplaintAt),
-    handoverComplaintNote: extra.transaction?.handoverComplaintNote ?? null,
     reference: extra.transaction?.reference ?? null,
     soldAt: toIsoOrNull(extra.transaction?.soldAt),
     paymentDeadline: toIsoOrNull(extra.transaction?.paymentDeadline),
     completedAt: toIsoOrNull(extra.transaction?.completedAt),
     completionSource: extra.transaction?.completionSource ?? null,
     handoverAutoCompleteAt: toIsoOrNull(
-      extra.transaction?.status === "lunas" && !extra.transaction?.handoverComplaintAt
+      extra.transaction?.status === "lunas"
         ? getHandoverAutoCompleteDeadline(extra.transaction?.handoverProofUploadedAt)
         : null,
     ),
@@ -365,7 +361,7 @@ export function serializeAdminTransaction(
   const hasHandoverProof = Boolean(row.handoverProofUrl);
   const printableReceipt = (row.status === "lunas" || row.status === "selesai") && hasHandoverProof;
   const handoverAutoCompleteAt =
-    row.status === "lunas" && !row.handoverComplaintAt
+    row.status === "lunas"
       ? getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt)
       : null;
 
@@ -391,8 +387,6 @@ export function serializeAdminTransaction(
     handoverProofFile: row.handoverProofUrl ?? "",
     handoverProofUploadedAt: toDateTimeLabel(row.handoverProofUploadedAt),
     handoverProofUploadedBy: hasHandoverProof ? row.handoverProofUploadedByName ?? "Admin Unit" : "-",
-    handoverComplaintAt: row.handoverComplaintAt ? toDateTimeLabel(row.handoverComplaintAt) : null,
-    handoverComplaintNote: row.handoverComplaintNote ?? null,
     handoverAutoCompleteAt: handoverAutoCompleteAt ? toDateTimeLabel(handoverAutoCompleteAt) : null,
     handoverAutoCompleteAtRaw: handoverAutoCompleteAt?.toISOString() ?? null,
     verifiedBy: row.verifiedByName ?? undefined,

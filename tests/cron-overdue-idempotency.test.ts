@@ -335,8 +335,7 @@ describe("handover auto-completion settlement", () => {
             id: "trx-1",
             pemasaranId: "pemasaran-1",
             status: "lunas",
-            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z"),
-            handoverComplaintAt: null
+            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z")
           }
         }
       ])
@@ -378,34 +377,5 @@ describe("handover auto-completion settlement", () => {
         })
       ])
     );
-  });
-
-  it("does not auto-complete transactions with a buyer handover complaint", async () => {
-    mocks.db.select.mockImplementationOnce(() =>
-      mockHandoverRows([
-        {
-          item: {
-            id: "barang-1",
-            status: "dipasarkan"
-          },
-          transaction: {
-            id: "trx-1",
-            pemasaranId: "pemasaran-1",
-            status: "lunas",
-            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z"),
-            handoverComplaintAt: new Date("2026-06-25T00:00:00.000Z")
-          }
-        }
-      ])
-    );
-
-    const { processHandoverAutoCompletions } = await import("@/lib/services/cron.service");
-    const summary = await processHandoverAutoCompletions(new Date("2026-06-28T00:00:00.000Z"));
-
-    expect(summary).toEqual({
-      processed: 1,
-      completed: 0
-    });
-    expect(mocks.db.transaction).not.toHaveBeenCalled();
   });
 });

@@ -46,6 +46,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/bundled-uploads ./bundled-uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/start-production.mjs ./start-production.mjs
 
 RUN mkdir -p /app/public/uploads/barang /app/public/uploads/bukti /app/public/uploads/blacklist-review /app/public/uploads/serah-terima \
   && mkdir -p /app/uploads/barang /app/uploads/bukti /app/uploads/blacklist-review /app/uploads/serah-terima \
@@ -55,4 +56,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "start-production.mjs"]

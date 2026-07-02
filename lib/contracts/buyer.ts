@@ -28,11 +28,6 @@ export type BuyerHandoverProof = {
   location: string;
 };
 
-export type BuyerHandoverComplaint = {
-  submittedAt: string;
-  note: string;
-};
-
 export type BuyerTransaction = {
   id: string;
   lotId: string;
@@ -71,7 +66,6 @@ export type BuyerTransaction = {
   handoverProof?: BuyerHandoverProof;
   handoverAutoCompleteAt?: string;
   handoverAutoCompleteAtRaw?: string;
-  handoverComplaint?: BuyerHandoverComplaint;
 };
 
 export type BuyerBidStatus =

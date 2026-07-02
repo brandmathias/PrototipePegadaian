@@ -126,8 +126,6 @@ export type MarketingSession = {
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
-  handoverComplaintAt?: string | null;
-  handoverComplaintNote?: string | null;
   handoverAutoCompleteAt?: string | null;
   completionSource?: string | null;
   reference?: string | null;
@@ -1089,13 +1087,9 @@ function getMarketingProgressCompletionLabel(auction: Pick<MarketingSession, "co
   return isAutoCompletedMarketing(auction) ? "Selesai otomatis" : "Selesai";
 }
 
-function getMarketingVerifiedDetail(auction: Pick<MarketingSession, "handoverAutoCompleteAt" | "handoverComplaintAt">) {
-  if (auction.handoverComplaintAt) {
-    return "Buyer mengajukan komplain serah-terima. Auto-selesai ditahan sampai admin menindaklanjuti bukti.";
-  }
-
+function getMarketingVerifiedDetail(auction: Pick<MarketingSession, "handoverAutoCompleteAt">) {
   if (auction.handoverAutoCompleteAt) {
-    return `Menunggu buyer menekan Pembelian Selesai atau komplain. Auto-selesai pada ${dateLabel(auction.handoverAutoCompleteAt)}.`;
+    return `Menunggu buyer menekan Pembelian Selesai. Auto-selesai pada ${dateLabel(auction.handoverAutoCompleteAt)}.`;
   }
 
   return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";

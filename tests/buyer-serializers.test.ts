@@ -361,7 +361,7 @@ describe("buyer serializers", () => {
     expect(transaction.paymentNotes.join(" ")).toMatch(/bukti serah-terima/i);
   });
 
-  it("marks auto-completed transactions and complaint-held handovers for buyer UI", () => {
+  it("marks auto-completed transactions for buyer UI", () => {
     const autoCompleted = serializeBuyerTransaction({
       id: "trx-auto-done",
       pemasaranId: "pm-fixed",
@@ -388,40 +388,9 @@ describe("buyer serializers", () => {
       account: null
     } as any);
 
-    const complained = serializeBuyerTransaction({
-      id: "trx-complained",
-      pemasaranId: "pm-fixed",
-      type: "fixed_price",
-      amount: "100000000",
-      paymentMethod: "transfer",
-      status: "lunas",
-      proofUrl: "/uploads/bukti/transfer.jpg",
-      rejectionReason: null,
-      referenceNumber: "BRI-2026-993",
-      paymentDeadline: new Date("2026-05-05T02:30:00Z"),
-      verifiedAt: new Date("2026-05-04T14:11:00Z"),
-      createdAt: new Date("2026-05-04T14:07:00Z"),
-      handoverProofUrl: "/uploads/serah-terima/trx-complained.jpg",
-      handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
-      handoverComplaintAt: new Date("2026-05-05T01:00:00Z"),
-      handoverComplaintNote: "Foto serah-terima tidak sesuai.",
-      lotName: "Kalung Emas",
-      lotId: "barang-2",
-      imageUrl: "/uploads/barang/kalung-emas.jpg",
-      unitName: "UPC Ranotana",
-      unitAddress: "Jl. Sam Ratulangi, Manado",
-      account: null
-    } as any);
-
     expect(autoCompleted.completionSource).toBe("AUTO_HANDOVER_GRACE");
     expect(autoCompleted.completedAt).toBe("7 Mei 2026, 22.30 WIB");
     expect(autoCompleted.paymentNotes.join(" ")).toMatch(/selesai otomatis/i);
-    expect(complained.handoverAutoCompleteAt).toBeUndefined();
-    expect(complained.handoverComplaint).toEqual({
-      submittedAt: "5 Mei 2026, 08.00 WIB",
-      note: "Foto serah-terima tidak sesuai."
-    });
-    expect(complained.paymentNotes.join(" ")).toMatch(/tidak akan selesai otomatis/i);
   });
 
   it("exposes vickrey winner payment context from the related transaction", () => {

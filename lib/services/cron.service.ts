@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, gt, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -857,7 +857,6 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
             eq(transaksi.status, "lunas"),
             isNotNull(transaksi.handoverProofUrl),
             isNotNull(transaksi.handoverProofUploadedAt),
-            isNull(transaksi.handoverComplaintAt),
           ),
         )
         .returning({ id: transaksi.id });
@@ -875,7 +874,7 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
         oldStatus: row.item.status,
         newStatus: "terjual",
         changedByUserId: null,
-        note: "Transaksi selesai otomatis karena buyer tidak menekan Pembelian Selesai atau mengajukan komplain dalam 3 hari setelah bukti serah-terima diunggah.",
+        note: "Transaksi selesai otomatis karena buyer tidak menekan Pembelian Selesai dalam 3 hari setelah bukti serah-terima diunggah.",
       });
 
       completed += 1;
