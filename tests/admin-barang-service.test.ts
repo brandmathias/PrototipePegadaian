@@ -39,7 +39,7 @@ const editPayload = {
   appraisalValue: "12000000",
   category: "emas",
   condition: "baik",
-  customerNumber: "NAS-001",
+  customerNumber: "081234567890",
   description: "Detail diperbarui",
   dueDate: "2026-07-01",
   loanValue: "8000000",
@@ -213,7 +213,9 @@ describe("listAdminBarang", () => {
       id: "barang-fixed",
       unitId: "unit-1",
       name: "Cincin Lama",
-      status: "dipasarkan"
+      status: "dipasarkan",
+      customerNumber: "081234567890",
+      loanValue: "8000000"
     };
     const updated = {
       ...current,
@@ -224,6 +226,9 @@ describe("listAdminBarang", () => {
       where: vi.fn().mockReturnValue({
         returning: vi.fn().mockResolvedValue([updated])
       })
+    });
+    const customerSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue([])
     });
 
     mocks.db.select
@@ -269,9 +274,14 @@ describe("listAdminBarang", () => {
           })
         })
       }));
-    mocks.db.update.mockImplementationOnce(() => ({
-      set: updateSet
-    }));
+    mocks.db.transaction.mockImplementationOnce(async (callback) =>
+      callback({
+        update: vi
+          .fn()
+          .mockImplementationOnce(() => ({ set: customerSet }))
+          .mockImplementationOnce(() => ({ set: updateSet }))
+      })
+    );
 
     const result = await updateAdminBarang("unit-1", "barang-fixed", editPayload);
 
@@ -288,7 +298,9 @@ describe("listAdminBarang", () => {
       id: "barang-fixed",
       unitId: "unit-1",
       name: "Cincin Lama",
-      status: "dipasarkan"
+      status: "dipasarkan",
+      customerNumber: "081234567890",
+      loanValue: "8000000"
     };
     const updated = {
       ...current,
@@ -301,6 +313,9 @@ describe("listAdminBarang", () => {
       })
     });
     const updateMarketingSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue([])
+    });
+    const updateCustomerSet = vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue([])
     });
 
@@ -347,13 +362,15 @@ describe("listAdminBarang", () => {
           })
         })
       }));
-    mocks.db.update
-      .mockImplementationOnce(() => ({
-        set: updateBarangSet
-      }))
-      .mockImplementationOnce(() => ({
-        set: updateMarketingSet
-      }));
+    mocks.db.transaction.mockImplementationOnce(async (callback) =>
+      callback({
+        update: vi
+          .fn()
+          .mockImplementationOnce(() => ({ set: updateCustomerSet }))
+          .mockImplementationOnce(() => ({ set: updateBarangSet }))
+          .mockImplementationOnce(() => ({ set: updateMarketingSet }))
+      })
+    );
 
     await updateAdminBarang("unit-1", "barang-fixed", {
       ...editPayload,
@@ -423,6 +440,151 @@ describe("listAdminBarang", () => {
       /barang lelang hanya dapat diedit/i
     );
     expect(mocks.db.update).not.toHaveBeenCalled();
+  });
+
+  it("corrects terminal item customer data across the same unit and appraisal only on the selected item", async () => {
+    const current = {
+      id: "barang-sold",
+      unitId: "unit-1",
+      name: "Cincin Terjual",
+      status: "terjual",
+      ownerName: "Raras Lama",
+      customerNumber: "081211112222",
+      appraisalValue: "8500000",
+      loanValue: "6500000"
+    };
+    const updated = {
+      ...current,
+      ownerName: "Raras Maheswari",
+      customerNumber: "081234567890",
+      appraisalValue: "9000000"
+    };
+    const customerWhere = vi.fn().mockResolvedValue([]);
+    const appraisalWhere = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([updated])
+    });
+    const customerSet = vi.fn().mockReturnValue({ where: customerWhere });
+    const appraisalSet = vi.fn().mockReturnValue({ where: appraisalWhere });
+    const tx = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }),
+      update: vi
+        .fn()
+        .mockImplementationOnce(() => ({ set: customerSet }))
+        .mockImplementationOnce(() => ({ set: appraisalSet }))
+    };
+
+    mocks.db.select.mockImplementationOnce(() => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([current])
+        })
+      })
+    }));
+    mocks.db.transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+    const result = await updateAdminBarang("unit-1", "barang-sold", {
+      correctionOnly: true,
+      ownerName: "Raras Maheswari",
+      customerNumber: "0812-3456-7890",
+      appraisalValue: "9000000"
+    });
+
+    expect(customerSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ownerName: "Raras Maheswari",
+        customerNumber: "081234567890"
+      })
+    );
+    expect(appraisalSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appraisalValue: "9000000"
+      })
+    );
+    expect(customerWhere).toHaveBeenCalledOnce();
+    expect(appraisalWhere).toHaveBeenCalledOnce();
+    expect(result.name).toBe("Cincin Terjual");
+  });
+
+  it("rejects correction fields that could mutate locked terminal item data", async () => {
+    const current = {
+      id: "barang-sold",
+      unitId: "unit-1",
+      name: "Cincin Terjual",
+      status: "terjual",
+      ownerName: "Raras Lama",
+      customerNumber: "081211112222",
+      appraisalValue: "8500000",
+      loanValue: "6500000"
+    };
+
+    mocks.db.select.mockImplementationOnce(() => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([current])
+        })
+      })
+    }));
+
+    await expect(
+      updateAdminBarang("unit-1", "barang-sold", {
+        correctionOnly: true,
+        name: "Nama Barang Diubah",
+        ownerName: "Raras Maheswari",
+        customerNumber: "081234567890",
+        appraisalValue: "9000000"
+      })
+    ).rejects.toThrow("Koreksi riwayat hanya dapat mengubah data nasabah dan nilai taksiran.");
+
+    expect(mocks.db.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a corrected phone owned by a different customer in the same unit", async () => {
+    const current = {
+      id: "barang-sold",
+      unitId: "unit-1",
+      name: "Cincin Terjual",
+      status: "terjual",
+      ownerName: "Raras Lama",
+      customerNumber: "081211112222",
+      appraisalValue: "8500000",
+      loanValue: "6500000"
+    };
+    const tx = {
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ ownerName: "Nasabah Berbeda" }])
+          })
+        })
+      }),
+      update: vi.fn()
+    };
+
+    mocks.db.select.mockImplementationOnce(() => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([current])
+        })
+      })
+    }));
+    mocks.db.transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+    await expect(
+      updateAdminBarang("unit-1", "barang-sold", {
+        correctionOnly: true,
+        ownerName: "Raras Maheswari",
+        customerNumber: "081234567890",
+        appraisalValue: "9000000"
+      })
+    ).rejects.toThrow("Nomor telepon sudah digunakan nasabah lain di unit ini.");
+
+    expect(tx.update).not.toHaveBeenCalled();
   });
 });
 

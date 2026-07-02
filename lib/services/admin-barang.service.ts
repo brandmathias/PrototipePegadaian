@@ -5,6 +5,7 @@ import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
 import { formatSbgCode } from "@/lib/barang/sbg-code";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
+  validateAdminBarangCorrectionPayload,
   validateAdminBarangPayload,
   validateFixedPriceMarketingPricePayload,
   validateAdminBarangMediaList,
@@ -99,6 +100,7 @@ async function getMarketingEditContext(barangId: string) {
 }
 
 type AdminBarangUpdateInput = Parameters<typeof validateAdminBarangPayload>[0] & {
+  correctionOnly?: unknown;
   marketingPrice?: unknown;
 };
 
@@ -466,48 +468,101 @@ export async function createAdminBarang(
 
 export async function updateAdminBarang(unitId: string, barangId: string, input: AdminBarangUpdateInput) {
   const current = await assertBarangForUnit(barangId, unitId);
-  const marketingContext = await getMarketingEditContext(barangId);
+  const correctionOnly = input.correctionOnly === true;
 
-  if (!canEditMarketedBarang({ status: current.status, ...marketingContext })) {
+  if (correctionOnly) {
+    const allowedKeys = new Set(["correctionOnly", "ownerName", "customerNumber", "appraisalValue"]);
+    if (Object.keys(input).some((key) => !allowedKeys.has(key))) {
+      throw new Error("Koreksi riwayat hanya dapat mengubah data nasabah dan nilai taksiran.");
+    }
+  }
+
+  const marketingContext = correctionOnly ? null : await getMarketingEditContext(barangId);
+
+  if (
+    !correctionOnly &&
+    !canEditMarketedBarang({ status: current.status, ...marketingContext })
+  ) {
     throw new Error("Barang harga tetap dapat diedit saat aktif, sedangkan barang lelang hanya dapat diedit setelah gagal karena tanpa peserta atau pemenang tidak membayar dalam 24 jam.");
   }
 
-  const payload = validateAdminBarangPayload(input);
-  const shouldUpdateMarketingPrice = input.marketingPrice !== undefined;
+  const payload = correctionOnly ? null : validateAdminBarangPayload(input);
+  const correction = validateAdminBarangCorrectionPayload(payload ?? input, current.loanValue);
+  const shouldUpdateMarketingPrice = !correctionOnly && input.marketingPrice !== undefined;
   const marketingPricePayload = shouldUpdateMarketingPrice ? validateFixedPriceMarketingPricePayload(input) : null;
 
-  if (marketingPricePayload && marketingContext.activeMarketingMode !== "fixed_price") {
+  if (marketingPricePayload && marketingContext?.activeMarketingMode !== "fixed_price") {
     throw new Error("Harga pemasaran hanya dapat diperbarui untuk barang harga tetap yang masih aktif.");
   }
 
-  const [updated] = await db
-    .update(barang)
-    .set({
-      name: payload.name,
-      category: payload.category,
-      condition: payload.condition,
-      description: payload.description,
-      specifications: payload.specifications,
-      appraisalValue: payload.appraisalValue,
-      loanValue: payload.loanValue,
-      ownerName: payload.ownerName,
-      customerNumber: payload.customerNumber,
-      pawnedAt: toUtcDate(payload.pawnedAt),
-      dueDate: toUtcDate(payload.dueDate),
-      updatedAt: new Date()
-    })
-    .where(eq(barang.id, barangId))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    if (correction.customerNumber !== current.customerNumber) {
+      const [existingCustomer] = await tx
+        .select({ ownerName: barang.ownerName })
+        .from(barang)
+        .where(and(eq(barang.unitId, unitId), eq(barang.customerNumber, correction.customerNumber)))
+        .limit(1);
 
-  if (marketingPricePayload) {
-    await db
-      .update(pemasaran)
+      if (
+        existingCustomer &&
+        existingCustomer.ownerName.trim().toLocaleLowerCase("id-ID") !==
+          correction.ownerName.toLocaleLowerCase("id-ID")
+      ) {
+        throw new Error("Nomor telepon sudah digunakan nasabah lain di unit ini.");
+      }
+    }
+
+    await tx
+      .update(barang)
       .set({
-        price: marketingPricePayload.marketingPrice,
+        ownerName: correction.ownerName,
+        customerNumber: correction.customerNumber,
         updatedAt: new Date()
       })
-      .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")));
-  }
+      .where(and(eq(barang.unitId, unitId), eq(barang.customerNumber, current.customerNumber)));
+
+    const [savedBarang] = await tx
+      .update(barang)
+      .set(
+        payload
+          ? {
+              name: payload.name,
+              category: payload.category,
+              condition: payload.condition,
+              description: payload.description,
+              specifications: payload.specifications,
+              appraisalValue: correction.appraisalValue,
+              loanValue: payload.loanValue,
+              ownerName: correction.ownerName,
+              customerNumber: correction.customerNumber,
+              pawnedAt: toUtcDate(payload.pawnedAt),
+              dueDate: toUtcDate(payload.dueDate),
+              updatedAt: new Date()
+            }
+          : {
+              appraisalValue: correction.appraisalValue,
+              updatedAt: new Date()
+            }
+      )
+      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
+      .returning();
+
+    if (!savedBarang) {
+      throw new Error("Barang tidak ditemukan di unit Anda.");
+    }
+
+    if (marketingPricePayload) {
+      await tx
+        .update(pemasaran)
+        .set({
+          price: marketingPricePayload.marketingPrice,
+          updatedAt: new Date()
+        })
+        .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")));
+    }
+
+    return savedBarang;
+  });
 
   return serializeAdminBarang(updated);
 }
