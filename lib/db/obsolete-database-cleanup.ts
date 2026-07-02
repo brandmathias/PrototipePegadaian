@@ -107,24 +107,22 @@ where "type" = 'blacklist_review_submitted'
    or "action_href" ilike '%/review-pelanggaran%'
    or "action_href" ilike '%/bantuan/blacklist%';
 
-update "blacklist_action_log"
-set "action" = 'cabut_manual'
-where "action" = 'review_disetujui';
-
 delete from "blacklist_action_log"
-where "action" in ('review_diajukan', 'review_ditolak', 'otomatis');
-
-update "blacklist_action_log"
-set "note" = replace(
-  "note",
-  'membutuhkan review manual',
-  'membutuhkan evaluasi manual'
-)
-where "note" like '%membutuhkan review manual%';
+where "action" in ('review_diajukan', 'review_ditolak', 'review_disetujui', 'otomatis');
 
 update "pelanggaran_user"
-set "resolution_type" = 'cabut_manual'
-where "resolution_type" = 'review_disetujui';
+set "resolution_type" = null,
+    "resolution_reason_code" = null,
+    "resolution_note" = null,
+    "resolved_by_user_id" = null,
+    "resolved_at" = null,
+    "escalation_eligible" = true,
+    "updated_at" = now()
+where "resolution_type" in ('review_disetujui', 'cabut_manual')
+   or lower(trim(coalesce("resolution_note", ''))) in ('test', 'demo', 'mock', 'data uji')
+   or "resolution_note" ilike '%review%'
+   or "resolution_note" ilike '%manual%'
+   or "resolution_note" ilike '%uji%';
 
 do $cleanup$
 declare
@@ -340,9 +338,69 @@ where blacklist."user_id" = owner."id"
   and owner."national_id" is not null
   and blacklist."national_id" is distinct from owner."national_id";
 
-update "blacklist_action_log"
-set "note" = 'Perpanjangan blacklist manual.'
-where "note" ilike 'Uji perpanjangan blacklist%';
+update "blacklist" as blacklist
+set "is_active" = true,
+    "revoked_by_user_id" = null,
+    "revoke_reason" = null,
+    "updated_at" = now()
+where (blacklist."revoked_by_user_id" is not null or blacklist."revoke_reason" is not null)
+  and not exists (
+    select 1
+    from "blacklist" as active_by_user
+    where active_by_user."id" <> blacklist."id"
+      and active_by_user."user_id" = blacklist."user_id"
+      and active_by_user."is_active" = true
+  )
+  and (
+    blacklist."national_id" is null
+    or not exists (
+      select 1
+      from "blacklist" as active_by_national_id
+      where active_by_national_id."id" <> blacklist."id"
+        and active_by_national_id."national_id" = blacklist."national_id"
+        and active_by_national_id."is_active" = true
+    )
+  );
+
+delete from "blacklist_action_log"
+where "action" in ('cabut_manual', 'perpanjang_manual')
+   or "performed_by_user_id" is not null
+   or "performed_by_type" <> 'system'
+   or lower(trim(coalesce("note", ''))) in ('test', 'demo', 'mock', 'data uji')
+   or "note" ilike '%review%'
+   or "note" ilike '%manual%'
+   or "note" ilike '%uji%';
+
+insert into "blacklist_action_log" (
+  "id",
+  "blacklist_id",
+  "target_user_id",
+  "action",
+  "performed_by_user_id",
+  "note",
+  "created_at",
+  "performed_by_type"
+)
+select
+  concat('auto-log-', blacklist."id"),
+  blacklist."id",
+  blacklist."user_id",
+  'blokir_otomatis',
+  null,
+  'Sistem otomatis memblokir buyer karena pelanggaran pembayaran.',
+  blacklist."blocked_at",
+  'system'
+from "blacklist" as blacklist
+where not exists (
+    select 1
+    from "blacklist_action_log" as existing_for_blacklist
+    where existing_for_blacklist."blacklist_id" = blacklist."id"
+  )
+  and not exists (
+    select 1
+    from "blacklist_action_log" as existing_by_id
+    where existing_by_id."id" = concat('auto-log-', blacklist."id")
+  );
 
 update "barang"
 set "description" = '',
