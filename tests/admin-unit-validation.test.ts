@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
+  validateAdminBarangCorrectionPayload,
   validateAdminBarangPayload,
   validateAdminBarangMediaList,
   validateFixedPriceMarketingPricePayload,
@@ -11,6 +12,45 @@ import {
 } from "@/lib/admin-unit/validation";
 
 describe("admin unit validation", () => {
+  it("normalizes and validates editable customer correction fields", () => {
+    expect(
+      validateAdminBarangCorrectionPayload(
+        {
+          ownerName: "  Raras Maheswari ",
+          customerNumber: "0812-3456-7890",
+          appraisalValue: "8500000"
+        },
+        "6500000"
+      )
+    ).toEqual({
+      ownerName: "Raras Maheswari",
+      customerNumber: "081234567890",
+      appraisalValue: "8500000"
+    });
+
+    expect(() =>
+      validateAdminBarangCorrectionPayload(
+        {
+          ownerName: "Raras",
+          customerNumber: "081234567",
+          appraisalValue: "8500000"
+        },
+        "6500000"
+      )
+    ).toThrow("Nomor telepon harus terdiri dari 10 sampai 13 digit.");
+
+    expect(() =>
+      validateAdminBarangCorrectionPayload(
+        {
+          ownerName: "Raras",
+          customerNumber: "081234567890",
+          appraisalValue: "6000000"
+        },
+        "6500000"
+      )
+    ).toThrow("Nilai taksiran tidak boleh lebih kecil dari nilai gadai.");
+  });
+
   it("normalizes barang gadai input", () => {
     const payload = validateAdminBarangPayload({
       name: "  Cincin Emas 18K ",

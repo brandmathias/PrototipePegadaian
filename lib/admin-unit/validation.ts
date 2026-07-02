@@ -44,6 +44,29 @@ function normalizeDate(value: unknown, message: string) {
   return result;
 }
 
+export function validateAdminBarangCorrectionPayload(
+  input: {
+    ownerName?: unknown;
+    customerNumber?: unknown;
+    appraisalValue?: unknown;
+  },
+  currentLoanValue: string | number
+) {
+  const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
+  const customerNumber = String(input.customerNumber ?? "").replace(/\D/g, "");
+  const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
+
+  if (!/^\d{10,13}$/.test(customerNumber)) {
+    throw new Error("Nomor telepon harus terdiri dari 10 sampai 13 digit.");
+  }
+
+  if (Number(appraisalValue) < Number(currentLoanValue)) {
+    throw new Error("Nilai taksiran tidak boleh lebih kecil dari nilai gadai.");
+  }
+
+  return { ownerName, customerNumber, appraisalValue };
+}
+
 export function validateAdminBarangPayload(input: {
   name?: unknown;
   category?: unknown;
