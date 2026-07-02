@@ -140,6 +140,14 @@ export function AdminBarangEditForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
+    const hasFullDataChanges =
+      name !== String(item.name ?? "") ||
+      category !== normalizeEditableCategory(String(item.category ?? "perhiasan")) ||
+      condition !== String(item.condition ?? "baik").toLowerCase() ||
+      description !== String(item.description ?? "") ||
+      JSON.stringify(specifications) !== JSON.stringify(item.specifications ?? {}) ||
+      (canEditFixedPrice && marketingPrice !== String(item.marketingPrice ?? ""));
+    const submitCorrectionOnly = correctionOnly || !hasFullDataChanges;
     toast({
       title: "Menyimpan perubahan barang",
       description: "Kami sedang memperbarui data inti barang agar riwayat unit tetap konsisten.",
@@ -155,7 +163,7 @@ export function AdminBarangEditForm({
           "Content-Type": "application/json"
         },
         body: JSON.stringify(
-          correctionOnly
+          submitCorrectionOnly
             ? {
                 correctionOnly: true,
                 ownerName,

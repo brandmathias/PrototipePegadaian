@@ -264,4 +264,40 @@ describe("admin gadai action forms", () => {
       appraisalValue: "12000000"
     });
   });
+
+  it("uses correction mode when only customer data changes on a normally editable form", async () => {
+    renderWithToast(
+      <AdminBarangEditForm
+        item={{
+          appraisalValue: 10000000,
+          category: "perhiasan",
+          condition: "baik",
+          customerNumber: "081211112222",
+          description: "Barang gagal dipasarkan.",
+          dueDate: "2026-06-01",
+          id: "barang-failed",
+          loanValue: 7000000,
+          name: "Kalung Emas",
+          ownerName: "Nasabah Lama",
+          pawnedAt: "2026-05-01",
+          specifications: {}
+        }}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), {
+      target: { value: "Nasabah Diperbaiki" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+    const [, request] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String((request as RequestInit).body))).toEqual({
+      correctionOnly: true,
+      ownerName: "Nasabah Diperbaiki",
+      customerNumber: "081211112222",
+      appraisalValue: "10000000"
+    });
+  });
 });
