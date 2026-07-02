@@ -72,10 +72,11 @@ describe("DashboardShell", () => {
     const brandImages = screen.getByRole("img", { name: /ruang agunan/i }).querySelectorAll("img");
     expect(brandImages).toHaveLength(2);
     brandImages.forEach((image) => {
-      expect(image).toHaveAttribute("fetchpriority", "low");
       expect(image).toHaveAttribute("loading", "eager");
       expect(image).not.toHaveAttribute("sizes");
     });
+    expect(brandImages[0]).toHaveAttribute("fetchpriority", "low");
+    expect(brandImages[1]).toHaveAttribute("fetchpriority", "high");
     expect(brandImages[0]).toHaveAttribute("width", "40");
     expect(brandImages[1]).toHaveAttribute("width", "118");
   });

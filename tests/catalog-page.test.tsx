@@ -87,6 +87,9 @@ describe("CatalogPage", () => {
     expect(screen.queryByText(/^foto\s+\d+/i)).not.toBeInTheDocument();
     expect(screen.getByText("21 jam 45 menit")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
+    screen.getAllByRole("img").forEach((image) => {
+      expect(image).toHaveAttribute("loading", "lazy");
+    });
   });
 
   it("does not show auction countdowns on harga tetap lots even if stale endsAt data exists", () => {

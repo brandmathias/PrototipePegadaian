@@ -79,7 +79,7 @@ export function BrandLockup({
           aria-hidden="true"
           className={cn("h-7 w-auto max-w-[12rem] shrink object-contain", nameClassName)}
           draggable={false}
-          fetchPriority="low"
+          fetchPriority="high"
           height={large ? 49 : 28}
           loading="eager"
           src={BRAND_NAME_IMAGE_SRC}
