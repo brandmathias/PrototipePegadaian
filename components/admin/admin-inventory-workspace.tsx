@@ -398,9 +398,13 @@ function InventoryHistoryList({
                 <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
               </div>
 
-              <div className="flex justify-start lg:grid lg:place-items-center">
+              <div className="flex flex-col items-start gap-1.5 lg:grid lg:place-items-center">
                 <DetailActionLink
                   href={`/admin/barang/${entry.barangId}`}
+                />
+                <DetailActionLink
+                  href={`/admin/barang/${entry.barangId}/edit`}
+                  label="Edit Data"
                 />
               </div>
             </div>
