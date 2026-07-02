@@ -425,16 +425,21 @@ function TransactionsTabButton({
     <button
       aria-pressed={active}
       className={cn(
-        "relative flex flex-1 sm:flex-none sm:min-w-[14.5rem] items-center justify-center rounded-2xl sm:rounded-[1.75rem] px-4 py-3 sm:px-8 sm:py-6 text-sm sm:text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "group relative flex flex-1 sm:flex-none sm:min-w-[14.5rem] items-center justify-center rounded-xl sm:rounded-[1.75rem] px-4 py-3 sm:px-8 sm:py-6 text-sm sm:text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] overflow-hidden active:scale-[0.98]",
         active
           ? "bg-white text-[#006747] shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
-          : "bg-[#f5f5f2] text-slate-500 hover:bg-[#f8f8f5] hover:text-slate-700"
+          : "bg-transparent text-slate-500 hover:text-[#006747]"
       )}
       type="button"
       onClick={onClick}
     >
-      {label}
-      {active ? <span className="absolute inset-x-5 bottom-0 h-[2px] rounded-full bg-[#006747]" /> : null}
+      <span className="relative z-10">{label}</span>
+      <span
+        className={cn(
+          "absolute inset-x-0 bottom-0 h-[3px] bg-[#d5a018] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] origin-center",
+          active ? "opacity-100 scale-x-100" : "opacity-0 scale-x-50 group-hover:opacity-50 group-hover:scale-x-75"
+        )}
+      />
     </button>
   );
 }
@@ -458,18 +463,24 @@ function FilterChip({
     <button
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:gap-3 sm:px-5 sm:py-2.5 sm:text-[0.98rem] font-medium tracking-[-0.012em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0",
+        "group relative inline-flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs sm:gap-3 sm:px-5 sm:py-2.5 sm:text-[0.98rem] font-medium tracking-[-0.012em] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] shrink-0 overflow-hidden active:scale-[0.97]",
         active
           ? toneMeta.activeClass
-          : "border-slate-100 bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-[#dfe7de] hover:bg-[#fcfcfa]"
+          : "border-slate-100 bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-[#dfe7de]/40 hover:bg-white hover:-translate-y-[1px] hover:shadow-[0_6px_16px_rgba(213,160,24,0.12)]"
       )}
       type="button"
       onClick={onClick}
     >
-      <span className={cn("shrink-0 transition-colors duration-500", toneMeta.iconClass)}>
+      <span className={cn("relative z-10 shrink-0 transition-colors duration-300", toneMeta.iconClass)}>
         {icon}
       </span>
-      <span className={cn("transition-colors duration-500", active ? "text-current" : "text-slate-900")}>{label}</span>
+      <span className={cn("relative z-10 transition-colors duration-300", active ? "text-current" : "text-slate-900")}>{label}</span>
+      <span
+        className={cn(
+          "absolute inset-x-0 bottom-0 h-[3px] bg-[#d5a018] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] origin-center",
+          !active ? "opacity-0 scale-x-50 group-hover:opacity-100 group-hover:scale-x-100" : "opacity-0"
+        )}
+      />
     </button>
   );
 }
@@ -972,7 +983,7 @@ export function TransactionsWorkspace({
 
   return (
     <div className="space-y-6 bg-[#FAFAFA]">
-      <div className="flex gap-2.5 sm:gap-4">
+      <div className="inline-flex w-full sm:w-auto p-1.5 bg-[#f5f5f2] rounded-2xl sm:rounded-[2.1rem] gap-1">
         <TransactionsTabButton
           active={tab === "transactions"}
           label="Semua Transaksi"
