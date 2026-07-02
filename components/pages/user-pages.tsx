@@ -894,6 +894,10 @@ function getBuyerTransactionCompletionLabel(transaction: BuyerTransaction) {
   return transaction.completionSource === "AUTO_HANDOVER_GRACE" ? "Selesai otomatis" : "Selesai oleh buyer";
 }
 
+function isTransactionCompletionFinalized(transaction: BuyerTransaction) {
+  return transaction.status === "SELESAI" && Boolean(transaction.completedAt);
+}
+
 function HandoverAutoCompleteNotice({ transaction }: { transaction: BuyerTransaction }) {
   if (transaction.status !== "LUNAS" || !transaction.handoverProof) {
     return null;
@@ -1636,7 +1640,7 @@ function VickreyPaymentSuccessDetail({
   settlementLockMessage: string | null;
   transaction: BuyerTransaction;
 }) {
-  const isCompleted = transaction.status === "SELESAI";
+  const isCompleted = isTransactionCompletionFinalized(transaction);
   const settlementDate =
     (transaction.verifiedAt ?? transaction.createdAt).split(",")[0]?.trim() ||
     transaction.verifiedAt ||
@@ -1839,7 +1843,7 @@ export function TransactionDetailPage({
   const isTransfer = transaction.method === "TRANSFER_BANK";
   const transferAccounts = isTransfer ? getTransactionBankAccounts(transaction) : [];
   const isVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
-  const isCompleted = transaction.status === "SELESAI";
+  const isCompleted = isTransactionCompletionFinalized(transaction);
   const showReceipt = isVerified;
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFixedPrice = transaction.kind === "FIXED_PRICE";

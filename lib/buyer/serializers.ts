@@ -377,10 +377,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
     verifiedBy: row.verifiedBy ?? undefined,
     verifiedAt: toDateTimeLabel(row.verifiedAt),
-    completedAt:
-      row.status === "selesai"
-        ? toDateTimeLabel(row.completedAt ?? row.updatedAt ?? row.verifiedAt ?? row.createdAt)
-        : undefined,
+    completedAt: row.status === "selesai" && row.completedAt ? toDateTimeLabel(row.completedAt) : undefined,
     completionSource,
     receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined,
     handoverProof: row.handoverProofUrl

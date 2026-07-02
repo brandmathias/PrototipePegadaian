@@ -229,6 +229,7 @@ describe("buyer transaction detail page", () => {
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",
+          completedAt: "4 Mei 2026 22.40 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
         transactionId={transaction.id}
@@ -278,6 +279,7 @@ describe("buyer transaction detail page", () => {
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",
+          completedAt: "4 Mei 2026 22.40 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
         transactionId={transaction.id}
@@ -301,6 +303,32 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/kalung-emas.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
+  });
+
+  it("keeps the finish button enabled for legacy selesai transactions missing completion metadata", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "SELESAI",
+          paymentProof: "/uploads/bukti/transfer-selesai.jpg",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-fixed-legacy.jpg",
+            uploadedAt: "4 Mei 2026 22.30 WIB",
+            uploadedBy: "Admin UPC Ranotana",
+            location: "UPC Ranotana"
+          },
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    expect(screen.getByText(/selesaikan pengambilan dan nota/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /cetak nota/i })).toBeDisabled();
   });
 
   it("keeps the finish action visible but disabled until admin uploads handover proof", () => {
@@ -343,6 +371,7 @@ describe("buyer transaction detail page", () => {
           status: "SELESAI",
           paymentProof: "/uploads/bukti/transfer-selesai.jpg",
           verifiedAt: "4 Mei 2026 22.11 WIB",
+          completedAt: "4 Mei 2026 22.40 WIB",
           receiptNumber: "INV/TRXFIXED"
         }}
         transactionId={transaction.id}
@@ -380,6 +409,7 @@ describe("buyer transaction detail page", () => {
               location: "UPC Ranotana"
             },
             verifiedAt: "4 Mei 2026 22.11 WIB",
+            completedAt: "4 Mei 2026 22.40 WIB",
             receiptNumber: "INV/TRXFIXED"
           }}
           transactionId={transaction.id}
@@ -624,7 +654,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/pembelian selesai setelah pembayaran diverifikasi/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/pembelian sudah ditutup buyer/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
     expect(screen.queryByText(/transfer-selesai.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();

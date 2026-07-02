@@ -1208,11 +1208,11 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  if (row.status === "selesai") {
+  if (row.status === "selesai" && row.completedAt && row.completionSource) {
     return serializeBuyerTransaction(row);
   }
 
-  if (row.status !== "lunas") {
+  if (row.status !== "lunas" && row.status !== "selesai") {
     throw new Error("Transaksi baru bisa diselesaikan setelah admin memverifikasi pembayaran.");
   }
 
