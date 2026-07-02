@@ -501,14 +501,12 @@ function PriceRangeControl({
 
 function CatalogLotCard({
   favorite,
-  imagePriority = false,
   lot,
   serverNow,
   viewMode,
   onToggleFavorite
 }: {
   favorite: boolean;
-  imagePriority?: boolean;
   lot: Lot;
   serverNow?: string;
   viewMode: ViewMode;
@@ -561,7 +559,6 @@ function CatalogLotCard({
             "rounded-none",
             viewMode === "list" ? "h-full min-h-[13.5rem] lg:aspect-auto" : "aspect-[1.78]"
           )}
-          imagePriority={imagePriority}
           imageSizes={CATALOG_CARD_IMAGE_SIZES}
           media={lot.media}
           showCategoryBadge={false}
@@ -1241,10 +1238,9 @@ export function CatalogPage({
                     viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
                   )}
                 >
-                  {visibleLots.map(({ lot }, index) => (
+                  {visibleLots.map(({ lot }) => (
                     <CatalogLotCard
                       favorite={favoriteIds.includes(lot.id)}
-                      imagePriority={index === 0}
                       key={lot.id}
                       lot={lot}
                       serverNow={serverNow}

@@ -88,14 +88,13 @@ describe("CatalogPage", () => {
     expect(screen.getByText("21 jam 45 menit")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
     const catalogImages = screen.getAllByRole("img");
-    expect(catalogImages[0]).toHaveAttribute("loading", "eager");
-    expect(catalogImages[0]).toHaveAttribute("fetchpriority", "high");
-    expect(catalogImages[0]).toHaveAttribute(
-      "sizes",
-      "(min-width: 1536px) 24vw, (min-width: 1280px) 23vw, (min-width: 1024px) 31vw, (min-width: 768px) 48vw, 100vw"
-    );
-    catalogImages.slice(1).forEach((image) => {
+    catalogImages.forEach((image) => {
       expect(image).toHaveAttribute("loading", "lazy");
+      expect(image).not.toHaveAttribute("fetchpriority", "high");
+      expect(image).toHaveAttribute(
+        "sizes",
+        "(min-width: 1536px) 24vw, (min-width: 1280px) 23vw, (min-width: 1024px) 31vw, (min-width: 768px) 48vw, 100vw"
+      );
     });
   });
 
