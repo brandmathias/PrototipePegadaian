@@ -2,6 +2,8 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { PublicShell } from "@/components/layout/public-shell";
+import { LoginPage } from "@/components/pages/login-page";
+import { RegisterPage } from "@/components/pages/public-pages";
 import { ToastProvider } from "@/components/ui/toast";
 
 vi.mock("next/navigation", () => ({
@@ -12,6 +14,21 @@ vi.mock("next/navigation", () => ({
   }),
   useSearchParams: () => new URLSearchParams("")
 }));
+
+function expectOptimizedBrandImages(container: Element, large = false) {
+  const images = container.querySelectorAll("img");
+
+  expect(images).toHaveLength(2);
+  images.forEach((image) => {
+    expect(image).toHaveAttribute("fetchpriority", "low");
+    expect(image).toHaveAttribute("loading", "eager");
+    expect(image).not.toHaveAttribute("sizes");
+  });
+  expect(images[0]).toHaveAttribute("width", large ? "60" : "40");
+  expect(images[0]).toHaveAttribute("height", large ? "60" : "40");
+  expect(images[1]).toHaveAttribute("width", large ? "207" : "118");
+  expect(images[1]).toHaveAttribute("height", large ? "49" : "28");
+}
 
 describe("PublicShell", () => {
   it("provides catalog and help navigation for guests", () => {
@@ -26,6 +43,7 @@ describe("PublicShell", () => {
     const guestBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(guestBrand).toHaveAttribute("href", "/katalog");
     expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
+    expectOptimizedBrandImages(guestBrand);
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
@@ -53,6 +71,7 @@ describe("PublicShell", () => {
     const buyerBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(buyerBrand).toHaveAttribute("href", "/dashboard");
     expect(buyerBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
+    expectOptimizedBrandImages(buyerBrand);
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
@@ -64,5 +83,14 @@ describe("PublicShell", () => {
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["login", <LoginPage key="login" />],
+    ["register", <RegisterPage key="register" />]
+  ])("uses optimized brand delivery on the %s page", (_page, page) => {
+    render(<ToastProvider>{page}</ToastProvider>);
+
+    expectOptimizedBrandImages(screen.getByRole("img", { name: /ruang agunan/i }), true);
   });
 });

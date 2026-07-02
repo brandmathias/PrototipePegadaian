@@ -77,6 +77,10 @@ function getChecklistTaskTitles(tasks: DashboardChecklistTask[]) {
   return tasks.map((task) => task.title);
 }
 
+function resetChecklistTasks(tasks: DashboardChecklistTask[]) {
+  return tasks.map((task) => ({ ...task, checked: false }));
+}
+
 function matchesChecklistTasks(stored: StoredDashboardChecklist, tasks: DashboardChecklistTask[]) {
   const taskTitles = getChecklistTaskTitles(tasks);
 
@@ -130,11 +134,13 @@ function loadStoredChecklist(tasks: DashboardChecklistTask[]) {
 
   try {
     const stored = JSON.parse(rawValue) as StoredDashboardChecklist;
-    if (
-      isStoredChecklistExpired(stored, dateKey, currentNow) ||
-      !Array.isArray(stored.checked) ||
-      !matchesChecklistTasks(stored, tasks)
-    ) {
+    if (isStoredChecklistExpired(stored, dateKey, currentNow)) {
+      const resetTasks = resetChecklistTasks(tasks);
+      writeStoredChecklist(resetTasks, dateKey);
+      return { tasks: resetTasks, dateKey };
+    }
+
+    if (!Array.isArray(stored.checked) || !matchesChecklistTasks(stored, tasks)) {
       writeStoredChecklist(tasks, dateKey);
       return { tasks, dateKey };
     }
@@ -186,9 +192,10 @@ export function AdminDashboardChecklistCard({ nowIso, tasks }: DashboardChecklis
       return;
     }
 
-    setInteractiveTasks(tasks);
+    const resetTasks = resetChecklistTasks(tasks);
+    setInteractiveTasks(resetTasks);
     setDateKey(currentDateKey);
-    writeStoredChecklist(tasks, currentDateKey);
+    writeStoredChecklist(resetTasks, currentDateKey);
   }, [dateKey, now, taskSignature, tasks]);
 
   const completedCount = useMemo(

@@ -254,7 +254,28 @@ describe("AdminDashboardPage", () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(progress).toHaveAttribute("aria-valuenow", "2");
+    expect(progress).toHaveAttribute("aria-valuenow", "0");
+  });
+
+  it("starts with an empty checklist when opened on the next Asia/Makassar day", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-03T16:00:01.000Z"));
+    window.localStorage.setItem(
+      "pegadaian:admin-dashboard-checklist:v1",
+      JSON.stringify({
+        dateKey: "2026-06-03",
+        resetAtIso: "2026-06-03T16:00:00.000Z",
+        taskTitles: dashboardChecklistTitles,
+        checked: [true, true, true, false, false]
+      })
+    );
+
+    render(<AdminDashboardPage data={baseDashboardData} />);
+
+    expect(screen.getByRole("progressbar", { name: /progres checklist harian/i })).toHaveAttribute(
+      "aria-valuenow",
+      "0"
+    );
   });
 
   it("updates the checklist clock in real time", () => {

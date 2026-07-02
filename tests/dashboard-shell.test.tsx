@@ -63,6 +63,23 @@ describe("DashboardShell", () => {
     document.documentElement.removeAttribute("style");
   });
 
+  it.each([
+    ["admin unit", adminNavigation],
+    ["superadmin", superadminNavigation]
+  ])("uses optimized brand delivery in the %s shell", (_role, navigation) => {
+    renderShell(navigation);
+
+    const brandImages = screen.getByRole("img", { name: /ruang agunan/i }).querySelectorAll("img");
+    expect(brandImages).toHaveLength(2);
+    brandImages.forEach((image) => {
+      expect(image).toHaveAttribute("fetchpriority", "low");
+      expect(image).toHaveAttribute("loading", "eager");
+      expect(image).not.toHaveAttribute("sizes");
+    });
+    expect(brandImages[0]).toHaveAttribute("width", "40");
+    expect(brandImages[1]).toHaveAttribute("width", "118");
+  });
+
   it("keeps kelola barang as a direct inventory link", () => {
     navigationMock.pathname = "/admin/barang";
 

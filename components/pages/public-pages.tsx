@@ -105,6 +105,7 @@ function AuthBrandCluster({
       <div className="pointer-events-none absolute -left-1 top-4 h-16 w-[20rem] bg-[linear-gradient(90deg,rgba(240,210,135,0.22),rgba(240,210,135,0.08),transparent_78%)] blur-xl" />
       <BrandLockup
         className="relative z-[1] max-w-full drop-shadow-[0_20px_32px_rgba(0,0,0,0.24)]"
+        large
         markClassName="size-[3.75rem]"
         nameClassName="h-[3.1rem] max-w-[19.5rem] brightness-[1.08] contrast-[1.08]"
       />

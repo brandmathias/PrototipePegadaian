@@ -2,13 +2,9 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 
 import {
-  BRAND_ICON_HEIGHT,
   BRAND_ICON_SRC,
-  BRAND_ICON_WIDTH,
   BRAND_NAME,
-  BRAND_NAME_IMAGE_HEIGHT,
-  BRAND_NAME_IMAGE_SRC,
-  BRAND_NAME_IMAGE_WIDTH
+  BRAND_NAME_IMAGE_SRC
 } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
@@ -25,28 +21,32 @@ type BrandTone = "default" | "inverse" | "gold";
 
 type BrandMarkProps = {
   className?: string;
+  large?: boolean;
   title?: string;
   tone?: BrandTone;
 };
 
-export function BrandMark({ className, title = "" }: BrandMarkProps) {
+export function BrandMark({ className, large = false, title = "" }: BrandMarkProps) {
+  const size = large ? 60 : 40;
+
   return (
     <Image
       alt={title}
       aria-hidden={title ? undefined : true}
       className={cn("h-10 w-10 shrink-0 object-contain", className)}
       draggable={false}
-      height={40}
-      sizes="40px"
+      fetchPriority="low"
+      height={size}
+      loading="eager"
       src={BRAND_ICON_SRC}
-      priority
-      width={40}
+      width={size}
     />
   );
 }
 
 type BrandLockupProps = {
   className?: string;
+  large?: boolean;
   markClassName?: string;
   nameClassName?: string;
   showName?: boolean;
@@ -57,6 +57,7 @@ type BrandLockupProps = {
 
 export function BrandLockup({
   className,
+  large = false,
   markClassName,
   nameClassName,
   showName = true,
@@ -71,18 +72,18 @@ export function BrandLockup({
       role={showName ? "img" : undefined}
       style={style}
     >
-      <BrandMark className={markClassName} />
+      <BrandMark className={markClassName} large={large} />
       {showName ? (
         <Image
           alt=""
           aria-hidden="true"
           className={cn("h-7 w-auto max-w-[12rem] shrink object-contain", nameClassName)}
           draggable={false}
-          height={28}
-          sizes="192px"
+          fetchPriority="low"
+          height={large ? 49 : 28}
+          loading="eager"
           src={BRAND_NAME_IMAGE_SRC}
-          priority
-          width={118}
+          width={large ? 207 : 118}
         />
       ) : null}
     </span>
