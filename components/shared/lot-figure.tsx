@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 type LotFigureProps = {
   category: string;
   className?: string;
+  imagePriority?: boolean;
+  imageSizes?: string;
   media?: Array<{
     type: "foto" | "video";
     url: string;
@@ -57,6 +59,8 @@ function revealVideoPreviewFrame(event: SyntheticEvent<HTMLVideoElement>) {
 export function LotFigure({
   category,
   className,
+  imagePriority = false,
+  imageSizes = "(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw",
   media = [],
   showCategoryBadge = true,
   showVideoControls = false,
@@ -102,9 +106,11 @@ export function LotFigure({
             fill
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             decoding="async"
-            loading="lazy"
+            fetchPriority={imagePriority ? "high" : undefined}
+            loading={imagePriority ? "eager" : "lazy"}
+            priority={imagePriority}
             quality={68}
-            sizes="(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw"
+            sizes={imageSizes}
             src={primaryMedia.url}
           />
         )}

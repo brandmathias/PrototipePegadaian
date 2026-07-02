@@ -53,7 +53,11 @@ type SaleMode = "all" | "fixed_price" | "vickrey";
 type SortMode = "latest" | "popular" | "lowest" | "highest" | "ending";
 type ViewMode = "grid" | "list";
 
-const HERO_BACKGROUND = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
+const HERO_BACKGROUND_AVIF = "/uploads/Hero%20Section%20Katalog%20Buyer.avif";
+const HERO_BACKGROUND_WEBP = "/uploads/Hero%20Section%20Katalog%20Buyer.webp";
+const HERO_BACKGROUND_FALLBACK = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
+const CATALOG_CARD_IMAGE_SIZES =
+  "(min-width: 1536px) 24vw, (min-width: 1280px) 23vw, (min-width: 1024px) 31vw, (min-width: 768px) 48vw, 100vw";
 const PAGE_SIZE_OPTIONS = [12, 24, 48] as const;
 const EMPTY_FAVORITE_IDS: string[] = [];
 const idNumberFormatter = new Intl.NumberFormat("id-ID");
@@ -497,12 +501,14 @@ function PriceRangeControl({
 
 function CatalogLotCard({
   favorite,
+  imagePriority = false,
   lot,
   serverNow,
   viewMode,
   onToggleFavorite
 }: {
   favorite: boolean;
+  imagePriority?: boolean;
   lot: Lot;
   serverNow?: string;
   viewMode: ViewMode;
@@ -555,6 +561,8 @@ function CatalogLotCard({
             "rounded-none",
             viewMode === "list" ? "h-full min-h-[13.5rem] lg:aspect-auto" : "aspect-[1.78]"
           )}
+          imagePriority={imagePriority}
+          imageSizes={CATALOG_CARD_IMAGE_SIZES}
           media={lot.media}
           showCategoryBadge={false}
         />
@@ -982,7 +990,7 @@ export function CatalogPage({
   }
 
   const heroStyle = {
-    "--catalog-hero-image": `url('${HERO_BACKGROUND}')`
+    "--catalog-hero-image": `image-set(url("${HERO_BACKGROUND_AVIF}") type("image/avif"), url("${HERO_BACKGROUND_WEBP}") type("image/webp"), url("${HERO_BACKGROUND_FALLBACK}") type("image/png"))`
   } as CSSProperties;
 
   return (
@@ -1233,9 +1241,10 @@ export function CatalogPage({
                     viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
                   )}
                 >
-                  {visibleLots.map(({ lot }) => (
+                  {visibleLots.map(({ lot }, index) => (
                     <CatalogLotCard
                       favorite={favoriteIds.includes(lot.id)}
+                      imagePriority={index === 0}
                       key={lot.id}
                       lot={lot}
                       serverNow={serverNow}
