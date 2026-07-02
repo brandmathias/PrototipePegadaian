@@ -12,14 +12,16 @@ describe("BuyerHelpCenterPage", () => {
     expect(
       screen.getByPlaceholderText("Cari solusi, panduan lelang, atau aturan pembatasan...")
     ).toBeInTheDocument();
+    expect(container.querySelector('[data-help-rail="active"]')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-help-card="active"]')).not.toBeInTheDocument();
+    const firstQuestion = screen.getByRole("button", {
+      name: /kenapa fitur penawaran \(bidding\) saya terkunci dan bagaimana memulihkannya/i
+    });
+    expect(firstQuestion).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(firstQuestion);
+    expect(firstQuestion).toHaveAttribute("aria-expanded", "true");
     expect(container.querySelector('[data-help-rail="active"]')).toHaveClass("bg-primary");
-    expect(container.querySelector('[data-help-card="active"]')).toHaveClass("border-t-amber-400");
-    expect(
-      screen.getByRole("button", {
-        name: /kenapa fitur penawaran \(bidding\) saya terkunci dan bagaimana memulihkannya/i
-      })
-    ).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText(/masih ada bid aktif pada Lelang Tertutup lain/i)).toBeInTheDocument();
     expect(screen.getByText(/Masih butuh konfirmasi lanjutan/i)).toBeInTheDocument();
   });
 

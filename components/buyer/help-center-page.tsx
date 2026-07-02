@@ -77,7 +77,7 @@ function HelpOrnament() {
 }
 
 export function BuyerHelpCenterPage() {
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openIndex, setOpenIndex] = useState(-1);
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
   const filteredFaqs = useMemo(() => {
