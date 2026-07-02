@@ -1141,7 +1141,6 @@ export function CatalogPage({
                     <CheckFilterButton
                       active={selectedDomiciles.includes(domicile)}
                       count={count}
-                      icon={<MapPin className="size-3.5" />}
                       key={domicile}
                       label={domicile}
                       onClick={() => toggleValue(domicile, setSelectedDomiciles)}
@@ -1150,10 +1149,10 @@ export function CatalogPage({
                 </div>
               </FilterSection>
 
-              <FilterSection title="Lokasi / Unit">
+              <FilterSection title="Unit">
                 <FilterSearch
-                  label="Cari unit atau lokasi"
-                  placeholder="Cari unit atau lokasi..."
+                  label="Cari unit"
+                  placeholder="Cari unit..."
                   value={unitQuery}
                   onChange={setUnitQuery}
                 />

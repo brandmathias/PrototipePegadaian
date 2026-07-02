@@ -378,13 +378,13 @@ export function TransactionReceiptDocument({
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#0f5136]">
               Syarat & Ketentuan
             </p>
-            <div className="mt-2 grid gap-1 text-[0.72rem] leading-5 text-[#4c5f50] print:text-[0.68rem]">
+            <ul className="mt-2 divide-y divide-[#edf2ec] text-[0.72rem] leading-5 text-[#4c5f50] print:text-[0.68rem]">
               {terms.slice(0, 3).map((term) => (
-                <div className="rounded-xl bg-[#f8faf7] px-3 py-1.5" key={term}>
+                <li className="py-1.5 first:pt-0 last:pb-0" key={term}>
                   {term}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
 
           <div className="rounded-[1.25rem] border border-[#dbe4da] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbf8_100%)] px-4 py-3 shadow-[0_18px_34px_-28px_rgba(8,63,39,0.2)] print:px-3 print:py-3">
@@ -408,14 +408,14 @@ export function TransactionReceiptDocument({
             <p className="text-[0.66rem] font-bold uppercase tracking-[0.22em] text-[#0f5136]">
               Audit Petugas
             </p>
-            <div className="mt-3 grid gap-2 text-[0.72rem] leading-5 text-[#4c5f50] print:text-[0.68rem]">
-              <div className="rounded-xl bg-[#f8faf7] px-3 py-2">
+            <div className="mt-3 divide-y divide-[#edf2ec] text-[0.72rem] leading-5 text-[#4c5f50] print:text-[0.68rem]">
+              <div className="pb-2">
                 <p className="font-bold uppercase tracking-[0.14em] text-[#6e836f]">
                   Pembayaran diverifikasi oleh
                 </p>
                 <p className="mt-1 font-semibold text-[#143325]">{paymentVerifierLabel}</p>
               </div>
-              <div className="rounded-xl bg-[#f8faf7] px-3 py-2">
+              <div className="pt-2">
                 <p className="font-bold uppercase tracking-[0.14em] text-[#6e836f]">
                   Barang diserahkan oleh
                 </p>
