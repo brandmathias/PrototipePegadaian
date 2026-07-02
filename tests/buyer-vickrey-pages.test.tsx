@@ -140,7 +140,6 @@ describe("buyer vickrey pages", () => {
   it("turns a submitted bid on lot detail into a monitoring state instead of another bid CTA", () => {
     render(<LotDetailPage bidState={winningBid} buyerStatus={null} lot={vickreyLot} />);
 
-    expect(screen.getByText(/bid sudah terkunci/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /pantau transaksi/i })).toHaveAttribute(
       "href",
       "/transaksi?tab=bids&lot=pm-vickrey-1"

@@ -186,8 +186,8 @@ describe("notification event helpers", () => {
         entityType: "transaction",
         entityId: "trx-fixed-1",
         actionHref: "/admin/pemasaran/fixed-price/pm-fixed-1",
-        title: "Bukti pembayaran harga tetap Kalung Emas masuk",
-        message: "Buyer sudah mengirim bukti pembayaran harga tetap dan menunggu verifikasi unit."
+        title: "Pembayaran Masuk: Kalung Emas",
+        message: "Pembeli telah mengunggah bukti pembayaran. Silakan lakukan verifikasi."
       })
     );
     expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
@@ -203,7 +203,7 @@ describe("notification event helpers", () => {
         entityType: "pemasaran",
         entityId: "pm-vickrey-1",
         actionHref: "/admin/pemasaran/vickrey-auction/pm-vickrey-1",
-        title: "Lelang Motor Racing berakhir"
+        title: "Lelang Berakhir: Motor Racing"
       })
     );
   });
