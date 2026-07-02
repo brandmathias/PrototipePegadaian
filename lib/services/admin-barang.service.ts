@@ -411,7 +411,7 @@ export async function createAdminBarang(
       throw new Error("Nomor SBG belum dapat dibuat.");
     }
 
-    const code = formatSbgCode(unit.code, BigInt(sequenceValue));
+    const code = formatSbgCode(unit.code, sequenceValue);
 
     const [createdBarang] = await tx
       .insert(barang)
