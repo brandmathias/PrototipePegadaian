@@ -26,7 +26,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
-import { INDONESIA_PROVINCES } from "@/lib/locations/indonesia-provinces";
+import {
+  extractUnitNumber,
+  formatUnitCode,
+  INDONESIA_PROVINCES,
+} from "@/lib/locations/indonesia-provinces";
 import { fetchSuperAdminJson } from "@/lib/superadmin/client";
 import {
   normalizeUnitAccountNumber,
@@ -130,6 +134,19 @@ function FieldHelp({ children }: { children: React.ReactNode }) {
   return <p className="text-[0.68rem] font-semibold leading-5 text-black/42">{children}</p>;
 }
 
+function UnitCodePreview({ domicile, unitNumber }: { domicile: string; unitNumber: string }) {
+  const code = formatUnitCode(domicile, unitNumber);
+
+  return (
+    <p
+      aria-live="polite"
+      className="mt-1.5 min-h-5 text-[0.7rem] font-black tracking-[0.06em] text-[#08754f]"
+    >
+      {code ?? "Pilih domisili dan masukkan 5 angka."}
+    </p>
+  );
+}
+
 function UnitTextInput({
   help,
   id,
@@ -207,7 +224,7 @@ function UnitEditForm({
   Pick<UnitFormProps, "formId" | "initialValue" | "showSubmitButton" | "showTitle" | "submitLabel" | "unitId">) {
   const router = useRouter();
   const { toast } = useToast();
-  const [code, setCode] = useState(initialValue?.code ?? "");
+  const [unitNumber, setUnitNumber] = useState(extractUnitNumber(initialValue?.code) ?? "");
   const [name, setName] = useState(initialValue?.name ?? "");
   const [address, setAddress] = useState(initialValue?.address ?? "");
   const [domicile, setDomicile] = useState(initialValue?.domicile ?? "");
@@ -225,7 +242,7 @@ function UnitEditForm({
       await fetchSuperAdminJson(`/api/superadmin/unit/${unitId}`, {
         method: "PUT",
         body: JSON.stringify({
-          code,
+          unitNumber,
           name,
           address,
           domicile,
@@ -258,14 +275,19 @@ function UnitEditForm({
     <form className="grid gap-4 lg:grid-cols-12" id={formId} onSubmit={handleSubmit}>
       <div className="lg:col-span-3">
         <UnitTextInput
-          help="Contoh: CP-MND-01"
-          id="unit-code-edit"
-          label="Kode unit"
-          onChange={(event) => setCode(event.target.value)}
-          placeholder="Contoh: CP-MND-01"
+          autoComplete="off"
+          help="Masukkan tepat 5 angka. Prefix CP dan kode wilayah dibuat otomatis."
+          id="unit-number-edit"
+          inputMode="numeric"
+          label="Nomor unit"
+          maxLength={5}
+          onChange={(event) => setUnitNumber(event.target.value.replace(/\D/g, "").slice(0, 5))}
+          pattern="\d{5}"
+          placeholder="11793"
           required
-          value={code}
+          value={unitNumber}
         />
+        <UnitCodePreview domicile={domicile} unitNumber={unitNumber} />
       </div>
       <div className="lg:col-span-4">
         <UnitTextInput
@@ -340,7 +362,7 @@ function UnitEditForm({
 function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) {
   const router = useRouter();
   const { toast } = useToast();
-  const [code, setCode] = useState("");
+  const [unitNumber, setUnitNumber] = useState("");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [domicile, setDomicile] = useState("");
@@ -362,11 +384,11 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
 
   const readyChecks = useMemo(
     () => [
-      { label: "Profil unit", done: Boolean(code.trim() && name.trim() && address.trim() && domicile) },
+      { label: "Profil unit", done: Boolean(/^\d{5}$/.test(unitNumber) && name.trim() && address.trim() && domicile) },
       { label: "Rekening utama", done: accounts.length > 0 },
       { label: "Admin unit", done: admins.length > 0 },
     ],
-    [accounts.length, address, admins.length, code, domicile, name]
+    [accounts.length, address, admins.length, domicile, name, unitNumber]
   );
   const canSubmit = readyChecks.every((item) => item.done);
 
@@ -466,7 +488,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
       const createdUnit = await fetchSuperAdminJson<ManagedUnitCreateResponse>("/api/superadmin/unit", {
         method: "POST",
         body: JSON.stringify({
-          code,
+          unitNumber,
           name,
           address,
           domicile,
@@ -498,7 +520,7 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
         description: `${createdUnit.name} sudah tersimpan bersama rekening utama dan admin penanggung jawab.`,
         variant: "success",
       });
-      setCode("");
+      setUnitNumber("");
       setName("");
       setAddress("");
       setDomicile("");
@@ -559,14 +581,19 @@ function UnitCreateForm({ showTitle = true }: Pick<UnitFormProps, "showTitle">) 
             <div className="grid gap-4 lg:grid-cols-12">
               <div className="lg:col-span-3">
                 <UnitTextInput
-                  help="Contoh: UPB-2026-0123"
-                  id="unit-code"
-                  label="Kode Unit"
-                  onChange={(event) => setCode(event.target.value)}
-                  placeholder="UPB-2026-0123"
+                  autoComplete="off"
+                  help="Masukkan tepat 5 angka. Prefix CP dan kode wilayah dibuat otomatis."
+                  id="unit-number"
+                  inputMode="numeric"
+                  label="Nomor Unit"
+                  maxLength={5}
+                  onChange={(event) => setUnitNumber(event.target.value.replace(/\D/g, "").slice(0, 5))}
+                  pattern="\d{5}"
+                  placeholder="11793"
                   required
-                  value={code}
+                  value={unitNumber}
                 />
+                <UnitCodePreview domicile={domicile} unitNumber={unitNumber} />
               </div>
               <div className="lg:col-span-4">
                 <UnitTextInput

@@ -611,6 +611,7 @@ export async function createUnit(input: {
   admins?: ManagedUnitAdminInput[];
   accounts?: ManagedUnitAccountInput[];
   code?: string;
+  unitNumber?: string;
   name?: string;
   address?: string;
   domicile?: string;
@@ -700,6 +701,7 @@ export async function updateUnit(
   unitId: string,
   input: {
     code?: string;
+    unitNumber?: string;
     name?: string;
     address?: string;
     domicile?: string;

@@ -840,7 +840,7 @@ describe("superadmin pages", () => {
       <SuperAdminManagementUnitDetailPage
         unit={{
           id: "unit-1",
-          code: "CP-MND-13",
+          code: "CP-MND-11793",
           name: "UPC Ranotana",
           address: "Jl. Sam Ratulangi",
           domicile: "Sulawesi Utara",
@@ -883,7 +883,8 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Profil & Lokasi Unit")).toBeInTheDocument();
     expect(screen.getByText("Rekening Operasional Cabang")).toBeInTheDocument();
     expect(screen.getByText("Otoritas Admin Penanggung Jawab")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("CP-MND-13")).toBeInTheDocument();
+    expect(screen.getByLabelText(/nomor unit/i)).toHaveValue("11793");
+    expect(screen.getByText("CP-MND-11793")).toBeInTheDocument();
     expect(screen.queryByText("Daftar Barang Unit")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^kembali$/i })).toHaveAttribute(
       "href",
@@ -969,7 +970,7 @@ describe("superadmin pages", () => {
         JSON.stringify({
           data: {
             id: "unit-1",
-            code: "CP-MND-13",
+            code: "CP-MND-11793",
             name: "UPC Ranotana",
             address: "Jl. Sam Ratulangi",
             domicile: "Sulawesi Utara",
@@ -983,7 +984,7 @@ describe("superadmin pages", () => {
     render(
       <UnitForm
         initialValue={{
-          code: "CP-MND-13",
+          code: "CP-MND-11793",
           name: "UPC Ranotana",
           address: "Jl. Sam Ratulangi",
           domicile: "Sulawesi Utara",
@@ -1003,6 +1004,13 @@ describe("superadmin pages", () => {
       );
     });
     expect(navigationMocks.refresh).toHaveBeenCalled();
+    const updateBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body ?? "{}"));
+    expect(updateBody).toMatchObject({
+      unitNumber: "11793",
+      name: "UPC Ranotana",
+      domicile: "Sulawesi Utara",
+    });
+    expect(updateBody).not.toHaveProperty("code");
   });
 
   it("keeps superadmin item status helper synchronized with due date", async () => {
@@ -1967,7 +1975,7 @@ describe("superadmin pages", () => {
           JSON.stringify({
             data: {
               id: "unit-created",
-              code: "UPB-2026-0123",
+              code: "CP-JKT-12345",
               name: "UPB Pondok Indah",
               address: "Jl. Sultan Iskandar Muda",
             },
@@ -1982,8 +1990,8 @@ describe("superadmin pages", () => {
 
     render(<SuperAdminCreateUnitPage />);
 
-    fireEvent.change(screen.getByLabelText(/kode unit/i), {
-      target: { value: "UPB-2026-0123" },
+    fireEvent.change(screen.getByLabelText(/nomor unit/i), {
+      target: { value: "12345" },
     });
     fireEvent.change(screen.getByLabelText(/nama unit/i), {
       target: { value: "UPB Pondok Indah" },
@@ -1994,6 +2002,7 @@ describe("superadmin pages", () => {
     fireEvent.change(screen.getByLabelText(/domisili/i), {
       target: { value: "DKI Jakarta" },
     });
+    expect(screen.getByText("CP-JKT-12345")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/nama bank/i), {
       target: { value: "Mandiri" },
@@ -2067,6 +2076,8 @@ describe("superadmin pages", () => {
     const adminBody = unitBody.admins[0];
 
     expect(unitBody.domicile).toBe("DKI Jakarta");
+    expect(unitBody.unitNumber).toBe("12345");
+    expect(unitBody).not.toHaveProperty("code");
     expect(unitBody.primaryAccount).not.toHaveProperty("branchName");
     expect(adminBody).toMatchObject({
       name: "Andi Setiawan",
