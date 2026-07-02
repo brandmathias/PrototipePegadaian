@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Grid2X2, Headphones, Heart, Home, ReceiptText, ShieldAlert } from "lucide-react";
+import { Grid2X2, Headphones, Heart, Home, LogOut, ReceiptText, ShieldAlert } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import { AlertCenter } from "@/components/ui/alert-center";
@@ -215,99 +216,121 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown with Backdrop Blur and Staggered Entry */}
-      {isOpen && (
-        <div className="fixed inset-0 top-16 z-30 flex flex-col bg-black/60 backdrop-blur-2xl animate-fade-in lg:hidden">
-          <div
-            className={cn(
-              "flex flex-col gap-4 p-5 shadow-2xl animate-slide-down border-b",
-              isLuxury ? "bg-[#fcfaf7] border-[#eadfcb]" : "bg-white border-black/5"
-            )}
-          >
-            {/* User Profile Card for Mobile */}
-            {name ? (
-              <div className="flex flex-col gap-3 rounded-[1.4rem] border border-black/5 bg-[#085a41]/[0.03] p-4 dark:border-white/5 dark:bg-white/[0.02]">
-                <div className="flex items-center gap-3">
-                  <div className="relative size-11 overflow-hidden rounded-full border-2 border-[#0a6a49]/20">
-                    {image ? (
-                      <img src={image} alt={name} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center bg-[#0a6a49] text-sm font-black text-white">
-                        {name.substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-black text-[#122018] truncate">{name}</p>
-                    <p className="text-[0.68rem] font-bold text-[#0a6a49]">Akun Terverifikasi</p>
-                  </div>
+      {/* Mobile Menu Dropdown with Backdrop Blur and Smooth Transitions */}
+      <div
+        className={cn(
+          "fixed inset-0 top-16 z-30 flex flex-col bg-black/60 backdrop-blur-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] lg:hidden",
+          isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        )}
+      >
+        <div
+          className={cn(
+            "flex flex-col gap-4 p-5 shadow-2xl border-b transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+            isOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0",
+            isLuxury ? "bg-[#fcfaf7] border-[#eadfcb]" : "bg-white border-black/5"
+          )}
+        >
+          {/* User Profile Card for Mobile */}
+          {name ? (
+            <div className="flex flex-col gap-3 rounded-[1.4rem] border border-black/5 bg-[#085a41]/[0.03] p-4 dark:border-white/5 dark:bg-white/[0.02]">
+              <div className="flex items-center gap-3">
+                <div className="relative size-11 overflow-hidden rounded-full border-2 border-[#0a6a49]/20">
+                  {image ? (
+                    <img src={image} alt={name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center bg-[#0a6a49] text-sm font-black text-white">
+                      {name.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  <Link
-                    href="/profil"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
-                  >
-                    Profil Saya
-                  </Link>
-                  <Link
-                    href="/wishlist"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
-                  >
-                    <Heart className="size-3.5 fill-[#d99900] text-[#d99900]" />
-                    Wishlist ({wishlistCount})
-                  </Link>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-[#122018] truncate">{name}</p>
+                  <p className="text-[0.68rem] font-bold text-[#0a6a49]">Akun Terverifikasi</p>
                 </div>
               </div>
-            ) : null}
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Link
+                  href="/profil"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
+                >
+                  Profil Saya
+                </Link>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
+                >
+                  <Heart className="size-3.5 fill-[#d99900] text-[#d99900]" />
+                  Wishlist ({wishlistCount})
+                </Link>
+              </div>
+            </div>
+          ) : null}
 
-            <CatalogSearchInput
-              defaultValue={catalogSearchValue}
-              inputClassName={cn(
-                "h-11 w-full text-sm",
-                isLuxury &&
-                  "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
-              )}
-              placeholder="Cari barang, unit, kategori..."
-              submitLabel="Telusuri"
-              wrapperClassName="w-full"
-            />
-            
-            <nav className="flex flex-col gap-1.5">
-              {buyerNav.map((item, index) => {
-                const active = isBuyerNavigationActive(pathname, item);
-                const Icon = item.icon;
+          <CatalogSearchInput
+            defaultValue={catalogSearchValue}
+            inputClassName={cn(
+              "h-11 w-full text-sm",
+              isLuxury &&
+                "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
+            )}
+            placeholder="Cari barang, unit, kategori..."
+            submitLabel="Telusuri"
+            wrapperClassName="w-full"
+          />
+          
+          <nav className="flex flex-col gap-1.5">
+            {buyerNav.map((item, index) => {
+              const active = isBuyerNavigationActive(pathname, item);
+              const Icon = item.icon;
 
-                return (
-                  <Link
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] animate-stagger-fade-in",
-                      isLuxury
-                        ? active
-                          ? "bg-[#9b6f22]/10 text-[#9b6f22]"
-                          : "text-[#6e665b] hover:bg-black/[0.03] hover:text-[#174e3b]"
-                        : active
-                          ? "bg-primary/[0.08] text-primary"
-                          : "text-black/58 hover:bg-black/[0.03] hover:text-primary"
-                    )}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    href={item.href}
-                    key={item.href}
-                  >
-                    <Icon className="size-5 shrink-0" />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-          {/* Tap outside area to close */}
-          <div className="flex-1 cursor-pointer" onClick={() => setIsOpen(false)} />
+              return (
+                <Link
+                  aria-label={`Buka ${item.label}`}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    isLuxury
+                      ? active
+                        ? "bg-[#9b6f22]/10 text-[#9b6f22]"
+                        : "text-[#6e665b] hover:bg-black/[0.03] hover:text-[#174e3b]"
+                      : active
+                        ? "bg-primary/[0.08] text-primary"
+                        : "text-black/58 hover:bg-black/[0.03] hover:text-primary"
+                  )}
+                  href={item.href}
+                  key={item.href}
+                >
+                  <Icon className="size-5 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Logout Button in Mobile Menu */}
+          {name ? (
+            <div className="mt-2 pt-3 border-t border-black/5 dark:border-white/5">
+              <LogoutButton
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                  isLuxury
+                    ? "text-[#c2410c] hover:bg-[#c2410c]/5"
+                    : "text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                <LogOut className="size-5 shrink-0" />
+                <span>Keluar dari Akun</span>
+              </LogoutButton>
+            </div>
+          ) : null}
         </div>
-      )}
+        {/* Tap outside area to close */}
+        <div className="flex-1 cursor-pointer" onClick={() => setIsOpen(false)} />
+      </div>
     </header>
   );
 }

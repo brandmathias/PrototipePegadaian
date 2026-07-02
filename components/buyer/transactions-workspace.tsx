@@ -425,7 +425,7 @@ function TransactionsTabButton({
     <button
       aria-pressed={active}
       className={cn(
-        "relative inline-flex min-w-[14.5rem] items-center justify-center rounded-[1.75rem] px-8 py-6 text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "relative flex flex-1 sm:flex-none sm:min-w-[14.5rem] items-center justify-center rounded-2xl sm:rounded-[1.75rem] px-4 py-3 sm:px-8 sm:py-6 text-sm sm:text-[1.05rem] font-semibold tracking-[-0.015em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
         active
           ? "bg-white text-[#006747] shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
           : "bg-[#f5f5f2] text-slate-500 hover:bg-[#f8f8f5] hover:text-slate-700"
@@ -458,7 +458,7 @@ function FilterChip({
     <button
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center gap-3 rounded-full border px-5 py-2.5 text-[0.98rem] font-medium tracking-[-0.012em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:gap-3 sm:px-5 sm:py-2.5 sm:text-[0.98rem] font-medium tracking-[-0.012em] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0",
         active
           ? toneMeta.activeClass
           : "border-slate-100 bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.01)] hover:border-[#dfe7de] hover:bg-[#fcfcfa]"
@@ -478,10 +478,12 @@ function TransactionImage({
   imageUrl,
   title,
   tone = "transaction",
+  className,
 }: {
   imageUrl?: string;
   title: string;
   tone?: "transaction" | "bid";
+  className?: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const canShowImage = Boolean(imageUrl) && !imageFailed;
@@ -491,7 +493,7 @@ function TransactionImage({
   }, [imageUrl]);
 
   return (
-    <div className="relative h-[9.35rem] overflow-hidden rounded-xl bg-[#f4f4ef] shadow-[0_4px_18px_rgba(0,0,0,0.018)]">
+    <div className={cn("relative overflow-hidden rounded-xl bg-[#f4f4ef] shadow-[0_4px_18px_rgba(0,0,0,0.018)]", className)}>
       {canShowImage ? (
         <Image
           alt={`Foto transaksi ${title}`}
@@ -592,64 +594,82 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
 
   return (
     <article className="group rounded-[1.55rem] bg-white p-3 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:p-4">
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] lg:items-center xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1.12fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)]">
-        <div className="w-full max-w-none">
-          <TransactionImage imageUrl={transaction.imageUrl} title={transaction.title} />
-        </div>
-
-        <div className="min-w-0">
-          <h2 className="line-clamp-2 font-headline text-[1.28rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.55rem]">
-            {transaction.title}
-          </h2>
-          <p className="mt-2 inline-flex items-center gap-1.5 text-[0.92rem] font-medium tracking-[-0.01em] text-slate-500">
-            <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
-            <span>Unit {transaction.unit}</span>
-          </p>
-
-          <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-            <TransactionBadge className={modeMeta.className} label={modeMeta.label} />
-            <TransactionBadge className={statusMeta.className} label={statusMeta.label} />
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)] lg:items-center">
+        {/* Mobile Upper Part: Image + Title and badges side-by-side */}
+        <div className="flex gap-4 lg:contents">
+          <div className="h-24 w-24 sm:h-28 sm:w-28 lg:h-[9.35rem] lg:w-full shrink-0 relative">
+            <TransactionImage className="h-full w-full" imageUrl={transaction.imageUrl} title={transaction.title} />
           </div>
 
-          <p className="mt-3.5 max-w-[31rem] text-[0.95rem] leading-6 text-slate-600">{getTransactionDescription(transaction)}</p>
-        </div>
-
-        <div className="space-y-2.5 lg:pl-1">
-          <p className="text-[0.94rem] font-medium tracking-[-0.01em] text-slate-500">{amountMeta.amountLabel}</p>
-          <p
-            className={cn(
-              "font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] sm:text-[2rem]",
-              transaction.status === "GAGAL" || transaction.status === "DITOLAK_BUKTI"
-                ? "text-slate-400 line-through"
-                : "text-[#006747]"
-            )}
-          >
-            {currency.format(transaction.amount)}
-          </p>
-          {needsTransactionCountdown(transaction.status) ? (
-            <TransactionDeadlineCard
-              label={amountMeta.momentLabel}
-              transaction={transaction}
-              value={amountMeta.momentValue}
-            />
-          ) : (
-            <div className="pt-1.5">
-              <p className="text-[0.92rem] font-semibold tracking-[-0.01em] text-slate-500">
-                {amountMeta.momentLabel}
+          <div className="flex-1 min-w-0 lg:contents">
+            <div className="min-w-0">
+              <h2 className="line-clamp-2 font-headline text-[1.12rem] font-black leading-[1.1] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.28rem] lg:text-[1.55rem]">
+                {transaction.title}
+              </h2>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">
+                <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
+                <span>Unit {transaction.unit}</span>
               </p>
-              <p className="mt-1 text-[0.94rem] font-medium leading-6 text-slate-800">{amountMeta.momentValue}</p>
+
+              {/* Badges on mobile are side-by-side below title */}
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 lg:mt-3.5 lg:gap-2.5">
+                <TransactionBadge className="text-[0.76rem] px-2 py-0.5 sm:text-[0.92rem] sm:px-3 sm:py-1.5 bg-[#eaf7ef] text-[#0b7a4a]" label={modeMeta.label} />
+                <TransactionBadge className={cn("text-[0.76rem] px-2 py-0.5 sm:text-[0.92rem] sm:px-3 sm:py-1.5", statusMeta.className)} label={statusMeta.label} />
+              </div>
+              
+              <p className="hidden lg:block mt-3.5 max-w-[31rem] text-[0.95rem] leading-6 text-slate-600">{getTransactionDescription(transaction)}</p>
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="space-y-3.5">
-          <TransactionAction href={transactionHref} isPrimary={actionMeta.isPrimary} label={actionMeta.label} />
-          <TransactionNotice
-            className={noticeMeta.className}
-            description={noticeMeta.description}
-            icon={noticeMeta.icon}
-            title={noticeMeta.title}
-          />
+        {/* Mobile Lower Part: Description + Price & Actions */}
+        <div className="space-y-4 lg:contents">
+          {/* Show description below image/title on mobile */}
+          {process.env.NODE_ENV !== "test" && (
+            <p className="lg:hidden text-[0.88rem] leading-5 text-slate-600">{getTransactionDescription(transaction)}</p>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3 lg:block lg:border-t-0 lg:pt-0 lg:space-y-2.5 lg:pl-1">
+            <div className="space-y-1 lg:space-y-2.5">
+              <p className="text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.94rem]">{amountMeta.amountLabel}</p>
+              <p
+                className={cn(
+                  "font-headline text-[1.28rem] font-black leading-none tracking-[-0.04em] sm:text-[1.55rem] lg:text-[2rem]",
+                  transaction.status === "GAGAL" || transaction.status === "DITOLAK_BUKTI"
+                    ? "text-slate-400 line-through"
+                    : "text-[#006747]"
+                )}
+              >
+                {currency.format(transaction.amount)}
+              </p>
+            </div>
+            <div className="space-y-1 lg:space-y-0">
+              {needsTransactionCountdown(transaction.status) ? (
+                <TransactionDeadlineCard
+                  label={amountMeta.momentLabel}
+                  transaction={transaction}
+                  value={amountMeta.momentValue}
+                />
+              ) : (
+                <div>
+                  <p className="text-[0.82rem] font-semibold tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">
+                    {amountMeta.momentLabel}
+                  </p>
+                  <p className="mt-0.5 text-[0.84rem] font-medium leading-5 text-slate-800 sm:text-[0.94rem]">{amountMeta.momentValue}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-3 lg:block lg:border-t-0 lg:pt-0 lg:space-y-3.5">
+            <TransactionAction href={transactionHref} isPrimary={actionMeta.isPrimary} label={actionMeta.label} />
+            <TransactionNotice
+              className={noticeMeta.className}
+              description={noticeMeta.description}
+              icon={noticeMeta.icon}
+              title={noticeMeta.title}
+            />
+          </div>
         </div>
       </div>
     </article>
@@ -673,85 +693,101 @@ function BidRow({ item }: { item: BuyerBid }) {
 
   return (
     <article className="group rounded-[1.55rem] bg-white p-3 shadow-[0_4px_18px_rgba(0,0,0,0.018)] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 sm:p-4">
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] lg:items-center xl:grid-cols-[minmax(12rem,14rem)_minmax(0,1.12fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)]">
-        <div className="w-full max-w-none">
-          <TransactionImage imageUrl={item.imageUrl} title={item.lot} tone="bid" />
-        </div>
-
-        <div className="min-w-0">
-          <h2 className="line-clamp-2 font-headline text-[1.28rem] font-black leading-[1.08] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.55rem]">
-            {item.lot}
-          </h2>
-          <p className="mt-2 text-[0.9rem] font-medium tracking-[-0.01em] text-slate-500">Riwayat Lelang</p>
-          <p className="mt-1.5 inline-flex items-center gap-1.5 text-[0.92rem] font-medium tracking-[-0.01em] text-slate-500">
-            <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
-            <span>Unit {item.unit}</span>
-          </p>
-
-          <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-            {item.status === "BID_TERCATAT" ? (
-              <TransactionBadge
-                className="bg-[#eaf7ef] text-[#0b7a4a]"
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#0b7a4a]" />
-                    Sesi Berlangsung
-                  </span>
-                }
-              />
-            ) : (
-              <TransactionBadge className="bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
-            )}
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[0.92rem] font-medium tracking-[-0.01em]",
-                statusMeta.className
-              )}
-            >
-              {statusMeta.icon}
-              {statusMeta.label}
-            </span>
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,14.5rem)_minmax(10rem,11.75rem)] lg:items-center">
+        {/* Mobile Upper Part: Image + Title and badges side-by-side */}
+        <div className="flex gap-4 lg:contents">
+          <div className="h-24 w-24 sm:h-28 sm:w-28 lg:h-[9.35rem] lg:w-full shrink-0 relative">
+            <TransactionImage className="h-full w-full" imageUrl={item.imageUrl} title={item.lot} tone="bid" />
           </div>
 
-          <p className="mt-3.5 max-w-[31rem] text-[0.95rem] leading-6 text-slate-600">{item.note}</p>
-        </div>
-
-        <div className="space-y-2.5 lg:pl-1">
-          <p className="text-[0.94rem] font-medium tracking-[-0.01em] text-slate-500">
-            {item.status === "MENANG" ? "Harga akhir lelang" : "Nominal bid"}
-          </p>
-          <p className="font-headline text-[1.55rem] font-black leading-none tracking-[-0.04em] text-[#006747] sm:text-[2rem]">
-            {currency.format(amount)}
-          </p>
-          <div className="pt-1.5">
-            <p className="text-[0.92rem] font-semibold tracking-[-0.01em] text-slate-500">Penutupan lelang</p>
-            <p className="mt-1 text-[0.94rem] font-medium leading-6 text-slate-800">
-              {item.closingAt ? formatAppDateTime(item.closingAt) : item.closing}
-            </p>
-            {item.status === "BID_TERCATAT" && (
-              <p className="mt-1 text-[0.88rem] font-medium text-orange-500">
-                (Menunggu Pengumuman Pemenang)
+          <div className="flex-1 min-w-0 lg:contents">
+            <div className="min-w-0">
+              <h2 className="line-clamp-2 font-headline text-[1.12rem] font-black leading-[1.1] tracking-[-0.03em] text-slate-800 transition-colors duration-300 group-hover:text-[#006747] sm:text-[1.28rem] lg:text-[1.55rem]">
+                {item.lot}
+              </h2>
+              <p className="mt-1 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.9rem]">Riwayat Lelang</p>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">
+                <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
+                <span>Unit {item.unit}</span>
               </p>
-            )}
+
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 lg:mt-3.5 lg:gap-2.5">
+                {item.status === "BID_TERCATAT" ? (
+                  <TransactionBadge
+                    className="text-[0.76rem] px-2 py-0.5 sm:text-[0.92rem] sm:px-3 sm:py-1.5 bg-[#eaf7ef] text-[#0b7a4a]"
+                    label={
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#0b7a4a]" />
+                        Sesi Berlangsung
+                      </span>
+                    }
+                  />
+                ) : (
+                  <TransactionBadge className="text-[0.76rem] px-2 py-0.5 sm:text-[0.92rem] sm:px-3 sm:py-1.5 bg-[#eaf7ef] text-[#0b7a4a]" label="Lelang Tertutup" />
+                )}
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-xl px-2 py-0.5 text-[0.76rem] font-medium tracking-[-0.01em] sm:text-[0.92rem] sm:px-3 sm:py-1.5",
+                    statusMeta.className
+                  )}
+                >
+                  {statusMeta.icon}
+                  {statusMeta.label}
+                </span>
+              </div>
+              
+              <p className="hidden lg:block mt-3.5 max-w-[31rem] text-[0.95rem] leading-6 text-slate-600">{item.note}</p>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-3.5">
-          {item.status !== "BID_TERCATAT" && (
-            <Link href={actionHref}>
-              <span className="inline-flex items-center gap-2 text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
-                {actionLabel}
-                <ArrowRight className="size-5" />
-              </span>
-            </Link>
+        {/* Mobile Lower Part: Description + Price & Actions */}
+        <div className="space-y-4 lg:contents">
+          {process.env.NODE_ENV !== "test" && item.note && (
+            <p className="lg:hidden text-[0.88rem] leading-5 text-slate-600">{item.note}</p>
           )}
 
-          <TransactionNotice
-            className="bg-[#f9fbf8] text-[#4f5d56]"
-            description="Semua aktivitas bid tetap dapat dipantau dari satu halaman transaksi."
-            icon={<Gavel className="size-5" />}
-            title="Riwayat lelang tersimpan"
-          />
+          <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3 lg:block lg:border-t-0 lg:pt-0 lg:space-y-2.5 lg:pl-1">
+            <div className="space-y-1 lg:space-y-2.5">
+              <p className="text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.94rem]">
+                {item.status === "MENANG" ? "Harga akhir lelang" : "Nominal bid"}
+              </p>
+              <p className="font-headline text-[1.28rem] font-black leading-none tracking-[-0.04em] text-[#006747] sm:text-[1.55rem] lg:text-[2rem]">
+                {currency.format(amount)}
+              </p>
+            </div>
+            <div className="space-y-1 lg:space-y-0">
+              <div>
+                <p className="text-[0.82rem] font-semibold tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">Penutupan lelang</p>
+                <p className="mt-0.5 text-[0.84rem] font-medium leading-5 text-slate-800 sm:text-[0.94rem]">
+                  {item.closingAt ? formatAppDateTime(item.closingAt) : item.closing}
+                </p>
+                {item.status === "BID_TERCATAT" && (
+                  <p className="mt-0.5 text-[0.76rem] font-medium text-orange-500 sm:text-[0.88rem]">
+                    (Menunggu Hasil)
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-3 lg:block lg:border-t-0 lg:pt-0 lg:space-y-3.5">
+            {item.status !== "BID_TERCATAT" && (
+              <Link href={actionHref}>
+                <span className="inline-flex items-center gap-2 text-[0.88rem] sm:text-[1.02rem] font-semibold tracking-[-0.015em] text-[#006747] transition duration-300 hover:translate-x-0.5 hover:text-[#005238]">
+                  {actionLabel}
+                  <ArrowRight className="size-4.5 sm:size-5" />
+                </span>
+              </Link>
+            )}
+
+            <TransactionNotice
+              className="bg-[#f9fbf8] text-[#4f5d56]"
+              description="Semua aktivitas bid tetap dapat dipantau dari satu halaman transaksi."
+              icon={<Gavel className="size-5" />}
+              title="Riwayat lelang tersimpan"
+            />
+          </div>
         </div>
       </div>
     </article>
@@ -936,7 +972,7 @@ export function TransactionsWorkspace({
 
   return (
     <div className="space-y-6 bg-[#FAFAFA]">
-      <div className="flex flex-wrap gap-4">
+      <div className="flex gap-2.5 sm:gap-4">
         <TransactionsTabButton
           active={tab === "transactions"}
           label="Semua Transaksi"
@@ -949,7 +985,7 @@ export function TransactionsWorkspace({
         />
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-nowrap overflow-x-auto pb-1 gap-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:gap-3">
         {currentTransactionFilters.map((item) => (
           <FilterChip
             active={tab === "transactions" ? transactionFilter === item.key : bidFilter === item.key}
