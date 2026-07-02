@@ -804,7 +804,6 @@ export function AdminInventoryDetailPage({
         row.label.toLowerCase().includes(query),
       ),
     ) ?? specificationRows[1];
-  const canEditItem = ["GADAI", "JAMINAN", "GAGAL"].includes(String(item.status));
   const timelineSourceEntries =
     history.length > 0
       ? history
@@ -928,19 +927,17 @@ export function AdminInventoryDetailPage({
               <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
                 <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
 
-                {canEditItem ? (
-                  <div className="relative mb-3 flex justify-end">
-                    <Link href={`/admin/barang/${item.id}/edit`}>
-                      <Button
-                        className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white"
-                        variant="ghost"
-                      >
-                        <PencilLine className="size-4" />
-                        Edit Data Barang
-                      </Button>
-                    </Link>
-                  </div>
-                ) : null}
+                <div className="relative mb-3 flex justify-end">
+                  <Link href={`/admin/barang/${item.id}/edit`}>
+                    <Button
+                      className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white"
+                      variant="ghost"
+                    >
+                      <PencilLine className="size-4" />
+                      Edit Data Barang
+                    </Button>
+                  </Link>
+                </div>
 
                 <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
                   <div className="w-full shrink-0 lg:w-[18rem]">
@@ -1153,6 +1150,13 @@ export function AdminInventoryEditPage({
   const editFormId = `admin-barang-edit-${String(item.id)}`;
   const auditCode = String(item.code ?? item.itemCode ?? "Kode SBG belum tersedia");
   const auditValue = Number(item.appraisalValue ?? item.price ?? 0);
+  const normalizedStatus = String(item.status ?? "").toUpperCase();
+  const correctionOnly =
+    !["GADAI", "JAMINAN", "GAGAL"].includes(normalizedStatus) &&
+    !(
+      normalizedStatus === "DIPASARKAN" &&
+      String(item.marketingMode ?? "").toLowerCase() === "fixed_price"
+    );
 
   return (
     <div className="space-y-5">
@@ -1176,10 +1180,10 @@ export function AdminInventoryEditPage({
             </span>
             <div>
               <h2 className="text-[0.86rem] font-black uppercase tracking-[0.08em] text-slate-900">
-                Informasi Audit Terkunci
+                Informasi Referensi Barang
               </h2>
               <p className="mt-1 max-w-[34rem] text-sm leading-6 text-slate-500">
-                Informasi ini tidak dapat diubah karena terkait dengan audit sistem dan riwayat operasional unit.
+                Kode barang tetap terkunci. Data nasabah dan nilai taksiran dapat dikoreksi tanpa mengubah alur transaksi.
               </p>
             </div>
           </div>
@@ -1198,8 +1202,16 @@ export function AdminInventoryEditPage({
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(23rem,0.95fr)] xl:items-start">
+      <div
+        className={cn(
+          "grid gap-4 xl:items-start",
+          correctionOnly
+            ? "xl:grid-cols-1"
+            : "xl:grid-cols-[minmax(0,1.05fr)_minmax(23rem,0.95fr)]"
+        )}
+      >
         <AdminBarangEditForm
+          correctionOnly={correctionOnly}
           formId={editFormId}
           item={{
             id: String(item.id),
@@ -1222,17 +1234,19 @@ export function AdminInventoryEditPage({
           showSubmit={false}
         />
 
-        <div className="rounded-[1.35rem] border border-slate-200/80 bg-white p-5 shadow-[0_18px_54px_-46px_rgba(15,23,42,0.46)] sm:p-6 xl:sticky xl:top-5">
-          <div className="mb-4 flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-xl bg-emerald-50 text-[#006747]">
-              <UploadCloud className="size-4" strokeWidth={2.1} />
-            </span>
-            <h3 className="text-[0.95rem] font-black uppercase tracking-[0.08em] text-slate-900">
-              Edit Media Barang
-            </h3>
+        {!correctionOnly ? (
+          <div className="rounded-[1.35rem] border border-slate-200/80 bg-white p-5 shadow-[0_18px_54px_-46px_rgba(15,23,42,0.46)] sm:p-6 xl:sticky xl:top-5">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="grid size-8 place-items-center rounded-xl bg-emerald-50 text-[#006747]">
+                <UploadCloud className="size-4" strokeWidth={2.1} />
+              </span>
+              <h3 className="text-[0.95rem] font-black uppercase tracking-[0.08em] text-slate-900">
+                Edit Media Barang
+              </h3>
+            </div>
+            <AdminBarangMediaManager barangId={item.id} media={media} />
           </div>
-          <AdminBarangMediaManager barangId={item.id} media={media} />
-        </div>
+        ) : null}
       </div>
 
       <footer className="flex flex-col-reverse gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_-38px_rgba(15,23,42,0.42)] sm:flex-row sm:items-center sm:justify-between">

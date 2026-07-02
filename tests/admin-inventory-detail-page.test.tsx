@@ -16,7 +16,7 @@ const baseItem = {
   status: "JAMINAN",
   description: "Lengkap",
   ownerName: "Nasabah Demo",
-  customerNumber: "NAS-001",
+  customerNumber: "081211112222",
   media: []
 };
 
@@ -46,6 +46,15 @@ describe("AdminInventoryDetailPage", () => {
 
     expect(screen.getAllByRole("link", { name: /edit data barang/i })).toHaveLength(1);
     expect(screen.getByRole("link", { name: /lelang lagi/i })).toBeInTheDocument();
+  });
+
+  it("keeps customer correction access available after an item is sold", () => {
+    render(<AdminInventoryDetailPage item={{ ...baseItem, status: "TERJUAL" }} />);
+
+    expect(screen.getByRole("link", { name: /edit data barang/i })).toHaveAttribute(
+      "href",
+      "/admin/barang/barang-demo/edit"
+    );
   });
 
   it("shows asset chronology from first action to latest with internal actors", () => {

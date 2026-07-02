@@ -115,7 +115,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "emas",
           condition: "baik",
-          customerNumber: "NAS-001",
+          customerNumber: "081211112222",
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-3",
@@ -137,6 +137,15 @@ describe("admin gadai action forms", () => {
     fireEvent.change(screen.getByLabelText("Berat"), {
       target: { value: "9 gram" }
     });
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), {
+      target: { value: "Raras Maheswari" }
+    });
+    fireEvent.change(screen.getByLabelText("Nomor telepon nasabah"), {
+      target: { value: "0812-3456-7890" }
+    });
+    fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
+      target: { value: "11000000" }
+    });
     fireEvent.click(screen.getByRole("radio", { name: "Cukup" }));
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
 
@@ -153,6 +162,9 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
       condition: "cukup",
       name: "Cincin Emas 18K",
+      ownerName: "Raras Maheswari",
+      customerNumber: "081234567890",
+      appraisalValue: "11000000",
       specifications: {
         berat: "9 gram",
         kadarEmas: "18K"
@@ -167,7 +179,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "perhiasan",
           condition: "baik",
-          customerNumber: "NAS-001",
+          customerNumber: "081211112222",
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-fixed",
@@ -202,6 +214,54 @@ describe("admin gadai action forms", () => {
     const [, request] = vi.mocked(fetch).mock.calls[0];
     expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
       marketingPrice: "13500000"
+    });
+  });
+
+  it("submits only customer correction fields for a locked historical item", async () => {
+    renderWithToast(
+      <AdminBarangEditForm
+        correctionOnly
+        item={{
+          appraisalValue: 10000000,
+          category: "perhiasan",
+          condition: "baik",
+          customerNumber: "081211112222",
+          description: "Transaksi telah selesai.",
+          dueDate: "2026-06-01",
+          id: "barang-sold",
+          loanValue: 7000000,
+          name: "Kalung Emas",
+          ownerName: "Nasabah Lama",
+          pawnedAt: "2026-05-01",
+          specifications: {}
+        }}
+      />
+    );
+
+    expect(screen.queryByLabelText("Nama barang")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Nama penggadai")).toBeEnabled();
+    expect(screen.getByLabelText("Nomor telepon nasabah")).toBeEnabled();
+    expect(screen.getByLabelText("Nilai taksiran")).toBeEnabled();
+
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), {
+      target: { value: "Nasabah Terkoreksi" }
+    });
+    fireEvent.change(screen.getByLabelText("Nomor telepon nasabah"), {
+      target: { value: "081299998888" }
+    });
+    fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
+      target: { value: "12000000" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+    const [, request] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String((request as RequestInit).body))).toEqual({
+      correctionOnly: true,
+      ownerName: "Nasabah Terkoreksi",
+      customerNumber: "081299998888",
+      appraisalValue: "12000000"
     });
   });
 });

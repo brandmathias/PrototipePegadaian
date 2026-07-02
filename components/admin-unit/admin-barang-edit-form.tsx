@@ -102,10 +102,12 @@ function CategoryDropdown({
 }
 
 export function AdminBarangEditForm({
+  correctionOnly = false,
   formId,
   item,
   showSubmit = true
 }: {
+  correctionOnly?: boolean;
   formId?: string;
   item: AdminBarangEditValue;
   showSubmit?: boolean;
@@ -115,8 +117,12 @@ export function AdminBarangEditForm({
   const [name, setName] = useState(String(item.name ?? ""));
   const [category, setCategory] = useState(normalizeEditableCategory(String(item.category ?? "perhiasan")));
   const [condition, setCondition] = useState(String(item.condition ?? "baik").toLowerCase());
-  const appraisalValue = String(item.appraisalValue ?? "");
+  const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
   const loanValue = String(item.loanValue ?? "");
+  const [ownerName, setOwnerName] = useState(String(item.ownerName ?? ""));
+  const [customerNumber, setCustomerNumber] = useState(
+    String(item.customerNumber ?? "").replace(/\D/g, "").slice(0, 13)
+  );
   const [marketingPrice, setMarketingPrice] = useState(String(item.marketingPrice ?? ""));
   const [description, setDescription] = useState(String(item.description ?? ""));
   const [specifications, setSpecifications] = useState<BarangSpecificationRecord>(item.specifications ?? {});
@@ -148,20 +154,29 @@ export function AdminBarangEditForm({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          name,
-          category,
-          condition,
-          description,
-          appraisalValue,
-          loanValue,
-          ownerName: item.ownerName,
-          customerNumber: item.customerNumber,
-          pawnedAt: item.pawnedAt,
-          dueDate: item.dueDate,
-          ...(canEditFixedPrice ? { marketingPrice } : {}),
-          specifications
-        })
+        body: JSON.stringify(
+          correctionOnly
+            ? {
+                correctionOnly: true,
+                ownerName,
+                customerNumber,
+                appraisalValue
+              }
+            : {
+                name,
+                category,
+                condition,
+                description,
+                appraisalValue,
+                loanValue,
+                ownerName,
+                customerNumber,
+                pawnedAt: item.pawnedAt,
+                dueDate: item.dueDate,
+                ...(canEditFixedPrice ? { marketingPrice } : {}),
+                specifications
+              }
+        )
       });
       const result = await response.json().catch(() => ({}));
 
@@ -204,6 +219,8 @@ export function AdminBarangEditForm({
         </h3>
       </div>
       <div className="grid gap-4 p-5 sm:p-6 md:grid-cols-2">
+        {!correctionOnly ? (
+          <>
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-name">Nama barang</FieldLabel>
           <Input
@@ -309,20 +326,6 @@ export function AdminBarangEditForm({
             />
           </div>
         ) : null}
-        <div className="grid gap-4 md:col-span-2 md:grid-cols-2">
-          <div className="space-y-2">
-            <FieldLabel>Nomor nasabah</FieldLabel>
-            <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-500">
-              {item.customerNumber || "-"}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <FieldLabel>Nama penggadai</FieldLabel>
-            <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
-              {item.ownerName || "-"}
-            </div>
-          </div>
-        </div>
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-description">Deskripsi barang</FieldLabel>
           <Textarea
@@ -331,6 +334,51 @@ export function AdminBarangEditForm({
             onChange={(event) => setDescription(event.target.value)}
             value={description}
           />
+        </div>
+          </>
+        ) : null}
+        <div className="grid gap-4 rounded-[1.1rem] border border-emerald-100 bg-emerald-50/35 p-4 md:col-span-2 md:grid-cols-2">
+          <div className="space-y-2">
+            <FieldLabel htmlFor="admin-barang-owner-name">Nama penggadai</FieldLabel>
+            <Input
+              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
+              id="admin-barang-owner-name"
+              onChange={(event) => setOwnerName(event.target.value)}
+              required
+              value={ownerName}
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel htmlFor="admin-barang-customer-number">Nomor telepon nasabah</FieldLabel>
+            <Input
+              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
+              id="admin-barang-customer-number"
+              inputMode="numeric"
+              maxLength={13}
+              minLength={10}
+              onChange={(event) =>
+                setCustomerNumber(event.target.value.replace(/\D/g, "").slice(0, 13))
+              }
+              pattern="[0-9]{10,13}"
+              required
+              value={customerNumber}
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <FieldLabel htmlFor="admin-barang-appraisal-value">Nilai taksiran</FieldLabel>
+            <Input
+              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
+              id="admin-barang-appraisal-value"
+              min={1}
+              onChange={(event) => setAppraisalValue(event.target.value)}
+              required
+              type="number"
+              value={appraisalValue}
+            />
+            <p className="text-xs font-medium leading-5 text-slate-500">
+              Nama dan nomor telepon disinkronkan ke seluruh barang nasabah di unit ini. Nilai taksiran hanya berlaku untuk barang ini.
+            </p>
+          </div>
         </div>
         {showSubmit ? (
           <div className="md:col-span-2">
