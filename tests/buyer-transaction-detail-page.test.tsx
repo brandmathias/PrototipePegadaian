@@ -286,8 +286,15 @@ describe("buyer transaction detail page", () => {
       />
     );
 
+    const completeButton = screen.getByRole("button", { name: /pembelian selesai/i });
     const receiptButton = screen.getByRole("button", { name: /cetak nota/i });
-    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
+    expect(completeButton).toBeDisabled();
+    expect(completeButton).toHaveClass(
+      "disabled:bg-[#dce8e1]",
+      "disabled:text-[#71867b]",
+      "disabled:shadow-none"
+    );
+    expect(completeButton).not.toHaveClass("disabled:bg-[#006747]");
     expect(receiptButton).toBeEnabled();
 
     fireEvent.click(receiptButton);
