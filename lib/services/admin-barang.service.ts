@@ -135,13 +135,10 @@ export type AdminBarangHistoryEntry = {
   actionKey:
     | "input_baru"
     | "perpanjangan"
-    | "jaminan"
     | "ditebus"
     | "dipasarkan"
-    | "menunggu_pembayaran"
     | "terjual"
-    | "gagal"
-    | "perubahan_status";
+    | "gagal";
   actionLabel: string;
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
@@ -162,14 +159,6 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
 
   if (oldStatus === newStatus) {
     return null;
-  }
-
-  if (newStatus === "jaminan") {
-    return {
-      actionKey: "jaminan" as const,
-      actionLabel: "Menjadi Jaminan",
-      actionTone: "warning" as const
-    };
   }
 
   if (newStatus === "dipasarkan") {
@@ -204,22 +193,7 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
     };
   }
 
-  if (newStatus === "menunggu_pembayaran") {
-    return {
-      actionKey: "menunggu_pembayaran" as const,
-      actionLabel: "Menunggu Pembayaran",
-      actionTone: "warning" as const
-    };
-  }
-
-  return {
-    actionKey: "perubahan_status" as const,
-    actionLabel: newStatus
-      .replace(/_/g, " ")
-      .toLowerCase()
-      .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase()),
-    actionTone: "default" as const
-  };
+  return null;
 }
 
 export async function listAdminBarang(unitId: string) {

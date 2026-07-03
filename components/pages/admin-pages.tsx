@@ -89,13 +89,10 @@ type AdminBarangMedia = {
 type AdminBarangHistoryActionKey =
   | "input_baru"
   | "perpanjangan"
-  | "jaminan"
   | "ditebus"
   | "dipasarkan"
-  | "menunggu_pembayaran"
   | "terjual"
-  | "gagal"
-  | "perubahan_status";
+  | "gagal";
 
 function isImageBarangMedia(media: AdminBarangMedia | null | undefined) {
   if (!media) {
@@ -1095,13 +1092,10 @@ export function AdminInventoryDetailPage({
                 const iconMap = {
                   input_baru: PackagePlus,
                   perpanjangan: CalendarClock,
-                  jaminan: Package2,
                   ditebus: ReceiptText,
                   dipasarkan: Gavel,
-                  menunggu_pembayaran: Clock3,
                   terjual: BadgeCheck,
                   gagal: FileWarning,
-                  perubahan_status: FileText,
                 };
                 const EntryIcon = iconMap[entry.actionKey];
                 const stamp = splitTimelineStamp(entry.createdAtLabel);

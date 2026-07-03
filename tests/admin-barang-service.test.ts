@@ -701,7 +701,7 @@ describe("listAdminBarangHistory", () => {
     ]);
   });
 
-  it("keeps legacy entry and every real status transition in riwayat barang", async () => {
+  it("keeps legacy entry without exposing intermediate statuses in riwayat barang", async () => {
     const baseRow = {
       barangId: "barang-complete-history",
       barangCode: "BRG-HISTORY",
@@ -750,16 +750,6 @@ describe("listAdminBarangHistory", () => {
     const result = await listAdminBarangHistory("unit-1");
 
     expect(result).toEqual([
-      expect.objectContaining({
-        id: "hist-payment",
-        actionKey: "menunggu_pembayaran",
-        actionLabel: "Menunggu Pembayaran"
-      }),
-      expect.objectContaining({
-        id: "hist-collateral",
-        actionKey: "jaminan",
-        actionLabel: "Menjadi Jaminan"
-      }),
       expect.objectContaining({
         id: "hist-legacy-entry",
         actionKey: "input_baru",
