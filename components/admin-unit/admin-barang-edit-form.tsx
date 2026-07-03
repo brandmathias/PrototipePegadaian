@@ -17,10 +17,12 @@ import {
 import { useRouter } from "next/navigation";
 
 import { AdminSelect } from "@/components/admin/admin-select";
+import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { getCustomerNumberInputValue } from "@/lib/admin-unit/customer-number";
 import { getBarangSpecificationFields, type BarangSpecificationRecord } from "@/lib/admin-unit/specifications";
 import { cn } from "@/lib/utils";
 
@@ -120,9 +122,7 @@ export function AdminBarangEditForm({
   const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
   const loanValue = String(item.loanValue ?? "");
   const [ownerName, setOwnerName] = useState(String(item.ownerName ?? ""));
-  const [customerNumber, setCustomerNumber] = useState(
-    String(item.customerNumber ?? "").replace(/\D/g, "").slice(0, 13)
-  );
+  const [customerNumber, setCustomerNumber] = useState(getCustomerNumberInputValue(String(item.customerNumber ?? "")));
   const [marketingPrice, setMarketingPrice] = useState(String(item.marketingPrice ?? ""));
   const [description, setDescription] = useState(String(item.description ?? ""));
   const [specifications, setSpecifications] = useState<BarangSpecificationRecord>(item.specifications ?? {});
@@ -358,16 +358,10 @@ export function AdminBarangEditForm({
           </div>
           <div className="space-y-2">
             <FieldLabel htmlFor="admin-barang-customer-number">Nomor telepon nasabah</FieldLabel>
-            <Input
-              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
+            <CustomerNumberInput
+              className="text-sm"
               id="admin-barang-customer-number"
-              inputMode="numeric"
-              maxLength={13}
-              minLength={10}
-              onChange={(event) =>
-                setCustomerNumber(event.target.value.replace(/\D/g, "").slice(0, 13))
-              }
-              pattern="[0-9]{10,13}"
+              onValueChange={setCustomerNumber}
               required
               value={customerNumber}
             />

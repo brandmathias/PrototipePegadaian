@@ -1,3 +1,4 @@
+import { normalizeCustomerNumber } from "@/lib/admin-unit/customer-number";
 import { normalizeBarangSpecifications } from "@/lib/admin-unit/specifications";
 
 const MONEY_REGEX = /^\d+(\.\d{1,2})?$/;
@@ -53,12 +54,8 @@ export function validateAdminBarangCorrectionPayload(
   currentLoanValue: string | number
 ) {
   const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
-  const customerNumber = String(input.customerNumber ?? "").replace(/\D/g, "");
+  const customerNumber = normalizeCustomerNumber(String(input.customerNumber ?? ""));
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
-
-  if (!/^\d{10,13}$/.test(customerNumber)) {
-    throw new Error("Nomor telepon harus terdiri dari 10 sampai 13 digit.");
-  }
 
   if (Number(appraisalValue) < Number(currentLoanValue)) {
     throw new Error("Nilai taksiran tidak boleh lebih kecil dari nilai gadai.");
@@ -114,7 +111,7 @@ export function validateAdminBarangPayload(input: {
     pawnedAt,
     dueDate,
     ownerName,
-    customerNumber: String(input.customerNumber ?? "").trim(),
+    customerNumber: normalizeCustomerNumber(String(input.customerNumber ?? "")),
     description: String(input.description ?? "").trim(),
     specifications: normalizeBarangSpecifications(category, input.specifications)
   };

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { AdminDatePicker, getDateAfter } from "@/components/admin-unit/admin-date-picker";
+import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -465,6 +466,7 @@ export function AdminInventoryCreateForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [category, setCategory] = useState<(typeof categoryOptions)[number]["value"]>("perhiasan");
   const [condition, setCondition] = useState<(typeof conditionOptions)[number]["value"]>("baik");
+  const [customerNumber, setCustomerNumber] = useState("");
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const defaultDueDate = useMemo(() => dateAfter(30), []);
@@ -768,7 +770,12 @@ export function AdminInventoryCreateForm() {
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="customerNumber">Nomor nasabah</FieldLabel>
-            <FormInput id="customerNumber" name="customerNumber" placeholder="Nomor telepon nasabah" />
+            <CustomerNumberInput
+              id="customerNumber"
+              name="customerNumber"
+              onValueChange={setCustomerNumber}
+              value={customerNumber}
+            />
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="ownerName">Nama penggadai</FieldLabel>
