@@ -5664,7 +5664,7 @@ export function SuperAdminManagementPage({
                 </div>
               </div>
 
-              <div className="hidden grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] gap-3 border-b border-[#edf2ee] px-5 py-3 text-center text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+              <div className="hidden grid-cols-[minmax(10rem,0.96fr)_minmax(6.4rem,0.4fr)_minmax(0,1.26fr)_minmax(10.5rem,0.78fr)_minmax(6.8rem,0.4fr)] gap-3 border-b border-[#edf2ee] px-5 py-3 text-center text-[0.68rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
                 <span>Unit</span>
                 <span>Admin Unit</span>
                 <span>Alamat</span>
@@ -5683,7 +5683,7 @@ export function SuperAdminManagementPage({
                 <div className="divide-y divide-[#edf2ee]">
                   {visibleUnits.map((unit) => (
                     <article
-                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(10rem,0.95fr)_minmax(7rem,0.48fr)_minmax(0,1.35fr)_minmax(8rem,0.6fr)_minmax(7.8rem,0.52fr)] lg:items-start lg:gap-3 lg:px-5"
+                      className="grid gap-4 px-4 py-4 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(10rem,0.96fr)_minmax(6.4rem,0.4fr)_minmax(0,1.26fr)_minmax(10.5rem,0.78fr)_minmax(6.8rem,0.4fr)] lg:items-start lg:gap-3 lg:px-5"
                       key={unit.id}
                     >
                       <div className="flex min-w-0 gap-3">
@@ -5719,14 +5719,14 @@ export function SuperAdminManagementPage({
                         </p>
                       </div>
 
-                      <div className="inline-flex min-w-0 items-center gap-2 rounded-[0.95rem] bg-[#f6faf7] px-3 py-2 text-[0.78rem] font-bold text-[#13211c] lg:mt-0.5">
+                      <div className="inline-flex min-w-0 items-center gap-1.5 rounded-[0.95rem] bg-[#f6faf7] px-2.5 py-2 text-[0.76rem] font-bold text-[#13211c] lg:mt-0.5">
                         <MapPin className="size-4 shrink-0 text-[#006747]" />
-                        <span className="truncate">{unit.domicile}</span>
+                        <span className="min-w-0 whitespace-nowrap">{unit.domicile}</span>
                       </div>
 
                       <div className="flex min-w-0 flex-wrap justify-start gap-2 lg:justify-end">
                         <DetailActionLink
-                          className="w-full min-w-[7.45rem] sm:w-auto"
+                          className="w-full min-w-[6.85rem] sm:w-auto"
                           href={`/superadmin/manajemen-unit/${unit.id}`}
                         />
                       </div>
