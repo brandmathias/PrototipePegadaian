@@ -39,7 +39,7 @@ const editPayload = {
   appraisalValue: "12000000",
   category: "emas",
   condition: "baik",
-  customerNumber: "081234567890",
+  customerNumber: "0812345678901",
   description: "Detail diperbarui",
   dueDate: "2026-07-01",
   name: "Cincin Harga Tetap",
@@ -215,7 +215,7 @@ describe("listAdminBarang", () => {
       unitId: "unit-1",
       name: "Cincin Lama",
       status: "dipasarkan",
-      customerNumber: "081234567890"
+      customerNumber: "0812345678901"
     };
     const updated = {
       ...current,
@@ -299,7 +299,7 @@ describe("listAdminBarang", () => {
       unitId: "unit-1",
       name: "Cincin Lama",
       status: "dipasarkan",
-      customerNumber: "081234567890",
+      customerNumber: "0812345678901",
     };
     const updated = {
       ...current,
@@ -389,7 +389,7 @@ describe("listAdminBarang", () => {
       unitId: "unit-1",
       name: "Cincin Lama",
       status: "jaminan",
-      customerNumber: "081234567890"
+      customerNumber: "0812345678901"
     };
     const updated = {
       ...current,
@@ -533,13 +533,13 @@ describe("listAdminBarang", () => {
       name: "Cincin Terjual",
       status: "terjual",
       ownerName: "Raras Lama",
-      customerNumber: "081211112222",
+      customerNumber: "0812111122222",
       appraisalValue: "8500000"
     };
     const updated = {
       ...current,
       ownerName: "Raras Maheswari",
-      customerNumber: "081234567890",
+      customerNumber: "0812345678901",
       appraisalValue: "9000000"
     };
     const customerWhere = vi.fn().mockResolvedValue([]);
@@ -574,14 +574,14 @@ describe("listAdminBarang", () => {
     const result = await updateAdminBarang("unit-1", "barang-sold", {
       correctionOnly: true,
       ownerName: "Raras Maheswari",
-      customerNumber: "0812-3456-7890",
+      customerNumber: "0812-3456-78901",
       appraisalValue: "9000000"
     });
 
     expect(customerSet).toHaveBeenCalledWith(
       expect.objectContaining({
         ownerName: "Raras Maheswari",
-        customerNumber: "081234567890"
+        customerNumber: "0812345678901"
       })
     );
     expect(appraisalSet).toHaveBeenCalledWith(
@@ -601,7 +601,7 @@ describe("listAdminBarang", () => {
       name: "Cincin Terjual",
       status: "terjual",
       ownerName: "Raras Lama",
-      customerNumber: "081211112222",
+      customerNumber: "0812111122222",
       appraisalValue: "8500000"
     };
 
@@ -618,7 +618,7 @@ describe("listAdminBarang", () => {
         correctionOnly: true,
         name: "Nama Barang Diubah",
         ownerName: "Raras Maheswari",
-        customerNumber: "081234567890",
+        customerNumber: "0812345678901",
         appraisalValue: "9000000"
       })
     ).rejects.toThrow("Koreksi riwayat hanya dapat mengubah data nasabah dan nilai taksiran.");
@@ -633,7 +633,7 @@ describe("listAdminBarang", () => {
       name: "Cincin Terjual",
       status: "terjual",
       ownerName: "Raras Lama",
-      customerNumber: "081211112222",
+      customerNumber: "0812111122222",
       appraisalValue: "8500000"
     };
     const tx = {
@@ -660,7 +660,7 @@ describe("listAdminBarang", () => {
       updateAdminBarang("unit-1", "barang-sold", {
         correctionOnly: true,
         ownerName: "Raras Maheswari",
-        customerNumber: "081234567890",
+        customerNumber: "0812345678901",
         appraisalValue: "9000000"
       })
     ).rejects.toThrow("Nomor telepon sudah digunakan nasabah lain di unit ini.");

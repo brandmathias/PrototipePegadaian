@@ -15,7 +15,7 @@ const baseItem = {
   status: "JAMINAN",
   description: "Lengkap",
   ownerName: "Nasabah Demo",
-  customerNumber: "081211112222",
+  customerNumber: "0812111122222",
   media: []
 };
 

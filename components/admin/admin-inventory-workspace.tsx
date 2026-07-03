@@ -307,12 +307,12 @@ function InventoryHistoryList({
     <div>
       <div
         className={cn(
-          "hidden gap-2.5 border-b border-[#e4ece7] bg-[#fbfcfa] text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid",
+          "hidden gap-2.5 border-b border-[#e4ece7] bg-[#fbfcfa] px-3.5 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#344c40]/72 lg:grid",
           historyGridTemplate
         )}
       >
-        <div className="px-3 py-3.5 lg:pl-[0.5rem]">Informasi Barang</div>
-        <div className="px-2 py-3.5">Kategori</div>
+        <div className="px-0 py-3.5 lg:pl-2">Informasi Barang</div>
+        <div className="px-0 py-3.5 lg:-ml-1">Kategori</div>
         <div className="px-2.5 py-3.5 text-center">Nasabah Pemilik</div>
         <div className="grid place-items-center px-0 py-3.5 text-center">Status</div>
         <div className="grid place-items-center px-0 py-3.5 text-center">Aktor Internal</div>

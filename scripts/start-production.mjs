@@ -13,6 +13,10 @@ const canonicalCodeMigrationSql = await readFile(
   new URL("./canonical-code-migration.sql", import.meta.url),
   "utf8",
 );
+const customerDataStandardMigrationSql = await readFile(
+  new URL("./customer-data-standard-migration.sql", import.meta.url),
+  "utf8",
+);
 await client.connect();
 
 try {
@@ -56,6 +60,7 @@ try {
     on conflict ("id") do nothing;
   `);
   await client.query(canonicalCodeMigrationSql);
+  await client.query(customerDataStandardMigrationSql);
 
   const retiredColumnAudit = await client.query(`
     select table_name, column_name
@@ -112,8 +117,20 @@ try {
     throw new Error("Audit startup menemukan kode unit atau SBG yang belum canonical.");
   }
 
+  const customerDataAudit = await client.query(`
+    select count(*) as invalid_customer_data
+    from "barang"
+    where "customer_number" !~ '^08[0-9]{11}$'
+       or trim("owner_name") ~ '[0-9]'
+       or array_length(regexp_split_to_array(trim("owner_name"), '\\s+'), 1) < 2
+  `);
+
+  if (Number(customerDataAudit.rows[0]?.invalid_customer_data ?? 0)) {
+    throw new Error("Audit startup menemukan nama atau nomor nasabah barang yang belum standar.");
+  }
+
   await client.query("commit");
-  console.log("Startup migration: database bersih dan seluruh kode unit/SBG sudah canonical.");
+  console.log("Startup migration: database bersih, data nasabah standar, dan seluruh kode unit/SBG sudah canonical.");
 } catch (error) {
   await client.query("rollback").catch(() => undefined);
   throw error;

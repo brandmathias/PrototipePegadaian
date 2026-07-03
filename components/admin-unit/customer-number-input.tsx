@@ -29,10 +29,10 @@ export function CustomerNumberInput({
         )}
         inputMode="numeric"
         maxLength={12}
-        minLength={9}
+        minLength={12}
         onChange={(event) => onValueChange(sanitizeCustomerNumberInput(event.target.value))}
-        pattern="[0-9]{9,12}"
-        placeholder="812 3456 7890"
+        pattern="[0-9]{12}"
+        placeholder="812 3456 78901"
         type="text"
         value={value}
       />

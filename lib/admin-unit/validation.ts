@@ -24,6 +24,17 @@ function requiredText(value: unknown, message: string) {
   return result;
 }
 
+function normalizeOwnerName(value: unknown) {
+  const result = requiredText(value, "Nama penggadai wajib diisi.").replace(/\s+/g, " ");
+  const words = result.split(" ").filter(Boolean);
+
+  if (words.length < 2 || /\d/.test(result)) {
+    throw new Error("Nama penggadai harus terdiri dari minimal dua kata dan tidak boleh berisi angka.");
+  }
+
+  return result;
+}
+
 function normalizeMoney(value: unknown, message: string) {
   const result = String(value ?? "").trim();
   if (!MONEY_REGEX.test(result) || Number(result) <= 0) {
@@ -52,8 +63,8 @@ export function validateAdminBarangCorrectionPayload(
     appraisalValue?: unknown;
   }
 ) {
-  const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
   const customerNumber = normalizeCustomerNumber(String(input.customerNumber ?? ""));
+  const ownerName = normalizeOwnerName(input.ownerName);
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
 
   return { ownerName, customerNumber, appraisalValue };
@@ -77,7 +88,7 @@ export function validateAdminBarangPayload(input: {
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
   const pawnedAt = normalizeDate(input.pawnedAt, "Tanggal gadai belum valid.");
   const dueDate = normalizeDate(input.dueDate, "Tanggal jatuh tempo belum valid.");
-  const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
+  const ownerName = normalizeOwnerName(input.ownerName);
 
   if (!ALLOWED_CATEGORIES.has(category)) {
     throw new Error("Kategori barang belum valid.");

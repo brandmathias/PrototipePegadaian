@@ -115,7 +115,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "emas",
           condition: "baik",
-          customerNumber: "081211112222",
+          customerNumber: "0812111122222",
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-3",
@@ -142,7 +142,7 @@ describe("admin gadai action forms", () => {
       target: { value: "Raras Maheswari" }
     });
     fireEvent.change(screen.getByLabelText("Nomor telepon nasabah"), {
-      target: { value: "0812-3456-7890" }
+      target: { value: "0812-3456-78901" }
     });
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
       target: { value: "11000000" }
@@ -166,7 +166,7 @@ describe("admin gadai action forms", () => {
       condition: "cukup",
       name: "Cincin Emas 18K",
       ownerName: "Raras Maheswari",
-      customerNumber: "81234567890",
+      customerNumber: "812345678901",
       appraisalValue: "11000000",
       specifications: {
         berat: "9 gram",
@@ -187,7 +187,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "kendaraan",
           condition: "baik",
-          customerNumber: "081211112222",
+          customerNumber: "0812111122222",
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-focus",
@@ -238,7 +238,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "perhiasan",
           condition: "baik",
-          customerNumber: "081211112222",
+          customerNumber: "0812111122222",
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-fixed",
@@ -283,7 +283,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "perhiasan",
           condition: "baik",
-          customerNumber: "081211112222",
+          customerNumber: "0812111122222",
           description: "Transaksi telah selesai.",
           dueDate: "2026-06-01",
           id: "barang-sold",
@@ -305,7 +305,7 @@ describe("admin gadai action forms", () => {
       target: { value: "Nasabah Terkoreksi" }
     });
     fireEvent.change(screen.getByLabelText("Nomor telepon nasabah"), {
-      target: { value: "081299998888" }
+      target: { value: "0812999988888" }
     });
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
       target: { value: "12000000" }
@@ -319,7 +319,7 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toEqual({
       correctionOnly: true,
       ownerName: "Nasabah Terkoreksi",
-      customerNumber: "81299998888",
+      customerNumber: "812999988888",
       appraisalValue: "12000000"
     });
   });
@@ -331,7 +331,7 @@ describe("admin gadai action forms", () => {
           appraisalValue: 10000000,
           category: "perhiasan",
           condition: "baik",
-          customerNumber: "081211112222",
+          customerNumber: "0812111122222",
           description: "Barang gagal dipasarkan.",
           dueDate: "2026-06-01",
           id: "barang-failed",
@@ -354,8 +354,33 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toEqual({
       correctionOnly: true,
       ownerName: "Nasabah Diperbaiki",
-      customerNumber: "81211112222",
+      customerNumber: "812111122222",
       appraisalValue: "10000000"
     });
+  });
+
+  it("uses the 13 digit customer phone standard on editable barang fields", () => {
+    renderWithToast(
+      <AdminBarangEditForm
+        item={{
+          appraisalValue: 10000000,
+          category: "perhiasan",
+          condition: "baik",
+          customerNumber: "0812111122222",
+          description: "Barang gagal dipasarkan.",
+          dueDate: "2026-06-01",
+          id: "barang-standard-phone",
+          name: "Kalung Emas",
+          ownerName: "Nasabah Lama",
+          pawnedAt: "2026-05-01",
+          specifications: {}
+        }}
+      />
+    );
+
+    const input = screen.getByLabelText("Nomor telepon nasabah");
+    expect(input).toHaveAttribute("minlength", "12");
+    expect(input).toHaveAttribute("maxlength", "12");
+    expect(input).toHaveAttribute("pattern", "[0-9]{12}");
   });
 });

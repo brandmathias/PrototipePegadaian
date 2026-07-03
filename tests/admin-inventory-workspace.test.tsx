@@ -156,8 +156,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
             barangId: "barang-1",
             barangCode: "BRG-001",
             barangName: "Motor Racing",
-            ownerName: "Rizki",
-            customerNumber: "9018",
+            ownerName: "Rizki Pratama",
+            customerNumber: "0812000009018",
             actionKey: "input_baru",
             actionLabel: "Barang Masuk",
             actionTone: "default",
@@ -171,8 +171,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
             barangId: "barang-2",
             barangCode: "BRG-002",
             barangName: "Kalung Emas",
-            ownerName: "Brando",
-            customerNumber: "56789",
+            ownerName: "Brando Mahendra",
+            customerNumber: "0812000056789",
             actionKey: "ditebus",
             actionLabel: "Ditebus",
             actionTone: "warning",
@@ -189,7 +189,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     const historyRow = screen.getByText("Motor Racing").closest('[class*="lg:grid-cols-"]');
     const infoCell = screen.getByText("Motor Racing").closest('[class*="lg:pl-2"]');
     const headerRow = screen.getByText("Informasi Barang").closest('[class*="lg:grid-cols-"]');
-    const infoHeader = screen.getByText("Informasi Barang").closest("div.px-3");
+    const infoHeader = screen.getByText("Informasi Barang").closest('[class*="lg:pl-2"]');
 
     expect(statusBadge).toHaveClass("whitespace-nowrap");
     expect(statusBadge).toHaveClass("min-w-[7.5rem]");
@@ -197,7 +197,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(headerRow).toHaveClass(
       "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
     );
-    expect(infoHeader).toHaveClass("lg:pl-[0.5rem]");
+    expect(infoHeader).toHaveClass("lg:pl-2");
     expect(historyRow).toHaveClass(
       "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
     );
@@ -245,7 +245,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             description: "Tablet Apple iPad Pro 11-inch.",
             specifications: { jenis: "tablet", merek: "Apple" },
             ownerName: "Budi Santoso",
-            customerNumber: "0812-3456-7890",
+            customerNumber: "0812-3456-78901",
             actionKey: "input_baru",
             actionLabel: "Barang Masuk",
             actionTone: "default",
@@ -280,7 +280,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             description: "Riwayat lama.",
             specifications: { jenis: "tablet" },
             ownerName: "Budi Santoso",
-            customerNumber: "0812-1111-1111",
+            customerNumber: "0812-1111-11111",
             actionKey: "input_baru",
             actionLabel: "Barang Masuk",
             actionTone: "default",
@@ -300,7 +300,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             description: "Riwayat baru.",
             specifications: { jenis: "tablet" },
             ownerName: "Siti Rahmawati",
-            customerNumber: "0812-2222-2222",
+            customerNumber: "0812-2222-22222",
             actionKey: "dipasarkan",
             actionLabel: "Dipasarkan",
             actionTone: "success",
@@ -393,7 +393,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang dipasarkan.",
             specifications: { jenis: "kalung" },
-            ownerName: "Andi",
+            ownerName: "Andi Wijaya",
             customerNumber: "NSB-MKT",
             actionKey: "dipasarkan",
             actionLabel: "Dipasarkan",
@@ -413,7 +413,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang terjual.",
             specifications: { jenis: "cincin" },
-            ownerName: "Budi",
+            ownerName: "Budi Santoso",
             customerNumber: "NSB-SLD",
             actionKey: "terjual",
             actionLabel: "Terjual",
@@ -433,7 +433,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang ditebus.",
             specifications: { jenis: "gelang" },
-            ownerName: "Dina",
+            ownerName: "Dina Maharani",
             customerNumber: "NSB-RDM",
             actionKey: "ditebus",
             actionLabel: "Ditebus",
@@ -453,7 +453,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang gagal.",
             specifications: { jenis: "tablet" },
-            ownerName: "Siti",
+            ownerName: "Siti Rahmawati",
             customerNumber: "NSB-FLD",
             actionKey: "gagal",
             actionLabel: "Gagal",
@@ -500,7 +500,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             description: "Tablet Apple iPad Pro 11-inch.",
             specifications: { jenis: "tablet", merek: "Apple" },
             ownerName: "Budi Santoso",
-            customerNumber: "0812-3456-7890",
+            customerNumber: "0812-3456-78901",
             actionKey: "input_baru",
             actionLabel: "Barang Masuk",
             actionTone: "default",
@@ -537,7 +537,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
       "Waktu Proses",
       "Aksi"
     ]);
+    expect(headerRow).toHaveClass("px-3.5");
+    expect(headerRow?.children[0]).toHaveClass("lg:pl-2");
+    expect(headerRow?.children[1]).toHaveClass("lg:-ml-1");
     expect(rowCells[0]).toHaveTextContent("Ipad Terbaru");
+    expect(rowCells[1]).toHaveClass("lg:-ml-1");
     expect(rowCells[3]).toHaveTextContent("Barang Masuk");
     expect(rowCells[4]).toHaveTextContent("Operator Arsip");
     expect(headerRow?.children[2]).toHaveClass("text-center");
@@ -587,7 +591,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
             description: "Tablet Apple iPad Pro 11-inch dengan catatan audit panjang yang harus tetap terlihat.",
             specifications: { jenis: "tablet", merek: "Apple" },
             ownerName: "Budi Santoso",
-            customerNumber: "0812-3456-7890",
+            customerNumber: "0812-3456-78901",
             actionKey: "dipasarkan",
             actionLabel: "Dipasarkan",
             actionTone: "success",
@@ -674,8 +678,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang logam mulia masuk ke unit.",
             specifications: { jenis: "emas batangan", berat: "10 gram" },
-            ownerName: "Rizki",
-            customerNumber: "9018",
+            ownerName: "Rizki Pratama",
+            customerNumber: "0812000009018",
             actionKey: "input_baru",
             actionLabel: "Barang Masuk",
             actionTone: "default",
@@ -694,8 +698,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "baik",
             description: "Barang elektronik dipasarkan.",
             specifications: { merek: "Lenovo", model: "ThinkPad" },
-            ownerName: "Brando",
-            customerNumber: "56789",
+            ownerName: "Brando Mahendra",
+            customerNumber: "0812000056789",
             actionKey: "dipasarkan",
             actionLabel: "Dipasarkan",
             actionTone: "success",
@@ -738,8 +742,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
             condition: "cukup",
             description: "Test 2",
             specifications: {},
-            ownerName: "Andi 2",
-            customerNumber: "020202",
+            ownerName: "Andi Wijaya",
+            customerNumber: "0812000020202",
             actionKey: "dipasarkan",
             actionLabel: "Dipasarkan",
             actionTone: "success",

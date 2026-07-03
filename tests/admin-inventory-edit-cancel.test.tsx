@@ -24,7 +24,7 @@ function editItem() {
     name: "Kalung Lama",
     category: "perhiasan",
     condition: "baik",
-    customerNumber: "081211112222",
+    customerNumber: "0812111122222",
     description: "Data lama",
     dueDate: "2026-06-01",
     ownerName: "Nasabah Lama",

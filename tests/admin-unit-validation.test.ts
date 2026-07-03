@@ -17,13 +17,13 @@ describe("admin unit validation", () => {
       validateAdminBarangCorrectionPayload(
         {
           ownerName: "  Raras Maheswari ",
-          customerNumber: "0812-3456-7890",
+          customerNumber: "0812-3456-78901",
           appraisalValue: "8500000"
         }
       )
     ).toEqual({
       ownerName: "Raras Maheswari",
-      customerNumber: "081234567890",
+      customerNumber: "0812345678901",
       appraisalValue: "8500000"
     });
 
@@ -35,17 +35,27 @@ describe("admin unit validation", () => {
           appraisalValue: "8500000"
         }
       )
-    ).toThrow("Nomor telepon harus diawali 08 dan terdiri dari 10 sampai 13 digit.");
+    ).toThrow("Nomor telepon harus diawali 08 dan terdiri dari 13 digit.");
+
+    expect(() =>
+      validateAdminBarangCorrectionPayload(
+        {
+          ownerName: "Brando 2",
+          customerNumber: "0812345678901",
+          appraisalValue: "8500000"
+        }
+      )
+    ).toThrow("Nama penggadai harus terdiri dari minimal dua kata dan tidak boleh berisi angka.");
 
     expect(
       validateAdminBarangCorrectionPayload({
-        ownerName: "Raras",
-        customerNumber: "081234567890",
+        ownerName: "Raras Maheswari",
+        customerNumber: "0812345678901",
         appraisalValue: "6000000"
       })
     ).toEqual({
-      ownerName: "Raras",
-      customerNumber: "081234567890",
+      ownerName: "Raras Maheswari",
+      customerNumber: "0812345678901",
       appraisalValue: "6000000"
     });
   });
@@ -58,12 +68,14 @@ describe("admin unit validation", () => {
       appraisalValue: "8500000",
       pawnedAt: "2026-04-01",
       dueDate: "2026-05-01",
-      ownerName: " Raras ",
-      customerNumber: "081234567890",
+      ownerName: " Raras Maheswari ",
+      customerNumber: "0812345678901",
       description: "Barang lengkap."
     });
 
     expect(payload.name).toBe("Cincin Emas 18K");
+    expect(payload.ownerName).toBe("Raras Maheswari");
+    expect(payload.customerNumber).toBe("0812345678901");
     expect(payload.appraisalValue).toBe("8500000");
     expect(payload).not.toHaveProperty("loanValue");
   });
@@ -76,8 +88,8 @@ describe("admin unit validation", () => {
       appraisalValue: "18500000",
       pawnedAt: "2026-04-01",
       dueDate: "2026-05-01",
-      ownerName: "Raras",
-      customerNumber: "081234567890",
+      ownerName: "Raras Maheswari",
+      customerNumber: "0812345678901",
       specifications: {
         jenisEmas: "  Cincin ",
         kadarEmas: "99,9%",

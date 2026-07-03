@@ -121,7 +121,7 @@ describe("AdminInventoryCreateForm", () => {
 
     fireEvent.change(screen.getByLabelText("Nama barang"), { target: { value: "Cincin Berlian" } });
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), { target: { value: "18500000" } });
-    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "081244551122" } });
+    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "0812445511223" } });
     fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras" } });
     fireEvent.change(screen.getByLabelText("Jenis Emas"), { target: { value: "Cincin" } });
     fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
@@ -152,8 +152,8 @@ describe("AdminInventoryCreateForm", () => {
 
     fireEvent.change(screen.getByLabelText("Nama barang"), { target: { value: "Cincin Berlian" } });
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), { target: { value: "18500000" } });
-    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "081244551122" } });
-    fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras" } });
+    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "0812445511223" } });
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras Maheswari" } });
     fireEvent.change(screen.getByLabelText("Jenis Emas"), { target: { value: "Cincin" } });
     fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
     fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "3,20 gram" } });
