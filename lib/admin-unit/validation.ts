@@ -50,16 +50,11 @@ export function validateAdminBarangCorrectionPayload(
     ownerName?: unknown;
     customerNumber?: unknown;
     appraisalValue?: unknown;
-  },
-  currentLoanValue: string | number
+  }
 ) {
   const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
   const customerNumber = normalizeCustomerNumber(String(input.customerNumber ?? ""));
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
-
-  if (Number(appraisalValue) < Number(currentLoanValue)) {
-    throw new Error("Nilai taksiran tidak boleh lebih kecil dari nilai gadai.");
-  }
 
   return { ownerName, customerNumber, appraisalValue };
 }
@@ -69,7 +64,6 @@ export function validateAdminBarangPayload(input: {
   category?: unknown;
   condition?: unknown;
   appraisalValue?: unknown;
-  loanValue?: unknown;
   pawnedAt?: unknown;
   dueDate?: unknown;
   ownerName?: unknown;
@@ -81,7 +75,6 @@ export function validateAdminBarangPayload(input: {
   const category = requiredText(input.category, "Kategori barang wajib diisi.").toLowerCase();
   const condition = requiredText(input.condition, "Kondisi barang wajib diisi.").toLowerCase();
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
-  const loanValue = normalizeMoney(input.loanValue, "Nilai gadai harus lebih dari 0.");
   const pawnedAt = normalizeDate(input.pawnedAt, "Tanggal gadai belum valid.");
   const dueDate = normalizeDate(input.dueDate, "Tanggal jatuh tempo belum valid.");
   const ownerName = requiredText(input.ownerName, "Nama penggadai wajib diisi.");
@@ -94,10 +87,6 @@ export function validateAdminBarangPayload(input: {
     throw new Error("Kondisi barang belum valid.");
   }
 
-  if (Number(loanValue) > Number(appraisalValue)) {
-    throw new Error("Nilai gadai tidak boleh melebihi nilai taksiran.");
-  }
-
   if (new Date(`${dueDate}T00:00:00.000Z`) <= new Date(`${pawnedAt}T00:00:00.000Z`)) {
     throw new Error("Tanggal jatuh tempo harus setelah tanggal gadai.");
   }
@@ -107,7 +96,6 @@ export function validateAdminBarangPayload(input: {
     category,
     condition,
     appraisalValue,
-    loanValue,
     pawnedAt,
     dueDate,
     ownerName,

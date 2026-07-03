@@ -119,7 +119,6 @@ describe("admin gadai action forms", () => {
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-3",
-          loanValue: 7000000,
           name: "Kalung Emas",
           ownerName: "Nasabah Demo",
           pawnedAt: "2026-05-01",
@@ -130,6 +129,8 @@ describe("admin gadai action forms", () => {
         }}
       />
     );
+
+    expect(screen.getByLabelText("Nilai taksiran")).toHaveValue("10.000.000");
 
     fireEvent.change(screen.getByLabelText("Nama barang"), {
       target: { value: "Cincin Emas 18K" }
@@ -146,6 +147,7 @@ describe("admin gadai action forms", () => {
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
       target: { value: "11000000" }
     });
+    expect(screen.getByLabelText("Nilai taksiran")).toHaveValue("11.000.000");
     fireEvent.click(screen.getByRole("radio", { name: "Cukup" }));
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
 
@@ -159,17 +161,19 @@ describe("admin gadai action forms", () => {
     });
 
     const [, request] = vi.mocked(fetch).mock.calls[0];
-    expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
+    const body = JSON.parse(String((request as RequestInit).body));
+    expect(body).toMatchObject({
       condition: "cukup",
       name: "Cincin Emas 18K",
       ownerName: "Raras Maheswari",
-      customerNumber: "081234567890",
+      customerNumber: "81234567890",
       appraisalValue: "11000000",
       specifications: {
         berat: "9 gram",
         kadarEmas: "18K"
       }
     });
+    expect(body).not.toHaveProperty("loanValue");
   });
 
   it("submits harga tetap marketing price when editing an active harga tetap barang", async () => {
@@ -183,7 +187,6 @@ describe("admin gadai action forms", () => {
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-fixed",
-          loanValue: 7000000,
           marketingMode: "fixed_price",
           marketingPrice: 12500000,
           name: "Kalung Emas",
@@ -229,7 +232,6 @@ describe("admin gadai action forms", () => {
           description: "Transaksi telah selesai.",
           dueDate: "2026-06-01",
           id: "barang-sold",
-          loanValue: 7000000,
           name: "Kalung Emas",
           ownerName: "Nasabah Lama",
           pawnedAt: "2026-05-01",
@@ -242,6 +244,7 @@ describe("admin gadai action forms", () => {
     expect(screen.getByLabelText("Nama penggadai")).toBeEnabled();
     expect(screen.getByLabelText("Nomor telepon nasabah")).toBeEnabled();
     expect(screen.getByLabelText("Nilai taksiran")).toBeEnabled();
+    expect(screen.getByLabelText("Nilai taksiran")).toHaveValue("10.000.000");
 
     fireEvent.change(screen.getByLabelText("Nama penggadai"), {
       target: { value: "Nasabah Terkoreksi" }
@@ -252,6 +255,7 @@ describe("admin gadai action forms", () => {
     fireEvent.change(screen.getByLabelText("Nilai taksiran"), {
       target: { value: "12000000" }
     });
+    expect(screen.getByLabelText("Nilai taksiran")).toHaveValue("12.000.000");
     fireEvent.click(screen.getByRole("button", { name: "Simpan Perubahan" }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
@@ -260,7 +264,7 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toEqual({
       correctionOnly: true,
       ownerName: "Nasabah Terkoreksi",
-      customerNumber: "081299998888",
+      customerNumber: "81299998888",
       appraisalValue: "12000000"
     });
   });
@@ -276,7 +280,6 @@ describe("admin gadai action forms", () => {
           description: "Barang gagal dipasarkan.",
           dueDate: "2026-06-01",
           id: "barang-failed",
-          loanValue: 7000000,
           name: "Kalung Emas",
           ownerName: "Nasabah Lama",
           pawnedAt: "2026-05-01",
@@ -296,7 +299,7 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toEqual({
       correctionOnly: true,
       ownerName: "Nasabah Diperbaiki",
-      customerNumber: "081211112222",
+      customerNumber: "81211112222",
       appraisalValue: "10000000"
     });
   });

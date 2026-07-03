@@ -1238,7 +1238,6 @@ describe("superadmin pages", () => {
               pawnedAt: "29 Mei 2026",
               dueDate: "29 Juni 2026",
               appraisalValue: 22_000_000,
-              loanValue: 17_000_000,
               ownerName: "Brando Mathias Zusriadi",
               customerNumber: "081200001234",
               description: "Cincin emas dengan dokumen appraisal lengkap.",

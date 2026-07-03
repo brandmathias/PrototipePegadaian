@@ -19,8 +19,7 @@ describe("admin unit validation", () => {
           ownerName: "  Raras Maheswari ",
           customerNumber: "0812-3456-7890",
           appraisalValue: "8500000"
-        },
-        "6500000"
+        }
       )
     ).toEqual({
       ownerName: "Raras Maheswari",
@@ -34,40 +33,39 @@ describe("admin unit validation", () => {
           ownerName: "Raras",
           customerNumber: "081234567",
           appraisalValue: "8500000"
-        },
-        "6500000"
+        }
       )
-    ).toThrow("Nomor telepon harus terdiri dari 10 sampai 13 digit.");
+    ).toThrow("Nomor telepon harus diawali 08 dan terdiri dari 10 sampai 13 digit.");
 
-    expect(() =>
-      validateAdminBarangCorrectionPayload(
-        {
-          ownerName: "Raras",
-          customerNumber: "081234567890",
-          appraisalValue: "6000000"
-        },
-        "6500000"
-      )
-    ).toThrow("Nilai taksiran tidak boleh lebih kecil dari nilai gadai.");
+    expect(
+      validateAdminBarangCorrectionPayload({
+        ownerName: "Raras",
+        customerNumber: "081234567890",
+        appraisalValue: "6000000"
+      })
+    ).toEqual({
+      ownerName: "Raras",
+      customerNumber: "081234567890",
+      appraisalValue: "6000000"
+    });
   });
 
-  it("normalizes barang gadai input", () => {
+  it("normalizes barang input using only appraisal value", () => {
     const payload = validateAdminBarangPayload({
       name: "  Cincin Emas 18K ",
       category: "emas",
       condition: "baik",
       appraisalValue: "8500000",
-      loanValue: "6500000",
       pawnedAt: "2026-04-01",
       dueDate: "2026-05-01",
       ownerName: " Raras ",
-      customerNumber: "CST-001",
+      customerNumber: "081234567890",
       description: "Barang lengkap."
     });
 
     expect(payload.name).toBe("Cincin Emas 18K");
     expect(payload.appraisalValue).toBe("8500000");
-    expect(payload.loanValue).toBe("6500000");
+    expect(payload).not.toHaveProperty("loanValue");
   });
 
   it("normalizes category-specific barang specifications", () => {
@@ -76,10 +74,10 @@ describe("admin unit validation", () => {
       category: "perhiasan",
       condition: "baik",
       appraisalValue: "18500000",
-      loanValue: "12000000",
       pawnedAt: "2026-04-01",
       dueDate: "2026-05-01",
       ownerName: "Raras",
+      customerNumber: "081234567890",
       specifications: {
         jenisEmas: "  Cincin ",
         kadarEmas: "99,9%",
@@ -103,19 +101,18 @@ describe("admin unit validation", () => {
     });
   });
 
-  it("rejects invalid loan and due date", () => {
+  it("rejects invalid appraisal and due date", () => {
     expect(() =>
       validateAdminBarangPayload({
         name: "Laptop",
         category: "elektronik",
         condition: "baik",
-        appraisalValue: "5000000",
-        loanValue: "6000000",
+        appraisalValue: "0",
         pawnedAt: "2026-04-01",
-        dueDate: "2026-04-01",
+        dueDate: "2026-05-01",
         ownerName: "Budi"
       })
-    ).toThrow("Nilai gadai tidak boleh melebihi nilai taksiran.");
+    ).toThrow("Nilai taksiran harus lebih dari 0.");
 
     expect(() =>
       validateAdminBarangPayload({
@@ -123,7 +120,6 @@ describe("admin unit validation", () => {
         category: "elektronik",
         condition: "baik",
         appraisalValue: "5000000",
-        loanValue: "4500000",
         pawnedAt: "2026-02-31",
         dueDate: "2026-03-15",
         ownerName: "Budi"

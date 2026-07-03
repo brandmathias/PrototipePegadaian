@@ -169,6 +169,13 @@
       "when": 1783028136134,
       "tag": "0023_canonical_unit_sbg_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1783043850152,
+      "tag": "0024_right_zombie",
+      "breakpoints": true
     }
   ]
 }

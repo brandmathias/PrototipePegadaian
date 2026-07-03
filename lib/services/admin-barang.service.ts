@@ -427,7 +427,6 @@ export async function createAdminBarang(
         description: payload.description,
         specifications: payload.specifications,
         appraisalValue: payload.appraisalValue,
-        loanValue: payload.loanValue,
         ownerName: payload.ownerName,
         customerNumber: payload.customerNumber,
         pawnedAt: toUtcDate(payload.pawnedAt),
@@ -487,7 +486,7 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
   }
 
   const payload = correctionOnly ? null : validateAdminBarangPayload(input);
-  const correction = validateAdminBarangCorrectionPayload(payload ?? input, current.loanValue);
+  const correction = validateAdminBarangCorrectionPayload(payload ?? input);
   const shouldUpdateMarketingPrice = !correctionOnly && input.marketingPrice !== undefined;
   const marketingPricePayload = shouldUpdateMarketingPrice ? validateFixedPriceMarketingPricePayload(input) : null;
 
@@ -532,7 +531,6 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
               description: payload.description,
               specifications: payload.specifications,
               appraisalValue: correction.appraisalValue,
-              loanValue: payload.loanValue,
               ownerName: correction.ownerName,
               customerNumber: correction.customerNumber,
               pawnedAt: toUtcDate(payload.pawnedAt),

@@ -42,7 +42,6 @@ const editPayload = {
   customerNumber: "081234567890",
   description: "Detail diperbarui",
   dueDate: "2026-07-01",
-  loanValue: "8000000",
   name: "Cincin Harga Tetap",
   ownerName: "Nasabah Demo",
   pawnedAt: "2026-05-01",
@@ -93,8 +92,10 @@ describe("createAdminBarang", () => {
         unitId: "unit-wanea",
         code: "SBG-1178725010004741",
         name: "Cincin Emas",
+        appraisalValue: "12000000",
       }),
     );
+    expect(insertedValues).not.toHaveBeenCalledWith(expect.objectContaining({ loanValue: expect.anything() }));
   });
 });
 
@@ -214,8 +215,7 @@ describe("listAdminBarang", () => {
       unitId: "unit-1",
       name: "Cincin Lama",
       status: "dipasarkan",
-      customerNumber: "081234567890",
-      loanValue: "8000000"
+      customerNumber: "081234567890"
     };
     const updated = {
       ...current,
@@ -300,7 +300,6 @@ describe("listAdminBarang", () => {
       name: "Cincin Lama",
       status: "dipasarkan",
       customerNumber: "081234567890",
-      loanValue: "8000000"
     };
     const updated = {
       ...current,
@@ -450,8 +449,7 @@ describe("listAdminBarang", () => {
       status: "terjual",
       ownerName: "Raras Lama",
       customerNumber: "081211112222",
-      appraisalValue: "8500000",
-      loanValue: "6500000"
+      appraisalValue: "8500000"
     };
     const updated = {
       ...current,
@@ -519,8 +517,7 @@ describe("listAdminBarang", () => {
       status: "terjual",
       ownerName: "Raras Lama",
       customerNumber: "081211112222",
-      appraisalValue: "8500000",
-      loanValue: "6500000"
+      appraisalValue: "8500000"
     };
 
     mocks.db.select.mockImplementationOnce(() => ({
@@ -552,8 +549,7 @@ describe("listAdminBarang", () => {
       status: "terjual",
       ownerName: "Raras Lama",
       customerNumber: "081211112222",
-      appraisalValue: "8500000",
-      loanValue: "6500000"
+      appraisalValue: "8500000"
     };
     const tx = {
       select: vi.fn().mockReturnValue({

@@ -1,0 +1,1 @@
+ALTER TABLE "barang" DROP COLUMN "loan_value";

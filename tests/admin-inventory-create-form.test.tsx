@@ -22,6 +22,17 @@ describe("AdminInventoryCreateForm", () => {
     router.push.mockClear();
     router.refresh.mockClear();
     vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ data: { id: "barang-created" } }), {
+            headers: { "Content-Type": "application/json" },
+            status: 201
+          })
+        )
+      )
+    );
+    vi.stubGlobal(
       "URL",
       Object.assign(globalThis.URL, {
         createObjectURL: vi.fn((file: File) => `blob:${file.name}`),
@@ -80,7 +91,7 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByLabelText("Diameter")).toBeInTheDocument();
     expect(screen.queryByLabelText("Nilai gadai")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /tanggal gadai/i })).not.toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Nomor telepon nasabah")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nomor nasabah")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio", { name: "Elektronik" }));
 
@@ -133,5 +144,41 @@ describe("AdminInventoryCreateForm", () => {
 
     expect(screen.getAllByLabelText(/checklist selesai/i)).toHaveLength(4);
     expect(screen.getByRole("button", { name: /simpan barang gadai/i })).toBeEnabled();
+  });
+
+  it("submits appraisal value without the removed loan value field", async () => {
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(screen.getByLabelText("Nama barang"), { target: { value: "Cincin Berlian" } });
+    fireEvent.change(screen.getByLabelText("Nilai taksiran"), { target: { value: "18500000" } });
+    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "081244551122" } });
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras" } });
+    fireEvent.change(screen.getByLabelText("Jenis Emas"), { target: { value: "Cincin" } });
+    fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
+    fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "3,20 gram" } });
+    fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Perhiasan" } });
+    fireEvent.change(screen.getByLabelText("Panjang"), { target: { value: "18 cm" } });
+    fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
+    fireEvent.change(screen.getByLabelText("Sertifikat"), { target: { value: "Antam" } });
+    fireEvent.change(input, {
+      target: {
+        files: [new File(["foto"], "cincin.jpg", { type: "image/jpeg" })]
+      }
+    });
+
+    await screen.findByAltText("Preview media barang 1");
+    fireEvent.click(screen.getByRole("button", { name: /simpan barang gadai/i }));
+
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/admin/barang",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
+    const [, request] = vi.mocked(fetch).mock.calls[0];
+    const body = (request as RequestInit).body as FormData;
+    expect(body.get("appraisalValue")).toBe("18500000");
+    expect(body.has("loanValue")).toBe(false);
   });
 });

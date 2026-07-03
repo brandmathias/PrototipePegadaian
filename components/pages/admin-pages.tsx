@@ -1219,7 +1219,6 @@ export function AdminInventoryEditPage({
             category: String(item.category ?? "emas"),
             condition: String(item.condition ?? "baik"),
             appraisalValue: item.appraisalValue ?? item.price ?? "",
-            loanValue: item.loanValue ?? "",
             description: String(item.description ?? ""),
             ownerName: String(item.ownerName ?? ""),
             customerNumber: String(item.customerNumber ?? ""),
@@ -1345,7 +1344,7 @@ export function AdminInventoryRedeemPage({
         itemName={item.name}
         ownerName={item.ownerName}
         previewImageUrl={redemptionPreviewImageUrl}
-        redemptionAmount={Number(item.loanValue ?? item.appraisalValue ?? 0)}
+        redemptionAmount={Number(item.appraisalValue ?? 0)}
       />
     </div>
   );

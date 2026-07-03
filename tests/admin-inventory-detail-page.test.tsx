@@ -9,7 +9,6 @@ const baseItem = {
   name: "Kalung Emas",
   category: "emas",
   appraisalValue: 10000000,
-  loanValue: 7000000,
   pawnedAt: "2026-04-01",
   dueDate: "2026-05-01",
   mediaSummary: "2 media",

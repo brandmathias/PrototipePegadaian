@@ -33,7 +33,6 @@ async function readBarangPayload(request: Request) {
     condition: formData.get("condition"),
     description: formData.get("description"),
     appraisalValue: formData.get("appraisalValue"),
-    loanValue: formData.get("loanValue"),
     ownerName: formData.get("ownerName"),
     customerNumber: formData.get("customerNumber"),
     pawnedAt: formData.get("pawnedAt"),

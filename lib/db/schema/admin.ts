@@ -20,7 +20,6 @@ export const barang = pgTable(
     description: text("description").notNull().default(""),
     specifications: jsonb("specifications").$type<Record<string, string>>().notNull().default(sql`'{}'::jsonb`),
     appraisalValue: numeric("appraisal_value", { precision: 15, scale: 2 }).notNull(),
-    loanValue: numeric("loan_value", { precision: 15, scale: 2 }).notNull(),
     ownerName: text("owner_name").notNull(),
     customerNumber: text("customer_number").notNull().default(""),
     pawnedAt: timestamp("pawned_at", { withTimezone: true }).notNull(),

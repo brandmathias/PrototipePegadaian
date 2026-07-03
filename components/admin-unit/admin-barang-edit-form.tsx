@@ -32,7 +32,6 @@ type AdminBarangEditValue = {
   category: string;
   condition: string;
   appraisalValue: number | string;
-  loanValue: number | string;
   description: string;
   ownerName: string;
   customerNumber: string;
@@ -70,6 +69,19 @@ function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: stri
 
 function normalizeEditableCategory(value: string) {
   return value.toLowerCase() === "emas" ? "perhiasan" : value.toLowerCase();
+}
+
+function normalizeDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function formatInputCurrency(value: string) {
+  const digits = normalizeDigits(value);
+  if (!digits) {
+    return "";
+  }
+
+  return Number(digits).toLocaleString("id-ID");
 }
 
 function getSpecificationSuffix(label: string) {
@@ -116,11 +128,11 @@ export function AdminBarangEditForm({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const initialAppraisalValue = normalizeDigits(String(item.appraisalValue ?? ""));
   const [name, setName] = useState(String(item.name ?? ""));
   const [category, setCategory] = useState(normalizeEditableCategory(String(item.category ?? "perhiasan")));
   const [condition, setCondition] = useState(String(item.condition ?? "baik").toLowerCase());
-  const [appraisalValue, setAppraisalValue] = useState(String(item.appraisalValue ?? ""));
-  const loanValue = String(item.loanValue ?? "");
+  const [appraisalValue, setAppraisalValue] = useState(initialAppraisalValue);
   const [ownerName, setOwnerName] = useState(String(item.ownerName ?? ""));
   const [customerNumber, setCustomerNumber] = useState(getCustomerNumberInputValue(String(item.customerNumber ?? "")));
   const [marketingPrice, setMarketingPrice] = useState(String(item.marketingPrice ?? ""));
@@ -176,7 +188,6 @@ export function AdminBarangEditForm({
                 condition,
                 description,
                 appraisalValue,
-                loanValue,
                 ownerName,
                 customerNumber,
                 pawnedAt: item.pawnedAt,
@@ -368,15 +379,22 @@ export function AdminBarangEditForm({
           </div>
           <div className="space-y-2 md:col-span-2">
             <FieldLabel htmlFor="admin-barang-appraisal-value">Nilai taksiran</FieldLabel>
-            <Input
-              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
-              id="admin-barang-appraisal-value"
-              min={1}
-              onChange={(event) => setAppraisalValue(event.target.value)}
-              required
-              type="number"
-              value={appraisalValue}
-            />
+            <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/8">
+              <span className="flex items-center border-r border-slate-100 bg-slate-50 px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-slate-500">
+                Rp
+              </span>
+              <Input
+                className="h-11 rounded-none border-0 bg-transparent text-sm font-semibold shadow-none focus-visible:ring-0"
+                id="admin-barang-appraisal-value"
+                inputMode="numeric"
+                min={1}
+                onChange={(event) => setAppraisalValue(normalizeDigits(event.target.value))}
+                pattern="[0-9.]*"
+                required
+                type="text"
+                value={formatInputCurrency(appraisalValue)}
+              />
+            </div>
             <p className="text-xs font-medium leading-5 text-slate-500">
               Nama dan nomor telepon disinkronkan ke seluruh barang nasabah di unit ini. Nilai taksiran hanya berlaku untuk barang ini.
             </p>

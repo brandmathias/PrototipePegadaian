@@ -20,7 +20,6 @@ describe("admin unit serializers", () => {
         berat: "3 gram"
       },
       appraisalValue: "8500000",
-      loanValue: "6500000",
       ownerName: "Raras",
       customerNumber: "CST-001",
       pawnedAt: new Date("2026-04-01T00:00:00Z"),
@@ -36,6 +35,7 @@ describe("admin unit serializers", () => {
     expect(item.status).toBe("JAMINAN");
     expect(item.ownerName).toBe("Raras");
     expect(item.appraisalValue).toBe(8500000);
+    expect(item).not.toHaveProperty("loanValue");
     expect(item.specifications).toEqual({ berat: "3 gram" });
   });
 

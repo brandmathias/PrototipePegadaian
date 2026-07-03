@@ -22,19 +22,33 @@ try {
       drop column if exists "handover_complaint_at";
     alter table "transaksi"
       drop column if exists "handover_complaint_note";
+    alter table "barang"
+      drop column if exists "loan_value";
   `);
   await client.query(canonicalCodeMigrationSql);
 
-  const audit = await client.query(`
-    select column_name
+  const retiredColumnAudit = await client.query(`
+    select table_name, column_name
     from information_schema.columns
     where table_schema = 'public'
-      and table_name = 'transaksi'
-      and column_name in ('handover_complaint_at', 'handover_complaint_note')
+      and (
+        (
+          table_name = 'transaksi'
+          and column_name in ('handover_complaint_at', 'handover_complaint_note')
+        )
+        or (
+          table_name = 'barang'
+          and column_name = 'loan_value'
+        )
+      )
   `);
 
-  if (audit.rowCount) {
-    throw new Error(`Kolom komplain masih tersisa: ${audit.rows.map((row) => row.column_name).join(", ")}`);
+  if (retiredColumnAudit.rowCount) {
+    throw new Error(
+      `Kolom lama masih tersisa: ${retiredColumnAudit.rows
+        .map((row) => `${row.table_name}.${row.column_name}`)
+        .join(", ")}`,
+    );
   }
 
   const canonicalAudit = await client.query(`

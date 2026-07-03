@@ -524,7 +524,6 @@ export const adminInventory: Array<{
   customerNumber: string;
   description: string;
   appraisalValue: number;
-  loanValue: number;
   pawnedAt: string;
   dueDate: string;
   marketingMode?: "FIXED_PRICE" | "VICKREY_AUCTION";
@@ -539,7 +538,6 @@ export const adminInventory: Array<{
     category: "Perhiasan",
     price: 9250000,
     appraisalValue: 9250000,
-    loanValue: 7500000,
     status: "GADAI",
     date: "12 April 2026",
     condition: "baik",
@@ -559,7 +557,6 @@ export const adminInventory: Array<{
     category: "Kendaraan",
     price: 21600000,
     appraisalValue: 21600000,
-    loanValue: 16400000,
     status: "GADAI",
     date: "2 April 2026",
     condition: "cukup",
@@ -579,7 +576,6 @@ export const adminInventory: Array<{
     category: "Elektronik",
     price: 18400000,
     appraisalValue: 18400000,
-    loanValue: 14000000,
     status: "JAMINAN",
     date: "15 April 2026",
     condition: "baik",
@@ -599,7 +595,6 @@ export const adminInventory: Array<{
     category: "Perhiasan",
     price: 27800000,
     appraisalValue: 27800000,
-    loanValue: 20400000,
     status: "JAMINAN",
     date: "11 April 2026",
     condition: "baik",
@@ -619,7 +614,6 @@ export const adminInventory: Array<{
     category: "Elektronik",
     price: 18200000,
     appraisalValue: 18200000,
-    loanValue: 14500000,
     status: "DIPASARKAN",
     date: "16 April 2026",
     condition: "baik",
@@ -641,7 +635,6 @@ export const adminInventory: Array<{
     category: "Logam Mulia",
     price: 11100000,
     appraisalValue: 11100000,
-    loanValue: 8500000,
     status: "DIPASARKAN",
     date: "17 April 2026",
     condition: "baik",
@@ -663,7 +656,6 @@ export const adminInventory: Array<{
     category: "Elektronik",
     price: 3150000,
     appraisalValue: 3150000,
-    loanValue: 2400000,
     status: "MENUNGGU_PEMBAYARAN",
     date: "20 April 2026",
     condition: "baik",
@@ -685,7 +677,6 @@ export const adminInventory: Array<{
     category: "Elektronik",
     price: 11300000,
     appraisalValue: 11300000,
-    loanValue: 8600000,
     status: "GAGAL",
     date: "19 April 2026",
     condition: "baik",
@@ -707,7 +698,6 @@ export const adminInventory: Array<{
     category: "Perhiasan",
     price: 28750000,
     appraisalValue: 28750000,
-    loanValue: 21000000,
     status: "TERJUAL",
     date: "10 April 2026",
     condition: "baik",
@@ -729,7 +719,6 @@ export const adminInventory: Array<{
     category: "Perhiasan",
     price: 14800000,
     appraisalValue: 14800000,
-    loanValue: 11000000,
     status: "DITEBUS",
     date: "8 April 2026",
     condition: "baik",

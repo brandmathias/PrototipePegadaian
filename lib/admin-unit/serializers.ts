@@ -117,7 +117,6 @@ export function serializeAdminBarang(
     pawnedAt: toDateLabel(row.pawnedAt),
     dueDate: toDateLabel(row.dueDate),
     appraisalValue: toNumber(row.appraisalValue),
-    loanValue: toNumber(row.loanValue),
     ownerName: row.ownerName,
     customerNumber: row.customerNumber,
     description: row.description,

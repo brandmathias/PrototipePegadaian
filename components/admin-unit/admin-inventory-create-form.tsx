@@ -658,7 +658,6 @@ export function AdminInventoryCreateForm() {
     const formData = new FormData(event.currentTarget);
     formData.delete("media");
     formData.set("pawnedAt", pawnedAt);
-    formData.set("loanValue", String(formData.get("appraisalValue") ?? ""));
     media.forEach((item) => formData.append("media", item.file));
 
     setIsSubmitting(true);
