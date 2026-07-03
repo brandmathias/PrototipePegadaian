@@ -146,7 +146,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             inputClassName={cn(
               "hidden w-72 lg:block xl:w-80",
               isLuxury &&
-                "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
+                "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus:border-[#006747]/35 focus:ring-[#bde8d0]/45 focus-visible:border-[#006747]/35 focus-visible:ring-[#bde8d0]/45"
             )}
             placeholder="Cari barang, unit, kategori..."
             submitLabel="Telusuri"
@@ -273,7 +273,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             inputClassName={cn(
               "h-11 w-full text-sm",
               isLuxury &&
-                "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus-visible:border-[#d4af37]/35 focus-visible:ring-[#d4af37]/20"
+                "border-[#eadfcb] bg-white/[0.92] text-[#183f32] ring-[#eadfcb]/60 placeholder:text-[#8a8172]/72 focus:border-[#006747]/35 focus:ring-[#bde8d0]/45 focus-visible:border-[#006747]/35 focus-visible:ring-[#bde8d0]/45"
             )}
             placeholder="Cari barang, unit, kategori..."
             submitLabel="Telusuri"

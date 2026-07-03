@@ -68,6 +68,18 @@
     min-width: 0;
   }
 
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):focus,
+  select:focus,
+  textarea:focus {
+    background-color: #ffffff;
+    border-color: rgba(0, 103, 71, 0.42) !important;
+    box-shadow:
+      0 0 0 4px rgba(189, 232, 208, 0.46),
+      0 18px 38px -32px rgba(0, 103, 71, 0.42) !important;
+    caret-color: #006747;
+    outline: none;
+  }
+
   button,
   [role="button"],
   a,

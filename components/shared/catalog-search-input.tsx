@@ -29,7 +29,7 @@ export function CatalogSearchInput({
         aria-label="Cari katalog buyer"
         autoComplete="off"
         className={cn(
-          "h-14 rounded-[1.75rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(249,252,249,0.88))] pl-14 pr-5 text-[0.96rem] shadow-[0_24px_64px_-48px_rgba(8,69,50,0.65)] ring-1 ring-primary/5 placeholder:text-muted-foreground/80 focus-visible:border-primary/15 focus-visible:ring-primary/15",
+          "h-14 rounded-[1.75rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(249,252,249,0.88))] pl-14 pr-5 text-[0.96rem] shadow-[0_24px_64px_-48px_rgba(8,69,50,0.65)] ring-1 ring-[#006747]/5 placeholder:text-muted-foreground/80 focus:border-[#006747]/35 focus:ring-4 focus:ring-[#bde8d0]/45 focus-visible:border-[#006747]/35 focus-visible:ring-4 focus-visible:ring-[#bde8d0]/45",
           inputClassName
         )}
         defaultValue={defaultValue}
