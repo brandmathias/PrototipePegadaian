@@ -60,7 +60,16 @@ type AdminBarangHistoryEntry = {
   specifications?: unknown;
   ownerName: string;
   customerNumber: string;
-  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
+  actionKey:
+    | "input_baru"
+    | "perpanjangan"
+    | "jaminan"
+    | "ditebus"
+    | "dipasarkan"
+    | "menunggu_pembayaran"
+    | "terjual"
+    | "gagal"
+    | "perubahan_status";
   actionLabel: string;
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
@@ -116,10 +125,13 @@ const historyToneClasses: Record<AdminBarangHistoryEntry["actionTone"], string> 
 const historyActionToneClasses: Partial<Record<AdminBarangHistoryEntry["actionKey"], string>> = {
   input_baru: "border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]",
   perpanjangan: "border-[#fde68a] bg-[#fffbeb] text-[#a16207]",
+  jaminan: "border-[#a7f3d0] bg-[#ecfdf5] text-[#047857]",
   ditebus: "border-[#ddd6fe] bg-[#f5f3ff] text-[#6d28d9]",
   dipasarkan: "border-[#99f6e4] bg-[#ecfdfa] text-[#0f766e]",
+  menunggu_pembayaran: "border-[#fed7aa] bg-[#fff7ed] text-[#c2410c]",
   terjual: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d]",
-  gagal: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]"
+  gagal: "border-[#fecaca] bg-[#fff1f2] text-[#be123c]",
+  perubahan_status: "border-[#cbd5e1] bg-[#f8fafc] text-[#475569]"
 };
 
 function getHistoryStatusClasses(entry: AdminBarangHistoryEntry) {
@@ -129,20 +141,26 @@ function getHistoryStatusClasses(entry: AdminBarangHistoryEntry) {
 const historyIconMap: Record<AdminBarangHistoryEntry["actionKey"], typeof FilePlus2> = {
   input_baru: FilePlus2,
   perpanjangan: CalendarClock,
+  jaminan: PackageCheck,
   ditebus: ReceiptText,
   dipasarkan: Gavel,
+  menunggu_pembayaran: CalendarClock,
   terjual: PackageCheck,
-  gagal: XCircle
+  gagal: XCircle,
+  perubahan_status: RefreshCw
 };
 
 const historyFilterOptions: Array<{ value: "SEMUA" | AdminBarangHistoryEntry["actionKey"]; label: string }> = [
   { value: "SEMUA", label: "Semua Proses" },
   { value: "input_baru", label: "Barang Masuk" },
   { value: "perpanjangan", label: "Perpanjang" },
+  { value: "jaminan", label: "Menjadi Jaminan" },
   { value: "ditebus", label: "Tebus" },
   { value: "dipasarkan", label: "Dipasarkan" },
+  { value: "menunggu_pembayaran", label: "Menunggu Pembayaran" },
   { value: "terjual", label: "Terjual" },
-  { value: "gagal", label: "Gagal" }
+  { value: "gagal", label: "Gagal" },
+  { value: "perubahan_status", label: "Perubahan Status Lain" }
 ];
 
 const inventoryFilterOptions = [

@@ -56,6 +56,11 @@ const conditions = [
   { value: "rusak_ringan", label: "Rusak Ringan" }
 ] as const;
 
+const editInputFocusClass =
+  "transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-[#0a6a49]/38 focus:bg-white focus-visible:border-[#0a6a49]/38 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8";
+const editInputGroupFocusClass =
+  "transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#0a6a49]/38 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0a6a49]/8";
+
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
     <label
@@ -205,11 +210,11 @@ export function AdminBarangEditForm({
 
       toast({
         title: "Perubahan tersimpan",
-        description: "Informasi barang sudah diperbarui. Anda bisa kembali ke detail atau lanjut merapikan media.",
+        description: "Informasi barang sudah diperbarui. Anda akan kembali ke Kelola Barang.",
         variant: "success",
         scope: "admin-unit"
       });
-      router.refresh();
+      router.push("/admin/barang");
     } catch (error) {
       toast({
         title: "Perubahan belum tersimpan",
@@ -243,7 +248,10 @@ export function AdminBarangEditForm({
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-name">Nama barang</FieldLabel>
           <Input
-            className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#006747] focus-visible:ring-4 focus-visible:ring-[#006747]/8 sm:text-sm"
+            className={cn(
+              "h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-800 shadow-none sm:text-sm",
+              editInputFocusClass
+            )}
             id="admin-barang-name"
             onChange={(event) => setName(event.target.value)}
             value={name}
@@ -302,7 +310,7 @@ export function AdminBarangEditForm({
               return (
                 <div className="space-y-2" key={field.key}>
                   <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>{field.label}</FieldLabel>
-                  <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/8">
+                  <div className={cn("flex overflow-hidden rounded-xl border border-slate-200 bg-white", editInputGroupFocusClass)}>
                     <input
                       className="h-10 w-full bg-transparent px-3 text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-300"
                       id={`admin-barang-specification-${field.key}`}
@@ -335,7 +343,7 @@ export function AdminBarangEditForm({
               </div>
             </div>
             <Input
-              className="h-11 rounded-xl bg-white text-sm font-semibold sm:text-sm"
+              className={cn("h-11 rounded-xl bg-white text-sm font-semibold sm:text-sm", editInputFocusClass)}
               id="admin-barang-marketing-price"
               min={1}
               onChange={(event) => setMarketingPrice(event.target.value)}
@@ -348,7 +356,10 @@ export function AdminBarangEditForm({
         <div className="space-y-2 md:col-span-2">
           <FieldLabel htmlFor="admin-barang-description">Deskripsi barang</FieldLabel>
           <Textarea
-            className="scrollbar-none min-h-28 resize-none rounded-xl border-slate-200 text-justify text-sm font-medium leading-6 text-slate-700 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#006747] focus-visible:ring-4 focus-visible:ring-[#006747]/8 sm:text-sm"
+            className={cn(
+              "scrollbar-none min-h-28 resize-none rounded-xl border-slate-200 text-justify text-sm font-medium leading-6 text-slate-700 sm:text-sm",
+              editInputFocusClass
+            )}
             id="admin-barang-description"
             onChange={(event) => setDescription(event.target.value)}
             value={description}
@@ -360,7 +371,7 @@ export function AdminBarangEditForm({
           <div className="space-y-2">
             <FieldLabel htmlFor="admin-barang-owner-name">Nama penggadai</FieldLabel>
             <Input
-              className="h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold"
+              className={cn("h-11 rounded-xl border-slate-200 bg-white text-sm font-semibold", editInputFocusClass)}
               id="admin-barang-owner-name"
               onChange={(event) => setOwnerName(event.target.value)}
               required
@@ -379,7 +390,7 @@ export function AdminBarangEditForm({
           </div>
           <div className="space-y-2 md:col-span-2">
             <FieldLabel htmlFor="admin-barang-appraisal-value">Nilai taksiran</FieldLabel>
-            <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/8">
+            <div className={cn("flex overflow-hidden rounded-xl border border-slate-200 bg-white", editInputGroupFocusClass)}>
               <span className="flex items-center border-r border-slate-100 bg-slate-50 px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-slate-500">
                 Rp
               </span>

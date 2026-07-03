@@ -25,6 +25,36 @@ try {
     alter table "barang"
       drop column if exists "loan_value";
   `);
+  await client.query(`
+    insert into "riwayat_status_barang" (
+      "id",
+      "barang_id",
+      "old_status",
+      "new_status",
+      "changed_by_user_id",
+      "note",
+      "created_at"
+    )
+    select
+      'initial-history-backfill-' || item."id",
+      item."id",
+      null,
+      case
+        when item."status" in ('gadai', 'jaminan') then item."status"
+        else 'jaminan'
+      end,
+      item."created_by_user_id",
+      'Catatan Barang Masuk dipulihkan dari data barang yang sudah ada.',
+      item."created_at"
+    from "barang" as item
+    where not exists (
+      select 1
+      from "riwayat_status_barang" as history
+      where history."barang_id" = item."id"
+        and history."old_status" is null
+    )
+    on conflict ("id") do nothing;
+  `);
   await client.query(canonicalCodeMigrationSql);
 
   const retiredColumnAudit = await client.query(`
@@ -49,6 +79,21 @@ try {
         .map((row) => `${row.table_name}.${row.column_name}`)
         .join(", ")}`,
     );
+  }
+
+  const barangHistoryAudit = await client.query(`
+    select count(*) as barang_tanpa_catatan_awal
+    from "barang" as item
+    where not exists (
+      select 1
+      from "riwayat_status_barang" as history
+      where history."barang_id" = item."id"
+        and history."old_status" is null
+    )
+  `);
+
+  if (Number(barangHistoryAudit.rows[0]?.barang_tanpa_catatan_awal ?? 0)) {
+    throw new Error("Audit startup menemukan barang tanpa catatan Barang Masuk.");
   }
 
   const canonicalAudit = await client.query(`

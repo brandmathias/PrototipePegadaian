@@ -701,6 +701,102 @@ describe("listAdminBarangHistory", () => {
     ]);
   });
 
+  it("keeps legacy entry and every real status transition in riwayat barang", async () => {
+    const baseRow = {
+      barangId: "barang-complete-history",
+      barangCode: "BRG-HISTORY",
+      barangName: "Mobil",
+      category: "kendaraan",
+      condition: "baik",
+      description: "Riwayat lengkap.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-HISTORY",
+      actorName: "Admin Unit",
+      actorRole: "admin_unit"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-payment",
+            oldStatus: "dipasarkan",
+            newStatus: "menunggu_pembayaran",
+            note: "Menunggu pembayaran pemenang.",
+            createdAt: new Date("2026-06-03T05:00:00.000Z")
+          },
+          {
+            ...baseRow,
+            id: "hist-collateral",
+            oldStatus: "gadai",
+            newStatus: "jaminan",
+            note: "Barang menjadi jaminan.",
+            createdAt: new Date("2026-06-03T04:00:00.000Z")
+          },
+          {
+            ...baseRow,
+            id: "hist-legacy-entry",
+            oldStatus: null,
+            newStatus: "gadai",
+            note: "Barang lama masuk.",
+            createdAt: new Date("2026-06-03T03:00:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "hist-payment",
+        actionKey: "menunggu_pembayaran",
+        actionLabel: "Menunggu Pembayaran"
+      }),
+      expect.objectContaining({
+        id: "hist-collateral",
+        actionKey: "jaminan",
+        actionLabel: "Menjadi Jaminan"
+      }),
+      expect.objectContaining({
+        id: "hist-legacy-entry",
+        actionKey: "input_baru",
+        actionLabel: "Barang Masuk"
+      })
+    ]);
+  });
+
+  it("does not truncate unit history before frontend filters run", async () => {
+    const rows = Array.from({ length: 30 }, (_, index) => ({
+      id: `hist-${index}`,
+      barangId: `barang-${index}`,
+      barangCode: `BRG-${index}`,
+      barangName: `Barang ${index}`,
+      category: "lainnya",
+      condition: "baik",
+      description: "",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: `NSB-${index}`,
+      oldStatus: null,
+      newStatus: "jaminan",
+      note: "Barang masuk.",
+      actorName: "Admin Unit",
+      actorRole: "admin_unit",
+      createdAt: new Date(Date.UTC(2026, 5, 3, 0, index))
+    }));
+
+    mocks.db.select
+      .mockImplementationOnce(() => mockHistoryQuery(rows))
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toHaveLength(30);
+  });
+
   it("keeps internal actor names from status and extension history joins", async () => {
     const baseRow = {
       barangId: "barang-actor",

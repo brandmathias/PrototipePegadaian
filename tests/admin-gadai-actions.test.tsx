@@ -174,6 +174,39 @@ describe("admin gadai action forms", () => {
       }
     });
     expect(body).not.toHaveProperty("loanValue");
+    await waitFor(() => {
+      expect(router.push).toHaveBeenCalledWith("/admin/barang");
+    });
+    expect(router.refresh).not.toHaveBeenCalled();
+  });
+
+  it("uses the green inventory-history focus treatment on edit fields", () => {
+    renderWithToast(
+      <AdminBarangEditForm
+        item={{
+          appraisalValue: 10000000,
+          category: "kendaraan",
+          condition: "baik",
+          customerNumber: "081211112222",
+          description: "Lengkap",
+          dueDate: "2026-06-01",
+          id: "barang-focus",
+          name: "Mobil",
+          ownerName: "Nasabah Demo",
+          pawnedAt: "2026-05-01",
+          specifications: {
+            nomorPolisi: ""
+          }
+        }}
+      />
+    );
+
+    expect(screen.getByLabelText("Nama barang")).toHaveClass(
+      "focus-visible:ring-[#0a6a49]/8"
+    );
+    expect(screen.getByLabelText("Nomor Polisi").parentElement).toHaveClass(
+      "focus-within:ring-[#0a6a49]/8"
+    );
   });
 
   it("submits harga tetap marketing price when editing an active harga tetap barang", async () => {

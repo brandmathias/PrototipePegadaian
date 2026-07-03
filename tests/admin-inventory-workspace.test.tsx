@@ -189,6 +189,64 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(screen.queryByText("Motor Racing")).not.toBeInTheDocument();
   });
 
+  it("offers filters for collateral and payment-waiting history", () => {
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={[
+          {
+            id: "hist-collateral",
+            barangId: "barang-collateral",
+            barangCode: "BRG-COLLATERAL",
+            barangName: "Barang Menjadi Jaminan",
+            category: "kendaraan",
+            condition: "baik",
+            description: "",
+            specifications: {},
+            ownerName: "Nasabah A",
+            customerNumber: "081200000001",
+            actionKey: "jaminan",
+            actionLabel: "Menjadi Jaminan",
+            actionTone: "warning",
+            note: "Barang jatuh tempo.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: "2026-06-01T01:00:00.000Z",
+            createdAtLabel: "1 Juni 2026"
+          },
+          {
+            id: "hist-payment",
+            barangId: "barang-payment",
+            barangCode: "BRG-PAYMENT",
+            barangName: "Barang Menunggu Pembayaran",
+            category: "elektronik",
+            condition: "baik",
+            description: "",
+            specifications: {},
+            ownerName: "Nasabah B",
+            customerNumber: "081200000002",
+            actionKey: "menunggu_pembayaran",
+            actionLabel: "Menunggu Pembayaran",
+            actionTone: "warning",
+            note: "Pemenang sudah ditentukan.",
+            actorName: "Sistem Otomatis",
+            actorRole: null,
+            createdAt: "2026-06-02T01:00:00.000Z",
+            createdAtLabel: "2 Juni 2026"
+          }
+        ]}
+      />
+    );
+
+    const processFilter = screen.getByLabelText("Filter proses riwayat barang");
+    fireEvent.change(processFilter, { target: { value: "jaminan" } });
+    expect(screen.getByText("Barang Menjadi Jaminan")).toBeInTheDocument();
+    expect(screen.queryByText("Barang Menunggu Pembayaran")).not.toBeInTheDocument();
+
+    fireEvent.change(processFilter, { target: { value: "menunggu_pembayaran" } });
+    expect(screen.getByText("Barang Menunggu Pembayaran")).toBeInTheDocument();
+    expect(screen.queryByText("Barang Menjadi Jaminan")).not.toBeInTheDocument();
+  });
+
   it("opens the timeline calendar popover with shortcut and calendar panels", () => {
     render(
       <AdminInventoryHistoryWorkspace

@@ -279,7 +279,16 @@ export type SuperAdminUnitBarangHistoryEntry = {
   id: string;
   barangId: string;
   actionLabel: string;
-  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
+  actionKey:
+    | "input_baru"
+    | "perpanjangan"
+    | "jaminan"
+    | "ditebus"
+    | "dipasarkan"
+    | "menunggu_pembayaran"
+    | "terjual"
+    | "gagal"
+    | "perubahan_status";
   note: string;
   actorName: string;
   createdAtLabel: string;
@@ -5112,10 +5121,13 @@ function SuperAdminAssetTimeline({
   const iconMap: Record<SuperAdminUnitBarangHistoryEntry["actionKey"], LucideIcon> = {
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
+    jaminan: Package2,
     ditebus: ReceiptText,
     dipasarkan: Gavel,
+    menunggu_pembayaran: Clock3,
     terjual: BadgeCheck,
     gagal: FileWarning,
+    perubahan_status: FileText,
   };
 
   return (

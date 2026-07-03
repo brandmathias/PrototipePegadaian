@@ -132,7 +132,16 @@ export type AdminBarangHistoryEntry = {
   specifications: unknown;
   ownerName: string;
   customerNumber: string;
-  actionKey: "input_baru" | "perpanjangan" | "ditebus" | "dipasarkan" | "terjual" | "gagal";
+  actionKey:
+    | "input_baru"
+    | "perpanjangan"
+    | "jaminan"
+    | "ditebus"
+    | "dipasarkan"
+    | "menunggu_pembayaran"
+    | "terjual"
+    | "gagal"
+    | "perubahan_status";
   actionLabel: string;
   actionTone: "default" | "success" | "warning" | "danger";
   note: string;
@@ -143,11 +152,23 @@ export type AdminBarangHistoryEntry = {
 };
 
 function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
-  if (!oldStatus && newStatus === "jaminan") {
+  if (!oldStatus) {
     return {
       actionKey: "input_baru" as const,
       actionLabel: "Barang Masuk",
       actionTone: "default" as const
+    };
+  }
+
+  if (oldStatus === newStatus) {
+    return null;
+  }
+
+  if (newStatus === "jaminan") {
+    return {
+      actionKey: "jaminan" as const,
+      actionLabel: "Menjadi Jaminan",
+      actionTone: "warning" as const
     };
   }
 
@@ -183,7 +204,22 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
     };
   }
 
-  return null;
+  if (newStatus === "menunggu_pembayaran") {
+    return {
+      actionKey: "menunggu_pembayaran" as const,
+      actionLabel: "Menunggu Pembayaran",
+      actionTone: "warning" as const
+    };
+  }
+
+  return {
+    actionKey: "perubahan_status" as const,
+    actionLabel: newStatus
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\p{L}/gu, (letter) => letter.toUpperCase()),
+    actionTone: "default" as const
+  };
 }
 
 export async function listAdminBarang(unitId: string) {
@@ -245,7 +281,7 @@ export async function listAdminBarang(unitId: string) {
 
 export async function listAdminBarangHistory(
   unitId: string,
-  limit = 24,
+  limit?: number,
   barangId?: string
 ): Promise<AdminBarangHistoryEntry[]> {
   const historyWhere = barangId
@@ -352,9 +388,10 @@ export async function listAdminBarangHistory(
     createdAtLabel: formatAppDateTime(row.createdAt)
   }));
 
-  return [...normalizedStatusRows, ...normalizedExtensionRows]
-    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
-    .slice(0, limit);
+  const sortedHistory = [...normalizedStatusRows, ...normalizedExtensionRows]
+    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+
+  return typeof limit === "number" ? sortedHistory.slice(0, limit) : sortedHistory;
 }
 
 export async function getAdminBarangById(unitId: string, barangId: string) {
