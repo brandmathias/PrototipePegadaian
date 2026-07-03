@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ComponentType, ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -51,8 +51,8 @@ import {
   AdminProfileWorkspace,
   type AdminProfileData,
 } from "@/components/admin/admin-profile-workspace";
-import { AdminBarangEditForm } from "@/components/admin-unit/admin-barang-edit-form";
-import { AdminBarangMediaManager } from "@/components/admin-unit/admin-barang-media-manager";
+import { AdminBarangEditForm, type AdminBarangEditSubmitPayload } from "@/components/admin-unit/admin-barang-edit-form";
+import { AdminBarangMediaManager, type AdminBarangMediaDraftChange } from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
@@ -1151,12 +1151,45 @@ export function AdminInventoryEditPage({
   const auditCode = String(item.code ?? item.itemCode ?? "Kode SBG belum tersedia");
   const auditValue = Number(item.appraisalValue ?? item.price ?? 0);
   const normalizedStatus = String(item.status ?? "").toUpperCase();
+  const [mediaDraftChange, setMediaDraftChange] = useState<AdminBarangMediaDraftChange>({
+    addedFiles: [],
+    deletedMediaIds: []
+  });
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const correctionOnly =
     !["GADAI", "JAMINAN", "GAGAL"].includes(normalizedStatus) &&
     !(
       normalizedStatus === "DIPASARKAN" &&
       String(item.marketingMode ?? "").toLowerCase() === "fixed_price"
     );
+  const hasMediaDraftChanges =
+    mediaDraftChange.addedFiles.length > 0 || mediaDraftChange.deletedMediaIds.length > 0;
+
+  async function saveEdit(payload: AdminBarangEditSubmitPayload) {
+    const response = hasMediaDraftChanges
+      ? await fetch(`/api/admin/barang/${item.id}`, {
+          method: "PUT",
+          body: (() => {
+            const formData = new FormData();
+            formData.set("payload", JSON.stringify(payload));
+            mediaDraftChange.deletedMediaIds.forEach((id) => formData.append("deleteMediaIds", id));
+            mediaDraftChange.addedFiles.forEach((file) => formData.append("media", file));
+            return formData;
+          })()
+        })
+      : await fetch(`/api/admin/barang/${item.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result?.message ?? "Data barang belum berhasil diperbarui.");
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -1212,6 +1245,7 @@ export function AdminInventoryEditPage({
       >
         <AdminBarangEditForm
           correctionOnly={correctionOnly}
+          forceFullSubmit={hasMediaDraftChanges}
           formId={editFormId}
           item={{
             id: String(item.id),
@@ -1230,6 +1264,8 @@ export function AdminInventoryEditPage({
             marketingPrice: item.marketingPrice ?? null,
             specifications: item.specifications ?? {},
           }}
+          onSave={saveEdit}
+          onSubmittingChange={setIsEditSubmitting}
           showSubmit={false}
         />
 
@@ -1243,20 +1279,35 @@ export function AdminInventoryEditPage({
                 Edit Media Barang
               </h3>
             </div>
-            <AdminBarangMediaManager barangId={item.id} media={media} />
+            <AdminBarangMediaManager
+              barangId={item.id}
+              disabled={isEditSubmitting}
+              media={media}
+              onDraftChange={setMediaDraftChange}
+            />
           </div>
         ) : null}
       </div>
 
       <footer className="flex flex-col-reverse gap-3 rounded-[1.15rem] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_-38px_rgba(15,23,42,0.42)] sm:flex-row sm:items-center sm:justify-between">
         <Link
-          className="inline-flex h-12 min-w-[7rem] items-center justify-center rounded-[0.82rem] border border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f6faf8]"
+          aria-disabled={isEditSubmitting}
+          className={cn(
+            "inline-flex h-12 min-w-[7rem] items-center justify-center rounded-[0.82rem] border border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f6faf8]",
+            isEditSubmitting && "pointer-events-none opacity-60"
+          )}
           href={`/admin/barang/${item.id}`}
+          onClick={(event) => {
+            if (isEditSubmitting) {
+              event.preventDefault();
+            }
+          }}
         >
           Batal
         </Link>
         <Button
           className="h-11 min-w-[14rem] rounded-xl bg-[#006747] px-6 text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.7)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#005238] active:scale-[0.98]"
+          disabled={isEditSubmitting}
           form={editFormId}
           type="submit"
         >

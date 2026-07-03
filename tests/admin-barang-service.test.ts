@@ -383,6 +383,91 @@ describe("listAdminBarang", () => {
     );
   });
 
+  it("applies staged media additions and deletions during the barang edit transaction", async () => {
+    const current = {
+      id: "barang-media-edit",
+      unitId: "unit-1",
+      name: "Cincin Lama",
+      status: "jaminan",
+      customerNumber: "081234567890"
+    };
+    const updated = {
+      ...current,
+      name: "Cincin Harga Tetap"
+    };
+    const updateCustomerSet = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) });
+    const updateBarangSet = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([updated])
+      })
+    });
+    const deleteMediaWhere = vi.fn().mockResolvedValue([]);
+    const insertMediaValues = vi.fn().mockResolvedValue([]);
+    const tx = {
+      update: vi
+        .fn()
+        .mockImplementationOnce(() => ({ set: updateCustomerSet }))
+        .mockImplementationOnce(() => ({ set: updateBarangSet })),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ id: "media-old" }, { id: "media-keep" }])
+        })
+      }),
+      delete: vi.fn().mockReturnValue({ where: deleteMediaWhere }),
+      insert: vi.fn().mockReturnValue({ values: insertMediaValues })
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([])
+            })
+          })
+        })
+      }));
+    mocks.db.transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+    await updateAdminBarang("unit-1", "barang-media-edit", editPayload, {
+      addMedia: [
+        {
+          type: "foto",
+          url: "/uploads/barang/foto-baru.jpg",
+          fileName: "foto-baru.jpg",
+          sizeBytes: 4096
+        }
+      ],
+      deleteMediaIds: ["media-old"]
+    });
+
+    expect(deleteMediaWhere).toHaveBeenCalledOnce();
+    expect(insertMediaValues).toHaveBeenCalledWith([
+      expect.objectContaining({
+        barangId: "barang-media-edit",
+        type: "foto",
+        url: "/uploads/barang/foto-baru.jpg",
+        fileName: "foto-baru.jpg",
+        sizeBytes: 4096,
+        sortOrder: 1
+      })
+    ]);
+  });
+
   it("blocks active auction barang from being updated before it becomes a failed strategy case", async () => {
     const current = {
       id: "barang-auction",

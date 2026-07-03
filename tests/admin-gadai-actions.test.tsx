@@ -180,7 +180,7 @@ describe("admin gadai action forms", () => {
     expect(router.refresh).not.toHaveBeenCalled();
   });
 
-  it("uses the green inventory-history focus treatment on edit fields", () => {
+  it("uses an explicit green focus treatment on every edit field", () => {
     renderWithToast(
       <AdminBarangEditForm
         item={{
@@ -191,6 +191,8 @@ describe("admin gadai action forms", () => {
           description: "Lengkap",
           dueDate: "2026-06-01",
           id: "barang-focus",
+          marketingMode: "fixed_price",
+          marketingPrice: 12000000,
           name: "Mobil",
           ownerName: "Nasabah Demo",
           pawnedAt: "2026-05-01",
@@ -201,11 +203,31 @@ describe("admin gadai action forms", () => {
       />
     );
 
-    expect(screen.getByLabelText("Nama barang")).toHaveClass(
-      "focus-visible:ring-[#0a6a49]/8"
-    );
-    expect(screen.getByLabelText("Nomor Polisi").parentElement).toHaveClass(
-      "focus-within:ring-[#0a6a49]/8"
+    const directFields = [
+      screen.getByLabelText("Nama barang"),
+      screen.getByLabelText("Harga harga tetap aktif"),
+      screen.getByLabelText("Deskripsi barang"),
+      screen.getByLabelText("Nama penggadai")
+    ];
+    const groupedFields = [
+      screen.getByLabelText("Nomor Polisi").parentElement,
+      screen.getByLabelText("Nomor telepon nasabah").parentElement,
+      screen.getByLabelText("Nilai taksiran").parentElement
+    ];
+
+    directFields.forEach((field) => {
+      expect(field).toHaveClass(
+        "focus-visible:shadow-[0_0_0_4px_rgba(189,232,208,0.46),0_18px_38px_-32px_rgba(0,103,71,0.42)]"
+      );
+    });
+    groupedFields.forEach((field) => {
+      expect(field).toHaveClass(
+        "focus-within:shadow-[0_0_0_4px_rgba(189,232,208,0.46),0_18px_38px_-32px_rgba(0,103,71,0.42)]"
+      );
+      expect(field?.className).not.toContain("focus-within:ring-");
+    });
+    expect(screen.getByRole("radio", { name: "Baik" })).toHaveClass(
+      "focus-visible:shadow-[0_0_0_4px_rgba(189,232,208,0.46)]"
     );
   });
 

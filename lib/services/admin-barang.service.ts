@@ -104,6 +104,23 @@ type AdminBarangUpdateInput = Parameters<typeof validateAdminBarangPayload>[0] &
   marketingPrice?: unknown;
 };
 
+type AdminBarangMediaChangesInput = {
+  addMedia?: unknown;
+  deleteMediaIds?: unknown;
+};
+
+function normalizeDeletedMediaIds(input: unknown) {
+  if (input === undefined || input === null) {
+    return [];
+  }
+
+  if (!Array.isArray(input)) {
+    throw new Error("Media yang dihapus belum valid.");
+  }
+
+  return Array.from(new Set(input.map((item) => String(item ?? "").trim()).filter(Boolean)));
+}
+
 async function recordStatusChange(input: {
   barangId: string;
   oldStatus?: string | null;
@@ -476,14 +493,24 @@ export async function createAdminBarang(
   return serializeAdminBarang(created);
 }
 
-export async function updateAdminBarang(unitId: string, barangId: string, input: AdminBarangUpdateInput) {
+export async function updateAdminBarang(
+  unitId: string,
+  barangId: string,
+  input: AdminBarangUpdateInput,
+  mediaChanges?: AdminBarangMediaChangesInput
+) {
   const current = await assertBarangForUnit(barangId, unitId);
   const correctionOnly = input.correctionOnly === true;
+  const mediaToAdd = validateAdminBarangMediaList(mediaChanges?.addMedia);
+  const mediaIdsToDelete = normalizeDeletedMediaIds(mediaChanges?.deleteMediaIds);
 
   if (correctionOnly) {
     const allowedKeys = new Set(["correctionOnly", "ownerName", "customerNumber", "appraisalValue"]);
     if (Object.keys(input).some((key) => !allowedKeys.has(key))) {
       throw new Error("Koreksi riwayat hanya dapat mengubah data nasabah dan nilai taksiran.");
+    }
+    if (mediaToAdd.length > 0 || mediaIdsToDelete.length > 0) {
+      throw new Error("Media barang tidak dapat diubah pada mode koreksi riwayat.");
     }
   }
 
@@ -568,6 +595,45 @@ export async function updateAdminBarang(unitId: string, barangId: string, input:
           updatedAt: new Date()
         })
         .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")));
+    }
+
+    if (mediaToAdd.length > 0 || mediaIdsToDelete.length > 0) {
+      const currentMedia = await tx
+        .select({ id: mediaBarang.id })
+        .from(mediaBarang)
+        .where(eq(mediaBarang.barangId, barangId));
+      const currentMediaIds = new Set(currentMedia.map((item) => item.id));
+      const missingMediaId = mediaIdsToDelete.find((id) => !currentMediaIds.has(id));
+
+      if (missingMediaId) {
+        throw new Error("Media barang tidak ditemukan.");
+      }
+
+      const nextMediaCount = currentMedia.length - mediaIdsToDelete.length + mediaToAdd.length;
+      if (nextMediaCount > ADMIN_BARANG_MEDIA_LIMIT) {
+        throw new Error(`Maksimal ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video untuk satu barang.`);
+      }
+
+      if (mediaIdsToDelete.length > 0) {
+        await tx
+          .delete(mediaBarang)
+          .where(and(eq(mediaBarang.barangId, barangId), inArray(mediaBarang.id, mediaIdsToDelete)));
+      }
+
+      if (mediaToAdd.length > 0) {
+        const sortOrderBase = currentMedia.length - mediaIdsToDelete.length;
+        await tx.insert(mediaBarang).values(
+          mediaToAdd.map((item, index) => ({
+            id: crypto.randomUUID(),
+            barangId,
+            type: item.type,
+            url: item.url,
+            fileName: item.fileName,
+            sizeBytes: item.sizeBytes,
+            sortOrder: sortOrderBase + index
+          }))
+        );
+      }
     }
 
     return savedBarang;

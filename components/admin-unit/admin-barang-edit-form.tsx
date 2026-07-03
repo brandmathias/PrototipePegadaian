@@ -42,6 +42,8 @@ type AdminBarangEditValue = {
   specifications?: BarangSpecificationRecord;
 };
 
+export type AdminBarangEditSubmitPayload = Record<string, unknown>;
+
 const categories = [
   { value: "perhiasan", label: "Perhiasan", icon: Gem },
   { value: "logam_mulia", label: "Logam Mulia", icon: Medal },
@@ -57,9 +59,9 @@ const conditions = [
 ] as const;
 
 const editInputFocusClass =
-  "transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-[#0a6a49]/38 focus:bg-white focus-visible:border-[#0a6a49]/38 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8";
+  "transition-[background-color,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-[#006747]/42 focus:bg-white focus-visible:border-[#006747]/42 focus-visible:shadow-[0_0_0_4px_rgba(189,232,208,0.46),0_18px_38px_-32px_rgba(0,103,71,0.42)]";
 const editInputGroupFocusClass =
-  "transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#0a6a49]/38 focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0a6a49]/8";
+  "transition-[background-color,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747]/42 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(189,232,208,0.46),0_18px_38px_-32px_rgba(0,103,71,0.42)]";
 
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
@@ -122,13 +124,19 @@ function CategoryDropdown({
 
 export function AdminBarangEditForm({
   correctionOnly = false,
+  forceFullSubmit = false,
   formId,
   item,
+  onSave,
+  onSubmittingChange,
   showSubmit = true
 }: {
   correctionOnly?: boolean;
+  forceFullSubmit?: boolean;
   formId?: string;
   item: AdminBarangEditValue;
+  onSave?: (payload: AdminBarangEditSubmitPayload) => Promise<void>;
+  onSubmittingChange?: (isSubmitting: boolean) => void;
   showSubmit?: boolean;
 }) {
   const router = useRouter();
@@ -157,7 +165,9 @@ export function AdminBarangEditForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
+    onSubmittingChange?.(true);
     const hasFullDataChanges =
+      forceFullSubmit ||
       name !== String(item.name ?? "") ||
       category !== normalizeEditableCategory(String(item.category ?? "perhiasan")) ||
       condition !== String(item.condition ?? "baik").toLowerCase() ||
@@ -172,40 +182,43 @@ export function AdminBarangEditForm({
       scope: "admin-unit",
       duration: 2600
     });
+    const payload: AdminBarangEditSubmitPayload = submitCorrectionOnly
+      ? {
+          correctionOnly: true,
+          ownerName,
+          customerNumber,
+          appraisalValue
+        }
+      : {
+          name,
+          category,
+          condition,
+          description,
+          appraisalValue,
+          ownerName,
+          customerNumber,
+          pawnedAt: item.pawnedAt,
+          dueDate: item.dueDate,
+          ...(canEditFixedPrice ? { marketingPrice } : {}),
+          specifications
+        };
 
     try {
-      const response = await fetch(`/api/admin/barang/${item.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(
-          submitCorrectionOnly
-            ? {
-                correctionOnly: true,
-                ownerName,
-                customerNumber,
-                appraisalValue
-              }
-            : {
-                name,
-                category,
-                condition,
-                description,
-                appraisalValue,
-                ownerName,
-                customerNumber,
-                pawnedAt: item.pawnedAt,
-                dueDate: item.dueDate,
-                ...(canEditFixedPrice ? { marketingPrice } : {}),
-                specifications
-              }
-        )
-      });
-      const result = await response.json().catch(() => ({}));
+      if (onSave) {
+        await onSave(payload);
+      } else {
+        const response = await fetch(`/api/admin/barang/${item.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        throw new Error(result?.message ?? "Data barang belum berhasil diperbarui.");
+        if (!response.ok) {
+          throw new Error(result?.message ?? "Data barang belum berhasil diperbarui.");
+        }
       }
 
       toast({
@@ -225,6 +238,7 @@ export function AdminBarangEditForm({
       });
     } finally {
       setIsSubmitting(false);
+      onSubmittingChange?.(false);
     }
   }
 
@@ -275,7 +289,7 @@ export function AdminBarangEditForm({
                   aria-checked={active}
                   aria-label={option.label}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-lg text-[0.72rem] font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    "flex items-center justify-center gap-1.5 rounded-lg text-[0.72rem] font-black outline-none transition-[background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:shadow-[0_0_0_4px_rgba(189,232,208,0.46)]",
                     active
                       ? "border border-emerald-200 bg-white text-[#006747] shadow-[0_12px_22px_-20px_rgba(0,103,71,0.42)]"
                       : "text-slate-500 hover:bg-white hover:text-slate-800"

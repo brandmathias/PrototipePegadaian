@@ -16,7 +16,7 @@ export function CustomerNumberInput({
   ...props
 }: CustomerNumberInputProps) {
   return (
-    <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/8">
+    <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition-[background-color,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747]/42 focus-within:shadow-[0_0_0_4px_rgba(189,232,208,0.46),0_18px_38px_-32px_rgba(0,103,71,0.42)]">
       <span className="flex min-w-[4.7rem] items-center justify-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-black tracking-[-0.03em] text-slate-700">
         +62
       </span>
