@@ -5719,7 +5719,7 @@ export function SuperAdminManagementPage({
                         </p>
                       </div>
 
-                      <div className="inline-flex min-w-0 items-center gap-1.5 rounded-[0.95rem] bg-[#f6faf7] px-2.5 py-2 text-[0.76rem] font-bold text-[#13211c] lg:mt-0.5">
+                      <div className="flex min-w-0 items-center gap-1.5 text-[0.76rem] font-bold text-[#13211c] lg:mt-0.5 lg:justify-center">
                         <MapPin className="size-4 shrink-0 text-[#006747]" />
                         <span className="min-w-0 whitespace-nowrap">{unit.domicile}</span>
                       </div>
