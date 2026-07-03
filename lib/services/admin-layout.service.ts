@@ -15,7 +15,7 @@ export async function getAdminLayoutMetrics(unitId: string) {
       status: barang.status
     })
     .from(barang)
-    .where(and(eq(barang.unitId, unitId), inArray(barang.status, ["gadai", "jaminan", "gagal"])));
+    .where(and(eq(barang.unitId, unitId), inArray(barang.status, ["gadai", "jaminan"])));
 
   return {
     inventoryMetrics: getAdminInventoryMetrics(

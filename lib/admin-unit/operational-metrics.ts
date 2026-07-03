@@ -21,7 +21,7 @@ export const ADMIN_VERIFICATION_ACTION_STATUSES = new Set([
 ]);
 
 const ADMIN_COLLATERAL_STATUSES = new Set(["GADAI", "JAMINAN"]);
-const ADMIN_INVENTORY_LIST_STATUSES = new Set(["GADAI", "JAMINAN", "GAGAL"]);
+const ADMIN_INVENTORY_LIST_STATUSES = new Set(["GADAI", "JAMINAN"]);
 
 export function getDaysUntilDateLabel(dateLabel: unknown, now = new Date()) {
   if (!dateLabel || dateLabel === "-") {
@@ -60,10 +60,6 @@ export function isAdminInventoryListItem(item: InventoryMetricItem) {
 
 export function isAdminInventoryReadyForMarketing(item: InventoryMetricItem, now = new Date()) {
   const status = String(item.status ?? "").toUpperCase();
-
-  if (status === "GAGAL") {
-    return true;
-  }
 
   if (!ADMIN_COLLATERAL_STATUSES.has(status)) {
     return false;

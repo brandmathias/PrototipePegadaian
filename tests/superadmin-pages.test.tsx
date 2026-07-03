@@ -1110,8 +1110,23 @@ describe("superadmin pages", () => {
         dueDate: new Date("2026-07-01T00:00:00.000Z"),
         now,
         transactionStatus: "ditolak_bukti",
-      }).operationalStatus,
-    ).toBe("Siap Dipasarkan");
+      }),
+    ).toEqual({
+      operationalStatus: "Gagal",
+      operationalTone: "red",
+    });
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "gagal",
+        latestMarketingStatus: "gagal",
+        dueDate: new Date("2026-05-01T00:00:00.000Z"),
+        now,
+      }),
+    ).toEqual({
+      operationalStatus: "Gagal",
+      operationalTone: "red",
+    });
 
     expect(
       getUnitItemOperationalState({
@@ -1127,6 +1142,14 @@ describe("superadmin pages", () => {
     expect(
       getUnitItemOperationalState({
         itemStatus: "menunggu_pembayaran",
+        dueDate: new Date("2026-05-01T00:00:00.000Z"),
+        now,
+      }).operationalStatus,
+    ).toBe("Sedang Dipasarkan");
+
+    expect(
+      getUnitItemOperationalState({
+        itemStatus: "dipasarkan",
         dueDate: new Date("2026-05-01T00:00:00.000Z"),
         now,
       }).operationalStatus,

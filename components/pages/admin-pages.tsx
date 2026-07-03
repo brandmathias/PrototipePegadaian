@@ -618,7 +618,7 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
           value={inventoryMetrics.total}
         />
         <InventoryMetricCard
-          description="Barang jatuh tempo atau pemasaran gagal yang siap ditayangkan kembali."
+          description="Barang jaminan yang sudah mencapai jatuh tempo dan belum masuk proses pemasaran."
           icon={BadgeCheck}
           label="Siap Dipasarkan"
           tone="success"

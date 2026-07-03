@@ -2127,6 +2127,7 @@ const unitDetailOperationalStatusOptions = [
   "Sedang Dipasarkan",
   "Siap Dipasarkan",
   "Terjual",
+  "Gagal",
 ] as const;
 const unitDetailModeOptions = [
   { label: "Harga Tetap", value: "fixed_price" },
@@ -2234,7 +2235,7 @@ function getUnitDetailDisplayStatus(status: string) {
   }
 
   if (["ada_tindak_lanjut", "gagal", "ditolak_bukti"].includes(normalizedStatus)) {
-    return "Siap Dipasarkan";
+    return "Gagal";
   }
 
   return status;
@@ -2249,6 +2250,7 @@ function getUnitDetailDisplayTone(
   if (displayStatus === "Barang Jaminan") return "amber";
   if (displayStatus === "Sedang Dipasarkan") return "blue";
   if (displayStatus === "Siap Dipasarkan") return "emerald";
+  if (displayStatus === "Gagal") return "red";
   if (displayStatus === "Ditebus" || displayStatus === "Terjual") return "slate";
 
   return fallbackTone;

@@ -1,5 +1,6 @@
 import {
   getAdminInventoryMetrics,
+  isAdminInventoryReadyForMarketing,
   isAdminMarketingActionable,
   isAdminTransactionActionable
 } from "@/lib/admin-unit/operational-metrics";
@@ -20,9 +21,10 @@ describe("admin operational metrics", () => {
       now
     );
 
-    expect(metrics.total).toBe(5);
-    expect(metrics.readyForMarketing).toBe(3);
+    expect(metrics.total).toBe(4);
+    expect(metrics.readyForMarketing).toBe(2);
     expect(metrics.dueSoon).toBe(2);
+    expect(isAdminInventoryReadyForMarketing({ dueDate: "2026-06-17", status: "GAGAL" }, now)).toBe(false);
   });
 
   it("raises marketing action for ended and failed vickrey sessions", () => {

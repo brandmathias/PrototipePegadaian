@@ -153,7 +153,7 @@ export function getUnitItemOperationalState(input: {
     latestMarketingStatus === "gagal" ||
     transactionStatus === "ditolak_bukti"
   ) {
-    return { operationalStatus: "Siap Dipasarkan", operationalTone: "emerald" };
+    return { operationalStatus: "Gagal", operationalTone: "red" };
   }
 
   const fixedPriceCatalogLocked =
@@ -175,11 +175,15 @@ export function getUnitItemOperationalState(input: {
     return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
   }
 
+  if (itemStatus === "dipasarkan") {
+    return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
+  }
+
   if (isCollateralStatus && isBeforeDueDate) {
     return { operationalStatus: "Barang Jaminan", operationalTone: "amber" };
   }
 
-  if (isCollateralStatus || (itemStatus === "dipasarkan" && !activeMarketingStatus)) {
+  if (isCollateralStatus) {
     return { operationalStatus: "Siap Dipasarkan", operationalTone: "emerald" };
   }
 

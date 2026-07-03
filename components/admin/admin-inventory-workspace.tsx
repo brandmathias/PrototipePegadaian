@@ -773,16 +773,16 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
         <table className="w-full table-fixed text-left">
           <thead className="bg-[#f7f5ef] text-[0.6rem] uppercase tracking-[0.13em] text-black/46 xl:text-[0.64rem]">
             <tr>
-              <th className="w-[11%] px-3 py-4">Kode Barang</th>
-              <th className="w-[15%] px-3 py-4">Barang</th>
-              <th className="w-[12%] px-3 py-4">Kategori</th>
-              <th className="w-[11%] px-3 py-4">Nama Nasabah</th>
-              <th className="w-[9%] px-3 py-4">No. Nasabah</th>
-              <th className="w-[10%] px-3 py-4">Tanggal Kredit</th>
-              <th className="w-[11%] px-3 py-4">
+              <th className="w-[11%] px-3 py-4 text-left">Kode Barang</th>
+              <th className="w-[15%] px-3 py-4 text-left">Barang</th>
+              <th className="w-[12%] px-3 py-4 text-center">Kategori</th>
+              <th className="w-[11%] px-3 py-4 text-left">Nama Nasabah</th>
+              <th className="w-[9%] px-3 py-4 text-center">No. Nasabah</th>
+              <th className="w-[10%] px-3 py-4 text-center">Tanggal Kredit</th>
+              <th className="w-[11%] px-3 py-4 text-center">
                 <button
                   aria-label={`Urutkan Jatuh Tempo ${dueDateSortDirection === "desc" ? "terdekat dulu" : "terjauh dulu"}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg text-inherit outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg text-inherit outline-none transition duration-300 hover:text-[#0a6a49] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/16"
                   type="button"
                   onClick={() => setDueDateSortDirection((current) => (current === "desc" ? "asc" : "desc"))}
                 >
@@ -790,8 +790,8 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                   <DueDateSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
                 </button>
               </th>
-              <th className="w-[11%] px-3 py-4">Nilai Taksiran</th>
-              <th className="w-[10%] px-3 py-4 text-right">Aksi</th>
+              <th className="w-[11%] px-3 py-4 text-right">Nilai Taksiran</th>
+              <th className="w-[10%] px-3 py-4 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -831,15 +831,15 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-black/86">{item.name}</p>
+                        <p className="whitespace-normal break-words text-left font-semibold leading-5 text-black/86">{item.name}</p>
                         <p className="mt-0.5 truncate text-[0.72rem] font-medium text-black/42">
                           {formatDisplayLabel(item.condition)}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-3.5 align-middle">
-                    <div className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[#f3f4ef] px-2.5 py-1 text-[0.68rem] font-semibold leading-4 text-black/62 xl:text-[0.72rem]">
+                  <td className="px-3 py-3.5 text-center align-middle">
+                    <div className="inline-flex max-w-full items-center justify-center gap-1.5 rounded-full bg-[#f3f4ef] px-2.5 py-1 text-[0.68rem] font-semibold leading-4 text-black/62 xl:text-[0.72rem]">
                       <CategoryIcon className="size-3 shrink-0 text-[#0a6a49]" />
                       <span className="whitespace-normal break-words">{formatDisplayLabel(item.category)}</span>
                     </div>
@@ -849,13 +849,13 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                       <p className="truncate font-semibold text-black/82">{item.ownerName}</p>
                     </div>
                   </td>
-                  <td className="px-3 py-3.5 align-middle">
+                  <td className="px-3 py-3.5 text-center align-middle">
                     <span className="block truncate font-semibold text-black/54">{item.customerNumber || "-"}</span>
                   </td>
-                  <td className="px-3 py-3.5 align-middle">
+                  <td className="px-3 py-3.5 text-center align-middle">
                     <span className="block truncate text-black/62">{item.pawnedAt}</span>
                   </td>
-                  <td className="px-3 py-3.5 align-middle">
+                  <td className="px-3 py-3.5 text-center align-middle">
                     <p className="font-semibold leading-5 text-black/78">{item.dueDate}</p>
                     <p
                       className={cn(
@@ -867,12 +867,12 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                       {getInventoryDueCopy(item.dueDate)}
                     </p>
                   </td>
-                  <td className="px-3 py-3.5 align-middle">
-                    <span className="block truncate font-semibold leading-5 text-black/78">
+                  <td className="px-3 py-3.5 text-right align-middle">
+                    <span className="block font-semibold leading-5 text-black/78">
                       {currency.format(item.appraisalValue)}
                     </span>
                   </td>
-                  <td className="px-3 py-3.5 text-right align-middle">
+                  <td className="px-3 py-3.5 text-center align-middle">
                     <DetailActionLink
                       className="min-h-8 text-[0.7rem] xl:text-[0.74rem]"
                       href={`/admin/barang/${item.id}`}

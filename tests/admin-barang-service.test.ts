@@ -145,8 +145,8 @@ describe("listAdminBarang", () => {
 
     const result = await listAdminBarang("unit-1");
 
-    expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-4", "barang-5"]);
-    expect(result.map((item) => item.status)).toEqual(["jaminan", "gagal", "gadai"]);
+    expect(result.map((item) => item.id)).toEqual(["barang-1", "barang-5"]);
+    expect(result.map((item) => item.status)).toEqual(["jaminan", "gadai"]);
   });
 
   it("returns the first image media as preview image for detail pages", async () => {

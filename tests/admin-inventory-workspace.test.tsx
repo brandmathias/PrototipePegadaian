@@ -48,7 +48,7 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.queryByText(/pencarian langsung/i)).not.toBeInTheDocument();
   });
 
-  it("keeps failed auctions ready for remarketing while hiding marketed and finished goods", () => {
+  it("keeps failed marketed goods out of daftar barang and siap dipasarkan", () => {
     render(
       <AdminInventoryWorkspace
         items={[
@@ -62,11 +62,11 @@ describe("AdminInventoryWorkspace", () => {
     );
 
     expect(screen.getByText("BRG-001")).toBeInTheDocument();
-    expect(screen.getByText("BRG-FAILED")).toBeInTheDocument();
+    expect(screen.queryByText("BRG-FAILED")).not.toBeInTheDocument();
     expect(screen.queryByText("BRG-MARKET")).not.toBeInTheDocument();
     expect(screen.queryByText("BRG-WAIT")).not.toBeInTheDocument();
     expect(screen.queryByText("BRG-SOLD")).not.toBeInTheDocument();
-    expect(screen.getByText((_, node) => node?.textContent?.replace(/\s+/g, " ").trim() === "Menampilkan 2 dari 2 barang.")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent?.replace(/\s+/g, " ").trim() === "Menampilkan 1 dari 1 barang.")).toBeInTheDocument();
   });
 
   it("paginates inventory rows without rendering every item at once", () => {
@@ -97,7 +97,32 @@ describe("AdminInventoryWorkspace", () => {
     fireEvent.click(screen.getByRole("button", { name: /siap dipasarkan/i }));
 
     expect(screen.getByText("BRG-001")).toBeInTheDocument();
-    expect(screen.getByText("BRG-003")).toBeInTheDocument();
+    expect(screen.getByText("BRG-002")).toBeInTheDocument();
+    expect(screen.queryByText("BRG-003")).not.toBeInTheDocument();
+    expect(screen.getByText("BRG-004")).toBeInTheDocument();
+  });
+
+  it("wraps item names and aligns inventory table headers with their cells", () => {
+    render(
+      <AdminInventoryWorkspace
+        items={[
+          {
+            ...makeItem(1),
+            name: "Mobil Smart Forfour Passion 1.0 AT Tahun 2016 Warna Biru Kondisi Sangat Baik"
+          }
+        ]}
+      />
+    );
+
+    const itemName = screen.getByText("Mobil Smart Forfour Passion 1.0 AT Tahun 2016 Warna Biru Kondisi Sangat Baik");
+    expect(itemName).not.toHaveClass("truncate");
+    expect(itemName).toHaveClass("whitespace-normal", "break-words", "text-left");
+
+    expect(screen.getByRole("columnheader", { name: "Barang" })).toHaveClass("text-left");
+    expect(screen.getByRole("columnheader", { name: "Kategori" })).toHaveClass("text-center");
+    expect(screen.getByRole("columnheader", { name: "No. Nasabah" })).toHaveClass("text-center");
+    expect(screen.getByRole("columnheader", { name: "Nilai Taksiran" })).toHaveClass("text-right");
+    expect(screen.getByRole("columnheader", { name: "Aksi" })).toHaveClass("text-center");
   });
 
   it("sorts inventory rows by due date from the header control", () => {

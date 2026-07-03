@@ -217,9 +217,9 @@ export async function listAdminBarang(unitId: string) {
   const rows = await db
     .select()
     .from(barang)
-    .where(and(eq(barang.unitId, unitId), inArray(barang.status, ["gadai", "jaminan", "gagal"])))
+    .where(and(eq(barang.unitId, unitId), inArray(barang.status, ["gadai", "jaminan"])))
     .orderBy(desc(barang.createdAt));
-  const inventoryRows = rows.filter((item) => ["gadai", "jaminan", "gagal"].includes(item.status));
+  const inventoryRows = rows.filter((item) => ["gadai", "jaminan"].includes(item.status));
 
   if (inventoryRows.length === 0) {
     return [];
