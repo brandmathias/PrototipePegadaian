@@ -228,6 +228,7 @@ export function AdminBarangEditForm({
         scope: "admin-unit"
       });
       router.push("/admin/barang");
+      router.refresh();
     } catch (error) {
       toast({
         title: "Perubahan belum tersimpan",

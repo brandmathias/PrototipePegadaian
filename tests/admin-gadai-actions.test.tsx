@@ -177,7 +177,7 @@ describe("admin gadai action forms", () => {
     await waitFor(() => {
       expect(router.push).toHaveBeenCalledWith("/admin/barang");
     });
-    expect(router.refresh).not.toHaveBeenCalled();
+    expect(router.refresh).toHaveBeenCalledOnce();
   });
 
   it("uses an explicit green focus treatment on every edit field", () => {
