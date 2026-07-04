@@ -366,7 +366,8 @@ describe("AdminDashboardPage", () => {
     expect(within(tooltip).getByText(/^Harga Tetap$/i)).toBeInTheDocument();
     expect(within(tooltip).getByText(/^Rp 6\.000\.000$/i)).toBeInTheDocument();
     expect(within(tooltip).getByText(/^Volume$/i)).toBeInTheDocument();
-    expect(within(tooltip).getByText(/^3 transaksi$/i)).toBeInTheDocument();
+    expect(within(tooltip).getAllByText(/^3 transaksi$/i).length).toBeGreaterThan(0);
+    expect(within(tooltip).queryByText(/^3 trx$/i)).not.toBeInTheDocument();
   });
 
   it("falls back to live transaction data when precomputed metrics are unavailable", () => {

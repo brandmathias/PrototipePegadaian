@@ -1774,8 +1774,8 @@ export function SuperAdminDashboardPage({
                         {formatFullCurrency(activeTrendPoint.amount)}
                       </p>
                     </div>
-                    <span className="rounded-full bg-[#fff7e6] px-2.5 py-1 text-[0.68rem] font-black text-[#c97900]">
-                      {formatDashboardCount(activeTrendPoint.volume)} trx
+                    <span className="shrink-0 whitespace-nowrap rounded-full bg-[#fff7e6] px-2.5 py-1 text-[0.64rem] font-black leading-none text-[#c97900]">
+                      {formatDashboardCount(activeTrendPoint.volume)} transaksi
                     </span>
                   </div>
                   <div className="mt-3 grid gap-2 text-[0.75rem] font-bold text-[#52615d]">
