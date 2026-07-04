@@ -58,4 +58,21 @@ describe("buyer mobile performance contracts", () => {
     expect(pageComponent).not.toContain("window.setInterval");
     expect(pageComponent).not.toContain("setNow");
   });
+
+  it("keeps the buyer dashboard LCP cheap and defers below-fold artwork", async () => {
+    const [dashboard, welcomeBadge] = await Promise.all([
+      source("components/pages/user-dashboard-page.tsx"),
+      source("components/shared/welcome-brush-badge.tsx")
+    ]);
+    const heroImage = dashboard.slice(
+      dashboard.indexOf('alt="Ilustrasi beranda pembeli"'),
+      dashboard.indexOf('src={BUYER_HOME_HERO_IMAGE}') + 'src={BUYER_HOME_HERO_IMAGE}'.length
+    );
+
+    expect(heroImage).toContain("priority");
+    expect(heroImage).toContain("quality={60}");
+    expect(dashboard).not.toContain('loading="eager"');
+    expect(welcomeBadge).not.toContain("<feTurbulence");
+    expect(welcomeBadge).not.toContain("<feDisplacementMap");
+  });
 });

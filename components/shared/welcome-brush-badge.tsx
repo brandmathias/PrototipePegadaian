@@ -52,39 +52,11 @@ export default function WelcomeBrushBadge({
               <stop offset="100%" stopColor="#064E3B" />
             </linearGradient>
 
-            {/* Displacement filter to create rough, textured paint brush edges */}
-            <filter id="brushTexture" x="-10%" y="-20%" width="120%" height="140%">
-              {/* Generate fractal noise texture */}
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.05"
-                numOctaves="4"
-                result="noise"
-              />
-              {/* Displace the clean vector edge using the noise */}
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="noise"
-                scale="7"
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="displaced"
-              />
-              {/* Apply premium drop shadow mapping the displaced brush shape */}
-              <feDropShadow
-                dx="0"
-                dy="6"
-                stdDeviation="5"
-                floodColor="#004d34"
-                floodOpacity="0.16"
-              />
-            </filter>
           </defs>
 
           {/* Main brush body path */}
           <path
             className="origin-left animate-brush-reveal"
-            filter="url(#brushTexture)"
             fill="url(#brushGradient)"
             d="M18 13 C52 6, 94 8, 134 10 C180 12, 236 4, 303 12 C326 15, 337 24, 329 35 C322 47, 291 50, 246 48 C196 46, 158 56, 101 50 C66 47, 31 53, 13 42 C-1 34, 2 19, 18 13 Z"
           />
@@ -92,7 +64,6 @@ export default function WelcomeBrushBadge({
           {/* Secondary background stroke layer for painterly depth */}
           <path
             className="origin-left animate-brush-reveal"
-            filter="url(#brushTexture)"
             fill="#064E3B"
             opacity="0.25"
             d="M25 43 C70 48, 111 39, 163 43 C214 47, 270 40, 318 43 C270 51, 211 54, 152 50 C98 46, 60 55, 25 43 Z"

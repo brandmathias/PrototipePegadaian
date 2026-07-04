@@ -297,7 +297,7 @@ export function UserDashboardPage({
           className="object-contain object-right"
           fill
           priority
-          fetchPriority="high"
+          quality={60}
           sizes="(max-width: 768px) 100vw, 1280px"
           src={BUYER_HOME_HERO_IMAGE}
         />
@@ -512,7 +512,6 @@ export function UserDashboardPage({
                         alt={`Foto ${latestViolation.itemName}`}
                         className="object-cover"
                         fill
-                        loading="eager"
                         sizes="88px"
                         src={latestViolation.imageUrl}
                       />
@@ -579,7 +578,7 @@ export function UserDashboardPage({
           aria-hidden="true"
           className="object-cover object-right opacity-80"
           fill
-          loading="eager"
+          quality={60}
           sizes="(max-width: 768px) 100vw, 1280px"
           src={BUYER_NOTES_BACKGROUND_IMAGE}
         />
