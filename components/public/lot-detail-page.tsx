@@ -199,15 +199,15 @@ export function LotDetailPage({
                   {lot.name}
                 </h1>
                 <div className="space-y-2.5" data-testid="lot-unit-location">
-                  <span
-                    className="inline-flex items-center gap-2 rounded-full border border-[#d4e6dc] bg-[#f4faf6] px-3.5 py-2 text-sm font-bold text-[#155c40] shadow-[0_12px_28px_-22px_rgba(8,69,50,0.48)]"
-                    data-testid="lot-unit-name"
-                  >
-                    <span className="grid size-6 place-items-center rounded-full bg-[#dff2e7] text-[#0d6b4c]">
-                      <MapPin className="size-3.5" />
+                  <div className="inline-flex items-center gap-2 text-sm text-[#155c40]">
+                    <MapPin className="size-4 text-[#d8aa3f]" />
+                    <span
+                      className="font-black tracking-[0.01em] underline decoration-[#e8c36a] decoration-2 underline-offset-4"
+                      data-testid="lot-unit-name"
+                    >
+                      {lot.unitName}
                     </span>
-                    {lot.unitName}
-                  </span>
+                  </div>
                   <p className="text-sm font-medium leading-6 text-[#66756e]" data-testid="lot-unit-address">
                     {lot.location}
                   </p>

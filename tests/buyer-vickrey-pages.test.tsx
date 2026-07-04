@@ -140,7 +140,10 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByTestId("lot-media-frame")).toHaveClass("xl:flex-1");
 
     expect(screen.getByTestId("lot-availability-tags")).toHaveTextContent("Sulawesi Utara");
-    expect(screen.getByTestId("lot-unit-name")).toHaveTextContent("UPC Boulevard");
+    const unitName = screen.getByTestId("lot-unit-name");
+    expect(unitName).toHaveTextContent("UPC Boulevard");
+    expect(unitName).toHaveClass("font-black", "underline");
+    expect(unitName).not.toHaveClass("rounded-full", "border", "bg-[#f4faf6]", "shadow-[0_12px_28px_-22px_rgba(8,69,50,0.48)]");
     expect(screen.getByTestId("lot-unit-address")).toHaveTextContent("Jl. Boulevard, Manado");
     expect(screen.getByTestId("lot-unit-location")).not.toHaveTextContent("/");
     expect(screen.getByTestId("lot-description")).toHaveClass("text-justify");
