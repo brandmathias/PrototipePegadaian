@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 
-import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-pages.lazy";
+import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-unit-barang-detail-page";
 import { getSuperAdminUnitBarangDetail } from "@/lib/services/unit.service";
 
 const getCachedSuperAdminUnitBarangDetail = unstable_cache(

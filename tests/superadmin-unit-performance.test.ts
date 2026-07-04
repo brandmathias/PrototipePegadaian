@@ -70,4 +70,18 @@ describe("superadmin unit monitoring performance", () => {
     expect(route).toContain("unstable_cache");
     expect(route).toContain("revalidate: 5");
   });
+
+  it("keeps the item-detail route out of the giant superadmin client bundle", async () => {
+    const [route, page, deferredMarketing] = await Promise.all([
+      source("app/superadmin/unit/[id]/barang/[barangId]/page.tsx"),
+      source("components/pages/superadmin-unit-barang-detail-page.tsx"),
+      source("components/pages/deferred-superadmin-marketing-audit.tsx"),
+    ]);
+
+    expect(route).toContain("@/components/pages/superadmin-unit-barang-detail-page");
+    expect(route).not.toContain("superadmin-pages.lazy");
+    expect(page).not.toContain('"use client"');
+    expect(page).toContain("<DeferredSuperAdminMarketingAudit");
+    expect(deferredMarketing).toContain("IntersectionObserver");
+  });
 });

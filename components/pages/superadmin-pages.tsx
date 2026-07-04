@@ -3546,7 +3546,7 @@ function getSuperAdminInitials(name?: string | null) {
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
 }
 
-type SuperAdminMarketingReceiptContext = {
+export type SuperAdminMarketingReceiptContext = {
   itemCode: string;
   itemMedia: SuperAdminUnitBarangDetailMedia[];
   itemTitle: string;
@@ -4970,7 +4970,7 @@ function SuperAdminDetailInfoCard({
   );
 }
 
-function SuperAdminMarketingAuditPanel({
+export function SuperAdminMarketingAuditPanel({
   marketing,
   receiptContext,
 }: {
