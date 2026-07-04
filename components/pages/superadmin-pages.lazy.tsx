@@ -48,7 +48,7 @@ const LazySuperAdminUnitsPage = dynamic<SuperAdminProps<"SuperAdminUnitsPage">>(
 
 const LazySuperAdminUnitDetailPage = dynamic<SuperAdminProps<"SuperAdminUnitDetailPage">>(
   () => import("@/components/pages/superadmin-pages").then((module) => module.SuperAdminUnitDetailPage),
-  { loading: SuperAdminFallback, ssr: false }
+  { loading: SuperAdminFallback }
 );
 
 const LazySuperAdminManagementUnitDetailPage = dynamic<

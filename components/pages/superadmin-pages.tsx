@@ -2980,11 +2980,14 @@ function SuperAdminUnitInventorySection({
                         {formatDashboardCount(currentPageStart + index)}
                       </td>
                       <td className="px-4 py-3.5">
-                        <div className="grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
+                        <div className="relative grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
                           {item.imageUrl ? (
-                            <img
+                            <Image
                               alt={item.name}
                               className="size-full object-cover"
+                              fill
+                              quality={60}
+                              sizes="48px"
                               src={item.imageUrl}
                             />
                           ) : (
