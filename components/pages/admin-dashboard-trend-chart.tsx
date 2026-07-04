@@ -813,15 +813,6 @@ export function AdminDashboardTrendChart({ metrics }: { metrics: AdminDashboardM
                     {formatCurrencyFull(activePoint.fixedPriceAmount)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#fff9ef] px-2.5 py-2 dark:bg-amber-300/8">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="size-2.5 rounded-full border-2 border-[#f59e0b] bg-white dark:bg-[#102019]" />
-                    Volume
-                  </span>
-                  <span className="font-black text-[#c97900] dark:text-amber-100">
-                    {formatCount(activePoint.value)} transaksi
-                  </span>
-                </div>
               </div>
             </div>
           ) : null}

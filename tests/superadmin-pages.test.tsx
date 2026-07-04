@@ -525,8 +525,8 @@ describe("superadmin pages", () => {
     fireEvent.mouseEnter(aprilHotspot);
 
     expect(screen.getByRole("tooltip")).toHaveTextContent("Rp 48.000.000");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("Volume");
     expect(screen.getByRole("tooltip")).toHaveTextContent("6 transaksi");
+    expect(screen.getByRole("tooltip")).not.toHaveTextContent("Volume");
 
     fireEvent.click(
       screen.getByRole("button", {
