@@ -11,9 +11,11 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Eye,
   Gem,
   Gavel,
   Grid3X3,
+  Heart,
   LayoutList,
   MapPin,
   Medal,
@@ -25,6 +27,7 @@ import {
   SlidersHorizontal,
   Tag,
   Timer,
+  UsersRound,
   X
 } from "lucide-react";
 
@@ -32,7 +35,6 @@ import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 import { LotFigure } from "@/components/shared/lot-figure";
-import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
 import { ADMIN_UNIT_CATEGORY_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
@@ -167,6 +169,29 @@ function getLotInsights(lot: Lot) {
     likes: lot.insights?.likes ?? 0,
     views: lot.insights?.views ?? 0
   };
+}
+
+function CatalogLotStats({ lot }: { lot: Lot }) {
+  const stats = getLotInsights(lot);
+  const items = [
+    { icon: Eye, label: "Dilihat", value: `${getCountLabel(stats.views)}x` },
+    { icon: Heart, label: "Suka", value: getCountLabel(stats.likes) },
+    lot.mode === "vickrey"
+      ? { icon: UsersRound, label: "Peserta", value: getCountLabel(stats.followers) }
+      : null
+  ].filter(Boolean) as Array<{ icon: typeof Eye; label: string; value: string }>;
+
+  return (
+    <div className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56">
+      {items.map(({ icon: Icon, label, value }) => (
+        <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap" key={label}>
+          <Icon className="size-3.5" />
+          <span>{label}</span>
+          <span>{value}</span>
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function getCategoryIcon(category: string) {
@@ -548,7 +573,7 @@ function CatalogLotCard({
   return (
     <article
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
+        "group flex h-full flex-col overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_20px_54px_-44px_rgba(8,69,50,0.42)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] [contain-intrinsic-size:auto_32rem] [content-visibility:auto] hover:-translate-y-1 hover:border-[#0b6a49]/22 hover:shadow-[0_26px_70px_-48px_rgba(8,69,50,0.52)]",
         viewMode === "list" && "lg:grid lg:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] lg:gap-0"
       )}
     >
@@ -592,12 +617,7 @@ function CatalogLotCard({
           ))}
         </div>
 
-        <LotRealtimeStats
-          className="mt-2 flex min-h-[1.2rem] items-center gap-3.5 overflow-hidden text-[0.72rem] font-semibold text-black/56"
-          initialStats={lot.insights}
-          lotId={lot.id}
-          mode={lot.mode}
-        />
+        <CatalogLotStats lot={lot} />
 
         <div className="mt-3 grid content-start gap-2.5">
           <div className={cn("grid items-start gap-2.5", showAuctionCountdown ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-1")}>
