@@ -119,7 +119,6 @@ export function LotDetailPage({
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
   const specificationRows = lot.specs;
-  const hasSingleMedia = lot.media.length === 1;
   const transactionContext: DetailInfoItem[] = [
     {
       icon: ShoppingCart,
@@ -157,22 +156,13 @@ export function LotDetailPage({
           <span className="text-[#b8892f]">{lot.name}</span>
         </nav>
 
-        <section className={cn(
-          "grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]",
-          hasSingleMedia ? "xl:items-stretch" : "xl:items-start"
-        )}>
-          <div className={cn("space-y-6", hasSingleMedia && "xl:h-full")}>
-            <div className={cn(
-              "relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)]",
-              hasSingleMedia && "xl:h-full"
-            )}>
+        <section className="grid gap-8 xl:items-stretch xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
+          <div className="space-y-6 xl:h-full">
+            <div className="relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)] xl:h-full">
               <LotMediaGallery
                 allowFullscreen
                 category={lot.category}
-                className={cn(
-                  "min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]",
-                  hasSingleMedia && "xl:h-full xl:min-h-0"
-                )}
+                className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem] xl:min-h-0"
                 title={lot.name}
                 media={lot.media}
                 priority
@@ -186,13 +176,19 @@ export function LotDetailPage({
           <aside className="xl:sticky xl:top-24">
             <div className="relative space-y-7 overflow-hidden rounded-[1.9rem] bg-white p-6 text-[#183f32] shadow-[0_30px_90px_rgba(3,45,36,0.12)] ring-1 ring-[#e8e2d6] md:p-8">
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(140deg,rgba(232,195,106,0.08),transparent_34%),radial-gradient(circle_at_88%_70%,rgba(0,74,35,0.05),transparent_28%)]" />
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-2.5" data-testid="lot-availability-tags">
                 <span className="relative rounded-full bg-[#0d6b4c] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ecfff8] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
                   {modeLabel}
                 </span>
                 <span className="relative rounded-full bg-[#f7f2e8] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#9a6a00] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
                   {lot.status}
                 </span>
+                {lot.domicile ? (
+                  <span className="relative inline-flex items-center gap-1.5 rounded-full border border-[#cfe4d9] bg-[#f3faf6] px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#17633f]">
+                    <MapPin className="size-3.5" />
+                    {lot.domicile}
+                  </span>
+                ) : null}
               </div>
 
               <div className="relative space-y-3">
@@ -202,17 +198,30 @@ export function LotDetailPage({
                 <h1 className="max-w-xl font-headline text-4xl font-black leading-[1.05] tracking-tight text-[#0f4735] md:text-5xl">
                   {lot.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#5f6f68]">
-                  <MapPin className="size-4 text-[#f0bd51]" />
-                  <span>{lot.unitName}</span>
-                  <span className="text-[#c9b991]">/</span>
-                  <span>{lot.location}</span>
+                <div className="space-y-2.5" data-testid="lot-unit-location">
+                  <span
+                    className="inline-flex items-center gap-2 rounded-full border border-[#d4e6dc] bg-[#f4faf6] px-3.5 py-2 text-sm font-bold text-[#155c40] shadow-[0_12px_28px_-22px_rgba(8,69,50,0.48)]"
+                    data-testid="lot-unit-name"
+                  >
+                    <span className="grid size-6 place-items-center rounded-full bg-[#dff2e7] text-[#0d6b4c]">
+                      <MapPin className="size-3.5" />
+                    </span>
+                    {lot.unitName}
+                  </span>
+                  <p className="text-sm font-medium leading-6 text-[#66756e]" data-testid="lot-unit-address">
+                    {lot.location}
+                  </p>
                 </div>
               </div>
 
               <div className="relative space-y-3 border-y border-[#ece5d9] py-5">
                 <h2 className="font-headline text-lg font-bold text-[#0f4735]">Deskripsi Barang</h2>
-                <p className="max-w-2xl text-sm leading-7 text-[#617068]">{lot.description}</p>
+                <p
+                  className="max-w-2xl break-words text-justify text-sm leading-7 text-[#617068] [hyphens:auto] [text-justify:inter-word]"
+                  data-testid="lot-description"
+                >
+                  {lot.description}
+                </p>
               </div>
 
               <div className="relative space-y-3">

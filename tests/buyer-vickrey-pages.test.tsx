@@ -60,6 +60,7 @@ const fixedPriceLot: Lot = {
   price: 45000000,
   location: "Jl. Boulevard, Manado",
   unitName: "UPC Boulevard",
+  domicile: "Sulawesi Utara",
   city: "Manado",
   condition: "Baik",
   status: "Tersedia",
@@ -113,6 +114,36 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByText(/alur harga tetap/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/360\s*view/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /buka preview penuh media barang/i })).toBeInTheDocument();
+  });
+
+  it("aligns a multi-media gallery with the detail card and clarifies unit information", () => {
+    const multiMediaLot: Lot = {
+      ...fixedPriceLot,
+      description:
+        "Barang harga tetap dengan deskripsi panjang yang tetap terbaca rapi pada card informasi katalog.",
+      media: [
+        ...fixedPriceLot.media,
+        {
+          id: "fixed-media-2",
+          type: "foto",
+          url: "/uploads/barang/gelang-detail.jpg",
+          fileName: "gelang-detail.jpg"
+        }
+      ]
+    };
+
+    render(<LotDetailPage bidState={null} buyerStatus={null} lot={multiMediaLot} />);
+
+    const heroGrid = screen.getByLabelText("Breadcrumb").nextElementSibling;
+    expect(heroGrid).toHaveClass("xl:items-stretch");
+    expect(screen.getByTestId("lot-media-gallery")).toHaveClass("h-full");
+    expect(screen.getByTestId("lot-media-frame")).toHaveClass("xl:flex-1");
+
+    expect(screen.getByTestId("lot-availability-tags")).toHaveTextContent("Sulawesi Utara");
+    expect(screen.getByTestId("lot-unit-name")).toHaveTextContent("UPC Boulevard");
+    expect(screen.getByTestId("lot-unit-address")).toHaveTextContent("Jl. Boulevard, Manado");
+    expect(screen.getByTestId("lot-unit-location")).not.toHaveTextContent("/");
+    expect(screen.getByTestId("lot-description")).toHaveClass("text-justify");
   });
 
   it("shows the updated transaction context and category-specific specs in separate white cards", () => {
