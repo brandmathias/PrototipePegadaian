@@ -15,7 +15,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("")
 }));
 
-function expectOptimizedBrandImages(container: Element, large = false) {
+function expectOptimizedBrandImages(container: Element, large = false, markPriority: "high" | "low" = "low") {
   const images = container.querySelectorAll("img");
 
   expect(images).toHaveLength(2);
@@ -23,7 +23,7 @@ function expectOptimizedBrandImages(container: Element, large = false) {
     expect(image).toHaveAttribute("loading", "eager");
     expect(image).not.toHaveAttribute("sizes");
   });
-  expect(images[0]).toHaveAttribute("fetchpriority", "low");
+  expect(images[0]).toHaveAttribute("fetchpriority", markPriority);
   expect(images[1]).toHaveAttribute("fetchpriority", "high");
   expect(images[0]).toHaveAttribute("width", large ? "60" : "40");
   expect(images[0]).toHaveAttribute("height", large ? "60" : "40");
@@ -87,11 +87,11 @@ describe("PublicShell", () => {
   });
 
   it.each([
-    ["login", <LoginPage key="login" />],
-    ["register", <RegisterPage key="register" />]
-  ])("uses optimized brand delivery on the %s page", (_page, page) => {
+    ["login", <LoginPage key="login" />, "high" as const],
+    ["register", <RegisterPage key="register" />, "low" as const]
+  ])("uses optimized brand delivery on the %s page", (_page, page, markPriority) => {
     render(<ToastProvider>{page}</ToastProvider>);
 
-    expectOptimizedBrandImages(screen.getByRole("img", { name: /ruang agunan/i }), true);
+    expectOptimizedBrandImages(screen.getByRole("img", { name: /ruang agunan/i }), true, markPriority);
   });
 });

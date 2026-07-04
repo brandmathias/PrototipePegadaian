@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
 import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
 import { adminNavigation } from "@/components/layout/role-navigation";
@@ -10,6 +11,25 @@ import { getAdminLayoutMetrics } from "@/lib/services/admin-layout.service";
 import { formatAppDateTime } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
+
+const getCachedAdminLayoutMetrics = unstable_cache(
+  async (unitId: string) => getAdminLayoutMetrics(unitId),
+  ["admin-layout-metrics"],
+  {
+    revalidate: 10,
+    tags: ["admin-layout"]
+  }
+);
+
+const getCachedAdminLayoutUnit = unstable_cache(
+  async (unitId: string) =>
+    db.select().from(units).where(eq(units.id, unitId)).limit(1),
+  ["admin-layout-unit"],
+  {
+    revalidate: 60,
+    tags: ["admin-layout"]
+  }
+);
 
 function isAdminReceiptRoute(path: string) {
   const pathname = path.split(/[?#]/, 1)[0] || path;
@@ -26,10 +46,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   const [unit] = currentUser.unitId
-    ? await db.select().from(units).where(eq(units.id, currentUser.unitId)).limit(1)
+    ? await getCachedAdminLayoutUnit(currentUser.unitId)
     : [];
   const { inventoryMetrics } = currentUser.unitId
-    ? await getAdminLayoutMetrics(currentUser.unitId)
+    ? await getCachedAdminLayoutMetrics(currentUser.unitId)
     : {
         inventoryMetrics: { dueSoon: 0, readyForMarketing: 0, total: 0 }
       };

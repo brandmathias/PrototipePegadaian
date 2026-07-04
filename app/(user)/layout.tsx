@@ -1,10 +1,20 @@
 import type { ReactNode } from "react";
+import { unstable_cache } from "next/cache";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
 import { getAppPathFromRequestHeaders, requireBuyerSession } from "@/lib/auth/session";
 import { getBuyerShellSummary } from "@/lib/services/buyer.service";
 
 export const dynamic = "force-dynamic";
+
+const getCachedBuyerShellSummary = unstable_cache(
+  async (userId: string) => getBuyerShellSummary(userId),
+  ["buyer-shell-summary"],
+  {
+    revalidate: 5,
+    tags: ["buyer-shell"]
+  }
+);
 
 function isBuyerReceiptRoute(path: string) {
   const pathname = path.split(/[?#]/, 1)[0] || path;
@@ -20,7 +30,7 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
     return <>{children}</>;
   }
 
-  const summary = await getBuyerShellSummary(session.user.id);
+  const summary = await getCachedBuyerShellSummary(session.user.id);
 
   return (
     <BuyerShell

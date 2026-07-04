@@ -22,11 +22,12 @@ type BrandTone = "default" | "inverse" | "gold";
 type BrandMarkProps = {
   className?: string;
   large?: boolean;
+  priority?: boolean;
   title?: string;
   tone?: BrandTone;
 };
 
-export function BrandMark({ className, large = false, title = "" }: BrandMarkProps) {
+export function BrandMark({ className, large = false, priority = false, title = "" }: BrandMarkProps) {
   const size = large ? 60 : 40;
 
   return (
@@ -35,9 +36,10 @@ export function BrandMark({ className, large = false, title = "" }: BrandMarkPro
       aria-hidden={title ? undefined : true}
       className={cn("h-10 w-10 shrink-0 object-contain", className)}
       draggable={false}
-      fetchPriority="low"
+      fetchPriority={priority ? "high" : "low"}
       height={size}
       loading="eager"
+      priority={priority}
       src={BRAND_ICON_SRC}
       width={size}
     />
@@ -49,6 +51,7 @@ type BrandLockupProps = {
   large?: boolean;
   markClassName?: string;
   nameClassName?: string;
+  priority?: boolean;
   showName?: boolean;
   stacked?: boolean;
   style?: CSSProperties;
@@ -60,6 +63,7 @@ export function BrandLockup({
   large = false,
   markClassName,
   nameClassName,
+  priority = false,
   showName = true,
   stacked: _stacked = false,
   style,
@@ -72,7 +76,7 @@ export function BrandLockup({
       role={showName ? "img" : undefined}
       style={style}
     >
-      <BrandMark className={markClassName} large={large} />
+      <BrandMark className={markClassName} large={large} priority={priority} />
       {showName ? (
         <Image
           alt=""
@@ -82,6 +86,7 @@ export function BrandLockup({
           fetchPriority="high"
           height={large ? 49 : 28}
           loading="eager"
+          priority={priority}
           src={BRAND_NAME_IMAGE_SRC}
           width={large ? 207 : 118}
         />

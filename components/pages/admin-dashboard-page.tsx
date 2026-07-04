@@ -348,6 +348,7 @@ function AdminDashboardHero({
           height={400}
           quality={75}
           priority
+          fetchPriority="high"
           sizes="(max-width: 1100px) 80vw, 400px"
           style={{ width: '100%', height: 'auto' }}
         />
@@ -436,11 +437,11 @@ export function AdminDashboardPage({ data, adminName }: { data: AdminDashboardDa
         ))}
       </section>
 
-      <section>
+      <section className="[content-visibility:auto] [contain-intrinsic-size:380px]">
           <AdminDashboardChecklistCard nowIso={nowIso} tasks={tasks} />
       </section>
 
-      <section>
+      <section className="[content-visibility:auto] [contain-intrinsic-size:620px]">
         <AdminDashboardTrendChart metrics={metrics} />
       </section>
     </div>

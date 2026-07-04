@@ -1373,6 +1373,7 @@ export function SuperAdminDashboardPage({
             className="pointer-events-none object-cover object-center"
             fill
             priority
+            fetchPriority="high"
             sizes="(min-width: 1024px) calc(100vw - 16rem), 100vw"
             src={SUPERADMIN_DASHBOARD_HERO_IMAGE}
           />

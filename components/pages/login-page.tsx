@@ -18,6 +18,7 @@ function LoginBrandCluster() {
         large
         markClassName="size-[3.75rem]"
         nameClassName="h-[3.1rem] max-w-[19.5rem] brightness-[1.08] contrast-[1.08]"
+        priority
       />
       <span className="relative z-[1] ml-1 h-px w-36 bg-[linear-gradient(90deg,rgba(240,210,135,0.92),rgba(240,210,135,0.24),transparent)]" />
     </div>
