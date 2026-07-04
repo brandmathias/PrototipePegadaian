@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
-import { PageTransition } from "@/components/shared/page-transition";
 
 type BuyerShellProps = {
   buyer: BuyerSessionUser;
@@ -54,7 +53,7 @@ export function BuyerShell({
           isFocusedResultPage ? "container py-0 print:py-0" : "container py-8 md:py-10 print:py-0"
         )}
       >
-        <PageTransition>{children}</PageTransition>
+        <div className="animate-page-transition">{children}</div>
       </main>
     </div>
   );

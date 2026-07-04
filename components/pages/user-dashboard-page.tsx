@@ -297,6 +297,7 @@ export function UserDashboardPage({
           className="object-contain object-right"
           fill
           priority
+          fetchPriority="high"
           quality={60}
           sizes="(max-width: 768px) 100vw, 1280px"
           src={BUYER_HOME_HERO_IMAGE}

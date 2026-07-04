@@ -40,14 +40,17 @@ describe("buyer mobile performance contracts", () => {
   });
 
   it("does not mount a global DOM-scanning reveal observer", async () => {
-    const [layout, transitions] = await Promise.all([
+    const [layout, transitions, buyerShell] = await Promise.all([
       source("app/layout.tsx"),
-      source("components/shared/page-transition.tsx")
+      source("components/shared/page-transition.tsx"),
+      source("components/layout/buyer-shell.tsx")
     ]);
 
     expect(layout).not.toContain("GlobalScrollReveal");
     expect(transitions).not.toContain("IntersectionObserver");
     expect(transitions).not.toContain("querySelectorAll");
+    expect(buyerShell).not.toContain("PageTransition");
+    expect(buyerShell).toContain('className="animate-page-transition"');
   });
 
   it("keeps the one-second violation clock inside a countdown leaf component", async () => {
@@ -70,6 +73,7 @@ describe("buyer mobile performance contracts", () => {
     );
 
     expect(heroImage).toContain("priority");
+    expect(heroImage).toContain('fetchPriority="high"');
     expect(heroImage).toContain("quality={60}");
     expect(dashboard).not.toContain('loading="eager"');
     expect(welcomeBadge).not.toContain("<feTurbulence");
