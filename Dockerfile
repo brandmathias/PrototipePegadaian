@@ -47,6 +47,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/bundled-uploads ./bundled-uploads
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/start-production.mjs ./start-production.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/production-cron-scheduler.mjs ./production-cron-scheduler.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0023_canonical_unit_sbg_codes.sql ./canonical-code-migration.sql
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0025_customer_data_standard.sql ./customer-data-standard-migration.sql
 

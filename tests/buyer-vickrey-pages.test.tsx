@@ -101,8 +101,11 @@ describe("buyer vickrey pages", () => {
   it("keeps the sale type pill on lot detail while removing condition, trust badges, and flow panels", () => {
     const { container } = render(<LotDetailPage bidState={null} buyerStatus={null} lot={fixedPriceLot} />);
     const purchasePanel = container.querySelector("aside");
+    const heroGrid = screen.getByLabelText("Breadcrumb").nextElementSibling;
 
     expect(purchasePanel).not.toBeNull();
+    expect(heroGrid).toHaveClass("xl:items-stretch");
+    expect(screen.getByTestId("lot-media-gallery")).toHaveClass("h-full");
     expect(within(purchasePanel as HTMLElement).getByText("Harga Tetap")).toBeInTheDocument();
     expect(within(purchasePanel as HTMLElement).queryByText("Baik")).not.toBeInTheDocument();
     expect(screen.queryByText(/pembayaran aman/i)).not.toBeInTheDocument();

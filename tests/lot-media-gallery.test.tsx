@@ -79,6 +79,32 @@ describe("LotMediaGallery", () => {
     expect(screen.getByAltText(/preview penuh kalung emas foto 1/i)).toBeInTheDocument();
   });
 
+  it("stretches a single PDP media frame to match the adjacent detail card height", () => {
+    render(
+      <LotMediaGallery
+        category="Perhiasan"
+        className="h-full min-h-[22rem] xl:min-h-0"
+        title="Cincin Emas"
+        media={[
+          {
+            id: "media-photo-1",
+            type: "foto",
+            url: "/uploads/barang/foto-1.jpg",
+            fileName: "foto-1.jpg"
+          }
+        ]}
+        variant="pdp"
+      />
+    );
+
+    const gallery = screen.getByTestId("lot-media-gallery");
+    const frame = screen.getByTestId("lot-media-frame");
+
+    expect(gallery).toHaveClass("h-full");
+    expect(frame).toHaveClass("h-full");
+    expect(frame).toHaveClass("xl:min-h-0");
+  });
+
   it("prioritizes the PDP hero image while keeping video thumbnails previewable", () => {
     render(
       <LotMediaGallery

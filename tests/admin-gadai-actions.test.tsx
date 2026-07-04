@@ -273,6 +273,9 @@ describe("admin gadai action forms", () => {
     expect(JSON.parse(String((request as RequestInit).body))).toMatchObject({
       marketingPrice: "13500000"
     });
+    await waitFor(() => {
+      expect(router.push).toHaveBeenCalledWith("/admin/barang/barang-fixed");
+    });
   });
 
   it("submits only customer correction fields for a locked historical item", async () => {

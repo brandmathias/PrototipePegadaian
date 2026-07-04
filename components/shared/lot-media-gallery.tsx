@@ -84,10 +84,11 @@ export function LotMediaGallery({
   const activeMedia = media[activeIndex];
   const activeMediaLabel = `${title} ${activeMedia.type === "video" ? "video" : "foto"} ${activeIndex + 1}`;
   const isPdp = variant === "pdp";
+  const shouldStretchSinglePdpMedia = isPdp && media.length === 1;
   const progressScale = media.length > 1 ? (activeIndex + 1) / media.length : 1;
 
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", shouldStretchSinglePdpMedia && "h-full")} data-testid="lot-media-gallery">
       <div
         className={cn(
           "relative overflow-hidden rounded-[2rem] border border-border/70 bg-transparent shadow-[0_18px_50px_rgba(10,40,28,0.08)]",
@@ -95,8 +96,10 @@ export function LotMediaGallery({
             "border-transparent bg-[#082d24] shadow-[0_30px_90px_rgba(0,0,0,0.38)]",
           isPdp &&
             "border-transparent bg-[#f7f8f6] shadow-[inset_0_1px_0_rgba(255,255,255,0.84)]",
+          shouldStretchSinglePdpMedia && "h-full",
           className
         )}
+        data-testid="lot-media-frame"
       >
         <div className="absolute inset-0" data-testid="lot-media-active">
           {activeMedia.type === "video" ? (
@@ -168,7 +171,7 @@ export function LotMediaGallery({
             <span>{String(media.length).padStart(2, "0")}</span>
           </div>
         ) : null}
-        <div className="min-h-[22rem] md:min-h-[34rem]" />
+        <div className={cn("min-h-[22rem] md:min-h-[34rem]", shouldStretchSinglePdpMedia && "h-full xl:min-h-0")} />
       </div>
 
       {media.length > 1 ? (

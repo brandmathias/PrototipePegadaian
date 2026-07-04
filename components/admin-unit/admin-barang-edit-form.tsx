@@ -154,6 +154,7 @@ export function AdminBarangEditForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
   const canEditFixedPrice = String(item.marketingMode ?? "").toLowerCase() === "fixed_price";
+  const saveRedirectTo = canEditFixedPrice ? `/admin/barang/${item.id}` : "/admin/barang";
 
   function updateSpecification(key: string, value: string) {
     setSpecifications((current) => ({
@@ -223,11 +224,13 @@ export function AdminBarangEditForm({
 
       toast({
         title: "Perubahan tersimpan",
-        description: "Informasi barang sudah diperbarui. Anda akan kembali ke Kelola Barang.",
+        description: canEditFixedPrice
+          ? "Informasi barang sudah diperbarui. Anda akan kembali ke barang terkait."
+          : "Informasi barang sudah diperbarui. Anda akan kembali ke Kelola Barang.",
         variant: "success",
         scope: "admin-unit"
       });
-      router.push("/admin/barang");
+      router.push(saveRedirectTo);
       router.refresh();
     } catch (error) {
       toast({

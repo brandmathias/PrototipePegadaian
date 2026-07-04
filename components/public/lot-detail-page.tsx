@@ -24,6 +24,7 @@ import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDate, formatAppDateTime } from "@/lib/timezone";
+import { cn } from "@/lib/utils";
 
 type BuyerPublicStatus = {
   blacklist: {
@@ -118,6 +119,7 @@ export function LotDetailPage({
   const priceLabel = isVickrey ? "Harga dasar" : "Harga terkini";
   const auctionEndLabel = formatOptionalDate(lot.endsAt);
   const specificationRows = lot.specs;
+  const hasSingleMedia = lot.media.length === 1;
   const transactionContext: DetailInfoItem[] = [
     {
       icon: ShoppingCart,
@@ -155,13 +157,22 @@ export function LotDetailPage({
           <span className="text-[#b8892f]">{lot.name}</span>
         </nav>
 
-        <section className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)] xl:items-start">
-          <div className="space-y-6">
-            <div className="relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)]">
+        <section className={cn(
+          "grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]",
+          hasSingleMedia ? "xl:items-stretch" : "xl:items-start"
+        )}>
+          <div className={cn("space-y-6", hasSingleMedia && "xl:h-full")}>
+            <div className={cn(
+              "relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)]",
+              hasSingleMedia && "xl:h-full"
+            )}>
               <LotMediaGallery
                 allowFullscreen
                 category={lot.category}
-                className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]"
+                className={cn(
+                  "min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem]",
+                  hasSingleMedia && "xl:h-full xl:min-h-0"
+                )}
                 title={lot.name}
                 media={lot.media}
                 priority

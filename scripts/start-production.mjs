@@ -1,5 +1,6 @@
 import pg from "pg";
 import { readFile } from "node:fs/promises";
+import { startProductionCronScheduler } from "./production-cron-scheduler.mjs";
 
 const { Client } = pg;
 const connectionString = process.env.DATABASE_URL;
@@ -137,5 +138,9 @@ try {
 } finally {
   await client.end();
 }
+
+startProductionCronScheduler({
+  secret: process.env.CRON_SECRET,
+});
 
 await import("./server.js");

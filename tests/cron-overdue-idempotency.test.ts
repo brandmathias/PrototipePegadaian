@@ -319,7 +319,7 @@ describe("handover auto-completion settlement", () => {
     mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));
   });
 
-  it("auto-completes due handover transactions and records an audit trail", async () => {
+  it("auto-completes due fixed-price and Vickrey handovers and records audit trails", async () => {
     const updatePayloads: Array<Record<string, unknown>> = [];
     const insertPayloads: Array<Record<string, unknown>> = [];
     const now = new Date("2026-06-28T00:00:00.000Z");
@@ -335,6 +335,20 @@ describe("handover auto-completion settlement", () => {
             id: "trx-1",
             pemasaranId: "pemasaran-1",
             status: "lunas",
+            type: "fixed_price",
+            handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z")
+          }
+        },
+        {
+          item: {
+            id: "barang-2",
+            status: "dipasarkan"
+          },
+          transaction: {
+            id: "trx-2",
+            pemasaranId: "pemasaran-2",
+            status: "lunas",
+            type: "vickrey",
             handoverProofUploadedAt: new Date("2026-06-24T00:00:00.000Z")
           }
         }
@@ -342,6 +356,9 @@ describe("handover auto-completion settlement", () => {
     );
 
     mocks.tx.update
+      .mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)))
+      .mockImplementationOnce(() => mockVoidUpdate((value) => updatePayloads.push(value)))
+      .mockImplementationOnce(() => mockVoidUpdate((value) => updatePayloads.push(value)))
       .mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)))
       .mockImplementation(() => mockVoidUpdate((value) => updatePayloads.push(value)));
     mocks.tx.insert.mockReturnValue({
@@ -355,8 +372,8 @@ describe("handover auto-completion settlement", () => {
     const summary = await processHandoverAutoCompletions(now);
 
     expect(summary).toEqual({
-      processed: 1,
-      completed: 1
+      processed: 2,
+      completed: 2
     });
     expect(updatePayloads).toEqual(
       expect.arrayContaining([
@@ -372,6 +389,11 @@ describe("handover auto-completion settlement", () => {
       expect.arrayContaining([
         expect.objectContaining({
           barangId: "barang-1",
+          newStatus: "terjual",
+          changedByUserId: null
+        }),
+        expect.objectContaining({
+          barangId: "barang-2",
           newStatus: "terjual",
           changedByUserId: null
         })
