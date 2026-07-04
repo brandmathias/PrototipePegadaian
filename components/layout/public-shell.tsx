@@ -47,6 +47,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const searchParams = useSearchParams();
   const isBuyer = viewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
+  const shouldPrioritizeBrand = pathname.startsWith("/katalog");
   const navItems = guestNav;
   const brandHref = viewer?.homeHref ?? "/katalog";
   const search = searchParams.toString();
@@ -83,6 +84,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
                 <BrandLockup
                   markClassName="size-9 sm:size-10"
                   nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
+                  priority={shouldPrioritizeBrand}
                 />
               </Link>
               <nav

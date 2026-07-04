@@ -44,7 +44,7 @@ describe("PublicShell", () => {
     const guestBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(guestBrand).toHaveAttribute("href", "/katalog");
     expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
-    expectOptimizedBrandImages(guestBrand);
+    expectOptimizedBrandImages(guestBrand, false, "high");
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
@@ -72,7 +72,7 @@ describe("PublicShell", () => {
     const buyerBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(buyerBrand).toHaveAttribute("href", "/dashboard");
     expect(buyerBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
-    expectOptimizedBrandImages(buyerBrand);
+    expectOptimizedBrandImages(buyerBrand, false, "high");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");

@@ -79,6 +79,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
   const pathname = livePathname || currentPath.split(/[?#]/, 1)[0] || "/dashboard";
   const isLuxury = variant === "luxury";
   const catalogSearchValue = getCatalogSearchValue(pathname, searchParams);
+  const shouldPrioritizeBrand = pathname.startsWith("/katalog");
 
   return (
     <header
@@ -105,6 +106,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
                 isLuxury && "drop-shadow-[0_12px_24px_rgba(184,129,16,0.16)]"
               )}
               nameClassName="max-w-[10rem] text-[1.05rem] min-[390px]:max-w-[11.25rem] sm:max-w-none sm:text-[1.42rem]"
+              priority={shouldPrioritizeBrand}
               tone={isLuxury ? "gold" : "default"}
             />
           </Link>
