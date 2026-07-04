@@ -45,4 +45,29 @@ describe("superadmin unit monitoring performance", () => {
     expect(route).toContain("unstable_cache");
     expect(route).toContain("revalidate: 5");
   });
+
+  it("optimizes item-detail gallery images and server-renders the detail page", async () => {
+    const [viewer, lazyPages] = await Promise.all([
+      source("components/admin-unit/admin-barang-detail-media-viewer.tsx"),
+      source("components/pages/superadmin-pages.lazy.tsx"),
+    ]);
+    const initialGallery = viewer.slice(0, viewer.indexOf("{isFullscreenOpen"));
+    const detailLoader = lazyPages.slice(
+      lazyPages.indexOf("const LazySuperAdminUnitBarangDetailPage"),
+      lazyPages.indexOf("const LazySuperAdminUnitAccountsPage"),
+    );
+
+    expect(initialGallery).not.toMatch(/<img[\s>]/);
+    expect(viewer).toContain('import Image from "next/image"');
+    expect(initialGallery).toContain('sizes="96px"');
+    expect(initialGallery).toContain("quality={60}");
+    expect(detailLoader).not.toContain("ssr: false");
+  });
+
+  it("briefly caches repeated item-detail requests", async () => {
+    const route = await source("app/superadmin/unit/[id]/barang/[barangId]/page.tsx");
+
+    expect(route).toContain("unstable_cache");
+    expect(route).toContain("revalidate: 5");
+  });
 });

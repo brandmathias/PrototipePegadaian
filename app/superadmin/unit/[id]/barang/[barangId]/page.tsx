@@ -1,5 +1,13 @@
+import { unstable_cache } from "next/cache";
+
 import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-pages.lazy";
 import { getSuperAdminUnitBarangDetail } from "@/lib/services/unit.service";
+
+const getCachedSuperAdminUnitBarangDetail = unstable_cache(
+  (unitId: string, barangId: string) => getSuperAdminUnitBarangDetail(unitId, barangId),
+  ["superadmin-unit-barang-detail"],
+  { revalidate: 5, tags: ["superadmin-unit-barang-detail"] },
+);
 
 export default async function Page({
   params
@@ -9,7 +17,7 @@ export default async function Page({
   const { barangId, id } = await params;
 
   try {
-    const detail = await getSuperAdminUnitBarangDetail(id, barangId);
+    const detail = await getCachedSuperAdminUnitBarangDetail(id, barangId);
     return <SuperAdminUnitBarangDetailPage detail={detail} />;
   } catch (error) {
     if (

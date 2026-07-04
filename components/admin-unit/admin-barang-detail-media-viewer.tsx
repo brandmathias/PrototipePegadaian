@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Expand, Package2, X } from "lucide-react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -116,10 +117,12 @@ export function AdminBarangDetailMediaViewer({
               src={activeMedia.url}
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               alt={`Preview media aktif ${title}: ${getMediaName(activeMedia, activeIndex)}`}
               className="size-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.015]"
+              fill
+              quality={60}
+              sizes="(max-width: 640px) calc(100vw - 3rem), 28rem"
               src={activeMedia.url}
             />
           )}
@@ -180,10 +183,12 @@ export function AdminBarangDetailMediaViewer({
                       <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,17,12,0.04),rgba(4,17,12,0.48))]" />
                     </div>
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       alt={`Thumbnail ${title}: ${getMediaName(item, index)}`}
                       className="size-full object-cover transition duration-500 group-hover:scale-[1.025]"
+                      fill
+                      quality={60}
+                      sizes="96px"
                       src={item.url}
                     />
                   )}
