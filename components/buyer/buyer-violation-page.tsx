@@ -468,7 +468,9 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
               <LockKeyhole className="size-7" />
             </span>
             <div>
-              <h2 className="font-headline text-2xl font-black text-red-700">Fitur yang Dibatasi</h2>
+              <h2 className="font-headline text-2xl font-black text-red-700">
+                Fitur yang Dibatasi Saat Ini
+              </h2>
               <p className="mt-1 text-sm leading-6 text-[#506079]">
                 Fitur berikut mengikuti level pembatasan yang sedang berlaku di sistem.
               </p>
@@ -507,7 +509,7 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
                   <CheckCircle2 className="size-7" />
                 </span>
                 <p className="mt-4 font-headline text-xl font-black text-[#101923]">
-                  Tidak Ada Fitur yang Dibatasi
+                  Tidak Ada Fitur yang Dibatasi Saat Ini
                 </p>
                 <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#506079]">
                   {restrictionSummary}

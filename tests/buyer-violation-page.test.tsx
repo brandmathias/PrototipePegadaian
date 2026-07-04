@@ -97,6 +97,9 @@ describe("BuyerViolationPage", () => {
     expect(screen.getByRole("heading", { name: /status penawaran anda/i })).toBeInTheDocument();
     expect(screen.getByText(/sedang dibatasi sementara/i)).toBeInTheDocument();
     expect(screen.getAllByText(/level 2 pembatasan/i).length).toBeGreaterThan(0);
+    expect(
+      within(restrictedFeaturesSection).getByRole("heading", { name: "Fitur yang Dibatasi Saat Ini" })
+    ).toBeInTheDocument();
     expect(screen.getByText(/12 juli 2026/i)).toBeInTheDocument();
     expect(within(restrictedFeaturesSection).getByText(/pengajuan bid lelang baru/i)).toBeInTheDocument();
     expect(within(restrictedFeaturesSection).getByText(/pembelian harga tetap baru/i)).toBeInTheDocument();
@@ -141,7 +144,9 @@ describe("BuyerViolationPage", () => {
     const restrictedFeaturesSection = screen.getByTestId("restricted-features-section");
 
     expect(screen.getAllByText(/akun dalam kondisi baik/i).length).toBeGreaterThan(0);
-    expect(within(restrictedFeaturesSection).getByText(/tidak ada fitur yang dibatasi/i)).toBeInTheDocument();
+    expect(
+      within(restrictedFeaturesSection).getByText("Tidak Ada Fitur yang Dibatasi Saat Ini")
+    ).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /fitur yang tetap aktif/i })).not.toBeInTheDocument();
     expect(screen.getByText(/tidak ada riwayat pelanggaran pembayaran/i)).toBeInTheDocument();
   });

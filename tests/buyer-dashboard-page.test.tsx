@@ -178,6 +178,35 @@ describe("buyer dashboard page", () => {
     expect(screen.queryByRole("link", { name: /jelajahi katalog/i })).not.toBeInTheDocument();
   });
 
+  it("counts historical violations even after the active restriction has ended", () => {
+    render(
+      <UserDashboardPage
+        buyer={buyer}
+        data={{
+          summary,
+          transactions: [],
+          bids: [],
+          violations: [
+            {
+              id: "violation-history-1",
+              imageUrl: "/uploads/barang/kalung-emas.jpg",
+              itemName: "Kalung Emas",
+              note: "Pemenang tidak menyelesaikan pembayaran dalam batas waktu.",
+              occurredAtLabel: "19 Juni 2026, 04.03 WIB",
+              unitName: "UPC Ranotana",
+              violationLevel: 1
+            }
+          ]
+        }}
+      />
+    );
+
+    const historyPanel = screen.getByRole("heading", { name: /riwayat pelanggaran/i }).closest("article");
+    expect(historyPanel).not.toBeNull();
+    expect(within(historyPanel as HTMLElement).getByText("1", { selector: "span" })).toBeInTheDocument();
+    expect(within(historyPanel as HTMLElement).getByText("Level 1")).toBeInTheDocument();
+  });
+
   it.each([
     [1, "bg-[#c97900]"],
     [2, "bg-[#dc4c18]"],

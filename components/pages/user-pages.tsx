@@ -933,8 +933,11 @@ export function UserDashboardPage({
       (first, second) => getUrgentTransactionRank(first) - getUrgentTransactionRank(second)
     )[0] ?? null;
   const urgentCopy = urgentTransaction ? getUrgentDashboardCopy(urgentTransaction) : null;
-  const violationCount = summary.blacklist.violations ?? 0;
-  const restrictionLevel = summary.blacklist.active ? Math.min(Math.max(violationCount, 1), 3) : 0;
+  const restrictionViolationCount = summary.blacklist.violations ?? 0;
+  const violationCount = Math.max(violations.length, restrictionViolationCount);
+  const restrictionLevel = summary.blacklist.active
+    ? Math.min(Math.max(restrictionViolationCount, 1), 3)
+    : 0;
   const latestViolation = violations[0] ?? null;
   const latestViolationLevel = latestViolation?.violationLevel
     ? Math.min(Math.max(latestViolation.violationLevel, 1), 3)
