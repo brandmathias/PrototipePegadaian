@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
   })
 }));
 
-import { UserDashboardPage } from "@/components/pages/user-pages";
+import { UserDashboardPage } from "@/components/pages/user-dashboard-page";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
 import type { BuyerBid, BuyerTransaction } from "@/lib/contracts/buyer";
 

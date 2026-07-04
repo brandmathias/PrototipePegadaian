@@ -1,4 +1,4 @@
-import { UserDashboardPage } from "@/components/pages/user-pages";
+import { UserDashboardPage } from "@/components/pages/user-dashboard-page";
 import { getBuyerSessionUser } from "@/lib/auth/session";
 import { getBuyerDashboardData } from "@/lib/services/buyer.service";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Grid2X2, Headphones, Heart, Home, LogOut, ReceiptText, ShieldAlert } from "lucide-react";
@@ -236,7 +237,13 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
               <div className="flex items-center gap-3">
                 <div className="relative size-11 overflow-hidden rounded-full border-2 border-[#0a6a49]/20">
                   {image ? (
-                    <img src={image} alt={name} className="h-full w-full object-cover" />
+                    <Image
+                      src={image}
+                      alt={name}
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="grid h-full w-full place-items-center bg-[#0a6a49] text-sm font-black text-white">
                       {name.substring(0, 2).toUpperCase()}
