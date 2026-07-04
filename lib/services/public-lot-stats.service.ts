@@ -20,6 +20,13 @@ function normalizeCount(value: unknown) {
   return Number(value ?? 0);
 }
 
+export function reconcileLotInsights(insights: LotInsights): LotInsights {
+  return {
+    ...insights,
+    views: Math.max(insights.views, insights.participants)
+  };
+}
+
 export async function getLotStatsByIds(pemasaranIds: string[]) {
   const uniqueIds = Array.from(new Set(pemasaranIds.filter(Boolean)));
   const stats = createStatsMap(uniqueIds);
@@ -68,6 +75,10 @@ export async function getLotStatsByIds(pemasaranIds: string[]) {
   for (const row of participantRows) {
     const current = stats.get(row.pemasaranId);
     if (current) current.participants = normalizeCount(row.count);
+  }
+
+  for (const [pemasaranId, insights] of stats) {
+    stats.set(pemasaranId, reconcileLotInsights(insights));
   }
 
   return stats;

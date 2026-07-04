@@ -60,6 +60,23 @@ try {
     )
     on conflict ("id") do nothing;
   `);
+  await client.query(`
+    insert into "pemasaran_views" (
+      "id",
+      "pemasaran_id",
+      "viewer_key",
+      "created_at",
+      "updated_at"
+    )
+    select
+      'bid-view-backfill-' || bid."id",
+      bid."pemasaran_id",
+      'user:' || bid."user_id",
+      bid."created_at",
+      bid."created_at"
+    from "bids" as bid
+    on conflict ("pemasaran_id", "viewer_key") do nothing;
+  `);
   await client.query(canonicalCodeMigrationSql);
   await client.query(customerDataStandardMigrationSql);
 
