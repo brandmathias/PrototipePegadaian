@@ -276,20 +276,20 @@ export async function getUnitById(unitId: string) {
     throw new Error("Unit belum ditemukan.");
   }
 
-  const [adminCountRow] = await db
+  const adminCountPromise = db
     .select({
       count: sql<number>`count(*)`
     })
     .from(users)
     .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId), eq(users.isActive, true)));
 
-  const accounts = await db
+  const accountsPromise = db
     .select()
     .from(unitAccounts)
     .where(eq(unitAccounts.unitId, unitId))
     .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
 
-  const admins = await db
+  const adminsPromise = db
     .select({
       id: users.id,
       name: users.name,
@@ -301,7 +301,7 @@ export async function getUnitById(unitId: string) {
     .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId), eq(users.isActive, true)))
     .orderBy(users.name);
 
-  const itemRows = await db
+  const itemRowsPromise = db
     .select({
       id: unitBarang.id,
       code: unitBarang.code,
@@ -378,6 +378,12 @@ export async function getUnitById(unitId: string) {
     .where(eq(unitBarang.unitId, unitId))
     .orderBy(desc(unitBarang.createdAt));
 
+  const [[adminCountRow], accounts, admins, itemRows] = await Promise.all([
+    adminCountPromise,
+    accountsPromise,
+    adminsPromise,
+    itemRowsPromise,
+  ]);
   const activeAccount = accounts.find((account) => account.isActive) ?? null;
 
   return {

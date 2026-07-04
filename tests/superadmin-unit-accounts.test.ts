@@ -31,8 +31,8 @@ describe("superadmin unit account ledger contracts", () => {
     );
     const detailAccountsQuery = block(
       unitService,
-      "const accounts = await db",
-      "const admins = await db",
+      "const accountsPromise = db",
+      "const adminsPromise = db",
     );
     const managementCountQuery = block(
       unitService,

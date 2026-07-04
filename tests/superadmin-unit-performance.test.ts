@@ -30,4 +30,19 @@ describe("superadmin unit monitoring performance", () => {
 
     expect(detailLoader).not.toContain("ssr: false");
   });
+
+  it("parallelizes unit reads and briefly caches repeated monitoring requests", async () => {
+    const [service, route] = await Promise.all([
+      source("lib/services/unit.service.ts"),
+      source("app/superadmin/unit/[id]/page.tsx"),
+    ]);
+    const unitReader = service.slice(
+      service.indexOf("export async function getUnitById"),
+      service.indexOf("export async function getSuperAdminUnitBarangDetail"),
+    );
+
+    expect(unitReader).toContain("await Promise.all");
+    expect(route).toContain("unstable_cache");
+    expect(route).toContain("revalidate: 5");
+  });
 });
