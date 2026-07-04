@@ -1,6 +1,7 @@
 import { hashPassword } from "@better-auth/utils/password";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { revalidateTag } from "next/cache";
 
 import { db } from "@/lib/db/client";
 import { account, barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
@@ -9,6 +10,11 @@ import { getAdminPemasaranById } from "@/lib/services/admin-pemasaran.service";
 import { releaseInactiveAdminIdentityConflicts } from "@/lib/services/admin-unit.service";
 import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { isHiddenOperationalUnit } from "@/lib/superadmin/hidden-operational-units";
+import {
+  rewriteSbgUnitNumber,
+  syncAdminUnitDisplayName,
+  syncUnitReferenceText,
+} from "@/lib/superadmin/unit-identity-sync";
 import { serializeUnitAccount, serializeUnitListItem } from "@/lib/superadmin/serializers";
 import {
   validateAdminUnitPayload,
@@ -713,33 +719,100 @@ export async function updateUnit(
   }
 ) {
   const payload = validateUnitPayload(input);
+  const updated = await db.transaction(async (tx) => {
+    const [[currentUnit], [duplicateUnit], adminRows, accountRows, itemRows] =
+      await Promise.all([
+        tx.select().from(units).where(eq(units.id, unitId)).limit(1),
+        tx
+          .select({ id: units.id })
+          .from(units)
+          .where(and(eq(units.code, payload.code), sql`${units.id} <> ${unitId}`))
+          .limit(1),
+        tx
+          .select({ id: users.id, name: users.name })
+          .from(users)
+          .where(and(eq(users.role, "admin_unit"), eq(users.unitId, unitId))),
+        tx
+          .select({
+            id: unitAccounts.id,
+            accountHolderName: unitAccounts.accountHolderName,
+            branchName: unitAccounts.branchName,
+          })
+          .from(unitAccounts)
+          .where(eq(unitAccounts.unitId, unitId)),
+        tx
+          .select({ id: barang.id, code: barang.code })
+          .from(barang)
+          .where(eq(barang.unitId, unitId)),
+      ]);
 
-  const [existing] = await db
-    .select()
-    .from(units)
-    .where(and(eq(units.code, payload.code), sql`${units.id} <> ${unitId}`))
-    .limit(1);
+    if (!currentUnit) {
+      throw new Error("Unit belum ditemukan.");
+    }
+    if (duplicateUnit) {
+      throw new Error("Kode unit sudah dipakai.");
+    }
 
-  if (existing) {
-    throw new Error("Kode unit sudah dipakai.");
-  }
+    const [nextUnit] = await tx
+      .update(units)
+      .set({
+        code: payload.code,
+        name: payload.name,
+        address: payload.address,
+        domicile: payload.domicile,
+        isActive:
+          typeof input.isActive === "boolean" ? input.isActive : true,
+        updatedAt: new Date(),
+      })
+      .where(eq(units.id, unitId))
+      .returning();
 
-  const [updated] = await db
-    .update(units)
-    .set({
-      code: payload.code,
-      name: payload.name,
-      address: payload.address,
-      domicile: payload.domicile,
-      isActive: typeof input.isActive === "boolean" ? input.isActive : true,
-      updatedAt: new Date()
-    })
-    .where(eq(units.id, unitId))
-    .returning();
+    for (const item of itemRows) {
+      const code = rewriteSbgUnitNumber(item.code, payload.code);
+      if (code !== item.code) {
+        await tx
+          .update(barang)
+          .set({ code, updatedAt: new Date() })
+          .where(eq(barang.id, item.id));
+      }
+    }
 
-  if (!updated) {
-    throw new Error("Unit belum ditemukan.");
-  }
+    for (const admin of adminRows) {
+      const name = syncAdminUnitDisplayName(admin.name, payload.name);
+      if (name !== admin.name) {
+        await tx.update(users).set({ name }).where(eq(users.id, admin.id));
+      }
+    }
+
+    for (const unitAccount of accountRows) {
+      const accountHolderName = syncUnitReferenceText(
+        unitAccount.accountHolderName,
+        currentUnit.name,
+        payload.name,
+      );
+      const branchName = syncUnitReferenceText(
+        unitAccount.branchName,
+        currentUnit.name,
+        payload.name,
+      );
+
+      if (
+        accountHolderName !== unitAccount.accountHolderName ||
+        branchName !== unitAccount.branchName
+      ) {
+        await tx
+          .update(unitAccounts)
+          .set({ accountHolderName, branchName, updatedAt: new Date() })
+          .where(eq(unitAccounts.id, unitAccount.id));
+      }
+    }
+
+    return nextUnit;
+  });
+
+  revalidateTag("admin-layout");
+  revalidateTag("admin-dashboard");
+  revalidateTag("superadmin-monitoring");
 
   return updated;
 }
