@@ -114,35 +114,37 @@ export default function WelcomeBrushBadge({
         </div>
 
         {/* Hand-drawn 3-stroke sparkle/burst icon sitting exactly on the outer top-right boundary line of the green brush */}
-        {/* Outer wrapper manages the load pop-in, inner SVG manages infinite rotation/twinkle */}
+        {/* Wrapper owns motion so the SVG stays cheap to render across dashboard roles. */}
         <div className="absolute -right-1 -top-2 z-20 animate-soft-pop origin-center">
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            className="animate-sparkle-twinkle text-amber-400 overflow-visible origin-center"
-          >
-            <path
-              d="M8 18 L2 10"
+          <div className="animate-sparkle-twinkle origin-center">
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
               stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M9 17 L17 6"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M10 19 L20 16"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-          </svg>
+              className="overflow-visible text-amber-400"
+            >
+              <path
+                d="M8 18 L2 10"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M9 17 L17 6"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M10 19 L20 16"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
