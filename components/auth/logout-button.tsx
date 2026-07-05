@@ -6,6 +6,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 
 import { LogoutSuccessTransition } from "@/components/auth/login-success-transition";
+import { clearBuyerViewerCache } from "@/components/layout/buyer-viewer-cache";
 
 type LogoutButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
@@ -25,6 +26,7 @@ export function LogoutButton({
 
   async function handleLogout() {
     setIsPending(true);
+    clearBuyerViewerCache();
 
     try {
       await fetch("/api/auth/logout", {

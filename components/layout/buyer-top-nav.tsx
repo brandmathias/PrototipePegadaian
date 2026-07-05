@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -12,6 +12,7 @@ import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import { AlertCenter } from "@/components/ui/alert-center";
 import { cn } from "@/lib/utils";
+import { writeBuyerViewerCache } from "@/components/layout/buyer-viewer-cache";
 
 type BuyerTopNavProps = {
   currentPath?: string;
@@ -80,6 +81,10 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
   const isLuxury = variant === "luxury";
   const catalogSearchValue = getCatalogSearchValue(pathname, searchParams);
   const shouldPrioritizeBrand = pathname.startsWith("/katalog");
+
+  useEffect(() => {
+    writeBuyerViewerCache({ image, name, wishlistCount });
+  }, [image, name, wishlistCount]);
 
   return (
     <header

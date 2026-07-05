@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
+import { readBuyerViewerCache, clearBuyerViewerCache } from "@/components/layout/buyer-viewer-cache";
 import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { buttonVariants } from "@/components/ui/button";
@@ -75,7 +76,9 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const shouldCheckViewer = !viewer && isPublicBuyerSurface(pathname) && typeof fetch === "function";
-  const [clientViewer, setClientViewer] = useState<PublicViewer | null>(viewer);
+  const [clientViewer, setClientViewer] = useState<PublicViewer | null>(() =>
+    viewer ?? (isPublicBuyerSurface(pathname) ? readBuyerViewerCache() : null)
+  );
   const [isCheckingViewer, setIsCheckingViewer] = useState(shouldCheckViewer);
   const activeViewer = viewer ?? clientViewer;
   const isBuyer = activeViewer?.role === "buyer";
@@ -89,8 +92,8 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const showFooter = !pathname.startsWith("/katalog") && !pathname.startsWith("/bantuan");
 
   useEffect(() => {
-    setClientViewer(viewer);
     if (viewer) {
+      setClientViewer(viewer);
       setIsCheckingViewer(false);
     }
   }, [viewer]);
@@ -111,11 +114,18 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
       .then((response) => (response.ok ? response.json() : null))
       .then((payload: AuthMeResponse | null) => {
         if (!cancelled) {
-          setClientViewer(toPublicViewer(payload?.user ?? null));
+          const nextViewer = toPublicViewer(payload?.user ?? null);
+
+          if (!nextViewer) {
+            clearBuyerViewerCache();
+          }
+
+          setClientViewer(nextViewer);
         }
       })
       .catch(() => {
         if (!cancelled) {
+          clearBuyerViewerCache();
           setClientViewer(null);
         }
       })

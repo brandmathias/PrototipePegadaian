@@ -10,6 +10,8 @@ const navigationMock = vi.hoisted(() => ({
   pathname: "/katalog",
 }));
 
+const BUYER_VIEWER_CACHE_KEY = "pegadaian:buyer-nav-viewer:v1";
+
 vi.mock("next/navigation", () => ({
   usePathname: () => navigationMock.pathname,
   useRouter: () => ({
@@ -38,6 +40,7 @@ function expectOptimizedBrandImages(container: Element, large = false, markPrior
 describe("PublicShell", () => {
   beforeEach(() => {
     navigationMock.pathname = "/katalog";
+    window.sessionStorage.clear();
     vi.unstubAllGlobals();
   });
 
@@ -87,6 +90,33 @@ describe("PublicShell", () => {
 
     expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Navigasi publik mobile" })).not.toBeInTheDocument();
+  });
+
+  it("keeps buyer navigation while checking authentication after coming from buyer home", () => {
+    window.sessionStorage.setItem(
+      BUYER_VIEWER_CACHE_KEY,
+      JSON.stringify({
+        name: "Raras Maheswari",
+        image: null,
+        role: "buyer",
+        homeHref: "/dashboard",
+        wishlistCount: 4,
+      }),
+    );
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+    const { container } = render(
+      <ToastProvider>
+        <PublicShell>
+          <div>Konten katalog</div>
+        </PublicShell>
+      </ToastProvider>,
+    );
+
+    expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeInTheDocument();
   });
 
   it("restores buyer navigation when an authenticated buyer opens help from a public link", async () => {

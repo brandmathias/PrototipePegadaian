@@ -36,6 +36,8 @@ import { RegisterForm } from "@/components/auth/register-form";
 import { ToastProvider } from "@/components/ui/toast";
 import AuthLayout from "@/app/(auth)/layout";
 
+const BUYER_VIEWER_CACHE_KEY = "pegadaian:buyer-nav-viewer:v1";
+
 function renderWithToast(ui: ReactElement) {
   return render(<ToastProvider>{ui}</ToastProvider>);
 }
@@ -47,6 +49,7 @@ describe("LoginForm", () => {
     navigationMocks.refresh.mockClear();
     authMocks.signInEmail.mockReset();
     authMocks.signUpEmail.mockReset();
+    window.sessionStorage.clear();
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -208,6 +211,7 @@ describe("LoginForm", () => {
   });
 
   it("uses a dedicated logout transition instead of the regular activity toast", async () => {
+    window.sessionStorage.setItem(BUYER_VIEWER_CACHE_KEY, "{\"name\":\"Raras\"}");
     renderWithToast(<LogoutButton>Keluar</LogoutButton>);
 
     fireEvent.click(screen.getByRole("button", { name: /keluar/i }));
@@ -218,6 +222,7 @@ describe("LoginForm", () => {
         credentials: "include"
       });
     });
+    expect(window.sessionStorage.getItem(BUYER_VIEWER_CACHE_KEY)).toBeNull();
 
     const status = await screen.findByRole("status");
     expect(status).toHaveTextContent("Logout Berhasil");

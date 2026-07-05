@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
 
@@ -7,6 +7,8 @@ const navigationMock = vi.hoisted(() => ({
   pathname: "/transaksi",
   search: "",
 }));
+
+const BUYER_VIEWER_CACHE_KEY = "pegadaian:buyer-nav-viewer:v1";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigationMock.pathname,
@@ -22,9 +24,10 @@ describe("BuyerShell", () => {
   beforeEach(() => {
     navigationMock.pathname = "/transaksi";
     navigationMock.search = "";
+    window.sessionStorage.clear();
   });
 
-  it("renders buyer summary details from provided database-backed summary", () => {
+  it("renders buyer summary details from provided database-backed summary", async () => {
     const { container } = render(
       <BuyerShell
         buyer={{
@@ -79,6 +82,10 @@ describe("BuyerShell", () => {
     expect(menu).toHaveClass("overflow-y-auto");
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/profil");
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(window.sessionStorage.getItem(BUYER_VIEWER_CACHE_KEY)).toContain("Raras Maheswari");
+    });
   });
 
   it.each([
