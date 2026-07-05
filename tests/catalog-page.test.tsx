@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
+import { CatalogHero } from "@/components/pages/catalog-hero";
 import { CatalogPage } from "@/components/pages/catalog-page";
 import type { Lot } from "@/lib/contracts/catalog";
 
@@ -56,18 +57,21 @@ describe("CatalogPage", () => {
 
   it("renders the buyer catalog hero, filter rail, product stats, and premium cards", () => {
     render(
-      <CatalogPage
-        serverNow={new Date("2026-05-29T12:15:00+08:00").toISOString()}
-        lots={[
-          makeLot(1, { name: "Cincin Emas Berlian", category: "Perhiasan" }),
-          makeLot(2, {
-            name: "Laptop ASUS VivoBook 14",
-            category: "Elektronik",
-            mode: "vickrey",
-            endsAt: new Date("2026-05-30T10:00:30+08:00").toISOString()
-          })
-        ]}
-      />
+      <>
+        <CatalogHero />
+        <CatalogPage
+          serverNow={new Date("2026-05-29T12:15:00+08:00").toISOString()}
+          lots={[
+            makeLot(1, { name: "Cincin Emas Berlian", category: "Perhiasan" }),
+            makeLot(2, {
+              name: "Laptop ASUS VivoBook 14",
+              category: "Elektronik",
+              mode: "vickrey",
+              endsAt: new Date("2026-05-30T10:00:30+08:00").toISOString()
+            })
+          ]}
+        />
+      </>
     );
 
     expect(screen.getByText(/katalog ruang agunan/i)).toBeInTheDocument();
@@ -89,9 +93,7 @@ describe("CatalogPage", () => {
     expect(screen.getByText("21 jam 45 menit")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(2);
     const catalogImages = screen.getAllByRole("img");
-    expect(catalogImages[0]).toHaveAttribute("fetchpriority", "high");
-    expect(catalogImages[0]).not.toHaveAttribute("loading", "lazy");
-    catalogImages.slice(1).forEach((image) => {
+    catalogImages.forEach((image) => {
       expect(image).toHaveAttribute("loading", "lazy");
       expect(image).not.toHaveAttribute("fetchpriority", "high");
     });

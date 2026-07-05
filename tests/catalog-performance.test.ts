@@ -23,9 +23,48 @@ describe("public catalog performance", () => {
     expect(page).toContain("[contain-intrinsic-size:");
   });
 
+  it("prioritizes the visible hero instead of below-fold catalog media", async () => {
+    const [route, template, hero, page] = await Promise.all([
+      source("app/(public)/katalog/page.tsx"),
+      source("app/(public)/katalog/template.tsx"),
+      source("components/pages/catalog-hero.tsx"),
+      source("components/pages/catalog-page.tsx")
+    ]);
+
+    expect(route).toContain('import { CatalogHero } from "@/components/pages/catalog-hero"');
+    expect(route).toContain("<CatalogHero />");
+    expect(hero).not.toContain('"use client"');
+    expect(hero).not.toContain('rel="preload"');
+    expect(template).toContain('import { preload } from "react-dom"');
+    expect(template).toContain('preload("/uploads/Hero%20Section%20Katalog%20Buyer.avif"');
+    expect(template).toContain('media: "(min-width: 768px)"');
+    expect(page).not.toContain("priority={currentPage === 0 && index === 0}");
+    expect(page).not.toContain("function HeroInfoCard");
+  });
+
+  it("keeps buyer navigation and catalog branding out of the guest critical path", async () => {
+    const [publicShell, buyerNav] = await Promise.all([
+      source("components/layout/public-shell.tsx"),
+      source("components/layout/buyer-top-nav.tsx")
+    ]);
+
+    expect(publicShell).toContain('import dynamic from "next/dynamic"');
+    expect(publicShell).not.toContain(
+      'import { BuyerTopNav } from "@/components/layout/buyer-top-nav"'
+    );
+    expect(publicShell).toContain('import("@/components/layout/buyer-top-nav")');
+    expect(publicShell).not.toContain("shouldPrioritizeBrand");
+    expect(buyerNav).not.toContain("shouldPrioritizeBrand");
+  });
+
   it("defers the cached catalog database read until runtime", async () => {
     const route = await source("app/(public)/katalog/page.tsx");
 
+    expect(route).toContain('import { Suspense } from "react"');
+    expect(route).toContain("async function CatalogResults()");
+    expect(route).toContain("<Suspense");
+    expect(route).toContain("fallback={<CatalogResultsFallback />}");
+    expect(route).not.toContain("export default async function Page()");
     expect(route).toContain('import { connection } from "next/server"');
     expect(route).toContain("await connection()");
     expect(route).toContain("unstable_cache");

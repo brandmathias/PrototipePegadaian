@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -7,13 +8,17 @@ import { LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
 import { readBuyerViewerCache, clearBuyerViewerCache } from "@/components/layout/buyer-viewer-cache";
-import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
 import { getRoleHomePath, isAuthRole, type AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/shared/page-transition";
+
+const BuyerTopNav = dynamic(
+  () => import("@/components/layout/buyer-top-nav").then((module) => module.BuyerTopNav),
+  { loading: () => <PublicHeaderSkeleton /> }
+);
 
 type PublicViewer = {
   name: string;
@@ -47,6 +52,32 @@ const guestNav = [
     label: "Pusat Bantuan"
   }
 ];
+
+function PublicHeaderSkeleton() {
+  return (
+    <header
+      aria-busy="true"
+      className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"
+    >
+      <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
+        <Link
+          aria-label={BRAND_NAME}
+          className="flex min-w-0 items-center text-primary"
+          href="/katalog"
+        >
+          <BrandLockup
+            markClassName="size-9 sm:size-10"
+            nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
+          />
+        </Link>
+        <div
+          aria-hidden="true"
+          className="hidden h-10 w-72 rounded-full bg-surface-low/80 lg:block xl:w-80"
+        />
+      </div>
+    </header>
+  );
+}
 
 function isPublicBuyerSurface(pathname: string) {
   return pathname.startsWith("/katalog") || pathname.startsWith("/bantuan");
@@ -83,7 +114,6 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const activeViewer = viewer ?? clientViewer;
   const isBuyer = activeViewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
-  const shouldPrioritizeBrand = pathname.startsWith("/katalog");
   const navItems = guestNav;
   const brandHref = activeViewer?.homeHref ?? "/katalog";
   const search = searchParams.toString();
@@ -158,28 +188,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           wishlistCount={activeViewer.wishlistCount}
         />
       ) : showAuthCheckShell ? (
-        <header
-          aria-busy="true"
-          className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"
-        >
-          <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
-            <Link
-              aria-label={BRAND_NAME}
-              className="flex min-w-0 items-center text-primary"
-              href="/katalog"
-            >
-              <BrandLockup
-                markClassName="size-9 sm:size-10"
-                nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
-                priority={shouldPrioritizeBrand}
-              />
-            </Link>
-            <div
-              aria-hidden="true"
-              className="hidden h-10 w-72 rounded-full bg-surface-low/80 lg:block xl:w-80"
-            />
-          </div>
-        </header>
+        <PublicHeaderSkeleton />
       ) : (
         <header
           className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"
@@ -194,7 +203,6 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
                 <BrandLockup
                   markClassName="size-9 sm:size-10"
                   nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
-                  priority={shouldPrioritizeBrand}
                 />
               </Link>
               <nav

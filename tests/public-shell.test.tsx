@@ -70,7 +70,7 @@ describe("PublicShell", () => {
     const guestBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(guestBrand).toHaveAttribute("href", "/katalog");
     expect(guestBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
-    expectOptimizedBrandImages(guestBrand, false, "high");
+    expectOptimizedBrandImages(guestBrand, false, "low");
     expect(screen.queryByRole("link", { name: "Beranda" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
@@ -92,7 +92,7 @@ describe("PublicShell", () => {
     expect(screen.queryByRole("navigation", { name: "Navigasi publik mobile" })).not.toBeInTheDocument();
   });
 
-  it("keeps buyer navigation while checking authentication after coming from buyer home", () => {
+  it("keeps buyer navigation while checking authentication after coming from buyer home", async () => {
     window.sessionStorage.setItem(
       BUYER_VIEWER_CACHE_KEY,
       JSON.stringify({
@@ -113,7 +113,7 @@ describe("PublicShell", () => {
       </ToastProvider>,
     );
 
-    expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
+    expect(await screen.findByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
     expect(container.querySelector('[aria-busy="true"]')).not.toBeInTheDocument();
@@ -147,11 +147,11 @@ describe("PublicShell", () => {
       expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
     });
 
-    expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
+    expect(await screen.findByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Pusat Bantuan" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("keeps buyer navigation when an authenticated buyer opens the public catalog", () => {
+  it("keeps buyer navigation when an authenticated buyer opens the public catalog", async () => {
     const { container } = render(
       <ToastProvider>
         <PublicShell
@@ -168,10 +168,11 @@ describe("PublicShell", () => {
 
     expect(container.querySelector(".buyer-experience-root")).toBeInTheDocument();
     expect(container.querySelector("main.buyer-motion-main")).toBeInTheDocument();
+    await screen.findByRole("link", { name: "Beranda" });
     const buyerBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(buyerBrand).toHaveAttribute("href", "/dashboard");
     expect(buyerBrand.querySelector("span:last-child")).not.toHaveClass("hidden");
-    expectOptimizedBrandImages(buyerBrand, false, "high");
+    expectOptimizedBrandImages(buyerBrand, false, "low");
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
