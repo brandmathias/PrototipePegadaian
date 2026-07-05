@@ -83,7 +83,7 @@ export function BrandLockup({
           aria-hidden="true"
           className={cn("h-7 w-auto max-w-[12rem] shrink object-contain", nameClassName)}
           draggable={false}
-          fetchPriority="high"
+          fetchPriority={priority ? "high" : "low"}
           height={large ? 49 : 28}
           loading="eager"
           priority={priority}

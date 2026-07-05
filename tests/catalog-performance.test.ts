@@ -28,5 +28,24 @@ describe("public catalog performance", () => {
 
     expect(route).toContain("unstable_cache");
     expect(route).toContain("revalidate: 10");
+    expect(route).not.toContain("force-dynamic");
+    expect(route).not.toContain("getServerSession");
+    expect(route).not.toContain("getBuyerWishlistIds");
+  });
+
+  it("keeps catalog filtering out of legacy and repeated client work", async () => {
+    const page = await source("components/pages/catalog-page.tsx");
+
+    expect(page).toContain("const catalogIndex = useMemo");
+    expect(page).not.toContain(".flatMap(");
+    expect(page).not.toContain("router.refresh()");
+  });
+
+  it("keeps the public layout from blocking catalog HTML on session reads", async () => {
+    const layout = await source("app/(public)/layout.tsx");
+
+    expect(layout).not.toContain("force-dynamic");
+    expect(layout).not.toContain("getServerSession");
+    expect(layout).not.toContain("getBuyerWishlistCount");
   });
 });

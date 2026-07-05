@@ -24,7 +24,7 @@ function expectOptimizedBrandImages(container: Element, large = false, markPrior
     expect(image).not.toHaveAttribute("sizes");
   });
   expect(images[0]).toHaveAttribute("fetchpriority", markPriority);
-  expect(images[1]).toHaveAttribute("fetchpriority", "high");
+  expect(images[1]).toHaveAttribute("fetchpriority", markPriority);
   expect(images[0]).toHaveAttribute("width", large ? "60" : "40");
   expect(images[0]).toHaveAttribute("height", large ? "60" : "40");
   expect(images[1]).toHaveAttribute("width", large ? "207" : "118");

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LogOut } from "lucide-react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -10,18 +10,29 @@ import { BuyerTopNav } from "@/components/layout/buyer-top-nav";
 import { BRAND_NAME, BrandLockup } from "@/components/shared/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { CatalogSearchInput } from "@/components/shared/catalog-search-input";
-import type { AuthRole } from "@/lib/auth/guards";
+import { getRoleHomePath, isAuthRole, type AuthRole } from "@/lib/auth/guards";
 import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/shared/page-transition";
 
+type PublicViewer = {
+  name: string;
+  image?: string | null;
+  role: AuthRole;
+  homeHref: string;
+  wishlistCount?: number;
+};
+
 type PublicShellProps = {
   children: ReactNode;
-  viewer?: {
-    name: string;
+  viewer?: PublicViewer | null;
+};
+
+type AuthMeResponse = {
+  user?: {
     image?: string | null;
-    role: AuthRole;
-    homeHref: string;
-    wishlistCount?: number;
+    name?: string | null;
+    role?: string | null;
+    wishlistCount?: number | null;
   } | null;
 };
 
@@ -42,18 +53,66 @@ function getViewerLabel(role: AuthRole) {
   return "Akun Pembeli";
 }
 
+function toPublicViewer(user: AuthMeResponse["user"]): PublicViewer | null {
+  if (!user || !isAuthRole(user.role)) {
+    return null;
+  }
+
+  return {
+    name: user.name?.trim() || "Pengguna",
+    image: typeof user.image === "string" && user.image ? user.image : null,
+    role: user.role,
+    homeHref: getRoleHomePath(user.role),
+    wishlistCount: typeof user.wishlistCount === "number" ? user.wishlistCount : 0
+  };
+}
+
 export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isBuyer = viewer?.role === "buyer";
+  const [clientViewer, setClientViewer] = useState<PublicViewer | null>(viewer);
+  const activeViewer = viewer ?? clientViewer;
+  const isBuyer = activeViewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
   const shouldPrioritizeBrand = pathname.startsWith("/katalog");
   const navItems = guestNav;
-  const brandHref = viewer?.homeHref ?? "/katalog";
+  const brandHref = activeViewer?.homeHref ?? "/katalog";
   const search = searchParams.toString();
   const currentPath = search ? `${pathname}?${search}` : pathname;
   const catalogSearchValue = pathname.startsWith("/katalog") ? searchParams.get("q") ?? "" : "";
   const showFooter = !pathname.startsWith("/katalog") && !pathname.startsWith("/bantuan");
+
+  useEffect(() => {
+    setClientViewer(viewer);
+  }, [viewer]);
+
+  useEffect(() => {
+    if (viewer || !pathname.startsWith("/katalog") || typeof fetch !== "function") {
+      return;
+    }
+
+    let cancelled = false;
+
+    void fetch("/api/auth/me", {
+      cache: "no-store",
+      credentials: "same-origin"
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: AuthMeResponse | null) => {
+        if (!cancelled) {
+          setClientViewer(toPublicViewer(payload?.user ?? null));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setClientViewer(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, viewer]);
 
   return (
     <div
@@ -62,13 +121,13 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
         isBuyerCatalogSurface && "buyer-experience-root"
       )}
     >
-      {isBuyer && viewer ? (
+      {isBuyer && activeViewer ? (
         <BuyerTopNav
           currentPath={currentPath}
-          image={viewer.image}
-          name={viewer.name}
+          image={activeViewer.image}
+          name={activeViewer.name}
           variant="light"
-          wishlistCount={viewer.wishlistCount}
+          wishlistCount={activeViewer.wishlistCount}
         />
       ) : (
         <header
@@ -120,13 +179,13 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
                 placeholder="Cari lot atau unit..."
                 wrapperClassName="hidden lg:block"
               />
-              {viewer ? (
+              {activeViewer ? (
                 <>
                   <Link
                     className="hidden rounded-full border border-border/70 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary/25 hover:bg-primary/5 md:block"
-                    href={viewer.homeHref}
+                    href={activeViewer.homeHref}
                   >
-                    {getViewerLabel(viewer.role)}
+                    {getViewerLabel(activeViewer.role)}
                   </Link>
                   <LogoutButton
                     className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"

@@ -765,7 +765,8 @@ export function CatalogPage({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(initialQuery);
+  const searchParamQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(() => initialQuery || searchParamQuery);
   const [mode, setMode] = useState<SaleMode>("all");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
@@ -785,18 +786,22 @@ export function CatalogPage({
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
-    setQuery(initialQuery);
-  }, [initialQuery]);
+    setQuery(initialQuery || searchParamQuery);
+  }, [initialQuery, searchParamQuery]);
 
   useEffect(() => {
     setFavoriteIds(initialFavoriteIds);
   }, [initialFavoriteIds]);
 
   async function handleToggleFavorite(lotId: string) {
-    if (!wishlistSyncEnabled) {
-      const currentQuery = searchParams.toString();
-      const nextPath = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
+    const currentQuery = searchParams.toString();
+    const nextPath = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
+    const redirectToLogin = () => {
       router.push(`/login?next=${encodeURIComponent(nextPath)}`);
+    };
+
+    if (!wishlistSyncEnabled) {
+      redirectToLogin();
       return;
     }
 
@@ -810,6 +815,14 @@ export function CatalogPage({
         method: "POST"
       });
 
+      if (response.status === 401 || response.status === 403) {
+        setFavoriteIds((current) =>
+          wasFavorite ? Array.from(new Set([...current, lotId])) : current.filter((item) => item !== lotId)
+        );
+        redirectToLogin();
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("Wishlist gagal diperbarui.");
       }
@@ -821,7 +834,6 @@ export function CatalogPage({
           : current.filter((item) => item !== lotId)
       );
       window.dispatchEvent(new CustomEvent("pegadaian:lot-stats-refresh", { detail: { lotId } }));
-      router.refresh();
     } catch {
       setFavoriteIds((current) =>
         wasFavorite ? Array.from(new Set([...current, lotId])) : current.filter((item) => item !== lotId)
@@ -829,61 +841,62 @@ export function CatalogPage({
     }
   }
 
-  const lotsWithInsights = useMemo(
-    () =>
-      initialLots.map((lot) => ({
-        insights: getLotInsights(lot),
-        lot
-      })),
-    [initialLots]
-  );
+  const catalogIndex = useMemo(() => {
+    const categoryMap = new Map<string, number>();
+    const conditionMap = new Map<string, number>();
+    const unitMap = new Map<string, number>();
+    const domicileMap = new Map<string, number>();
+    let fixedPriceCount = 0;
+    let vickreyCount = 0;
 
-  const modeCounts = useMemo(
-    () => ({
-      all: initialLots.length,
-      fixed_price: initialLots.filter((lot) => lot.mode === "fixed_price").length,
-      vickrey: initialLots.filter((lot) => lot.mode === "vickrey").length
-    }),
-    [initialLots]
-  );
+    const lotsWithInsights = initialLots.map((lot) => {
+      if (lot.mode === "fixed_price") {
+        fixedPriceCount += 1;
+      } else if (lot.mode === "vickrey") {
+        vickreyCount += 1;
+      }
 
-  const categories = useMemo(() => {
-    const map = new Map<string, number>();
-    initialLots.forEach((lot) => map.set(lot.category, (map.get(lot.category) ?? 0) + 1));
-    const rank = new Map<string, number>(ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index]));
-    return [...map.entries()].sort((a, b) => {
-      const leftRank = rank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
-      const rightRank = rank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
-      return leftRank - rightRank || a[0].localeCompare(b[0], "id");
-    });
-  }, [initialLots]);
+      categoryMap.set(lot.category, (categoryMap.get(lot.category) ?? 0) + 1);
 
-  const conditions = useMemo(() => {
-    const map = new Map<string, number>();
-    initialLots.forEach((lot) => map.set(titleCase(lot.condition), (map.get(titleCase(lot.condition)) ?? 0) + 1));
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "id"));
-  }, [initialLots]);
+      const condition = titleCase(lot.condition);
+      conditionMap.set(condition, (conditionMap.get(condition) ?? 0) + 1);
+      unitMap.set(lot.unitName, (unitMap.get(lot.unitName) ?? 0) + 1);
 
-  const units = useMemo(() => {
-    const map = new Map<string, number>();
-    initialLots.forEach((lot) => map.set(lot.unitName, (map.get(lot.unitName) ?? 0) + 1));
-    return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
-  }, [initialLots]);
-
-  const domiciles = useMemo(() => {
-    const map = new Map<string, number>();
-    initialLots.forEach((lot) => {
       const domicile = String(lot.domicile ?? "").trim();
       if (domicile) {
-        map.set(domicile, (map.get(domicile) ?? 0) + 1);
+        domicileMap.set(domicile, (domicileMap.get(domicile) ?? 0) + 1);
       }
+
+      return {
+        insights: getLotInsights(lot),
+        lot
+      };
     });
-    return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"));
+
+    const categoryRank = new Map<string, number>(
+      ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index])
+    );
+
+    return {
+      lotsWithInsights,
+      modeCounts: {
+        all: initialLots.length,
+        fixed_price: fixedPriceCount,
+        vickrey: vickreyCount
+      },
+      categories: [...categoryMap.entries()].sort((a, b) => {
+        const leftRank = categoryRank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
+        const rightRank = categoryRank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
+        return leftRank - rightRank || a[0].localeCompare(b[0], "id");
+      }),
+      conditions: [...conditionMap.entries()].sort((a, b) => a[0].localeCompare(b[0], "id")),
+      units: [...unitMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id")),
+      domiciles: [...domicileMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"))
+    };
   }, [initialLots]);
 
-  const priceUpperBound = useMemo(() => {
-    return CATALOG_PRICE_FILTER_LIMIT;
-  }, []);
+  const { categories, conditions, domiciles, lotsWithInsights, modeCounts, units } = catalogIndex;
+  const priceUpperBound = CATALOG_PRICE_FILTER_LIMIT;
 
   const visibleCategories = categories.filter(([category]) => normalize(category).includes(normalize(categoryQuery)));
   const visibleDomiciles = domiciles.filter(([domicile]) => normalize(domicile).includes(normalize(domicileQuery)));
@@ -907,7 +920,7 @@ export function CatalogPage({
 
       if (!normalizedQuery) return true;
 
-      return [
+      const searchableValues = [
         lot.name,
         lot.code,
         lot.category,
@@ -917,9 +930,20 @@ export function CatalogPage({
         lot.unitName,
         lot.location,
         lot.description,
-        getSubtype(lot),
-        ...lot.specs.flatMap((spec) => [spec.label, spec.value])
-      ].some((value) => normalize(value).includes(normalizedQuery));
+        getSubtype(lot)
+      ];
+
+      if (searchableValues.some((value) => normalize(value).includes(normalizedQuery))) {
+        return true;
+      }
+
+      for (const spec of lot.specs) {
+        if (normalize(spec.label).includes(normalizedQuery) || normalize(spec.value).includes(normalizedQuery)) {
+          return true;
+        }
+      }
+
+      return false;
     });
 
     if (sortBy === "popular") {
