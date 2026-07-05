@@ -74,7 +74,9 @@ function toPublicViewer(user: AuthMeResponse["user"]): PublicViewer | null {
 export function PublicShell({ children, viewer = null }: PublicShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const shouldCheckViewer = !viewer && isPublicBuyerSurface(pathname) && typeof fetch === "function";
   const [clientViewer, setClientViewer] = useState<PublicViewer | null>(viewer);
+  const [isCheckingViewer, setIsCheckingViewer] = useState(shouldCheckViewer);
   const activeViewer = viewer ?? clientViewer;
   const isBuyer = activeViewer?.role === "buyer";
   const isBuyerCatalogSurface = isBuyer || pathname.startsWith("/katalog");
@@ -88,15 +90,20 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
 
   useEffect(() => {
     setClientViewer(viewer);
+    if (viewer) {
+      setIsCheckingViewer(false);
+    }
   }, [viewer]);
 
   useEffect(() => {
     if (viewer || !isPublicBuyerSurface(pathname) || typeof fetch !== "function") {
+      setIsCheckingViewer(false);
       return;
     }
 
     let cancelled = false;
 
+    setIsCheckingViewer(true);
     void fetch("/api/auth/me", {
       cache: "no-store",
       credentials: "same-origin"
@@ -111,12 +118,19 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
         if (!cancelled) {
           setClientViewer(null);
         }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsCheckingViewer(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
   }, [pathname, viewer]);
+
+  const showAuthCheckShell = !activeViewer && isCheckingViewer && isPublicBuyerSurface(pathname);
 
   return (
     <div
@@ -133,6 +147,29 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
           variant="light"
           wishlistCount={activeViewer.wishlistCount}
         />
+      ) : showAuthCheckShell ? (
+        <header
+          aria-busy="true"
+          className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"
+        >
+          <div className="container flex min-h-16 items-center justify-between gap-3 py-3 sm:gap-4">
+            <Link
+              aria-label={BRAND_NAME}
+              className="flex min-w-0 items-center text-primary"
+              href="/katalog"
+            >
+              <BrandLockup
+                markClassName="size-9 sm:size-10"
+                nameClassName="max-w-[9rem] text-[1.05rem] sm:max-w-none sm:text-[1.45rem]"
+                priority={shouldPrioritizeBrand}
+              />
+            </Link>
+            <div
+              aria-hidden="true"
+              className="hidden h-10 w-72 rounded-full bg-surface-low/80 lg:block xl:w-80"
+            />
+          </div>
+        </header>
       ) : (
         <header
           className="sticky top-0 z-40 border-b border-black/5 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur"

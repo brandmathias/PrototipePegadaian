@@ -41,7 +41,17 @@ describe("PublicShell", () => {
     vi.unstubAllGlobals();
   });
 
-  it("provides catalog and help navigation for guests", () => {
+  it("provides catalog and help navigation for guests", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          user: null,
+        }),
+      }),
+    );
+
     render(
       <ToastProvider>
         <PublicShell>
@@ -49,6 +59,10 @@ describe("PublicShell", () => {
         </PublicShell>
       </ToastProvider>
     );
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
+    });
 
     const guestBrand = screen.getByRole("link", { name: /ruang agunan/i });
     expect(guestBrand).toHaveAttribute("href", "/katalog");
@@ -58,7 +72,21 @@ describe("PublicShell", () => {
     expect(screen.getAllByRole("link", { name: "Katalog" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })[0]).toHaveAttribute("href", "/bantuan");
-    expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
+  });
+
+  it("does not show the guest shell while checking authentication on buyer public surfaces", () => {
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+    render(
+      <ToastProvider>
+        <PublicShell>
+          <div>Konten katalog</div>
+        </PublicShell>
+      </ToastProvider>
+    );
+
+    expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Navigasi publik mobile" })).not.toBeInTheDocument();
   });
 
   it("restores buyer navigation when an authenticated buyer opens help from a public link", async () => {
