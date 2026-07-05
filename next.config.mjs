@@ -3,8 +3,7 @@ const nextConfig = {
   output: "standalone",
   devIndicators: false,
   experimental: {
-    optimizePackageImports: ["lucide-react"],
-    inlineCss: true
+    optimizePackageImports: ["lucide-react"]
   },
   images: {
     deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536],

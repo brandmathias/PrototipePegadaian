@@ -527,12 +527,14 @@ function PriceRangeControl({
 function CatalogLotCard({
   favorite,
   lot,
+  priority,
   serverNow,
   viewMode,
   onToggleFavorite
 }: {
   favorite: boolean;
   lot: Lot;
+  priority?: boolean;
   serverNow?: string;
   viewMode: ViewMode;
   onToggleFavorite: () => void;
@@ -586,6 +588,7 @@ function CatalogLotCard({
           )}
           imageSizes={CATALOG_CARD_IMAGE_SIZES}
           media={lot.media}
+          priority={priority}
           showCategoryBadge={false}
         />
         <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-white/94 px-2.5 py-1 text-[0.68rem] font-black text-[#075f42] shadow-sm">
@@ -1325,11 +1328,12 @@ export function CatalogPage({
                     viewMode === "grid" ? "md:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
                   )}
                 >
-                  {visibleLots.map(({ lot }) => (
+                  {visibleLots.map(({ lot }, index) => (
                     <CatalogLotCard
                       favorite={favoriteIds.includes(lot.id)}
                       key={lot.id}
                       lot={lot}
+                      priority={currentPage === 0 && index === 0}
                       serverNow={serverNow}
                       viewMode={viewMode}
                       onToggleFavorite={() => void handleToggleFavorite(lot.id)}

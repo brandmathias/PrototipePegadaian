@@ -23,11 +23,11 @@ describe("public catalog performance", () => {
     expect(page).toContain("[contain-intrinsic-size:");
   });
 
-  it("keeps the shared catalog database read cached without build-time prerendering", async () => {
+  it("keeps the catalog route eligible for ISR while caching its database read", async () => {
     const route = await source("app/(public)/katalog/page.tsx");
 
-    expect(route).toContain('import { connection } from "next/server"');
-    expect(route).toContain("await connection()");
+    expect(route).not.toContain('from "next/server"');
+    expect(route).not.toContain("await connection()");
     expect(route).toContain("unstable_cache");
     expect(route).toContain("revalidate: 10");
     expect(route).not.toContain("force-dynamic");

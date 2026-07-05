@@ -14,6 +14,7 @@ type LotFigureProps = {
     url: string;
     fileName: string;
   }>;
+  priority?: boolean;
   showCategoryBadge?: boolean;
   showVideoControls?: boolean;
   variant?: "default" | "dark" | "pdp";
@@ -60,6 +61,7 @@ export function LotFigure({
   className,
   imageSizes = "(min-width: 1536px) 28vw, (min-width: 1280px) 32vw, (min-width: 768px) 50vw, 100vw",
   media = [],
+  priority = false,
   showCategoryBadge = true,
   showVideoControls = false,
   variant = "default"
@@ -104,7 +106,9 @@ export function LotFigure({
             fill
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             decoding="async"
-            loading="lazy"
+            fetchPriority={priority ? "high" : undefined}
+            loading={priority ? undefined : "lazy"}
+            priority={priority}
             quality={68}
             sizes={imageSizes}
             src={primaryMedia.url}
