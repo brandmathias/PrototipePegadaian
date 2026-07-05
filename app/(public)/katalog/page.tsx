@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { connection } from "next/server";
 
 import { CatalogPage } from "@/components/pages/catalog-page";
 import { listPublicLots } from "@/lib/services/public-catalog.service";
@@ -11,6 +12,8 @@ const getCachedPublicLots = unstable_cache(listPublicLots, ["public-catalog-lots
 });
 
 export default async function Page() {
+  await connection();
+
   const lots = await getCachedPublicLots();
 
   return (
