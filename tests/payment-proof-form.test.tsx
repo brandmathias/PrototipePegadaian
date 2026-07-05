@@ -66,11 +66,13 @@ describe("BuyerPaymentProofForm", () => {
   });
 
   it("fills the dashed proof review frame with the uploaded image preview", () => {
-    renderForm({ currentProof: "/uploads/bukti-transfer.jpg", locked: true, readOnlyPreview: true });
+    const { container } = renderForm({ currentProof: "/uploads/bukti-transfer.jpg", locked: true, readOnlyPreview: true });
 
     const previewButton = screen.getByRole("button", { name: /buka preview bukti transfer/i });
     const previewImage = screen.getByRole("img", { name: /preview bukti transfer/i });
 
+    expect(container.firstElementChild).toHaveClass("flex", "h-full", "flex-col", "gap-4");
+    expect(previewButton.closest(".border-dashed")).toHaveClass("flex-1");
     expect(previewButton).toHaveClass("absolute", "inset-0", "h-full", "w-full");
     expect(previewImage).toHaveClass("absolute", "inset-0", "h-full", "w-full", "object-cover");
   });

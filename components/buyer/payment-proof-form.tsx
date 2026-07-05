@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 type BuyerPaymentProofFormProps = {
   transactionId: string;
   currentProof?: string;
+  className?: string;
   locked?: boolean;
   lockedTitle?: string;
   lockedDescription?: string;
@@ -47,6 +48,7 @@ function proofUrlMatchesExtension(value: string | null | undefined, pattern: Reg
 export function BuyerPaymentProofForm({
   transactionId,
   currentProof,
+  className,
   locked = false,
   lockedTitle = "Bukti pembayaran sedang direview",
   lockedDescription = "Admin unit sedang mencocokkan nominal, rekening tujuan, referensi, dan kejelasan bukti transfer. Bukti tidak dapat diganti sampai admin memberi keputusan.",
@@ -188,7 +190,7 @@ export function BuyerPaymentProofForm({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={cn("flex h-full flex-col gap-4", className)}>
       {locked && !readOnlyPreview ? (
         <div className="rounded-[1.35rem] border border-[#c9e2d6] bg-[#eef8f2] p-2">
           <div className="rounded-[calc(1.35rem-0.5rem)] border border-white/80 bg-white px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
@@ -206,11 +208,11 @@ export function BuyerPaymentProofForm({
       ) : null}
       <div
         className={cn(
-          "rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6]",
+          "flex-1 rounded-xl border-2 border-dashed border-[#d5d8d2] bg-[#f8f8f6]",
           hasPreview ? "p-1.5 sm:p-2" : "p-4 sm:p-5"
         )}
       >
-        <div className={cn("flex flex-col", hasPreview ? "min-h-[30rem]" : "min-h-[26rem]")}>
+        <div className={cn("flex h-full flex-col", hasPreview ? "min-h-[30rem]" : "min-h-[26rem]")}>
           {hasPreview ? (
             <div className="relative flex-1 overflow-hidden rounded-[1.15rem] bg-[linear-gradient(180deg,#fafaf7,#f1f2ed)]">
               {previewMediaFailed ? (

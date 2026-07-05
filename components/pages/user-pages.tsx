@@ -2205,8 +2205,9 @@ export function TransactionDetailPage({
               {settlementLockMessage ? (
                 <BuyerSettlementLockNotice message={settlementLockMessage} />
               ) : (
-                <div className="space-y-4">
+                <div className="flex flex-1 flex-col">
                   <BuyerPaymentProofForm
+                    className="flex-1"
                     currentProof={transaction.paymentProof}
                     locked={isProofInReview || isProofRejected}
                     lockedDescription="File bukti di bawah ini sudah masuk antrean review admin unit dan tidak bisa diganti sementara."
