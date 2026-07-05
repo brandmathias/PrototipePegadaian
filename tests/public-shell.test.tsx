@@ -1,13 +1,17 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { PublicShell } from "@/components/layout/public-shell";
 import { LoginPage } from "@/components/pages/login-page";
 import { RegisterPage } from "@/components/pages/public-pages";
 import { ToastProvider } from "@/components/ui/toast";
 
+const navigationMock = vi.hoisted(() => ({
+  pathname: "/katalog",
+}));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/katalog",
+  usePathname: () => navigationMock.pathname,
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn()
@@ -32,6 +36,11 @@ function expectOptimizedBrandImages(container: Element, large = false, markPrior
 }
 
 describe("PublicShell", () => {
+  beforeEach(() => {
+    navigationMock.pathname = "/katalog";
+    vi.unstubAllGlobals();
+  });
+
   it("provides catalog and help navigation for guests", () => {
     render(
       <ToastProvider>
@@ -50,6 +59,38 @@ describe("PublicShell", () => {
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })).toHaveLength(2);
     expect(screen.getAllByRole("link", { name: "Pusat Bantuan" })[0]).toHaveAttribute("href", "/bantuan");
     expect(screen.getByRole("link", { name: "Masuk" })).toHaveAttribute("href", "/login");
+  });
+
+  it("restores buyer navigation when an authenticated buyer opens help from a public link", async () => {
+    navigationMock.pathname = "/bantuan";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          user: {
+            name: "Raras Maheswari",
+            role: "buyer",
+            wishlistCount: 3,
+          },
+        }),
+      }),
+    );
+
+    render(
+      <ToastProvider>
+        <PublicShell>
+          <div>Konten bantuan</div>
+        </PublicShell>
+      </ToastProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: "Pusat Bantuan" })).toHaveAttribute("aria-current", "page");
   });
 
   it("keeps buyer navigation when an authenticated buyer opens the public catalog", () => {

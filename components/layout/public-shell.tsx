@@ -47,6 +47,10 @@ const guestNav = [
   }
 ];
 
+function isPublicBuyerSurface(pathname: string) {
+  return pathname.startsWith("/katalog") || pathname.startsWith("/bantuan");
+}
+
 function getViewerLabel(role: AuthRole) {
   if (role === "super_admin") return "Control Center";
   if (role === "admin_unit") return "Area Admin";
@@ -87,7 +91,7 @@ export function PublicShell({ children, viewer = null }: PublicShellProps) {
   }, [viewer]);
 
   useEffect(() => {
-    if (viewer || !pathname.startsWith("/katalog") || typeof fetch !== "function") {
+    if (viewer || !isPublicBuyerSurface(pathname) || typeof fetch !== "function") {
       return;
     }
 
