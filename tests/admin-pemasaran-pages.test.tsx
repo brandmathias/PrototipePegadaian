@@ -457,7 +457,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("1 Harga Tetap / 0 Lelang Tertutup")).toBeInTheDocument();
   });
 
-  it("keeps harga tetap verification locked when payment proof url is missing", () => {
+  it("allows harga tetap verification from the uploaded-proof status even when the proof URL is missing", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -487,9 +487,9 @@ describe("admin pemasaran pages", () => {
 
     const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
 
-    expect(verifyButton).toBeDisabled();
+    expect(verifyButton).toBeEnabled();
     fireEvent.click(verifyButton);
-    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).toBeInTheDocument();
   });
 
   it("does not reopen harga tetap verification actions after payment proof has been rejected", () => {

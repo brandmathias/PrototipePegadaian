@@ -1119,6 +1119,7 @@ function hasFixedPricePaymentSubmission(auction: MarketingSession) {
 
   return (
     hasFixedPricePaymentProof(auction) ||
+    transactionStatus === "BUKTI_DIUNGGAH" ||
     transactionStatus === "LUNAS" ||
     transactionStatus === "SELESAI" ||
     Boolean(auction.soldAt)
@@ -1130,7 +1131,7 @@ function hasFixedPricePaymentProof(auction: MarketingSession) {
 }
 
 function hasFixedPriceVerificationReady(auction: MarketingSession) {
-  return Boolean(auction.transactionId) && auction.transactionStatus === "BUKTI_DIUNGGAH" && hasFixedPricePaymentProof(auction);
+  return Boolean(auction.transactionId) && auction.transactionStatus === "BUKTI_DIUNGGAH";
 }
 
 function getFixedPriceWorkflowStatus(auction: MarketingSession) {
