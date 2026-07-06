@@ -35,7 +35,7 @@ import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button
 import { LotFigure } from "@/components/shared/lot-figure";
 import { LotRealtimeStats } from "@/components/shared/lot-realtime-stats";
 import { buttonVariants } from "@/components/ui/button";
-import { ADMIN_UNIT_CATEGORY_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
 import type { AuctionMode } from "@/lib/contracts/catalog";
 import type { BuyerWishlistItem } from "@/lib/contracts/wishlist";
 import type { CountdownState } from "@/lib/countdown";
@@ -874,13 +874,9 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
+    ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.forEach((option) => map.set(option.label, 0));
     currentItems.forEach((item) => map.set(item.lot.category, (map.get(item.lot.category) ?? 0) + 1));
-    const rank = new Map<string, number>(ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index]));
-    return [...map.entries()].sort((a, b) => {
-      const leftRank = rank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
-      const rightRank = rank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
-      return leftRank - rightRank || a[0].localeCompare(b[0], "id");
-    });
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], "id-ID"));
   }, [currentItems]);
 
   const conditions = useMemo(() => {

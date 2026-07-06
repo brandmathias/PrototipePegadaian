@@ -36,7 +36,7 @@ import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button
 import { LotFigure } from "@/components/shared/lot-figure";
 import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
-import { ADMIN_UNIT_CATEGORY_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, type AdminUnitCategoryIconKey } from "@/lib/catalog/categories";
 import type { CountdownState } from "@/lib/countdown";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDateTime } from "@/lib/timezone";
@@ -818,9 +818,9 @@ export function CatalogPage({
       };
     });
 
-    const categoryRank = new Map<string, number>(
-      ADMIN_UNIT_CATEGORY_OPTIONS.map((option, index) => [option.label, index])
-    );
+    ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.forEach((option) => {
+      if (!categoryMap.has(option.label)) categoryMap.set(option.label, 0);
+    });
 
     return {
       lotsWithInsights,
@@ -829,11 +829,7 @@ export function CatalogPage({
         fixed_price: fixedPriceCount,
         vickrey: vickreyCount
       },
-      categories: [...categoryMap.entries()].sort((a, b) => {
-        const leftRank = categoryRank.get(a[0]) ?? Number.MAX_SAFE_INTEGER;
-        const rightRank = categoryRank.get(b[0]) ?? Number.MAX_SAFE_INTEGER;
-        return leftRank - rightRank || a[0].localeCompare(b[0], "id");
-      }),
+      categories: [...categoryMap.entries()].sort((a, b) => a[0].localeCompare(b[0], "id-ID")),
       conditions: [...conditionMap.entries()].sort((a, b) => a[0].localeCompare(b[0], "id")),
       units: [...unitMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id")),
       domiciles: [...domicileMap.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "id"))

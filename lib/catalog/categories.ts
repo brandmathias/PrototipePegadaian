@@ -6,6 +6,10 @@ export const ADMIN_UNIT_CATEGORY_OPTIONS = [
   { value: "lainnya", label: "Lainnya", iconKey: "lainnya" }
 ] as const;
 
+export const ADMIN_UNIT_CATEGORY_FILTER_OPTIONS = [...ADMIN_UNIT_CATEGORY_OPTIONS].sort((left, right) =>
+  left.label.localeCompare(right.label, "id-ID")
+);
+
 export type AdminUnitCategory = (typeof ADMIN_UNIT_CATEGORY_OPTIONS)[number]["value"];
 export type AdminUnitCategoryIconKey = (typeof ADMIN_UNIT_CATEGORY_OPTIONS)[number]["iconKey"];
 

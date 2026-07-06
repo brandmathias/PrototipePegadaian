@@ -113,6 +113,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS } from "@/lib/catalog/categories";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
@@ -2686,7 +2687,12 @@ function SuperAdminUnitInventorySection({
   const [pageSize, setPageSize] = useState<(typeof unitDetailPageSizeOptions)[number]>(10);
   const [currentPage, setCurrentPage] = useState(1);
   const categoryOptions = useMemo(() => {
-    const categoryMap = new Map<string, string>();
+    const categoryMap = new Map<string, string>(
+      ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => [
+        normalizeUnitDetailOptionValue(option.value),
+        option.label,
+      ]),
+    );
 
     items.forEach((item) => {
       const value = normalizeUnitDetailOptionValue(item.category);

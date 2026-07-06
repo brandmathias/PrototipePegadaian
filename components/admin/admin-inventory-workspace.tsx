@@ -43,7 +43,7 @@ import {
   isAdminInventoryReadyForMarketing
 } from "@/lib/admin-unit/operational-metrics";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
-import { ADMIN_UNIT_CATEGORY_OPTIONS } from "@/lib/catalog/categories";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS } from "@/lib/catalog/categories";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -77,7 +77,7 @@ type AdminBarangHistoryEntry = {
 };
 
 const ADMIN_HISTORY_CATEGORY_LABELS = new Map(
-  ADMIN_UNIT_CATEGORY_OPTIONS.map((option) => [String(option.value), option.label])
+  ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => [String(option.value), option.label])
 );
 
 function getInventoryDaysUntil(dateLabel: string | null | undefined) {
@@ -670,7 +670,14 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
   const inventoryItems = useMemo(() => items.filter(isAdminInventoryListItem), [items]);
 
   const categories = useMemo(() => {
-    return ["SEMUA", ...new Set(inventoryItems.map((item) => String(item.category ?? "").trim()).filter(Boolean))];
+    const masterCategories = ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => String(option.value));
+    const extraCategories = inventoryItems
+      .map((item) => String(item.category ?? "").trim())
+      .filter((category) => category && !masterCategories.includes(category))
+      .filter((category, index, values) => values.indexOf(category) === index)
+      .sort((left, right) => formatDisplayLabel(left).localeCompare(formatDisplayLabel(right), "id-ID"));
+
+    return ["SEMUA", ...masterCategories, ...extraCategories];
   }, [inventoryItems]);
 
   const filteredItems = useMemo(() => {
@@ -947,11 +954,14 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
   }, [datePickerOpen]);
 
   const categories = useMemo(() => {
-    const masterCategories = ADMIN_UNIT_CATEGORY_OPTIONS.map((option) => String(option.value));
+    const masterCategories = ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => String(option.value));
     const historyCategories = history.map((entry) => String(entry.category ?? "").trim()).filter(Boolean);
-    const extraCategories = historyCategories.filter((category) => !masterCategories.includes(category));
+    const extraCategories = historyCategories
+      .filter((category) => !masterCategories.includes(category))
+      .filter((category, index, values) => values.indexOf(category) === index)
+      .sort((left, right) => formatDisplayLabel(left).localeCompare(formatDisplayLabel(right), "id-ID"));
 
-    return ["SEMUA", ...masterCategories, ...Array.from(new Set(extraCategories))];
+    return ["SEMUA", ...masterCategories, ...extraCategories];
   }, [history]);
 
   const filteredHistory = useMemo(() => {
