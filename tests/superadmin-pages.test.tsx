@@ -1493,6 +1493,68 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
+  it("shows rejected fixed-price verification details as read-only audit data", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-wanea",
+              code: "UPC-WANEA",
+              name: "UPC Wanea",
+              address: "Wanea",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-fixed-rejected",
+              code: "SBG-117870000000024",
+              name: "Kalung Salib Emas 17K",
+              category: "perhiasan",
+              condition: "baik",
+              status: "dipasarkan",
+              appraisalValue: 15_000_000,
+              specifications: {},
+              media: [],
+            },
+            operationalStatus: "Gagal",
+            operationalTone: "red",
+            marketing: {
+              id: "pemasaran-fixed-rejected",
+              lotId: "barang-fixed-rejected",
+              lot: "Kalung Salib Emas 17K",
+              status: "AKTIF",
+              mode: "FIXED_PRICE",
+              iteration: 5,
+              price: 15_000_000,
+              transactionId: "trx-fixed-rejected",
+              transactionStatus: "DITOLAK_BUKTI",
+              transactionCreatedAt: "2026-07-06T04:29:00.000Z",
+              buyerName: "Cristiano Ronaldo",
+              proofUrl: "/uploads/bukti-fixed-rejected.jpg",
+              verifiedBy: "Maria Supit",
+              verifiedAt: "2026-07-06T05:56:00.000Z",
+              rejectionReason: "Uang dikirim bukan ke rekening tujuan.",
+              reference: "FP-117870000000024",
+              note: "Bukti pembayaran harga tetap ditolak admin unit.",
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    expect(screen.getByText("Pembayaran Harga Tetap Ditolak")).toBeInTheDocument();
+    const audit = screen.getByTestId("superadmin-payment-verification-audit");
+    expect(audit).toHaveTextContent("Maria Supit");
+    expect(audit).toHaveTextContent("6 Jul 2026");
+    expect(audit).toHaveTextContent("Uang dikirim bukan ke rekening tujuan.");
+    expect(within(audit).getByRole("link", { name: /lihat bukti pembayaran/i })).toHaveAttribute(
+      "href",
+      "/uploads/bukti-fixed-rejected.jpg",
+    );
+    expect(within(audit).queryByRole("button")).not.toBeInTheDocument();
+  });
+
   it("keeps the verified superadmin winner manifest compact inside the settlement grid", () => {
     render(
       <SuperAdminUnitBarangDetailPage

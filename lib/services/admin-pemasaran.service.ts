@@ -63,7 +63,9 @@ type AdminMarketingTransactionSummary = {
   paymentMethod?: string | null;
   status?: string | null;
   proofUrl?: string | null;
+  rejectionReason?: string | null;
   verifiedBy?: string | null;
+  verifiedAt?: Date | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | null;
   handoverProofUploadedBy?: string | null;
@@ -239,13 +241,15 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       status: transaksi.status,
       paymentMethod: transaksi.paymentMethod,
       proofUrl: transaksi.proofUrl,
+      rejectionReason: transaksi.rejectionReason,
       verifiedBy: transactionPaymentVerifier.name,
+      verifiedAt: transaksi.verifiedAt,
+      updatedAt: transaksi.updatedAt,
       handoverProofUrl: transaksi.handoverProofUrl,
       handoverProofUploadedAt: transaksi.handoverProofUploadedAt,
       handoverProofUploadedBy: transactionHandoverUploader.name,
       reference: transaksi.referenceNumber,
       paymentDeadline: transaksi.paymentDeadline,
-      soldAt: transaksi.verifiedAt,
       completedAt: transaksi.completedAt,
       completionSource: transaksi.completionSource,
       buyerName: users.name,
@@ -271,12 +275,14 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       paymentMethod: row.paymentMethod,
       status: row.status,
       proofUrl: row.proofUrl,
+      rejectionReason: row.rejectionReason,
       verifiedBy: row.verifiedBy,
+      verifiedAt: row.verifiedAt ?? (row.status === "ditolak_bukti" ? row.updatedAt : null),
       handoverProofUrl: row.handoverProofUrl,
       handoverProofUploadedAt: row.handoverProofUploadedAt,
       handoverProofUploadedBy: row.handoverProofUploadedBy,
       reference: row.reference,
-      soldAt: row.soldAt,
+      soldAt: row.status === "lunas" || row.status === "selesai" ? row.verifiedAt : null,
       paymentDeadline: row.paymentDeadline,
       completedAt: row.completedAt,
       completionSource: row.completionSource,

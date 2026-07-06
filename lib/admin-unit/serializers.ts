@@ -28,7 +28,9 @@ type AdminPemasaranTransaction = {
   paymentMethod?: string | null;
   status?: string | null;
   proofUrl?: string | null;
+  rejectionReason?: string | null;
   verifiedBy?: string | null;
+  verifiedAt?: Date | string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: Date | string | null;
   handoverProofUploadedBy?: string | null;
@@ -240,6 +242,11 @@ export function serializeAdminPemasaran(
       if (extra.transaction?.status === "lunas" || extra.transaction?.status === "selesai") {
         return "Pembayaran sudah terverifikasi dan barang siap dinyatakan terjual.";
       }
+      if (extra.transaction?.status === "ditolak_bukti") {
+        return extra.transaction.rejectionReason
+          ? `Bukti pembayaran ditolak admin unit. Alasan: ${extra.transaction.rejectionReason}`
+          : "Bukti pembayaran ditolak admin unit.";
+      }
       if (extra.transaction) {
         return "Pembeli sudah mulai proses pembayaran dan menunggu verifikasi admin.";
       }
@@ -306,7 +313,9 @@ export function serializeAdminPemasaran(
     buyerNationalId: extra.transaction?.buyerNationalId ?? null,
     paymentMethod: formatPaymentMethod(extra.transaction?.paymentMethod),
     proofUrl: extra.transaction?.proofUrl ?? null,
+    rejectionReason: extra.transaction?.rejectionReason ?? null,
     verifiedBy: extra.transaction?.verifiedBy ?? null,
+    verifiedAt: toIsoOrNull(extra.transaction?.verifiedAt),
     handoverProofUrl: extra.transaction?.handoverProofUrl ?? null,
     handoverProofUploadedAt: toIsoOrNull(extra.transaction?.handoverProofUploadedAt),
     handoverProofUploadedBy: extra.transaction?.handoverProofUploadedBy ?? null,

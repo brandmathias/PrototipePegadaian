@@ -245,7 +245,9 @@ export type SuperAdminUnitBarangMarketingSession = {
   buyerNationalId?: string | null;
   paymentMethod?: string | null;
   proofUrl?: string | null;
+  rejectionReason?: string | null;
   verifiedBy?: string | null;
+  verifiedAt?: string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
@@ -4663,10 +4665,44 @@ function SuperAdminFixedPriceProgressPanel({
 }) {
   const fulfilled = session.transactionStatus === "SELESAI";
   const verified = session.transactionStatus === "LUNAS" || fulfilled;
+  const rejected = session.transactionStatus === "DITOLAK_BUKTI";
   const submitted = Boolean(session.transactionId) && !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
   const buyerActor = session.buyerName ? `Buyer: ${session.buyerName}` : "Buyer";
   const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : "Admin Unit";
   const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+  if (rejected) {
+    return (
+      <CompactTransactionProgress
+        steps={[
+          {
+            label: "Pembayaran",
+            status: "Bukti dikirim",
+            actor: buyerActor,
+            occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
+            icon: WalletCards,
+            tone: "done",
+          },
+          {
+            label: "Verifikasi",
+            status: "Ditolak",
+            actor: adminActor,
+            occurredAt: formatSuperAdminDateTime(session.verifiedAt),
+            icon: X,
+            tone: "failed",
+          },
+          {
+            label: "Selesai",
+            status: "Transaksi dibatalkan",
+            occurredAt: null,
+            icon: CheckCircle2,
+            tone: "pending",
+          },
+        ]}
+        title="Progress Penyelesaian"
+      />
+    );
+  }
+
   const steps = [
     {
       label: "Pembayaran",
@@ -4702,11 +4738,16 @@ function SuperAdminFixedPriceWorkspace({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const sold = session.transactionStatus === "SELESAI" || session.status === "SELESAI" || Boolean(session.soldAt);
+  const rejected = session.transactionStatus === "DITOLAK_BUKTI";
+  const sold = session.transactionStatus
+    ? session.transactionStatus === "SELESAI"
+    : session.status === "SELESAI" || Boolean(session.soldAt);
   const verified = session.transactionStatus === "LUNAS";
   const hasBuyer = Boolean(session.transactionId || session.buyerName || session.winner);
-  const isFailed = session.status === "GAGAL" || session.transactionStatus === "GAGAL";
-  const statusTitle = isFailed
+  const isFailed = rejected || session.status === "GAGAL" || session.transactionStatus === "GAGAL";
+  const statusTitle = rejected
+    ? "Pembayaran Harga Tetap Ditolak"
+    : isFailed
     ? "Sesi Harga Tetap Diarsipkan"
     : sold
       ? "Pembelian Harga Tetap Selesai"
@@ -4715,7 +4756,9 @@ function SuperAdminFixedPriceWorkspace({
         : hasBuyer
           ? "Bukti Pembayaran Masuk"
           : "Masih Tersedia di Katalog";
-  const statusDetail = isFailed
+  const statusDetail = rejected
+    ? `Admin unit menolak bukti pembayaran${session.rejectionReason ? ` dengan alasan: ${session.rejectionReason}` : ""}. Barang tetap tersedia untuk pembeli lain.`
+    : isFailed
     ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
     : sold
       ? isSuperAdminAutoCompleted(session)
@@ -4816,6 +4859,54 @@ function SuperAdminFixedPriceWorkspace({
               {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
             </div>
           </section>
+
+          {rejected ? (
+            <section
+              className="rounded-xl border border-[#fecaca] bg-[#fff8f8] px-4 py-4 shadow-[0_20px_46px_-40px_rgba(127,29,29,0.28)]"
+              data-testid="superadmin-payment-verification-audit"
+            >
+              <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#991b1b]">
+                Detail Verifikasi Admin Unit
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <SuperAdminDetailInfoCard icon={X} label="Keputusan" value="Bukti pembayaran ditolak" />
+                <SuperAdminDetailInfoCard
+                  icon={UserRound}
+                  label="Diverifikasi Oleh"
+                  value={session.verifiedBy || "Admin Unit"}
+                />
+                <SuperAdminDetailInfoCard
+                  icon={Clock3}
+                  label="Waktu Keputusan"
+                  value={formatSuperAdminDateTime(session.verifiedAt)}
+                />
+                <SuperAdminDetailInfoCard
+                  icon={ReceiptText}
+                  label="Referensi"
+                  value={session.reference || "-"}
+                />
+              </div>
+              <div className="mt-3 rounded-lg border border-[#fecaca] bg-white px-3.5 py-3">
+                <p className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#991b1b]">
+                  Alasan Penolakan
+                </p>
+                <p className="mt-1 text-[0.78rem] font-semibold leading-5 text-[#7f1d1d]">
+                  {session.rejectionReason || "Alasan penolakan tidak tercatat."}
+                </p>
+              </div>
+              {session.proofUrl ? (
+                <a
+                  className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#fecaca] bg-white px-3.5 text-[0.76rem] font-black text-[#991b1b] transition-colors hover:bg-[#fff1f2]"
+                  href={session.proofUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Eye className="size-4" />
+                  Lihat Bukti Pembayaran
+                </a>
+              ) : null}
+            </section>
+          ) : null}
         </div>
 
         <div className="space-y-4">
