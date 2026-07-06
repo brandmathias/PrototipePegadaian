@@ -2120,7 +2120,7 @@ export function TransactionDetailPage({
                 {transferAccounts.length > 0 ? (
                   <div
                     aria-label="Daftar rekening tujuan"
-                    className="grid min-h-[18rem] flex-1 gap-3 overflow-y-auto pr-1 [grid-auto-rows:minmax(8.75rem,1fr)] [scrollbar-gutter:stable] [scrollbar-width:thin]"
+                    className="grid max-h-[27.75rem] gap-3 overflow-y-auto overscroll-contain pr-1 [grid-auto-rows:8.75rem] [scrollbar-gutter:stable] [scrollbar-width:thin]"
                     role="list"
                   >
                     {transferAccounts.map((account) => (

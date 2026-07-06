@@ -6,8 +6,15 @@ export const ADMIN_UNIT_CATEGORY_OPTIONS = [
   { value: "lainnya", label: "Lainnya", iconKey: "lainnya" }
 ] as const;
 
+export function compareCategoryFilterLabels(left: string, right: string) {
+  if (left === right) return 0;
+  if (left === "Lainnya") return 1;
+  if (right === "Lainnya") return -1;
+  return left.localeCompare(right, "id-ID");
+}
+
 export const ADMIN_UNIT_CATEGORY_FILTER_OPTIONS = [...ADMIN_UNIT_CATEGORY_OPTIONS].sort((left, right) =>
-  left.label.localeCompare(right.label, "id-ID")
+  compareCategoryFilterLabels(left.label, right.label)
 );
 
 export type AdminUnitCategory = (typeof ADMIN_UNIT_CATEGORY_OPTIONS)[number]["value"];

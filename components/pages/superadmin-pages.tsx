@@ -113,7 +113,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
-import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS } from "@/lib/catalog/categories";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, compareCategoryFilterLabels } from "@/lib/catalog/categories";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
@@ -2704,7 +2704,7 @@ function SuperAdminUnitInventorySection({
     return [
       { label: "Semua Kategori", value: unitDetailFilterAll },
       ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
-        left.label.localeCompare(right.label, "id-ID"),
+        compareCategoryFilterLabels(left.label, right.label),
       ),
     ];
   }, [items]);

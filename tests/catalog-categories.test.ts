@@ -7,9 +7,9 @@ describe("catalog category filters", () => {
     expect(ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => option.label)).toEqual([
       "Elektronik",
       "Kendaraan",
-      "Lainnya",
       "Logam Mulia",
-      "Perhiasan"
+      "Perhiasan",
+      "Lainnya"
     ]);
   });
 });

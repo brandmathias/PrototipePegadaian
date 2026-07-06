@@ -43,7 +43,7 @@ import {
   isAdminInventoryReadyForMarketing
 } from "@/lib/admin-unit/operational-metrics";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
-import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS } from "@/lib/catalog/categories";
+import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, compareCategoryFilterLabels } from "@/lib/catalog/categories";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -677,7 +677,12 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
       .filter((category, index, values) => values.indexOf(category) === index)
       .sort((left, right) => formatDisplayLabel(left).localeCompare(formatDisplayLabel(right), "id-ID"));
 
-    return ["SEMUA", ...masterCategories, ...extraCategories];
+    return [
+      "SEMUA",
+      ...[...masterCategories, ...extraCategories].sort((left, right) =>
+        compareCategoryFilterLabels(formatDisplayLabel(left), formatDisplayLabel(right))
+      )
+    ];
   }, [inventoryItems]);
 
   const filteredItems = useMemo(() => {
@@ -961,7 +966,12 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
       .filter((category, index, values) => values.indexOf(category) === index)
       .sort((left, right) => formatDisplayLabel(left).localeCompare(formatDisplayLabel(right), "id-ID"));
 
-    return ["SEMUA", ...masterCategories, ...extraCategories];
+    return [
+      "SEMUA",
+      ...[...masterCategories, ...extraCategories].sort((left, right) =>
+        compareCategoryFilterLabels(formatDisplayLabel(left), formatDisplayLabel(right))
+      )
+    ];
   }, [history]);
 
   const filteredHistory = useMemo(() => {

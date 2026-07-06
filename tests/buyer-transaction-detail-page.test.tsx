@@ -112,10 +112,9 @@ describe("buyer transaction detail page", () => {
     const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
     expect(accountList).toHaveClass(
       "grid",
-      "min-h-[18rem]",
-      "flex-1",
+      "max-h-[27.75rem]",
       "overflow-y-auto",
-      "[grid-auto-rows:minmax(8.75rem,1fr)]"
+      "[grid-auto-rows:8.75rem]"
     );
     const firstAccount = screen.getByLabelText(/rekening tujuan bni/i);
     expect(firstAccount).toHaveClass(
