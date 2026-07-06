@@ -42,6 +42,7 @@ async function getTransactionJoin(transactionId: string, unitId?: string) {
   const [row] = await db
     .select({
       transaction: transaksi,
+      marketing: pemasaran,
       item: barang,
       imageUrl: primaryBarangPhotoUrl(),
       unit: units,
@@ -221,6 +222,59 @@ async function recordItemStatusHistory(input: {
   });
 }
 
+type TransactionDb = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function relistRejectedFixedPriceMarketing(
+  tx: TransactionDb,
+  input: {
+    adminId: string;
+    barangId: string;
+    itemStatus: string;
+    marketingId: string;
+    now: Date;
+    price: string;
+    reason: string;
+    sourceIteration?: number | null;
+  }
+) {
+  const [archived] = await tx
+    .update(pemasaran)
+    .set({ status: "gagal", updatedAt: input.now })
+    .where(and(eq(pemasaran.id, input.marketingId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")))
+    .returning({ id: pemasaran.id });
+
+  if (!archived) {
+    return;
+  }
+
+  await tx.insert(pemasaran).values({
+    id: randomUUID(),
+    barangId: input.barangId,
+    mode: "fixed_price",
+    price: input.price,
+    basePrice: null,
+    durationDays: null,
+    durationSeconds: null,
+    startsAt: input.now,
+    endsAt: null,
+    revealEndsAt: null,
+    iteration: Number(input.sourceIteration ?? 0) + 1,
+    status: "aktif",
+    createdByUserId: input.adminId,
+    updatedAt: input.now
+  });
+
+  await tx.update(barang).set({ status: "dipasarkan", updatedAt: input.now }).where(eq(barang.id, input.barangId));
+  await tx.insert(riwayatStatusBarang).values({
+    id: randomUUID(),
+    barangId: input.barangId,
+    oldStatus: input.itemStatus,
+    newStatus: "gagal",
+    changedByUserId: input.adminId,
+    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}. Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.`
+  });
+}
+
 export async function verifyAdminTransaction(unitId: string, adminId: string, transactionId: string, input: { reference?: unknown }) {
   const row = await getTransactionForUnit(unitId, transactionId);
   await ensureTransactionMutable(row.transaction.status);
@@ -282,27 +336,39 @@ export async function rejectAdminTransactionProof(
     throw new Error("Hanya bukti transfer yang sudah diunggah yang dapat ditolak.");
   }
 
-  const [updated] = await db
-    .update(transaksi)
-    .set({
-      status: "ditolak_bukti",
-      rejectionReason: payload.reason,
-      verifiedByUserId: adminId,
-      verifiedAt: new Date(),
-      updatedAt: new Date()
-    })
-    .where(eq(transaksi.id, transactionId))
-    .returning();
+  const now = new Date();
+  const updated = await db.transaction(async (tx) => {
+    const [updatedTransaction] = await tx
+      .update(transaksi)
+      .set({
+        status: "ditolak_bukti",
+        rejectionReason: payload.reason,
+        verifiedByUserId: adminId,
+        verifiedAt: now,
+        updatedAt: now
+      })
+      .where(eq(transaksi.id, transactionId))
+      .returning();
 
-  if (row.transaction.type === "fixed_price") {
-    await recordItemStatusHistory({
-      barangId: row.item.id,
-      oldStatus: row.item.status,
-      newStatus: "gagal",
-      changedByUserId: adminId,
-      note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${payload.reason}.`
-    });
-  }
+    if (!updatedTransaction) {
+      throw new Error("Transaksi tidak ditemukan.");
+    }
+
+    if (row.transaction.type === "fixed_price") {
+      await relistRejectedFixedPriceMarketing(tx, {
+        adminId,
+        barangId: row.item.id,
+        itemStatus: row.item.status,
+        marketingId: row.transaction.pemasaranId,
+        now,
+        price: String(row.marketing.price ?? row.transaction.amount),
+        reason: payload.reason,
+        sourceIteration: row.marketing.iteration
+      });
+    }
+
+    return updatedTransaction;
+  });
 
   await notifyPaymentRejected({
     userId: updated.userId,

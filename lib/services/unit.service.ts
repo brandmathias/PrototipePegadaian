@@ -145,6 +145,9 @@ export function getUnitItemOperationalState(input: {
   const dueDate = input.dueDate ?? null;
   const isCollateralStatus = itemStatus === "gadai" || itemStatus === "jaminan";
   const isBeforeDueDate = dueDate ? dueDate.getTime() > now.getTime() : false;
+  const fixedPriceCatalogLocked =
+    activeMarketingMode === "fixed_price" &&
+    ["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus);
 
   if (itemStatus === "terjual" || transactionStatus === "lunas" || transactionStatus === "selesai") {
     return { operationalStatus: "Terjual", operationalTone: "slate" };
@@ -154,20 +157,16 @@ export function getUnitItemOperationalState(input: {
     return { operationalStatus: "Ditebus", operationalTone: "slate" };
   }
 
+  if (itemStatus === "dipasarkan" && activeMarketingStatus === "aktif" && !fixedPriceCatalogLocked) {
+    return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
+  }
+
   if (
     itemStatus === "gagal" ||
     latestMarketingStatus === "gagal" ||
     transactionStatus === "ditolak_bukti"
   ) {
     return { operationalStatus: "Gagal", operationalTone: "red" };
-  }
-
-  const fixedPriceCatalogLocked =
-    activeMarketingMode === "fixed_price" &&
-    ["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus);
-
-  if (itemStatus === "dipasarkan" && activeMarketingStatus === "aktif" && !fixedPriceCatalogLocked) {
-    return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
   }
 
   if (fixedPriceCatalogLocked) {

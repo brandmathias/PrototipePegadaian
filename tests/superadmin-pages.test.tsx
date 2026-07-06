@@ -1112,6 +1112,19 @@ describe("superadmin pages", () => {
         transactionStatus: "ditolak_bukti",
       }),
     ).toEqual({
+      operationalStatus: "Sedang Dipasarkan",
+      operationalTone: "blue",
+    });
+
+    expect(
+      getUnitItemOperationalState({
+        activeMarketingMode: "fixed_price",
+        itemStatus: "dipasarkan",
+        dueDate: new Date("2026-07-01T00:00:00.000Z"),
+        now,
+        transactionStatus: "ditolak_bukti",
+      }),
+    ).toEqual({
       operationalStatus: "Gagal",
       operationalTone: "red",
     });

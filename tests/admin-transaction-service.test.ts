@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => {
     db: {
       select: vi.fn(() => query),
       insert: vi.fn(),
+      transaction: vi.fn(),
       update: vi.fn()
     },
     query,
@@ -69,6 +70,25 @@ function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
       createdAt: date,
       updatedAt: date
     },
+    marketing: {
+      id: "pm-fixed",
+      barangId: "barang-1",
+      mode: type === "fixed_price" ? "fixed_price" : "vickrey",
+      price: type === "fixed_price" ? "10000000" : null,
+      basePrice: type === "fixed_price" ? null : "10000000",
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: date,
+      endsAt: null,
+      revealEndsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 5,
+      status: "aktif",
+      createdByUserId: "admin-creator",
+      createdAt: date,
+      updatedAt: date
+    },
     item: {
       id: "barang-1",
       name: "Cincin Emas Berlian",
@@ -93,8 +113,20 @@ function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
 describe("admin transaction service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.insert.mockReset();
+    mocks.db.select.mockReset();
+    mocks.db.update.mockReset();
+    mocks.db.transaction.mockReset();
+    mocks.db.select.mockImplementation(() => mocks.query);
     mocks.query.limit.mockReset();
     mocks.query.limit.mockResolvedValue([makeTransactionJoin()]);
+    mocks.db.transaction.mockImplementation(async (callback) =>
+      callback({
+        insert: mocks.db.insert,
+        select: mocks.db.select,
+        update: mocks.db.update
+      })
+    );
   });
 
   afterEach(() => {
@@ -208,12 +240,28 @@ describe("admin transaction service", () => {
           paymentVerifier: { name: "Maria Supit" }
         }
       ]);
+    const archiveMarketingSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "pm-fixed" }])
+      })
+    });
+    const updateItemSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined)
+    });
+    const createMarketingValuesSpy = vi.fn().mockResolvedValue(undefined);
     const statusHistoryValuesSpy = mockInsertValues();
 
-    mocks.db.update.mockImplementationOnce(() => mockUpdateReturning(updatedTransaction));
-    mocks.db.insert.mockImplementationOnce(() => ({
-      values: statusHistoryValuesSpy
-    }));
+    mocks.db.update
+      .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
+      .mockImplementationOnce(() => ({ set: archiveMarketingSetSpy }))
+      .mockImplementationOnce(() => ({ set: updateItemSetSpy }));
+    mocks.db.insert
+      .mockImplementationOnce(() => ({
+        values: createMarketingValuesSpy
+      }))
+      .mockImplementationOnce(() => ({
+        values: statusHistoryValuesSpy
+      }));
 
     await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
@@ -231,6 +279,101 @@ describe("admin transaction service", () => {
     expect(mocks.serializeAdminTransaction).toHaveBeenLastCalledWith(
       expect.objectContaining({
         verifiedByName: "Maria Supit"
+      })
+    );
+    expectTransactionViewsRevalidated();
+  });
+
+  it("archives a rejected harga tetap iteration and relists the item on the next iteration", async () => {
+    const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(rejectedAt);
+
+    const updatedTransaction = {
+      ...makeTransactionJoin("bukti_diunggah", "fixed_price").transaction,
+      status: "ditolak_bukti",
+      rejectionReason: "Uang dikirim bukan ke rekening tujuan",
+      verifiedByUserId: "admin-1",
+      verifiedAt: rejectedAt,
+      updatedAt: rejectedAt
+    };
+    mocks.query.limit
+      .mockResolvedValueOnce([makeTransactionJoin("bukti_diunggah", "fixed_price")])
+      .mockResolvedValueOnce([
+        {
+          ...makeTransactionJoin("ditolak_bukti", "fixed_price"),
+          transaction: updatedTransaction,
+          paymentVerifier: { name: "Maria Supit" }
+        }
+      ]);
+
+    const transactionSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([updatedTransaction])
+      })
+    });
+    const archiveMarketingSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "pm-fixed" }])
+      })
+    });
+    const updateItemSetSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined)
+    });
+    const createMarketingValuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([{ id: "pm-fixed-iteration-6" }])
+    });
+    const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
+
+    mocks.db.update
+      .mockImplementationOnce(() => ({ set: transactionSetSpy }))
+      .mockImplementationOnce(() => ({ set: archiveMarketingSetSpy }))
+      .mockImplementationOnce(() => ({ set: updateItemSetSpy }));
+    mocks.db.insert
+      .mockImplementationOnce(() => ({ values: createMarketingValuesSpy }))
+      .mockImplementationOnce(() => ({ values: statusHistoryValuesSpy }));
+
+    await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
+      reason: "Uang dikirim bukan ke rekening tujuan"
+    });
+
+    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
+    expect(archiveMarketingSetSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "gagal",
+        updatedAt: rejectedAt
+      })
+    );
+    expect(createMarketingValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        mode: "fixed_price",
+        price: "10000000",
+        basePrice: null,
+        durationDays: null,
+        durationSeconds: null,
+        startsAt: rejectedAt,
+        endsAt: null,
+        revealEndsAt: null,
+        iteration: 6,
+        status: "aktif",
+        createdByUserId: "admin-1",
+        updatedAt: rejectedAt
+      })
+    );
+    expect(updateItemSetSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "dipasarkan",
+        updatedAt: rejectedAt
+      })
+    );
+    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        oldStatus: "dipasarkan",
+        newStatus: "gagal",
+        changedByUserId: "admin-1",
+        note: expect.stringMatching(/harga tetap ditolak/i)
       })
     );
     expectTransactionViewsRevalidated();
