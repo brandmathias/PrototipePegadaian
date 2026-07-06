@@ -58,6 +58,7 @@ import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
+import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import {
   printReceiptElementInIsolatedFrame,
@@ -2433,9 +2434,13 @@ export function AdminFixedPriceDetailPage({
   const fixedPriceAmount = currency.format(auction.price ?? 0);
   const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
   const canScheduleRemarketing = auction.status === "AKTIF" && !auction.transactionId;
+  const shouldAutoRefresh =
+    Boolean(auction.transactionId) &&
+    !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(auction.transactionStatus ?? "");
 
   return (
     <div className="space-y-4">
+      <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section className="rounded-[1.45rem] border border-[#d8e8dd] bg-white/90 p-4 shadow-[0_24px_70px_-56px_rgba(8,69,50,0.45)]">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">

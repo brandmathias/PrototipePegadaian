@@ -492,6 +492,43 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).toBeInTheDocument();
   });
 
+  it("auto-refreshes detail harga tetap while payment is still waiting on buyer or admin action", () => {
+    vi.useFakeTimers();
+
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-refresh",
+          lotId: "barang-fixed-refresh",
+          lot: "Cincin Emas 3",
+          code: "BRG-02393124",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15000000,
+          transactionId: "trx-fixed-refresh",
+          transactionStatus: "MENUNGGU_PEMBAYARAN",
+          buyerName: "Buyer Demo 13 B",
+          paymentMethod: "TRANSFER_BANK",
+          proofUrl: null,
+          reference: null,
+          paymentDeadline: "2099-06-05T12:00:00.000Z",
+          media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
+          primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
+          note: "Buyer sudah membuka transaksi dan admin perlu memantau sinkronisasi status."
+        }}
+      />
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+
+    expect(router.refresh).toHaveBeenCalledTimes(1);
+  });
+
   it("does not reopen harga tetap verification actions after payment proof has been rejected", () => {
     render(
       <AdminFixedPriceDetailPage

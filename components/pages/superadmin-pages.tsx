@@ -78,6 +78,7 @@ import {
 } from "lucide-react";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
+import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
 import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
@@ -4716,9 +4717,13 @@ function SuperAdminFixedPriceWorkspace({
         : hasBuyer
           ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
           : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
+  const shouldAutoRefresh =
+    Boolean(session.transactionId) &&
+    !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(session.transactionStatus ?? "");
 
   return (
     <div className="space-y-4" data-testid="superadmin-fixed-price-settlement-layout">
+      <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section className={cn(
         "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
         isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",

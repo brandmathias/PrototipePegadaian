@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
       update: vi.fn()
     },
     query,
+    revalidateTag: vi.fn(),
     serializeAdminTransaction: vi.fn((row) => row),
     notifyPaymentRejected: vi.fn(),
     notifyPaymentVerified: vi.fn()
@@ -32,6 +33,10 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 vi.mock("@/lib/services/notification-events", () => ({
   notifyPaymentRejected: mocks.notifyPaymentRejected,
   notifyPaymentVerified: mocks.notifyPaymentVerified
+}));
+
+vi.mock("next/cache", () => ({
+  revalidateTag: mocks.revalidateTag
 }));
 
 import {
@@ -117,6 +122,15 @@ describe("admin transaction service", () => {
     return vi.fn().mockResolvedValue(undefined);
   }
 
+  function expectTransactionViewsRevalidated() {
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("admin-layout");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("admin-dashboard");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("public-catalog-lots");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-monitoring");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-detail");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-barang-detail");
+  }
+
   it("treats an already rejected harga tetap proof as an idempotent result", async () => {
     const result = await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
       reason: "Nominal uang yang dikirim tidak sesuai harga barang"
@@ -132,6 +146,7 @@ describe("admin transaction service", () => {
     );
     expect(mocks.db.update).not.toHaveBeenCalled();
     expect(mocks.notifyPaymentRejected).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
     expect(mocks.serializeAdminTransaction).toHaveBeenCalledTimes(1);
   });
 
@@ -171,6 +186,7 @@ describe("admin transaction service", () => {
         note: expect.stringMatching(/harga tetap disetujui/i)
       })
     );
+    expectTransactionViewsRevalidated();
 
   });
 
@@ -202,6 +218,7 @@ describe("admin transaction service", () => {
         note: expect.stringMatching(/harga tetap ditolak/i)
       })
     );
+    expectTransactionViewsRevalidated();
   });
 
   it("stores admin-uploaded handover proof without changing the transaction status", async () => {
@@ -239,5 +256,6 @@ describe("admin transaction service", () => {
       })
     );
     expect(setPayload).not.toHaveProperty("status");
+    expectTransactionViewsRevalidated();
   });
 });

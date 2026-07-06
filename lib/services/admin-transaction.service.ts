@@ -22,6 +22,7 @@ import {
   users
 } from "@/lib/db/schema";
 import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
+import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 
 const handoverUploader = alias(users, "transaction_handover_uploader");
 const paymentVerifier = alias(users, "transaction_payment_verifier");
@@ -192,6 +193,8 @@ export async function uploadAdminTransactionHandoverProof(
     throw new Error("Transaksi tidak ditemukan.");
   }
 
+  revalidateTransactionViews();
+
   return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
 }
 
@@ -256,6 +259,7 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     transactionId: updated.id,
     lotName: row.item.name
   });
+  revalidateTransactionViews();
 
   return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
 }
@@ -304,6 +308,7 @@ export async function rejectAdminTransactionProof(
     lotName: row.item.name,
     reason: payload.reason
   });
+  revalidateTransactionViews();
 
   return serializeAdminTransaction({
     ...updated,

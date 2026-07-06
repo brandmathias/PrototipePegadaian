@@ -22,6 +22,7 @@ import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-upload-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { PaymentWorkflowRail, type PaymentWorkflowStep } from "@/components/shared/payment-workflow-rail";
+import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
 import { TransactionReceiptAutoPrint } from "@/components/shared/transaction-receipt-auto-print";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import { TransactionReceiptInlinePrint } from "@/components/shared/transaction-receipt-inline-print";
@@ -1135,8 +1136,11 @@ export function AdminTransactionDetailWorkspacePage({
   backLabel?: string;
   serverNow?: string;
 }) {
+  const shouldAutoRefresh = !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(transaction.status);
+
   return (
     <div className="space-y-6">
+      <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <PageHeader
         eyebrow="Admin Unit / Detail Transaksi"
         title={transaction.lot}

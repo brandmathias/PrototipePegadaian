@@ -38,6 +38,7 @@ import {
   notifyAdminUnitPaymentProofUploaded
 } from "@/lib/services/notification-events";
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
+import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
@@ -936,6 +937,8 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     });
   }
 
+  revalidateTransactionViews();
+
   return serializeBuyerTransaction({
     ...created,
     lotName: row.item.name,
@@ -1180,6 +1183,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     transactionId: updated.id,
     lotName: row.lotName
   });
+  revalidateTransactionViews();
 
   return serializeBuyerTransaction({
     ...updated,
@@ -1240,6 +1244,8 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
 
     return updatedTransaction;
   });
+
+  revalidateTransactionViews();
 
   return serializeBuyerTransaction({
     ...updated,

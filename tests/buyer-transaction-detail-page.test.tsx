@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const router = vi.hoisted(() => ({
+  refresh: vi.fn()
+}));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    refresh: vi.fn()
-  })
+  useRouter: () => router
 }));
 
 import { TransactionDetailPage } from "@/components/pages/user-pages";
@@ -19,6 +21,15 @@ const buyer: BuyerSessionUser = {
   role: "buyer",
   isActive: true
 };
+
+beforeEach(() => {
+  router.refresh.mockClear();
+});
+
+afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
+});
 
 const transaction: BuyerTransaction = {
   id: "trx-fixed-1",
@@ -645,6 +656,30 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /bukti sedang direview admin/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^kirim bukti pembayaran$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kembali ke detail barang/i })).not.toBeInTheDocument();
+  });
+
+  it("auto-refreshes detail transaksi while payment is waiting for admin verification", () => {
+    vi.useFakeTimers();
+
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-fixed-review",
+          status: "BUKTI_DIUNGGAH",
+          paymentProof: "/uploads/bukti/transfer-budi.jpg",
+          reference: "BRI-2026-009"
+        }}
+        transactionId="trx-fixed-review"
+      />
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+
+    expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the uploaded proof preview visible after the transaction is completed", () => {

@@ -38,6 +38,7 @@ import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
+import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
 import { BuyerProfileSettingsForm } from "@/components/buyer/profile-settings-form";
 import { RestrictionCountdownTiles } from "@/components/buyer/restriction-countdown-tiles";
 import { TransactionsWorkspace } from "@/components/buyer/transactions-workspace";
@@ -1865,6 +1866,10 @@ export function TransactionDetailPage({
   const fixedPriceActionLockMessage = handoverLockMessage;
   const fixedPriceReceiptLockMessage =
     handoverLockMessage ?? (!isCompleted ? "Nota dapat dicetak setelah buyer menekan Pembelian Selesai." : null);
+  const shouldAutoRefresh =
+    transaction.status === "BUKTI_DIUNGGAH" ||
+    transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG" ||
+    (transaction.status === "LUNAS" && (!transaction.handoverProof || !isCompleted));
   const transactionSpecificationRows = [
     ...(transaction.category ? [{ label: "Kategori", value: transaction.category }] : []),
     ...(transaction.specs ?? [])
@@ -1937,6 +1942,7 @@ export function TransactionDetailPage({
 
   return (
     <div className="space-y-7 bg-white md:space-y-8">
+      <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">

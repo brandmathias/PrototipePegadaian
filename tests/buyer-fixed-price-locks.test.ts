@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => {
     db,
     listActiveAdminUnitNotificationRecipientIds: vi.fn().mockResolvedValue(["admin-unit-1"]),
     notifyAdminUnitPaymentProofUploaded: vi.fn(),
+    revalidateTag: vi.fn(),
     serializeBuyerTransaction: vi.fn((row) => row)
   };
 });
@@ -32,6 +33,10 @@ vi.mock("@/lib/services/cron.service", () => ({
 vi.mock("@/lib/services/notification-events", () => ({
   listActiveAdminUnitNotificationRecipientIds: mocks.listActiveAdminUnitNotificationRecipientIds,
   notifyAdminUnitPaymentProofUploaded: mocks.notifyAdminUnitPaymentProofUploaded
+}));
+
+vi.mock("next/cache", () => ({
+  revalidateTag: mocks.revalidateTag
 }));
 
 import { createFixedPricePurchase, uploadBuyerPaymentProof } from "@/lib/services/buyer.service";
@@ -64,6 +69,16 @@ function mockTransactionListQuery(rows: Array<Record<string, unknown>>) {
   return {
     from: vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue(rows)
+    })
+  };
+}
+
+function mockTransactionLockQuery(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue(rows)
+      })
     })
   };
 }
@@ -102,6 +117,15 @@ describe("createFixedPricePurchase locking rules", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+
+  function expectTransactionViewsRevalidated() {
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("admin-layout");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("admin-dashboard");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("public-catalog-lots");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-monitoring");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-detail");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-barang-detail");
+  }
 
   it("creates a harga tetap transaction in waiting payment before receiving payment proof", async () => {
     mocks.db.select
@@ -160,6 +184,7 @@ describe("createFixedPricePurchase locking rules", () => {
         userId: "buyer-baru"
       })
     );
+    expectTransactionViewsRevalidated();
   });
 
   it("allows another buyer to start checkout while the earlier buyer is only waiting for payment", async () => {
@@ -228,6 +253,7 @@ describe("createFixedPricePurchase locking rules", () => {
           userId: "buyer-baru"
       })
     );
+    expectTransactionViewsRevalidated();
   });
 
   it("blocks another buyer once the earlier buyer has uploaded payment proof", async () => {
@@ -261,6 +287,74 @@ describe("createFixedPricePurchase locking rules", () => {
     expect(mocks.db.insert).not.toHaveBeenCalled();
   });
 
+  it("uploads buyer payment proof and revalidates synced transaction views", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionDetailQuery({
+          id: "trx-proof-1",
+          pemasaranId: "pemasaran-1",
+          userId: "buyer-1",
+          status: "menunggu_pembayaran",
+          paymentMethod: "transfer",
+          referenceNumber: "BRI-2026-001",
+          proofUrl: null,
+          unitId: "unit-1",
+          lotName: "Cincin Emas"
+        })
+      )
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([])
+      );
+
+    const updatedAt = new Date("2026-05-27T09:10:00.000Z");
+    const setSpy = vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
+          {
+            id: "trx-proof-1",
+            pemasaranId: "pemasaran-1",
+            userId: "buyer-1",
+            type: "fixed_price",
+            amount: "12500000",
+            paymentMethod: "transfer",
+            status: "bukti_diunggah",
+            proofUrl: "/uploads/bukti/transfer-baru.jpg",
+            referenceNumber: "BRI-2026-002",
+            paymentDeadline: null,
+            createdAt: updatedAt,
+            updatedAt
+          }
+        ])
+      })
+    });
+
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: setSpy
+    }));
+
+    await uploadBuyerPaymentProof("buyer-1", "trx-proof-1", {
+      fileName: "/uploads/bukti/transfer-baru.jpg",
+      reference: "BRI-2026-002"
+    });
+
+    expect(setSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "bukti_diunggah",
+        proofUrl: "/uploads/bukti/transfer-baru.jpg",
+        referenceNumber: "BRI-2026-002"
+      })
+    );
+    expect(mocks.notifyAdminUnitPaymentProofUploaded).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transactionId: "trx-proof-1",
+        pemasaranId: "pemasaran-1",
+        lotName: "Cincin Emas"
+      })
+    );
+    expectTransactionViewsRevalidated();
+  });
+
   it("blocks proof upload while the current proof is already waiting for admin review", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockBlacklistQuery())
@@ -283,6 +377,7 @@ describe("createFixedPricePurchase locking rules", () => {
     ).rejects.toThrow("Bukti pembayaran sudah terkirim dan sedang diverifikasi admin unit.");
 
     expect(mocks.db.update).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
   it("blocks proof upload after admin rejects the harga tetap payment proof", async () => {
@@ -307,5 +402,6 @@ describe("createFixedPricePurchase locking rules", () => {
     ).rejects.toThrow("Transaksi ini sudah dibatalkan dan tidak dapat diperbarui.");
 
     expect(mocks.db.update).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 });
