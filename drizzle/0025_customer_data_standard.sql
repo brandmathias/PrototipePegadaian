@@ -2,6 +2,9 @@ alter table "barang"
   drop constraint if exists "barang_customer_number_13_digit_check";
 
 alter table "barang"
+  drop constraint if exists "barang_customer_number_format_check";
+
+alter table "barang"
   drop constraint if exists "barang_owner_name_two_words_check";
 
 update "barang" as item
@@ -33,13 +36,13 @@ targets as (
   select
     normalized."id",
     case
-      when normalized.digits ~ '^08[0-9]{11}$' then normalized.digits
-      when normalized.digits ~ '^8[0-9]{11}$' then concat('0', normalized.digits)
-      when normalized.digits ~ '^62[0-9]{11}$' then concat('0', substring(normalized.digits from 3))
+      when normalized.digits ~ '^08[0-9]{8,11}$' then normalized.digits
+      when normalized.digits ~ '^8[0-9]{8,11}$' then concat('0', normalized.digits)
+      when normalized.digits ~ '^628[0-9]{8,11}$' then concat('0', substring(normalized.digits from 3))
       else concat('0899', lpad(normalized.sequence_number::text, 9, '0'))
     end as new_customer_number
   from normalized
-  where normalized.digits !~ '^08[0-9]{11}$'
+  where normalized.digits !~ '^08[0-9]{8,11}$'
 )
 update "barang" as item
 set
@@ -49,8 +52,8 @@ from targets
 where targets."id" = item."id";
 
 alter table "barang"
-  add constraint "barang_customer_number_13_digit_check"
-  check ("customer_number" ~ '^08[0-9]{11}$');
+  add constraint "barang_customer_number_format_check"
+  check ("customer_number" ~ '^08[0-9]{8,11}$');
 
 alter table "barang"
   add constraint "barang_owner_name_two_words_check"
@@ -66,7 +69,7 @@ begin
   select count(*)
     into invalid_count
   from "barang"
-  where "customer_number" !~ '^08[0-9]{11}$'
+  where "customer_number" !~ '^08[0-9]{8,11}$'
      or trim("owner_name") ~ '[0-9]'
      or array_length(regexp_split_to_array(trim("owner_name"), '\s+'), 1) < 2;
 

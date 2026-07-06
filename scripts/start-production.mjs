@@ -138,7 +138,7 @@ try {
   const customerDataAudit = await client.query(`
     select count(*) as invalid_customer_data
     from "barang"
-    where "customer_number" !~ '^08[0-9]{11}$'
+    where "customer_number" !~ '^08[0-9]{8,11}$'
        or trim("owner_name") ~ '[0-9]'
        or array_length(regexp_split_to_array(trim("owner_name"), '\\s+'), 1) < 2
   `);

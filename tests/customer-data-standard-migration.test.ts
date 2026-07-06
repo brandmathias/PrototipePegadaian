@@ -12,8 +12,8 @@ describe("customer data standard migration", () => {
     expect(migration).toContain(`update "barang" as item`);
     expect(migration).toContain(`'Brando Mahendra'`);
     expect(migration).toContain(`'Andi Wijaya'`);
-    expect(migration).toContain(`"customer_number" ~ '^08[0-9]{11}$'`);
-    expect(migration).toContain(`"barang_customer_number_13_digit_check"`);
+    expect(migration).toContain(`"customer_number" ~ '^08[0-9]{8,11}$'`);
+    expect(migration).toContain(`"barang_customer_number_format_check"`);
     expect(migration).toContain(`"barang_owner_name_two_words_check"`);
   });
 
@@ -29,5 +29,9 @@ describe("customer data standard migration", () => {
     expect(packageJson.scripts["db:migrate:customer-data-standard"]).toBe(
       "tsx scripts/apply-customer-data-standard-migration.ts",
     );
+    expect(startup).toContain(`"customer_number" !~ '^08[0-9]{8,11}$'`);
+    expect(
+      readFileSync(join(process.cwd(), "scripts", "apply-customer-data-standard-migration.ts"), "utf8"),
+    ).toContain(`"customer_number" !~ '^08[0-9]{8,11}$'`);
   });
 });
