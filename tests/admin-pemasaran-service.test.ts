@@ -115,6 +115,7 @@ describe("resolveMarketingPerformanceInsights", () => {
 describe("getAdminPemasaranById", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.select.mockReset();
     mocks.processExpiredVickreyAuctions.mockResolvedValue(undefined);
     mocks.getLotStatsByIds.mockResolvedValue(new Map());
   });
@@ -216,6 +217,221 @@ describe("getAdminPemasaranById", () => {
     expect(detailExtras.transaction?.status).toBe("bukti_diunggah");
     expect(detailExtras.transaction?.proofUrl).toBe("/uploads/bukti-transfer.jpg");
   });
+
+  it("keeps a rejected fixed-price proof visible instead of falling back to a newer unpaid checkout", async () => {
+    const marketing = {
+      id: "marketing-fixed",
+      barangId: "barang-fixed",
+      mode: "fixed_price",
+      price: "15000000",
+      basePrice: null,
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: new Date("2026-06-23T05:00:00.000Z"),
+      endsAt: null,
+      revealEndsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 5,
+      status: "aktif",
+      createdByUserId: "admin-1",
+      createdAt: new Date("2026-06-23T05:00:00.000Z"),
+      updatedAt: new Date("2026-06-23T05:00:00.000Z")
+    };
+    const item = {
+      id: "barang-fixed",
+      unitId: "unit-1",
+      name: "Kalung Salib Emas 17K",
+      code: "SBG-117870000000024",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Kalung emas.",
+      appraisalValue: "15000000",
+      specifications: {}
+    };
+    const newerUnpaidTransaction = {
+      id: "trx-newer-unpaid",
+      pemasaranId: "marketing-fixed",
+      status: "menunggu_pembayaran",
+      paymentMethod: "transfer",
+      proofUrl: null,
+      rejectionReason: null,
+      verifiedBy: null,
+      verifiedAt: null,
+      updatedAt: new Date("2026-07-01T08:35:00.000Z"),
+      handoverProofUrl: null,
+      handoverProofUploadedAt: null,
+      handoverProofUploadedBy: null,
+      reference: null,
+      paymentDeadline: null,
+      completedAt: null,
+      completionSource: null,
+      buyerName: "Cristiano Ronaldo",
+      buyerEmail: "newer@example.test",
+      buyerPhone: null,
+      buyerNationalId: null,
+      transactionCreatedAt: new Date("2026-07-01T08:35:00.000Z")
+    };
+    const rejectedTransaction = {
+      ...newerUnpaidTransaction,
+      id: "trx-rejected-proof",
+      status: "ditolak_bukti",
+      proofUrl: "/uploads/bukti-transfer.jpg",
+      rejectionReason: "Uang dikirim bukan ke rekening tujuan.",
+      verifiedBy: "Maria Supit",
+      verifiedAt: new Date("2026-07-06T07:36:00.000Z"),
+      updatedAt: new Date("2026-07-06T07:36:00.000Z"),
+      buyerName: "Lionel Messi",
+      buyerEmail: "buyer@example.test",
+      transactionCreatedAt: new Date("2026-07-01T08:29:00.000Z")
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "innerJoin", "leftJoin", "leftJoin", "where", "groupBy", "limit"], [
+          {
+            marketing,
+            item,
+            unitName: "UPC Wanea",
+            unitAddress: "Manado",
+            bidCount: 0,
+            winnerName: null
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "where", "orderBy"], []))
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "leftJoin", "leftJoin", "where", "orderBy"], [
+          newerUnpaidTransaction,
+          rejectedTransaction
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "leftJoin", "leftJoin", "where", "groupBy", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []));
+
+    await getAdminPemasaranById("unit-1", "marketing-fixed");
+
+    const detailExtras = mocks.serializeAdminPemasaran.mock.calls.at(-1)?.[1] as {
+      transaction?: {
+        id?: string | null;
+        status?: string | null;
+        buyerName?: string | null;
+        rejectionReason?: string | null;
+      };
+    };
+
+    expect(detailExtras.transaction).toEqual(
+      expect.objectContaining({
+        id: "trx-rejected-proof",
+        status: "ditolak_bukti",
+        buyerName: "Lionel Messi",
+        rejectionReason: "Uang dikirim bukan ke rekening tujuan."
+      })
+    );
+  });
+
+  it("loads bidder rows for an archived vickrey iteration", async () => {
+    const currentMarketing = {
+      id: "marketing-fixed-current",
+      barangId: "barang-archive",
+      mode: "fixed_price",
+      price: "15000000",
+      basePrice: null,
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: new Date("2026-06-23T05:00:00.000Z"),
+      endsAt: null,
+      revealEndsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 5,
+      status: "aktif",
+      createdByUserId: "admin-1",
+      createdAt: new Date("2026-06-23T05:00:00.000Z"),
+      updatedAt: new Date("2026-06-23T05:00:00.000Z")
+    };
+    const archivedMarketing = {
+      ...currentMarketing,
+      id: "marketing-vickrey-archive",
+      mode: "vickrey",
+      price: null,
+      basePrice: "15000000",
+      endsAt: new Date("2026-06-18T00:59:00.000Z"),
+      revealEndsAt: new Date("2026-06-18T01:09:00.000Z"),
+      winnerId: "buyer-winner",
+      finalPrice: "15000000",
+      iteration: 4,
+      status: "gagal",
+      createdAt: new Date("2026-06-17T00:59:00.000Z"),
+      updatedAt: new Date("2026-06-19T04:03:00.000Z")
+    };
+    const item = {
+      id: "barang-archive",
+      unitId: "unit-1",
+      name: "Kalung Salib Emas 17K",
+      code: "SBG-117870000000024",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Kalung emas.",
+      appraisalValue: "15000000",
+      specifications: {}
+    };
+    const archivedBid = {
+      pemasaranId: "marketing-vickrey-archive",
+      bid: {
+        id: "bid-winner",
+        userId: "buyer-winner",
+        nominal: "17000000",
+        createdAt: new Date("2026-06-18T00:40:00.000Z"),
+        revealedAt: new Date("2026-06-18T01:02:00.000Z")
+      },
+      bidderName: "Kylian Mbappe"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "innerJoin", "leftJoin", "leftJoin", "where", "groupBy", "limit"], [
+          {
+            marketing: currentMarketing,
+            item,
+            unitName: "UPC Wanea",
+            unitAddress: "Manado",
+            bidCount: 0,
+            winnerName: null
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "leftJoin", "leftJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "leftJoin", "leftJoin", "where", "groupBy", "orderBy"], [
+          {
+            marketing: archivedMarketing,
+            bidCount: 1,
+            winnerName: "Kylian Mbappe"
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "leftJoin", "leftJoin", "where", "orderBy"], [])
+      )
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "where", "orderBy"], [archivedBid])
+      );
+
+    const detail = await getAdminPemasaranById("unit-1", "marketing-fixed-current");
+    const archivedIteration = detail.iterationHistory.find(
+      (entry: { id?: string }) => entry.id === "marketing-vickrey-archive"
+    ) as { bids?: Array<{ bidderName?: string }> } | undefined;
+
+    expect(archivedIteration?.bids).toEqual([
+      expect.objectContaining({
+        bidderName: "Kylian Mbappe"
+      })
+    ]);
+  });
 });
 
 describe("publishAdminBarang", () => {
@@ -223,6 +439,7 @@ describe("publishAdminBarang", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-12T08:30:45.000+08:00"));
     vi.clearAllMocks();
+    mocks.db.select.mockReset();
     mocks.db.transaction.mockImplementation(async (callback) =>
       callback({
         insert: mocks.db.insert,

@@ -20,6 +20,17 @@ type ParticipantPreview = {
   submittedAt?: Date | null;
 };
 
+type AdminMarketingBidRow = {
+  bid: {
+    id: string;
+    userId: string;
+    nominal: string | null;
+    createdAt: Date;
+    revealedAt: Date | null;
+  };
+  bidderName: string | null;
+};
+
 type MarketingRecencyRow = {
   marketing: {
     updatedAt?: Date | null;
@@ -81,6 +92,7 @@ const ADMIN_MARKETING_TRANSACTION_PRIORITY: Record<string, number> = {
   selesai: 5,
   lunas: 4,
   bukti_diunggah: 3,
+  ditolak_bukti: 3,
   menunggu_konfirmasi_langsung: 2
 };
 
@@ -350,6 +362,39 @@ async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {
   );
 }
 
+async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
+  if (!pemasaranIds.length) {
+    return new Map<string, AdminMarketingBidRow[]>();
+  }
+
+  const rows = await db
+    .select({
+      pemasaranId: bids.pemasaranId,
+      bid: {
+        id: bids.id,
+        userId: bids.userId,
+        nominal: bids.nominal,
+        createdAt: bids.createdAt,
+        revealedAt: bids.revealedAt
+      },
+      bidderName: users.name
+    })
+    .from(bids)
+    .innerJoin(users, eq(users.id, bids.userId))
+    .where(inArray(bids.pemasaranId, pemasaranIds))
+    .orderBy(asc(bids.createdAt));
+
+  return rows.reduce((map, row) => {
+    const collection = map.get(row.pemasaranId) ?? [];
+    collection.push({
+      bid: row.bid,
+      bidderName: row.bidderName
+    });
+    map.set(row.pemasaranId, collection);
+    return map;
+  }, new Map<string, AdminMarketingBidRow[]>());
+}
+
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
   const latestMarketing = item.status === "dipasarkan" ? await getLatestMarketingForBarang(barangId) : null;
@@ -554,30 +599,19 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     ...historyRows.map((history) => history.marketing)
   ];
   const uniqueMarketingIds = Array.from(new Set(marketingInsightRows.map((marketing) => marketing.id).filter(Boolean)));
-  const [historyTransactionByPemasaranId, statsByPemasaranId] = await Promise.all([
+  const revealedVickreyIds = marketingInsightRows
+    .filter(
+      (marketing) =>
+        marketing.mode === "vickrey" &&
+        (!marketing.endsAt || marketing.endsAt.getTime() <= Date.now())
+    )
+    .map((marketing) => marketing.id);
+  const [historyTransactionByPemasaranId, statsByPemasaranId, bidRowsByPemasaranId] = await Promise.all([
     getLatestTransactionsByPemasaranIds(historyRows.map((history) => history.marketing.id)),
-    getLotStatsByIds(uniqueMarketingIds)
+    getLotStatsByIds(uniqueMarketingIds),
+    getBidRowsByPemasaranIds(revealedVickreyIds)
   ]);
   const insightsByPemasaranId = resolveMarketingPerformanceInsights(marketingInsightRows, statsByPemasaranId);
-
-  const shouldRevealBids = !row.marketing.endsAt || row.marketing.endsAt.getTime() <= Date.now();
-  const bidRows = shouldRevealBids
-      ? await db
-        .select({
-          bid: {
-            id: bids.id,
-            userId: bids.userId,
-            nominal: bids.nominal,
-            createdAt: bids.createdAt,
-            revealedAt: bids.revealedAt
-          },
-          bidderName: users.name
-        })
-        .from(bids)
-        .innerJoin(users, eq(users.id, bids.userId))
-        .where(eq(bids.pemasaranId, row.marketing.id))
-        .orderBy(asc(bids.createdAt))
-    : [];
 
   const baseExtra = {
     lotName: row.item.name,
@@ -597,7 +631,8 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       bidCount: Number(history.bidCount ?? 0),
       insights: insightsByPemasaranId.get(history.marketing.id) ?? null,
       winnerName: history.winnerName ?? null,
-      transaction: historyTransactionByPemasaranId.get(history.marketing.id) ?? null
+      transaction: historyTransactionByPemasaranId.get(history.marketing.id) ?? null,
+      bids: bidRowsByPemasaranId.get(history.marketing.id) ?? []
     })
   );
 
@@ -610,7 +645,7 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
       winnerName: row.winnerName ?? null,
       transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
       participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? [],
-      bids: bidRows
+      bids: bidRowsByPemasaranId.get(row.marketing.id) ?? []
     }),
     iterationHistory
   };
