@@ -112,9 +112,10 @@ describe("buyer transaction detail page", () => {
     const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
     expect(accountList).toHaveClass(
       "grid",
-      "max-h-[27.75rem]",
+      "min-h-[27.75rem]",
+      "flex-1",
       "overflow-y-auto",
-      "[grid-auto-rows:8.75rem]"
+      "[grid-auto-rows:calc((100%_-_1.5rem)/3)]"
     );
     const firstAccount = screen.getByLabelText(/rekening tujuan bni/i);
     expect(firstAccount).toHaveClass(
@@ -139,6 +140,7 @@ describe("buyer transaction detail page", () => {
       "/uploads/bank-logos/bri.png"
     );
     expect(screen.getByText(/0115489623/i)).toBeInTheDocument();
+    expect(screen.getByText(/0115489623/i)).toHaveClass("text-[1.24rem]");
     expect(screen.getByText(/1234567890/i)).toBeInTheDocument();
     expect(screen.getByText(/98765432109876/i)).toBeInTheDocument();
     const accountCopyButtons = screen.getAllByRole("button", { name: /salin nomor rekening/i });

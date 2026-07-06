@@ -418,7 +418,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
   return (
     <div
       aria-label={`Rekening tujuan ${bankDisplayName}`}
-      className="relative flex h-full min-h-[8.75rem] flex-col justify-center overflow-hidden rounded-[0.92rem] border border-[#d8b24c] bg-white px-4 py-4 shadow-[0_16px_30px_-22px_rgba(73,54,8,0.38)]"
+      className="relative flex h-full min-h-[8.75rem] flex-col justify-center overflow-hidden rounded-[0.92rem] border border-[#d8b24c] bg-white px-5 py-5 shadow-[0_16px_30px_-22px_rgba(73,54,8,0.38)]"
       role="listitem"
     >
       <span
@@ -437,7 +437,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
 
         <div className="min-w-0">
           <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Bank</p>
-          <p className="mt-1.5 truncate font-headline text-[1.08rem] font-black leading-none text-[#151a17]">
+          <p className="mt-1.5 truncate font-headline text-[1.12rem] font-black leading-none text-[#151a17]">
             {bankDisplayName}
           </p>
         </div>
@@ -446,7 +446,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
           <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">
             Nomor Rekening
           </p>
-          <p className="mt-1.5 truncate font-headline text-[1.08rem] font-black leading-none tracking-[0.04em] text-primary">
+          <p className="mt-1.5 truncate font-headline text-[1.24rem] font-black leading-none tracking-[0.04em] text-primary">
             {account.accountNumber}
           </p>
         </div>
@@ -458,7 +458,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
 
       <div className="mt-3 border-t border-[#eadfbe] pt-3">
         <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Atas Nama</p>
-        <p className="mt-1.5 line-clamp-1 text-[0.82rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
+        <p className="mt-1.5 line-clamp-1 text-[0.86rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
           {account.accountHolder}
         </p>
       </div>
@@ -2120,7 +2120,7 @@ export function TransactionDetailPage({
                 {transferAccounts.length > 0 ? (
                   <div
                     aria-label="Daftar rekening tujuan"
-                    className="grid max-h-[27.75rem] gap-3 overflow-y-auto overscroll-contain pr-1 [grid-auto-rows:8.75rem] [scrollbar-gutter:stable] [scrollbar-width:thin]"
+                    className="grid min-h-[27.75rem] flex-1 gap-3 overflow-y-auto overscroll-contain pr-1 [grid-auto-rows:calc((100%_-_1.5rem)/3)] [scrollbar-gutter:stable] [scrollbar-width:thin]"
                     role="list"
                   >
                     {transferAccounts.map((account) => (
