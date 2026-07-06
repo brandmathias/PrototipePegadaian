@@ -359,6 +359,7 @@ export function serializeAdminTransaction(
   const proof = splitLegacyProofValue(row.proofUrl);
   const hasHandoverProof = Boolean(row.handoverProofUrl);
   const printableReceipt = (row.status === "lunas" || row.status === "selesai") && hasHandoverProof;
+  const verifiedAt = row.verifiedAt ?? (row.status === "ditolak_bukti" ? row.updatedAt : null);
   const handoverAutoCompleteAt =
     row.status === "lunas"
       ? getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt)
@@ -395,7 +396,7 @@ export function serializeAdminTransaction(
     accountNumber: row.accountNumber ?? "-",
     accountName: row.accountName ?? "-",
     createdAt: toDateTimeLabel(row.createdAt),
-    verifiedAt: toDateTimeLabel(row.verifiedAt),
+    verifiedAt: toDateTimeLabel(verifiedAt),
     completedAt: row.status === "selesai" ? toDateTimeLabel(row.completedAt ?? row.updatedAt) : undefined,
     completionSource: row.completionSource ?? null,
     receiptNumber: printableReceipt ? `PEG-${row.createdAt.getFullYear()}${String(row.createdAt.getMonth() + 1).padStart(2, "0")}${String(row.createdAt.getDate()).padStart(2, "0")}-${row.id.slice(0, 3).toUpperCase()}` : undefined,

@@ -644,7 +644,7 @@ function TransactionTimeline({ transaction }: { transaction: BuyerTransaction })
   );
 }
 
-function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction }) {
+function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; transaction: BuyerTransaction }) {
   const isTransfer = transaction.method === "TRANSFER_BANK";
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
@@ -687,6 +687,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
       headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Lelang Tertutup di Unit" : "Bayar di Loket Unit",
       detail: paymentDetail,
       meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Lelang Tertutup bayar di loket" : "Bayar di loket",
+      actor: `Buyer: ${buyer.name}`,
       occurredAt: transaction.createdAt,
       icon: Landmark
     },
@@ -708,6 +709,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
           ? "Melewati 24 jam"
           : "Bukti ditolak admin unit"
         : "Aksi admin unit",
+      actor: isFailedVickreyPayment ? "Sistem" : transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Admin Unit",
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
       icon: ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
@@ -718,6 +720,7 @@ function PaymentProgressRail({ transaction }: { transaction: BuyerTransaction })
       headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai",
       detail: finishDetail,
       meta: "Aksi akhir buyer",
+      actor: transaction.completionSource === "AUTO_HANDOVER_GRACE" ? "Sistem" : `Buyer: ${buyer.name}`,
       occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }
@@ -1479,7 +1482,7 @@ function VickreyPaymentFailedDetail({
       </div>
 
       <div className="order-2">
-        <PaymentProgressRail transaction={transaction} />
+        <PaymentProgressRail buyer={buyer} transaction={transaction} />
       </div>
 
       <Card className="order-3 overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
@@ -1665,7 +1668,7 @@ function VickreyPaymentSuccessDetail({
         </div>
       </div>
 
-      <PaymentProgressRail transaction={transaction} />
+      <PaymentProgressRail buyer={buyer} transaction={transaction} />
 
       <Card className="overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
         <CardContent className="grid p-0 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -1977,7 +1980,7 @@ export function TransactionDetailPage({
           ) : null}
         </div>
 
-        <PaymentProgressRail transaction={transaction} />
+        <PaymentProgressRail buyer={buyer} transaction={transaction} />
         {isVickreyWin ? (
           <Card className="overflow-hidden border border-accent/35 bg-[radial-gradient(circle_at_top_left,rgba(255,205,76,0.22),transparent_34%),linear-gradient(135deg,#ffffff_0%,#f8f3e6_100%)]">
             <CardContent className="grid gap-5 p-5 md:grid-cols-[0.72fr_1.28fr] md:p-6">

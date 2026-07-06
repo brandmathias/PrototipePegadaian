@@ -497,6 +497,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: isTransfer ? "Bukti Transfer Buyer" : "Pembayaran di Loket",
       detail: paymentDetail,
       meta: isTransfer ? "Sumber: upload buyer" : "Sumber: loket unit",
+      actor: `Buyer: ${transaction.buyer}`,
       occurredAt: transaction.createdAt,
       icon: WalletCards
     },
@@ -506,6 +507,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: "Admin Perlu Verifikasi",
       detail: verificationDetail,
       meta: "Tindakan admin",
+      actor: transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Admin Unit",
       occurredAt: transaction.verifiedAt,
       icon: FileCheck2
     },
@@ -515,6 +517,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: completed ? getAdminTransactionCompletionLabel(transaction) : "Menunggu Buyer Selesai",
       detail: finishDetail,
       meta: "Penutupan transaksi",
+      actor: transaction.completionSource === "auto_handover_grace" ? "Sistem" : `Buyer: ${transaction.buyer}`,
       occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }

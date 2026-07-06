@@ -4061,21 +4061,24 @@ function SuperAdminVickreyProgressPanel({
 }) {
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
+  const buyerActor = session.buyerName || session.winner ? `Buyer: ${session.buyerName || session.winner}` : "Buyer";
+  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : "Admin Unit";
+  const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = fulfilled
     ? [
-        { label: "Pembayaran", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Verifikasi", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
-        { label: "Selesai", status: getSuperAdminProgressCompletionLabel(session), occurredAt: formatSuperAdminDateTime(session.completedAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
+        { label: "Selesai", status: getSuperAdminProgressCompletionLabel(session), actor: completionActor, occurredAt: formatSuperAdminDateTime(session.completedAt), icon: CheckCircle2, tone: "done" as const },
       ]
     : verified
       ? [
-          { label: "Pembayaran", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-          { label: "Verifikasi", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
-          { label: "Selesai", status: "Menunggu buyer", icon: CheckCircle2, tone: "current" as const },
+          { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+          { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
+          { label: "Selesai", status: "Menunggu buyer", actor: buyerActor, icon: CheckCircle2, tone: "current" as const },
         ]
       : [
-          { label: "Pembayaran", status: "Berjalan", occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
-          { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
+          { label: "Pembayaran", status: "Berjalan", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
+          { label: "Verifikasi", status: "Belum terjadi", actor: "Admin Unit", icon: FileText, tone: "pending" as const },
           { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const },
         ];
 
@@ -4640,13 +4643,13 @@ function SuperAdminVickreyFailureProgressPanel({
   const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
   const steps = unpaid
     ? [
-        { label: "Pemenang Diumumkan", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: Trophy, tone: "done" as const },
-        { label: "Gagal Bayar", status: "Terjadi", occurredAt: formatSuperAdminDateTime(session.paymentDeadline), icon: X, tone: "failed" as const },
+        { label: "Pemenang Diumumkan", status: "Selesai", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: Trophy, tone: "done" as const },
+        { label: "Gagal Bayar", status: "Terjadi", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.paymentDeadline), icon: X, tone: "failed" as const },
         { label: "Selesai", status: "Belum tercapai", icon: CheckCircle2, tone: "pending" as const },
       ]
     : [
-        { label: "Sesi Ditutup", status: "Selesai", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Tanpa Bid", status: "Terjadi", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: X, tone: "failed" as const },
+        { label: "Sesi Ditutup", status: "Selesai", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Tanpa Bid", status: "Terjadi", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: X, tone: "failed" as const },
         { label: "Lelang Ulang", status: "Belum dijadwalkan", icon: RefreshCcw, tone: "pending" as const },
       ];
 
@@ -4661,10 +4664,14 @@ function SuperAdminFixedPriceProgressPanel({
   const fulfilled = session.transactionStatus === "SELESAI";
   const verified = session.transactionStatus === "LUNAS" || fulfilled;
   const submitted = Boolean(session.transactionId) && !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
+  const buyerActor = session.buyerName ? `Buyer: ${session.buyerName}` : "Buyer";
+  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : "Admin Unit";
+  const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = [
     {
       label: "Pembayaran",
       status: submitted ? "Selesai" : session.transactionId ? "Berjalan" : "Belum terjadi",
+      actor: submitted || session.transactionId ? buyerActor : null,
       occurredAt: submitted ? formatSuperAdminDateTime(session.transactionCreatedAt) : null,
       icon: WalletCards,
       tone: submitted ? ("done" as const) : session.transactionId ? ("current" as const) : ("pending" as const),
@@ -4672,6 +4679,7 @@ function SuperAdminFixedPriceProgressPanel({
     {
       label: "Verifikasi",
       status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
+      actor: verified ? adminActor : submitted ? "Admin Unit" : null,
       occurredAt: verified ? formatSuperAdminDateTime(session.soldAt) : null,
       icon: ShieldCheck,
       tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const),
@@ -4679,6 +4687,7 @@ function SuperAdminFixedPriceProgressPanel({
     {
       label: "Selesai",
       status: fulfilled ? getSuperAdminProgressCompletionLabel(session) : verified ? "Menunggu buyer" : "Belum terjadi",
+      actor: fulfilled ? completionActor : verified ? buyerActor : null,
       occurredAt: fulfilled ? formatSuperAdminDateTime(session.completedAt) : null,
       icon: CheckCircle2,
       tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const),

@@ -287,6 +287,8 @@ export async function rejectAdminTransactionProof(
     .set({
       status: "ditolak_bukti",
       rejectionReason: payload.reason,
+      verifiedByUserId: adminId,
+      verifiedAt: new Date(),
       updatedAt: new Date()
     })
     .where(eq(transaksi.id, transactionId))

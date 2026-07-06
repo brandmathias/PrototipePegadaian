@@ -2369,10 +2369,14 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const fulfilled = auction.transactionStatus === "SELESAI";
   const verified = auction.transactionStatus === "LUNAS" || fulfilled;
   const submitted = hasFixedPricePaymentSubmission(auction) || verified;
+  const buyerActor = auction.buyerName ? `Buyer: ${auction.buyerName}` : "Buyer";
+  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : "Admin Unit";
+  const completionActor = auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = [
     {
       label: "Pembayaran",
       status: submitted ? "Selesai" : auction.transactionId ? "Berjalan" : "Belum terjadi",
+      actor: submitted || auction.transactionId ? buyerActor : null,
       occurredAt: submitted ? dateLabel(auction.transactionCreatedAt) : null,
       icon: WalletCards,
       tone: submitted ? ("done" as const) : auction.transactionId ? ("current" as const) : ("pending" as const)
@@ -2380,6 +2384,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
     {
       label: "Verifikasi",
       status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
+      actor: verified ? adminActor : submitted ? "Admin Unit" : null,
       occurredAt: verified ? dateLabel(auction.soldAt) : null,
       icon: ShieldCheck,
       tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const)
@@ -2387,6 +2392,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
     {
       label: "Selesai",
       status: fulfilled ? getMarketingProgressCompletionLabel(auction) : verified ? "Menunggu buyer" : "Belum terjadi",
+      actor: fulfilled ? completionActor : verified ? buyerActor : null,
       occurredAt: fulfilled ? dateLabel(auction.completedAt) : null,
       icon: CheckCircle2,
       tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const)
@@ -3589,21 +3595,24 @@ function VickreyWinnerAssetPanel({ auction }: { auction: MarketingSession }) {
 function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession }) {
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const buyerActor = auction.buyerName || auction.winner ? `Buyer: ${auction.buyerName || auction.winner}` : "Buyer";
+  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : "Admin Unit";
+  const completionActor = auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = fulfilled
     ? [
-        { label: "Pembayaran", status: "Selesai", occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Verifikasi", status: "Selesai", occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
-        { label: "Selesai", status: getMarketingProgressCompletionLabel(auction), occurredAt: dateLabel(auction.completedAt), icon: CheckCircle2, tone: "done" as const }
+        { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
+        { label: "Selesai", status: getMarketingProgressCompletionLabel(auction), actor: completionActor, occurredAt: dateLabel(auction.completedAt), icon: CheckCircle2, tone: "done" as const }
       ]
     : verified
       ? [
-          { label: "Pembayaran", status: "Selesai", occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-          { label: "Verifikasi", status: "Selesai", occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
-          { label: "Selesai", status: "Menunggu buyer", icon: CheckCircle2, tone: "current" as const }
+          { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: dateLabel(auction.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
+          { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: dateLabel(auction.soldAt), icon: ShieldCheck, tone: "done" as const },
+          { label: "Selesai", status: "Menunggu buyer", actor: buyerActor, icon: CheckCircle2, tone: "current" as const }
         ]
     : [
-        { label: "Pembayaran", status: "Berjalan", occurredAt: dateLabel(auction.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
-        { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
+        { label: "Pembayaran", status: "Berjalan", actor: buyerActor, occurredAt: dateLabel(auction.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
+        { label: "Verifikasi", status: "Belum terjadi", actor: "Admin Unit", icon: FileText, tone: "pending" as const },
         { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const }
       ];
 
@@ -5316,13 +5325,13 @@ function VickreyFailureProgressPanel({ auction }: { auction: MarketingSession })
   const unpaid = getVickreyFailureKind(auction) === "unpaid";
   const steps = unpaid
     ? [
-        { label: "Pemenang Diumumkan", status: "Selesai", occurredAt: dateLabel(auction.endingAt), icon: Trophy, tone: "done" as const },
-        { label: "Gagal Bayar", status: "Terjadi", occurredAt: dateLabel(auction.paymentDeadline), icon: X, tone: "failed" as const },
+        { label: "Pemenang Diumumkan", status: "Selesai", actor: "Sistem", occurredAt: dateLabel(auction.endingAt), icon: Trophy, tone: "done" as const },
+        { label: "Gagal Bayar", status: "Terjadi", actor: "Sistem", occurredAt: dateLabel(auction.paymentDeadline), icon: X, tone: "failed" as const },
         { label: "Selesai", status: "Belum tercapai", icon: CheckCircle2, tone: "pending" as const }
       ]
     : [
-        { label: "Sesi Ditutup", status: "Selesai", occurredAt: dateLabel(auction.endingAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Tanpa Bid", status: "Terjadi", occurredAt: dateLabel(auction.endingAt), icon: X, tone: "failed" as const },
+        { label: "Sesi Ditutup", status: "Selesai", actor: "Sistem", occurredAt: dateLabel(auction.endingAt), icon: CheckCircle2, tone: "done" as const },
+        { label: "Tanpa Bid", status: "Terjadi", actor: "Sistem", occurredAt: dateLabel(auction.endingAt), icon: X, tone: "failed" as const },
         { label: "Lelang Ulang", status: "Belum dijadwalkan", icon: RefreshCcw, tone: "pending" as const }
       ];
 

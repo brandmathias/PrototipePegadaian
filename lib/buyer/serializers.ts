@@ -328,6 +328,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
       : row.completionSource === "buyer"
         ? "BUYER"
         : undefined;
+  const verifiedAt = row.verifiedAt ?? (row.status === "ditolak_bukti" ? row.updatedAt : null);
   const bankAccounts = getBuyerBankAccounts(row);
   const primaryBankAccount = bankAccounts.find((account) => account.isActive) ?? bankAccounts[0];
 
@@ -372,7 +373,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     rejectionReason: row.rejectionReason ?? undefined,
     winnerContext: isVickrey ? "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem." : undefined,
     verifiedBy: row.verifiedBy ?? undefined,
-    verifiedAt: toDateTimeLabel(row.verifiedAt),
+    verifiedAt: toDateTimeLabel(verifiedAt),
     completedAt: row.status === "selesai" && row.completedAt ? toDateTimeLabel(row.completedAt) : undefined,
     completionSource,
     receiptNumber: hasFinalReceipt ? `INV/${row.id.slice(0, 8).toUpperCase()}` : undefined,

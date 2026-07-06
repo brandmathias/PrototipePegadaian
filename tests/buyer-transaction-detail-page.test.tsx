@@ -208,7 +208,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/id pengajuan/i)).toBeInTheDocument();
     expect(screen.getByText(/^pgj-vic-failed$/i)).toBeInTheDocument();
     expect(screen.getByText(/nama pembeli/i)).toBeInTheDocument();
-    expect(screen.getByText(/budi santoso/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/budi@example\.com/i)).toBeInTheDocument();
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /log audit sistem/i })).toBeInTheDocument();
@@ -519,7 +519,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/id penagihan/i)).toBeInTheDocument();
     expect(screen.getByText(/^pgj-vic-trxvick$/i)).toBeInTheDocument();
     expect(screen.getByText(/nama pembeli/i)).toBeInTheDocument();
-    expect(screen.getByText(/budi santoso/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/budi@example\.com/i)).toBeInTheDocument();
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /log audit sistem/i })).toBeInTheDocument();

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 export type CompactTransactionProgressStep = {
   label: string;
   status: string;
+  actor?: string | null;
   occurredAt?: string | null;
   icon: LucideIcon;
   tone: "done" | "current" | "failed" | "pending";
@@ -75,6 +76,11 @@ export function CompactTransactionProgress({
                 <p className="mt-1 min-h-6 font-mono text-[0.55rem] font-semibold leading-3 text-[#40558b]">
                   {step.occurredAt || "Belum terjadi"}
                 </p>
+                {step.actor ? (
+                  <p className="mt-1 truncate text-[0.54rem] font-black uppercase tracking-[0.08em] text-[#6b7b73]">
+                    {step.actor}
+                  </p>
+                ) : null}
               </div>
             </div>
           );
