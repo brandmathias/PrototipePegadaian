@@ -507,7 +507,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: "Admin Perlu Verifikasi",
       detail: verificationDetail,
       meta: "Tindakan admin",
-      actor: transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Admin Unit",
+      actor: transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : undefined,
       occurredAt: transaction.verifiedAt,
       icon: FileCheck2
     },
@@ -517,7 +517,11 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
       headline: completed ? getAdminTransactionCompletionLabel(transaction) : "Menunggu Buyer Selesai",
       detail: finishDetail,
       meta: "Penutupan transaksi",
-      actor: transaction.completionSource === "auto_handover_grace" ? "Sistem" : `Buyer: ${transaction.buyer}`,
+      actor: completed
+        ? transaction.completionSource === "auto_handover_grace"
+          ? "Sistem"
+          : `Buyer: ${transaction.buyer}`
+        : undefined,
       occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }

@@ -197,11 +197,26 @@ function transactionSelection() {
     rejectionReason: transaksi.rejectionReason,
     referenceNumber: transaksi.referenceNumber,
     paymentDeadline: transaksi.paymentDeadline,
-    verifiedBy: sql<string | null>`(
-      select u.name
-      from "user" u
-      where u.id = ${transaksi.verifiedByUserId}
-      limit 1
+    verifiedBy: sql<string | null>`coalesce(
+      (
+        select u.name
+        from "user" u
+        where u.id = ${transaksi.verifiedByUserId}
+        limit 1
+      ),
+      (
+        select actor.name
+        from riwayat_status_barang history
+        inner join pemasaran history_marketing on history_marketing.barang_id = history.barang_id
+        inner join "user" actor on actor.id = history.changed_by_user_id
+        where history_marketing.id = ${transaksi.pemasaranId}
+          and ${transaksi.status} = 'ditolak_bukti'
+          and history.new_status = 'gagal'
+          and history.note ilike 'Verifikasi bukti pembayaran harga tetap ditolak admin unit.%'
+          and history.created_at >= ${transaksi.createdAt}
+        order by history.created_at desc
+        limit 1
+      )
     )`,
     verifiedAt: transaksi.verifiedAt,
     handoverProofUrl: transaksi.handoverProofUrl,

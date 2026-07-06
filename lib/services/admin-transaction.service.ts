@@ -312,22 +312,5 @@ export async function rejectAdminTransactionProof(
   });
   revalidateTransactionViews();
 
-  return serializeAdminTransaction({
-    ...updated,
-    buyerName: row.buyer.name,
-    buyerEmail: row.buyer.email,
-    buyerPhone: row.buyer.phoneNumber,
-    buyerNationalId: row.buyer.nationalId,
-    buyerAddress: null,
-    lotName: row.item.name,
-    lotId: row.item.id,
-    imageUrl: row.imageUrl ?? null,
-    unitName: row.unit.name,
-    unitAddress: row.unit.address,
-    bankName: row.account?.bankName ?? null,
-    accountNumber: row.account?.accountNumber ?? null,
-    accountName: row.account?.accountHolderName ?? null,
-    verifiedByName: row.paymentVerifier?.name ?? null,
-    handoverProofUploadedByName: row.handoverUploader?.name ?? null
-  });
+  return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
 }

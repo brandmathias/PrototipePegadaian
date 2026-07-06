@@ -712,7 +712,9 @@ describe("buyer transaction detail page", () => {
           ...transaction,
           status: "DITOLAK_BUKTI",
           paymentProof: "/uploads/bukti/transfer-budi-buram.jpg",
-          rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang."
+          rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang.",
+          verifiedBy: "Maria Supit",
+          verifiedAt: "5 Jul 2026, 15.36 WIB"
         }}
         transactionId={transaction.id}
       />
@@ -731,6 +733,10 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim ulang bukti pembayaran/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
+    const workflow = screen.getByText("Alur Pembayaran").closest("section");
+    expect(workflow).not.toBeNull();
+    expect(within(workflow!).getByText(/Admin: Maria Supit/i)).toBeInTheDocument();
+    expect(within(workflow!).getAllByText(new RegExp(`Buyer: ${buyer.name}`, "i"))).toHaveLength(1);
   });
 
   it("keeps the handover proof requirement while the buyer has an active blacklist", () => {

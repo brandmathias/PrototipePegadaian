@@ -242,7 +242,22 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
       paymentMethod: transaksi.paymentMethod,
       proofUrl: transaksi.proofUrl,
       rejectionReason: transaksi.rejectionReason,
-      verifiedBy: transactionPaymentVerifier.name,
+      verifiedBy: sql<string | null>`coalesce(
+        ${transactionPaymentVerifier.name},
+        (
+          select actor.name
+          from riwayat_status_barang history
+          inner join pemasaran history_marketing on history_marketing.barang_id = history.barang_id
+          inner join "user" actor on actor.id = history.changed_by_user_id
+          where history_marketing.id = ${transaksi.pemasaranId}
+            and ${transaksi.status} = 'ditolak_bukti'
+            and history.new_status = 'gagal'
+            and history.note ilike 'Verifikasi bukti pembayaran harga tetap ditolak admin unit.%'
+            and history.created_at >= ${transaksi.createdAt}
+          order by history.created_at desc
+          limit 1
+        )
+      )`,
       verifiedAt: transaksi.verifiedAt,
       updatedAt: transaksi.updatedAt,
       handoverProofUrl: transaksi.handoverProofUrl,

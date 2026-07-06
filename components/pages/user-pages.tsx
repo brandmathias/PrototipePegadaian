@@ -709,7 +709,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Melewati 24 jam"
           : "Bukti ditolak admin unit"
         : "Aksi admin unit",
-      actor: isFailedVickreyPayment ? "Sistem" : transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Admin Unit",
+      actor: isFailedVickreyPayment ? "Sistem" : transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : undefined,
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
       icon: ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
@@ -720,7 +720,11 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai",
       detail: finishDetail,
       meta: "Aksi akhir buyer",
-      actor: transaction.completionSource === "AUTO_HANDOVER_GRACE" ? "Sistem" : `Buyer: ${buyer.name}`,
+      actor: completed
+        ? transaction.completionSource === "AUTO_HANDOVER_GRACE"
+          ? "Sistem"
+          : `Buyer: ${buyer.name}`
+        : undefined,
       occurredAt: transaction.completedAt,
       icon: CheckCircle2
     }

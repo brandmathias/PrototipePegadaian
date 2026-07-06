@@ -193,7 +193,7 @@ function WorkflowNode({
         <p className="mt-1 min-h-5 font-mono text-[0.68rem] font-semibold leading-5 text-black/48">
           {step.occurredAt || "Belum terjadi"}
         </p>
-        {step.actor ? (
+        {step.actor && step.occurredAt ? (
           <p className="mt-1 min-h-4 truncate text-[0.64rem] font-black uppercase tracking-[0.12em] text-black/45">
             {step.actor}
           </p>

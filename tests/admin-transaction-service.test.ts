@@ -93,6 +93,7 @@ function makeTransactionJoin(status = "ditolak_bukti", type = "fixed_price") {
 describe("admin transaction service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.query.limit.mockReset();
     mocks.query.limit.mockResolvedValue([makeTransactionJoin()]);
   });
 
@@ -191,13 +192,22 @@ describe("admin transaction service", () => {
   });
 
   it("records failed item history when admin rejects a harga tetap proof", async () => {
-    mocks.query.limit.mockResolvedValue([makeTransactionJoin("bukti_diunggah", "fixed_price")]);
-
     const updatedTransaction = {
       ...makeTransactionJoin("bukti_diunggah", "fixed_price").transaction,
       status: "ditolak_bukti",
-      rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang"
+      rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
+      verifiedByUserId: "admin-1",
+      verifiedAt: new Date("2026-06-03T10:00:00.000Z")
     };
+    mocks.query.limit
+      .mockResolvedValueOnce([makeTransactionJoin("bukti_diunggah", "fixed_price")])
+      .mockResolvedValueOnce([
+        {
+          ...makeTransactionJoin("ditolak_bukti", "fixed_price"),
+          transaction: updatedTransaction,
+          paymentVerifier: { name: "Maria Supit" }
+        }
+      ]);
     const statusHistoryValuesSpy = mockInsertValues();
 
     mocks.db.update.mockImplementationOnce(() => mockUpdateReturning(updatedTransaction));
@@ -216,6 +226,11 @@ describe("admin transaction service", () => {
         newStatus: "gagal",
         changedByUserId: "admin-1",
         note: expect.stringMatching(/harga tetap ditolak/i)
+      })
+    );
+    expect(mocks.serializeAdminTransaction).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        verifiedByName: "Maria Supit"
       })
     );
     expectTransactionViewsRevalidated();

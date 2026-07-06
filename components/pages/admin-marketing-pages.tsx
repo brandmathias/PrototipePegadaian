@@ -2370,7 +2370,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const verified = auction.transactionStatus === "LUNAS" || fulfilled;
   const submitted = hasFixedPricePaymentSubmission(auction) || verified;
   const buyerActor = auction.buyerName ? `Buyer: ${auction.buyerName}` : "Buyer";
-  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : "Admin Unit";
+  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : null;
   const completionActor = auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = [
     {
@@ -2384,7 +2384,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
     {
       label: "Verifikasi",
       status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
-      actor: verified ? adminActor : submitted ? "Admin Unit" : null,
+      actor: verified ? adminActor : null,
       occurredAt: verified ? dateLabel(auction.soldAt) : null,
       icon: ShieldCheck,
       tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const)
@@ -3596,7 +3596,7 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
   const buyerActor = auction.buyerName || auction.winner ? `Buyer: ${auction.buyerName || auction.winner}` : "Buyer";
-  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : "Admin Unit";
+  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : null;
   const completionActor = auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = fulfilled
     ? [
@@ -3612,7 +3612,7 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
         ]
     : [
         { label: "Pembayaran", status: "Berjalan", actor: buyerActor, occurredAt: dateLabel(auction.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
-        { label: "Verifikasi", status: "Belum terjadi", actor: "Admin Unit", icon: FileText, tone: "pending" as const },
+        { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
         { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const }
       ];
 

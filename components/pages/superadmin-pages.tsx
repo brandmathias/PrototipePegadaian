@@ -4064,7 +4064,7 @@ function SuperAdminVickreyProgressPanel({
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
   const buyerActor = session.buyerName || session.winner ? `Buyer: ${session.buyerName || session.winner}` : "Buyer";
-  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : "Admin Unit";
+  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : null;
   const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = fulfilled
     ? [
@@ -4080,7 +4080,7 @@ function SuperAdminVickreyProgressPanel({
         ]
       : [
           { label: "Pembayaran", status: "Berjalan", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
-          { label: "Verifikasi", status: "Belum terjadi", actor: "Admin Unit", icon: FileText, tone: "pending" as const },
+          { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
           { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const },
         ];
 
@@ -4668,7 +4668,7 @@ function SuperAdminFixedPriceProgressPanel({
   const rejected = session.transactionStatus === "DITOLAK_BUKTI";
   const submitted = Boolean(session.transactionId) && !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
   const buyerActor = session.buyerName ? `Buyer: ${session.buyerName}` : "Buyer";
-  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : "Admin Unit";
+  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : null;
   const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   if (rejected) {
     return (
@@ -4715,7 +4715,7 @@ function SuperAdminFixedPriceProgressPanel({
     {
       label: "Verifikasi",
       status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
-      actor: verified ? adminActor : submitted ? "Admin Unit" : null,
+      actor: verified ? adminActor : null,
       occurredAt: verified ? formatSuperAdminDateTime(session.soldAt) : null,
       icon: ShieldCheck,
       tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const),
