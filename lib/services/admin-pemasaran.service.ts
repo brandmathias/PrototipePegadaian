@@ -54,6 +54,61 @@ type MarketingInsightRow = {
   mode?: string | null;
 };
 
+type AdminMarketingTransactionSummary = {
+  id?: string | null;
+  buyerName?: string | null;
+  buyerEmail?: string | null;
+  buyerPhone?: string | null;
+  buyerNationalId?: string | null;
+  paymentMethod?: string | null;
+  status?: string | null;
+  proofUrl?: string | null;
+  verifiedBy?: string | null;
+  handoverProofUrl?: string | null;
+  handoverProofUploadedAt?: Date | null;
+  handoverProofUploadedBy?: string | null;
+  reference?: string | null;
+  soldAt?: Date | null;
+  paymentDeadline?: Date | null;
+  completedAt?: Date | null;
+  completionSource?: string | null;
+  transactionCreatedAt?: Date | null;
+};
+
+const ADMIN_MARKETING_TRANSACTION_PRIORITY: Record<string, number> = {
+  selesai: 5,
+  lunas: 4,
+  bukti_diunggah: 3,
+  menunggu_konfirmasi_langsung: 2
+};
+
+function getAdminMarketingTransactionPriority(status?: string | null) {
+  return ADMIN_MARKETING_TRANSACTION_PRIORITY[String(status ?? "").toLowerCase()] ?? 0;
+}
+
+function getAdminMarketingTransactionTime(transaction: AdminMarketingTransactionSummary) {
+  const time = transaction.transactionCreatedAt instanceof Date ? transaction.transactionCreatedAt.getTime() : Number.NaN;
+  return Number.isFinite(time) ? time : 0;
+}
+
+function shouldUseAdminMarketingTransaction(
+  current: AdminMarketingTransactionSummary | undefined,
+  candidate: AdminMarketingTransactionSummary
+) {
+  if (!current) {
+    return true;
+  }
+
+  const priorityDiff =
+    getAdminMarketingTransactionPriority(candidate.status) - getAdminMarketingTransactionPriority(current.status);
+
+  if (priorityDiff !== 0) {
+    return priorityDiff > 0;
+  }
+
+  return getAdminMarketingTransactionTime(candidate) > getAdminMarketingTransactionTime(current);
+}
+
 function normalizeMarketingInsights(insights?: LotInsights | null): LotInsights {
   return {
     likes: Number(insights?.likes ?? EMPTY_LOT_INSIGHTS.likes),
@@ -174,29 +229,7 @@ async function getMarketingMediaByBarangIds(barangIds: string[]) {
 
 async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
   if (!pemasaranIds.length) {
-    return new Map<
-      string,
-      {
-        id?: string | null;
-        buyerName?: string | null;
-        buyerEmail?: string | null;
-        buyerPhone?: string | null;
-        buyerNationalId?: string | null;
-        paymentMethod?: string | null;
-        status?: string | null;
-        proofUrl?: string | null;
-        verifiedBy?: string | null;
-        handoverProofUrl?: string | null;
-        handoverProofUploadedAt?: Date | null;
-        handoverProofUploadedBy?: string | null;
-        reference?: string | null;
-        soldAt?: Date | null;
-        paymentDeadline?: Date | null;
-        completedAt?: Date | null;
-        completionSource?: string | null;
-        transactionCreatedAt?: Date | null;
-      }
-    >();
+    return new Map<string, AdminMarketingTransactionSummary>();
   }
 
   const rows = await db
@@ -229,52 +262,32 @@ async function getLatestTransactionsByPemasaranIds(pemasaranIds: string[]) {
     .orderBy(desc(transaksi.createdAt));
 
   return rows.reduce((map, row) => {
-    if (!map.has(row.pemasaranId)) {
-      map.set(row.pemasaranId, {
-        id: row.id,
-        buyerName: row.buyerName,
-        buyerEmail: row.buyerEmail,
-        buyerPhone: row.buyerPhone,
-        buyerNationalId: row.buyerNationalId,
-        paymentMethod: row.paymentMethod,
-        status: row.status,
-        proofUrl: row.proofUrl,
-        verifiedBy: row.verifiedBy,
-        handoverProofUrl: row.handoverProofUrl,
-        handoverProofUploadedAt: row.handoverProofUploadedAt,
-        handoverProofUploadedBy: row.handoverProofUploadedBy,
-        reference: row.reference,
-        soldAt: row.soldAt,
-        paymentDeadline: row.paymentDeadline,
-        completedAt: row.completedAt,
-        completionSource: row.completionSource,
-        transactionCreatedAt: row.transactionCreatedAt
-      });
+    const candidate = {
+      id: row.id,
+      buyerName: row.buyerName,
+      buyerEmail: row.buyerEmail,
+      buyerPhone: row.buyerPhone,
+      buyerNationalId: row.buyerNationalId,
+      paymentMethod: row.paymentMethod,
+      status: row.status,
+      proofUrl: row.proofUrl,
+      verifiedBy: row.verifiedBy,
+      handoverProofUrl: row.handoverProofUrl,
+      handoverProofUploadedAt: row.handoverProofUploadedAt,
+      handoverProofUploadedBy: row.handoverProofUploadedBy,
+      reference: row.reference,
+      soldAt: row.soldAt,
+      paymentDeadline: row.paymentDeadline,
+      completedAt: row.completedAt,
+      completionSource: row.completionSource,
+      transactionCreatedAt: row.transactionCreatedAt
+    };
+
+    if (shouldUseAdminMarketingTransaction(map.get(row.pemasaranId), candidate)) {
+      map.set(row.pemasaranId, candidate);
     }
     return map;
-  }, new Map<
-    string,
-    {
-      id?: string | null;
-      buyerName?: string | null;
-      buyerEmail?: string | null;
-      buyerPhone?: string | null;
-      buyerNationalId?: string | null;
-      paymentMethod?: string | null;
-      status?: string | null;
-      proofUrl?: string | null;
-      verifiedBy?: string | null;
-      handoverProofUrl?: string | null;
-      handoverProofUploadedAt?: Date | null;
-      handoverProofUploadedBy?: string | null;
-      reference?: string | null;
-      soldAt?: Date | null;
-      paymentDeadline?: Date | null;
-      completedAt?: Date | null;
-      completionSource?: string | null;
-      transactionCreatedAt?: Date | null;
-    }
-  >());
+  }, new Map<string, AdminMarketingTransactionSummary>());
 }
 
 async function getParticipantPreviewsByPemasaranIds(pemasaranIds: string[]) {

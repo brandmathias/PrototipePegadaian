@@ -10,6 +10,8 @@ const mocks = vi.hoisted(() => {
 
   return {
     db,
+    getLotStatsByIds: vi.fn(),
+    processExpiredVickreyAuctions: vi.fn(),
     serializeAdminPemasaran: vi.fn((marketing, extras) => ({
       ...marketing,
       ...extras
@@ -25,11 +27,30 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
   serializeAdminPemasaran: mocks.serializeAdminPemasaran
 }));
 
+vi.mock("@/lib/services/cron.service", () => ({
+  processExpiredVickreyAuctions: mocks.processExpiredVickreyAuctions
+}));
+
+vi.mock("@/lib/services/public-lot-stats.service", () => ({
+  EMPTY_LOT_INSIGHTS: { likes: 0, participants: 0, views: 0 },
+  getLotStatsByIds: mocks.getLotStatsByIds
+}));
+
 import {
+  getAdminPemasaranById,
   publishAdminBarang,
   resolveMarketingPerformanceInsights,
   sortAdminMarketingRowsByRecency
 } from "@/lib/services/admin-pemasaran.service";
+
+function mockQueryChain(methods: string[], value: unknown) {
+  return [...methods].reverse().reduce<unknown>(
+    (next, method) => ({
+      [method]: vi.fn(() => next)
+    }),
+    Promise.resolve(value)
+  );
+}
 
 describe("sortAdminMarketingRowsByRecency", () => {
   it("places an updated marketing session before older untouched sessions", () => {
@@ -88,6 +109,112 @@ describe("resolveMarketingPerformanceInsights", () => {
     expect(insights.get("fixed-current")).toEqual({ views: 18, likes: 5, participants: 0 });
     expect(insights.get("vickrey-old")).toEqual({ views: 19, likes: 4, participants: 5 });
     expect(insights.get("vickrey-current")).toEqual({ views: 6, likes: 1, participants: 2 });
+  });
+});
+
+describe("getAdminPemasaranById", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.processExpiredVickreyAuctions.mockResolvedValue(undefined);
+    mocks.getLotStatsByIds.mockResolvedValue(new Map());
+  });
+
+  it("uses an uploaded fixed-price payment proof even when a newer checkout is still unpaid", async () => {
+    const marketing = {
+      id: "marketing-fixed",
+      barangId: "barang-fixed",
+      mode: "fixed_price",
+      price: "15000000",
+      basePrice: null,
+      durationDays: null,
+      durationSeconds: null,
+      startsAt: new Date("2026-06-23T05:00:00.000Z"),
+      endsAt: null,
+      revealEndsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 5,
+      status: "aktif",
+      createdByUserId: "admin-1",
+      createdAt: new Date("2026-06-23T05:00:00.000Z"),
+      updatedAt: new Date("2026-06-23T05:00:00.000Z")
+    };
+    const item = {
+      id: "barang-fixed",
+      unitId: "unit-1",
+      name: "Kalung Salib Emas 17K",
+      code: "SBG-117870000000024",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Kalung emas.",
+      appraisalValue: "15000000",
+      specifications: {}
+    };
+    const newerUnpaidTransaction = {
+      id: "trx-newer-unpaid",
+      pemasaranId: "marketing-fixed",
+      status: "menunggu_pembayaran",
+      paymentMethod: "transfer",
+      proofUrl: null,
+      verifiedBy: null,
+      handoverProofUrl: null,
+      handoverProofUploadedAt: null,
+      handoverProofUploadedBy: null,
+      reference: null,
+      paymentDeadline: new Date("2026-07-02T00:00:00.000Z"),
+      soldAt: null,
+      completedAt: null,
+      completionSource: null,
+      buyerName: "Checkout Baru",
+      buyerEmail: "newer@example.test",
+      buyerPhone: null,
+      buyerNationalId: null,
+      transactionCreatedAt: new Date("2026-07-01T08:35:00.000Z")
+    };
+    const uploadedProofTransaction = {
+      ...newerUnpaidTransaction,
+      id: "trx-uploaded-proof",
+      status: "bukti_diunggah",
+      proofUrl: "/uploads/bukti-transfer.jpg",
+      reference: "PAY-001",
+      buyerName: "Lionel Messi",
+      buyerEmail: "buyer@example.test",
+      transactionCreatedAt: new Date("2026-07-01T08:29:00.000Z")
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "innerJoin", "leftJoin", "leftJoin", "where", "groupBy", "limit"], [
+          {
+            marketing,
+            item,
+            unitName: "UPC Wanea",
+            unitAddress: "Manado",
+            bidCount: 0,
+            winnerName: null
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "where", "orderBy"], []))
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "leftJoin", "leftJoin", "where", "orderBy"], [
+          newerUnpaidTransaction,
+          uploadedProofTransaction
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "leftJoin", "leftJoin", "where", "groupBy", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []));
+
+    await getAdminPemasaranById("unit-1", "marketing-fixed");
+
+    const detailExtras = mocks.serializeAdminPemasaran.mock.calls.at(-1)?.[1] as {
+      transaction?: { id?: string | null; status?: string | null; proofUrl?: string | null };
+    };
+
+    expect(detailExtras.transaction?.id).toBe("trx-uploaded-proof");
+    expect(detailExtras.transaction?.status).toBe("bukti_diunggah");
+    expect(detailExtras.transaction?.proofUrl).toBe("/uploads/bukti-transfer.jpg");
   });
 });
 
