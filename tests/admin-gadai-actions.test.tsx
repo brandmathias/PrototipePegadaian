@@ -362,7 +362,7 @@ describe("admin gadai action forms", () => {
     });
   });
 
-  it("uses the 13 digit customer phone standard on editable barang fields", () => {
+  it("accepts valid Indonesian mobile lengths after the +62 prefix", () => {
     renderWithToast(
       <AdminBarangEditForm
         item={{
@@ -382,8 +382,8 @@ describe("admin gadai action forms", () => {
     );
 
     const input = screen.getByLabelText("Nomor telepon nasabah");
-    expect(input).toHaveAttribute("minlength", "12");
+    expect(input).toHaveAttribute("minlength", "9");
     expect(input).toHaveAttribute("maxlength", "12");
-    expect(input).toHaveAttribute("pattern", "[0-9]{12}");
+    expect(input).toHaveAttribute("pattern", "[0-9]{9,12}");
   });
 });

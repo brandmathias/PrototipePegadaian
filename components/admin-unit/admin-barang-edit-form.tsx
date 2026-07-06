@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { AdminSelect } from "@/components/admin/admin-select";
 import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
@@ -80,15 +81,6 @@ function normalizeEditableCategory(value: string) {
 
 function normalizeDigits(value: string) {
   return value.replace(/\D/g, "");
-}
-
-function formatInputCurrency(value: string) {
-  const digits = normalizeDigits(value);
-  if (!digits) {
-    return "";
-  }
-
-  return Number(digits).toLocaleString("id-ID");
 }
 
 function getSpecificationSuffix(label: string) {
@@ -360,13 +352,12 @@ export function AdminBarangEditForm({
                 </p>
               </div>
             </div>
-            <Input
+            <CurrencyInput
               className={cn("h-11 rounded-xl bg-white text-sm font-semibold sm:text-sm", editInputFocusClass)}
               id="admin-barang-marketing-price"
               min={1}
-              onChange={(event) => setMarketingPrice(event.target.value)}
-              placeholder="Contoh: 12500000"
-              type="number"
+              onValueChange={setMarketingPrice}
+              placeholder="Contoh: 12.500.000"
               value={marketingPrice}
             />
           </div>
@@ -412,16 +403,13 @@ export function AdminBarangEditForm({
               <span className="flex items-center border-r border-slate-100 bg-slate-50 px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-slate-500">
                 Rp
               </span>
-              <Input
+              <CurrencyInput
                 className="h-11 rounded-none border-0 bg-transparent text-sm font-semibold shadow-none focus-visible:ring-0"
                 id="admin-barang-appraisal-value"
-                inputMode="numeric"
                 min={1}
-                onChange={(event) => setAppraisalValue(normalizeDigits(event.target.value))}
-                pattern="[0-9.]*"
+                onValueChange={setAppraisalValue}
                 required
-                type="text"
-                value={formatInputCurrency(appraisalValue)}
+                value={appraisalValue}
               />
             </div>
             <p className="text-xs font-medium leading-5 text-slate-500">

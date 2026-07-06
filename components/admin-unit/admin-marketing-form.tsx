@@ -14,11 +14,16 @@ import {
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { formatCurrencyInput, getCurrencyInputDigits } from "@/components/ui/currency-input";
 import { useToast } from "@/components/ui/toast";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
 type MarketingMode = "fixed_price" | "vickrey";
+
+function normalizeDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
 
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
@@ -29,19 +34,6 @@ function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: stri
       {children}
     </label>
   );
-}
-
-function normalizeDigits(value: string) {
-  return value.replace(/\D/g, "");
-}
-
-function formatInputCurrency(value: string) {
-  const digits = normalizeDigits(value);
-  if (!digits) {
-    return "";
-  }
-
-  return Number(digits).toLocaleString("id-ID");
 }
 
 function formatDurationFieldValue(value: string, padLength: number) {
@@ -465,10 +457,10 @@ export function AdminMarketingForm({
                       className="h-[3rem] w-full bg-transparent pr-5 text-[0.92rem] font-black tracking-[0.02em] text-[#0d4e34] outline-none placeholder:text-slate-300"
                       id="marketing-price"
                       inputMode="numeric"
-                      onChange={(event) => setPrice(normalizeDigits(event.target.value))}
+                      onChange={(event) => setPrice(getCurrencyInputDigits(event.target.value))}
                       placeholder="0"
                       type="text"
-                      value={formatInputCurrency(price)}
+                      value={formatCurrencyInput(price)}
                     />
                   </div>
                 </div>

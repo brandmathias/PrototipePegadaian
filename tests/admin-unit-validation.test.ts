@@ -35,7 +35,15 @@ describe("admin unit validation", () => {
           appraisalValue: "8500000"
         }
       )
-    ).toThrow("Nomor telepon harus diawali 08 dan terdiri dari 13 digit.");
+    ).toThrow("Nomor telepon harus diawali 08 dan terdiri dari 10 sampai 13 digit.");
+
+    expect(
+      validateAdminBarangCorrectionPayload({
+        ownerName: "Raras Maheswari",
+        customerNumber: "8123456789",
+        appraisalValue: "8500000"
+      }).customerNumber
+    ).toBe("08123456789");
 
     expect(() =>
       validateAdminBarangCorrectionPayload(

@@ -31,8 +31,8 @@ export function normalizeCustomerNumber(value: string) {
       ? `0${digits}`
       : digits;
 
-  if (!/^08\d{11}$/.test(normalized)) {
-    throw new Error("Nomor telepon harus diawali 08 dan terdiri dari 13 digit.");
+  if (!/^08\d{8,11}$/.test(normalized)) {
+    throw new Error("Nomor telepon harus diawali 08 dan terdiri dari 10 sampai 13 digit.");
   }
 
   return normalized;

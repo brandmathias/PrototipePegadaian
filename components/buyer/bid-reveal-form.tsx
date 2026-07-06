@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 
@@ -96,12 +97,11 @@ export function BidRevealForm({ buyerId, lotId }: BidRevealFormProps) {
           <label className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground" htmlFor="reveal-amount">
             Nominal bid
           </label>
-          <Input
+          <CurrencyInput
             id="reveal-amount"
             min={0}
-            onChange={(event) => setAmount(event.target.value)}
+            onValueChange={setAmount}
             placeholder="Nominal bid"
-            type="number"
             value={amount}
           />
         </div>

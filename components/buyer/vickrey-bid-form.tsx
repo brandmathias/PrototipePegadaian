@@ -19,6 +19,7 @@ import { DirectPaymentDisclaimer } from "@/components/buyer/direct-payment-discl
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
@@ -407,16 +408,15 @@ export function VickreyBidForm({
               >
                 Nominal penawaran
               </label>
-              <Input
+              <CurrencyInput
                 autoComplete="off"
                 className="mt-3 h-11 rounded-[0.95rem] bg-surface-low text-base font-semibold"
                 disabled={bidLocked || isPending}
                 id="vickrey-terms-bid-amount"
                 min={lot.price}
                 name="modalBidAmount"
-                onChange={(event) => setBidAmount(event.target.value)}
+                onValueChange={setBidAmount}
                 placeholder="Masukkan nominal bid"
-                type="number"
                 value={bidAmount}
               />
               <div className="mt-3 grid gap-2 rounded-[1rem] bg-primary/[0.04] px-3 py-3">
@@ -587,15 +587,14 @@ export function VickreyBidForm({
                 Nominal penawaran
               </label>
               <div className="mt-3">
-                <Input
+                <CurrencyInput
                   autoComplete="off"
                   id="bid-amount"
                   disabled={bidLocked}
                   min={lot.price}
                   name="bidAmount"
-                  onChange={(event) => setBidAmount(event.target.value)}
+                  onValueChange={setBidAmount}
                   placeholder="Masukkan nominal bid"
-                  type="number"
                   value={bidAmount}
                 />
               </div>

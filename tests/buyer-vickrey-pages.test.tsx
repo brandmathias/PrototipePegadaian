@@ -202,7 +202,7 @@ describe("buyer vickrey pages", () => {
     const bidInputLabel = within(dialog).getByText("Nominal penawaran", { selector: "label" });
     const formattedBasePrice = currency.format(vickreyLot.price).replace(/\u00a0/g, " ");
     expect(restrictionHeading.compareDocumentPosition(bidInputLabel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(bidInput).toHaveValue(vickreyLot.price);
+    expect(bidInput).toHaveValue("90.000.000");
     expect(
       within(dialog).getByText((text) => text.replace(/\u00a0/g, " ") === `Harga dasar ${formattedBasePrice}`)
     ).toBeInTheDocument();

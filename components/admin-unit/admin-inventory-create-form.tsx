@@ -23,6 +23,7 @@ import {
 import { AdminDatePicker, getDateAfter } from "@/components/admin-unit/admin-date-picker";
 import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput, getCurrencyInputDigits } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
@@ -114,13 +115,12 @@ function FormInput({
   );
 }
 
-function MoneyInput(props: React.ComponentProps<typeof Input>) {
+function MoneyInput(props: React.ComponentProps<typeof CurrencyInput>) {
   return (
     <div className="flex overflow-hidden rounded-xl border border-transparent bg-slate-50 transition focus-within:border-[#006747] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#006747]/10">
-      <Input
+      <CurrencyInput
         {...props}
         className="h-11 flex-1 border-0 bg-transparent px-3 text-xs font-bold text-slate-800 shadow-none focus-visible:ring-0"
-        type="number"
       />
       <span className="flex items-center border-l border-slate-200/60 bg-slate-100/50 px-3.5 text-[0.64rem] font-black uppercase tracking-[0.08em] text-slate-400">
         Rp
@@ -657,6 +657,7 @@ export function AdminInventoryCreateForm() {
 
     const formData = new FormData(event.currentTarget);
     formData.delete("media");
+    formData.set("appraisalValue", getCurrencyInputDigits(String(formData.get("appraisalValue") ?? "")));
     formData.set("pawnedAt", pawnedAt);
     media.forEach((item) => formData.append("media", item.file));
 
