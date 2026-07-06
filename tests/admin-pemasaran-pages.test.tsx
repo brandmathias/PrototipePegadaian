@@ -559,6 +559,11 @@ describe("admin pemasaran pages", () => {
 
     const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
 
+    expect(screen.getByText(/bukti ditolak/i)).toBeInTheDocument();
+    expect(screen.getByText(/bukti pembayaran ditolak/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/verifikasi: ditolak/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
     expect(verifyButton).toBeDisabled();
     fireEvent.click(verifyButton);
     expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();

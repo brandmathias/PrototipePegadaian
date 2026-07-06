@@ -124,6 +124,8 @@ export type MarketingSession = {
   paymentMethod?: string | null;
   proofUrl?: string | null;
   verifiedBy?: string | null;
+  verifiedAt?: string | null;
+  rejectionReason?: string | null;
   handoverProofUrl?: string | null;
   handoverProofUploadedAt?: string | null;
   handoverProofUploadedBy?: string | null;
@@ -1115,6 +1117,10 @@ function isMarketingSold(auction: MarketingSession) {
   );
 }
 
+function isFixedPricePaymentRejected(auction: MarketingSession) {
+  return auction.transactionStatus === "DITOLAK_BUKTI";
+}
+
 function hasFixedPricePaymentSubmission(auction: MarketingSession) {
   const transactionStatus = auction.transactionStatus ?? "";
 
@@ -1136,14 +1142,26 @@ function hasFixedPriceVerificationReady(auction: MarketingSession) {
 }
 
 function getFixedPriceWorkflowStatus(auction: MarketingSession) {
+  if (isFixedPricePaymentRejected(auction)) {
+    return "Gagal";
+  }
+
   if (auction.transactionStatus === "LUNAS") {
     return "Menunggu Buyer";
+  }
+
+  if (auction.status === "GAGAL" || auction.transactionStatus === "GAGAL") {
+    return "Gagal";
   }
 
   return isMarketingSold(auction) ? "Selesai" : "Aktif";
 }
 
 function getFixedPriceOperationalNote(auction: MarketingSession) {
+  if (isFixedPricePaymentRejected(auction)) {
+    return "Bukti pembayaran ditolak";
+  }
+
   if (isMarketingSold(auction)) {
     return "Pembelian harga tetap selesai";
   }
@@ -2368,10 +2386,46 @@ export function AdminVickreyAuctionListPage({
 function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const fulfilled = auction.transactionStatus === "SELESAI";
   const verified = auction.transactionStatus === "LUNAS" || fulfilled;
+  const rejected = isFixedPricePaymentRejected(auction);
   const submitted = hasFixedPricePaymentSubmission(auction) || verified;
   const buyerActor = auction.buyerName ? `Buyer: ${auction.buyerName}` : "Buyer";
   const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : null;
   const completionActor = auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+
+  if (rejected) {
+    return (
+      <CompactTransactionProgress
+        steps={[
+          {
+            label: "Pembayaran",
+            status: "Bukti dikirim",
+            actor: buyerActor,
+            occurredAt: dateLabel(auction.transactionCreatedAt),
+            icon: WalletCards,
+            tone: "done"
+          },
+          {
+            label: "Verifikasi",
+            status: "Ditolak",
+            actor: adminActor,
+            occurredAt: dateLabel(auction.verifiedAt),
+            icon: X,
+            tone: "failed"
+          },
+          {
+            label: "Selesai",
+            status: "Transaksi dibatalkan",
+            actor: null,
+            occurredAt: null,
+            icon: CheckCircle2,
+            tone: "pending"
+          }
+        ]}
+        title="Progress Penyelesaian"
+      />
+    );
+  }
+
   const steps = [
     {
       label: "Pembayaran",
@@ -2684,6 +2738,19 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
       detail: getMarketingVerifiedDetail(auction),
       icon: BadgeCheck,
       label: "Terverifikasi"
+    };
+  }
+
+  if (isFixedPricePaymentRejected(auction)) {
+    const rejectionDetail = auction.rejectionReason
+      ? `Bukti pembayaran ditolak admin unit. Alasan: ${auction.rejectionReason}. Transaksi dibatalkan dan barang dapat kembali tersedia di katalog pada iterasi berikutnya.`
+      : "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang dapat kembali tersedia di katalog pada iterasi berikutnya.";
+
+    return {
+      badgeClassName: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c]",
+      detail: rejectionDetail,
+      icon: AlertTriangle,
+      label: "Bukti Ditolak"
     };
   }
 
