@@ -17,6 +17,7 @@
     "db:migrate:customer-data-standard": "tsx scripts/apply-customer-data-standard-migration.ts",
     "db:cleanup:obsolete": "tsx scripts/cleanup-obsolete-database.ts",
     "db:backfill:blacklist": "tsx scripts/backfill-blacklist-violation-totals.ts",
+    "db:repair:fixed-price-relist": "tsx scripts/repair-fixed-price-rejected-relist.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
