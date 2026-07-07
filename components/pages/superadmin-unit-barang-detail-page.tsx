@@ -7,21 +7,30 @@ import {
   CalendarClock,
   CalendarDays,
   CarFront,
+  Circle,
+  Cpu,
   FileText,
+  Gauge,
   Gem,
+  HardDrive,
   Hash,
   Landmark,
+  Layers,
   Medal,
   Megaphone,
   MonitorSmartphone,
   Package2,
+  PackageCheck,
   PackagePlus,
   Phone,
   ReceiptText,
   Ruler,
   Scale,
+  ScrollText,
+  Shapes,
   ShieldCheck,
-  Sparkles,
+  StickyNote,
+  Tag,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -53,19 +62,56 @@ function specificationIcon(category: unknown, rowLabel: string) {
   const categoryValue = String(category ?? "").toLowerCase();
   const rowValue = rowLabel.toLowerCase();
 
+  // Emas & Perhiasan
   if (categoryValue.includes("emas") || categoryValue.includes("perhias")) {
+    if (rowValue.includes("jenis")) return Gem;
+    if (rowValue.includes("kadar")) return Gauge;
     if (rowValue.includes("berat")) return Scale;
-    if (rowValue.includes("panjang") || rowValue.includes("diameter")) return Ruler;
-    if (rowValue.includes("sertifikat")) return ShieldCheck;
+    if (rowValue.includes("bentuk")) return Shapes;
+    if (rowValue.includes("panjang")) return Ruler;
+    if (rowValue.includes("diameter")) return Circle;
+    if (rowValue.includes("sertifikat")) return ScrollText;
     return Gem;
   }
-  if (categoryValue.includes("logam")) return rowValue.includes("berat") ? Scale : Medal;
-  if (categoryValue.includes("kendara")) return rowValue.includes("nomor") ? Hash : CarFront;
-  if (categoryValue.includes("elektronik")) {
-    return rowValue.includes("garansi") ? ShieldCheck : MonitorSmartphone;
+
+  // Logam Mulia
+  if (categoryValue.includes("logam")) {
+    if (rowValue.includes("jenis")) return Medal;
+    if (rowValue.includes("brand")) return Tag;
+    if (rowValue.includes("kadar")) return Gauge;
+    if (rowValue.includes("berat")) return Scale;
+    if (rowValue.includes("sertifikat") || rowValue.includes("nomor")) return ScrollText;
+    return Medal;
   }
+
+  // Kendaraan
+  if (categoryValue.includes("kendara")) {
+    if (rowValue.includes("merek")) return Tag;
+    if (rowValue.includes("tipe")) return CarFront;
+    if (rowValue.includes("tahun")) return CalendarClock;
+    if (rowValue.includes("nomor")) return Hash;
+    if (rowValue.includes("kilometer")) return Gauge;
+    if (rowValue.includes("dokumen")) return FileText;
+    return CarFront;
+  }
+
+  // Elektronik
+  if (categoryValue.includes("elektronik")) {
+    if (rowValue.includes("merek")) return Tag;
+    if (rowValue.includes("model")) return Layers;
+    if (rowValue.includes("spesifikasi")) return Cpu;
+    if (rowValue.includes("kapasitas")) return HardDrive;
+    if (rowValue.includes("kelengkapan")) return PackageCheck;
+    if (rowValue.includes("garansi")) return ShieldCheck;
+    return MonitorSmartphone;
+  }
+
+  // Lainnya
+  if (rowValue.includes("jenis")) return Package2;
+  if (rowValue.includes("material")) return Layers;
   if (rowValue.includes("ukuran")) return Ruler;
-  if (rowValue.includes("material")) return Sparkles;
+  if (rowValue.includes("kelengkapan")) return PackageCheck;
+  if (rowValue.includes("catatan")) return StickyNote;
   return Package2;
 }
 

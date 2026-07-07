@@ -5,24 +5,30 @@ import { useState, type ComponentType, type ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
-  CalendarDays,
   CalendarClock,
+  CalendarDays,
   CarFront,
   CheckCircle2,
+  Circle,
   Clock3,
-  FileText,
+  Cpu,
   FileCheck2,
+  FileText,
   FileWarning,
+  Gauge,
   Gavel,
   Gem,
+  HardDrive,
   Hash,
   Landmark,
+  Layers,
   Medal,
   Megaphone,
   MonitorSmartphone,
   Ban,
   Package,
   Package2,
+  PackageCheck,
   PackagePlus,
   PencilLine,
   Phone,
@@ -32,9 +38,12 @@ import {
   RotateCcw,
   Scale,
   ScrollText,
+  Shapes,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  StickyNote,
+  Tag,
   UserRound,
   ReceiptText,
   UploadCloud,
@@ -259,34 +268,56 @@ function getSpecificationIcon(category: unknown, label: string) {
   const normalizedCategory = String(category ?? "").toLowerCase();
   const normalizedLabel = label.toLowerCase();
 
+  // Emas & Perhiasan
   if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+    if (normalizedLabel.includes("jenis")) return Gem;
+    if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("kadar")) return Sparkles;
-    if (normalizedLabel.includes("panjang") || normalizedLabel.includes("diameter")) return Ruler;
-    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    if (normalizedLabel.includes("bentuk")) return Shapes;
+    if (normalizedLabel.includes("panjang")) return Ruler;
+    if (normalizedLabel.includes("diameter")) return Circle;
+    if (normalizedLabel.includes("sertifikat")) return ScrollText;
     return Gem;
   }
 
+  // Logam Mulia
   if (normalizedCategory.includes("logam")) {
+    if (normalizedLabel.includes("jenis")) return Medal;
+    if (normalizedLabel.includes("brand")) return Tag;
+    if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    if (normalizedLabel.includes("sertifikat") || normalizedLabel.includes("nomor")) return ScrollText;
     return Medal;
   }
 
+  // Kendaraan
   if (normalizedCategory.includes("kendara")) {
+    if (normalizedLabel.includes("merek")) return Tag;
+    if (normalizedLabel.includes("tipe")) return CarFront;
+    if (normalizedLabel.includes("tahun")) return CalendarClock;
     if (normalizedLabel.includes("nomor")) return Hash;
+    if (normalizedLabel.includes("kilometer")) return Gauge;
     if (normalizedLabel.includes("dokumen")) return FileText;
     return CarFront;
   }
 
+  // Elektronik
   if (normalizedCategory.includes("elektronik")) {
+    if (normalizedLabel.includes("merek")) return Tag;
+    if (normalizedLabel.includes("model")) return Layers;
+    if (normalizedLabel.includes("spesifikasi")) return Cpu;
+    if (normalizedLabel.includes("kapasitas")) return HardDrive;
+    if (normalizedLabel.includes("kelengkapan")) return PackageCheck;
     if (normalizedLabel.includes("garansi")) return ShieldCheck;
-    if (normalizedLabel.includes("kapasitas") || normalizedLabel.includes("spesifikasi")) return FileText;
     return MonitorSmartphone;
   }
 
+  // Lainnya
+  if (normalizedLabel.includes("jenis")) return Package2;
+  if (normalizedLabel.includes("material")) return Layers;
   if (normalizedLabel.includes("ukuran")) return Ruler;
-  if (normalizedLabel.includes("material")) return Sparkles;
+  if (normalizedLabel.includes("kelengkapan")) return PackageCheck;
+  if (normalizedLabel.includes("catatan")) return StickyNote;
   return Package2;
 }
 

@@ -78,7 +78,7 @@ describe("DashboardShell", () => {
       expect(image).not.toHaveAttribute("sizes");
     });
     expect(brandImages[0]).toHaveAttribute("fetchpriority", "low");
-    expect(brandImages[1]).toHaveAttribute("fetchpriority", "high");
+    expect(brandImages[1]).toHaveAttribute("fetchpriority", "low");
     expect(brandImages[0]).toHaveAttribute("width", "40");
     expect(brandImages[1]).toHaveAttribute("width", "118");
   });

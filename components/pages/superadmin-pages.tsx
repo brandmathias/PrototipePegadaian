@@ -18,59 +18,69 @@ import {
   BadgeCheck,
   Ban,
   BarChart3,
-  CheckCircle2,
-  Pencil,
   Building2,
   CalendarClock,
   CalendarDays,
   CarFront,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Circle,
   Clock3,
   ClipboardList,
+  Cpu,
+  CreditCard,
   Download,
   Eye,
-  CreditCard,
   FileText,
   FileWarning,
+  Gauge,
   Gavel,
   Gem,
+  HardDrive,
   Hash,
   Info,
   Landmark,
+  Layers,
   ListChecks,
+  LockKeyhole,
   Mail,
   MapPin,
   Maximize2,
-  Megaphone,
   Medal,
+  Megaphone,
   MonitorSmartphone,
   MoreVertical,
   Package,
   Package2,
+  PackageCheck,
   PackagePlus,
-  Printer,
+  Pencil,
   Phone,
   PieChart,
   Plus,
+  Printer,
+  ReceiptText,
   RefreshCcw,
   RefreshCw,
-  ReceiptText,
   Ruler,
+  Scale,
+  ScrollText,
   Search,
   SearchX,
-  Scale,
+  Shapes,
   Shield,
   ShieldAlert,
-  ShieldCheck,
   ShieldBan,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
-  LockKeyhole,
-  Trophy,
+  StickyNote,
+  Tag,
   TrendingDown,
   TrendingUp,
+  Trophy,
   type LucideIcon,
   UserCog,
   UserRound,
@@ -2154,34 +2164,56 @@ function getSuperAdminSpecificationIcon(category: unknown, label: string) {
   const normalizedCategory = String(category ?? "").toLowerCase();
   const normalizedLabel = label.toLowerCase();
 
+  // Emas & Perhiasan
   if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+    if (normalizedLabel.includes("jenis")) return Gem;
+    if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("kadar")) return Sparkles;
-    if (normalizedLabel.includes("panjang") || normalizedLabel.includes("diameter")) return Ruler;
-    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    if (normalizedLabel.includes("bentuk")) return Shapes;
+    if (normalizedLabel.includes("panjang")) return Ruler;
+    if (normalizedLabel.includes("diameter")) return Circle;
+    if (normalizedLabel.includes("sertifikat")) return ScrollText;
     return Gem;
   }
 
+  // Logam Mulia
   if (normalizedCategory.includes("logam")) {
+    if (normalizedLabel.includes("jenis")) return Medal;
+    if (normalizedLabel.includes("brand")) return Tag;
+    if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("sertifikat")) return ShieldCheck;
+    if (normalizedLabel.includes("sertifikat") || normalizedLabel.includes("nomor")) return ScrollText;
     return Medal;
   }
 
+  // Kendaraan
   if (normalizedCategory.includes("kendara")) {
+    if (normalizedLabel.includes("merek")) return Tag;
+    if (normalizedLabel.includes("tipe")) return CarFront;
+    if (normalizedLabel.includes("tahun")) return CalendarClock;
     if (normalizedLabel.includes("nomor")) return Hash;
+    if (normalizedLabel.includes("kilometer")) return Gauge;
     if (normalizedLabel.includes("dokumen")) return FileText;
     return CarFront;
   }
 
+  // Elektronik
   if (normalizedCategory.includes("elektronik")) {
+    if (normalizedLabel.includes("merek")) return Tag;
+    if (normalizedLabel.includes("model")) return Layers;
+    if (normalizedLabel.includes("spesifikasi")) return Cpu;
+    if (normalizedLabel.includes("kapasitas")) return HardDrive;
+    if (normalizedLabel.includes("kelengkapan")) return PackageCheck;
     if (normalizedLabel.includes("garansi")) return ShieldCheck;
-    if (normalizedLabel.includes("kapasitas") || normalizedLabel.includes("spesifikasi")) return FileText;
     return MonitorSmartphone;
   }
 
+  // Lainnya
+  if (normalizedLabel.includes("jenis")) return Package2;
+  if (normalizedLabel.includes("material")) return Layers;
   if (normalizedLabel.includes("ukuran")) return Ruler;
-  if (normalizedLabel.includes("material")) return Sparkles;
+  if (normalizedLabel.includes("kelengkapan")) return PackageCheck;
+  if (normalizedLabel.includes("catatan")) return StickyNote;
   return Package2;
 }
 
