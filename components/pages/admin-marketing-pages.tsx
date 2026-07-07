@@ -4431,7 +4431,12 @@ function FixedPricePaymentVerificationModal({
           </div>
 
           <div className="scrollbar-none min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-5">
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
+            <div
+              className={cn(
+                "grid gap-4",
+                !isRejectedReview && "xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]"
+              )}
+            >
             <div className="space-y-4">
               <div className="relative overflow-hidden rounded-[1.05rem] border border-[#cce6da] bg-[radial-gradient(circle_at_88%_32%,rgba(46,196,125,0.18),transparent_29%),linear-gradient(135deg,#fbfffd_0%,#eef9f3_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -4478,7 +4483,10 @@ function FixedPricePaymentVerificationModal({
                 />
               </div>
 
-              <div className="rounded-[1rem] border border-[#dfe8e3] bg-white p-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.28)]">
+              <div
+                className="rounded-[1rem] border border-[#dfe8e3] bg-white p-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.28)]"
+                data-testid="fixed-price-payment-proof-card"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[0.84rem] font-black leading-none text-[#15231d]">
                     Bukti Transfer dari Pembeli
@@ -4489,12 +4497,18 @@ function FixedPricePaymentVerificationModal({
                 </div>
                 {auction.proofUrl ? (
                   <div className="mt-3 overflow-hidden rounded-[0.9rem] border border-[#d4dce8] bg-[#1e293b]">
-                    <div className="relative h-52 w-full overflow-hidden bg-[#111827] sm:h-60">
+                    <div
+                      className={cn(
+                        "relative w-full overflow-hidden bg-[#111827]",
+                        isRejectedReview ? "h-64 sm:h-72 lg:h-[20rem]" : "h-52 sm:h-60"
+                      )}
+                      data-testid="fixed-price-payment-proof-preview"
+                    >
                       <Image
                         alt={`Bukti pembayaran ${auction.lot}`}
                         className="object-cover opacity-72 transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
                         fill
-                        sizes="(min-width: 1280px) 44vw, (min-width: 768px) 60vw, 100vw"
+                        sizes={isRejectedReview ? "(min-width: 1280px) 64rem, (min-width: 768px) 82vw, 100vw" : "(min-width: 1280px) 44vw, (min-width: 768px) 60vw, 100vw"}
                         src={auction.proofUrl}
                         unoptimized
                       />
@@ -4515,31 +4529,40 @@ function FixedPricePaymentVerificationModal({
                   </div>
                 )}
 
-                <div className="mt-3 flex flex-col gap-3 rounded-[0.9rem] border border-[#dfe8e3] bg-[#fbfdfb] px-4 py-3 text-[0.82rem] font-bold text-[#26342e] sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-[0.75rem] bg-[#fff0f0] text-[#e11d48]">
-                      <Clock3 className="size-5" />
+                {!isRejectedReview ? (
+                  <div className="mt-3 flex flex-col gap-3 rounded-[0.9rem] border border-[#dfe8e3] bg-[#fbfdfb] px-4 py-3 text-[0.82rem] font-bold text-[#26342e] sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-[0.75rem] bg-[#fff0f0] text-[#e11d48]">
+                        <Clock3 className="size-5" />
+                      </span>
+                      <span>Batas Waktu Pelunasan:</span>
+                    </div>
+                    <span className="font-headline text-[0.92rem] font-black leading-5 text-[#dc2626] [font-variant-numeric:tabular-nums]">
+                      {auction.paymentDeadline ? (
+                        <AdminLiveCountdown
+                          expiredLabel="Batas bayar terlewati"
+                          fallbackLabel={dateLabel(auction.paymentDeadline)}
+                          prefix="Sisa"
+                          serverNow={serverNow}
+                          targetAt={auction.paymentDeadline}
+                        />
+                      ) : (
+                        "-"
+                      )}
                     </span>
-                    <span>Batas Waktu Pelunasan:</span>
                   </div>
-                  <span className="font-headline text-[0.92rem] font-black leading-5 text-[#dc2626] [font-variant-numeric:tabular-nums]">
-                    {auction.paymentDeadline ? (
-                      <AdminLiveCountdown
-                        expiredLabel="Batas bayar terlewati"
-                        fallbackLabel={dateLabel(auction.paymentDeadline)}
-                        prefix="Sisa"
-                        serverNow={serverNow}
-                        targetAt={auction.paymentDeadline}
-                      />
-                    ) : (
-                      "-"
-                    )}
-                  </span>
-                </div>
+                ) : null}
               </div>
             </div>
 
-            <div className="flex min-h-full flex-col gap-4 rounded-[1.05rem] border border-[#f4c979] bg-[linear-gradient(180deg,#fffdf9_0%,#fff7f7_58%,#fffefe_100%)] p-4 shadow-[0_20px_54px_-44px_rgba(120,53,15,0.35)]">
+            <div
+              className={cn(
+                "flex flex-col gap-4 rounded-[1.05rem] p-4",
+                isRejectedReview
+                  ? "border border-[#fecaca] bg-white shadow-[0_18px_44px_-36px_rgba(185,28,28,0.32)]"
+                  : "min-h-full border border-[#f4c979] bg-[linear-gradient(180deg,#fffdf9_0%,#fff7f7_58%,#fffefe_100%)] shadow-[0_20px_54px_-44px_rgba(120,53,15,0.35)]"
+              )}
+            >
               <div
                   className={cn(
                     "rounded-[0.95rem] border px-4 py-4",
@@ -4647,15 +4670,17 @@ function FixedPricePaymentVerificationModal({
               </div>
               ) : null}
 
-              <div className="rounded-[0.95rem] border border-[#e5ebee] bg-white p-4 text-[0.82rem] font-semibold leading-6 text-[#52625b]">
-                <div className="flex items-start gap-3">
-                  <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" />
-                  <p>
-                    Fixed price dinyatakan terverifikasi setelah bukti bayar disetujui Admin Unit. Tahap selesai tetap
-                    menunggu buyer menekan Pembelian Selesai.
-                  </p>
+              {!isRejectedReview ? (
+                <div className="rounded-[0.95rem] border border-[#e5ebee] bg-white p-4 text-[0.82rem] font-semibold leading-6 text-[#52625b]">
+                  <div className="flex items-start gap-3">
+                    <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" />
+                    <p>
+                      Fixed price dinyatakan terverifikasi setelah bukti bayar disetujui Admin Unit. Tahap selesai tetap
+                      menunggu buyer menekan Pembelian Selesai.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </div>
