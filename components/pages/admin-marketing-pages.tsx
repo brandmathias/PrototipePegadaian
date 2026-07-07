@@ -4577,7 +4577,11 @@ function FixedPricePaymentVerificationModal({
                   <div
                     className={cn(
                       "inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.78rem] font-black uppercase leading-4 tracking-[0.045em]",
-                      isRejectedReview ? "text-[#b91c1c]" : isReadOnly ? "text-[#006747]" : "text-[#b45309]"
+                      isRejectedReview
+                        ? "text-[0.88rem] tracking-[0.07em] text-[#b91c1c]"
+                        : isReadOnly
+                          ? "text-[#006747]"
+                          : "text-[#b45309]"
                     )}
                   >
                     <span
@@ -4598,7 +4602,12 @@ function FixedPricePaymentVerificationModal({
                     <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
                   )}
                 </div>
-                <p className="mt-4 text-[0.88rem] font-semibold leading-6 text-[#47564f]">
+                <p
+                  className={cn(
+                    "mt-4 font-semibold leading-6 text-[#47564f]",
+                    isRejectedReview && "text-[0.98rem] leading-7 text-[#7f1d1d]"
+                  )}
+                >
                   {isRejectedReview
                     ? `Bukti pembayaran ditolak admin unit${auction.rejectionReason ? ` dengan alasan: ${auction.rejectionReason}` : ""}. Transaksi ini dibatalkan dan hanya dapat ditinjau sebagai arsip.`
                     : isReadOnly
@@ -4627,7 +4636,7 @@ function FixedPricePaymentVerificationModal({
                   />
                 </div>
               </div>
-              ) : (
+              ) : !isRejectedReview ? (
                 <div className={cn(
                   "rounded-[0.95rem] border bg-white p-4 text-[0.84rem] leading-6",
                   isRejectedReview ? "border-[#fecaca] text-[#7f1d1d]" : "border-[#cfe3d7] text-[#456057]"
@@ -4651,7 +4660,7 @@ function FixedPricePaymentVerificationModal({
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {!isReviewOnly ? (
                 <div className="rounded-[0.95rem] border border-[#f5d48e] bg-[#fffbf2] p-4 text-[0.84rem] leading-6 text-[#6f4c16]">

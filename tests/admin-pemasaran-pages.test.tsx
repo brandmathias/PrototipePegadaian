@@ -570,7 +570,7 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(verifyButton);
     const dialog = screen.getByRole("dialog", { name: /review pembayaran ditolak/i });
     expect(within(dialog).getByText("PEMBAYARAN DITOLAK")).toBeInTheDocument();
-    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(2);
+    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(1);
     expect(within(dialog).getByTestId("fixed-price-payment-proof-preview")).toHaveClass(
       "h-64",
       "sm:h-72",
@@ -578,6 +578,7 @@ describe("admin pemasaran pages", () => {
     );
     expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/fixed price dinyatakan/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/review penolakan terkunci/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
   });
