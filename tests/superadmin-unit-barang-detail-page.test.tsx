@@ -82,5 +82,7 @@ describe("route-real superadmin unit barang detail page", () => {
     expect(timeline).toHaveTextContent("Deskripsi");
     expect(timeline).toHaveTextContent("Aktor / Sumber");
     expect(timeline).toHaveTextContent("Aktor Internal: Maria Supit");
+    expect(timeline.querySelector(".lucide-megaphone")).not.toBeNull();
+    expect(timeline.querySelector(".lucide-ban")).not.toBeNull();
   });
 });

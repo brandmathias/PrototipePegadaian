@@ -1093,9 +1093,9 @@ export function AdminInventoryDetailPage({
                   input_baru: PackagePlus,
                   perpanjangan: CalendarClock,
                   ditebus: ReceiptText,
-                  dipasarkan: Gavel,
+                  dipasarkan: Megaphone,
                   terjual: BadgeCheck,
-                  gagal: FileWarning,
+                  gagal: Ban,
                 };
                 const EntryIcon = iconMap[entry.actionKey];
                 const stamp = splitTimelineStamp(entry.createdAtLabel);

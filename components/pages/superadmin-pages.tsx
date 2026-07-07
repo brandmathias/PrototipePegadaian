@@ -5117,37 +5117,37 @@ function SuperAdminFixedPriceWorkspace({
     !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(session.transactionStatus ?? "");
 
   return (
-    <div className="space-y-4" data-testid="superadmin-fixed-price-settlement-layout">
+    <div className="space-y-3" data-testid="superadmin-fixed-price-settlement-layout">
       <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section
         className={cn(
-          "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
+          "rounded-[1.1rem] px-4 py-3.5 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
           isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
         )}
         data-testid={rejected ? "superadmin-payment-verification-audit" : undefined}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3.5">
           <span
             className={cn(
-              "grid size-14 shrink-0 place-items-center rounded-full text-white",
+              "grid size-12 shrink-0 place-items-center rounded-full text-white",
               isFailed ? "bg-[#dc2626]" : "bg-[#006747]",
             )}
           >
             {isFailed ? (
-              <AlertTriangle className="size-7" strokeWidth={2.5} />
+              <AlertTriangle className="size-6" strokeWidth={2.5} />
             ) : (
-              <ShoppingBag className="size-7" strokeWidth={2.2} />
+              <ShoppingBag className="size-6" strokeWidth={2.2} />
             )}
           </span>
           <div className="min-w-0">
             <h2 className={cn(
-              "font-headline text-[1.08rem] font-black uppercase tracking-[0.02em] sm:text-[1.18rem]",
+              "font-headline text-[1.02rem] font-black uppercase tracking-[0.02em] sm:text-[1.12rem]",
               isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
             )}>
               {statusTitle}
             </h2>
             <p className={cn(
-              "mt-1 text-[0.84rem] font-semibold leading-5",
+              "mt-1 text-[0.8rem] font-semibold leading-5",
               isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
             )}>
               {statusDetail}
@@ -5158,48 +5158,55 @@ function SuperAdminFixedPriceWorkspace({
 
       <div
         className={cn(
-          "grid gap-4",
+          "grid items-stretch gap-3",
           hasBuyer && "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
         )}
         data-testid="superadmin-fixed-price-settlement-primary-grid"
       >
-        <div className="space-y-4">
-          <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+        <section
+          className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-3.5 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+          data-testid="superadmin-fixed-price-summary-card"
+        >
+          <div>
             <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
               Ringkasan Sesi Harga Tetap
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
               <SuperAdminDetailInfoCard
+                compact
                 icon={ShoppingBag}
                 label="Status Sesi"
                 value={formatSuperAdminDisplayLabel(session.status)}
               />
               <SuperAdminDetailInfoCard
+                compact
                 icon={CreditCard}
                 label="Status Pembayaran"
                 value={formatSuperAdminDisplayLabel(session.transactionStatus)}
               />
               <SuperAdminDetailInfoCard
+                compact
                 icon={WalletCards}
                 label="Buyer"
                 value={session.buyerName || session.winner || "Belum ada pembeli"}
               />
               <SuperAdminDetailInfoCard
+                compact
                 icon={Clock3}
                 label="Waktu Sesi"
                 value={getSuperAdminMarketingDateLabel(session)}
               />
             </div>
-          </section>
+          </div>
 
-          <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-            <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          <div className="mt-3">
+            <p className="text-[0.72rem] font-black uppercase tracking-[0.04em] text-[#006747]">
               Harga & Catatan Sesi
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+            <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
+              <div className="min-h-12 rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-2.5">
                 <p className="text-[0.66rem] font-black text-[#92400e]">Harga Tetap</p>
-                <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
+                <p className={`mt-1 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
                   {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
                 </p>
               </div>
@@ -5214,13 +5221,19 @@ function SuperAdminFixedPriceWorkspace({
                 </div>
               )}
             </div>
-            <div className="mt-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+            <div className="mt-2 overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2 text-[0.68rem] font-semibold leading-5 text-[#52655d]">
+              <p className="truncate">
               {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
+              </p>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
 
-        {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
+        {hasBuyer ? (
+          <div className="h-full min-h-[12.5rem] [&>section]:h-full [&>section]:px-4 [&>section]:py-3 [&>section>div]:mt-4">
+            <SuperAdminFixedPriceProgressPanel session={session} />
+          </div>
+        ) : null}
       </div>
 
       <MarketingPerformancePanel insights={session.insights} testId="superadmin-fixed-price-performance-panel" />
@@ -5357,25 +5370,37 @@ function SuperAdminVickreyWorkspace({
 }
 
 function SuperAdminDetailInfoCard({
+  compact = false,
   icon: Icon,
   label,
   value,
 }: {
+  compact?: boolean;
   icon: LucideIcon;
   label: string;
   value: ReactNode;
 }) {
   return (
-    <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3.5 shadow-[0_14px_34px_-30px_rgba(8,69,50,0.34)]">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-[#f1f8f4] text-[#007a4d] ring-1 ring-[#d6eadf]">
-          <Icon className="size-4" strokeWidth={1.9} />
+    <div
+      className={cn(
+        "rounded-[1rem] border border-[#e4ece7] bg-white shadow-[0_14px_34px_-30px_rgba(8,69,50,0.34)]",
+        compact ? "px-3 py-2.5" : "px-4 py-3.5",
+      )}
+    >
+      <div className={cn("flex items-start", compact ? "gap-2.5" : "gap-3")}>
+        <span
+          className={cn(
+            "mt-0.5 grid shrink-0 place-items-center rounded-full bg-[#f1f8f4] text-[#007a4d] ring-1 ring-[#d6eadf]",
+            compact ? "size-7" : "size-8",
+          )}
+        >
+          <Icon className={compact ? "size-3.5" : "size-4"} strokeWidth={1.9} />
         </span>
         <div className="min-w-0">
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">
+          <p className={cn("font-black uppercase tracking-[0.16em] text-[#6a7d73]", compact ? "text-[0.6rem]" : "text-[0.68rem]")}>
             {label}
           </p>
-          <div className="mt-1.5 text-[0.95rem] font-bold leading-6 text-[#13211c]">
+          <div className={cn("font-bold text-[#13211c]", compact ? "mt-1 text-[0.82rem] leading-5" : "mt-1.5 text-[0.95rem] leading-6")}>
             {value}
           </div>
         </div>
@@ -5530,9 +5555,9 @@ function SuperAdminAssetTimeline({
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
     ditebus: ReceiptText,
-    dipasarkan: Gavel,
+    dipasarkan: Megaphone,
     terjual: BadgeCheck,
-    gagal: FileWarning,
+    gagal: Ban,
   };
 
   return (

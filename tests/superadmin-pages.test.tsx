@@ -1567,7 +1567,13 @@ describe("superadmin pages", () => {
 
     expect(screen.getByText("Pembayaran Harga Tetap Ditolak")).toBeInTheDocument();
     const audit = screen.getByTestId("superadmin-payment-verification-audit");
+    const fixedPriceGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
+    const summaryCard = screen.getByTestId("superadmin-fixed-price-summary-card");
     expect(audit).toHaveTextContent("Uang dikirim bukan ke rekening tujuan.");
+    expect(fixedPriceGrid).toHaveClass("items-stretch", "gap-3");
+    expect(summaryCard).toHaveTextContent("Ringkasan Sesi Harga Tetap");
+    expect(summaryCard).toHaveTextContent("Harga & Catatan Sesi");
+    expect(summaryCard).toHaveTextContent("Rp 15.000.000");
     expect(screen.getByText(/maria supit/i)).toBeInTheDocument();
     expect(screen.getAllByText(/6 Jul 2026/).length).toBeGreaterThan(0);
     expect(screen.queryByText("Detail Verifikasi Admin Unit")).not.toBeInTheDocument();

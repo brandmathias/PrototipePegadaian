@@ -2,17 +2,17 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   BadgeCheck,
+  Ban,
   Building2,
   CalendarClock,
   CalendarDays,
   CarFront,
   FileText,
-  FileWarning,
-  Gavel,
   Gem,
   Hash,
   Landmark,
   Medal,
+  Megaphone,
   MonitorSmartphone,
   Package2,
   PackagePlus,
@@ -138,9 +138,9 @@ function AssetTimeline({
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
     ditebus: ReceiptText,
-    dipasarkan: Gavel,
+    dipasarkan: Megaphone,
     terjual: BadgeCheck,
-    gagal: FileWarning,
+    gagal: Ban,
   };
 
   return (

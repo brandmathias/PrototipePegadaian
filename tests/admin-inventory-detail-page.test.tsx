@@ -64,6 +64,15 @@ describe("AdminInventoryDetailPage", () => {
           {
             id: "hist-latest",
             barangId: "barang-demo",
+            actionLabel: "Gagal",
+            actionKey: "gagal",
+            note: "Pembayaran tidak selesai.",
+            actorName: "Admin Verifikasi",
+            createdAtLabel: "4 Jun 2026, 11.00 WIB",
+          },
+          {
+            id: "hist-marketing",
+            barangId: "barang-demo",
             actionLabel: "Dipasarkan",
             actionKey: "dipasarkan",
             note: "Barang dipublikasikan ke katalog.",
@@ -88,10 +97,14 @@ describe("AdminInventoryDetailPage", () => {
     expect(timeline).not.toBeNull();
     expect(timeline).toHaveTextContent("Aktor Internal: Admin Input");
     expect(timeline).toHaveTextContent("Aktor Internal: Admin Pemasaran");
+    expect(timeline).toHaveTextContent("Aktor Internal: Admin Verifikasi");
     expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
+    expect(timeline?.querySelector(".lucide-megaphone")).not.toBeNull();
+    expect(timeline?.querySelector(".lucide-ban")).not.toBeNull();
 
     const timelineText = timeline?.textContent ?? "";
     expect(timelineText.indexOf("Barang Masuk")).toBeLessThan(timelineText.indexOf("Dipasarkan"));
+    expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(timelineText.indexOf("Gagal"));
   });
 
   it("switches additional media thumbnails into the main preview", () => {
