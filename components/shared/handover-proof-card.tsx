@@ -21,6 +21,7 @@ type HandoverProofCardProps = {
   audience?: "buyer" | "admin" | "superadmin";
   compact?: boolean;
   controls?: ReactNode;
+  emptyFooterCopy?: string;
   previewUrl?: string | null;
 };
 
@@ -46,6 +47,7 @@ export function HandoverProofCard({
   className,
   compact = false,
   controls,
+  emptyFooterCopy,
   itemTitle,
   previewUrl,
   proof
@@ -62,7 +64,7 @@ export function HandoverProofCard({
   const imageAlt = `Preview bukti serah-terima barang ${itemTitle ?? "transaksi"}`;
   const footerCopy = fileUrl
     ? "Foto ini tersimpan sebagai bukti serah-terima fisik barang."
-    : "Menunggu admin unit mengunggah bukti serah-terima barang.";
+    : emptyFooterCopy ?? "Menunggu admin unit mengunggah bukti serah-terima barang.";
   const metaRows = [
     { icon: CalendarDays, label: "Waktu Penyerahan", value: uploadedAt },
     { icon: MapPin, label: "Lokasi Loket Unit", value: location },
@@ -141,9 +143,9 @@ export function HandoverProofCard({
               ))}
             </div>
 
-            <div className="mt-auto flex items-start gap-2 pt-4 text-xs font-semibold leading-5 text-[#64748b]">
-              <Info className="mt-0.5 size-4 shrink-0 text-[#c7d3e1]" />
-              <p>{footerCopy}</p>
+            <div className="mt-auto flex min-w-0 items-center gap-2 pt-4 text-xs font-semibold leading-5 text-[#64748b]">
+              <Info className="size-4 shrink-0 text-[#c7d3e1]" />
+              <p className="min-w-0 truncate" title={footerCopy}>{footerCopy}</p>
             </div>
           </div>
 

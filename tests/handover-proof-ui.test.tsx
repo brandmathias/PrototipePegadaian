@@ -98,6 +98,17 @@ describe("handover proof UI", () => {
     expect(revokeObjectUrlMock).toHaveBeenCalledWith("blob:handover-preview");
   });
 
+  it("folds the waiting-for-payment copy into the handover card footer", () => {
+    renderUploadForm(false);
+
+    expect(screen.queryByText("Menunggu pembayaran terverifikasi")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Menunggu pembayaran terverifikasi; setelah itu admin unit mengunggah bukti serah-terima.")
+    ).toHaveClass("truncate");
+    expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
+    expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("keeps the superadmin handover proof card read-only while using the wide preview shell", () => {
     render(
       <HandoverProofCard

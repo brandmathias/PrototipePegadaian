@@ -131,6 +131,11 @@ export function HandoverProofUploadForm({
       <HandoverProofCard
         audience="admin"
         controls={controls}
+        emptyFooterCopy={
+          canUpload
+            ? undefined
+            : "Menunggu pembayaran terverifikasi; setelah itu admin unit mengunggah bukti serah-terima."
+        }
         itemTitle={itemTitle}
         previewUrl={previewUrl}
         proof={proof ? { ...proof, location: proof.location ?? location } : { location }}
@@ -166,13 +171,6 @@ export function HandoverProofUploadForm({
         )}
       </Button>
 
-      {!canUpload ? (
-        <InlineFeedback
-          description="Bukti serah-terima baru dapat diunggah setelah pembayaran transaksi diverifikasi."
-          title="Menunggu pembayaran terverifikasi"
-          variant="info"
-        />
-      ) : null}
       {feedback ? (
         <InlineFeedback
           className="feedback-lift"

@@ -923,9 +923,9 @@ describe("admin pemasaran pages", () => {
     const outcomeLayout = screen.getByTestId("fixed-price-outcome-layout");
 
     expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]");
-    expect(primaryLayout).toHaveClass("xl:items-start");
+    expect(primaryLayout).toHaveClass("xl:items-stretch");
     expect(primaryLayout).not.toHaveClass("2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
-    expect(secondaryLayout).toHaveClass("space-y-4");
+    expect(secondaryLayout).toHaveClass("space-y-4", "xl:self-start");
     expect(secondaryLayout).not.toHaveClass("xl:grid-cols-[minmax(0,0.95fr)_minmax(24rem,0.8fr)]");
     expect(screen.getByText("Rp 100.000.000")).toHaveClass("whitespace-nowrap");
     expect(handoverPanel).toHaveClass("w-full");
@@ -937,11 +937,14 @@ describe("admin pemasaran pages", () => {
 
     const primaryColumn = primaryLayout.firstElementChild as HTMLElement;
     expect(within(primaryColumn).getByText(/galeri media barang/i)).toBeInTheDocument();
-    expect(within(primaryColumn).getByText(/konsol manajemen/i)).toBeInTheDocument();
+    expect(screen.getByTestId("fixed-price-management-panel")).toHaveClass("h-full");
+    expect(screen.getByTestId("fixed-price-description-panel")).toHaveClass("h-full");
+    expect(within(screen.getByTestId("fixed-price-management-panel")).getByText(/konsol manajemen/i)).toBeInTheDocument();
     expect(within(secondaryLayout).getByText(/harga barang/i)).toBeInTheDocument();
     expect(within(secondaryLayout).getByText(/spesifikasi lengkap/i)).toBeInTheDocument();
-    expect(within(secondaryLayout).getByText(/deskripsi barang/i)).toBeInTheDocument();
+    expect(within(screen.getByTestId("fixed-price-description-panel")).getByText(/deskripsi barang/i)).toBeInTheDocument();
     expect(outcomeLayout).toHaveClass("xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]");
+    expect(outcomeLayout).toHaveClass("xl:items-stretch");
     expect(within(outcomeLayout).getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
     expect(within(outcomeLayout).getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByTestId("fixed-price-description")).toHaveClass("text-justify");

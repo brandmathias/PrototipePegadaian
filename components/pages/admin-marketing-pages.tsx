@@ -2543,78 +2543,14 @@ export function AdminFixedPriceDetailPage({
       <MarketingIterationHistoryPanel auction={auction} />
 
       <div
-        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)] xl:items-start"
+        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)] xl:items-stretch"
         data-testid="fixed-price-primary-layout"
       >
-        <div className="space-y-4">
+        <div className="xl:self-start">
           <FixedPriceAuditGallery auction={auction} media={media} />
-
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle
-              description="Kelola data produk, visibilitas katalog, dan pantau aktivitas sesi."
-              icon={SlidersHorizontal}
-              title="Konsol Manajemen"
-            />
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {canShowReceiptAction ? (
-                <Button
-                  className="h-12 rounded-xl border border-[#d9e1dc] bg-[#f5f7f6] px-4 text-sm font-black text-[#8a9891]"
-                  disabled
-                  title="Data barang tidak dapat diedit setelah pembayaran diverifikasi."
-                  variant="secondary"
-                >
-                  <PencilLine className="size-4" />
-                  Edit Data
-                </Button>
-              ) : (
-                <Link
-                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
-                  href={`/admin/barang/${auction.lotId}/edit`}
-                >
-                  <PencilLine className="size-4 text-[#526072]" />
-                  Edit Data
-                </Link>
-              )}
-              <FixedPricePaymentVerificationButton
-                auction={auction}
-                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
-                label={canShowReceiptAction ? "Lihat Pembayaran" : "Verifikasi Pembayaran"}
-              />
-              {canShowReceiptAction ? (
-                <div className="sm:col-span-2 [&>span]:w-full">
-                  <FixedPriceReceiptInlinePrint
-                    auction={auction}
-                    buttonClassName="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 sm:col-span-2"
-                    disabledReason={fixedPriceReceiptLockMessage}
-                    label="Cetak Nota"
-                  />
-                </div>
-              ) : null}
-              {canScheduleRemarketing ? (
-                <button
-                  className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] sm:col-span-2"
-                  onClick={() => setIsRelistModalOpen(true)}
-                  type="button"
-                >
-                  <RefreshCcw className="size-4" />
-                  Jadwalkan Pasarkan Ulang
-                </button>
-              ) : null}
-            </div>
-            <div className="mt-4 rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3 text-[0.82rem] font-semibold leading-6 text-[#53655e]">
-              {buyerName ? (
-                <p>
-                  Pembeli tercatat: <span className="font-black text-[#13211c]">{buyerName}</span>.
-                </p>
-              ) : (
-                <p>Belum ada pembeli dengan bukti pembayaran masuk pada sesi harga tetap ini.</p>
-              )}
-              <p className="mt-1">{statusMeta.detail}</p>
-            </div>
-          </section>
         </div>
 
-        <aside className="space-y-4" data-testid="fixed-price-secondary-layout">
+        <aside className="space-y-4 xl:self-start" data-testid="fixed-price-secondary-layout">
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={Tag} title="Harga Barang" />
             <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5 sm:p-6">
@@ -2657,39 +2593,115 @@ export function AdminFixedPriceDetailPage({
               ))}
             </div>
           </section>
-
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
-            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-3.5">
-              <p
-                className="text-justify text-[0.8rem] font-semibold leading-5 text-[#31433b] [hyphens:auto] [text-justify:inter-word]"
-                data-testid="fixed-price-description"
-              >
-                {auction.description ||
-                  auction.note ||
-                  "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
-              </p>
-              <div className="mt-3 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3 py-2.5 text-[0.68rem] font-semibold leading-4 text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
-                <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="size-3.5 shrink-0 text-[#006747]" />
-                  Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
-                </span>
-                <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
-              </div>
-            </div>
-          </section>
         </aside>
+
+        <section
+          className="flex h-full flex-col rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]"
+          data-testid="fixed-price-management-panel"
+        >
+          <FixedPricePanelTitle
+            description="Kelola data produk, visibilitas katalog, dan pantau aktivitas sesi."
+            icon={SlidersHorizontal}
+            title="Konsol Manajemen"
+          />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {canShowReceiptAction ? (
+              <Button
+                className="h-12 rounded-xl border border-[#d9e1dc] bg-[#f5f7f6] px-4 text-sm font-black text-[#8a9891]"
+                disabled
+                title="Data barang tidak dapat diedit setelah pembayaran diverifikasi."
+                variant="secondary"
+              >
+                <PencilLine className="size-4" />
+                Edit Data
+              </Button>
+            ) : (
+              <Link
+                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
+                href={`/admin/barang/${auction.lotId}/edit`}
+              >
+                <PencilLine className="size-4 text-[#526072]" />
+                Edit Data
+              </Link>
+            )}
+            <FixedPricePaymentVerificationButton
+              auction={auction}
+              className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
+              label={canShowReceiptAction ? "Lihat Pembayaran" : "Verifikasi Pembayaran"}
+            />
+            {canShowReceiptAction ? (
+              <div className="sm:col-span-2 [&>span]:w-full">
+                <FixedPriceReceiptInlinePrint
+                  auction={auction}
+                  buttonClassName="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-55 sm:col-span-2"
+                  disabledReason={fixedPriceReceiptLockMessage}
+                  label="Cetak Nota"
+                />
+              </div>
+            ) : null}
+            {canScheduleRemarketing ? (
+              <button
+                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] sm:col-span-2"
+                onClick={() => setIsRelistModalOpen(true)}
+                type="button"
+              >
+                <RefreshCcw className="size-4" />
+                Jadwalkan Pasarkan Ulang
+              </button>
+            ) : null}
+          </div>
+          <div className="mt-4 rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3 text-[0.82rem] font-semibold leading-6 text-[#53655e]">
+            {buyerName ? (
+              <p>
+                Pembeli tercatat: <span className="font-black text-[#13211c]">{buyerName}</span>.
+              </p>
+            ) : (
+              <p>Belum ada pembeli dengan bukti pembayaran masuk pada sesi harga tetap ini.</p>
+            )}
+            <p className="mt-1">{statusMeta.detail}</p>
+          </div>
+        </section>
+
+        <section
+          className="flex h-full flex-col rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]"
+          data-testid="fixed-price-description-panel"
+        >
+          <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
+          <div className="mt-3 flex flex-1 flex-col rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-3.5">
+            <p
+              className="text-justify text-[0.8rem] font-semibold leading-5 text-[#31433b] [hyphens:auto] [text-justify:inter-word]"
+              data-testid="fixed-price-description"
+            >
+              {auction.description ||
+                auction.note ||
+                "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
+            </p>
+            <div className="mt-auto flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3 py-2.5 text-[0.68rem] font-semibold leading-4 text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck className="size-3.5 shrink-0 text-[#006747]" />
+                Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
+              </span>
+              <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div
         className={cn(
-          "grid gap-4 xl:items-start",
+          "grid gap-4 xl:items-stretch",
           auction.transactionId ? "xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]" : "xl:grid-cols-1"
         )}
         data-testid="fixed-price-outcome-layout"
       >
-        <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
-        {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
+        <div className="h-full [&>section]:h-full">
+          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
+        </div>
+        {auction.transactionId ? (
+          <div className="h-full [&>section]:h-full">
+            <FixedPriceProgressPanel auction={auction} />
+          </div>
+        ) : null}
       </div>
 
       <FixedPriceHandoverProofSection auction={auction} />
