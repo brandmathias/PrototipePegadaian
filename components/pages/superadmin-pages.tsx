@@ -27,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Circle,
+  CircleDot,
   Clock3,
   ClipboardList,
   Cpu,
@@ -4711,7 +4712,7 @@ function SuperAdminFixedPriceProgressPanel({
         steps={[
           {
             label: "Pembayaran",
-            status: "Bukti dikirim",
+            status: "Berdasarkan",
             actor: buyerActor,
             occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
             icon: WalletCards,
@@ -4728,8 +4729,8 @@ function SuperAdminFixedPriceProgressPanel({
           {
             label: "Selesai",
             status: "Transaksi dibatalkan",
-            occurredAt: null,
-            icon: CheckCircle2,
+            occurredAt: "bukan Terjual",
+            icon: CircleDot,
             tone: "pending",
           },
         ]}
@@ -4760,7 +4761,7 @@ function SuperAdminFixedPriceProgressPanel({
       status: fulfilled ? getSuperAdminProgressCompletionLabel(session) : verified ? "Menunggu buyer" : "Belum terjadi",
       actor: fulfilled ? completionActor : verified ? buyerActor : null,
       occurredAt: fulfilled ? formatSuperAdminDateTime(session.completedAt) : null,
-      icon: CheckCircle2,
+      icon: fulfilled ? CheckCircle2 : CircleDot,
       tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const),
     },
   ];
