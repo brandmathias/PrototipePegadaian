@@ -2612,8 +2612,6 @@ export function AdminFixedPriceDetailPage({
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
           </section>
-
-          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
         </div>
 
         <aside className="space-y-4" data-testid="fixed-price-secondary-layout">
@@ -2662,27 +2660,36 @@ export function AdminFixedPriceDetailPage({
 
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
-            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
+            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-3.5">
               <p
-                className="text-justify text-[0.92rem] font-semibold leading-7 text-[#31433b] [hyphens:auto] [text-justify:inter-word]"
+                className="text-justify text-[0.8rem] font-semibold leading-5 text-[#31433b] [hyphens:auto] [text-justify:inter-word]"
                 data-testid="fixed-price-description"
               >
                 {auction.description ||
                   auction.note ||
                   "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
               </p>
-              <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-3 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3 py-2.5 text-[0.68rem] font-semibold leading-4 text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
                 <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-[#006747]" />
+                  <ShieldCheck className="size-3.5 shrink-0 text-[#006747]" />
                   Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
                 </span>
                 <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
               </div>
             </div>
           </section>
-
-          {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
         </aside>
+      </div>
+
+      <div
+        className={cn(
+          "grid gap-4 xl:items-start",
+          auction.transactionId ? "xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]" : "xl:grid-cols-1"
+        )}
+        data-testid="fixed-price-outcome-layout"
+      >
+        <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
+        {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
       </div>
 
       <FixedPriceHandoverProofSection auction={auction} />

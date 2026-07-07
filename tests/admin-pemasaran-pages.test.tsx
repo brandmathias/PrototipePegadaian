@@ -920,6 +920,7 @@ describe("admin pemasaran pages", () => {
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima harga tetap/i);
     const primaryLayout = screen.getByTestId("fixed-price-primary-layout");
     const secondaryLayout = screen.getByTestId("fixed-price-secondary-layout");
+    const outcomeLayout = screen.getByTestId("fixed-price-outcome-layout");
 
     expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]");
     expect(primaryLayout).toHaveClass("xl:items-start");
@@ -937,11 +938,12 @@ describe("admin pemasaran pages", () => {
     const primaryColumn = primaryLayout.firstElementChild as HTMLElement;
     expect(within(primaryColumn).getByText(/galeri media barang/i)).toBeInTheDocument();
     expect(within(primaryColumn).getByText(/konsol manajemen/i)).toBeInTheDocument();
-    expect(within(primaryColumn).getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
     expect(within(secondaryLayout).getByText(/harga barang/i)).toBeInTheDocument();
     expect(within(secondaryLayout).getByText(/spesifikasi lengkap/i)).toBeInTheDocument();
     expect(within(secondaryLayout).getByText(/deskripsi barang/i)).toBeInTheDocument();
-    expect(within(secondaryLayout).getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(outcomeLayout).toHaveClass("xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]");
+    expect(within(outcomeLayout).getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
+    expect(within(outcomeLayout).getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByTestId("fixed-price-description")).toHaveClass("text-justify");
     expect(screen.getByTestId("fixed-price-description")).toHaveClass("[text-justify:inter-word]");
 
