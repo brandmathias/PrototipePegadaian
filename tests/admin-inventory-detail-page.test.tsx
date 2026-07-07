@@ -92,13 +92,14 @@ describe("AdminInventoryDetailPage", () => {
       />,
     );
 
-    const timeline = screen.getByText("Riwayat Kronologi Aset").closest("aside");
+    const timeline = screen.getByRole("table").closest("section");
 
     expect(timeline).not.toBeNull();
-    expect(timeline).toHaveTextContent("Aktor Internal: Admin Input");
-    expect(timeline).toHaveTextContent("Aktor Internal: Admin Pemasaran");
-    expect(timeline).toHaveTextContent("Aktor Internal: Admin Verifikasi");
-    expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
+    expect(timeline).toHaveTextContent("Riwayat Kronologi Aset");
+    expect(timeline).toHaveTextContent("Aktor Internal:Admin Input");
+    expect(timeline).toHaveTextContent("Aktor Internal:Admin Pemasaran");
+    expect(timeline).toHaveTextContent("Aktor Internal:Admin Verifikasi");
+    expect(timeline?.querySelector("table")).not.toBeNull();
     expect(timeline?.querySelector(".lucide-megaphone")).not.toBeNull();
     expect(timeline?.querySelector(".lucide-ban")).not.toBeNull();
 

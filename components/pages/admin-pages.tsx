@@ -951,174 +951,165 @@ export function AdminInventoryDetailPage({
         )}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_21.5rem]">
-        <div>
-          <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-            <div className="space-y-5 p-4 lg:p-5">
-              <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
-                <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
+      <section className="overflow-hidden rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_16px_38px_rgba(15,23,42,0.035)] lg:p-5">
+        <div className="relative overflow-hidden rounded-[1.25rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
+          <div className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
 
-                <div className="relative mb-3 flex justify-end">
-                  <Link href={`/admin/barang/${item.id}/edit`}>
-                    <Button
-                      className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white"
-                      variant="ghost"
-                    >
-                      <PencilLine className="size-4" />
-                      Edit Data Barang
-                    </Button>
-                  </Link>
+          <div className="relative mb-3 flex justify-end">
+            <Link href={`/admin/barang/${item.id}/edit`}>
+              <Button
+                className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white active:scale-[0.98]"
+                variant="ghost"
+              >
+                <PencilLine className="size-4" />
+                Edit Data Barang
+              </Button>
+            </Link>
+          </div>
+
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start">
+            <div className="w-full shrink-0 lg:w-[20rem]">
+              <AdminBarangDetailMediaViewer
+                category={formatDisplayLabel(item.category)}
+                media={media}
+                title={String(item.name ?? "Barang")}
+              />
+            </div>
+
+            <div className="min-w-0 flex-1 space-y-4">
+              <div>
+                <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
+                  {item.name}
+                </h2>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
+                  <span className="font-medium">Kode Barang:</span>
+                  <span className="font-medium text-[#0a9f62]">{item.code}</span>
                 </div>
+              </div>
 
-                <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
-                  <div className="w-full shrink-0 lg:w-[18rem]">
-                    <AdminBarangDetailMediaViewer
-                      category={formatDisplayLabel(item.category)}
-                      media={media}
-                      title={String(item.name ?? "Barang")}
-                    />
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-4">
-                    <div>
-                      <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
-                        {item.name}
-                      </h2>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
-                        <span className="font-medium">Kode Barang:</span>
-                        <span className="font-medium text-[#0a9f62]">{item.code}</span>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
-                      {summaryMetrics.map((metric) => (
-                        <div
-                          className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
-                          key={metric.label}
+              <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
+                {summaryMetrics.map((metric) => (
+                  <div
+                    className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                    key={metric.label}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                        <metric.icon className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
+                          {metric.label}
+                        </p>
+                        <p
+                          className={cn(
+                            "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
+                            metric.label === "Nilai Taksiran"
+                              ? "text-[0.82rem] xl:text-[0.88rem]"
+                              : "text-[0.93rem]"
+                          )}
                         >
-                          <div className="flex items-center gap-2.5">
-                            <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
-                              <metric.icon className="size-4" />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
-                                {metric.label}
-                              </p>
-                              <p
-                                className={cn(
-                                  "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
-                                  metric.label === "Nilai Taksiran"
-                                    ? "text-[0.82rem] xl:text-[0.88rem]"
-                                    : "text-[0.93rem]"
-                                )}
-                              >
-                                {metric.value}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="h-px bg-[#eef1ee]" />
-
-              <div className="space-y-0 rounded-2xl border border-[#eef1ee] bg-white">
-                <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
-                  {topInfoRows.map((row, index) => (
-                    <div
-                      className={cn(
-                        "flex items-start gap-3 px-4 py-4",
-                        index < topInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
-                      )}
-                      key={row.label}
-                    >
-                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                        <row.icon className="size-4.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[0.72rem] font-medium text-[#667085]">
-                          {row.label}
-                        </p>
-                        <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                          {row.value}
+                          {metric.value}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
-                  {bottomInfoRows.map((row, index) => (
-                    <div
-                      className={cn(
-                        "flex items-start gap-3 px-4 py-4",
-                        index < bottomInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
-                      )}
-                      key={row.label}
-                    >
-                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                        <row.icon className="size-4.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[0.72rem] font-medium text-[#667085]">
-                          {row.label}
-                        </p>
-                        <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                          {row.value}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-                <div className="flex items-start gap-3.5">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
-                    <FileText className="size-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
-                      Deskripsi Barang
-                    </h3>
-                    <div className="scrollbar-none mt-3 space-y-2.5 overflow-y-auto text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
-                      <p>
-                        {item.description || "Belum ada deskripsi barang yang dicatat."}
-                      </p>
-                      {specificationRows.length > 0 ? (
-                        <p>
-                          {specificationRows
-                            .slice(0, 3)
-                            .map((row) => `${row.label}: ${row.value}`)
-                            .join(". ")}
-                        </p>
-                      ) : null}
-                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
-          </section>
+          </div>
         </div>
 
-        <div className="min-h-0">
-          <aside className="flex h-full max-h-[min(44rem,calc(100vh-8rem))] min-h-0 flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-            <div className="px-4 py-4">
-              <div className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
-                  <ShoppingBag className="size-4.5" />
+        <div className="mt-4 overflow-hidden rounded-2xl border border-[#eef1ee] bg-white">
+          <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
+            {topInfoRows.map((row, index) => (
+              <div
+                className={cn(
+                  "flex items-start gap-3 px-4 py-4",
+                  index < topInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
+                )}
+                key={row.label}
+              >
+                <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                  <row.icon className="size-4.5" />
                 </span>
-                <h3 className="text-[1.28rem] font-medium tracking-[-0.02em] text-[#14213d]">
-                  Riwayat Kronologi Aset
-                </h3>
+                <div className="min-w-0">
+                  <p className="text-[0.72rem] font-medium text-[#667085]">{row.label}</p>
+                  <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                    {row.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
+            {bottomInfoRows.map((row, index) => (
+              <div
+                className={cn(
+                  "flex items-start gap-3 px-4 py-4",
+                  index < bottomInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
+                )}
+                key={row.label}
+              >
+                <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                  <row.icon className="size-4.5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[0.72rem] font-medium text-[#667085]">{row.label}</p>
+                  <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                    {row.value}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+          <div className="flex items-start gap-3.5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
+              <FileText className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">Deskripsi Barang</h3>
+              <div className="mt-3 space-y-2.5 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
+                <p>{item.description || "Belum ada deskripsi barang yang dicatat."}</p>
+                {specificationRows.length > 0 ? (
+                  <p>
+                    {specificationRows
+                      .slice(0, 3)
+                      .map((row) => `${row.label}: ${row.value}`)
+                      .join(". ")}
+                  </p>
+                ) : null}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="scrollbar-none relative min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-              <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
+      <section className="overflow-hidden rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_16px_38px_rgba(15,23,42,0.035)] lg:p-5">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
+            <ShoppingBag className="size-4.5" />
+          </span>
+          <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#14213d]">
+            Riwayat Kronologi Aset
+          </h3>
+        </div>
+
+        <div className="responsive-scroll-x overflow-x-auto">
+          <table className="min-w-[46rem] w-full border-collapse text-left">
+            <thead>
+              <tr className="border-y border-[#edf1ee] bg-[#fbfcfb] text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#14213d]">
+                <th className="w-[8.5rem] px-4 py-3">Status</th>
+                <th className="w-[10.5rem] px-4 py-3">Tanggal &amp; Jam</th>
+                <th className="px-4 py-3">Deskripsi</th>
+                <th className="w-[12rem] px-4 py-3">Aktor / Sumber</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#edf1ee]">
               {timelineEntries.map((entry) => {
                 const iconMap = {
                   input_baru: PackagePlus,
@@ -1130,40 +1121,44 @@ export function AdminInventoryDetailPage({
                 };
                 const EntryIcon = iconMap[entry.actionKey];
                 const stamp = splitTimelineStamp(entry.createdAtLabel);
+                const isFailure = entry.actionKey === "gagal";
 
                 return (
-                  <div
-                    className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_5.4rem] gap-3 py-3.5"
-                    key={entry.id}
-                  >
-                    <div className="relative flex justify-center">
-                      <span className="grid size-9 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62] shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
-                        <EntryIcon className="size-4" />
-                      </span>
-                      <span className="absolute -right-1 top-3 size-2.5 rounded-full bg-[#099561] ring-4 ring-white" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
+                  <tr key={entry.id} className="align-top text-[0.9rem] text-[#41506a]">
+                    <td className="px-4 py-3.5">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-2 text-[0.78rem] font-bold",
+                          isFailure ? "text-red-600" : "text-[#0a9f62]",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "grid size-5 place-items-center rounded-full border",
+                            isFailure ? "border-red-500 text-red-600" : "border-[#0a9f62] text-[#0a9f62]",
+                          )}
+                        >
+                          <EntryIcon className="size-3" />
+                        </span>
                         {entry.actionLabel}
-                      </h3>
-                      <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
-                        {entry.note}
-                      </p>
-                      <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
-                        Aktor Internal: {entry.actorName || "Sistem Otomatis"}
-                      </p>
-                    </div>
-                    <div className="pt-0.5 text-right text-[0.82rem] leading-6 text-[#667085]">
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 font-medium leading-6 text-[#14213d]">
                       <p>{stamp.date}</p>
                       <p>{stamp.time}</p>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="px-4 py-3.5 leading-6">{entry.note}</td>
+                    <td className="px-4 py-3.5 font-semibold leading-6 text-[#0a7d51]">
+                      <p>Aktor Internal:</p>
+                      <p>{entry.actorName || "Sistem Otomatis"}</p>
+                    </td>
+                  </tr>
                 );
               })}
-            </div>
-          </aside>
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
