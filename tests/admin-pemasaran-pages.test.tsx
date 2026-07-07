@@ -921,7 +921,7 @@ describe("admin pemasaran pages", () => {
     const primaryLayout = screen.getByTestId("fixed-price-primary-layout");
     const secondaryLayout = screen.getByTestId("fixed-price-secondary-layout");
 
-    expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
+    expect(primaryLayout).toHaveClass("xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)]");
     expect(primaryLayout).toHaveClass("xl:items-start");
     expect(primaryLayout).not.toHaveClass("2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]");
     expect(secondaryLayout).toHaveClass("space-y-4");
@@ -933,6 +933,17 @@ describe("admin pemasaran pages", () => {
     expect(handoverPanel).toContainElement(screen.getByLabelText(/file bukti serah-terima barang/i));
     expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "false");
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
+
+    const primaryColumn = primaryLayout.firstElementChild as HTMLElement;
+    expect(within(primaryColumn).getByText(/galeri media barang/i)).toBeInTheDocument();
+    expect(within(primaryColumn).getByText(/konsol manajemen/i)).toBeInTheDocument();
+    expect(within(primaryColumn).getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
+    expect(within(secondaryLayout).getByText(/harga barang/i)).toBeInTheDocument();
+    expect(within(secondaryLayout).getByText(/spesifikasi lengkap/i)).toBeInTheDocument();
+    expect(within(secondaryLayout).getByText(/deskripsi barang/i)).toBeInTheDocument();
+    expect(within(secondaryLayout).getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    expect(screen.getByTestId("fixed-price-description")).toHaveClass("text-justify");
+    expect(screen.getByTestId("fixed-price-description")).toHaveClass("[text-justify:inter-word]");
 
     const performanceTitle = screen.getByText(/performa & aktivitas sesi publik/i);
     const descriptionTitle = screen.getByText(/deskripsi barang/i);

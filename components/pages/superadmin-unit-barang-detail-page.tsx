@@ -300,7 +300,7 @@ export function SuperAdminUnitBarangDetailPage({
                 </span>
                 <div>
                   <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">Deskripsi Barang</h3>
-                  <p className="mt-3 text-[0.96rem] leading-7 text-[#5f6f86]">
+                  <p className="mt-3 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
                     {item.description || "Belum ada deskripsi barang yang dicatat."}
                   </p>
                 </div>

@@ -258,7 +258,9 @@ export function LotDetailPage({
 
               <div className="relative space-y-3 border-y border-[#ece5d9] py-5">
                 <h2 className="font-headline text-lg font-bold text-[#0f4735]">Deskripsi Barang</h2>
-                <p className="max-w-2xl text-sm leading-7 text-[#617068]">{lot.description}</p>
+                <p className="max-w-2xl text-justify text-sm leading-7 text-[#617068] [hyphens:auto] [text-justify:inter-word]">
+                  {lot.description}
+                </p>
               </div>
 
               <div className="relative space-y-3">

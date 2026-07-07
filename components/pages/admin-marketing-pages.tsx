@@ -625,7 +625,7 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
       </div>
       <div className="px-4 pb-4 pt-2">
         <div className="relative overflow-hidden rounded-[1.15rem] border border-[#dbe9e2] bg-[radial-gradient(circle_at_95%_0%,rgba(0,122,83,0.08),transparent_30%),linear-gradient(135deg,#ffffff_0%,#fbfdfb_100%)] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <p className="line-clamp-3 text-justify text-[0.92rem] font-semibold leading-7 text-[#24352e]">
+          <p className="line-clamp-3 text-justify text-[0.92rem] font-semibold leading-7 text-[#24352e] [hyphens:auto] [text-justify:inter-word]">
             {description}
           </p>
 
@@ -671,7 +671,7 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
                 <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#8a9891]">
                   Deskripsi Barang
                 </p>
-                <p className="mt-2 text-justify text-[0.95rem] font-semibold leading-7 text-[#24352e]">
+                <p className="mt-2 text-justify text-[0.95rem] font-semibold leading-7 text-[#24352e] [hyphens:auto] [text-justify:inter-word]">
                   {description}
                 </p>
               </div>
@@ -2543,78 +2543,11 @@ export function AdminFixedPriceDetailPage({
       <MarketingIterationHistoryPanel auction={auction} />
 
       <div
-        className="grid gap-4 xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)] xl:items-start"
+        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,1fr)] xl:items-start"
         data-testid="fixed-price-primary-layout"
       >
         <div className="space-y-4">
           <FixedPriceAuditGallery auction={auction} media={media} />
-
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle icon={ClipboardList} title="Spesifikasi Lengkap" />
-            <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-              {specTiles.map((item) => (
-                <div
-                  className="grid min-h-[5.4rem] place-items-center rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3.5 text-center"
-                  key={`${item.label}-${item.value}`}
-                >
-                  <span className="min-w-0">
-                    <span className="block text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#53655e]">
-                      {item.label}
-                    </span>
-                    <span className="mt-1 block text-[0.93rem] font-black leading-5 text-[#111827]">
-                      {item.value}
-                    </span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
-            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
-              <p className="text-[0.92rem] font-semibold leading-7 text-[#31433b]">
-                {auction.description ||
-                  auction.note ||
-                  "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
-              </p>
-              <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
-                <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="size-4 text-[#006747]" />
-                  Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
-                </span>
-                <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <aside className="space-y-4" data-testid="fixed-price-secondary-layout">
-          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
-            <FixedPricePanelTitle icon={Tag} title="Harga Barang" />
-            <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5 sm:p-6">
-              <div className="min-w-0">
-                <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#53655e]">Harga Tetap</p>
-                <p
-                  className={cn(
-                    "mt-3 block max-w-full overflow-hidden whitespace-nowrap font-headline font-black leading-none text-[#070b16] tabular-nums",
-                    fixedPriceAmountClass
-                  )}
-                  title={fixedPriceAmount}
-                >
-                  {fixedPriceAmount}
-                </p>
-                <p className="mt-5 inline-flex items-center gap-2 text-[1.02rem] font-black text-[#13211c]">
-                  <MapPin className="size-5 text-[#006747]" />
-                  {unitLabel}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
-
-          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
 
           <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
             <FixedPricePanelTitle
@@ -2679,6 +2612,76 @@ export function AdminFixedPriceDetailPage({
               <p className="mt-1">{statusMeta.detail}</p>
             </div>
           </section>
+
+          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
+        </div>
+
+        <aside className="space-y-4" data-testid="fixed-price-secondary-layout">
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={Tag} title="Harga Barang" />
+            <div className="mt-3 overflow-hidden rounded-2xl border border-[#dbe8e2] bg-[linear-gradient(135deg,#f8fafc_0%,#eff7f2_54%,#e7f1ec_100%)] p-5 sm:p-6">
+              <div className="min-w-0">
+                <p className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#53655e]">Harga Tetap</p>
+                <p
+                  className={cn(
+                    "mt-3 block max-w-full overflow-hidden whitespace-nowrap font-headline font-black leading-none text-[#070b16] tabular-nums",
+                    fixedPriceAmountClass
+                  )}
+                  title={fixedPriceAmount}
+                >
+                  {fixedPriceAmount}
+                </p>
+                <p className="mt-5 inline-flex items-center gap-2 text-[1.02rem] font-black text-[#13211c]">
+                  <MapPin className="size-5 text-[#006747]" />
+                  {unitLabel}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={ClipboardList} title="Spesifikasi Lengkap" />
+            <div className="mt-3 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+              {specTiles.map((item) => (
+                <div
+                  className="grid min-h-[5.4rem] place-items-center rounded-xl border border-[#dde8e1] bg-[#fbfdfb] p-3.5 text-center"
+                  key={`${item.label}-${item.value}`}
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#53655e]">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block text-[0.93rem] font-black leading-5 text-[#111827]">
+                      {item.value}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[1.35rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]">
+            <FixedPricePanelTitle icon={FileText} title="Deskripsi Barang" />
+            <div className="mt-3 rounded-xl border border-[#dfe9e3] bg-[#fbfdfb] p-4">
+              <p
+                className="text-justify text-[0.92rem] font-semibold leading-7 text-[#31433b] [hyphens:auto] [text-justify:inter-word]"
+                data-testid="fixed-price-description"
+              >
+                {auction.description ||
+                  auction.note ||
+                  "Deskripsi katalog belum tersedia. Lengkapi narasi barang agar buyer memahami kondisi, kelengkapan, dan nilai jual harga tetap."}
+              </p>
+              <div className="mt-4 flex flex-col gap-2 rounded-xl border border-[#dce9df] bg-white px-3.5 py-3 text-[0.76rem] font-semibold text-[#52675e] sm:flex-row sm:items-center sm:justify-between">
+                <span className="inline-flex items-center gap-2">
+                  <ShieldCheck className="size-4 text-[#006747]" />
+                  Pastikan informasi produk akurat dan sesuai kebijakan platform sebelum perubahan ditayangkan.
+                </span>
+                <span className="font-mono text-[#33443d]">Terakhir diperbarui: {lastUpdated}</span>
+              </div>
+            </div>
+          </section>
+
+          {auction.transactionId ? <FixedPriceProgressPanel auction={auction} /> : null}
         </aside>
       </div>
 

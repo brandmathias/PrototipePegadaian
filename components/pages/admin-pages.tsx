@@ -1053,7 +1053,7 @@ export function AdminInventoryDetailPage({
                     <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
                       Deskripsi Barang
                     </h3>
-                    <div className="scrollbar-none mt-3 space-y-2.5 overflow-y-auto text-justify text-[0.96rem] leading-7 text-[#5f6f86]">
+                    <div className="scrollbar-none mt-3 space-y-2.5 overflow-y-auto text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
                       <p>
                         {item.description || "Belum ada deskripsi barang yang dicatat."}
                       </p>
