@@ -7,6 +7,7 @@ import type { BuyerWishlist, BuyerWishlistItem } from "@/lib/contracts/wishlist"
 import { db } from "@/lib/db/client";
 import { barang, buyerWishlist, mediaBarang, pemasaran, unitAccounts, units } from "@/lib/db/schema";
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
+import { revalidateLotInsightsViews } from "@/lib/services/revalidate-lot-insights-views";
 import { formatAppDateTime } from "@/lib/timezone";
 
 function wishlistLotSelection() {
@@ -186,6 +187,8 @@ export async function toggleBuyerWishlist(userId: string, pemasaranId: string) {
       .delete(buyerWishlist)
       .where(and(eq(buyerWishlist.userId, userId), eq(buyerWishlist.pemasaranId, pemasaranId)));
 
+    revalidateLotInsightsViews();
+
     return {
       favorited: false,
       count: await getBuyerWishlistCount(userId)
@@ -203,6 +206,8 @@ export async function toggleBuyerWishlist(userId: string, pemasaranId: string) {
       target: [buyerWishlist.userId, buyerWishlist.pemasaranId]
     });
 
+  revalidateLotInsightsViews();
+
   return {
     favorited: true,
     count: await getBuyerWishlistCount(userId)
@@ -213,6 +218,8 @@ export async function removeBuyerWishlist(userId: string, pemasaranId: string) {
   await db
     .delete(buyerWishlist)
     .where(and(eq(buyerWishlist.userId, userId), eq(buyerWishlist.pemasaranId, pemasaranId)));
+
+  revalidateLotInsightsViews();
 
   return {
     favorited: false,

@@ -5268,7 +5268,11 @@ function SuperAdminFixedPriceWorkspace({
         ) : null}
       </div>
 
-      <MarketingPerformancePanel insights={session.insights} testId="superadmin-fixed-price-performance-panel" />
+      <MarketingPerformancePanel
+        insights={session.insights}
+        lotId={session.id}
+        testId="superadmin-fixed-price-performance-panel"
+      />
 
       <div data-testid="superadmin-fixed-price-settlement-handover">
         <SuperAdminHandoverProofAuditCard
@@ -5313,6 +5317,7 @@ function SuperAdminVickreyWorkspace({
             <SuperAdminVickreyFailureProgressPanel session={session} />
             <MarketingPerformancePanel
               insights={session.insights}
+              lotId={session.id}
               testId="superadmin-vickrey-failure-performance-panel"
             />
             <SuperAdminVickreyFailureActionFooter />
@@ -5354,7 +5359,11 @@ function SuperAdminVickreyWorkspace({
           <SuperAdminVickreyRankingTable session={session} />
         </div>
 
-        <MarketingPerformancePanel insights={session.insights} testId="superadmin-vickrey-settlement-performance-panel" />
+        <MarketingPerformancePanel
+          insights={session.insights}
+          lotId={session.id}
+          testId="superadmin-vickrey-settlement-performance-panel"
+        />
 
         <div data-testid="superadmin-vickrey-settlement-handover">
           <SuperAdminHandoverProofAuditCard
@@ -5388,7 +5397,11 @@ function SuperAdminVickreyWorkspace({
         </div>
         <div className="space-y-4 2xl:sticky 2xl:top-4">
           <SuperAdminVickreyProgressPanel session={session} />
-          <MarketingPerformancePanel insights={session.insights} testId="superadmin-vickrey-active-performance-panel" />
+          <MarketingPerformancePanel
+            insights={session.insights}
+            lotId={session.id}
+            testId="superadmin-vickrey-active-performance-panel"
+          />
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
         </div>

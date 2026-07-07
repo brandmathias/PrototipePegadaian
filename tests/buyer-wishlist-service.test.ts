@@ -6,12 +6,17 @@ const mocks = vi.hoisted(() => {
     insert: vi.fn(),
     select: vi.fn()
   };
+  const revalidateTag = vi.fn();
 
-  return { db };
+  return { db, revalidateTag };
 });
 
 vi.mock("@/lib/db/client", () => ({
   db: mocks.db
+}));
+
+vi.mock("next/cache", () => ({
+  revalidateTag: mocks.revalidateTag
 }));
 
 import { getBuyerWishlistCount, isBuyerWishlistItem, toggleBuyerWishlist } from "@/lib/services/wishlist.service";
@@ -47,6 +52,9 @@ describe("wishlist service", () => {
         userId: "buyer-1"
       })
     );
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("public-catalog-lots");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-barang-detail");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("buyer-shell");
   });
 
   it("removes an item when it already exists in the buyer wishlist", async () => {
@@ -62,6 +70,9 @@ describe("wishlist service", () => {
 
     expect(mocks.db.delete).toHaveBeenCalledTimes(1);
     expect(where).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("public-catalog-lots");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("superadmin-unit-barang-detail");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("buyer-shell");
   });
 
   it("counts wishlist items for one buyer", async () => {

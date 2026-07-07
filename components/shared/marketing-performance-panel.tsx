@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BarChart3, Eye, Heart } from "lucide-react";
 
 import type { LotInsights } from "@/lib/contracts/catalog";
@@ -59,13 +60,84 @@ function MarketingPerformanceMetricCard({
 export function MarketingPerformancePanel({
   className,
   insights,
+  lotId,
+  pollIntervalMs = 10000,
   testId
 }: {
   className?: string;
   insights?: LotInsights | null;
+  lotId?: string | null;
+  pollIntervalMs?: number | null;
   testId?: string;
 }) {
-  const normalized = normalizeInsights(insights);
+  const [stats, setStats] = useState(() => normalizeInsights(insights));
+  const endpoint = useMemo(
+    () => (lotId ? `/api/public/lots/${encodeURIComponent(lotId)}/stats` : null),
+    [lotId]
+  );
+
+  useEffect(() => {
+    setStats(normalizeInsights(insights));
+  }, [insights]);
+
+  const refreshStats = useCallback(async () => {
+    if (!endpoint) {
+      return;
+    }
+
+    const response = await fetch(endpoint, {
+      cache: "no-store",
+      method: "GET"
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    setStats(normalizeInsights(await response.json()));
+  }, [endpoint]);
+
+  useEffect(() => {
+    if (!endpoint) {
+      return;
+    }
+
+    void refreshStats().catch(() => undefined);
+
+    const intervalId =
+      pollIntervalMs && pollIntervalMs > 0
+        ? window.setInterval(() => {
+            void refreshStats().catch(() => undefined);
+          }, pollIntervalMs)
+        : null;
+
+    return () => {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+      }
+    };
+  }, [endpoint, pollIntervalMs, refreshStats]);
+
+  useEffect(() => {
+    if (!lotId) {
+      return;
+    }
+
+    function handleRefresh(event: Event) {
+      const detail = event instanceof CustomEvent ? (event.detail as { lotId?: string } | undefined) : undefined;
+      if (detail?.lotId !== lotId) {
+        return;
+      }
+
+      void refreshStats().catch(() => undefined);
+    }
+
+    window.addEventListener("pegadaian:lot-stats-refresh", handleRefresh);
+
+    return () => {
+      window.removeEventListener("pegadaian:lot-stats-refresh", handleRefresh);
+    };
+  }, [lotId, refreshStats]);
 
   return (
     <section
@@ -91,14 +163,14 @@ export function MarketingPerformancePanel({
           icon={Eye}
           label="Total Tayangan"
           tone="green"
-          value={`${normalized.views.toLocaleString("id-ID")}x`}
+          value={`${stats.views.toLocaleString("id-ID")}x`}
         />
         <MarketingPerformanceMetricCard
           detail="Disimpan oleh pengguna unik"
           icon={Heart}
           label="Watchlist Nasabah"
           tone="rose"
-          value={`${normalized.likes.toLocaleString("id-ID")} Akun`}
+          value={`${stats.likes.toLocaleString("id-ID")} Akun`}
         />
       </div>
     </section>

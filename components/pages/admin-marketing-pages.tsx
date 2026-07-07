@@ -2695,7 +2695,11 @@ export function AdminFixedPriceDetailPage({
         data-testid="fixed-price-outcome-layout"
       >
         <div className="h-full [&>section]:h-full">
-          <MarketingPerformancePanel insights={auction.insights} testId="admin-fixed-price-performance-panel" />
+          <MarketingPerformancePanel
+            insights={auction.insights}
+            lotId={auction.id}
+            testId="admin-fixed-price-performance-panel"
+          />
         </div>
         {auction.transactionId ? (
           <div className="h-full [&>section]:h-full">
@@ -5554,7 +5558,11 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
         <div className="space-y-4 lg:sticky lg:top-4">
           <VickreyFailureAssetPanel auction={auction} />
           <VickreyFailureProgressPanel auction={auction} />
-          <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-failure-performance-panel" />
+          <MarketingPerformancePanel
+            insights={auction.insights}
+            lotId={auction.id}
+            testId="admin-vickrey-failure-performance-panel"
+          />
           <VickreyFailureActionFooter onRelist={() => setIsRelistModalOpen(true)} />
         </div>
       </div>
@@ -5647,7 +5655,11 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           </div>
         </div>
 
-        <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-settlement-performance-panel" />
+        <MarketingPerformancePanel
+          insights={auction.insights}
+          lotId={auction.id}
+          testId="admin-vickrey-settlement-performance-panel"
+        />
 
         {auction.transactionId ? (
           <div aria-label="Area upload bukti serah-terima pemenang" className="w-full">
@@ -5734,7 +5746,11 @@ export function AdminVickreyAuctionDetailPage({
             <div className="space-y-4">
               <VickreyMediaManifest auction={auction} />
               <VickreySpecificationPanel auction={auction} />
-              <MarketingPerformancePanel insights={auction.insights} testId="admin-vickrey-active-performance-panel" />
+              <MarketingPerformancePanel
+                insights={auction.insights}
+                lotId={auction.id}
+                testId="admin-vickrey-active-performance-panel"
+              />
             </div>
           </div>
         </>

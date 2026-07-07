@@ -5,6 +5,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import { db } from "@/lib/db/client";
 import { bids, buyerWishlist, pemasaranViews } from "@/lib/db/schema";
+import { revalidateLotInsightsViews } from "@/lib/services/revalidate-lot-insights-views";
 
 export const EMPTY_LOT_INSIGHTS: LotInsights = {
   likes: 0,
@@ -109,6 +110,8 @@ export async function recordLotView(pemasaranId: string, viewerKey: string) {
       },
       target: [pemasaranViews.pemasaranId, pemasaranViews.viewerKey]
     });
+
+  revalidateLotInsightsViews();
 
   return getLotStats(pemasaranId);
 }
