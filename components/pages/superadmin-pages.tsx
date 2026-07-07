@@ -4776,26 +4776,35 @@ function SuperAdminFixedPriceWorkspace({
   return (
     <div className="space-y-4" data-testid="superadmin-fixed-price-settlement-layout">
       <StatusSyncRefresh enabled={shouldAutoRefresh} />
-      <section className={cn(
-        "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
-        isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
-      )}>
+      <section
+        className={cn(
+          "rounded-[1.1rem] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
+          isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
+        )}
+        data-testid={rejected ? "superadmin-payment-verification-audit" : undefined}
+      >
         <div className="flex items-start gap-4">
-          <span className={cn(
-            "grid size-14 shrink-0 place-items-center rounded-full text-white",
-            isFailed ? "bg-[#b91c1c]" : "bg-[#006747]",
-          )}>
-            {isFailed ? <AlertTriangle className="size-7" strokeWidth={2.5} /> : <ShoppingBag className="size-7" strokeWidth={2.2} />}
+          <span
+            className={cn(
+              "grid size-14 shrink-0 place-items-center rounded-full text-white",
+              isFailed ? "bg-[#dc2626]" : "bg-[#006747]",
+            )}
+          >
+            {isFailed ? (
+              <AlertTriangle className="size-7" strokeWidth={2.5} />
+            ) : (
+              <ShoppingBag className="size-7" strokeWidth={2.2} />
+            )}
           </span>
           <div className="min-w-0">
             <h2 className={cn(
-              "font-headline text-[1rem] font-black uppercase tracking-[0.02em] sm:text-[1.12rem]",
+              "font-headline text-[1.08rem] font-black uppercase tracking-[0.02em] sm:text-[1.18rem]",
               isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
             )}>
               {statusTitle}
             </h2>
             <p className={cn(
-              "mt-1 text-[0.8rem] font-semibold leading-5",
+              "mt-1 text-[0.84rem] font-semibold leading-5",
               isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
             )}>
               {statusDetail}
@@ -4805,7 +4814,10 @@ function SuperAdminFixedPriceWorkspace({
       </section>
 
       <div
-        className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(19rem,0.72fr)]"
+        className={cn(
+          "grid gap-4",
+          hasBuyer && "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+        )}
         data-testid="superadmin-fixed-price-settlement-primary-grid"
       >
         <div className="space-y-4">
@@ -4848,76 +4860,32 @@ function SuperAdminFixedPriceWorkspace({
                   {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
                 </p>
               </div>
-              <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
-                <p className="text-[0.66rem] font-black text-[#40558b]">Referensi</p>
-                <p className="mt-2 text-[0.9rem] font-black leading-tight text-[#111b46]">
-                  {session.reference || "-"}
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-              {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
-            </div>
-          </section>
-
-          {rejected ? (
-            <section
-              className="rounded-xl border border-[#fecaca] bg-[#fff8f8] px-4 py-4 shadow-[0_20px_46px_-40px_rgba(127,29,29,0.28)]"
-              data-testid="superadmin-payment-verification-audit"
-            >
-              <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#991b1b]">
-                Detail Verifikasi Admin Unit
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <SuperAdminDetailInfoCard icon={X} label="Keputusan" value="Bukti pembayaran ditolak" />
-                <SuperAdminDetailInfoCard
-                  icon={UserRound}
-                  label="Diverifikasi Oleh"
-                  value={session.verifiedBy || "Admin Unit"}
-                />
-                <SuperAdminDetailInfoCard
-                  icon={Clock3}
-                  label="Waktu Keputusan"
-                  value={formatSuperAdminDateTime(session.verifiedAt)}
-                />
-                <SuperAdminDetailInfoCard
-                  icon={ReceiptText}
-                  label="Referensi"
-                  value={session.reference || "-"}
-                />
-              </div>
-              <div className="mt-3 rounded-lg border border-[#fecaca] bg-white px-3.5 py-3">
-                <p className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#991b1b]">
-                  Alasan Penolakan
-                </p>
-                <p className="mt-1 text-[0.78rem] font-semibold leading-5 text-[#7f1d1d]">
-                  {session.rejectionReason || "Alasan penolakan tidak tercatat."}
-                </p>
-              </div>
               {session.proofUrl ? (
                 <a
-                  className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#fecaca] bg-white px-3.5 text-[0.76rem] font-black text-[#991b1b] transition-colors hover:bg-[#fff1f2]"
+                  className="interactive-tap inline-flex min-h-[4.6rem] items-center justify-center gap-2 rounded-lg border border-[#fecaca] bg-white px-3.5 text-[0.82rem] font-black text-[#dc2626] shadow-[0_18px_32px_-26px_rgba(220,38,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99]"
                   href={session.proofUrl}
                   rel="noreferrer"
                   target="_blank"
                 >
                   <Eye className="size-4" />
-                  Lihat Bukti Pembayaran
+                  Lihat Verifikasi Pembayaran
                 </a>
-              ) : null}
-            </section>
-          ) : null}
+              ) : (
+                <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+                  <p className="text-[0.66rem] font-black text-[#40558b]">Referensi</p>
+                  <p className="mt-2 text-[0.9rem] font-black leading-tight text-[#111b46]">
+                    {session.reference || "-"}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+              {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
+            </div>
+          </section>
         </div>
 
-        <div className="space-y-4">
-          <SuperAdminMarketingArchiveStatusCard
-            detail={hasBuyer ? "Data buyer dan status transaksi ditampilkan read-only untuk kebutuhan audit." : "Belum ada pembeli tercatat pada sesi harga tetap ini."}
-            eyebrow="Status Transaksi"
-            title={hasBuyer ? formatSuperAdminDisplayLabel(session.transactionStatus) : "Belum ada pembeli"}
-            tone={isFailed ? "red" : "emerald"}
-          />
-          {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
-        </div>
+        {hasBuyer ? <SuperAdminFixedPriceProgressPanel session={session} /> : null}
       </div>
 
       <MarketingPerformancePanel insights={session.insights} testId="superadmin-fixed-price-performance-panel" />
@@ -5233,53 +5201,65 @@ function SuperAdminAssetTimeline({
   };
 
   return (
-    <aside className="flex h-full max-h-[min(44rem,calc(100vh-8rem))] min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e2ebe6] bg-white shadow-[0_18px_54px_-46px_rgba(8,69,50,0.34)]">
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
-            <ShoppingBag className="size-4.5" />
-          </span>
-          <h3 className="text-[1.28rem] font-medium tracking-[-0.02em] text-[#14213d]">
-            Riwayat Kronologi Aset
-          </h3>
-        </div>
+    <aside className="overflow-hidden rounded-[1.35rem] border border-[#e2ebe6] bg-white shadow-[0_18px_54px_-46px_rgba(8,69,50,0.34)]">
+      <div className="px-4 pb-2 pt-4">
+        <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
+          Riwayat Kronologi Aset
+        </p>
       </div>
 
-      <div className="scrollbar-none relative min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
-        {timelineEntries.map((entry) => {
-          const EntryIcon = iconMap[entry.actionKey] ?? FileText;
-          const stamp = String(entry.createdAtLabel ?? "").split(",");
+      <div className="scrollbar-none max-h-[22rem] overflow-y-auto px-4 pb-4">
+        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
+          <colgroup>
+            <col className="w-[16%]" />
+            <col className="w-[20%]" />
+            <col />
+            <col className="w-[25%]" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-[#edf2ee] text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#006747]">
+              <th className="border-b border-[#edf2ee] px-3 py-3">Status</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Tanggal & Jam</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Deskripsi</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Aktor / Sumber</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#edf2ee] text-[0.78rem] font-semibold text-[#52655d]">
+            {timelineEntries.map((entry) => {
+              const EntryIcon = iconMap[entry.actionKey] ?? FileText;
+              const failed = entry.actionKey === "gagal";
+              const actor = entry.actorName || "Sistem Otomatis";
 
-          return (
-            <div
-              className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_5.8rem] gap-3 py-3.5"
-              key={entry.id}
-            >
-              <div className="relative flex justify-center">
-                <span className="grid size-9 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62] shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
-                  <EntryIcon className="size-4" />
-                </span>
-                <span className="absolute -right-1 top-3 size-2.5 rounded-full bg-[#099561] ring-4 ring-white" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
-                  {entry.actionLabel}
-                </h3>
-              <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">
-                {entry.note}
-              </p>
-              <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
-                Aktor Internal: {entry.actorName || "Sistem Otomatis"}
-              </p>
-            </div>
-              <div className="pt-0.5 text-right text-[0.78rem] leading-6 text-[#667085]">
-                <p>{stamp[0]?.trim() || "-"}</p>
-                <p>{stamp.slice(1).join(",").trim()}</p>
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <tr className="align-top" key={entry.id}>
+                  <td className="px-3 py-3">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-2 font-black",
+                        failed ? "text-[#dc2626]" : "text-[#006747]",
+                      )}
+                    >
+                      <EntryIcon className="size-4 shrink-0" />
+                      {entry.actionLabel}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 font-mono text-[0.72rem] leading-5 text-[#40558b]">
+                    {entry.createdAtLabel || "-"}
+                  </td>
+                  <td className="px-3 py-3 leading-5">
+                    {entry.note}
+                  </td>
+                  <td className="px-3 py-3">
+                    <span className="inline-flex items-center gap-2 font-black text-[#006747]">
+                      <UserRound className="size-4 shrink-0" />
+                      Aktor Internal: {actor}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </aside>
   );
@@ -5389,7 +5369,7 @@ export function SuperAdminUnitBarangDetailPage({
         title={itemName}
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_21.5rem]">
+      <div className="grid gap-4">
         <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
           <div className="space-y-5 p-4 lg:p-5">
             <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
@@ -5527,9 +5507,7 @@ export function SuperAdminUnitBarangDetailPage({
           </div>
         </section>
 
-        <div className="space-y-4">
-          <SuperAdminAssetTimeline history={detail.history} item={item} />
-        </div>
+        <SuperAdminAssetTimeline history={detail.history} item={item} />
       </div>
 
       {marketing ? (

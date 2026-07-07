@@ -1558,10 +1558,11 @@ describe("superadmin pages", () => {
 
     expect(screen.getByText("Pembayaran Harga Tetap Ditolak")).toBeInTheDocument();
     const audit = screen.getByTestId("superadmin-payment-verification-audit");
-    expect(audit).toHaveTextContent("Maria Supit");
-    expect(audit).toHaveTextContent("6 Jul 2026");
     expect(audit).toHaveTextContent("Uang dikirim bukan ke rekening tujuan.");
-    expect(within(audit).getByRole("link", { name: /lihat bukti pembayaran/i })).toHaveAttribute(
+    expect(screen.getByText(/maria supit/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/6 Jul 2026/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Detail Verifikasi Admin Unit")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat verifikasi pembayaran/i })).toHaveAttribute(
       "href",
       "/uploads/bukti-fixed-rejected.jpg",
     );
