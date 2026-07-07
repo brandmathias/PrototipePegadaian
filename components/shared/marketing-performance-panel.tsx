@@ -38,7 +38,7 @@ function MarketingPerformanceMetricCard({
       : "border-[#ffd1d9] bg-[#fff0f2] text-[#e11d48] [--dot-color:rgba(225,29,72,0.16)]";
 
   return (
-    <div className={cn("relative min-h-[7.1rem] overflow-hidden rounded-xl border p-4", toneClass)}>
+    <div className={cn("relative h-full min-h-[8.65rem] overflow-hidden rounded-xl border p-4", toneClass)}>
       <div className="absolute inset-y-0 right-0 w-32 opacity-70 [background-image:radial-gradient(circle,var(--dot-color)_1.2px,transparent_1.2px)] [background-size:10px_10px]" />
       <div className="relative flex h-full items-center justify-between gap-4">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ export function MarketingPerformancePanel({
   return (
     <section
       className={cn(
-        "rounded-[1.25rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]",
+        "flex h-full flex-col rounded-[1.25rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]",
         className
       )}
       data-testid={testId}
@@ -85,7 +85,7 @@ export function MarketingPerformancePanel({
           </h3>
         </div>
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid flex-1 items-stretch gap-3 sm:grid-cols-2">
         <MarketingPerformanceMetricCard
           detail="Sejak dipublikasikan"
           icon={Eye}
