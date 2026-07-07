@@ -4707,6 +4707,7 @@ function SuperAdminFixedPriceProgressPanel({
   if (rejected) {
     return (
       <CompactTransactionProgress
+        density="tight"
         steps={[
           {
             label: "Pembayaran",
@@ -4764,7 +4765,7 @@ function SuperAdminFixedPriceProgressPanel({
     },
   ];
 
-  return <CompactTransactionProgress steps={steps} title="Progress Penyelesaian" />;
+  return <CompactTransactionProgress density="tight" steps={steps} title="Progress Penyelesaian" />;
 }
 
 function SuperAdminPaymentReviewInfoCard({
@@ -5096,7 +5097,7 @@ function SuperAdminFixedPricePaymentReviewButton({
   return (
     <>
       <button
-        className="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
+        className="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-[#c8d9d0] bg-[#edf5f1] px-3 text-[0.78rem] font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
         onClick={() => setIsOpen(true)}
         type="button"
       >
@@ -5149,37 +5150,37 @@ function SuperAdminFixedPriceWorkspace({
     !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(session.transactionStatus ?? "");
 
   return (
-    <div className="space-y-3" data-testid="superadmin-fixed-price-settlement-layout">
+    <div className="space-y-2" data-testid="superadmin-fixed-price-settlement-layout">
       <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section
         className={cn(
-          "rounded-[1.1rem] px-4 py-3.5 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
+          "rounded-lg px-3 py-2.5 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
           isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
         )}
         data-testid={rejected ? "superadmin-payment-verification-audit" : undefined}
       >
-        <div className="flex items-start gap-3.5">
+        <div className="flex items-center gap-3">
           <span
             className={cn(
-              "grid size-12 shrink-0 place-items-center rounded-full text-white",
+              "grid size-9 shrink-0 place-items-center rounded-full text-white",
               isFailed ? "bg-[#dc2626]" : "bg-[#006747]",
             )}
           >
             {isFailed ? (
-              <AlertTriangle className="size-6" strokeWidth={2.5} />
+              <AlertTriangle className="size-4.5" strokeWidth={2.5} />
             ) : (
-              <ShoppingBag className="size-6" strokeWidth={2.2} />
+              <ShoppingBag className="size-4.5" strokeWidth={2.2} />
             )}
           </span>
           <div className="min-w-0">
             <h2 className={cn(
-              "font-headline text-[1.02rem] font-black uppercase tracking-[0.02em] sm:text-[1.12rem]",
+              "font-headline text-[0.82rem] font-black uppercase tracking-[0.02em]",
               isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
             )}>
               {statusTitle}
             </h2>
             <p className={cn(
-              "mt-1 text-[0.8rem] font-semibold leading-5",
+              "mt-1 text-[0.68rem] font-semibold leading-4",
               isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
             )}>
               {statusDetail}
@@ -5190,20 +5191,20 @@ function SuperAdminFixedPriceWorkspace({
 
       <div
         className={cn(
-          "grid items-stretch gap-3",
-          hasBuyer && "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+          "grid items-stretch gap-2",
+          hasBuyer && "xl:grid-cols-2",
         )}
         data-testid="superadmin-fixed-price-settlement-primary-grid"
       >
         <section
-          className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-3.5 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+          className="rounded-xl border border-[#dfe7e2] bg-white px-3 py-2.5 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
           data-testid="superadmin-fixed-price-summary-card"
         >
           <div>
-            <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+            <p className="text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#006747]">
               Ringkasan Sesi Harga Tetap
             </p>
-            <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
               <SuperAdminDetailInfoCard
                 compact
                 icon={ShoppingBag}
@@ -5231,29 +5232,32 @@ function SuperAdminFixedPriceWorkspace({
             </div>
           </div>
 
-          <div className="mt-3">
-            <p className="text-[0.72rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+          <div className="mt-2">
+            <p className="text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#006747]">
               Harga & Catatan Sesi
             </p>
-            <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-              <div className="min-h-12 rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-2.5">
-                <p className="text-[0.66rem] font-black text-[#92400e]">Harga Tetap</p>
-                <p className={`mt-1 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
+            <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
+              <div
+                className="flex h-12 min-w-0 flex-col justify-center rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3"
+                data-testid="superadmin-fixed-price-price-card"
+              >
+                <p className="text-[0.6rem] font-black text-[#92400e]">Harga Tetap</p>
+                <p className={`mt-0.5 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
                   {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
                 </p>
               </div>
               {session.proofUrl ? (
                 <SuperAdminFixedPricePaymentReviewButton session={session} />
               ) : (
-                <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
-                  <p className="text-[0.66rem] font-black text-[#40558b]">Referensi</p>
-                  <p className="mt-2 text-[0.9rem] font-black leading-tight text-[#111b46]">
+                <div className="flex h-12 min-w-0 flex-col justify-center rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3">
+                  <p className="text-[0.6rem] font-black text-[#40558b]">Referensi</p>
+                  <p className="mt-0.5 truncate text-[0.78rem] font-black leading-tight text-[#111b46]">
                     {session.reference || "-"}
                   </p>
                 </div>
               )}
             </div>
-            <div className="mt-2 overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-2 text-[0.68rem] font-semibold leading-5 text-[#52655d]">
+            <div className="mt-2 overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-1.5 text-[0.62rem] font-semibold leading-4 text-[#52655d]">
               <p className="truncate">
               {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
               </p>
@@ -5262,7 +5266,7 @@ function SuperAdminFixedPriceWorkspace({
         </section>
 
         {hasBuyer ? (
-          <div className="h-full min-h-[12.5rem] [&>section]:h-full [&>section]:px-4 [&>section]:py-3 [&>section>div]:mt-4">
+          <div className="h-full [&>section]:h-full">
             <SuperAdminFixedPriceProgressPanel session={session} />
           </div>
         ) : null}
@@ -5429,23 +5433,23 @@ function SuperAdminDetailInfoCard({
     <div
       className={cn(
         "rounded-[1rem] border border-[#e4ece7] bg-white shadow-[0_14px_34px_-30px_rgba(8,69,50,0.34)]",
-        compact ? "px-3 py-2.5" : "px-4 py-3.5",
+        compact ? "px-3 py-2" : "px-4 py-3.5",
       )}
     >
-      <div className={cn("flex items-start", compact ? "gap-2.5" : "gap-3")}>
+      <div className={cn("flex items-start", compact ? "gap-2" : "gap-3")}>
         <span
           className={cn(
             "mt-0.5 grid shrink-0 place-items-center rounded-full bg-[#f1f8f4] text-[#007a4d] ring-1 ring-[#d6eadf]",
-            compact ? "size-7" : "size-8",
+            compact ? "size-6" : "size-8",
           )}
         >
-          <Icon className={compact ? "size-3.5" : "size-4"} strokeWidth={1.9} />
+          <Icon className={compact ? "size-3" : "size-4"} strokeWidth={1.9} />
         </span>
         <div className="min-w-0">
-          <p className={cn("font-black uppercase tracking-[0.16em] text-[#6a7d73]", compact ? "text-[0.6rem]" : "text-[0.68rem]")}>
+          <p className={cn("font-black uppercase tracking-[0.16em] text-[#6a7d73]", compact ? "text-[0.52rem]" : "text-[0.68rem]")}>
             {label}
           </p>
-          <div className={cn("font-bold text-[#13211c]", compact ? "mt-1 text-[0.82rem] leading-5" : "mt-1.5 text-[0.95rem] leading-6")}>
+          <div className={cn("font-bold text-[#13211c]", compact ? "mt-0.5 text-[0.72rem] leading-4" : "mt-1.5 text-[0.95rem] leading-6")}>
             {value}
           </div>
         </div>
@@ -5497,37 +5501,37 @@ export function SuperAdminMarketingAuditPanel({
   }));
 
   return (
-    <section className="space-y-4 overflow-hidden rounded-[1.15rem] border border-[#d8e8dd] border-l-[5px] border-l-[#008f4a] bg-white px-5 py-5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <section className="space-y-2 overflow-hidden rounded-[1.05rem] border border-[#d8e8dd] border-l-[4px] border-l-[#008f4a] bg-white px-3 py-2.5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
+          <p className="text-[0.58rem] font-black uppercase tracking-[0.18em] text-[#006747]">
             Riwayat Iterasi Pemasaran
           </p>
-          <p className="mt-2 font-headline text-[1.48rem] font-black leading-none text-[#13211c]">
+          <p className="mt-1 font-headline text-[1.1rem] font-black leading-none text-[#13211c]">
             {marketing.lot}
           </p>
         </div>
         {iterationOptions.length > 1 ? (
           <AdminSelect
             ariaLabel="Pilih iterasi pemasaran"
-            className="w-full sm:w-[13.75rem] [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.92rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
+            className="w-full sm:w-[11.5rem] [&_.admin-select-trigger]:h-9 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.78rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-9 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.78rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
             onValueChange={setSelectedIterationId}
             options={iterationOptions}
             value={selectedIteration.id}
           />
         ) : (
-          <span className="inline-flex h-9 w-fit items-center gap-2 rounded-[0.45rem] bg-[#eef3f1] px-3.5 text-[0.82rem] font-black text-[#52655d] shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]">
+          <span className="inline-flex h-8 w-fit items-center gap-2 rounded-[0.45rem] bg-[#eef3f1] px-3 text-[0.72rem] font-black text-[#52655d] shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]">
             <FileText className="size-4" />
             Iterasi {selectedIteration.iteration ?? 1}
           </span>
         )}
       </div>
 
-      <div className="mt-5 border-t border-[#e6eee9] pt-5">
-        <div className="grid gap-3 rounded-[0.95rem] text-sm sm:grid-cols-[11.5rem_minmax(0,1fr)_11.5rem] sm:items-center">
+      <div className="border-t border-[#e6eee9] pt-2">
+        <div className="grid gap-2 rounded-[0.95rem] text-sm sm:grid-cols-[7.5rem_minmax(0,1fr)_10.5rem] sm:items-center">
           <span
             className={cn(
-              "inline-flex h-9 w-fit items-center gap-2 rounded-[0.45rem] px-3.5 text-[0.82rem] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]",
+              "inline-flex h-7 w-fit items-center gap-2 rounded-[0.45rem] px-2.5 text-[0.68rem] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]",
               selectedIsFailed
                 ? "bg-[#fff1f1] text-[#b42318]"
                 : selectedIsSettled
@@ -5539,7 +5543,7 @@ export function SuperAdminMarketingAuditPanel({
           >
             <span
               className={cn(
-                "relative size-3 rounded-full",
+                "relative size-2.5 rounded-full",
                 selectedIsFailed
                   ? "bg-[#d61f1f]"
                   : selectedIsSettled
@@ -5553,17 +5557,17 @@ export function SuperAdminMarketingAuditPanel({
             </span>
             {selectedStatus}
           </span>
-          <span className="min-w-0 truncate font-black text-[#0f172a]">
+          <span className="min-w-0 truncate text-[0.72rem] font-black text-[#0f172a]">
             {getSuperAdminMarketingSummary(selectedIteration)}
           </span>
-          <span className="inline-flex items-center gap-2 font-mono text-[0.76rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
+          <span className="inline-flex items-center gap-2 font-mono text-[0.62rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
             <Clock3 className="size-4 shrink-0" />
             {getSuperAdminMarketingDateLabel(selectedIteration)}
           </span>
         </div>
       </div>
 
-      <div className="border-t border-[#e6eee9] pt-5">
+      <div className="border-t border-[#e6eee9] pt-2">
         {isVickrey ? (
           <SuperAdminVickreyWorkspace receiptContext={receiptContext} session={selectedIteration} />
         ) : (
