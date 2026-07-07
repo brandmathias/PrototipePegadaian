@@ -1494,8 +1494,17 @@ describe("superadmin pages", () => {
     expect(fixedPriceHandoverPanel).toHaveClass("grid-cols-[repeat(auto-fit,minmax(min(100%,34rem),1fr))]");
     expect(screen.queryByText("Ranking Bid")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cetak Nota" })).not.toBeInTheDocument();
-    const timeline = screen.getByText("Riwayat Kronologi Aset").closest("aside");
+    const itemAuditStack = screen.getByTestId("superadmin-item-audit-stack");
+    const itemMainCard = screen.getByTestId("superadmin-item-detail-main-card");
+    const timeline = screen.getByTestId("superadmin-asset-timeline");
+    expect(itemAuditStack).toHaveClass("grid", "gap-4");
+    expect(itemAuditStack).toContainElement(itemMainCard);
+    expect(itemAuditStack).toContainElement(timeline);
+    expect(itemMainCard.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(timeline).not.toBeNull();
+    expect(timeline).toHaveTextContent("Riwayat Kronologi Aset");
     expect(timeline).toHaveTextContent("Aktor Internal: Admin Unit");
     expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
     const timelineText = timeline?.textContent ?? "";
@@ -1562,10 +1571,23 @@ describe("superadmin pages", () => {
     expect(screen.getByText(/maria supit/i)).toBeInTheDocument();
     expect(screen.getAllByText(/6 Jul 2026/).length).toBeGreaterThan(0);
     expect(screen.queryByText("Detail Verifikasi Admin Unit")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat verifikasi pembayaran/i })).toHaveAttribute(
-      "href",
-      "/uploads/bukti-fixed-rejected.jpg",
+    expect(screen.queryByRole("link", { name: /lihat verifikasi pembayaran/i })).not.toBeInTheDocument();
+    const reviewButton = screen.getByRole("button", { name: /lihat verifikasi pembayaran/i });
+    expect(reviewButton).toHaveClass("rounded-xl", "bg-[#edf5f1]", "text-[#285445]");
+    fireEvent.click(reviewButton);
+    const dialog = screen.getByRole("dialog", { name: /review pembayaran ditolak/i });
+    expect(within(dialog).getByText("PEMBAYARAN DITOLAK")).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(1);
+    expect(within(dialog).getByTestId("fixed-price-payment-proof-preview")).toHaveClass(
+      "h-64",
+      "sm:h-72",
+      "lg:h-[20rem]",
     );
+    expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/fixed price dinyatakan/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/review penolakan terkunci/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
     expect(within(audit).queryByRole("button")).not.toBeInTheDocument();
   });
 
