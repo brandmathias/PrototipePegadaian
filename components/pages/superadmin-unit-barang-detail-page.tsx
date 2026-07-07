@@ -21,7 +21,6 @@ import {
   Ruler,
   Scale,
   ShieldCheck,
-  ShoppingBag,
   Sparkles,
   UserRound,
   type LucideIcon,
@@ -145,47 +144,65 @@ function AssetTimeline({
   };
 
   return (
-    <aside className="flex h-full max-h-[min(44rem,calc(100vh-8rem))] min-h-0 flex-col overflow-hidden rounded-3xl border border-[#e2ebe6] bg-white shadow-[0_18px_54px_-46px_rgba(8,69,50,0.34)]">
-      <div className="flex items-center gap-3 px-4 py-4">
-        <span className="grid size-10 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
-          <ShoppingBag className="size-4.5" />
-        </span>
-        <h3 className="text-[1.28rem] font-medium tracking-[-0.02em] text-[#14213d]">
+    <aside
+      className="overflow-hidden rounded-[1.35rem] border border-[#e2ebe6] bg-white shadow-[0_18px_54px_-46px_rgba(8,69,50,0.34)]"
+      data-testid="route-real-superadmin-asset-timeline"
+    >
+      <div className="px-4 pb-2 pt-4">
+        <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
           Riwayat Kronologi Aset
-        </h3>
+        </p>
       </div>
-      <div className="scrollbar-none relative min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-        <div className="absolute bottom-5 left-[2.95rem] top-2 w-px bg-[#dceddf]" />
-        {entries.map((entry) => {
-          const Icon = icons[entry.actionKey] ?? FileText;
-          const stamp = String(entry.createdAtLabel ?? "").split(",");
-          return (
-            <div
-              className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_5.8rem] gap-3 py-3.5"
-              key={entry.id}
-            >
-              <div className="relative flex justify-center">
-                <span className="grid size-9 place-items-center rounded-full border border-[#e3efe7] bg-[#f8fcf9] text-[#0a9f62]">
-                  <Icon className="size-4" />
-                </span>
-                <span className="absolute -right-1 top-3 size-2.5 rounded-full bg-[#099561] ring-4 ring-white" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-[0.93rem] font-medium leading-6 text-[#14213d]">
-                  {entry.actionLabel}
-                </h3>
-                <p className="mt-1.5 text-[0.88rem] leading-6 text-[#667085]">{entry.note}</p>
-                <p className="mt-1 text-[0.74rem] font-semibold leading-5 text-[#0a6a49]">
-                  Aktor Internal: {entry.actorName || "Sistem Otomatis"}
-                </p>
-              </div>
-              <div className="pt-0.5 text-right text-[0.78rem] leading-6 text-[#667085]">
-                <p>{stamp[0]?.trim() || "-"}</p>
-                <p>{stamp.slice(1).join(",").trim()}</p>
-              </div>
-            </div>
-          );
-        })}
+
+      <div className="scrollbar-none max-h-[22rem] overflow-y-auto px-4 pb-4">
+        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
+          <colgroup>
+            <col className="w-[16%]" />
+            <col className="w-[20%]" />
+            <col />
+            <col className="w-[25%]" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-[#edf2ee] text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#006747]">
+              <th className="border-b border-[#edf2ee] px-3 py-3">Status</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Tanggal & Jam</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Deskripsi</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">Aktor / Sumber</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#edf2ee] text-[0.78rem] font-semibold text-[#52655d]">
+            {entries.map((entry) => {
+              const Icon = icons[entry.actionKey] ?? FileText;
+              const failed = entry.actionKey === "gagal";
+
+              return (
+                <tr className="align-top" key={entry.id}>
+                  <td className="px-3 py-3">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-2 font-black",
+                        failed ? "text-[#dc2626]" : "text-[#006747]",
+                      )}
+                    >
+                      <Icon className="size-4 shrink-0" />
+                      {entry.actionLabel}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 font-mono text-[0.72rem] leading-5 text-[#40558b]">
+                    {entry.createdAtLabel || "-"}
+                  </td>
+                  <td className="px-3 py-3 leading-5">{entry.note}</td>
+                  <td className="px-3 py-3">
+                    <span className="inline-flex items-center gap-2 font-black text-[#006747]">
+                      <UserRound className="size-4 shrink-0" />
+                      Aktor Internal: {entry.actorName || "Sistem Otomatis"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </aside>
   );
@@ -257,8 +274,11 @@ export function SuperAdminUnitBarangDetailPage({
         title={itemName}
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_21.5rem]">
-        <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+      <div className="grid gap-4" data-testid="route-real-superadmin-item-audit-stack">
+        <section
+          className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]"
+          data-testid="route-real-superadmin-item-detail-main-card"
+        >
           <div className="space-y-5 p-4 lg:p-5">
             <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88),rgba(255,255,255,0.98))] p-4 lg:p-5">
               <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
