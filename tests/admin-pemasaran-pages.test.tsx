@@ -390,6 +390,7 @@ describe("admin pemasaran pages", () => {
           buyerName: "Buyer Demo 13 B",
           paymentMethod: "TRANSFER_BANK",
           proofUrl: "/uploads/bukti-fixed-price.jpg",
+          rejectionReason: "Uang dikirim bukan ke rekening tujuan",
           reference: "FP-02393124",
           paymentDeadline: "2099-06-05T12:00:00.000Z",
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
@@ -548,6 +549,7 @@ describe("admin pemasaran pages", () => {
           buyerName: "Buyer Demo 13 B",
           paymentMethod: "TRANSFER_BANK",
           proofUrl: "/uploads/bukti-fixed-price.jpg",
+          rejectionReason: "Uang dikirim bukan ke rekening tujuan",
           reference: "FP-02393124",
           paymentDeadline: "2099-06-05T12:00:00.000Z",
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
@@ -564,9 +566,13 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/verifikasi: ditolak/i)).toHaveClass("transaction-progress-node-failed");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
-    expect(verifyButton).toBeDisabled();
+    expect(verifyButton).not.toBeDisabled();
     fireEvent.click(verifyButton);
-    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /review pembayaran ditolak/i });
+    expect(within(dialog).getByText("PEMBAYARAN DITOLAK")).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(2);
+    expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
   });
 
   it("locks editing and exposes the approved fixed-price payment as read-only", () => {

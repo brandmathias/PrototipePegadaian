@@ -4284,6 +4284,8 @@ function FixedPricePaymentVerificationModal({
 }) {
   const action = getFixedPriceVerificationAction(auction);
   const isReadOnly = isMarketingPaymentVerifiedForReceipt(auction);
+  const isRejectedReview = isFixedPricePaymentRejected(auction);
+  const isReviewOnly = isReadOnly || isRejectedReview;
   const [isProofPreviewOpen, setIsProofPreviewOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const paymentPrice = auction.price ?? 0;
@@ -4293,11 +4295,13 @@ function FixedPricePaymentVerificationModal({
   const categoryLabel = humanize(auction.category);
   const paymentMethodLabel = auction.paymentMethod ? humanize(auction.paymentMethod) : "Transfer Bank";
   const statusLabel = humanize(auction.transactionStatus).toUpperCase();
-  const verificationStatusLabel = isReadOnly
-    ? "PEMBAYARAN DISETUJUI"
-    : auction.transactionStatus === "BUKTI_DIUNGGAH"
-      ? "MENUNGGU VERIFIKASI STAF"
-      : statusLabel;
+  const verificationStatusLabel = isRejectedReview
+    ? "PEMBAYARAN DITOLAK"
+    : isReadOnly
+      ? "PEMBAYARAN DISETUJUI"
+      : auction.transactionStatus === "BUKTI_DIUNGGAH"
+        ? "MENUNGGU VERIFIKASI STAF"
+        : statusLabel;
   const serverNow = new Date().toISOString();
   const rejectEndpoint = auction.transactionId ? `/api/admin/transaksi/${auction.transactionId}/tolak-bukti` : undefined;
   const hasRejectionReason = rejectionReason.length > 0;
@@ -4361,8 +4365,15 @@ function FixedPricePaymentVerificationModal({
         role="dialog"
       >
         <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
-          <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
-            <ShieldCheck className="size-6" strokeWidth={2.2} />
+          <div
+            className={cn(
+              "grid size-16 place-items-center rounded-full border-[5px] border-white text-white",
+              isRejectedReview
+                ? "bg-[#b91c1c] shadow-[0_18px_30px_-18px_rgba(185,28,28,0.7)]"
+                : "bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]"
+            )}
+          >
+            {isRejectedReview ? <X className="size-6" strokeWidth={2.2} /> : <ShieldCheck className="size-6" strokeWidth={2.2} />}
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
@@ -4381,12 +4392,18 @@ function FixedPricePaymentVerificationModal({
                 className="mx-auto max-w-[42rem] font-headline text-[1.55rem] font-black leading-tight tracking-tight text-[#15231d] sm:text-[1.78rem]"
                 id="fixed-price-payment-verification-title"
               >
-                {isReadOnly ? "Detail Pembayaran Terverifikasi" : "Verifikasi Pelunasan Dana Harga Tetap"}
+                {isRejectedReview
+                  ? "Review Pembayaran Ditolak"
+                  : isReadOnly
+                    ? "Detail Pembayaran Terverifikasi"
+                    : "Verifikasi Pelunasan Dana Harga Tetap"}
               </h2>
               <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
-                {isReadOnly
-                  ? "Informasi verifikasi sebelumnya hanya dapat dilihat dan tidak dapat diubah."
-                  : "Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap."}
+                {isRejectedReview
+                  ? "Bukti pembayaran ini sudah ditolak. Data berikut hanya dapat ditinjau sebagai arsip verifikasi."
+                  : isReadOnly
+                    ? "Informasi verifikasi sebelumnya hanya dapat dilihat dan tidak dapat diubah."
+                    : "Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap."}
               </p>
             </div>
           </div>
@@ -4502,42 +4519,50 @@ function FixedPricePaymentVerificationModal({
 
             <div className="flex min-h-full flex-col gap-4 rounded-[1.05rem] border border-[#f4c979] bg-[linear-gradient(180deg,#fffdf9_0%,#fff7f7_58%,#fffefe_100%)] p-4 shadow-[0_20px_54px_-44px_rgba(120,53,15,0.35)]">
               <div
-                className={cn(
-                  "rounded-[0.95rem] border px-4 py-4",
-                  isReadOnly
+                  className={cn(
+                    "rounded-[0.95rem] border px-4 py-4",
+                    isRejectedReview
+                      ? "border-[#fecaca] bg-[#fff1f2] shadow-[0_16px_34px_-30px_rgba(185,28,28,0.5)]"
+                      : isReadOnly
                     ? "border-[#b9dec9] bg-[#eff9f3] shadow-[0_16px_34px_-30px_rgba(0,103,71,0.5)]"
                     : "border-[#fde3b2] bg-[#fff8eb] shadow-[0_16px_34px_-30px_rgba(214,126,22,0.7)]"
-                )}
+                  )}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div
                     className={cn(
                       "inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.78rem] font-black uppercase leading-4 tracking-[0.045em]",
-                      isReadOnly ? "text-[#006747]" : "text-[#b45309]"
+                      isRejectedReview ? "text-[#b91c1c]" : isReadOnly ? "text-[#006747]" : "text-[#b45309]"
                     )}
                   >
                     <span
                       className={cn(
                         "size-3 shrink-0 rounded-full ring-4",
-                        isReadOnly ? "bg-[#16a36a] ring-[#d7f2e3]" : "bg-[#f59e0b] ring-[#fff0cf]"
+                        isRejectedReview
+                          ? "bg-[#dc2626] ring-[#fee2e2]"
+                          : isReadOnly ? "bg-[#16a36a] ring-[#d7f2e3]" : "bg-[#f59e0b] ring-[#fff0cf]"
                       )}
                     />
                     <span className="min-w-0 whitespace-normal break-words">{verificationStatusLabel}</span>
                   </div>
-                  {isReadOnly ? (
+                  {isRejectedReview ? (
+                    <X className="size-7 shrink-0 text-[#b91c1c]" />
+                  ) : isReadOnly ? (
                     <CheckCircle2 className="size-7 shrink-0 text-[#087a50]" />
                   ) : (
                     <span className="size-7 shrink-0 animate-spin rounded-full border-[3px] border-[#f7c873] border-t-transparent" />
                   )}
                 </div>
                 <p className="mt-4 text-[0.88rem] font-semibold leading-6 text-[#47564f]">
-                  {isReadOnly
-                    ? "Pembayaran disetujui admin unit. Bukti, nominal, dan rekening tujuan berikut disimpan sebagai catatan verifikasi."
-                    : "Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap dicairkan."}
+                  {isRejectedReview
+                    ? `Bukti pembayaran ditolak admin unit${auction.rejectionReason ? ` dengan alasan: ${auction.rejectionReason}` : ""}. Transaksi ini dibatalkan dan hanya dapat ditinjau sebagai arsip.`
+                    : isReadOnly
+                      ? "Pembayaran disetujui admin unit. Bukti, nominal, dan rekening tujuan berikut disimpan sebagai catatan verifikasi."
+                      : "Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap dicairkan."}
                 </p>
               </div>
 
-              {!isReadOnly ? (
+              {!isReviewOnly ? (
                 <div className="rounded-[0.95rem] border border-[#fecaca] bg-[linear-gradient(180deg,#fff7f7_0%,#fff1f2_100%)] px-4 py-4 shadow-[0_18px_34px_-28px_rgba(190,24,93,0.2)]">
                 <label
                   className="block font-headline text-[0.88rem] font-black leading-tight text-[#991b1b]"
@@ -4558,22 +4583,32 @@ function FixedPricePaymentVerificationModal({
                 </div>
               </div>
               ) : (
-                <div className="rounded-[0.95rem] border border-[#cfe3d7] bg-white p-4 text-[0.84rem] leading-6 text-[#456057]">
+                <div className={cn(
+                  "rounded-[0.95rem] border bg-white p-4 text-[0.84rem] leading-6",
+                  isRejectedReview ? "border-[#fecaca] text-[#7f1d1d]" : "border-[#cfe3d7] text-[#456057]"
+                )}>
                   <div className="flex items-start gap-3">
-                    <span className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] bg-[#e9f7ef] text-[#006747] ring-1 ring-[#c7e5d4]">
-                      <ShieldCheck className="size-6" />
+                    <span className={cn(
+                      "grid size-12 shrink-0 place-items-center rounded-[0.85rem] ring-1",
+                      isRejectedReview ? "bg-[#fff1f2] text-[#b91c1c] ring-[#fecaca]" : "bg-[#e9f7ef] text-[#006747] ring-[#c7e5d4]"
+                    )}>
+                      {isRejectedReview ? <X className="size-6" /> : <ShieldCheck className="size-6" />}
                     </span>
                     <div>
-                      <p className="font-headline text-[0.92rem] font-black text-[#164b38]">Data verifikasi terkunci</p>
+                      <p className={cn("font-headline text-[0.92rem] font-black", isRejectedReview ? "text-[#991b1b]" : "text-[#164b38]")}>
+                        {isRejectedReview ? "Review penolakan terkunci" : "Data verifikasi terkunci"}
+                      </p>
                       <p className="mt-1 font-semibold">
-                        Hasil persetujuan ini hanya dapat dilihat untuk menjaga konsistensi riwayat transaksi.
+                        {isRejectedReview
+                          ? `Alasan penolakan: ${auction.rejectionReason || "Alasan penolakan tidak tercatat."}`
+                          : "Hasil persetujuan ini hanya dapat dilihat untuk menjaga konsistensi riwayat transaksi."}
                       </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {!isReadOnly ? (
+              {!isReviewOnly ? (
                 <div className="rounded-[0.95rem] border border-[#f5d48e] bg-[#fffbf2] p-4 text-[0.84rem] leading-6 text-[#6f4c16]">
                 <div className="flex items-start gap-3">
                   <span className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] bg-[#fff5db] text-[#a16207] ring-1 ring-[#f4d08b]">
@@ -4606,10 +4641,10 @@ function FixedPricePaymentVerificationModal({
         <div
           className={cn(
             "flex shrink-0 flex-col gap-3 border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:flex-row sm:items-center sm:px-7",
-            isReadOnly ? "sm:justify-end" : "sm:justify-between"
+            isReviewOnly ? "sm:justify-end" : "sm:justify-between"
           )}
         >
-          {!isReadOnly ? (hasRejectionReason && rejectEndpoint ? (
+          {!isReviewOnly ? (hasRejectionReason && rejectEndpoint ? (
             <AdminUnitActionButton
               className="min-h-12 w-full rounded-[0.82rem] border border-[#dc2626] bg-white px-6 text-[0.92rem] font-black text-[#b91c1c] shadow-[0_18px_34px_-28px_rgba(185,28,28,0.46)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#fff1f2] active:scale-[0.99] sm:w-auto"
               endpoint={rejectEndpoint}
@@ -4645,7 +4680,7 @@ function FixedPricePaymentVerificationModal({
               Kembali
             </Button>
 
-            {!isReadOnly ? (action && !hasRejectionReason ? (
+            {!isReviewOnly ? (action && !hasRejectionReason ? (
               <AdminUnitActionButton
                 className="min-h-12 w-full rounded-[0.82rem] bg-[#006747] px-7 text-[0.92rem] font-black text-white shadow-[0_18px_34px_-22px_rgba(0,103,71,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] sm:w-auto"
                 endpoint={action.endpoint}
@@ -4731,8 +4766,9 @@ function FixedPricePaymentVerificationButton({
   const [isOpen, setIsOpen] = useState(false);
   const isReady = hasFixedPriceVerificationReady(auction);
   const isReadOnly = isMarketingPaymentVerifiedForReceipt(auction);
+  const isRejectedReview = isFixedPricePaymentRejected(auction);
 
-  if (!isReady && !isReadOnly) {
+  if (!isReady && !isReadOnly && !isRejectedReview) {
     return (
       <Button className={className} disabled>
         <ReceiptText className="size-5" />
