@@ -1341,6 +1341,7 @@ describe("superadmin pages", () => {
                   id: "bid-1",
                   bidderId: "buyer-1",
                   bidderName: "Buyer Ranotana",
+                  bidderImage: "/uploads/buyers/buyer-ranotana.jpg",
                   submittedAtLabel: "30 Mei 2026, 09:40 WIB",
                   amount: 23_000_000,
                   isRevealed: true,
@@ -1352,6 +1353,7 @@ describe("superadmin pages", () => {
                   id: "bid-2",
                   bidderId: "buyer-2",
                   bidderName: "Andi Rahman",
+                  bidderImage: "/uploads/buyers/andi-rahman.jpg",
                   submittedAtLabel: "30 Mei 2026, 09:25 WIB",
                   amount: 21_000_000,
                   isRevealed: true,
@@ -1437,8 +1439,9 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
     expect(screen.getAllByText("Buyer Ranotana").length).toBeGreaterThan(0);
     expect(screen.getByText("Bidders Ranking Table (Arsip)")).toBeInTheDocument();
-    expect(screen.getByText("Harga Bayar")).toBeInTheDocument();
+    expect(screen.getByText("Harga yang Dibayarkan")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 21.000.000").length).toBeGreaterThan(0);
+    expect(screen.getByAltText("Foto peserta Buyer Ranotana")).toBeInTheDocument();
     expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga akhir Lelang Tertutup");
     expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 21.000.000");
     expect(screen.getByText("Lelang Selesai Sempurna - Aset Telah Diserahkan")).toBeInTheDocument();
@@ -1495,6 +1498,8 @@ describe("superadmin pages", () => {
     expect(vickreyHandover.compareDocumentPosition(vickreySummaryPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
+    expect(screen.getByTestId("superadmin-ranking-row-1").className).toContain("bg-[#eefaf2]");
+    expect(screen.getByTestId("superadmin-ranking-row-2").className).toContain("bg-[#fff9ea]");
     expect(vickreyHandover).toHaveTextContent(
       "Dokumentasi Serah Terima Barang Fisik",
     );
@@ -1769,6 +1774,7 @@ describe("superadmin pages", () => {
                   id: "bid-haaland",
                   bidderId: "buyer-haaland",
                   bidderName: "Erling Haaland",
+                  bidderImage: "/uploads/buyers/erling-haaland.jpg",
                   submittedAtLabel: "26 Jun 2026, 23.15 WIB",
                   amount: 15_000_000,
                   isRevealed: true,
@@ -1780,6 +1786,7 @@ describe("superadmin pages", () => {
                   id: "bid-messi",
                   bidderId: "buyer-messi",
                   bidderName: "Lionel Messi",
+                  bidderImage: "/uploads/buyers/lionel-messi.jpg",
                   submittedAtLabel: "26 Jun 2026, 23.14 WIB",
                   amount: 12_000_000,
                   isRevealed: true,
@@ -1808,6 +1815,11 @@ describe("superadmin pages", () => {
     expect(performancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(performancePanel).toHaveTextContent("26x");
     expect(performancePanel).toHaveTextContent("3 Akun");
+    expect(screen.getByText("Gagal / Pelanggaran")).toBeInTheDocument();
+    expect(screen.getByText("Harga yang Dibayarkan")).toBeInTheDocument();
+    expect(screen.getByAltText("Foto peserta Erling Haaland")).toBeInTheDocument();
+    expect(screen.getByTestId("superadmin-failure-ranking-row-1").className).toContain("bg-[#eefaf2]");
+    expect(screen.getByTestId("superadmin-failure-ranking-row-2").className).toContain("bg-[#fff9ea]");
     expect(screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     expect(performancePanel.compareDocumentPosition(mechanismPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,

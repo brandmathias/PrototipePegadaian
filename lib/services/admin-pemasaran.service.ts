@@ -29,6 +29,7 @@ type AdminMarketingBidRow = {
     revealedAt: Date | null;
   };
   bidderName: string | null;
+  bidderImage?: string | null;
 };
 
 type MarketingRecencyRow = {
@@ -377,7 +378,8 @@ async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
         createdAt: bids.createdAt,
         revealedAt: bids.revealedAt
       },
-      bidderName: users.name
+      bidderName: users.name,
+      bidderImage: users.image
     })
     .from(bids)
     .innerJoin(users, eq(users.id, bids.userId))
@@ -388,7 +390,8 @@ async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
     const collection = map.get(row.pemasaranId) ?? [];
     collection.push({
       bid: row.bid,
-      bidderName: row.bidderName
+      bidderName: row.bidderName,
+      bidderImage: row.bidderImage ?? null
     });
     map.set(row.pemasaranId, collection);
     return map;

@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Circle,
   CircleDot,
+  CircleX,
   Clock3,
   ClipboardList,
   Cpu,
@@ -283,6 +284,7 @@ export type SuperAdminUnitBarangMarketingSession = {
     id: string;
     bidderId: string;
     bidderName: string;
+    bidderImage?: string | null;
     submittedAtLabel: string;
     amount?: number | null;
     isRevealed?: boolean;
@@ -3660,6 +3662,85 @@ function getSuperAdminInitials(name?: string | null) {
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
 }
 
+function getSuperAdminRankingRowClasses(
+  bid: NonNullable<SuperAdminUnitBarangMarketingSession["bids"]>[number],
+  {
+    fulfilled,
+    failure = false,
+  }: {
+    fulfilled: boolean;
+    failure?: boolean;
+  },
+) {
+  const isRunnerUp = bid.determinesFinalPrice;
+
+  if (bid.isWinner) {
+    return {
+      rowTone: "bg-[#eefaf2]",
+      amountTone: failure ? "text-[#111b46]" : "text-[#006747]",
+      status: failure ? "Gagal / Pelanggaran" : fulfilled ? "Lunas & Diserahkan" : "Pemenang",
+      statusTone: failure
+        ? "border border-[#fecaca] bg-[#fff1f2] text-[#b42318]"
+        : "border border-[#cfe8d8] bg-[#f1fbf6] text-[#006747]",
+      StatusIcon: failure ? X : CheckCircle2,
+    };
+  }
+
+  if (isRunnerUp) {
+    return {
+      rowTone: "bg-[#fff9ea]",
+      amountTone: "text-[#111b46]",
+      status: "Harga yang Dibayarkan",
+      statusTone: "border border-[#fde2a5] bg-[#fff4da] text-[#c26b00]",
+      StatusIcon: WalletCards,
+    };
+  }
+
+  return {
+    rowTone: "bg-white",
+    amountTone: "text-[#111b46]",
+    status: fulfilled || failure ? "Tidak Menang" : "-",
+    statusTone: "border border-[#dce5e1] bg-[#f7f9f8] text-[#667085]",
+    StatusIcon: CircleX,
+  };
+}
+
+function getSuperAdminRankingBadge(rank: number) {
+  if (rank === 1) {
+    return {
+      tone: "text-[#f5b301]",
+      text: "text-[#8f5a00]",
+      bg: "bg-[#fff7db]",
+      ring: "ring-[#fde2a5]",
+    };
+  }
+
+  if (rank === 2) {
+    return {
+      tone: "text-[#98a2b3]",
+      text: "text-[#475467]",
+      bg: "bg-[#f3f4f6]",
+      ring: "ring-[#d0d5dd]",
+    };
+  }
+
+  if (rank === 3) {
+    return {
+      tone: "text-[#c26b00]",
+      text: "text-[#8f3b00]",
+      bg: "bg-[#fff1e8]",
+      ring: "ring-[#f7c9a9]",
+    };
+  }
+
+  return {
+    tone: "text-[#98a2b3]",
+    text: "text-[#475467]",
+    bg: "bg-[#f8fafc]",
+    ring: "ring-[#e2e8f0]",
+  };
+}
+
 export type SuperAdminMarketingReceiptContext = {
   itemCode: string;
   itemMedia: SuperAdminUnitBarangDetailMedia[];
@@ -4086,86 +4167,88 @@ function SuperAdminVickreyRankingTable({
 
   return (
     <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+      <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
+        <ClipboardList className="size-4 shrink-0 text-[#40558b]" />
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
           {fulfilled ? "Bidders Ranking Table (Arsip)" : "Ranking Peserta Lelang (Admin View)"}
         </h3>
       </div>
       <div>
         <table className="w-full table-fixed text-left text-[0.72rem]">
           <colgroup>
-            <col className="w-[7%]" />
-            <col className="w-[25%]" />
+            <col className="w-[8%]" />
+            <col className="w-[29%]" />
             <col className="w-[22%]" />
-            <col className="w-[24%]" />
-            <col className="w-[22%]" />
+            <col className="w-[18%]" />
+            <col className="w-[23%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
-              <th className="px-2 py-2.5 text-center">#</th>
-              <th className="px-2 py-2.5">Nama Peserta</th>
-              <th className="px-2 py-2.5">Waktu Penawaran</th>
-              <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
-              <th className="px-2 py-2.5 text-center">Status</th>
+              <th className="px-3 py-3 text-center">#</th>
+              <th className="px-3 py-3">Nama Peserta</th>
+              <th className="px-3 py-3">Waktu Penawaran</th>
+              <th className="px-3 py-3 text-right">Nominal Penawaran</th>
+              <th className="px-3 py-3 text-center">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
             {rows.map((bid) => {
-              const isRunnerUp = bid.determinesFinalPrice;
-              const rowTone = fulfilled
-                ? bid.isWinner
-                  ? "bg-[#e9f8ef]"
-                  : "bg-white text-[#8b9a93]"
-                : bid.isWinner
-                  ? "bg-[#e9f8ef]"
-                  : isRunnerUp
-                    ? "bg-[#fff8e7]"
-                    : "bg-white";
-              const status = fulfilled
-                ? bid.isWinner
-                  ? "Lunas & Diserahkan"
-                  : "Tidak Menang"
-                : bid.isWinner
-                  ? "Pemenang"
-                  : isRunnerUp
-                    ? "Harga Bayar"
-                    : "-";
-              const statusTone = fulfilled
-                ? bid.isWinner
-                  ? "bg-[#e9f8ef] text-[#006747]"
-                  : "bg-[#eef2f0] text-[#8b9a93]"
-                : bid.isWinner
-                  ? "bg-[#006747] text-white"
-                  : isRunnerUp
-                    ? "bg-[#f59e0b] text-white"
-                    : "text-[#40558b]";
+              const badgeTone = getSuperAdminRankingBadge(bid.rank);
+              const { amountTone, rowTone, status, statusTone, StatusIcon } = getSuperAdminRankingRowClasses(bid, {
+                fulfilled,
+              });
 
               return (
-                <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#f4fbf7]`} key={bid.id}>
-                  <td className="px-2 py-2.5 text-center font-mono text-[#006747]">{bid.rank}</td>
-                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">{bid.bidderName}</td>
-                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
-                    {bid.submittedAtLabel}
+                <tr
+                  className={`${rowTone} transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f7fbf9]`}
+                  data-testid={`superadmin-ranking-row-${bid.rank}`}
+                  key={bid.id}
+                >
+                  <td className="px-3 py-3.5 text-center">
+                    <span
+                      className={`relative inline-flex size-8 items-center justify-center rounded-full ring-1 ${badgeTone.bg} ${badgeTone.ring}`}
+                    >
+                      <Medal className={`size-5 ${badgeTone.tone}`} strokeWidth={1.9} />
+                      <span className={`absolute text-[0.58rem] font-black ${badgeTone.text}`}>{bid.rank}</span>
+                    </span>
                   </td>
-                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
+                  <td className="px-3 py-3.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {bid.bidderImage ? (
+                        <span className="relative size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[#dbe7e1]">
+                          <Image
+                            alt={`Foto peserta ${bid.bidderName}`}
+                            className="object-cover"
+                            fill
+                            sizes="36px"
+                            src={bid.bidderImage}
+                          />
+                        </span>
+                      ) : (
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#dbe7e1] bg-[#f3f7f5] text-[0.68rem] font-black text-[#006747]">
+                          {getSuperAdminInitials(bid.bidderName)}
+                        </span>
+                      )}
+                      <p className="truncate text-[0.76rem] font-black leading-5 text-[#111b46]">{bid.bidderName}</p>
+                    </div>
+                  </td>
+                  <td className="px-3 py-3.5">
+                    <div className="flex items-center gap-2 font-mono text-[0.66rem] leading-4 text-[#40558b]">
+                      <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
+                      <span className="break-words">{bid.submittedAtLabel}</span>
+                    </div>
+                  </td>
+                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.72rem] font-black leading-4 ${amountTone}`}>
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
-                  <td className="px-2 py-2.5 text-center">
+                  <td className="px-3 py-3.5 text-center">
                     {status === "-" ? (
                       <span className="font-black text-[#40558b]">-</span>
                     ) : (
-                      <span className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}>
-                        {fulfilled ? (
-                          bid.isWinner ? (
-                            <CheckCircle2 className="size-3" />
-                          ) : (
-                            <X className="size-3" />
-                          )
-                        ) : bid.isWinner ? (
-                          <Trophy className="size-3" />
-                        ) : (
-                          <ReceiptText className="size-3" />
-                        )}
+                      <span
+                        className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}
+                      >
+                        <StatusIcon className="size-3.5 shrink-0" />
                         <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
                       </span>
                     )}
@@ -4176,8 +4259,9 @@ function SuperAdminVickreyRankingTable({
           </tbody>
         </table>
       </div>
-      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        Total {session.participants ?? rows.length} peserta
+      <div className="flex items-center gap-2 border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
+        <UsersRound className="size-3.5 shrink-0 text-[#667085]" />
+        <span>Total {session.participants ?? rows.length} peserta</span>
       </div>
     </section>
   );
@@ -4755,54 +4839,84 @@ function SuperAdminVickreyFailureRankingTable({
 
   return (
     <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+      <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
+        <ClipboardList className="size-4 shrink-0 text-[#40558b]" />
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
           Bidders Ranking Table (Arsip)
         </h3>
       </div>
       <table className="w-full table-fixed text-left text-[0.72rem]">
         <colgroup>
-          <col className="w-[7%]" />
-          <col className="w-[25%]" />
+          <col className="w-[8%]" />
+          <col className="w-[29%]" />
           <col className="w-[22%]" />
-          <col className="w-[24%]" />
-          <col className="w-[22%]" />
+          <col className="w-[18%]" />
+          <col className="w-[23%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
-            <th className="px-2 py-2.5 text-center">#</th>
-            <th className="px-2 py-2.5">Nama Peserta</th>
-            <th className="px-2 py-2.5">Waktu Penawaran</th>
-            <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
-            <th className="px-2 py-2.5 text-center">Status</th>
+            <th className="px-3 py-3 text-center">#</th>
+            <th className="px-3 py-3">Nama Peserta</th>
+            <th className="px-3 py-3">Waktu Penawaran</th>
+            <th className="px-3 py-3 text-right">Nominal Penawaran</th>
+            <th className="px-3 py-3 text-center">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
           {rows.length ? (
             rows.map((bid) => {
-              const rowTone = bid.isWinner ? "bg-[#fff1f2]" : bid.determinesFinalPrice ? "bg-[#fff8e7]" : "bg-white";
-              const status = bid.isWinner ? "Gagal / Pelanggaran" : bid.determinesFinalPrice ? "Harga Pembanding" : "Tidak Menang";
-              const statusTone = bid.isWinner
-                ? "bg-[#b91c1c] text-white"
-                : bid.determinesFinalPrice
-                  ? "bg-[#f59e0b] text-white"
-                  : "bg-[#eef2f0] text-[#40558b]";
+              const badgeTone = getSuperAdminRankingBadge(bid.rank);
+              const { amountTone, rowTone, status, statusTone, StatusIcon } = getSuperAdminRankingRowClasses(bid, {
+                failure: true,
+                fulfilled: false,
+              });
 
               return (
-                <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#fef2f2]`} key={bid.id}>
-                  <td className="px-2 py-2.5 text-center font-mono text-[#991b1b]">{bid.rank}</td>
-                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
-                    {bid.bidderName}
+                <tr
+                  className={`${rowTone} transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#fbfaf5]`}
+                  data-testid={`superadmin-failure-ranking-row-${bid.rank}`}
+                  key={bid.id}
+                >
+                  <td className="px-3 py-3.5 text-center">
+                    <span
+                      className={`relative inline-flex size-8 items-center justify-center rounded-full ring-1 ${badgeTone.bg} ${badgeTone.ring}`}
+                    >
+                      <Medal className={`size-5 ${badgeTone.tone}`} strokeWidth={1.9} />
+                      <span className={`absolute text-[0.58rem] font-black ${badgeTone.text}`}>{bid.rank}</span>
+                    </span>
                   </td>
-                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
-                    {bid.submittedAtLabel}
+                  <td className="px-3 py-3.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {bid.bidderImage ? (
+                        <span className="relative size-9 shrink-0 overflow-hidden rounded-full ring-1 ring-[#dbe7e1]">
+                          <Image
+                            alt={`Foto peserta ${bid.bidderName}`}
+                            className="object-cover"
+                            fill
+                            sizes="36px"
+                            src={bid.bidderImage}
+                          />
+                        </span>
+                      ) : (
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#dbe7e1] bg-[#f3f7f5] text-[0.68rem] font-black text-[#006747]">
+                          {getSuperAdminInitials(bid.bidderName)}
+                        </span>
+                      )}
+                      <p className="truncate text-[0.76rem] font-black leading-5 text-[#111b46]">{bid.bidderName}</p>
+                    </div>
                   </td>
-                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
+                  <td className="px-3 py-3.5">
+                    <div className="flex items-center gap-2 font-mono text-[0.66rem] leading-4 text-[#40558b]">
+                      <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
+                      <span className="break-words">{bid.submittedAtLabel}</span>
+                    </div>
+                  </td>
+                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.72rem] font-black leading-4 ${amountTone}`}>
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
-                  <td className="px-2 py-2.5 text-center">
-                    <span className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}>
-                      {bid.isWinner ? <X className="size-3" /> : bid.determinesFinalPrice ? <ReceiptText className="size-3" /> : <CheckCircle2 className="size-3" />}
+                  <td className="px-3 py-3.5 text-center">
+                    <span className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}>
+                      <StatusIcon className="size-3.5 shrink-0" />
                       <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
                     </span>
                   </td>
@@ -4818,8 +4932,9 @@ function SuperAdminVickreyFailureRankingTable({
           )}
         </tbody>
       </table>
-      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        Total {session.participants ?? rows.length} peserta
+      <div className="flex items-center gap-2 border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
+        <UsersRound className="size-3.5 shrink-0 text-[#667085]" />
+        <span>Total {session.participants ?? rows.length} peserta</span>
       </div>
     </section>
   );

@@ -173,6 +173,7 @@ export function serializeAdminPemasaran(
     bids?: Array<{
       bid: AdminSafeBidRow;
       bidderName?: string | null;
+      bidderImage?: string | null;
     }>;
   } = { lotName: "-" }
 ) {
@@ -224,6 +225,7 @@ export function serializeAdminPemasaran(
             id: entry.bid.id,
             bidderId: entry.bid.userId,
             bidderName: entry.bidderName ?? "Peserta",
+            bidderImage: entry.bidderImage ?? null,
             submittedAt: entry.bid.createdAt.toISOString(),
             submittedAtLabel: toDateTimeLabel(entry.bid.createdAt),
             isRevealed: Boolean(entry.bid.revealedAt),
