@@ -1644,10 +1644,14 @@ describe("admin pemasaran pages", () => {
     const assetPanel = screen.getByText(/detail aset lelang$/i).closest("section");
     const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
     const settlementPerformancePanel = screen.getByTestId("admin-vickrey-settlement-performance-panel");
+    const rankingSection = screen.getByText(/ranking peserta lelang \(admin view\)/i).closest("section");
     expect(assetPanel).not.toHaveClass("h-full");
-    expect(progressPanel?.parentElement).toHaveClass("space-y-4");
-    expect(settlementPerformancePanel.parentElement).toHaveClass("grid", "lg:grid-rows-[minmax(0,1fr)_auto]");
+    expect(progressPanel?.parentElement).toHaveClass("h-full", "lg:col-start-1", "lg:row-start-3");
+    expect(settlementPerformancePanel.parentElement).toHaveClass("h-full", "lg:col-start-2", "lg:row-start-3");
     expect(assetPanel?.compareDocumentPosition(settlementPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(progressPanel!.compareDocumentPosition(rankingSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
@@ -2209,10 +2213,27 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("iPad Pro 11")).toBeInTheDocument();
     expect(screen.getByText("Spesifikasi")).toBeInTheDocument();
     expect(screen.getByText("M2, 128GB, Wi-Fi")).toBeInTheDocument();
+    const assetPanel = screen.getByText(/detail aset lelang/i).closest("section");
+    const progressSection = screen.getByText(/progress (penyelesaian|pembayaran lelang)/i).closest("section");
     const settlementPerformancePanel = screen.getByTestId("admin-vickrey-settlement-performance-panel");
+    const rankingSection = screen.getByText(/(bidders ranking table \(arsip\)|ranking peserta lelang \(admin view\))/i).closest("section");
     expect(settlementPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(settlementPerformancePanel).toHaveTextContent("19x");
     expect(settlementPerformancePanel).toHaveTextContent("4 Akun");
+    expect(assetPanel).not.toBeNull();
+    expect(progressSection).not.toBeNull();
+    expect(rankingSection).not.toBeNull();
+    expect(settlementPerformancePanel).toHaveClass("h-full");
+    expect(progressSection).toHaveClass("h-full");
+    expect(assetPanel!.compareDocumentPosition(settlementPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(progressSection!.compareDocumentPosition(rankingSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(settlementPerformancePanel.compareDocumentPosition(rankingSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(screen.queryByText("Kadar")).not.toBeInTheDocument();
     expect(screen.queryByText("Berat")).not.toBeInTheDocument();
   });

@@ -5691,19 +5691,25 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
         <VickreySettlementDeadlineBanner auction={auction} />
 
         <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-          <div className="space-y-4">
+          <div className="lg:col-start-1 lg:row-start-1">
             <VickreyWinnerProfilePanel auction={auction} />
-            <VickreyMechanismPanel auction={auction} />
-            <VickreyPaymentProgressPanel auction={auction} />
-            <div className="flex items-center gap-2 px-1 text-[0.72rem] font-semibold text-[#6f83b6]">
-              <ShieldCheck className="size-4 text-[#7eb7a5]" />
-              Seluruh data dilindungi sistem keamanan berlapis dan tidak dapat diubah secara manual.
-            </div>
           </div>
 
-          <div className="grid min-h-0 gap-4 lg:grid-rows-[minmax(0,1fr)_auto]">
+          <div className="h-full lg:col-start-2 lg:row-span-2 lg:row-start-1 [&>section]:h-full">
             <VickreyWinnerAssetPanel auction={auction} />
+          </div>
+
+          <div className="lg:col-start-1 lg:row-start-2">
+            <VickreyMechanismPanel auction={auction} />
+          </div>
+
+          <div className="h-full lg:col-start-1 lg:row-start-3 [&>section]:h-full">
+            <VickreyPaymentProgressPanel auction={auction} />
+          </div>
+
+          <div className="h-full lg:col-start-2 lg:row-start-3 [&>section]:h-full">
             <MarketingPerformancePanel
+              className="h-full"
               insights={auction.insights}
               lotId={auction.id}
               testId="admin-vickrey-settlement-performance-panel"
@@ -5712,6 +5718,11 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
         </div>
 
         <VickreyWinnerRankingTable auction={auction} />
+
+        <div className="flex items-center gap-2 px-1 text-[0.72rem] font-semibold text-[#6f83b6]">
+          <ShieldCheck className="size-4 text-[#7eb7a5]" />
+          Seluruh data dilindungi sistem keamanan berlapis dan tidak dapat diubah secara manual.
+        </div>
 
         {auction.transactionId ? (
           <div aria-label="Area upload bukti serah-terima pemenang" className="w-full">
