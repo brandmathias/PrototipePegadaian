@@ -1786,12 +1786,12 @@ describe("superadmin pages", () => {
     expect(progressSection).toHaveClass("justify-between");
     expect(progressSection).toHaveTextContent("Gagal Bayar");
     expect(progressSection).toHaveTextContent("Belum tercapai");
-    expect(mechanismPanel).not.toHaveClass("h-full");
+    expect(mechanismPanel).toHaveClass("h-full");
     expect(performancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(performancePanel).toHaveTextContent("26x");
     expect(performancePanel).toHaveTextContent("3 Akun");
     expect(screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
-    expect(mechanismPanel.compareDocumentPosition(performancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    expect(performancePanel.compareDocumentPosition(mechanismPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(performancePanel.compareDocumentPosition(progressSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(

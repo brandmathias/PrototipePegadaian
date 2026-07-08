@@ -4588,7 +4588,7 @@ function SuperAdminVickreyFailureMechanismPanel({
 
   return (
     <section
-      className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      className="h-full rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
       data-testid="superadmin-vickrey-mechanism-panel"
     >
       <div className="flex items-center gap-2">
@@ -4977,18 +4977,14 @@ function SuperAdminVickreyWorkspace({
       <div className="space-y-4">
         <SuperAdminVickreyFailureBanner session={session} />
         <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
-          <div className="space-y-4">
-            <SuperAdminVickreyFailureProfilePanel session={session} />
-            <SuperAdminVickreyFailureMechanismPanel session={session} />
-          </div>
-          <div className="space-y-4">
-            <MarketingPerformancePanel
-              insights={session.insights}
-              lotId={session.id}
-              testId="superadmin-vickrey-failure-performance-panel"
-            />
-            <SuperAdminVickreyFailureProgressPanel session={session} />
-          </div>
+          <SuperAdminVickreyFailureProfilePanel session={session} />
+          <MarketingPerformancePanel
+            insights={session.insights}
+            lotId={session.id}
+            testId="superadmin-vickrey-failure-performance-panel"
+          />
+          <SuperAdminVickreyFailureMechanismPanel session={session} />
+          <SuperAdminVickreyFailureProgressPanel session={session} />
         </div>
         <SuperAdminVickreyFailureRankingTable session={session} />
         <SuperAdminReadOnlyAuditFooter
