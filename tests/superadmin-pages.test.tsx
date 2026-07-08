@@ -1449,15 +1449,21 @@ describe("superadmin pages", () => {
     expect(screen.getByRole("button", { name: "Cetak Nota" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Tutup & Arsipkan Berkas Lelang" })).not.toBeInTheDocument();
     expect(screen.getByTestId("superadmin-vickrey-settlement-layout")).toBeInTheDocument();
-    expect(screen.getByTestId("superadmin-vickrey-settlement-primary-grid")).toHaveClass("xl:grid-cols-3");
+    expect(screen.getByTestId("superadmin-vickrey-settlement-primary-grid")).toHaveClass(
+      "xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]",
+    );
     expect(screen.getByTestId("superadmin-vickrey-settlement-secondary-grid")).toHaveClass(
-      "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+      "xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]",
     );
     const superAdminMechanismPanel = screen.getByTestId("superadmin-vickrey-mechanism-panel");
+    const superAdminWinnerPanel = screen.getByTestId("superadmin-vickrey-winner-profile");
+    const superAdminProgressPanel = screen.getByText("Progress Penyelesaian").closest("section");
     const superAdminArchivePrice = within(superAdminMechanismPanel).getByText("Rp 21.000.000");
     const superAdminArchiveStatus = within(superAdminMechanismPanel).getByText("Selesai & Diarsipkan");
     const superAdminArchiveStatusPill = superAdminArchiveStatus.parentElement as HTMLElement;
     const superAdminExecutionTime = within(superAdminMechanismPanel).getByText("30 Mei 2026, 09.00 WIB");
+    expect(superAdminWinnerPanel).toHaveClass("h-full");
+    expect(superAdminWinnerPanel).toHaveTextContent("Member ID:");
     expect(superAdminMechanismPanel).toHaveTextContent("Selesai & Diarsipkan");
     expect(superAdminArchivePrice.className).toContain("whitespace-nowrap");
     expect(superAdminArchivePrice.className).not.toContain("text-ellipsis");
@@ -1469,18 +1475,30 @@ describe("superadmin pages", () => {
     expect(superAdminExecutionTime.className).toContain("whitespace-nowrap");
     expect(superAdminExecutionTime.className).not.toContain("text-ellipsis");
     expect(superAdminExecutionTime.className).not.toContain("truncate");
-    expect(screen.getByTestId("superadmin-vickrey-note-panel")).toHaveClass("min-h-[14.5rem]");
     const vickreyPerformancePanel = screen.getByTestId("superadmin-vickrey-settlement-performance-panel");
     const vickreyHandover = screen.getByTestId("superadmin-vickrey-settlement-handover");
+    const vickreySummaryPanel = screen.getByTestId("superadmin-vickrey-final-summary-panel");
     expect(vickreyPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(vickreyPerformancePanel).toHaveTextContent("45x");
     expect(vickreyPerformancePanel).toHaveTextContent("6 Akun");
+    expect(vickreyPerformancePanel).toHaveClass("h-full");
+    expect(superAdminProgressPanel).toHaveClass("h-full");
+    expect(superAdminWinnerPanel.compareDocumentPosition(superAdminMechanismPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(superAdminProgressPanel!.compareDocumentPosition(vickreyPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(vickreyPerformancePanel.compareDocumentPosition(vickreyHandover) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(vickreyHandover.compareDocumentPosition(vickreySummaryPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(vickreyHandover).toHaveTextContent(
       "Dokumentasi Serah Terima Barang Fisik",
     );
+    expect(vickreySummaryPanel).toHaveTextContent("Total Pelunasan Kasir");
     expect(screen.getAllByText("30 Mei 2026, 09.00 WIB").length).toBeGreaterThan(0);
     expect(screen.queryByText("30 Mei 2026, 10:00 WIB")).not.toBeInTheDocument();
     expect(screen.getAllByText("Iterasi 2 (Terkini)").length).toBeGreaterThan(0);
@@ -1684,7 +1702,7 @@ describe("superadmin pages", () => {
     expect(winnerPanel).toHaveTextContent("Cristiano Ronaldo");
     expect(winnerPanel).toHaveTextContent("6281200001001");
     expect(winnerPanel).toHaveTextContent("buyer1@mail.com");
-    expect(within(winnerPanel).queryByText(/Member ID:/i)).not.toBeInTheDocument();
+    expect(within(winnerPanel).getByText(/Member ID:/i)).toBeInTheDocument();
     const verifiedBadges = within(winnerPanel).getAllByText("Pemenang Terverifikasi");
 
     expect(within(winnerPanel).getByText("Cristiano Ronaldo")).toHaveClass("truncate");

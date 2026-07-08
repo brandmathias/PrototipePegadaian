@@ -3895,6 +3895,8 @@ function SuperAdminVickreyWinnerProfilePanel({
   session: SuperAdminUnitBarangMarketingSession;
 }) {
   const winnerName = session.buyerName || session.winner || "Pemenang belum tercatat";
+  const winnerBid = getSuperAdminWinnerBid(session);
+  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
   const title = verified ? "Manifes Penyerahan & Pemenang" : "Detail Pemenang Lelang";
@@ -3902,7 +3904,7 @@ function SuperAdminVickreyWinnerProfilePanel({
 
   return (
     <section
-      className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
       data-testid="superadmin-vickrey-winner-profile"
     >
       {verified ? (
@@ -3912,28 +3914,38 @@ function SuperAdminVickreyWinnerProfilePanel({
         {title}
       </p>
 
-      <div className="relative mt-4 flex min-w-0 items-center gap-3">
-        <span className="grid size-12 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1rem] font-black text-[#006747]">
-          {getSuperAdminInitials(winnerName)}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate font-headline text-[0.95rem] font-black leading-tight text-[#111b46]">
-            {winnerName}
-          </h3>
-          {verified ? (
-            <span className="mt-1.5 inline-flex max-w-full items-center gap-1 rounded-full border border-[#d6efe1] bg-[#f1fbf6] px-2 py-1 text-[0.56rem] font-black uppercase leading-none tracking-[0.07em] text-[#006747]">
-              <CheckCircle2 className="size-3 shrink-0" />
-              <span className="truncate">Pemenang Terverifikasi</span>
-            </span>
-          ) : null}
-          <div className="mt-2 grid min-w-0 gap-1.5 text-[0.72rem] font-bold leading-4 text-[#111b46]">
+      <div className="mt-4 grid flex-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="grid size-14 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1.1rem] font-black text-[#006747]">
+            {getSuperAdminInitials(winnerName)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h3 className="truncate font-headline text-[1.02rem] font-black leading-tight text-[#111b46]">
+                {winnerName}
+              </h3>
+              {verified ? (
+                <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-[#d6efe1] bg-[#f1fbf6] px-2.5 py-1 text-[0.58rem] font-black uppercase leading-none tracking-[0.08em] text-[#006747]">
+                  <CheckCircle2 className="size-3 shrink-0" />
+                  <span className="truncate">Terverifikasi</span>
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-2 text-[0.74rem] font-bold text-[#52655d]">
+              Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-2 border-t border-[#edf2ee] pt-3 text-[0.76rem] font-bold text-[#111b46] md:border-l md:border-t-0 md:pl-5 md:pt-0">
+          <div className="grid min-w-0 gap-1.5">
             <p className="flex min-w-0 items-center gap-2">
-              <Phone className="size-3.5 shrink-0 text-[#40558b]" />
+              <Phone className="size-4 shrink-0 text-[#40558b]" />
               <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
             </p>
             <p className="flex min-w-0 items-center gap-2">
-              <Mail className="size-3.5 shrink-0 text-[#40558b]" />
-              <span className="min-w-0 truncate font-mono text-[0.7rem]">
+              <Mail className="size-4 shrink-0 text-[#40558b]" />
+              <span className="min-w-0 truncate font-mono text-[0.72rem]">
                 {session.buyerEmail || "email-belum-tercatat"}
               </span>
             </p>
@@ -4292,6 +4304,73 @@ function SuperAdminVickreyNotePanel({
         </div>
         <div className="rounded-lg border border-[#fde2a5] bg-[#fffbeb] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#9a3412]">
           Status saat ini: <span className="font-black">{formatSuperAdminDisplayLabel(session.transactionStatus) || "Menunggu Bayar"}</span>. Menunggu pelunasan oleh pemenang hingga batas waktu yang ditentukan.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SuperAdminVickreyFinalSummaryPanel({
+  receiptContext,
+  session,
+}: {
+  receiptContext: SuperAdminMarketingReceiptContext;
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const receiptLockMessage = getSuperAdminReceiptLockMessage(session);
+  const canPrintReceipt = !receiptLockMessage;
+
+  return (
+    <section
+      className="flex min-h-[14rem] w-full flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] sm:px-5"
+      data-testid="superadmin-vickrey-final-summary-panel"
+    >
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
+        Ringkasan Transaksi
+      </p>
+      <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+        Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
+      </p>
+
+      <div className="mt-4 grid flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.52fr)] lg:items-stretch">
+        <div className="flex h-full flex-col justify-between space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+          <div className="flex min-h-10 items-center justify-between gap-4">
+            <span>Harga akhir lelang</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+          </div>
+          <div className="border-t border-[#dfe7e2] pt-2">
+            <div className="flex min-h-10 items-center justify-between gap-4">
+              <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
+                Total Pelunasan Kasir
+              </span>
+              <span className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+                {formatFullCurrency(paymentPrice)}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex h-full flex-col justify-center gap-3 print:hidden">
+          {canPrintReceipt ? (
+            <SuperAdminVickreyReceiptInlinePrint
+              buttonClassName="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+              receiptContext={receiptContext}
+              session={session}
+            />
+          ) : (
+            <Button
+              className="h-14 w-full rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
+              disabled
+              title={receiptLockMessage ?? undefined}
+              variant="secondary"
+            >
+              <Printer className="size-4" />
+              Cetak Nota
+            </Button>
+          )}
+          {receiptLockMessage ? (
+            <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+          ) : null}
         </div>
       </div>
     </section>
@@ -5000,6 +5079,57 @@ function SuperAdminVickreyWorkspace({
   }
 
   if (verified || fulfilled) {
+    if (fulfilled) {
+      return (
+        <div className="space-y-4" data-testid="superadmin-vickrey-settlement-layout">
+          <SuperAdminVickreySettlementBanner session={session} />
+          <div
+            className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]"
+            data-testid="superadmin-vickrey-settlement-primary-grid"
+          >
+            <div className="h-full [&>section]:h-full">
+              <SuperAdminVickreyWinnerProfilePanel session={session} />
+            </div>
+            <div className="h-full [&>section]:h-full">
+              <SuperAdminVickreyMechanismPanel session={session} />
+            </div>
+          </div>
+
+          <div
+            className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]"
+            data-testid="superadmin-vickrey-settlement-secondary-grid"
+          >
+            <div className="h-full [&>section]:h-full">
+              <SuperAdminVickreyProgressPanel session={session} />
+            </div>
+            <MarketingPerformancePanel
+              className="h-full"
+              insights={session.insights}
+              lotId={session.id}
+              testId="superadmin-vickrey-settlement-performance-panel"
+            />
+          </div>
+
+          <SuperAdminVickreyRankingTable session={session} />
+
+          <div data-testid="superadmin-vickrey-settlement-handover">
+            <SuperAdminHandoverProofAuditCard
+              itemTitle={receiptContext.itemTitle}
+              session={session}
+              unitName={receiptContext.unitName}
+            />
+          </div>
+
+          <SuperAdminVickreyFinalSummaryPanel receiptContext={receiptContext} session={session} />
+
+          <SuperAdminReadOnlyAuditFooter
+            icon={ShieldCheck}
+            note="Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-4" data-testid="superadmin-vickrey-settlement-layout">
         <SuperAdminVickreySettlementBanner session={session} />
