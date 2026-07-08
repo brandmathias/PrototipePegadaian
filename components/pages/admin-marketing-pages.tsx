@@ -3199,28 +3199,28 @@ function getCompactCurrencyTextClass(value?: number | null) {
 
 function getMechanismBadgeTextClass(label: string) {
   if (label.length >= 18) {
-    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
+    return "text-[0.38rem] sm:text-[0.42rem] xl:text-[0.46rem]";
   }
 
   if (label.length >= 12) {
-    return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
+    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
   }
 
-  return "text-[0.5rem] sm:text-[0.54rem] xl:text-[0.58rem]";
+  return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
 }
 
 function getMechanismDateTextClass(value?: string | null) {
   const label = value?.trim() || "-";
 
   if (label.length >= 20) {
-    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
+    return "text-[0.48rem] sm:text-[0.52rem] xl:text-[0.58rem]";
   }
 
   if (label.length >= 16) {
-    return "text-[0.56rem] sm:text-[0.6rem] xl:text-[0.66rem]";
+    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
   }
 
-  return "text-[0.62rem] sm:text-[0.68rem] xl:text-[0.74rem]";
+  return "text-[0.58rem] sm:text-[0.64rem] xl:text-[0.7rem]";
 }
 
 function isVickreyPaymentVerified(auction: MarketingSession) {

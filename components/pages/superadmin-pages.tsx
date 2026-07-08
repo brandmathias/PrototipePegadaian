@@ -3529,28 +3529,28 @@ function getSuperAdminMechanismCurrencyTextClass(value?: number | null) {
 
 function getSuperAdminMechanismBadgeTextClass(label: string) {
   if (label.length >= 18) {
-    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
+    return "text-[0.38rem] sm:text-[0.42rem] xl:text-[0.46rem]";
   }
 
   if (label.length >= 12) {
-    return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
+    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
   }
 
-  return "text-[0.5rem] sm:text-[0.54rem] xl:text-[0.58rem]";
+  return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
 }
 
 function getSuperAdminMechanismDateTextClass(value?: string | null) {
   const label = value?.trim() || "-";
 
   if (label.length >= 20) {
-    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
+    return "text-[0.48rem] sm:text-[0.52rem] xl:text-[0.58rem]";
   }
 
   if (label.length >= 16) {
-    return "text-[0.56rem] sm:text-[0.6rem] xl:text-[0.66rem]";
+    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
   }
 
-  return "text-[0.62rem] sm:text-[0.68rem] xl:text-[0.74rem]";
+  return "text-[0.58rem] sm:text-[0.64rem] xl:text-[0.7rem]";
 }
 
 function isSuperAdminVickreyPaymentVerified(session: SuperAdminUnitBarangMarketingSession) {
@@ -3956,48 +3956,48 @@ function SuperAdminVickreyMechanismPanel({
       </div>
 
       <div className={`mt-4 grid items-stretch gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
           <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
             {formatSuperAdminOptionalCurrency(highestBid)}
           </p>
-          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#2f6a52]">
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
             Penawaran tertinggi oleh pemenang
           </p>
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
           <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
-          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#b45309]">
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
             Harga yang harus dibayarkan pemenang
           </p>
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
           <span
-            className={`mt-2 inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 font-black uppercase tracking-[-0.02em] text-[#006747] ${getSuperAdminMechanismBadgeTextClass(statusLabel)}`}
+            className={`mt-2 inline-flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 font-black uppercase leading-none tracking-[-0.02em] text-[#006747] ${getSuperAdminMechanismBadgeTextClass(statusLabel)}`}
           >
             <span>{statusLabel}</span>
-            <Trophy className="size-3.5 shrink-0" />
+            <Trophy className="size-3 shrink-0" />
           </span>
-          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
             {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
           </p>
         </div>
 
         {fulfilled ? (
-          <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
+          <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
             <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
             <p
               className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getSuperAdminMechanismDateTextClass(executionLabel)}`}
             >
               {executionLabel}
             </p>
-            <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
+            <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
               Tanggal sesi ditutup
             </p>
           </div>

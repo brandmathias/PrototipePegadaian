@@ -1463,6 +1463,7 @@ describe("superadmin pages", () => {
     expect(superAdminArchiveStatusPill.className).toContain("whitespace-nowrap");
     expect(superAdminArchiveStatusPill.className).not.toContain("text-ellipsis");
     expect(superAdminArchiveStatusPill.className).not.toContain("truncate");
+    expect(superAdminArchiveStatusPill.querySelector("svg")).toHaveClass("size-3", "shrink-0");
     expect(superAdminExecutionTime.className).toContain("whitespace-nowrap");
     expect(superAdminExecutionTime.className).not.toContain("text-ellipsis");
     expect(superAdminExecutionTime.className).not.toContain("truncate");
