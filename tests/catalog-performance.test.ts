@@ -35,6 +35,9 @@ describe("public catalog performance", () => {
     expect(route).toContain("<CatalogHero />");
     expect(hero).not.toContain('"use client"');
     expect(hero).not.toContain('rel="preload"');
+    expect(hero).toContain('data-testid="catalog-hero-image"');
+    expect(hero).toContain('fetchPriority="high"');
+    expect(hero).toContain('loading="eager"');
     expect(template).toContain('import { preload } from "react-dom"');
     expect(template).toContain('preload("/uploads/Hero%20Section%20Katalog%20Buyer.avif"');
     expect(template).toContain('media: "(min-width: 768px)"');

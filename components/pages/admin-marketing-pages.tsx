@@ -1577,12 +1577,12 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-black/[0.06] pt-3 dark:border-white/8 lg:grid-cols-[minmax(0,1.24fr)_minmax(4rem,0.54fr)_minmax(4.5rem,0.7fr)_minmax(0,1.22fr)] lg:divide-x lg:divide-black/10 lg:dark:divide-white/10">
+        <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-black/[0.06] pt-3 dark:border-white/8 lg:grid-cols-[minmax(0,1.3fr)_minmax(4rem,0.52fr)_minmax(4.5rem,0.68fr)_minmax(0,1.14fr)] lg:divide-x lg:divide-black/10 lg:dark:divide-white/10">
           <MarketingMetaItem
             icon={Landmark}
             label="Kode Barang"
             value={auction.code || auction.id}
-            valueClassName="whitespace-nowrap text-[0.68rem] tracking-[-0.03em] sm:text-[0.69rem] xl:text-[0.7rem]"
+            valueClassName="whitespace-nowrap text-[0.7rem] tracking-[-0.03em] sm:text-[0.72rem] xl:text-[0.74rem]"
           />
           <MarketingMetaItem icon={CalendarDays} label="Tahun" value={getMarketingDateYear(auction)} />
           <MarketingMetaItem icon={BadgeCheck} label="Kondisi" value={humanize(auction.condition)} />
@@ -1591,7 +1591,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
             label={getMarketingTimeLabel(auction)}
             rootClassName="col-span-2 lg:col-span-1"
             value={getMarketingTimeValue(auction)}
-            valueClassName="text-[0.7rem] sm:text-[0.73rem] xl:text-[0.71rem] 2xl:text-[0.74rem] whitespace-normal xl:whitespace-nowrap"
+            valueClassName="text-[0.68rem] sm:text-[0.7rem] xl:text-[0.69rem] 2xl:text-[0.72rem] whitespace-normal xl:whitespace-nowrap"
           />
         </div>
 

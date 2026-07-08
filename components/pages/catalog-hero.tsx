@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BriefcaseBusiness, CheckCircle2, Gavel } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -61,15 +61,24 @@ function HeroInfoCard({
 }
 
 export function CatalogHero() {
-  const heroStyle = {
-    "--catalog-hero-image": `image-set(url("${HERO_BACKGROUND_AVIF}") type("image/avif"), url("${HERO_BACKGROUND_WEBP}") type("image/webp"), url("${HERO_BACKGROUND_FALLBACK}") type("image/png"))`
-  } as CSSProperties;
-
   return (
-    <section
-      className="relative isolate overflow-hidden bg-white bg-bottom bg-no-repeat md:bg-[image:var(--catalog-hero-image)] md:bg-[length:100%_auto]"
-      style={heroStyle}
-    >
+    <section className="relative isolate overflow-hidden bg-white">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 -z-20 hidden w-[54%] md:block">
+        <picture>
+          <source srcSet={HERO_BACKGROUND_AVIF} type="image/avif" />
+          <source srcSet={HERO_BACKGROUND_WEBP} type="image/webp" />
+          <img
+            alt=""
+            className="h-full w-full object-cover object-center"
+            data-testid="catalog-hero-image"
+            decoding="async"
+            fetchPriority="high"
+            loading="eager"
+            src={HERO_BACKGROUND_FALLBACK}
+          />
+        </picture>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.16)_14%,rgba(255,255,255,0.54)_44%,rgba(255,255,255,0.88)_100%)]" />
+      </div>
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.88)_0%,rgba(255,255,255,0.76)_42%,rgba(255,255,255,0.50)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.94)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 h-14 rounded-t-[2.4rem] border-t border-black/6 bg-white" />
