@@ -1989,7 +1989,22 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText(/gagal \/ pelanggaran/i)).toBeInTheDocument();
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
+    const failureAssetPanel = screen.getByText(/detail aset lelang \(arsip\)/i).closest("section");
+    const failureProgressSection = screen.getByText(/progress penyelesaian/i).closest("section");
+    const failureRankingSection = screen.getByText(/bidders ranking table \(arsip\)/i).closest("section");
     const failurePerformancePanel = screen.getByTestId("admin-vickrey-failure-performance-panel");
+    expect(failureAssetPanel).not.toBeNull();
+    expect(failureProgressSection).not.toBeNull();
+    expect(failureRankingSection).not.toBeNull();
+    expect(failureAssetPanel).toHaveClass("lg:min-h-[18.75rem]");
+    expect(failureProgressSection).toHaveClass("h-full", "justify-between");
+    expect(failurePerformancePanel).toHaveClass("h-full");
+    expect(failureAssetPanel!.compareDocumentPosition(failurePerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(failureProgressSection!.compareDocumentPosition(failureRankingSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(failurePerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(failurePerformancePanel).toHaveTextContent("34x");
     expect(failurePerformancePanel).toHaveTextContent("5 Akun");
@@ -2055,7 +2070,12 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText(/tanpa peserta/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/tidak ada bid masuk/i)).toBeInTheDocument();
     expect(screen.getByText(/belum ada peserta yang mengirim penawaran/i)).toBeInTheDocument();
+    const noBidAssetPanel = screen.getByText(/detail aset lelang \(arsip\)/i).closest("section");
+    const noBidProgressSection = screen.getByText(/progress penyelesaian/i).closest("section");
     const noBidPerformancePanel = screen.getByTestId("admin-vickrey-failure-performance-panel");
+    expect(noBidAssetPanel).toHaveClass("lg:min-h-[18.75rem]");
+    expect(noBidProgressSection).toHaveClass("h-full", "justify-between");
+    expect(noBidPerformancePanel).toHaveClass("h-full");
     expect(noBidPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(noBidPerformancePanel).toHaveTextContent("8x");
     expect(noBidPerformancePanel).toHaveTextContent("0 Akun");

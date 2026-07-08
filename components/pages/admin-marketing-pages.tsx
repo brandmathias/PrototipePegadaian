@@ -5488,11 +5488,11 @@ function VickreyFailureAssetPanel({ auction }: { auction: MarketingSession }) {
   const detailRows = getVickreyAssetDetailRows(auction, true);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section className="flex flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] lg:min-h-[18.75rem]">
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
         Detail Aset Lelang (Arsip)
       </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,0.9fr)] sm:items-center">
+      <div className="mt-4 grid flex-1 gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,0.9fr)] sm:items-center">
         <div className="aspect-[16/9] overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f6f2eb]">
           {media ? (
             isVideo ? (
@@ -5545,7 +5545,7 @@ function VickreyFailureProgressPanel({ auction }: { auction: MarketingSession })
         { label: "Lelang Ulang", status: "Belum dijadwalkan", icon: RefreshCcw, tone: "pending" as const }
       ];
 
-  return <CompactTransactionProgress steps={steps} title="Progress Penyelesaian" />;
+  return <CompactTransactionProgress density="tight" steps={steps} title="Progress Penyelesaian" />;
 }
 
 function VickreyFailureActionFooter({
@@ -5601,15 +5601,25 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
       <VickreyFailureBanner auction={auction} />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
-        <div className="space-y-4">
+        <div className="lg:col-start-1 lg:row-start-1">
           <VickreyFailureProfilePanel auction={auction} />
+        </div>
+
+        <div className="h-full lg:col-start-2 lg:row-span-2 lg:row-start-1 [&>section]:h-full">
+          <VickreyFailureAssetPanel auction={auction} />
+        </div>
+
+        <div className="lg:col-start-1 lg:row-start-2">
           <VickreyFailureMechanismPanel auction={auction} />
+        </div>
+
+        <div className="h-full lg:col-start-1 lg:row-start-3 [&>section]:h-full">
           <VickreyFailureProgressPanel auction={auction} />
         </div>
 
-        <div className="space-y-4">
-          <VickreyFailureAssetPanel auction={auction} />
+        <div className="h-full lg:col-start-2 lg:row-start-3 [&>section]:h-full">
           <MarketingPerformancePanel
+            className="h-full"
             insights={auction.insights}
             lotId={auction.id}
             testId="admin-vickrey-failure-performance-panel"
