@@ -26,14 +26,14 @@ export function CompactTransactionProgress({
   return (
     <section
       className={cn(
-        "rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] flex flex-col justify-between h-full",
-        tight ? "px-4 py-3" : "px-5 py-5",
+        "rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]",
+        tight ? "flex h-full flex-col justify-between px-4 py-3" : "px-5 py-5",
       )}
     >
       <p className={cn("font-black uppercase tracking-[0.04em] text-[#006747] shrink-0", tight ? "text-[0.72rem]" : "text-[0.82rem]")}>
         {title}
       </p>
-      <div className={cn("relative flex-1 flex items-center justify-center w-full", tight ? "mt-3.5" : "mt-5")}>
+      <div className={cn("relative w-full", tight ? "mt-3.5 flex flex-1 items-center justify-center" : "mt-4")}>
         <div className="relative grid grid-cols-3 items-start px-1 text-center w-full">
           <span
             className={cn(

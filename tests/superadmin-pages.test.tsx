@@ -1691,6 +1691,106 @@ describe("superadmin pages", () => {
     expect(within(winnerPanel).getByText("Menunggu Buyer Selesai").parentElement).toHaveClass("text-[0.56rem]");
   });
 
+  it("keeps the failed vickrey progress panel compact without stretching the right rail", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-erling",
+              code: "UPC-ERL",
+              name: "UPC Erling",
+              address: "Manado",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-iphone",
+              code: "SBG-117870000000028",
+              name: "iPhone 17 Pro Max 512GB Cosmic Orange",
+              category: "elektronik",
+              condition: "baik",
+              status: "GAGAL",
+              appraisalValue: 12_000_000,
+              specifications: {},
+              media: [],
+            },
+            operationalStatus: "Gagal",
+            operationalTone: "red",
+            marketing: {
+              id: "pemasaran-failure-archive",
+              lotId: "barang-iphone",
+              lot: "iPhone 17 Pro Max 512GB Cosmic Orange",
+              code: "SBG-117870000000028",
+              status: "GAGAL",
+              mode: "VICKREY_AUCTION",
+              iteration: 5,
+              totalIterations: 5,
+              createdAt: "2026-06-26T14:10:00+08:00",
+              endingAt: "2026-06-26T23:10:00+08:00",
+              paymentDeadline: "2026-06-27T23:59:00+08:00",
+              participants: 2,
+              revealedBidCount: 2,
+              pendingRevealCount: 0,
+              insights: {
+                views: 26,
+                likes: 3,
+                participants: 2,
+              },
+              basePrice: 12_000_000,
+              finalPrice: 12_000_000,
+              winner: "Erling Haaland",
+              buyerName: "Erling Haaland",
+              buyerEmail: "haaland@mail.com",
+              buyerPhone: "081200001004",
+              transactionStatus: "GAGAL",
+              note: "Pemenang tidak melakukan pelunasan dalam batas waktu 24 jam setelah lelang diumumkan.",
+              bids: [
+                {
+                  id: "bid-haaland",
+                  bidderId: "buyer-haaland",
+                  bidderName: "Erling Haaland",
+                  submittedAtLabel: "26 Jun 2026, 23.15 WIB",
+                  amount: 15_000_000,
+                  isRevealed: true,
+                  rank: 1,
+                  isWinner: true,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-messi",
+                  bidderId: "buyer-messi",
+                  bidderName: "Lionel Messi",
+                  submittedAtLabel: "26 Jun 2026, 23.14 WIB",
+                  amount: 12_000_000,
+                  isRevealed: true,
+                  rank: 2,
+                  isWinner: false,
+                  determinesFinalPrice: true,
+                },
+              ],
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    const progressSection = screen.getByText("Progress Penyelesaian").closest("section");
+    const performancePanel = screen.getByTestId("superadmin-vickrey-failure-performance-panel");
+
+    expect(progressSection).not.toBeNull();
+    expect(progressSection).not.toHaveClass("h-full");
+    expect(progressSection).not.toHaveClass("justify-between");
+    expect(progressSection).toHaveTextContent("Gagal Bayar");
+    expect(progressSection).toHaveTextContent("Belum tercapai");
+    expect(performancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(performancePanel).toHaveTextContent("26x");
+    expect(performancePanel).toHaveTextContent("3 Akun");
+    expect(progressSection!.compareDocumentPosition(performancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it("prints the prepared superadmin receipt in place on mobile without opening the receipt route", async () => {
     vi.useRealTimers();
 
