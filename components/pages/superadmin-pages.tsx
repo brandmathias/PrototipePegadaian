@@ -30,8 +30,8 @@ import {
   CircleDot,
   CircleX,
   Clock3,
-  ClipboardList,
   Cpu,
+  Crown,
   CreditCard,
   Download,
   Eye,
@@ -3708,56 +3708,69 @@ function getSuperAdminRankingRowClasses(
 function getSuperAdminRankingBadge(rank: number) {
   if (rank === 1) {
     return {
-      icon: Trophy,
-      tone: "text-[#f5b301]",
+      accent: "gold" as const,
       text: "text-[#8f5a00]",
-      bg: "bg-[#fff7db]",
-      ring: "ring-[#fde2a5]",
+      circle: "bg-[linear-gradient(180deg,#ffc934,#f1ab00)]",
+      ring: "ring-[#f6c453]",
+      border: "border-[#ffe8a3]",
+      ribbon: "bg-[#db4b39]",
     };
   }
 
   if (rank === 2) {
     return {
-      icon: Medal,
+      accent: "silver" as const,
       tone: "text-[#98a2b3]",
       text: "text-[#475467]",
-      bg: "bg-[#f3f4f6]",
+      circle: "bg-[linear-gradient(180deg,#f5f7fa,#cfd6df)]",
       ring: "ring-[#d0d5dd]",
+      border: "border-[#f8fafc]",
+      ribbon: "bg-[#bfc7d1]",
     };
   }
 
   if (rank === 3) {
     return {
-      icon: Medal,
-      tone: "text-[#c26b00]",
+      accent: "bronze" as const,
       text: "text-[#8f3b00]",
-      bg: "bg-[#fff1e8]",
-      ring: "ring-[#f7c9a9]",
+      circle: "bg-[linear-gradient(180deg,#d89340,#b96b1c)]",
+      ring: "ring-[#d59a63]",
+      border: "border-[#f5d0b0]",
+      ribbon: "bg-[#db4b39]",
     };
   }
 
   return {
-    icon: Medal,
-    tone: "text-[#98a2b3]",
+    accent: "silver" as const,
     text: "text-[#475467]",
-    bg: "bg-[#f8fafc]",
-    ring: "ring-[#e2e8f0]",
+    circle: "bg-[linear-gradient(180deg,#f8fafc,#d7dde5)]",
+    ring: "ring-[#dbe2ea]",
+    border: "border-[#ffffff]",
+    ribbon: "bg-[#bfc7d1]",
   };
 }
 
 function SuperAdminRankingAvatar({
   bidderImage,
   bidderName,
+  rank,
 }: {
   bidderImage?: string | null;
   bidderName: string;
+  rank: number;
 }) {
+  const badgeTone = getSuperAdminRankingBadge(rank);
+
   return bidderImage ? (
-    <span className="relative size-8 shrink-0 overflow-hidden rounded-full border-2 border-[#d5eadc] bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ring-[#8fd0a9]/85">
+    <span
+      className={`relative size-8 shrink-0 overflow-hidden rounded-full border-2 bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ${badgeTone.border} ${badgeTone.ring}`}
+    >
       <Image alt={`Foto peserta ${bidderName}`} className="object-cover" fill sizes="32px" src={bidderImage} />
     </span>
   ) : (
-    <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-[#d5eadc] bg-[#d9e3dc] text-[0.62rem] font-black uppercase tracking-[0.05em] text-[#006747] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ring-[#8fd0a9]/85">
+    <span
+      className={`grid size-8 shrink-0 place-items-center rounded-full border-2 bg-[#d9e3dc] text-[0.62rem] font-black uppercase tracking-[0.05em] text-[#14213d] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ${badgeTone.border} ${badgeTone.ring}`}
+    >
       {getSuperAdminInitials(bidderName)}
     </span>
   );
@@ -3765,16 +3778,23 @@ function SuperAdminRankingAvatar({
 
 function SuperAdminRankingMarker({ rank }: { rank: number }) {
   const badgeTone = getSuperAdminRankingBadge(rank);
-  const Icon = badgeTone.icon;
 
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span
-        className={`inline-flex size-7 items-center justify-center rounded-full border border-white/80 ring-1 ${badgeTone.bg} ${badgeTone.ring}`}
-      >
-        <Icon className={`size-4 ${badgeTone.tone}`} strokeWidth={1.9} />
+      <span className="relative inline-flex size-7 shrink-0 items-center justify-center">
+        <span
+          className={`relative z-[1] inline-flex size-6 items-center justify-center rounded-full border ring-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] ${badgeTone.circle} ${badgeTone.border} ${badgeTone.ring}`}
+        >
+          <span className={`text-[0.72rem] font-black leading-none text-white ${rank === 2 ? "text-[#667085]" : ""}`}>
+            {rank}
+          </span>
+        </span>
+        <span className="absolute bottom-0 left-1/2 z-0 flex -translate-x-1/2 items-start gap-[2px]">
+          <span className={`h-2.5 w-[5px] rounded-b-[2px] ${badgeTone.ribbon} [clip-path:polygon(0_0,100%_0,80%_100%,20%_100%)]`} />
+          <span className={`h-2.5 w-[5px] rounded-b-[2px] ${badgeTone.ribbon} [clip-path:polygon(0_0,100%_0,80%_100%,20%_100%)]`} />
+        </span>
       </span>
-      <span className={`text-[0.8rem] font-black leading-none ${badgeTone.text}`}>{rank}</span>
+      <span className={`text-[0.84rem] font-black leading-none ${badgeTone.text}`}>{rank}</span>
     </span>
   );
 }
@@ -4206,8 +4226,8 @@ function SuperAdminVickreyRankingTable({
   return (
     <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
       <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <ClipboardList className="size-3.5 shrink-0 text-[#40558b]" />
-        <h3 className="text-[0.76rem] font-black uppercase tracking-[0.03em] text-[#111b46]">
+        <Crown className="size-3.5 shrink-0 text-[#40558b]" strokeWidth={2} />
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.035em] text-[#111b46]">
           {fulfilled ? "Bidders Ranking Table (Arsip)" : "Ranking Peserta Lelang (Admin View)"}
         </h3>
       </div>
@@ -4221,7 +4241,7 @@ function SuperAdminVickreyRankingTable({
             <col className="w-[23%]" />
           </colgroup>
           <thead>
-            <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
+            <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
               <th className="px-3 py-3 text-center">#</th>
               <th className="px-3 py-3">Nama Peserta</th>
               <th className="px-3 py-3">Waktu Penawaran</th>
@@ -4244,17 +4264,17 @@ function SuperAdminVickreyRankingTable({
                   <td className="px-3 py-3.5 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} />
-                      <p className="truncate text-[0.78rem] font-semibold leading-5 text-[#14213d]">{bid.bidderName}</p>
+                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
+                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">{bid.bidderName}</p>
                     </div>
                   </td>
                   <td className="px-3 py-3.5">
-                    <div className="flex items-center gap-2 font-mono text-[0.64rem] font-bold leading-4 text-[#40558b]">
+                    <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
                       <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
                       <span className="break-words">{bid.submittedAtLabel}</span>
                     </div>
                   </td>
-                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.74rem] font-black leading-4 ${amountTone}`}>
+                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}>
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
                   <td className="px-3 py-3.5 text-center">
@@ -4262,7 +4282,7 @@ function SuperAdminVickreyRankingTable({
                       <span className="font-black text-[#40558b]">-</span>
                     ) : (
                       <span
-                        className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.53rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.56rem] ${statusTone}`}
+                        className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}
                       >
                         <StatusIcon className="size-3.5 shrink-0" />
                         <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
@@ -4856,8 +4876,8 @@ function SuperAdminVickreyFailureRankingTable({
   return (
     <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
       <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <ClipboardList className="size-3.5 shrink-0 text-[#40558b]" />
-        <h3 className="text-[0.76rem] font-black uppercase tracking-[0.03em] text-[#111b46]">
+        <Crown className="size-3.5 shrink-0 text-[#40558b]" strokeWidth={2} />
+        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.035em] text-[#111b46]">
           Bidders Ranking Table (Arsip)
         </h3>
       </div>
@@ -4870,7 +4890,7 @@ function SuperAdminVickreyFailureRankingTable({
           <col className="w-[23%]" />
         </colgroup>
         <thead>
-          <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
+          <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
             <th className="px-3 py-3 text-center">#</th>
             <th className="px-3 py-3">Nama Peserta</th>
             <th className="px-3 py-3">Waktu Penawaran</th>
@@ -4895,21 +4915,21 @@ function SuperAdminVickreyFailureRankingTable({
                   <td className="px-3 py-3.5 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} />
-                      <p className="truncate text-[0.78rem] font-semibold leading-5 text-[#14213d]">{bid.bidderName}</p>
+                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
+                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">{bid.bidderName}</p>
                     </div>
                   </td>
                   <td className="px-3 py-3.5">
-                    <div className="flex items-center gap-2 font-mono text-[0.64rem] font-bold leading-4 text-[#40558b]">
+                    <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
                       <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
                       <span className="break-words">{bid.submittedAtLabel}</span>
                     </div>
                   </td>
-                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.74rem] font-black leading-4 ${amountTone}`}>
+                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}>
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
                   <td className="px-3 py-3.5 text-center">
-                    <span className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.53rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.56rem] ${statusTone}`}>
+                    <span className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}>
                       <StatusIcon className="size-3.5 shrink-0" />
                       <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
                     </span>
