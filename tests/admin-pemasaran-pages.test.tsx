@@ -1136,6 +1136,54 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeInTheDocument();
   });
 
+  it("disables remarketing from archived admin vickrey iterations when a newer iteration exists", () => {
+    const latestIteration = {
+      id: "pm-ipad-iteration-newest",
+      lotId: "barang-ipad-history",
+      lot: "Ipad",
+      code: "BRG-42969709",
+      category: "elektronik",
+      condition: "baik",
+      status: "AKTIF",
+      mode: "VICKREY_AUCTION",
+      iteration: 2,
+      createdAt: "2026-06-03T00:00:00.000Z",
+      ending: "3 Jun 2026",
+      endingAt: "2026-06-03T20:13:00.000Z",
+      participants: 0,
+      basePrice: 10_000_000,
+      finalPrice: null,
+      winner: null,
+      visibility: "TERKUNCI",
+      bids: []
+    };
+    const archivedIteration = {
+      ...latestIteration,
+      id: "pm-ipad-iteration-archived",
+      status: "GAGAL",
+      iteration: 1,
+      createdAt: "2026-06-01T00:00:00.000Z",
+      ending: "1 Jun 2026",
+      endingAt: "2026-06-01T20:13:00.000Z",
+      visibility: "HASIL_DIBUKA",
+      note: "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
+    };
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          ...archivedIteration,
+          iterationHistory: [latestIteration, archivedIteration]
+        }}
+      />
+    );
+
+    const relistButton = screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i });
+    expect(relistButton).toBeDisabled();
+    fireEvent.click(relistButton);
+    expect(screen.queryByRole("heading", { name: /pasarkan barang/i })).not.toBeInTheDocument();
+  });
+
   it("refreshes the admin vickrey detail automatically when the live countdown expires", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-06-02T20:18:59+08:00"));
@@ -1595,9 +1643,13 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/detail aset lelang$/i)).toBeInTheDocument();
     const assetPanel = screen.getByText(/detail aset lelang$/i).closest("section");
     const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
+    const settlementPerformancePanel = screen.getByTestId("admin-vickrey-settlement-performance-panel");
     expect(assetPanel).not.toHaveClass("h-full");
-    expect(progressPanel?.parentElement).toHaveClass("grid", "lg:grid-rows-[minmax(0,1fr)_auto]");
-    expect(progressPanel?.parentElement).not.toHaveClass("space-y-4");
+    expect(progressPanel?.parentElement).toHaveClass("space-y-4");
+    expect(settlementPerformancePanel.parentElement).toHaveClass("grid", "lg:grid-rows-[minmax(0,1fr)_auto]");
+    expect(assetPanel?.compareDocumentPosition(settlementPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
@@ -1788,6 +1840,8 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByText(/lelang selesai sempurna .* aset telah diserahkan/i)).toBeInTheDocument();
+    expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
+    expect(screen.getByText("Iterasi 1")).toBeInTheDocument();
     expect(screen.getByText(/pembayaran & penyerahan selesai/i)).toBeInTheDocument();
     expect(screen.getByText(/manifes penyerahan & pemenang/i)).toBeInTheDocument();
     expect(screen.getByText(/barang sudah diambil/i)).toBeInTheDocument();
@@ -1986,7 +2040,10 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByText(/^gagal$/i)).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
+    const noBidHeaderBadge = screen
+      .getAllByText(/^gagal$/i)
+      .find((element) => element.className.includes("bg-[#fdeeee]"));
+    expect(noBidHeaderBadge).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
     expect(screen.getByText(/lelang gagal .* tidak ada peserta/i)).toBeInTheDocument();
     expect(screen.getByText(/sesi berakhir tanpa peserta yang mengirim bid/i)).toBeInTheDocument();
     expect(screen.getByText(/manifes kegagalan sesi/i)).toBeInTheDocument();
@@ -2086,7 +2143,10 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByText(/^gagal$/i)).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
+    const failedHeaderBadge = screen
+      .getAllByText(/^gagal$/i)
+      .find((element) => element.className.includes("bg-[#fdeeee]"));
+    expect(failedHeaderBadge).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
     expect(screen.getByText(/lelang gagal .* pemenang dikenakan sanksi/i)).toBeInTheDocument();
     expect(screen.getByText(/batas 24 jam terlewati/i)).toBeInTheDocument();
   });

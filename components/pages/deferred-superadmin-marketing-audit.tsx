@@ -16,10 +16,14 @@ const MarketingAuditPanel = dynamic(() =>
 
 export function DeferredSuperAdminMarketingAudit({
   marketing,
+  onSelectedIterationChange,
   receiptContext,
+  selectedIterationId,
 }: {
   marketing: SuperAdminUnitBarangMarketingSession;
+  onSelectedIterationChange?: (iterationId: string) => void;
   receiptContext: SuperAdminMarketingReceiptContext;
+  selectedIterationId?: string;
 }) {
   const markerRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -45,7 +49,12 @@ export function DeferredSuperAdminMarketingAudit({
       ref={markerRef}
     >
       {visible ? (
-        <MarketingAuditPanel marketing={marketing} receiptContext={receiptContext} />
+        <MarketingAuditPanel
+          marketing={marketing}
+          onSelectedIterationChange={onSelectedIterationChange}
+          receiptContext={receiptContext}
+          selectedIterationId={selectedIterationId}
+        />
       ) : (
         <div
           aria-hidden="true"

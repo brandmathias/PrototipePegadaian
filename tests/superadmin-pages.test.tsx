@@ -1490,6 +1490,8 @@ describe("superadmin pages", () => {
     fireEvent.click(archivedIterationOption);
     expect(screen.getByText("Sesi Harga Tetap Diarsipkan")).toBeInTheDocument();
     expect(screen.queryByText("Ringkasan Sesi Harga Tetap")).not.toBeInTheDocument();
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga Tetap");
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 20.000.000");
     const fixedPriceLayout = screen.getByTestId("superadmin-fixed-price-settlement-layout");
     const fixedPricePrimaryGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
     const fixedPricePerformancePanel = screen.getByTestId("superadmin-fixed-price-performance-panel");
@@ -1786,6 +1788,7 @@ describe("superadmin pages", () => {
     expect(performancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(performancePanel).toHaveTextContent("26x");
     expect(performancePanel).toHaveTextContent("3 Akun");
+    expect(screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     expect(progressSection!.compareDocumentPosition(performancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );

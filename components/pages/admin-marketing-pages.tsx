@@ -1733,6 +1733,13 @@ function getMarketingIterationSummary(auction: MarketingSession) {
   return auction.buyerName || getFixedPriceOperationalNote(auction);
 }
 
+function isLatestMarketingIteration(auction: MarketingSession) {
+  const history = auction.iterationHistory?.length ? auction.iterationHistory : [auction];
+  const sortedHistory = [...history].sort(compareMarketingRecency);
+
+  return (sortedHistory[0]?.id ?? auction.id) === auction.id;
+}
+
 function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession }) {
   const router = useRouter();
   const history = useMemo(() => {
@@ -1767,10 +1774,6 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
     [auction.id, history, router]
   );
 
-  if (history.length <= 1) {
-    return null;
-  }
-
   const selectedIteration = history.find((entry) => entry.id === selectedIterationId) ?? history[0];
   const latestIterationId = history[0]?.id;
   const selectedStatus = getMarketingWorkflowStatus(selectedIteration);
@@ -1793,13 +1796,20 @@ function MarketingIterationHistoryPanel({ auction }: { auction: MarketingSession
             {auction.lot}
           </h2>
         </div>
-        <AdminSelect
-          ariaLabel="Pilih iterasi pemasaran"
-          className="w-full sm:w-[13.75rem] [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.92rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
-          options={iterationOptions}
-          value={selectedIteration.id}
-          onValueChange={handleIterationChange}
-        />
+        {iterationOptions.length > 1 ? (
+          <AdminSelect
+            ariaLabel="Pilih iterasi pemasaran"
+            className="w-full sm:w-[13.75rem] [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.92rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.9rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
+            options={iterationOptions}
+            value={selectedIteration.id}
+            onValueChange={handleIterationChange}
+          />
+        ) : (
+          <span className="inline-flex h-10 w-fit items-center gap-2 rounded-[0.72rem] border border-[#d7e0ec] bg-[#fbfcfe] px-3 text-[0.84rem] font-black text-[#192333] shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)]">
+            <FileText className="size-4 text-[#61707f]" />
+            Iterasi {selectedIteration.iteration ?? 1}
+          </span>
+        )}
       </div>
 
       <div className="mt-5 border-t border-[#e6eee9] pt-5">
@@ -2493,7 +2503,8 @@ export function AdminFixedPriceDetailPage({
   const fixedPriceReceiptLockMessage = getMarketingReceiptLockMessage(auction);
   const fixedPriceAmount = currency.format(auction.price ?? 0);
   const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
-  const canScheduleRemarketing = auction.status === "AKTIF" && !auction.transactionId;
+  const canShowRemarketingAction = auction.status === "AKTIF" && !auction.transactionId;
+  const canScheduleRemarketing = canShowRemarketingAction && isLatestMarketingIteration(auction);
   const shouldAutoRefresh =
     Boolean(auction.transactionId) &&
     !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(auction.transactionStatus ?? "");
@@ -2639,10 +2650,12 @@ export function AdminFixedPriceDetailPage({
                 />
               </div>
             ) : null}
-            {canScheduleRemarketing ? (
+            {canShowRemarketingAction ? (
               <button
-                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] sm:col-span-2"
-                onClick={() => setIsRelistModalOpen(true)}
+                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#006747] px-4 text-sm font-black text-white shadow-[0_18px_32px_-24px_rgba(0,103,71,0.58)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00543a] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 sm:col-span-2"
+                disabled={!canScheduleRemarketing}
+                onClick={canScheduleRemarketing ? () => setIsRelistModalOpen(true) : undefined}
+                title={!canScheduleRemarketing ? "Pemasaran ulang hanya bisa dijadwalkan dari iterasi terbaru." : undefined}
                 type="button"
               >
                 <RefreshCcw className="size-4" />
@@ -5536,15 +5549,19 @@ function VickreyFailureProgressPanel({ auction }: { auction: MarketingSession })
 }
 
 function VickreyFailureActionFooter({
+  disabled = false,
   onRelist
 }: {
+  disabled?: boolean;
   onRelist: () => void;
 }) {
   return (
     <div className="grid gap-3 print:hidden">
       <button
-        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-        onClick={onRelist}
+        className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50"
+        disabled={disabled}
+        onClick={disabled ? undefined : onRelist}
+        title={disabled ? "Pemasaran ulang hanya bisa dijadwalkan dari iterasi terbaru." : undefined}
         type="button"
       >
         <RefreshCcw className="size-4.5" />
@@ -5577,6 +5594,7 @@ function VickreyFailureAuditFooter({ auction }: { auction: MarketingSession }) {
 function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession }) {
   const [isRelistModalOpen, setIsRelistModalOpen] = useState(false);
   const serverNow = useMemo(() => new Date().toISOString(), []);
+  const canRelist = isLatestMarketingIteration(auction);
 
   return (
     <div className="space-y-4 print:space-y-3">
@@ -5586,21 +5604,21 @@ function VickreyFailedArchiveWorkspace({ auction }: { auction: MarketingSession 
         <div className="space-y-4">
           <VickreyFailureProfilePanel auction={auction} />
           <VickreyFailureMechanismPanel auction={auction} />
-          <VickreyFailureRankingTable auction={auction} />
+          <VickreyFailureProgressPanel auction={auction} />
         </div>
 
-        <div className="space-y-4 lg:sticky lg:top-4">
+        <div className="space-y-4">
           <VickreyFailureAssetPanel auction={auction} />
-          <VickreyFailureProgressPanel auction={auction} />
           <MarketingPerformancePanel
             insights={auction.insights}
             lotId={auction.id}
             testId="admin-vickrey-failure-performance-panel"
           />
-          <VickreyFailureActionFooter onRelist={() => setIsRelistModalOpen(true)} />
         </div>
       </div>
 
+      <VickreyFailureRankingTable auction={auction} />
+      <VickreyFailureActionFooter disabled={!canRelist} onRelist={() => setIsRelistModalOpen(true)} />
       <VickreyFailureAuditFooter auction={auction} />
 
       {isRelistModalOpen ? (
@@ -5676,7 +5694,7 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
           <div className="space-y-4">
             <VickreyWinnerProfilePanel auction={auction} />
             <VickreyMechanismPanel auction={auction} />
-            <VickreyWinnerRankingTable auction={auction} />
+            <VickreyPaymentProgressPanel auction={auction} />
             <div className="flex items-center gap-2 px-1 text-[0.72rem] font-semibold text-[#6f83b6]">
               <ShieldCheck className="size-4 text-[#7eb7a5]" />
               Seluruh data dilindungi sistem keamanan berlapis dan tidak dapat diubah secara manual.
@@ -5685,15 +5703,15 @@ function VickreyWinnerSettlementWorkspace({ auction }: { auction: MarketingSessi
 
           <div className="grid min-h-0 gap-4 lg:grid-rows-[minmax(0,1fr)_auto]">
             <VickreyWinnerAssetPanel auction={auction} />
-            <VickreyPaymentProgressPanel auction={auction} />
+            <MarketingPerformancePanel
+              insights={auction.insights}
+              lotId={auction.id}
+              testId="admin-vickrey-settlement-performance-panel"
+            />
           </div>
         </div>
 
-        <MarketingPerformancePanel
-          insights={auction.insights}
-          lotId={auction.id}
-          testId="admin-vickrey-settlement-performance-panel"
-        />
+        <VickreyWinnerRankingTable auction={auction} />
 
         {auction.transactionId ? (
           <div aria-label="Area upload bukti serah-terima pemenang" className="w-full">

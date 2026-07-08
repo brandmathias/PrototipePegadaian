@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BadgeCheck,
   Ban,
@@ -279,6 +281,12 @@ export function SuperAdminUnitBarangDetailPage({
 }: {
   detail: SuperAdminUnitBarangDetail | null;
 }) {
+  const [selectedMarketingIterationId, setSelectedMarketingIterationId] = useState(() => detail?.marketing?.id ?? "");
+
+  useEffect(() => {
+    setSelectedMarketingIterationId(detail?.marketing?.id ?? "");
+  }, [detail?.marketing?.id]);
+
   if (!detail) {
     return (
       <Card className="border border-border/70 bg-white p-8">
@@ -291,16 +299,26 @@ export function SuperAdminUnitBarangDetailPage({
   const itemName = String(item.name ?? "Detail Barang");
   const itemCode = String(item.code ?? item.id);
   const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
-  const marketingMode = String(marketing?.mode ?? "").toLowerCase();
+  const marketingIterations =
+    marketing?.iterationHistory?.length
+      ? [marketing, ...marketing.iterationHistory.filter((entry) => entry.id !== marketing.id)]
+      : marketing
+        ? [marketing]
+        : [];
+  const selectedMarketingIteration =
+    marketingIterations.find((entry) => entry.id === selectedMarketingIterationId) ??
+    marketingIterations[0] ??
+    marketing;
+  const marketingMode = String(selectedMarketingIteration?.mode ?? "").toLowerCase();
   const isVickreyMarketing = marketingMode.includes("vickrey") || marketingMode.includes("auction");
   const heroPriceLabel = isVickreyMarketing
     ? "Lelang Tertutup"
-    : marketing
+    : selectedMarketingIteration
       ? "Harga Tetap"
       : "Nilai Taksiran";
   const heroPriceValue = isVickreyMarketing
-    ? marketing?.finalPrice ?? marketing?.basePrice ?? item.appraisalValue ?? 0
-    : marketing?.price ?? marketing?.finalPrice ?? item.appraisalValue ?? 0;
+    ? selectedMarketingIteration?.finalPrice ?? selectedMarketingIteration?.basePrice ?? item.appraisalValue ?? 0
+    : selectedMarketingIteration?.price ?? selectedMarketingIteration?.finalPrice ?? item.appraisalValue ?? 0;
   const specificationRows = getBarangSpecificationRows(
     String(item.category ?? ""),
     item.specifications ?? {},
@@ -411,6 +429,7 @@ export function SuperAdminUnitBarangDetailPage({
       {marketing ? (
         <DeferredSuperAdminMarketingAudit
           marketing={marketing}
+          onSelectedIterationChange={setSelectedMarketingIterationId}
           receiptContext={{
             itemCode,
             itemMedia: media,
@@ -418,6 +437,7 @@ export function SuperAdminUnitBarangDetailPage({
             unitAddress: unit.address,
             unitName: unit.name,
           }}
+          selectedIterationId={selectedMarketingIteration?.id ?? selectedMarketingIterationId}
         />
       ) : null}
     </div>

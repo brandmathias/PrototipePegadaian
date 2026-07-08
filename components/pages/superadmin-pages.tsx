@@ -4450,17 +4450,6 @@ function SuperAdminVickreyActionFooter({
   );
 }
 
-function SuperAdminVickreyFailureActionFooter() {
-  return (
-    <div className="grid gap-3 print:hidden">
-      <SuperAdminPassiveActionButton className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]">
-        <RefreshCcw className="size-4.5" />
-        Jadwalkan Pasarkan Ulang
-      </SuperAdminPassiveActionButton>
-    </div>
-  );
-}
-
 function SuperAdminVickreyFailureBanner({
   session,
 }: {
@@ -4991,18 +4980,17 @@ function SuperAdminVickreyWorkspace({
           <div className="space-y-4">
             <SuperAdminVickreyFailureProfilePanel session={session} />
             <SuperAdminVickreyFailureMechanismPanel session={session} />
-            <SuperAdminVickreyFailureRankingTable session={session} />
-          </div>
-          <div className="space-y-4 2xl:sticky 2xl:top-4">
             <SuperAdminVickreyFailureProgressPanel session={session} />
+          </div>
+          <div className="space-y-4">
             <MarketingPerformancePanel
               insights={session.insights}
               lotId={session.id}
               testId="superadmin-vickrey-failure-performance-panel"
             />
-            <SuperAdminVickreyFailureActionFooter />
           </div>
         </div>
+        <SuperAdminVickreyFailureRankingTable session={session} />
         <SuperAdminReadOnlyAuditFooter
           icon={ShieldCheck}
           note={
@@ -5036,14 +5024,14 @@ function SuperAdminVickreyWorkspace({
           data-testid="superadmin-vickrey-settlement-secondary-grid"
         >
           <SuperAdminVickreyMechanismPanel session={session} />
-          <SuperAdminVickreyRankingTable session={session} />
+          <MarketingPerformancePanel
+            insights={session.insights}
+            lotId={session.id}
+            testId="superadmin-vickrey-settlement-performance-panel"
+          />
         </div>
 
-        <MarketingPerformancePanel
-          insights={session.insights}
-          lotId={session.id}
-          testId="superadmin-vickrey-settlement-performance-panel"
-        />
+        <SuperAdminVickreyRankingTable session={session} />
 
         <div data-testid="superadmin-vickrey-settlement-handover">
           <SuperAdminHandoverProofAuditCard
@@ -5136,16 +5124,20 @@ function SuperAdminDetailInfoCard({
 
 export function SuperAdminMarketingAuditPanel({
   marketing,
+  onSelectedIterationChange,
   receiptContext,
+  selectedIterationId: controlledSelectedIterationId,
 }: {
   marketing: SuperAdminUnitBarangMarketingSession | null;
+  onSelectedIterationChange?: (iterationId: string) => void;
   receiptContext: SuperAdminMarketingReceiptContext;
+  selectedIterationId?: string;
 }) {
   const iterationHistory = getSuperAdminIterationHistory(marketing);
-  const [selectedIterationId, setSelectedIterationId] = useState(() => marketing?.id ?? "");
+  const [internalSelectedIterationId, setInternalSelectedIterationId] = useState(() => marketing?.id ?? "");
 
   useEffect(() => {
-    setSelectedIterationId(marketing?.id ?? "");
+    setInternalSelectedIterationId(marketing?.id ?? "");
   }, [marketing?.id]);
 
   if (!marketing) {
@@ -5153,6 +5145,7 @@ export function SuperAdminMarketingAuditPanel({
   }
 
   const latestIterationId = iterationHistory[0]?.id;
+  const selectedIterationId = controlledSelectedIterationId ?? internalSelectedIterationId;
   const selectedIteration =
     iterationHistory.find((entry) => entry.id === selectedIterationId) ?? iterationHistory[0] ?? marketing;
   const selectedStatus = formatSuperAdminDisplayLabel(selectedIteration.status);
@@ -5175,6 +5168,10 @@ export function SuperAdminMarketingAuditPanel({
     value: entry.id,
     label: `Iterasi ${entry.iteration ?? iterationHistory.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
   }));
+  const handleSelectedIterationChange = (iterationId: string) => {
+    setInternalSelectedIterationId(iterationId);
+    onSelectedIterationChange?.(iterationId);
+  };
 
   return (
     <section className="space-y-2 overflow-hidden rounded-[1.05rem] border border-[#d8e8dd] border-l-[4px] border-l-[#008f4a] bg-white px-3 py-2.5 shadow-[0_22px_58px_-42px_rgba(15,23,42,0.28)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]">
@@ -5191,7 +5188,7 @@ export function SuperAdminMarketingAuditPanel({
           <AdminSelect
             ariaLabel="Pilih iterasi pemasaran"
             className="w-full sm:w-[11.5rem] [&_.admin-select-trigger]:h-9 [&_.admin-select-trigger]:rounded-[0.72rem] [&_.admin-select-trigger]:border-[#d7e0ec] [&_.admin-select-trigger]:bg-[#fbfcfe] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.78rem] [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-[#192333] [&_.admin-select-trigger]:shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#006747]/45 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.48),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-icon]:text-[#15231d] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-9 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.78rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option]:text-[#192333] [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
-            onValueChange={setSelectedIterationId}
+            onValueChange={handleSelectedIterationChange}
             options={iterationOptions}
             value={selectedIteration.id}
           />
@@ -5358,6 +5355,12 @@ export function SuperAdminUnitBarangDetailPage({
 }: {
   detail: SuperAdminUnitBarangDetail | null;
 }) {
+  const [selectedMarketingIterationId, setSelectedMarketingIterationId] = useState(() => detail?.marketing?.id ?? "");
+
+  useEffect(() => {
+    setSelectedMarketingIterationId(detail?.marketing?.id ?? "");
+  }, [detail?.marketing?.id]);
+
   if (!detail) {
     return (
       <Card className="border border-border/70 bg-white p-8">
@@ -5370,11 +5373,16 @@ export function SuperAdminUnitBarangDetailPage({
   const itemName = String(item.name ?? "Detail Barang");
   const itemCode = String(item.code ?? item.id);
   const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
-  const heroPriceLabel = marketing
-    ? getSuperAdminMarketingPriceLabel(marketing)
+  const marketingIterations = getSuperAdminIterationHistory(marketing);
+  const selectedMarketingIteration =
+    marketingIterations.find((entry) => entry.id === selectedMarketingIterationId) ??
+    marketingIterations[0] ??
+    marketing;
+  const heroPriceLabel = selectedMarketingIteration
+    ? getSuperAdminMarketingPriceLabel(selectedMarketingIteration)
     : "Nilai Taksiran";
-  const heroPriceValue = marketing
-    ? getSuperAdminMarketingPriceValue(marketing)
+  const heroPriceValue = selectedMarketingIteration
+    ? getSuperAdminMarketingPriceValue(selectedMarketingIteration)
     : Number(item.appraisalValue ?? 0);
   const specificationRows = getBarangSpecificationRows(
     String(item.category ?? ""),
@@ -5615,6 +5623,7 @@ export function SuperAdminUnitBarangDetailPage({
       {marketing ? (
         <SuperAdminMarketingAuditPanel
           marketing={marketing}
+          onSelectedIterationChange={setSelectedMarketingIterationId}
           receiptContext={{
             itemCode,
             itemMedia: media,
@@ -5622,6 +5631,7 @@ export function SuperAdminUnitBarangDetailPage({
             unitAddress: unit.address,
             unitName: unit.name,
           }}
+          selectedIterationId={selectedMarketingIteration?.id ?? selectedMarketingIterationId}
         />
       ) : null}
     </div>
