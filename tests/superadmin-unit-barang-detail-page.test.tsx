@@ -67,6 +67,7 @@ describe("route-real superadmin unit barang detail page", () => {
 
     const stack = screen.getByTestId("route-real-superadmin-item-audit-stack");
     const detailCard = screen.getByTestId("route-real-superadmin-item-detail-main-card");
+    const priceFrame = screen.getByTestId("route-real-superadmin-item-price-frame");
     const timeline = screen.getByTestId("route-real-superadmin-asset-timeline");
 
     expect(stack).toHaveClass("grid", "gap-4");
@@ -76,6 +77,8 @@ describe("route-real superadmin unit barang detail page", () => {
     expect(detailCard.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
+    expect(priceFrame).toHaveTextContent("Nilai Taksiran");
+    expect(priceFrame).toHaveTextContent("Rp 15.000.000");
     expect(timeline.querySelector("table")).not.toBeNull();
     expect(timeline).toHaveTextContent("Status");
     expect(timeline).toHaveTextContent("Tanggal & Jam");

@@ -162,6 +162,26 @@ function InfoCard({
   );
 }
 
+function ItemPriceFrame({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-[0.9rem] border border-[#d6a55f]/75 bg-[linear-gradient(180deg,#fffdf8,#fffaf0)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+      data-testid="route-real-superadmin-item-price-frame"
+    >
+      <span className="pointer-events-none absolute left-2 top-2 size-3 border-l border-t border-[#c98f45]" />
+      <span className="pointer-events-none absolute right-2 top-2 size-3 border-r border-t border-[#c98f45]" />
+      <span className="pointer-events-none absolute bottom-2 left-2 size-3 border-b border-l border-[#c98f45]" />
+      <span className="pointer-events-none absolute bottom-2 right-2 size-3 border-b border-r border-[#c98f45]" />
+      <p className="text-center text-[0.7rem] font-black uppercase tracking-[0.24em] text-[#b7791f]">
+        {label}
+      </p>
+      <p className="mt-2 text-center font-serif text-[2.45rem] font-semibold leading-none tracking-normal text-[#111111] sm:text-[3.1rem] xl:text-[3.55rem]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function AssetTimeline({
   detail,
 }: {
@@ -271,6 +291,16 @@ export function SuperAdminUnitBarangDetailPage({
   const itemName = String(item.name ?? "Detail Barang");
   const itemCode = String(item.code ?? item.id);
   const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
+  const marketingMode = String(marketing?.mode ?? "").toLowerCase();
+  const isVickreyMarketing = marketingMode.includes("vickrey") || marketingMode.includes("auction");
+  const heroPriceLabel = isVickreyMarketing
+    ? "Lelang Tertutup"
+    : marketing
+      ? "Harga Tetap"
+      : "Nilai Taksiran";
+  const heroPriceValue = isVickreyMarketing
+    ? marketing?.finalPrice ?? marketing?.basePrice ?? item.appraisalValue ?? 0
+    : marketing?.price ?? marketing?.finalPrice ?? item.appraisalValue ?? 0;
   const specificationRows = getBarangSpecificationRows(
     String(item.category ?? ""),
     item.specifications ?? {},
@@ -338,6 +368,7 @@ export function SuperAdminUnitBarangDetailPage({
                       Kode Barang: <span className="font-medium text-[#0a9f62]">{itemCode}</span>
                     </p>
                   </div>
+                  <ItemPriceFrame label={heroPriceLabel} value={currency.format(Number(heroPriceValue))} />
                   <div className="grid gap-2.5 sm:grid-cols-3">
                     <InfoCard icon={Package2} label="Kategori" value={categoryLabel(String(item.category ?? "-"))} />
                     <InfoCard icon={ShieldCheck} label="Kondisi" value={label(item.condition)} />

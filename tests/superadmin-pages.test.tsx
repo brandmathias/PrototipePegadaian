@@ -1439,6 +1439,8 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Bidders Ranking Table (Arsip)")).toBeInTheDocument();
     expect(screen.getByText("Harga Bayar")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 21.000.000").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga akhir Lelang Tertutup");
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 21.000.000");
     expect(screen.getByText("Lelang Selesai Sempurna - Aset Telah Diserahkan")).toBeInTheDocument();
     expect(screen.getByText("Manifes Penyerahan & Pemenang")).toBeInTheDocument();
     expect(screen.getByText("Mekanisme Lelang (Arsip)")).toBeInTheDocument();
@@ -1487,9 +1489,7 @@ describe("superadmin pages", () => {
     expect(archivedIterationOption.querySelector(".lucide-file-text")).toBeNull();
     fireEvent.click(archivedIterationOption);
     expect(screen.getByText("Sesi Harga Tetap Diarsipkan")).toBeInTheDocument();
-    expect(screen.getByText("Ringkasan Sesi Harga Tetap")).toBeInTheDocument();
-    expect(screen.getByText("Harga Tetap")).toBeInTheDocument();
-    expect(screen.getAllByText("Rp 20.000.000").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Ringkasan Sesi Harga Tetap")).not.toBeInTheDocument();
     const fixedPriceLayout = screen.getByTestId("superadmin-fixed-price-settlement-layout");
     const fixedPricePrimaryGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
     const fixedPricePerformancePanel = screen.getByTestId("superadmin-fixed-price-performance-panel");
@@ -1498,6 +1498,7 @@ describe("superadmin pages", () => {
     expect(fixedPriceLayout).toContainElement(fixedPricePrimaryGrid);
     expect(fixedPriceLayout).toContainElement(fixedPricePerformancePanel);
     expect(fixedPriceLayout).toContainElement(fixedPriceHandover);
+    expect(fixedPricePrimaryGrid).toContainElement(fixedPricePerformancePanel);
     expect(fixedPricePerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(fixedPricePerformancePanel).toHaveTextContent("12x");
     expect(fixedPricePerformancePanel).toHaveTextContent("1 Akun");
@@ -1585,36 +1586,20 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Pembayaran Harga Tetap Ditolak")).toBeInTheDocument();
     const audit = screen.getByTestId("superadmin-payment-verification-audit");
     const fixedPriceGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
-    const summaryCard = screen.getByTestId("superadmin-fixed-price-summary-card");
-    const priceCard = screen.getByTestId("superadmin-fixed-price-price-card");
+    const fixedPricePerformancePanel = screen.getByTestId("superadmin-fixed-price-performance-panel");
     expect(audit).toHaveTextContent("Uang dikirim bukan ke rekening tujuan.");
     expect(audit).toHaveClass("py-2.5", "rounded-lg");
     expect(fixedPriceGrid).toHaveClass("items-stretch", "gap-2", "xl:grid-cols-2");
-    expect(summaryCard).toHaveTextContent("Ringkasan Sesi Harga Tetap");
-    expect(summaryCard).toHaveTextContent("Harga & Catatan Sesi");
-    expect(summaryCard).toHaveTextContent("Rp 15.000.000");
-    expect(summaryCard).toHaveClass("py-2.5");
-    expect(priceCard).toHaveClass("h-12");
+    expect(fixedPriceGrid).toContainElement(fixedPricePerformancePanel);
+    expect(fixedPricePerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(screen.queryByText("Ringkasan Sesi Harga Tetap")).not.toBeInTheDocument();
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga Tetap");
+    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 15.000.000");
     expect(screen.getByText(/maria supit/i)).toBeInTheDocument();
     expect(screen.getAllByText(/6 Jul 2026/).length).toBeGreaterThan(0);
     expect(screen.queryByText("Detail Verifikasi Admin Unit")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /lihat verifikasi pembayaran/i })).not.toBeInTheDocument();
-    const reviewButton = screen.getByRole("button", { name: /lihat verifikasi pembayaran/i });
-    expect(reviewButton).toHaveClass("h-12", "rounded-lg", "bg-[#edf5f1]", "text-[#285445]");
-    fireEvent.click(reviewButton);
-    const dialog = screen.getByRole("dialog", { name: /review pembayaran ditolak/i });
-    expect(within(dialog).getByText("PEMBAYARAN DITOLAK")).toBeInTheDocument();
-    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(1);
-    expect(within(dialog).getByTestId("fixed-price-payment-proof-preview")).toHaveClass(
-      "h-64",
-      "sm:h-72",
-      "lg:h-[20rem]",
-    );
-    expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/fixed price dinyatakan/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/review penolakan terkunci/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lihat verifikasi pembayaran/i })).not.toBeInTheDocument();
     expect(within(audit).queryByRole("button")).not.toBeInTheDocument();
   });
 

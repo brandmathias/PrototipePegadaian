@@ -3411,6 +3411,32 @@ function getSuperAdminMarketingPriceValue(session: SuperAdminUnitBarangMarketing
   return session.price ?? session.finalPrice ?? session.appraisalValue ?? 0;
 }
 
+function SuperAdminItemPriceFrame({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-[0.9rem] border border-[#d6a55f]/75 bg-[linear-gradient(180deg,#fffdf8,#fffaf0)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+      data-testid="superadmin-item-price-frame"
+    >
+      <span className="pointer-events-none absolute left-2 top-2 size-3 border-l border-t border-[#c98f45]" />
+      <span className="pointer-events-none absolute right-2 top-2 size-3 border-r border-t border-[#c98f45]" />
+      <span className="pointer-events-none absolute bottom-2 left-2 size-3 border-b border-l border-[#c98f45]" />
+      <span className="pointer-events-none absolute bottom-2 right-2 size-3 border-b border-r border-[#c98f45]" />
+      <p className="text-center text-[0.7rem] font-black uppercase tracking-[0.24em] text-[#b7791f]">
+        {label}
+      </p>
+      <p className="mt-2 text-center font-serif text-[2.45rem] font-semibold leading-none tracking-normal text-[#111111] sm:text-[3.1rem] xl:text-[3.55rem]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function getSuperAdminMarketingSummary(session: SuperAdminUnitBarangMarketingSession) {
   if (session.note) {
     return session.note;
@@ -4828,347 +4854,6 @@ function SuperAdminFixedPriceProgressPanel({
   return <CompactTransactionProgress density="tight" steps={steps} title="Progress Penyelesaian" />;
 }
 
-function SuperAdminPaymentReviewInfoCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: ReactNode;
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-[1rem] border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_16px_38px_-34px_rgba(8,69,50,0.32)]">
-      <span
-        aria-hidden="true"
-        className="grid size-12 shrink-0 place-items-center rounded-[0.85rem] border border-[#cfe6dc] bg-[#edf8f2] text-[#006747] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)]"
-      >
-        <Icon className="size-5" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[0.72rem] font-semibold leading-none text-[#64756e]">{label}</p>
-        <div className="mt-2 min-w-0 break-words text-[1rem] font-black leading-5 text-[#101827]">
-          {value}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SuperAdminFixedPricePaymentReviewButton({
-  session,
-}: {
-  session: SuperAdminUnitBarangMarketingSession;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isProofPreviewOpen, setIsProofPreviewOpen] = useState(false);
-  const isRejectedReview = session.transactionStatus === "DITOLAK_BUKTI";
-  const paymentPrice = getSuperAdminMarketingPriceValue(session);
-  const paymentMethodLabel = getSuperAdminMarketingPaymentMethodLabel(session);
-  const referenceDisplay = `#${String(session.reference || session.transactionId || session.id).replace(/^#/, "")}`;
-  const statusLabel = isRejectedReview ? "PEMBAYARAN DITOLAK" : "PEMBAYARAN TERVERIFIKASI";
-  const statusDetail = isRejectedReview
-    ? `Bukti pembayaran ditolak admin unit${session.rejectionReason ? ` dengan alasan: ${session.rejectionReason}` : ""}. Transaksi ini dibatalkan dan hanya dapat ditinjau sebagai arsip.`
-    : "Pembayaran disetujui admin unit. Bukti, nominal, dan rekening tujuan berikut disimpan sebagai catatan verifikasi read-only superadmin.";
-
-  useEffect(() => {
-    if (!isOpen || typeof document === "undefined") {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsProofPreviewOpen(false);
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      if (isProofPreviewOpen) {
-        setIsProofPreviewOpen(false);
-        return;
-      }
-
-      setIsOpen(false);
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isProofPreviewOpen]);
-
-  const modal =
-    isOpen && typeof document !== "undefined"
-      ? createPortal(
-          <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] print:hidden sm:px-6 sm:py-6 lg:py-8">
-            <button
-              aria-label="Tutup pop up verifikasi pembayaran harga tetap"
-              className="fixed inset-0 bg-[#07131e]/66 backdrop-blur-[5px]"
-              onClick={() => setIsOpen(false)}
-              type="button"
-            />
-            <section
-              aria-labelledby="superadmin-fixed-price-payment-review-title"
-              aria-modal="true"
-              className="relative z-[151] mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-8 sm:max-h-[calc(100dvh-2.5rem)] sm:pt-9"
-              role="dialog"
-            >
-              <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
-                <div
-                  className={cn(
-                    "grid size-16 place-items-center rounded-full border-[5px] border-white text-white",
-                    isRejectedReview
-                      ? "bg-[#b91c1c] shadow-[0_18px_30px_-18px_rgba(185,28,28,0.7)]"
-                      : "bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]",
-                  )}
-                >
-                  {isRejectedReview ? (
-                    <X className="size-6" strokeWidth={2.2} />
-                  ) : (
-                    <ShieldCheck className="size-6" strokeWidth={2.2} />
-                  )}
-                </div>
-              </div>
-
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
-                <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
-                  <button
-                    aria-label="Tutup"
-                    className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7 sm:size-9"
-                    onClick={() => setIsOpen(false)}
-                    type="button"
-                  >
-                    <X className="size-4.5" strokeWidth={2.2} />
-                  </button>
-
-                  <div className="space-y-2 text-center">
-                    <h2
-                      className="mx-auto max-w-[42rem] font-headline text-[1.55rem] font-black leading-tight tracking-tight text-[#15231d] sm:text-[1.78rem]"
-                      id="superadmin-fixed-price-payment-review-title"
-                    >
-                      {isRejectedReview ? "Review Pembayaran Ditolak" : "Detail Pembayaran Terverifikasi"}
-                    </h2>
-                    <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
-                      {isRejectedReview
-                        ? "Bukti pembayaran ini sudah ditolak. Data berikut hanya dapat ditinjau sebagai arsip verifikasi."
-                        : "Informasi verifikasi sebelumnya hanya dapat dilihat dan tidak dapat diubah."}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="scrollbar-none min-h-0 overflow-y-auto px-4 py-4 sm:px-7 sm:py-5">
-                  <div className="grid gap-4">
-                    <div className="relative overflow-hidden rounded-[1.05rem] border border-[#cce6da] bg-[radial-gradient(circle_at_88%_32%,rgba(46,196,125,0.18),transparent_29%),linear-gradient(135deg,#fbfffd_0%,#eef9f3_100%)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="text-[0.82rem] font-black leading-none text-[#18231e]">
-                            Kewajiban Nominal Harga Tetap
-                          </p>
-                          <p className="mt-3 break-words font-headline text-[2.55rem] font-black leading-none tracking-[-0.04em] text-[#00593b] [font-variant-numeric:tabular-nums] sm:text-[3.15rem]">
-                            {formatFullCurrency(paymentPrice)}
-                          </p>
-                        </div>
-                        <div className="inline-flex h-12 max-w-full items-center gap-2 rounded-[0.8rem] border border-[#c9d7e9] bg-white px-4 font-headline text-[0.9rem] font-black text-[#111827] shadow-[0_18px_36px_-32px_rgba(15,23,42,0.35)]">
-                          <span className="truncate">{session.code ?? session.lotId}</span>
-                          <ClipboardList className="size-4.5 shrink-0 text-[#64748b]" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                      <SuperAdminPaymentReviewInfoCard icon={Package2} label="Nama Barang" value={session.lot} />
-                      <SuperAdminPaymentReviewInfoCard
-                        icon={UserRound}
-                        label="Nasabah / Buyer"
-                        value={session.buyerName || session.winner || "-"}
-                      />
-                      <SuperAdminPaymentReviewInfoCard
-                        icon={Landmark}
-                        label="Rekening Asal"
-                        value={session.buyerName ? `a.n. ${session.buyerName}` : "-"}
-                      />
-                      <SuperAdminPaymentReviewInfoCard
-                        icon={WalletCards}
-                        label="Virtual Account Tujuan"
-                        value={paymentMethodLabel}
-                      />
-                    </div>
-
-                    <div
-                      className="rounded-[1rem] border border-[#dfe8e3] bg-white p-4 shadow-[0_18px_40px_-34px_rgba(8,69,50,0.28)]"
-                      data-testid="fixed-price-payment-proof-card"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-[0.84rem] font-black leading-none text-[#15231d]">
-                          Bukti Transfer dari Pembeli
-                        </p>
-                        <span className="rounded-full border border-[#d7e3dd] bg-[#f8faf9] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#52625b]">
-                          {referenceDisplay}
-                        </span>
-                      </div>
-
-                      {session.proofUrl ? (
-                        <div className="mt-3 overflow-hidden rounded-[0.9rem] border border-[#d4dce8] bg-[#1e293b]">
-                          <div
-                            className="relative h-64 w-full overflow-hidden bg-[#111827] sm:h-72 lg:h-[20rem]"
-                            data-testid="fixed-price-payment-proof-preview"
-                          >
-                            <Image
-                              alt={`Bukti pembayaran ${session.lot}`}
-                              className="object-cover opacity-72 transition duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                              fill
-                              sizes="(min-width: 1280px) 64rem, (min-width: 768px) 82vw, 100vw"
-                              src={session.proofUrl}
-                              unoptimized
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.08),transparent_34%,rgba(17,24,39,0.28))]" />
-                            <button
-                              aria-label="Buka fullscreen bukti pembayaran"
-                              className="absolute right-4 top-4 z-[2] grid size-10 place-items-center rounded-full bg-white/94 text-[#264139] shadow-[0_18px_42px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] sm:right-5 sm:top-5"
-                              onClick={() => setIsProofPreviewOpen(true)}
-                              type="button"
-                            >
-                              <Maximize2 className="size-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-3 rounded-[0.9rem] border border-dashed border-[#ccd8d2] bg-[#f8faf9] px-4 py-6 text-[0.85rem] font-semibold text-[#64756e]">
-                          Bukti pembayaran belum tersedia.
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      className={cn(
-                        "rounded-[0.95rem] border px-4 py-4 shadow-[0_16px_34px_-30px_rgba(185,28,28,0.24)]",
-                        isRejectedReview
-                          ? "border-[#fecaca] bg-[#fff1f2]"
-                          : "border-[#b9dec9] bg-[#eff9f3]",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div
-                          className={cn(
-                            "inline-flex max-w-full items-center gap-2 rounded-full px-1 text-[0.88rem] font-black uppercase leading-4 tracking-[0.07em]",
-                            isRejectedReview ? "text-[#b91c1c]" : "text-[#006747]",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "size-3 shrink-0 rounded-full ring-4",
-                              isRejectedReview ? "bg-[#dc2626] ring-[#fee2e2]" : "bg-[#16a36a] ring-[#d7f2e3]",
-                            )}
-                          />
-                          <span className="min-w-0 whitespace-normal break-words">{statusLabel}</span>
-                        </div>
-                        {isRejectedReview ? (
-                          <X className="size-7 shrink-0 text-[#b91c1c]" />
-                        ) : (
-                          <CheckCircle2 className="size-7 shrink-0 text-[#087a50]" />
-                        )}
-                      </div>
-                      <p
-                        className={cn(
-                          "mt-4 text-[0.98rem] font-semibold leading-7",
-                          isRejectedReview ? "text-[#7f1d1d]" : "text-[#164b38]",
-                        )}
-                      >
-                        {statusDetail}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex shrink-0 justify-end border-t border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:px-7">
-                  <Button
-                    className="min-h-12 w-full rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8] sm:w-auto"
-                    onClick={() => setIsOpen(false)}
-                    type="button"
-                    variant="secondary"
-                  >
-                    Kembali
-                  </Button>
-                </div>
-              </div>
-            </section>
-
-            {isProofPreviewOpen && session.proofUrl ? (
-              <div
-                aria-label="Preview bukti pembayaran"
-                aria-modal="true"
-                className="fixed inset-0 z-[170] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/72 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-6"
-                onClick={() => setIsProofPreviewOpen(false)}
-                role="dialog"
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,184,93,0.16),transparent_36%)]" />
-                <div
-                  className="modal-viewport relative z-[171] my-auto w-full max-w-6xl rounded-[2rem] border border-white/28 bg-[linear-gradient(180deg,rgba(248,246,239,0.96),rgba(255,255,255,0.92))] p-2 shadow-[0_48px_120px_-40px_rgba(3,21,14,0.82)]"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <div className="relative overflow-hidden rounded-[calc(2rem-0.5rem)] border border-black/5 bg-[#fbfbf8]">
-                    <div className="flex items-start justify-between gap-4 border-b border-black/6 px-5 py-4 sm:px-6">
-                      <div className="min-w-0">
-                        <p className="font-body text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-[#8d6c08]">
-                          Bukti Pembayaran
-                        </p>
-                        <h3 className="mt-1 truncate font-headline text-[1.35rem] font-black tracking-tight text-[#13211c]">
-                          {session.buyerName || session.lot}
-                        </h3>
-                      </div>
-                      <button
-                        aria-label="Tutup preview bukti pembayaran"
-                        className="grid size-11 shrink-0 place-items-center rounded-full border border-black/8 bg-white text-primary transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f5f7f2] active:scale-[0.97]"
-                        onClick={() => setIsProofPreviewOpen(false)}
-                        type="button"
-                      >
-                        <X className="size-4" />
-                      </button>
-                    </div>
-                    <div className="bg-[linear-gradient(180deg,#f7f8f4,#eef1ea)] p-3 sm:p-4">
-                      <div className="overflow-hidden rounded-[1.5rem] border border-black/6 bg-white shadow-[0_24px_60px_-36px_rgba(8,69,50,0.28)]">
-                        <img
-                          alt={`Preview bukti pembayaran ${session.buyerName || session.lot}`}
-                          className="media-preview-frame w-full bg-[#f8f8f5] object-contain"
-                          src={session.proofUrl}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </div>,
-          document.body,
-        )
-      : null;
-
-  return (
-    <>
-      <button
-        className="interactive-tap inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg border border-[#c8d9d0] bg-[#edf5f1] px-3 text-[0.78rem] font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
-        onClick={() => setIsOpen(true)}
-        type="button"
-      >
-        <ReceiptText className="size-4" />
-        Lihat Verifikasi Pembayaran
-      </button>
-      {modal}
-    </>
-  );
-}
-
 function SuperAdminFixedPriceWorkspace({
   session,
 }: {
@@ -5256,74 +4941,11 @@ function SuperAdminFixedPriceWorkspace({
         )}
         data-testid="superadmin-fixed-price-settlement-primary-grid"
       >
-        <section
-          className="rounded-xl border border-[#dfe7e2] bg-white px-3 py-2.5 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
-          data-testid="superadmin-fixed-price-summary-card"
-        >
-          <div>
-            <p className="text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#006747]">
-              Ringkasan Sesi Harga Tetap
-            </p>
-            <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
-              <SuperAdminDetailInfoCard
-                compact
-                icon={ShoppingBag}
-                label="Status Sesi"
-                value={formatSuperAdminDisplayLabel(session.status)}
-              />
-              <SuperAdminDetailInfoCard
-                compact
-                icon={CreditCard}
-                label="Status Pembayaran"
-                value={formatSuperAdminDisplayLabel(session.transactionStatus)}
-              />
-              <SuperAdminDetailInfoCard
-                compact
-                icon={WalletCards}
-                label="Buyer"
-                value={session.buyerName || session.winner || "Belum ada pembeli"}
-              />
-              <SuperAdminDetailInfoCard
-                compact
-                icon={Clock3}
-                label="Waktu Sesi"
-                value={getSuperAdminMarketingDateLabel(session)}
-              />
-            </div>
-          </div>
-
-          <div className="mt-2">
-            <p className="text-[0.66rem] font-black uppercase tracking-[0.08em] text-[#006747]">
-              Harga & Catatan Sesi
-            </p>
-            <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-              <div
-                className="flex h-12 min-w-0 flex-col justify-center rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3"
-                data-testid="superadmin-fixed-price-price-card"
-              >
-                <p className="text-[0.6rem] font-black text-[#92400e]">Harga Tetap</p>
-                <p className={`mt-0.5 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(getSuperAdminMarketingPriceValue(session))}`}>
-                  {formatFullCurrency(getSuperAdminMarketingPriceValue(session))}
-                </p>
-              </div>
-              {session.proofUrl ? (
-                <SuperAdminFixedPricePaymentReviewButton session={session} />
-              ) : (
-                <div className="flex h-12 min-w-0 flex-col justify-center rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3">
-                  <p className="text-[0.6rem] font-black text-[#40558b]">Referensi</p>
-                  <p className="mt-0.5 truncate text-[0.78rem] font-black leading-tight text-[#111b46]">
-                    {session.reference || "-"}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="mt-2 overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f8faf9] px-3 py-1.5 text-[0.62rem] font-semibold leading-4 text-[#52655d]">
-              <p className="truncate">
-              {session.note || "Belum ada catatan tambahan pada iterasi harga tetap ini."}
-              </p>
-            </div>
-          </div>
-        </section>
+        <MarketingPerformancePanel
+          insights={session.insights}
+          lotId={session.id}
+          testId="superadmin-fixed-price-performance-panel"
+        />
 
         {hasBuyer ? (
           <div className="h-full [&>section]:h-full">
@@ -5331,12 +4953,6 @@ function SuperAdminFixedPriceWorkspace({
           </div>
         ) : null}
       </div>
-
-      <MarketingPerformancePanel
-        insights={session.insights}
-        lotId={session.id}
-        testId="superadmin-fixed-price-performance-panel"
-      />
 
       <div data-testid="superadmin-fixed-price-settlement-handover">
         <SuperAdminHandoverProofAuditCard
@@ -5754,6 +5370,12 @@ export function SuperAdminUnitBarangDetailPage({
   const itemName = String(item.name ?? "Detail Barang");
   const itemCode = String(item.code ?? item.id);
   const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
+  const heroPriceLabel = marketing
+    ? getSuperAdminMarketingPriceLabel(marketing)
+    : "Nilai Taksiran";
+  const heroPriceValue = marketing
+    ? getSuperAdminMarketingPriceValue(marketing)
+    : Number(item.appraisalValue ?? 0);
   const specificationRows = getBarangSpecificationRows(
     String(item.category ?? ""),
     item.specifications ?? {},
@@ -5868,6 +5490,11 @@ export function SuperAdminUnitBarangDetailPage({
                       <span className="font-medium text-[#0a9f62]">{itemCode}</span>
                     </div>
                   </div>
+
+                  <SuperAdminItemPriceFrame
+                    label={heroPriceLabel}
+                    value={formatFullCurrency(heroPriceValue)}
+                  />
 
                   <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
                     {summaryMetrics.map((metric) => (
@@ -7592,3 +7219,4 @@ export function SuperAdminBlacklistPage({
     </div>
   );
 }
+
