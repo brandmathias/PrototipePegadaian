@@ -3509,6 +3509,24 @@ function getSuperAdminCompactCurrencyTextClass(value?: number | null) {
   return "text-[0.98rem] sm:text-[1.08rem] xl:text-[1.16rem]";
 }
 
+function getSuperAdminMechanismCurrencyTextClass(value?: number | null) {
+  const digits = getSuperAdminCurrencyDigitCount(value);
+
+  if (digits >= 12) {
+    return "text-[0.68rem] sm:text-[0.74rem] xl:text-[0.82rem]";
+  }
+
+  if (digits >= 10) {
+    return "text-[0.76rem] sm:text-[0.84rem] xl:text-[0.92rem]";
+  }
+
+  if (digits >= 8) {
+    return "text-[0.88rem] sm:text-[0.96rem] xl:text-[1.02rem]";
+  }
+
+  return "text-[0.94rem] sm:text-[1rem] xl:text-[1.08rem]";
+}
+
 function isSuperAdminVickreyPaymentVerified(session: SuperAdminUnitBarangMarketingSession) {
   return session.transactionStatus === "LUNAS" || session.transactionStatus === "SELESAI";
 }
@@ -3898,7 +3916,10 @@ function SuperAdminVickreyMechanismPanel({
   const verified = isSuperAdminVickreyPaymentVerified(session);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="superadmin-vickrey-mechanism-panel"
+    >
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
           {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Lelang Tertutup"}
@@ -3906,44 +3927,45 @@ function SuperAdminVickreyMechanismPanel({
         <Info className="size-3.5 text-[#2f6fff]" />
       </div>
 
-      <div className={`mt-4 grid gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
-        <div className="min-w-0 rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
+      <div className={`mt-4 grid items-stretch gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-none tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
             {formatSuperAdminOptionalCurrency(highestBid)}
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
+          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#2f6a52]">
             Penawaran tertinggi oleh pemenang
           </p>
         </div>
 
-        <div className="min-w-0 rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-none tracking-[-0.03em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
+          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#b45309]">
             Harga yang harus dibayarkan pemenang
           </p>
         </div>
 
-        <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
-          <span className="mt-2 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2.5 py-1 text-[0.6rem] font-black uppercase text-[#006747] 2xl:text-[0.64rem]">
-            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3.5" />
+          <span className="mt-2 inline-flex max-w-full items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 text-[0.54rem] font-black uppercase text-[#006747] xl:text-[0.58rem]">
+            <span className="truncate">{fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"}</span>
+            <Trophy className="size-3.5 shrink-0" />
           </span>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
+          <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
             {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
           </p>
         </div>
 
         {fulfilled ? (
-          <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
+          <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
             <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
-            <p className="mt-2 font-mono text-[0.78rem] font-black leading-tight text-[#111b46]">
+            <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[0.7rem] font-black leading-tight text-[#111b46] xl:text-[0.76rem]">
               {formatSuperAdminDateTime(session.endingAt)}
             </p>
-            <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
+            <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
               Tanggal sesi ditutup
             </p>
           </div>
@@ -4119,7 +4141,7 @@ function SuperAdminVickreyProgressPanel({
           { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const },
         ];
 
-  return <CompactTransactionProgress steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
+  return <CompactTransactionProgress density="tight" steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
 }
 
 function SuperAdminVickreyNotePanel({
@@ -4133,7 +4155,10 @@ function SuperAdminVickreyNotePanel({
 
   if (fulfilled) {
     return (
-      <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+      <section
+        className="flex min-h-[14.5rem] flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+        data-testid="superadmin-vickrey-note-panel"
+      >
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
           Ringkasan Transaksi
         </p>
@@ -4141,7 +4166,7 @@ function SuperAdminVickreyNotePanel({
           Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
         </p>
 
-        <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+        <div className="mt-4 flex flex-1 flex-col justify-between space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
             <span className="whitespace-nowrap font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
@@ -4320,10 +4345,6 @@ function SuperAdminVickreyActionFooter({
         {receiptLockMessage ? (
           <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
         ) : null}
-        <SuperAdminPassiveActionButton className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]">
-          <LockKeyhole className="size-4.5" />
-          Tutup & Arsipkan Berkas Lelang
-        </SuperAdminPassiveActionButton>
       </div>
     );
   }
@@ -5350,7 +5371,7 @@ function SuperAdminVickreyWorkspace({
         >
           <SuperAdminVickreyWinnerProfilePanel session={session} />
           <SuperAdminVickreyProgressPanel session={session} />
-          <div className="grid content-start gap-4">
+          <div className="grid gap-4">
             <SuperAdminVickreyNotePanel session={session} />
             <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
           </div>

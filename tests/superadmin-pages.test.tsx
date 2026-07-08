@@ -1445,12 +1445,14 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Progress Penyelesaian")).toBeInTheDocument();
     expect(screen.getByText("Ringkasan Transaksi")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cetak Nota" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tutup & Arsipkan Berkas Lelang" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tutup & Arsipkan Berkas Lelang" })).not.toBeInTheDocument();
     expect(screen.getByTestId("superadmin-vickrey-settlement-layout")).toBeInTheDocument();
     expect(screen.getByTestId("superadmin-vickrey-settlement-primary-grid")).toHaveClass("xl:grid-cols-3");
     expect(screen.getByTestId("superadmin-vickrey-settlement-secondary-grid")).toHaveClass(
       "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
     );
+    expect(screen.getByTestId("superadmin-vickrey-mechanism-panel")).toHaveTextContent("Selesai & Diarsipkan");
+    expect(screen.getByTestId("superadmin-vickrey-note-panel")).toHaveClass("min-h-[14.5rem]");
     const vickreyPerformancePanel = screen.getByTestId("superadmin-vickrey-settlement-performance-panel");
     const vickreyHandover = screen.getByTestId("superadmin-vickrey-settlement-handover");
     expect(vickreyPerformancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");

@@ -78,7 +78,7 @@ export function CompactTransactionProgress({
                   {step.tone === "pending" && <Circle className="size-2.5 fill-current" />}
                   {step.tone === "current" && <Circle className="size-2.5 fill-current" />}
                 </span>
-                <div className={cn("min-w-0", tight ? "max-w-[8rem]" : "max-w-[9.5rem]")}>
+              <div className={cn("min-w-0", tight ? "max-w-[8.4rem]" : "max-w-[9.5rem]")}>
                   <p
                     className={cn(
                       "font-black",
@@ -95,10 +95,17 @@ export function CompactTransactionProgress({
                     {step.occurredAt || "Belum terjadi"}
                   </p>
                   {step.actor && step.occurredAt ? (
-                    <p className={cn("truncate font-black uppercase tracking-[0.08em] text-[#6b7b73]", tight ? "mt-0.5 text-[0.58rem]" : "mt-1 text-[0.62rem]")}>
-                      {step.actor}
-                    </p>
-                  ) : null}
+                  <p
+                    className={cn(
+                      "font-black uppercase text-[#6b7b73]",
+                      tight
+                        ? "mt-0.5 whitespace-normal break-words text-[0.48rem] leading-3 tracking-[0.05em]"
+                        : "mt-1 truncate text-[0.62rem] tracking-[0.08em]",
+                    )}
+                  >
+                    {step.actor}
+                  </p>
+                ) : null}
                 </div>
               </div>
             );
