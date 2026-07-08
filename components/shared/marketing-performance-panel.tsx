@@ -39,18 +39,18 @@ function MarketingPerformanceMetricCard({
       : "border-[#ffd1d9] bg-[#fff0f2] text-[#e11d48] [--dot-color:rgba(225,29,72,0.16)]";
 
   return (
-    <div className={cn("relative h-full min-h-[8.65rem] overflow-hidden rounded-xl border p-4", toneClass)}>
+    <div className={cn("relative min-h-[7.25rem] overflow-hidden rounded-xl border px-4 py-3.5", toneClass)}>
       <div className="absolute inset-y-0 right-0 w-32 opacity-70 [background-image:radial-gradient(circle,var(--dot-color)_1.2px,transparent_1.2px)] [background-size:10px_10px]" />
-      <div className="relative flex h-full items-center justify-between gap-4">
+      <div className="relative flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[0.7rem] font-black uppercase tracking-[0.13em]">{label}</p>
-          <p className="mt-2 font-headline text-[2rem] font-black leading-none text-[#070b16] sm:text-[2.25rem]">
+          <p className="mt-1.5 font-headline text-[1.82rem] font-black leading-none text-[#070b16] sm:text-[2rem]">
             {value}
           </p>
-          <p className="mt-2 text-[0.74rem] font-semibold text-[#53655e]">{detail}</p>
+          <p className="mt-1.5 text-[0.72rem] font-semibold leading-5 text-[#53655e]">{detail}</p>
         </div>
-        <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/80 bg-white/82 text-current shadow-[0_18px_36px_-28px_rgba(8,69,50,0.42)]">
-          <Icon className="size-6" strokeWidth={2.35} />
+        <span className="grid size-10 shrink-0 place-items-center rounded-[1.05rem] border border-white/80 bg-white/82 text-current shadow-[0_18px_36px_-28px_rgba(8,69,50,0.42)]">
+          <Icon className="size-5" strokeWidth={2.2} />
         </span>
       </div>
     </div>
@@ -142,7 +142,7 @@ export function MarketingPerformancePanel({
   return (
     <section
       className={cn(
-        "flex h-full flex-col rounded-[1.25rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]",
+        "rounded-[1.25rem] border border-[#d8e8dd] bg-white p-4 shadow-[0_20px_58px_-50px_rgba(8,69,50,0.42)]",
         className
       )}
       data-testid={testId}
@@ -157,7 +157,7 @@ export function MarketingPerformancePanel({
           </h3>
         </div>
       </div>
-      <div className="mt-3 grid flex-1 items-stretch gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <MarketingPerformanceMetricCard
           detail="Sejak dipublikasikan"
           icon={Eye}

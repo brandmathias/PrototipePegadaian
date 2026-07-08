@@ -175,7 +175,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
     expect(screen.getByText("+2")).toBeInTheDocument();
-    expect(screen.getAllByText("Kode Lot").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Kode Barang").length).toBeGreaterThan(0);
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();

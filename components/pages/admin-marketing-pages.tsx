@@ -1577,12 +1577,12 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
           </p>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-black/[0.06] pt-3 dark:border-white/8 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.72fr)_minmax(0,0.92fr)_minmax(0,1.46fr)] lg:divide-x lg:divide-black/10 lg:dark:divide-white/10">
+        <div className="mt-4 grid grid-cols-2 gap-y-3 border-t border-black/[0.06] pt-3 dark:border-white/8 lg:grid-cols-[minmax(0,1.24fr)_minmax(4rem,0.54fr)_minmax(4.5rem,0.7fr)_minmax(0,1.22fr)] lg:divide-x lg:divide-black/10 lg:dark:divide-white/10">
           <MarketingMetaItem
             icon={Landmark}
-            label="Kode Lot"
+            label="Kode Barang"
             value={auction.code || auction.id}
-            valueClassName="whitespace-nowrap"
+            valueClassName="whitespace-nowrap text-[0.68rem] tracking-[-0.03em] sm:text-[0.69rem] xl:text-[0.7rem]"
           />
           <MarketingMetaItem icon={CalendarDays} label="Tahun" value={getMarketingDateYear(auction)} />
           <MarketingMetaItem icon={BadgeCheck} label="Kondisi" value={humanize(auction.condition)} />
