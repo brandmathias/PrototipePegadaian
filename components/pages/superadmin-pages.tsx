@@ -3744,8 +3744,8 @@ function getSuperAdminRankingBadge(rank: number) {
     accent: "silver" as const,
     text: "text-[#475467]",
     circle: "bg-[linear-gradient(180deg,#f8fafc,#d7dde5)]",
-    ring: "ring-[#dbe2ea]",
-    border: "border-[#ffffff]",
+    ring: "ring-[#cfd4dc]",
+    border: "border-[#e5e7eb]",
     ribbon: "bg-[#bfc7d1]",
   };
 }
