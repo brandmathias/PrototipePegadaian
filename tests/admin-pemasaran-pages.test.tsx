@@ -1789,17 +1789,21 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/bidders ranking table \(arsip\)/i)).toBeInTheDocument();
     expect(screen.getByText(/lunas & diserahkan/i)).toBeInTheDocument();
     expect(screen.getByText(/detail aset lelang \(arsip\)/i)).toBeInTheDocument();
-    const archivedAuctionStatus = screen.getByText("Selesai & Diarsipkan");
-    expect(archivedAuctionStatus).toHaveClass(
-      "max-w-full",
-      "min-w-0",
-      "gap-1",
-      "px-2",
-      "text-[0.52rem]"
-    );
-    expect(archivedAuctionStatus).not.toHaveClass("2xl:text-[0.64rem]");
-    expect(archivedAuctionStatus.querySelector("svg")).toHaveClass("size-3", "shrink-0");
-    expect(archivedAuctionStatus.parentElement).toHaveClass("min-w-0", "overflow-hidden");
+    const mechanismPanel = screen.getByTestId("admin-vickrey-mechanism-panel");
+    const archivedAuctionStatus = within(mechanismPanel).getByText("Selesai & Diarsipkan");
+    const archivedAuctionStatusPill = archivedAuctionStatus.parentElement as HTMLElement;
+    const archivePrice = within(mechanismPanel).getByText("Rp 78.000.000");
+    const executionTime = within(mechanismPanel).getByText("31 Mei 2026, 18.17 WIB");
+    expect(archivePrice.className).toContain("whitespace-nowrap");
+    expect(archivePrice.className).not.toContain("text-ellipsis");
+    expect(archivePrice.className).not.toContain("truncate");
+    expect(archivedAuctionStatusPill.className).toContain("whitespace-nowrap");
+    expect(archivedAuctionStatusPill.className).not.toContain("text-ellipsis");
+    expect(archivedAuctionStatusPill.className).not.toContain("truncate");
+    expect(archivedAuctionStatusPill.querySelector("svg")).toHaveClass("size-3", "shrink-0");
+    expect(executionTime.className).toContain("whitespace-nowrap");
+    expect(executionTime.className).not.toContain("text-ellipsis");
+    expect(executionTime.className).not.toContain("truncate");
     expect(screen.getByText("Lokasi Barang")).toBeInTheDocument();
     expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();

@@ -1451,7 +1451,21 @@ describe("superadmin pages", () => {
     expect(screen.getByTestId("superadmin-vickrey-settlement-secondary-grid")).toHaveClass(
       "xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
     );
-    expect(screen.getByTestId("superadmin-vickrey-mechanism-panel")).toHaveTextContent("Selesai & Diarsipkan");
+    const superAdminMechanismPanel = screen.getByTestId("superadmin-vickrey-mechanism-panel");
+    const superAdminArchivePrice = within(superAdminMechanismPanel).getByText("Rp 21.000.000");
+    const superAdminArchiveStatus = within(superAdminMechanismPanel).getByText("Selesai & Diarsipkan");
+    const superAdminArchiveStatusPill = superAdminArchiveStatus.parentElement as HTMLElement;
+    const superAdminExecutionTime = within(superAdminMechanismPanel).getByText("30 Mei 2026, 09.00 WIB");
+    expect(superAdminMechanismPanel).toHaveTextContent("Selesai & Diarsipkan");
+    expect(superAdminArchivePrice.className).toContain("whitespace-nowrap");
+    expect(superAdminArchivePrice.className).not.toContain("text-ellipsis");
+    expect(superAdminArchivePrice.className).not.toContain("truncate");
+    expect(superAdminArchiveStatusPill.className).toContain("whitespace-nowrap");
+    expect(superAdminArchiveStatusPill.className).not.toContain("text-ellipsis");
+    expect(superAdminArchiveStatusPill.className).not.toContain("truncate");
+    expect(superAdminExecutionTime.className).toContain("whitespace-nowrap");
+    expect(superAdminExecutionTime.className).not.toContain("text-ellipsis");
+    expect(superAdminExecutionTime.className).not.toContain("truncate");
     expect(screen.getByTestId("superadmin-vickrey-note-panel")).toHaveClass("min-h-[14.5rem]");
     const vickreyPerformancePanel = screen.getByTestId("superadmin-vickrey-settlement-performance-panel");
     const vickreyHandover = screen.getByTestId("superadmin-vickrey-settlement-handover");

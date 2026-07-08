@@ -3183,18 +3183,44 @@ function getCompactCurrencyTextClass(value?: number | null) {
   const digits = getCurrencyDigitCount(value);
 
   if (digits >= 12) {
-    return "text-[0.64rem] sm:text-[0.74rem] xl:text-[0.82rem] 2xl:text-[0.9rem]";
+    return "text-[0.56rem] sm:text-[0.64rem] xl:text-[0.72rem] 2xl:text-[0.8rem]";
   }
 
   if (digits >= 10) {
-    return "text-[0.74rem] sm:text-[0.84rem] xl:text-[0.92rem] 2xl:text-[1rem]";
+    return "text-[0.64rem] sm:text-[0.72rem] xl:text-[0.8rem] 2xl:text-[0.88rem]";
   }
 
   if (digits >= 8) {
-    return "text-[0.84rem] sm:text-[0.94rem] xl:text-[1.02rem] 2xl:text-[1.1rem]";
+    return "text-[0.72rem] sm:text-[0.8rem] xl:text-[0.88rem] 2xl:text-[0.96rem]";
   }
 
-  return "text-[0.98rem] sm:text-[1.08rem] xl:text-[1.16rem]";
+  return "text-[0.82rem] sm:text-[0.9rem] xl:text-[0.98rem]";
+}
+
+function getMechanismBadgeTextClass(label: string) {
+  if (label.length >= 18) {
+    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
+  }
+
+  if (label.length >= 12) {
+    return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
+  }
+
+  return "text-[0.5rem] sm:text-[0.54rem] xl:text-[0.58rem]";
+}
+
+function getMechanismDateTextClass(value?: string | null) {
+  const label = value?.trim() || "-";
+
+  if (label.length >= 20) {
+    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
+  }
+
+  if (label.length >= 16) {
+    return "text-[0.56rem] sm:text-[0.6rem] xl:text-[0.66rem]";
+  }
+
+  return "text-[0.62rem] sm:text-[0.68rem] xl:text-[0.74rem]";
 }
 
 function isVickreyPaymentVerified(auction: MarketingSession) {
@@ -3444,9 +3470,14 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
   const paymentPrice = auction.finalPrice ?? auction.basePrice ?? null;
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const statusLabel = fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang";
+  const executionLabel = dateLabel(auction.endingAt);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="admin-vickrey-mechanism-panel"
+    >
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
           {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Lelang Tertutup"}
@@ -3457,7 +3488,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
       <div className={`mt-4 grid gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
         <div className="min-w-0 rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {formatOptionalCurrency(highestBid)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -3467,7 +3498,7 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
 
         <div className="min-w-0 rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-[-0.03em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -3477,8 +3508,11 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
-          <span className="mt-2 inline-flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 text-[0.52rem] font-black uppercase leading-none text-[#006747]">
-            {fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"} <Trophy className="size-3 shrink-0" />
+          <span
+            className={`mt-2 inline-flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 font-black uppercase leading-none tracking-[-0.02em] text-[#006747] ${getMechanismBadgeTextClass(statusLabel)}`}
+          >
+            <span>{statusLabel}</span>
+            <Trophy className="size-3 shrink-0" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
             {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
@@ -3488,8 +3522,10 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
         {fulfilled ? (
           <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
             <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
-            <p className="mt-2 font-mono text-[0.78rem] font-black leading-tight text-[#111b46]">
-              {dateLabel(auction.endingAt)}
+            <p
+              className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getMechanismDateTextClass(executionLabel)}`}
+            >
+              {executionLabel}
             </p>
             <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
               Tanggal sesi ditutup
@@ -5283,9 +5319,13 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
   const unpaid = failureKind === "unpaid";
   const highestBid = getHighestBidAmount(auction);
   const paymentPrice = auction.finalPrice ?? auction.basePrice ?? null;
+  const executionLabel = dateLabel(auction.endingAt);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="admin-vickrey-mechanism-panel"
+    >
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
           Mekanisme Lelang (Arsip)
@@ -5296,7 +5336,7 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(highestBid)}`}>
             {unpaid ? formatOptionalCurrency(highestBid) : "Belum ada bid"}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -5306,7 +5346,7 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(paymentPrice)}`}>
             {formatOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -5327,8 +5367,10 @@ function VickreyFailureMechanismPanel({ auction }: { auction: MarketingSession }
 
         <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
-          <p className="mt-2 font-mono text-[0.76rem] font-black leading-tight text-[#111b46]">
-            {dateLabel(auction.endingAt)}
+          <p
+            className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getMechanismDateTextClass(executionLabel)}`}
+          >
+            {executionLabel}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
             Tanggal sesi ditutup

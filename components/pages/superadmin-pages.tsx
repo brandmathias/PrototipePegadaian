@@ -3513,18 +3513,44 @@ function getSuperAdminMechanismCurrencyTextClass(value?: number | null) {
   const digits = getSuperAdminCurrencyDigitCount(value);
 
   if (digits >= 12) {
-    return "text-[0.68rem] sm:text-[0.74rem] xl:text-[0.82rem]";
+    return "text-[0.56rem] sm:text-[0.64rem] xl:text-[0.72rem]";
   }
 
   if (digits >= 10) {
-    return "text-[0.76rem] sm:text-[0.84rem] xl:text-[0.92rem]";
+    return "text-[0.64rem] sm:text-[0.72rem] xl:text-[0.8rem]";
   }
 
   if (digits >= 8) {
-    return "text-[0.88rem] sm:text-[0.96rem] xl:text-[1.02rem]";
+    return "text-[0.72rem] sm:text-[0.8rem] xl:text-[0.88rem]";
   }
 
-  return "text-[0.94rem] sm:text-[1rem] xl:text-[1.08rem]";
+  return "text-[0.82rem] sm:text-[0.9rem] xl:text-[0.98rem]";
+}
+
+function getSuperAdminMechanismBadgeTextClass(label: string) {
+  if (label.length >= 18) {
+    return "text-[0.42rem] sm:text-[0.46rem] xl:text-[0.5rem]";
+  }
+
+  if (label.length >= 12) {
+    return "text-[0.46rem] sm:text-[0.5rem] xl:text-[0.54rem]";
+  }
+
+  return "text-[0.5rem] sm:text-[0.54rem] xl:text-[0.58rem]";
+}
+
+function getSuperAdminMechanismDateTextClass(value?: string | null) {
+  const label = value?.trim() || "-";
+
+  if (label.length >= 20) {
+    return "text-[0.52rem] sm:text-[0.56rem] xl:text-[0.62rem]";
+  }
+
+  if (label.length >= 16) {
+    return "text-[0.56rem] sm:text-[0.6rem] xl:text-[0.66rem]";
+  }
+
+  return "text-[0.62rem] sm:text-[0.68rem] xl:text-[0.74rem]";
 }
 
 function isSuperAdminVickreyPaymentVerified(session: SuperAdminUnitBarangMarketingSession) {
@@ -3914,6 +3940,8 @@ function SuperAdminVickreyMechanismPanel({
   const paymentPrice = session.finalPrice ?? session.basePrice ?? null;
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
+  const statusLabel = fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang";
+  const executionLabel = formatSuperAdminDateTime(session.endingAt);
 
   return (
     <section
@@ -3930,7 +3958,7 @@ function SuperAdminVickreyMechanismPanel({
       <div className={`mt-4 grid items-stretch gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-none tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
             {formatSuperAdminOptionalCurrency(highestBid)}
           </p>
           <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#2f6a52]">
@@ -3940,7 +3968,7 @@ function SuperAdminVickreyMechanismPanel({
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className={`mt-2 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-headline font-black leading-none tracking-[-0.03em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#b45309]">
@@ -3950,8 +3978,10 @@ function SuperAdminVickreyMechanismPanel({
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
-          <span className="mt-2 inline-flex max-w-full items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 text-[0.54rem] font-black uppercase text-[#006747] xl:text-[0.58rem]">
-            <span className="truncate">{fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang"}</span>
+          <span
+            className={`mt-2 inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 font-black uppercase tracking-[-0.02em] text-[#006747] ${getSuperAdminMechanismBadgeTextClass(statusLabel)}`}
+          >
+            <span>{statusLabel}</span>
             <Trophy className="size-3.5 shrink-0" />
           </span>
           <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
@@ -3962,8 +3992,10 @@ function SuperAdminVickreyMechanismPanel({
         {fulfilled ? (
           <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3 py-3">
             <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
-            <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap font-mono text-[0.7rem] font-black leading-tight text-[#111b46] xl:text-[0.76rem]">
-              {formatSuperAdminDateTime(session.endingAt)}
+            <p
+              className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getSuperAdminMechanismDateTextClass(executionLabel)}`}
+            >
+              {executionLabel}
             </p>
             <p className="mt-1 text-[0.64rem] font-semibold leading-4 text-[#40558b]">
               Tanggal sesi ditutup
@@ -4537,9 +4569,13 @@ function SuperAdminVickreyFailureMechanismPanel({
   const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
   const highestBid = getSuperAdminHighestBidAmount(session);
   const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? null;
+  const executionLabel = formatSuperAdminDateTime(session.endingAt ?? session.createdAt);
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="superadmin-vickrey-mechanism-panel"
+    >
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
           Mekanisme Lelang (Arsip)
@@ -4550,7 +4586,7 @@ function SuperAdminVickreyFailureMechanismPanel({
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(highestBid)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
             {unpaid ? formatSuperAdminOptionalCurrency(highestBid) : "Belum ada bid"}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
@@ -4560,7 +4596,7 @@ function SuperAdminVickreyFailureMechanismPanel({
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-tight tracking-tight text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
@@ -4581,8 +4617,10 @@ function SuperAdminVickreyFailureMechanismPanel({
 
         <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
           <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
-          <p className="mt-2 font-mono text-[0.76rem] font-black leading-tight text-[#111b46]">
-            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)}
+          <p
+            className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getSuperAdminMechanismDateTextClass(executionLabel)}`}
+          >
+            {executionLabel}
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
             Tanggal sesi ditutup
