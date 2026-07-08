@@ -1828,7 +1828,9 @@ describe("admin pemasaran pages", () => {
     expect(finalNotePanel).not.toBeNull();
     const printReceiptButton = screen.getByRole("button", { name: /cetak nota/i });
     expect(finalNotePanel).toContainElement(printReceiptButton);
-    expect(printReceiptButton.className).toContain("min-h-[10.75rem]");
+    expect(printReceiptButton.className).toContain("h-14");
+    expect(printReceiptButton.className).not.toContain("min-h-[10.75rem]");
+    expect(printReceiptButton.className).not.toContain("flex-1");
     expect(within(finalNotePanel as HTMLElement).queryByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toBeNull();
     expect(handoverPanel.compareDocumentPosition(finalNoteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING

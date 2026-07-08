@@ -3796,15 +3796,15 @@ function VickreyPaymentTotalPanel({
               </div>
             </div>
           </div>
-          <div className="flex h-full min-h-full flex-col print:hidden">
+          <div className="flex items-center print:hidden">
             {canPrintReceipt ? (
               <VickreyReceiptPrintButton
-                className="inline-flex min-h-[10.75rem] w-full flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+                className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
                 onPrint={handleReceiptPrint}
               />
             ) : (
               <Button
-                className="min-h-[10.75rem] w-full flex-1 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46]"
+                className="h-14 w-full rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
                 disabled
                 title={receiptLockMessage ?? undefined}
                 variant="secondary"
@@ -5122,12 +5122,12 @@ function VickreyWinnerActionFooter({
       <div className="flex h-full flex-col print:hidden">
         {canPrintReceipt ? (
           <VickreyReceiptPrintButton
-            className="inline-flex min-h-[10.75rem] w-full flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+            className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
             onPrint={onPrintReceipt}
           />
         ) : (
           <Button
-            className="min-h-[10.75rem] w-full flex-1 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46]"
+            className="h-14 w-full rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
             disabled
             title={receiptLockMessage ?? undefined}
             variant="secondary"
