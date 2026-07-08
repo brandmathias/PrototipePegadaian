@@ -3581,6 +3581,67 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
   );
 }
 
+function RankingMarker({ rank }: { rank: number }) {
+  if (rank === 1) {
+    return (
+      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
+        {/* Ribbons */}
+        <span
+          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#e11d48] origin-top rotate-[18deg]"
+          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
+        />
+        <span
+          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#e11d48] origin-top -rotate-[18deg]"
+          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
+        />
+        {/* Medal Circle */}
+        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#ffca28] to-[#ff9800] border border-[#f57c00]/30 shadow-[0_2px_6px_rgba(245,124,0,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
+          1
+        </span>
+      </div>
+    );
+  }
+
+  if (rank === 2) {
+    return (
+      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
+        {/* Silver Circle */}
+        <span className="flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#f1f5f9] to-[#cbd5e1] border border-[#cbd5e1]/40 shadow-[0_2px_4px_rgba(100,116,139,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] text-[0.78rem] font-bold text-[#334155] leading-none">
+          2
+        </span>
+      </div>
+    );
+  }
+
+  if (rank === 3) {
+    return (
+      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
+        {/* Ribbons */}
+        <span
+          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#a16207] origin-top rotate-[18deg]"
+          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
+        />
+        <span
+          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#a16207] origin-top -rotate-[18deg]"
+          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
+        />
+        {/* Medal Circle */}
+        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#d97706] to-[#a16207] border border-[#a16207]/30 shadow-[0_2px_6px_rgba(161,98,7,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
+          3
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
+      <span className="flex items-center justify-center w-[1.5rem] h-[1.5rem] rounded-full bg-[#f8fafc] border border-slate-200/80 text-[0.7rem] font-bold text-slate-500/80 leading-none font-mono">
+        {rank}
+      </span>
+    </div>
+  );
+}
+
 function VickreyWinnerRankingTable({ auction }: { auction: MarketingSession }) {
   const rows = [...(auction.bids ?? [])].sort((left, right) => (left.rank || 0) - (right.rank || 0));
   const fulfilled = isVickreyPaymentFulfilled(auction);
@@ -3643,7 +3704,7 @@ function VickreyWinnerRankingTable({ auction }: { auction: MarketingSession }) {
 
               return (
                 <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#f4fbf7]`} key={bid.id}>
-                  <td className="px-2 py-2.5 text-center font-mono text-[#006747]">{bid.rank}</td>
+                  <td className="px-2 py-2.5 text-center"><RankingMarker rank={bid.rank} /></td>
                   <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">{bid.bidderName}</td>
                   <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
                     {bid.submittedAtLabel}
@@ -5447,7 +5508,7 @@ function VickreyFailureRankingTable({ auction }: { auction: MarketingSession }) 
 
               return (
                 <tr className={`${rowTone} transition-colors duration-200 hover:bg-[#fef2f2]`} key={bid.id}>
-                  <td className="px-2 py-2.5 text-center font-mono text-[#991b1b]">{bid.rank}</td>
+                  <td className="px-2 py-2.5 text-center"><RankingMarker rank={bid.rank} /></td>
                   <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
                     {bid.bidderName}
                   </td>
