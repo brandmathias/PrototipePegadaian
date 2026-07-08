@@ -50,6 +50,7 @@ import {
   Mail,
   MapPin,
   Maximize2,
+  Award,
   Medal,
   Megaphone,
   MonitorSmartphone,
@@ -3791,8 +3792,8 @@ function SuperAdminRankingMarker({ rank }: { rank: number }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="relative inline-flex size-7 shrink-0 items-center justify-center">
-        <Medal className={`size-6 drop-shadow-[0_6px_10px_rgba(15,23,42,0.12)] ${medalTone}`} strokeWidth={1.9} />
-        <span className={`pointer-events-none absolute inset-0 flex items-center justify-center pb-[1px] text-[0.63rem] font-black leading-none ${medalNumberTone}`}>
+        <Award className={`size-6 drop-shadow-[0_6px_10px_rgba(15,23,42,0.12)] ${medalTone}`} strokeWidth={1.9} />
+        <span className={`pointer-events-none absolute left-1/2 top-[7px] -translate-x-1/2 text-[0.63rem] font-black leading-none ${medalNumberTone}`}>
           {rank}
         </span>
       </span>
