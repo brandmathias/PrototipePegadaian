@@ -3790,15 +3790,15 @@ function VickreyPaymentTotalPanel({
               </div>
             </div>
           </div>
-          <div className="grid gap-3 print:hidden">
+          <div className="flex h-full flex-col print:hidden">
             {canPrintReceipt ? (
               <VickreyReceiptPrintButton
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+                className="inline-flex min-h-[9.1rem] w-full flex-1 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
                 onPrint={handleReceiptPrint}
               />
             ) : (
               <Button
-                className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+                className="min-h-[9.1rem] w-full flex-1 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
                 disabled
                 title={receiptLockMessage ?? undefined}
                 variant="secondary"
@@ -3808,15 +3808,8 @@ function VickreyPaymentTotalPanel({
               </Button>
             )}
             {receiptLockMessage ? (
-              <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+              <p className="mt-3 text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
             ) : null}
-            <Link
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-              href="/admin/pemasaran"
-            >
-              <LockKeyhole className="size-4.5" />
-              Tutup & Arsipkan Berkas Lelang
-            </Link>
           </div>
         </div>
       </section>
@@ -5120,15 +5113,15 @@ function VickreyWinnerActionFooter({
 
   if (isVickreyPaymentFulfilled(auction)) {
     return (
-      <div className="grid gap-3 print:hidden">
+      <div className="flex h-full flex-col print:hidden">
         {canPrintReceipt ? (
           <VickreyReceiptPrintButton
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+            className="inline-flex min-h-[9.1rem] w-full flex-1 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
             onPrint={onPrintReceipt}
           />
         ) : (
           <Button
-            className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+            className="min-h-[9.1rem] w-full flex-1 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
             disabled
             title={receiptLockMessage ?? undefined}
             variant="secondary"
@@ -5138,15 +5131,8 @@ function VickreyWinnerActionFooter({
           </Button>
         )}
         {receiptLockMessage ? (
-          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+          <p className="mt-3 text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
         ) : null}
-        <Link
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white shadow-[0_18px_34px_-24px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.99]"
-          href="/admin/pemasaran"
-        >
-          <LockKeyhole className="size-4.5" />
-          Tutup & Arsipkan Berkas Lelang
-        </Link>
       </div>
     );
   }

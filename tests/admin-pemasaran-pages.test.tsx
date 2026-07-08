@@ -1816,7 +1816,7 @@ describe("admin pemasaran pages", () => {
     const finalNotePanel = finalNoteTitle.closest("section");
     expect(finalNotePanel).not.toBeNull();
     expect(finalNotePanel).toContainElement(screen.getByRole("button", { name: /cetak nota/i }));
-    expect(finalNotePanel).toContainElement(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i }));
+    expect(within(finalNotePanel as HTMLElement).queryByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toBeNull();
     expect(handoverPanel.compareDocumentPosition(finalNoteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
@@ -1833,10 +1833,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!).not.toHaveTextContent("Lelang Tertutup");
     expect(receiptPrintRoot!).not.toHaveClass("h-0", "w-0", "opacity-0");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toHaveAttribute(
-      "href",
-      "/admin/pemasaran"
-    );
+    expect(screen.queryByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toBeNull();
 
     printSpy.mockRestore();
   });
