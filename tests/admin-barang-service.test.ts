@@ -672,19 +672,26 @@ describe("listAdminBarang", () => {
 describe("listAdminBarangHistory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.select.mockImplementation(() => mockHistoryQuery([]));
   });
 
   function mockHistoryQuery(rows: Array<Record<string, unknown>>) {
+    const query = {
+      innerJoin: vi.fn(),
+      leftJoin: vi.fn(),
+      where: vi.fn(),
+      groupBy: vi.fn(),
+      orderBy: vi.fn()
+    };
+
+    query.innerJoin.mockReturnValue(query);
+    query.leftJoin.mockReturnValue(query);
+    query.where.mockReturnValue(query);
+    query.groupBy.mockReturnValue(query);
+    query.orderBy.mockResolvedValue(rows);
+
     return {
-      from: vi.fn().mockReturnValue({
-        innerJoin: vi.fn().mockReturnValue({
-          leftJoin: vi.fn().mockReturnValue({
-            where: vi.fn().mockReturnValue({
-              orderBy: vi.fn().mockResolvedValue(rows)
-            })
-          })
-        })
-      })
+      from: vi.fn().mockReturnValue(query)
     };
   }
 
@@ -970,5 +977,117 @@ describe("listAdminBarangHistory", () => {
         actorRole: null
       })
     ]);
+  });
+
+  it("fills missing marketed, sold, and failed milestones from pemasaran and transaksi history", async () => {
+    const baseRow = {
+      barangId: "barang-sync",
+      barangCode: "BRG-SYNC",
+      barangName: "Ipad Terbaru",
+      category: "elektronik",
+      condition: "baik",
+      description: "Perangkat flagship.",
+      specifications: {},
+      ownerName: "Nasabah Sync",
+      customerNumber: "NSB-SYNC"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-input",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang hasil input gadai dicatat sebagai barang jaminan unit.",
+            actorName: "Admin Input",
+            actorRole: "admin_unit",
+            createdAt: new Date("2026-05-31T10:44:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-fixed",
+            mode: "fixed_price",
+            status: "gagal",
+            iteration: 1,
+            createdAt: new Date("2026-06-01T13:47:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 0
+          },
+          {
+            ...baseRow,
+            marketingId: "marketing-vickrey",
+            mode: "vickrey",
+            status: "selesai",
+            iteration: 2,
+            createdAt: new Date("2026-06-02T13:47:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 2
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-fixed",
+            type: "fixed_price",
+            status: "ditolak_bukti",
+            rejectionReason: "Nominal tidak sesuai.",
+            createdAt: new Date("2026-06-01T14:00:00.000Z"),
+            updatedAt: new Date("2026-06-01T15:30:00.000Z"),
+            verifiedAt: new Date("2026-06-01T15:30:00.000Z"),
+            completedAt: null,
+            paymentDeadline: null,
+            actorName: "Admin Verifikasi",
+            actorRole: "admin_unit"
+          },
+          {
+            ...baseRow,
+            marketingId: "marketing-vickrey",
+            type: "vickrey",
+            status: "selesai",
+            rejectionReason: null,
+            createdAt: new Date("2026-06-02T14:00:00.000Z"),
+            updatedAt: new Date("2026-06-03T13:57:00.000Z"),
+            verifiedAt: new Date("2026-06-03T13:57:00.000Z"),
+            completedAt: new Date("2026-06-04T09:00:00.000Z"),
+            paymentDeadline: new Date("2026-06-03T14:10:00.000Z"),
+            actorName: "Admin Verifikasi",
+            actorRole: "admin_unit"
+          }
+        ])
+      );
+
+    const result = await listAdminBarangHistory("unit-1");
+
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actionKey: "dipasarkan",
+          note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 1."
+        }),
+        expect.objectContaining({
+          actionKey: "gagal",
+          note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal tidak sesuai."
+        }),
+        expect.objectContaining({
+          actionKey: "dipasarkan",
+          note: "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup iterasi 2."
+        }),
+        expect.objectContaining({
+          actionKey: "terjual",
+          note: "Pemenang Lelang Tertutup menyelesaikan pembayaran dan barang tercatat terjual."
+        })
+      ])
+    );
   });
 });

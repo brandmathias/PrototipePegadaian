@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { canEditMarketedBarang } from "@/lib/admin-unit/marketing-edit-policy";
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
@@ -165,6 +166,43 @@ export type AdminBarangHistoryEntry = {
   createdAtLabel: string;
 };
 
+type AdminBarangTimelineSourceRow = {
+  barangId: string;
+  barangCode: string;
+  barangName: string;
+  category: string;
+  condition: string;
+  description: string | null;
+  specifications: unknown;
+  ownerName: string;
+  customerNumber: string;
+};
+
+type AdminBarangMarketingTimelineRow = AdminBarangTimelineSourceRow & {
+  marketingId: string;
+  mode: string;
+  status: string;
+  iteration: number | null;
+  createdAt: Date;
+  actorName: string | null;
+  actorRole: string | null;
+  bidCount: number;
+};
+
+type AdminBarangTransactionTimelineRow = AdminBarangTimelineSourceRow & {
+  marketingId: string;
+  type: string;
+  status: string;
+  rejectionReason: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  verifiedAt: Date | null;
+  completedAt: Date | null;
+  paymentDeadline: Date | null;
+  actorName: string | null;
+  actorRole: string | null;
+};
+
 function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
   if (!oldStatus) {
     return {
@@ -211,6 +249,76 @@ function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
   }
 
   return null;
+}
+
+function formatMarketingModeLabel(mode: string | null | undefined) {
+  const normalized = String(mode ?? "").toLowerCase();
+
+  if (normalized === "fixed_price") {
+    return "Harga Tetap";
+  }
+
+  if (normalized === "vickrey") {
+    return "Lelang Tertutup";
+  }
+
+  return "pemasaran";
+}
+
+function appendSentencePeriod(value: string) {
+  return `${value.trim().replace(/[.!?]+$/u, "")}.`;
+}
+
+function createSyntheticHistoryEntry(
+  source: AdminBarangTimelineSourceRow,
+  input: {
+    id: string;
+    actionKey: AdminBarangHistoryEntry["actionKey"];
+    actionLabel: string;
+    actionTone: AdminBarangHistoryEntry["actionTone"];
+    note: string;
+    actorName?: string | null;
+    actorRole?: string | null;
+    createdAt: Date;
+  }
+): AdminBarangHistoryEntry {
+  return {
+    id: input.id,
+    barangId: source.barangId,
+    barangCode: source.barangCode,
+    barangName: source.barangName,
+    category: source.category,
+    condition: source.condition,
+    description: source.description,
+    specifications: source.specifications,
+    ownerName: source.ownerName,
+    customerNumber: source.customerNumber,
+    actionKey: input.actionKey,
+    actionLabel: input.actionLabel,
+    actionTone: input.actionTone,
+    note: input.note,
+    actorName: input.actorName ?? "Sistem Otomatis",
+    actorRole: input.actorRole ?? null,
+    createdAt: input.createdAt.toISOString(),
+    createdAtLabel: formatAppDateTime(input.createdAt)
+  };
+}
+
+function hasNearbyHistoryEntry(
+  entries: AdminBarangHistoryEntry[],
+  candidate: Pick<AdminBarangHistoryEntry, "actionKey" | "barangId" | "createdAt">
+) {
+  const candidateTime = new Date(candidate.createdAt).getTime();
+
+  return entries.some((entry) => {
+    if (entry.barangId !== candidate.barangId || entry.actionKey !== candidate.actionKey) {
+      return false;
+    }
+
+    const entryTime = new Date(entry.createdAt).getTime();
+
+    return Math.abs(entryTime - candidateTime) <= 60_000;
+  });
 }
 
 export async function listAdminBarang(unitId: string) {
@@ -278,8 +386,10 @@ export async function listAdminBarangHistory(
   const historyWhere = barangId
     ? and(eq(barang.unitId, unitId), eq(barang.id, barangId))
     : eq(barang.unitId, unitId);
+  const marketingCreator = alias(users, "marketing_creator");
+  const transactionVerifier = alias(users, "transaction_verifier");
 
-  const [statusRows, extensionRows] = await Promise.all([
+  const [statusRows, extensionRows, marketingRows, transactionRows] = await Promise.all([
     db
       .select({
         id: riwayatStatusBarang.id,
@@ -325,7 +435,63 @@ export async function listAdminBarangHistory(
       .innerJoin(barang, eq(barang.id, riwayatPerpanjangan.barangId))
       .leftJoin(users, eq(users.id, riwayatPerpanjangan.extendedByUserId))
       .where(historyWhere)
-      .orderBy(desc(riwayatPerpanjangan.createdAt))
+      .orderBy(desc(riwayatPerpanjangan.createdAt)),
+    db
+      .select({
+        marketingId: pemasaran.id,
+        barangId: barang.id,
+        barangCode: barang.code,
+        barangName: barang.name,
+        category: barang.category,
+        condition: barang.condition,
+        description: barang.description,
+        specifications: barang.specifications,
+        ownerName: barang.ownerName,
+        customerNumber: barang.customerNumber,
+        mode: pemasaran.mode,
+        status: pemasaran.status,
+        iteration: pemasaran.iteration,
+        createdAt: pemasaran.createdAt,
+        actorName: marketingCreator.name,
+        actorRole: marketingCreator.role,
+        bidCount: sql<number>`count(${bids.id})`
+      })
+      .from(pemasaran)
+      .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+      .leftJoin(marketingCreator, eq(marketingCreator.id, pemasaran.createdByUserId))
+      .leftJoin(bids, eq(bids.pemasaranId, pemasaran.id))
+      .where(historyWhere)
+      .groupBy(pemasaran.id, barang.id, marketingCreator.name, marketingCreator.role)
+      .orderBy(desc(pemasaran.createdAt)),
+    db
+      .select({
+        marketingId: pemasaran.id,
+        barangId: barang.id,
+        barangCode: barang.code,
+        barangName: barang.name,
+        category: barang.category,
+        condition: barang.condition,
+        description: barang.description,
+        specifications: barang.specifications,
+        ownerName: barang.ownerName,
+        customerNumber: barang.customerNumber,
+        type: transaksi.type,
+        status: transaksi.status,
+        rejectionReason: transaksi.rejectionReason,
+        createdAt: transaksi.createdAt,
+        updatedAt: transaksi.updatedAt,
+        verifiedAt: transaksi.verifiedAt,
+        completedAt: transaksi.completedAt,
+        paymentDeadline: transaksi.paymentDeadline,
+        actorName: transactionVerifier.name,
+        actorRole: transactionVerifier.role
+      })
+      .from(transaksi)
+      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+      .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+      .leftJoin(transactionVerifier, eq(transactionVerifier.id, transaksi.verifiedByUserId))
+      .where(historyWhere)
+      .orderBy(desc(transaksi.createdAt))
   ]);
 
   const normalizedStatusRows: AdminBarangHistoryEntry[] = [];
@@ -379,7 +545,103 @@ export async function listAdminBarangHistory(
     createdAtLabel: formatAppDateTime(row.createdAt)
   }));
 
-  const sortedHistory = [...normalizedStatusRows, ...normalizedExtensionRows]
+  const timelineEntries = [...normalizedStatusRows, ...normalizedExtensionRows];
+  const latestTransactionByMarketingId = transactionRows.reduce((map, row) => {
+    if (!map.has(row.marketingId)) {
+      map.set(row.marketingId, row);
+    }
+
+    return map;
+  }, new Map<string, AdminBarangTransactionTimelineRow>());
+
+  for (const row of marketingRows) {
+    const modeLabel = formatMarketingModeLabel(row.mode);
+    const marketingEntry = createSyntheticHistoryEntry(row, {
+      id: `marketing-${row.marketingId}`,
+      actionKey: "dipasarkan",
+      actionLabel: "Dipasarkan",
+      actionTone: "success",
+      note: `Barang dipublikasikan ke katalog sebagai sesi ${modeLabel}${row.iteration ? ` iterasi ${row.iteration}` : ""}.`,
+      actorName: row.actorName,
+      actorRole: row.actorRole,
+      createdAt: row.createdAt
+    });
+
+    if (!hasNearbyHistoryEntry(timelineEntries, marketingEntry)) {
+      timelineEntries.push(marketingEntry);
+    }
+
+    const transaction = latestTransactionByMarketingId.get(row.marketingId);
+
+    if (transaction && ["lunas", "selesai"].includes(transaction.status)) {
+      const soldEntry = createSyntheticHistoryEntry(row, {
+        id: `transaction-sold-${row.marketingId}`,
+        actionKey: "terjual",
+        actionLabel: "Terjual",
+        actionTone: "success",
+        note:
+          transaction.type === "vickrey"
+            ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dan barang tercatat terjual."
+            : "Pembayaran harga tetap disetujui admin unit sehingga barang tercatat terjual.",
+        actorName: transaction.actorName,
+        actorRole: transaction.actorRole,
+        createdAt: transaction.verifiedAt ?? transaction.completedAt ?? transaction.updatedAt ?? transaction.createdAt
+      });
+
+      if (!hasNearbyHistoryEntry(timelineEntries, soldEntry)) {
+        timelineEntries.push(soldEntry);
+      }
+
+      continue;
+    }
+
+    if (transaction?.status === "ditolak_bukti") {
+      const failedEntry = createSyntheticHistoryEntry(row, {
+        id: `transaction-failed-${row.marketingId}`,
+        actionKey: "gagal",
+        actionLabel: "Gagal",
+        actionTone: "danger",
+        note: transaction.rejectionReason
+          ? `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${appendSentencePeriod(transaction.rejectionReason)}`
+          : "Verifikasi bukti pembayaran harga tetap ditolak admin unit.",
+        actorName: transaction.actorName,
+        actorRole: transaction.actorRole,
+        createdAt: transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt
+      });
+
+      if (!hasNearbyHistoryEntry(timelineEntries, failedEntry)) {
+        timelineEntries.push(failedEntry);
+      }
+
+      continue;
+    }
+
+    if (row.status !== "gagal") {
+      continue;
+    }
+
+    const failedEntry = createSyntheticHistoryEntry(row, {
+      id: `marketing-failed-${row.marketingId}`,
+      actionKey: "gagal",
+      actionLabel: "Gagal",
+      actionTone: "danger",
+      note:
+        row.mode === "vickrey"
+          ? row.bidCount > 0
+            ? "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
+            : "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
+          : "Sesi Harga Tetap ditutup sebagai pemasaran gagal dan membutuhkan tindak lanjut unit.",
+      actorName: transaction?.actorName,
+      actorRole: transaction?.actorRole,
+      createdAt: transaction?.paymentDeadline ?? transaction?.updatedAt ?? row.createdAt
+    });
+
+    if (!hasNearbyHistoryEntry(timelineEntries, failedEntry)) {
+      timelineEntries.push(failedEntry);
+    }
+  }
+
+  const sortedHistory = timelineEntries
     .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
 
   return typeof limit === "number" ? sortedHistory.slice(0, limit) : sortedHistory;

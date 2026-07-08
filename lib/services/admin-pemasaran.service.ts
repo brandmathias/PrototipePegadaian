@@ -474,8 +474,10 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
       newStatus: "dipasarkan",
       changedByUserId: userId,
       note: canRepublishActiveFixedPrice
-        ? "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog."
-        : "Barang dipublikasikan ke katalog."
+        ? "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
+        : payload.mode === "fixed_price"
+          ? "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap."
+          : "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup."
     });
 
     return createdMarketing;
