@@ -39,8 +39,9 @@ describe("public catalog performance", () => {
     expect(hero).toContain('fetchPriority="high"');
     expect(hero).toContain('loading="eager"');
     expect(template).toContain('import { preload } from "react-dom"');
-    expect(template).toContain('preload("/uploads/Hero%20Section%20Katalog%20Buyer.avif"');
+    expect(template).toContain('preload("/assets/catalog-hero-buyer.webp"');
     expect(template).toContain('media: "(min-width: 768px)"');
+    expect(template).toContain('type: "image/webp"');
     expect(page).not.toContain("priority={currentPage === 0 && index === 0}");
     expect(page).not.toContain("function HeroInfoCard");
   });

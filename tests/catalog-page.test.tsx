@@ -78,6 +78,7 @@ describe("CatalogPage", () => {
     expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
     expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("loading", "eager");
     expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("fetchpriority", "high");
+    expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("src", "/assets/catalog-hero-buyer.png");
     expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Lelang Tertutup")[0]).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();

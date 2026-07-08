@@ -3,9 +3,8 @@ import { BriefcaseBusiness, CheckCircle2, Gavel } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const HERO_BACKGROUND_AVIF = "/uploads/Hero%20Section%20Katalog%20Buyer.avif";
-const HERO_BACKGROUND_WEBP = "/uploads/Hero%20Section%20Katalog%20Buyer.webp";
-const HERO_BACKGROUND_FALLBACK = "/uploads/Hero%20Section%20Katalog%20Buyer.png";
+const HERO_BACKGROUND_WEBP = "/assets/catalog-hero-buyer.webp";
+const HERO_BACKGROUND_FALLBACK = "/assets/catalog-hero-buyer.png";
 
 function HeroInfoCard({
   icon,
@@ -65,7 +64,6 @@ export function CatalogHero() {
     <section className="relative isolate overflow-hidden bg-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 -z-20 hidden w-[54%] md:block">
         <picture>
-          <source srcSet={HERO_BACKGROUND_AVIF} type="image/avif" />
           <source srcSet={HERO_BACKGROUND_WEBP} type="image/webp" />
           <img
             alt=""

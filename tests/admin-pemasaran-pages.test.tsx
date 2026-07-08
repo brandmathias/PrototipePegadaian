@@ -176,6 +176,11 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
     expect(screen.getByText("+2")).toBeInTheDocument();
     expect(screen.getAllByText("Kode Barang").length).toBeGreaterThan(0);
+    const activeItemCode = screen.getByText("BRG-001");
+    expect(activeItemCode.className).toContain("text-[0.78rem]");
+    expect(activeItemCode.className).toContain("sm:text-[0.8rem]");
+    expect(activeItemCode.className).toContain("xl:text-[0.82rem]");
+    expect(activeItemCode.className).toContain("whitespace-nowrap");
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
     expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();
