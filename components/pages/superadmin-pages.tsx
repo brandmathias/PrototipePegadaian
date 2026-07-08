@@ -3778,20 +3778,22 @@ function SuperAdminRankingAvatar({
 
 function SuperAdminRankingMarker({ rank }: { rank: number }) {
   const badgeTone = getSuperAdminRankingBadge(rank);
+  const medalTone =
+    rank === 1
+      ? "text-[#f1ab00]"
+      : rank === 2
+        ? "text-[#b8c0cc]"
+        : rank === 3
+          ? "text-[#c97a2b]"
+          : "text-[#b8c0cc]";
+  const medalNumberTone = rank === 2 ? "text-[#6b7280]" : "text-white";
 
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="relative inline-flex size-7 shrink-0 items-center justify-center">
-        <span
-          className={`relative z-[1] inline-flex size-6 items-center justify-center rounded-full border ring-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] ${badgeTone.circle} ${badgeTone.border} ${badgeTone.ring}`}
-        >
-          <span className={`text-[0.72rem] font-black leading-none text-white ${rank === 2 ? "text-[#667085]" : ""}`}>
-            {rank}
-          </span>
-        </span>
-        <span className="absolute bottom-0 left-1/2 z-0 flex -translate-x-1/2 items-start gap-[2px]">
-          <span className={`h-2.5 w-[5px] rounded-b-[2px] ${badgeTone.ribbon} [clip-path:polygon(0_0,100%_0,80%_100%,20%_100%)]`} />
-          <span className={`h-2.5 w-[5px] rounded-b-[2px] ${badgeTone.ribbon} [clip-path:polygon(0_0,100%_0,80%_100%,20%_100%)]`} />
+        <Medal className={`size-6 drop-shadow-[0_6px_10px_rgba(15,23,42,0.12)] ${medalTone}`} strokeWidth={1.9} />
+        <span className={`pointer-events-none absolute inset-0 flex items-center justify-center pb-[1px] text-[0.63rem] font-black leading-none ${medalNumberTone}`}>
+          {rank}
         </span>
       </span>
       <span className={`text-[0.84rem] font-black leading-none ${badgeTone.text}`}>{rank}</span>
