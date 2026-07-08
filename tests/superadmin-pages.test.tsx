@@ -1778,17 +1778,22 @@ describe("superadmin pages", () => {
     );
 
     const progressSection = screen.getByText("Progress Penyelesaian").closest("section");
+    const mechanismPanel = screen.getByTestId("superadmin-vickrey-mechanism-panel");
     const performancePanel = screen.getByTestId("superadmin-vickrey-failure-performance-panel");
 
     expect(progressSection).not.toBeNull();
-    expect(progressSection).not.toHaveClass("h-full");
-    expect(progressSection).not.toHaveClass("justify-between");
+    expect(progressSection).toHaveClass("h-full");
+    expect(progressSection).toHaveClass("justify-between");
     expect(progressSection).toHaveTextContent("Gagal Bayar");
     expect(progressSection).toHaveTextContent("Belum tercapai");
+    expect(mechanismPanel).toHaveClass("h-full");
     expect(performancePanel).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(performancePanel).toHaveTextContent("26x");
     expect(performancePanel).toHaveTextContent("3 Akun");
     expect(screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
+    expect(mechanismPanel.compareDocumentPosition(progressSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(progressSection!.compareDocumentPosition(performancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
