@@ -74,11 +74,14 @@ describe("CatalogPage", () => {
       </>
     );
 
-    expect(screen.getByText(/katalog ruang agunan/i)).toBeInTheDocument();
+    expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
-    expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("loading", "eager");
-    expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("fetchpriority", "high");
-    expect(screen.getByTestId("catalog-hero-image")).toHaveAttribute("src", "/assets/catalog-hero-buyer.png");
+    expect(screen.getByTestId("catalog-hero-image").getAttribute("style")).toContain(
+      "/assets/catalog-hero-buyer.webp"
+    );
+    expect(screen.getByTestId("catalog-hero-image").getAttribute("style")).toContain(
+      "/assets/catalog-hero-buyer.png"
+    );
     expect(screen.getAllByText("Harga Tetap")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Lelang Tertutup")[0]).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Filter" })).toBeInTheDocument();

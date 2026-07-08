@@ -36,8 +36,8 @@ describe("public catalog performance", () => {
     expect(hero).not.toContain('"use client"');
     expect(hero).not.toContain('rel="preload"');
     expect(hero).toContain('data-testid="catalog-hero-image"');
-    expect(hero).toContain('fetchPriority="high"');
-    expect(hero).toContain('loading="eager"');
+    expect(hero).toContain("md:bg-[image:var(--catalog-hero-image)]");
+    expect(hero).toContain("md:bg-[length:100%_auto]");
     expect(template).toContain('import { preload } from "react-dom"');
     expect(template).toContain('preload("/assets/catalog-hero-buyer.webp"');
     expect(template).toContain('media: "(min-width: 768px)"');
