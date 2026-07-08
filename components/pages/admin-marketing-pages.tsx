@@ -3765,7 +3765,7 @@ function VickreyPaymentTotalPanel({
 
   if (fulfilled) {
     return (
-      <section className="w-full rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] sm:px-5">
+      <section className="flex min-h-[14rem] w-full flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] sm:px-5">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#111b46]">
           Nota Dokumen Final
         </p>
@@ -3773,8 +3773,8 @@ function VickreyPaymentTotalPanel({
           Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
         </p>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(17rem,0.5fr)] lg:items-stretch">
-          <div className="space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
+        <div className="mt-4 grid flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.52fr)] lg:items-stretch">
+          <div className="flex h-full flex-col justify-between space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
             <div className="flex min-h-10 items-center justify-between gap-4">
               <span>Harga akhir lelang</span>
               <span className="whitespace-nowrap font-mono text-[#111b46]">{currency.format(paymentPrice)}</span>
@@ -3790,15 +3790,15 @@ function VickreyPaymentTotalPanel({
               </div>
             </div>
           </div>
-          <div className="flex h-full flex-col print:hidden">
+          <div className="flex h-full min-h-full flex-col print:hidden">
             {canPrintReceipt ? (
               <VickreyReceiptPrintButton
-                className="inline-flex min-h-[9.1rem] w-full flex-1 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+                className="inline-flex min-h-[10.75rem] w-full flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
                 onPrint={handleReceiptPrint}
               />
             ) : (
               <Button
-                className="min-h-[9.1rem] w-full flex-1 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
+                className="min-h-[10.75rem] w-full flex-1 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46]"
                 disabled
                 title={receiptLockMessage ?? undefined}
                 variant="secondary"
@@ -5116,12 +5116,12 @@ function VickreyWinnerActionFooter({
       <div className="flex h-full flex-col print:hidden">
         {canPrintReceipt ? (
           <VickreyReceiptPrintButton
-            className="inline-flex min-h-[9.1rem] w-full flex-1 items-center justify-center gap-2 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
+            className="inline-flex min-h-[10.75rem] w-full flex-1 items-center justify-center gap-2 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46] shadow-[0_18px_34px_-28px_rgba(8,69,50,0.28)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#f8faf9] active:scale-[0.99]"
             onPrint={onPrintReceipt}
           />
         ) : (
           <Button
-            className="min-h-[9.1rem] w-full flex-1 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.92rem] font-black text-[#111b46]"
+            className="min-h-[10.75rem] w-full flex-1 rounded-xl border border-[#d8e4de] bg-white px-5 text-[0.96rem] font-black text-[#111b46]"
             disabled
             title={receiptLockMessage ?? undefined}
             variant="secondary"

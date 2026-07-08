@@ -1815,12 +1815,14 @@ describe("admin pemasaran pages", () => {
     const finalNoteTitle = screen.getByText(/nota dokumen final/i);
     const finalNotePanel = finalNoteTitle.closest("section");
     expect(finalNotePanel).not.toBeNull();
-    expect(finalNotePanel).toContainElement(screen.getByRole("button", { name: /cetak nota/i }));
+    const printReceiptButton = screen.getByRole("button", { name: /cetak nota/i });
+    expect(finalNotePanel).toContainElement(printReceiptButton);
+    expect(printReceiptButton.className).toContain("min-h-[10.75rem]");
     expect(within(finalNotePanel as HTMLElement).queryByRole("link", { name: /tutup & arsipkan berkas lelang/i })).toBeNull();
     expect(handoverPanel.compareDocumentPosition(finalNoteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
-    fireEvent.click(screen.getByRole("button", { name: /cetak nota/i }));
+    fireEvent.click(printReceiptButton);
     await waitFor(() => expect(printSpy).toHaveBeenCalledTimes(1), { timeout: 4000 });
     const receiptPrintRoot = document.getElementById("vickrey-receipt-print-root-trx-vickrey-completed");
     expect(receiptPrintRoot).not.toBeNull();
