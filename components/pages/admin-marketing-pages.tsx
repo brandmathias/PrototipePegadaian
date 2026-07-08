@@ -3745,7 +3745,13 @@ function VickreyPaymentProgressPanel({ auction }: { auction: MarketingSession })
         { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const }
       ];
 
-  return <CompactTransactionProgress steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
+  return (
+    <CompactTransactionProgress
+      density="tight"
+      steps={steps}
+      title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
+    />
+  );
 }
 
 function VickreyPaymentTotalPanel({

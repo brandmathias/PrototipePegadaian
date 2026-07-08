@@ -1810,6 +1810,12 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("bg-[#006747]");
     expect(screen.getByLabelText(/^selesai: selesai$/i)).toHaveClass("bg-[#006747]");
+    const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
+    expect(progressPanel).not.toBeNull();
+    const adminProgressActor = within(progressPanel as HTMLElement).getByText("Admin: Admin Unit Ranotana");
+    expect(adminProgressActor.className).toContain("uppercase");
+    expect(adminProgressActor.className).toContain("whitespace-normal");
+    expect(adminProgressActor.className).not.toContain("truncate");
     expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
     const finalNoteTitle = screen.getByText(/nota dokumen final/i);
