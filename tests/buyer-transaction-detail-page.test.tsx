@@ -237,7 +237,7 @@ describe("buyer transaction detail page", () => {
           handoverProof: {
             fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
             uploadedAt: "4 Mei 2026 22.30 WIB",
-            uploadedBy: "Admin UPC Ranotana",
+            uploadedBy: "Hendra Wijaya",
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",
@@ -287,7 +287,7 @@ describe("buyer transaction detail page", () => {
           handoverProof: {
             fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
             uploadedAt: "4 Mei 2026 22.30 WIB",
-            uploadedBy: "Admin UPC Ranotana",
+            uploadedBy: "Hendra Wijaya",
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",
@@ -335,7 +335,7 @@ describe("buyer transaction detail page", () => {
           handoverProof: {
             fileUrl: "/uploads/serah-terima/trx-fixed-legacy.jpg",
             uploadedAt: "4 Mei 2026 22.30 WIB",
-            uploadedBy: "Admin UPC Ranotana",
+            uploadedBy: "Hendra Wijaya",
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",
@@ -424,7 +424,7 @@ describe("buyer transaction detail page", () => {
             handoverProof: {
               fileUrl: "/uploads/serah-terima/trx-fixed-1-mobile.jpg",
               uploadedAt: "4 Mei 2026 22.30 WIB",
-              uploadedBy: "Admin UPC Ranotana",
+              uploadedBy: "Hendra Wijaya",
               location: "UPC Ranotana"
             },
             verifiedAt: "4 Mei 2026 22.11 WIB",
@@ -495,7 +495,7 @@ describe("buyer transaction detail page", () => {
           handoverProof: {
             fileUrl: "/uploads/serah-terima/trx-vickrey-paid.jpg",
             uploadedAt: "3 Jun 2026, 08.15 WIB",
-            uploadedBy: "Admin UPC Ranotana",
+            uploadedBy: "Hendra Wijaya",
             location: "UPC Ranotana"
           },
           verifiedAt: "3 Jun 2026, 07.39 WIB",
@@ -588,7 +588,7 @@ describe("buyer transaction detail page", () => {
             handoverProof: {
               fileUrl: "/uploads/serah-terima/trx-vickrey-paid-mobile.jpg",
               uploadedAt: "3 Jun 2026, 08.15 WIB",
-              uploadedBy: "Admin UPC Ranotana",
+              uploadedBy: "Hendra Wijaya",
               location: "UPC Ranotana"
             },
             verifiedAt: "3 Jun 2026, 07.39 WIB",
@@ -772,7 +772,7 @@ describe("buyer transaction detail page", () => {
           handoverProof: {
             fileUrl: "/uploads/serah-terima/trx-fixed-1.jpg",
             uploadedAt: "4 Mei 2026 22.30 WIB",
-            uploadedBy: "Admin UPC Ranotana",
+            uploadedBy: "Hendra Wijaya",
             location: "UPC Ranotana"
           },
           verifiedAt: "4 Mei 2026 22.11 WIB",

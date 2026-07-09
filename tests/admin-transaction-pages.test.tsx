@@ -232,8 +232,8 @@ describe("admin transaction pages", () => {
       ...transactions[1],
       handoverProofFile: "/uploads/serah-terima/trx-history.jpg",
       handoverProofUploadedAt: "2 Mei 2026 16.00",
-      handoverProofUploadedBy: "Admin Unit Ranotana",
-      verifiedBy: "Admin Unit Ranotana"
+      handoverProofUploadedBy: "Hendra Wijaya",
+      verifiedBy: "Hendra Wijaya"
     };
 
     render(
@@ -268,8 +268,8 @@ describe("admin transaction pages", () => {
       ...transactions[1],
       handoverProofFile: "/uploads/serah-terima/trx-history.jpg",
       handoverProofUploadedAt: "2 Mei 2026 16.00",
-      handoverProofUploadedBy: "Admin Unit Ranotana",
-      verifiedBy: "Admin Unit Ranotana"
+      handoverProofUploadedBy: "Hendra Wijaya",
+      verifiedBy: "Hendra Wijaya"
     };
 
     Object.defineProperty(window.navigator, "userAgent", {

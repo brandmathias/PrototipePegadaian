@@ -334,12 +334,12 @@ describe("buyer serializers", () => {
       rejectionReason: null,
       referenceNumber: "BRI-2026-991",
       paymentDeadline: new Date("2026-05-05T02:30:00Z"),
-      verifiedBy: "Admin Unit Ranotana",
+      verifiedBy: "Hendra Wijaya",
       verifiedAt: new Date("2026-05-04T14:11:00Z"),
       createdAt: new Date("2026-05-04T14:07:00Z"),
       handoverProofUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
       handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
-      handoverProofUploadedBy: "Admin UPC Ranotana",
+      handoverProofUploadedBy: "Hendra Wijaya",
       lotName: "Kalung Emas",
       lotId: "barang-2",
       imageUrl: "/uploads/barang/kalung-emas.jpg",
@@ -349,11 +349,11 @@ describe("buyer serializers", () => {
     } as any);
 
     expect(transaction.paymentProof).toBe("/uploads/bukti/transfer.jpg");
-    expect(transaction.verifiedBy).toBe("Admin Unit Ranotana");
+    expect(transaction.verifiedBy).toBe("Hendra Wijaya");
     expect(transaction.handoverProof).toEqual({
       fileUrl: "/uploads/serah-terima/trx-fixed-handover.jpg",
       uploadedAt: "4 Mei 2026, 22.30 WIB",
-      uploadedBy: "Admin UPC Ranotana",
+      uploadedBy: "Hendra Wijaya",
       location: "UPC Ranotana"
     });
     expect(transaction.handoverAutoCompleteAt).toBe("7 Mei 2026, 22.30 WIB");
@@ -379,7 +379,7 @@ describe("buyer serializers", () => {
       createdAt: new Date("2026-05-04T14:07:00Z"),
       handoverProofUrl: "/uploads/serah-terima/trx-auto-done.jpg",
       handoverProofUploadedAt: new Date("2026-05-04T15:30:00Z"),
-      handoverProofUploadedBy: "Admin UPC Ranotana",
+      handoverProofUploadedBy: "Hendra Wijaya",
       lotName: "Kalung Emas",
       lotId: "barang-2",
       imageUrl: "/uploads/barang/kalung-emas.jpg",

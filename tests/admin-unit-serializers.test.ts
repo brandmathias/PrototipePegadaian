@@ -552,13 +552,13 @@ describe("admin unit serializers", () => {
       verifiedAt: new Date("2026-05-04T14:11:00Z"),
       createdAt: new Date("2026-05-04T14:07:00Z"),
       updatedAt: new Date("2026-05-04T14:15:00Z"),
-      verifiedByName: "Admin Unit Ranotana",
+      verifiedByName: "Hendra Wijaya",
       handoverProofUploadedByName: "Petugas Serah Terima"
     });
 
     expect(transaction.status).toBe("SELESAI");
     expect(transaction.printableReceipt).toBe(true);
-    expect(transaction.verifiedBy).toBe("Admin Unit Ranotana");
+    expect(transaction.verifiedBy).toBe("Hendra Wijaya");
     expect(transaction.handoverProofUploadedBy).toBe("Petugas Serah Terima");
   });
 });

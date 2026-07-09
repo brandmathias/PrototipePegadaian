@@ -663,10 +663,10 @@ describe("admin pemasaran pages", () => {
           buyerEmail: "buyer1@mail.com",
           buyerPhone: "6281200001001",
           paymentMethod: "TRANSFER_BANK",
-          verifiedBy: "Admin Unit Ranotana",
+          verifiedBy: "Hendra Wijaya",
           handoverProofUrl: "/uploads/serah-terima/trx-fixed-paid.jpg",
           handoverProofUploadedAt: "2026-06-03T01:00:00.000Z",
-          handoverProofUploadedBy: "Admin Unit Ranotana",
+          handoverProofUploadedBy: "Hendra Wijaya",
           reference: "FP-02393124",
           soldAt: "2026-06-03T00:39:00.000Z",
           unitName: "UPC Ranotana",
@@ -730,10 +730,10 @@ describe("admin pemasaran pages", () => {
             buyerEmail: "buyer1@mail.com",
             buyerPhone: "6281200001001",
             paymentMethod: "TRANSFER_BANK",
-            verifiedBy: "Admin Unit Ranotana",
+            verifiedBy: "Hendra Wijaya",
             handoverProofUrl: "/uploads/serah-terima/trx-fixed-paid.jpg",
             handoverProofUploadedAt: "2026-06-03T01:00:00.000Z",
-            handoverProofUploadedBy: "Admin Unit Ranotana",
+            handoverProofUploadedBy: "Hendra Wijaya",
             reference: "FP-02393124",
             soldAt: "2026-06-03T00:39:00.000Z",
             unitName: "UPC Ranotana",
@@ -1587,10 +1587,10 @@ describe("admin pemasaran pages", () => {
           paymentMethod: "BAYAR_LANGSUNG",
           reference: "PGD1029384",
           proofUrl: null,
-          verifiedBy: "Admin Unit Ranotana",
+          verifiedBy: "Hendra Wijaya",
           handoverProofUrl: "/uploads/serah-terima/trx-vickrey-paid.jpg",
           handoverProofUploadedAt: "2026-06-01T13:00:00.000Z",
-          handoverProofUploadedBy: "Admin Unit Ranotana",
+          handoverProofUploadedBy: "Hendra Wijaya",
           soldAt: "2026-06-01T12:25:00.000Z",
           paymentDeadline: "2026-06-02T23:35:00.000Z",
           specifications: {
@@ -1731,10 +1731,10 @@ describe("admin pemasaran pages", () => {
             paymentMethod: "BAYAR_LANGSUNG",
             reference: "PGD1029384",
             proofUrl: null,
-            verifiedBy: "Admin Unit Ranotana",
+            verifiedBy: "Hendra Wijaya",
             handoverProofUrl: "/uploads/serah-terima/trx-vickrey-paid.jpg",
             handoverProofUploadedAt: "2026-06-01T13:00:00.000Z",
-            handoverProofUploadedBy: "Admin Unit Ranotana",
+            handoverProofUploadedBy: "Hendra Wijaya",
             soldAt: "2026-06-01T12:25:00.000Z",
             paymentDeadline: "2026-06-02T23:35:00.000Z",
             media: [{ id: "asset-paid", type: "foto", url: "/uploads/bangle.jpg", fileName: "bangle.jpg" }],
@@ -1805,10 +1805,10 @@ describe("admin pemasaran pages", () => {
           paymentMethod: "BAYAR_LANGSUNG",
           reference: "PGD1029384",
           proofUrl: null,
-          verifiedBy: "Admin Unit Ranotana",
+          verifiedBy: "Hendra Wijaya",
           handoverProofUrl: "/uploads/serah-terima/trx-vickrey-completed.jpg",
           handoverProofUploadedAt: "2026-06-01T13:00:00.000Z",
-          handoverProofUploadedBy: "Admin Unit Ranotana",
+          handoverProofUploadedBy: "Hendra Wijaya",
           soldAt: "2026-06-01T12:25:00.000Z",
           paymentDeadline: "2026-06-02T23:35:00.000Z",
           specifications: {
@@ -1875,7 +1875,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/^selesai: selesai$/i)).toHaveClass("bg-[#006747]");
     const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
     expect(progressPanel).not.toBeNull();
-    const adminProgressActor = within(progressPanel as HTMLElement).getByText("Admin: Admin Unit Ranotana");
+    const adminProgressActor = within(progressPanel as HTMLElement).getByText("Admin: Hendra Wijaya");
     expect(adminProgressActor.className).toContain("uppercase");
     expect(adminProgressActor.className).toContain("whitespace-normal");
     expect(adminProgressActor.className).not.toContain("truncate");

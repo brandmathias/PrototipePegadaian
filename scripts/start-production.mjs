@@ -79,6 +79,98 @@ try {
   `);
   await client.query(canonicalCodeMigrationSql);
   await client.query(customerDataStandardMigrationSql);
+  const unitAdminAuditRepair = await client.query(`
+    with target_context as (
+      select
+        unit_target."id" as unit_id,
+        replacement_admin."id" as replacement_user_id
+      from "units" unit_target
+      join lateral (
+        select u."id"
+        from "user" u
+        where u."role" = 'admin_unit'
+          and u."is_active" = true
+          and u."unit_id" = unit_target."id"
+          and lower(u."name") = lower('Hendra Wijaya')
+        order by u."updated_at" desc, u."created_at" desc, u."id" desc
+        limit 1
+      ) replacement_admin on true
+      where lower(unit_target."name") = lower('UPC Wanea')
+      limit 1
+    ),
+    stale_admins as (
+      select stale."id"
+      from "user" stale
+      where stale."role" = 'admin_unit'
+        and lower(stale."name") = any(array['admin unit ranotana', 'admin upc ranotana']::text[])
+    ),
+    updated_verified_transactions as (
+      update "transaksi" as t
+      set "verified_by_user_id" = target_context.replacement_user_id,
+          "updated_at" = now()
+      from target_context, stale_admins, "pemasaran" as p, "barang" as b
+      where t."pemasaran_id" = p."id"
+        and b."id" = p."barang_id"
+        and b."unit_id" = target_context.unit_id
+        and t."verified_by_user_id" = stale_admins."id"
+      returning 1
+    ),
+    updated_handover_transactions as (
+      update "transaksi" as t
+      set "handover_proof_uploaded_by_user_id" = target_context.replacement_user_id,
+          "updated_at" = now()
+      from target_context, stale_admins, "pemasaran" as p, "barang" as b
+      where t."pemasaran_id" = p."id"
+        and b."id" = p."barang_id"
+        and b."unit_id" = target_context.unit_id
+        and t."handover_proof_uploaded_by_user_id" = stale_admins."id"
+      returning 1
+    ),
+    updated_status_history as (
+      update "riwayat_status_barang" as history
+      set "changed_by_user_id" = target_context.replacement_user_id
+      from target_context, stale_admins, "barang" as b
+      where history."barang_id" = b."id"
+        and b."unit_id" = target_context.unit_id
+        and history."changed_by_user_id" = stale_admins."id"
+      returning 1
+    ),
+    updated_extension_history as (
+      update "riwayat_perpanjangan" as extension_history
+      set "extended_by_user_id" = target_context.replacement_user_id
+      from target_context, stale_admins, "barang" as b
+      where extension_history."barang_id" = b."id"
+        and b."unit_id" = target_context.unit_id
+        and extension_history."extended_by_user_id" = stale_admins."id"
+      returning 1
+    ),
+    updated_marketing_creators as (
+      update "pemasaran" as p
+      set "created_by_user_id" = target_context.replacement_user_id,
+          "updated_at" = now()
+      from target_context, stale_admins, "barang" as b
+      where p."barang_id" = b."id"
+        and b."unit_id" = target_context.unit_id
+        and p."created_by_user_id" = stale_admins."id"
+      returning 1
+    ),
+    updated_item_creators as (
+      update "barang" as b
+      set "created_by_user_id" = target_context.replacement_user_id,
+          "updated_at" = now()
+      from target_context, stale_admins
+      where b."unit_id" = target_context.unit_id
+        and b."created_by_user_id" = stale_admins."id"
+      returning 1
+    )
+    select
+      (select count(*) from updated_verified_transactions)::integer
+      + (select count(*) from updated_handover_transactions)::integer
+      + (select count(*) from updated_status_history)::integer
+      + (select count(*) from updated_extension_history)::integer
+      + (select count(*) from updated_marketing_creators)::integer
+      + (select count(*) from updated_item_creators)::integer as repaired_references
+  `);
 
   const retiredColumnAudit = await client.query(`
     select table_name, column_name
@@ -148,7 +240,9 @@ try {
   }
 
   await client.query("commit");
-  console.log("Startup migration: database bersih, data nasabah standar, dan seluruh kode unit/SBG sudah canonical.");
+  console.log(
+    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi.`,
+  );
 } catch (error) {
   await client.query("rollback").catch(() => undefined);
   throw error;
