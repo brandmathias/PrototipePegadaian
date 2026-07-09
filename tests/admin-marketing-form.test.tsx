@@ -226,10 +226,12 @@ describe("AdminMarketingForm", () => {
     );
 
     expect(container.querySelector("[aria-live='polite']")).toHaveClass("z-[200]");
-    expect(container.querySelector(".lucide-megaphone")).toBeTruthy();
-    const marketingModal = screen.getByRole("heading", { name: /pasarkan barang/i }).closest(".modal-viewport");
+    const marketingHeading = await screen.findByRole("heading", { name: /pasarkan barang/i });
+    expect(document.body.querySelector(".lucide-megaphone")).toBeTruthy();
+    const marketingModal = marketingHeading.closest(".modal-viewport");
     expect(marketingModal).toHaveClass("modal-viewport", "my-auto", "max-w-[66rem]");
     expect(marketingModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
+    expect(marketingModal?.parentElement?.parentElement).toBe(document.body);
 
     fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
 

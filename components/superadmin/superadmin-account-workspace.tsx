@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { AdminSelect } from "@/components/admin/admin-select";
@@ -296,10 +297,10 @@ function ResetPasswordDialog({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[120] grid place-items-center bg-[#13211c]/38 px-4 py-5 backdrop-blur-sm">
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#13211c]/38 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm sm:px-4 sm:py-5">
       <form
-        className="toast-enter modal-viewport w-full max-w-md overflow-hidden rounded-[1.35rem] border border-[#dfe8e3] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
+        className="toast-enter modal-viewport my-auto w-full max-w-md overflow-hidden rounded-[1.35rem] border border-[#dfe8e3] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
         onSubmit={handleSubmit}
       >
         <div className="flex items-start justify-between gap-4 border-b border-[#edf2ee] px-5 py-4">
@@ -348,7 +349,8 @@ function ResetPasswordDialog({
           </div>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -411,7 +413,7 @@ function CreateSuperAdminPanel({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto overscroll-contain px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] scrollbar-none sm:px-6 sm:py-6">
       <button
         aria-label="Tutup panel tambah akses"
@@ -551,7 +553,8 @@ function CreateSuperAdminPanel({
           </div>
         </section>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

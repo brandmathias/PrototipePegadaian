@@ -644,8 +644,8 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
         </div>
       </div>
 
-      {isDetailOpen ? (
-        <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto overscroll-contain bg-[#10231b]/42 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 sm:py-6">
+      {isDetailOpen && typeof document !== "undefined" ? createPortal(
+        <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#10231b]/42 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 sm:py-6">
           <div className="modal-viewport my-auto w-full max-w-3xl overflow-hidden rounded-[1.35rem] border border-[#d7e7df] bg-white shadow-[0_32px_90px_-44px_rgba(8,69,50,0.62)] sm:rounded-[1.6rem]">
             <div className="flex items-start justify-between gap-4 border-b border-[#edf2ee] px-5 py-4">
               <div>
@@ -721,7 +721,8 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </section>
   );

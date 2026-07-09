@@ -40,14 +40,16 @@ describe("admin gadai action forms", () => {
   });
 
   it("submits the selected extension due date instead of an auto-generated fallback", async () => {
-    const { container } = renderWithToast(
+    renderWithToast(
       <AdminExtensionForm currentDueDate="2026-05-31" itemId="barang-1" />
     );
 
-    expect(container.querySelector(".lucide-calendar-clock")).toBeTruthy();
-    const extensionModal = screen.getByRole("heading", { name: /catat perpanjangan gadai/i }).closest(".modal-viewport");
+    const extensionHeading = await screen.findByRole("heading", { name: /catat perpanjangan gadai/i });
+    expect(document.body.querySelector(".lucide-calendar-clock")).toBeTruthy();
+    const extensionModal = extensionHeading.closest(".modal-viewport");
     expect(extensionModal).toHaveClass("modal-viewport", "my-auto", "max-w-[42rem]");
     expect(extensionModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
+    expect(extensionModal?.parentElement?.parentElement).toBe(document.body);
 
     fireEvent.click(screen.getByRole("button", { name: "Simpan perpanjangan" }));
 
@@ -68,7 +70,7 @@ describe("admin gadai action forms", () => {
   });
 
   it("requires a redemption reference and sends the entered reference to the API", async () => {
-    const { container } = renderWithToast(
+    renderWithToast(
       <AdminRedeemForm
         customerNumber="NAS-001"
         itemCode="BRG-002"
@@ -80,15 +82,17 @@ describe("admin gadai action forms", () => {
       />
     );
 
-    expect(container.querySelector(".lucide-receipt-text")).toBeTruthy();
+    const redeemHeading = await screen.findByRole("heading", { name: /catat penebusan gadai/i });
+    expect(document.body.querySelector(".lucide-receipt-text")).toBeTruthy();
 
     expect(screen.getByRole("img", { name: "LM Antam 10gr Sertifikat" })).toHaveAttribute(
       "src",
       "/uploads/lm-antam.jpg"
     );
-    const redeemModal = screen.getByRole("heading", { name: /catat penebusan gadai/i }).closest(".modal-viewport");
+    const redeemModal = redeemHeading.closest(".modal-viewport");
     expect(redeemModal).toHaveClass("modal-viewport", "my-auto", "max-w-[42rem]");
     expect(redeemModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
+    expect(redeemModal?.parentElement?.parentElement).toBe(document.body);
 
     fireEvent.click(screen.getByRole("button", { name: "Tunai" }));
     const visualTransferOption = screen

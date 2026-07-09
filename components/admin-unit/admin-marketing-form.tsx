@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, ReactNode, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle2,
   Gavel,
@@ -240,6 +241,7 @@ export function AdminMarketingForm({
   const [activeDurationField, setActiveDurationField] = useState<null | "days" | "hours" | "minutes" | "seconds">(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalClosedAfterSuccess, setIsModalClosedAfterSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const normalizedPrice = Number(price);
   const normalizedDurationDays = Number(durationDays || "0");
@@ -275,6 +277,21 @@ export function AdminMarketingForm({
       timeZone: "Asia/Makassar",
     });
   }, [baseNowMs, mode, normalizedDurationTotalSeconds]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || presentation !== "modal" || isModalClosedAfterSuccess) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isModalClosedAfterSuccess, mounted, presentation]);
 
   function handleCancel() {
     if (onCancel) {
@@ -591,14 +608,15 @@ export function AdminMarketingForm({
   );
 
   if (presentation === "modal") {
-    if (isModalClosedAfterSuccess) {
+    if (!mounted || isModalClosedAfterSuccess) {
       return null;
     }
 
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#081b14]/42 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-[2px] sm:px-6 sm:py-6">
           {marketingCard}
-      </div>
+      </div>,
+      document.body
     );
   }
 
