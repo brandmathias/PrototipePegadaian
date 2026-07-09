@@ -545,7 +545,7 @@ export function RegisterPage() {
         <div className="absolute bottom-0 left-0 h-56 w-full bg-[radial-gradient(circle_at_0%_100%,rgba(13,143,83,0.28),transparent_52%)]" />
         <div className="relative w-full max-w-[650px]">
           <div className="mb-9 space-y-6">
-            <AuthBrandCluster accentLabel="Registrasi Pembeli" />
+            <AuthBrandCluster accentLabel="Registrasi Akun" />
             <div>
               <h1 className="font-headline text-4xl font-black tracking-tight xl:text-5xl">
                 Buat akun pembeli baru

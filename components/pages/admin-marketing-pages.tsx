@@ -605,46 +605,33 @@ function VickreyBidLogTable({
   );
 }
 
-function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
+function VickreyAssetDetailDialog({
+  auction,
+  isOpen,
+  onClose
+}: {
+  auction: MarketingSession;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const rows = getBarangSpecificationRows(auction.category ?? "", auction.specifications ?? {});
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const description = auction.description?.trim() || "Deskripsi barang belum tercatat pada data jaminan ini.";
+  const summaryRows = [
+    { label: "Kode Aset", value: auction.code || auction.lotId || auction.id },
+    { label: "Nama Barang", value: auction.lot || "-" },
+    { label: "Kategori", value: auction.category ? humanize(auction.category) : "-" },
+    { label: "Kondisi", value: auction.condition ? humanize(auction.condition) : "-" },
+    { label: "Harga Dasar", value: currency.format(auction.basePrice ?? 0) },
+    { label: "Nilai Taksiran", value: currency.format(auction.appraisalValue ?? auction.basePrice ?? 0) },
+    { label: "Unit", value: auction.unitName ?? auction.unitAddress ?? "-" },
+    { label: "Batas Lelang", value: auction.endingAt ? formatAppDateTime(auction.endingAt) : auction.ending ?? "-" }
+  ];
 
-  return (
-    <section className="relative overflow-hidden rounded-[1.45rem] border border-[#d7e7df] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfb_100%)] shadow-[0_22px_58px_-48px_rgba(8,69,50,0.36)]">
-      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#007a53_0%,#cfeee0_44%,transparent_100%)]" />
-      <div className="px-5 pb-2 pt-4">
-        <div>
-          <p className="text-[0.76rem] font-black uppercase tracking-[0.09em] text-[#10231b]">
-            Deskripsi Barang
-          </p>
-          <p className="mt-1.5 text-[0.72rem] font-semibold text-[#64756e]">
-            Ringkasan kondisi dan konteks jaminan
-          </p>
-        </div>
-      </div>
-      <div className="px-4 pb-4 pt-2">
-        <div className="relative overflow-hidden rounded-[1.15rem] border border-[#dbe9e2] bg-[radial-gradient(circle_at_95%_0%,rgba(0,122,83,0.08),transparent_30%),linear-gradient(135deg,#ffffff_0%,#fbfdfb_100%)] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <p className="line-clamp-3 text-justify text-[0.92rem] font-semibold leading-7 text-[#24352e] [hyphens:auto] [text-justify:inter-word]">
-            {description}
-          </p>
+  if (!isOpen || typeof document === "undefined") {
+    return null;
+  }
 
-          <div className="mt-3 flex justify-end">
-            <button
-              className="group inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#007a53]/18 bg-[#007a53] px-4 text-[0.78rem] font-black text-white shadow-[0_14px_28px_-20px_rgba(0,103,71,0.75)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-[#006747] active:scale-[0.98]"
-              onClick={() => setIsDetailOpen(true)}
-              type="button"
-            >
-              Lihat detail
-              <span className="grid size-6 place-items-center rounded-full bg-white/14 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0.5">
-                <ArrowRight className="size-3.5" />
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isDetailOpen && typeof document !== "undefined" ? createPortal(
+  return createPortal(
         <div className="fixed inset-0 z-[120] flex items-start justify-center overflow-y-auto overscroll-contain bg-[#10231b]/42 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4 sm:py-6">
           <div className="modal-viewport my-auto w-full max-w-3xl overflow-hidden rounded-[1.35rem] border border-[#d7e7df] bg-white shadow-[0_32px_90px_-44px_rgba(8,69,50,0.62)] sm:rounded-[1.6rem]">
             <div className="flex items-start justify-between gap-4 border-b border-[#edf2ee] px-5 py-4">
@@ -659,7 +646,7 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
               <button
                 aria-label="Tutup detail spesifikasi"
                 className="grid size-10 shrink-0 place-items-center rounded-full border border-[#dbe9e2] bg-white text-[#52655d] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:text-[#10231b] active:scale-[0.98]"
-                onClick={() => setIsDetailOpen(false)}
+                onClick={onClose}
                 type="button"
               >
                 <X className="size-5" />
@@ -667,6 +654,32 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
             </div>
 
             <div className="max-h-[min(70dvh,calc(100dvh-9rem))] overflow-y-auto p-4 sm:p-5">
+              <div className="mb-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#10231b]">
+                    Ringkasan Aset
+                  </p>
+                  <span className="rounded-full border border-[#d8efe3] bg-[#f2fbf6] px-3 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#007a53]">
+                    Lengkap
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {summaryRows.map((row) => (
+                    <div
+                      className="rounded-[1.05rem] border border-[#dbe9e2] bg-white px-4 py-3 shadow-[0_18px_38px_-34px_rgba(8,69,50,0.42),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                      key={row.label}
+                    >
+                      <p className="text-[0.62rem] font-black uppercase tracking-[0.16em] text-[#8a9891]">
+                        {row.label}
+                      </p>
+                      <p className="mt-1.5 min-w-0 break-words text-[0.94rem] font-black leading-6 text-[#10231b]">
+                        {row.value || "-"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="mb-4 rounded-[1.15rem] border border-[#dbe9e2] bg-[linear-gradient(135deg,#ffffff_0%,#fbfdfb_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                 <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#8a9891]">
                   Deskripsi Barang
@@ -723,9 +736,7 @@ function VickreySpecificationPanel({ auction }: { auction: MarketingSession }) {
           </div>
         </div>,
         document.body
-      ) : null}
-    </section>
-  );
+      );
 }
 
 function isMarketingVideoMedia(media: MarketingMedia | null | undefined) {
@@ -752,6 +763,7 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
   const media = auction.media ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const activeMedia = media[Math.min(activeIndex, Math.max(media.length - 1, 0))] ?? null;
   const activeIsVideo = isMarketingVideoMedia(activeMedia);
 
@@ -799,6 +811,14 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
             </div>
           )}
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(4,36,25,0.10)_0%,transparent_34%,rgba(4,36,25,0.12)_100%)]" />
+          <button
+            className="absolute bottom-4 right-4 z-[3] inline-flex h-10 items-center justify-center gap-2 rounded-[0.72rem] bg-white/92 px-3.5 text-[0.78rem] font-black text-[#10231b] shadow-[0_16px_32px_-22px_rgba(8,69,50,0.72)] transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:bg-white active:scale-[0.98]"
+            onClick={() => setIsDetailOpen(true)}
+            type="button"
+          >
+            Lihat detail
+            <ArrowRight className="size-3.5" />
+          </button>
         </div>
       </div>
 
@@ -907,6 +927,11 @@ function VickreyMediaManifest({ auction }: { auction: MarketingSession }) {
             document.body
           )
         : null}
+      <VickreyAssetDetailDialog
+        auction={auction}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+      />
     </section>
   );
 }
@@ -5870,7 +5895,6 @@ export function AdminVickreyAuctionDetailPage({
 
             <div className="space-y-4">
               <VickreyMediaManifest auction={auction} />
-              <VickreySpecificationPanel auction={auction} />
               <MarketingPerformancePanel
                 insights={auction.insights}
                 lotId={auction.id}

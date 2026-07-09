@@ -92,6 +92,10 @@ describe("CatalogPage", () => {
     expect(screen.getAllByText(/suka/i)[0]).toBeInTheDocument();
     expect(screen.getByText("Harga")).toBeInTheDocument();
     expect(screen.getByText("Harga Dasar")).toBeInTheDocument();
+    expect(screen.getByText("Cincin Emas Berlian").closest("article")).toHaveTextContent("Harga Tetap");
+    expect(
+      screen.getByText("Cincin Emas Berlian").closest("article")?.querySelector(".text-\\[\\#b87900\\]")
+    ).not.toBeNull();
     expect(screen.getByText(/peserta/i)).toBeInTheDocument();
     expect(screen.getAllByText("Pembayaran aman").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Penawaran tertutup").length).toBeGreaterThan(0);

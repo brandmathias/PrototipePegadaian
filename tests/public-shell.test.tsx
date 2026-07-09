@@ -194,4 +194,11 @@ describe("PublicShell", () => {
 
     expectOptimizedBrandImages(screen.getByRole("img", { name: /ruang agunan/i }), true, markPriority);
   });
+
+  it("labels the register page as account registration", () => {
+    render(<ToastProvider><RegisterPage /></ToastProvider>);
+
+    expect(screen.getByText("Registrasi Akun")).toBeInTheDocument();
+    expect(screen.queryByText("Registrasi Pembeli")).not.toBeInTheDocument();
+  });
 });

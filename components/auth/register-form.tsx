@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  FileText,
   IdCard,
   Loader2,
   LockKeyhole,
@@ -304,15 +303,6 @@ export function RegisterForm() {
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
           </div>
-        </div>
-      </div>
-      <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 text-sm leading-7 text-emerald-50/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-        <div className="flex items-start gap-3">
-          <FileText className="mt-1 size-4 shrink-0 text-amber-100" />
-          <span>
-            Data identitas Anda digunakan secara aman untuk memverifikasi akun dan menjaga
-            transparansi seluruh aktivitas transaksi Anda.
-          </span>
         </div>
       </div>
       <Button

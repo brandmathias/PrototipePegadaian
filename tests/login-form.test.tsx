@@ -167,6 +167,8 @@ describe("LoginForm", () => {
 
     renderWithToast(<RegisterForm />);
 
+    expect(screen.queryByText(/data identitas anda digunakan secara aman/i)).not.toBeInTheDocument();
+
     const passwordInput = screen.getByLabelText(/kata sandi/i, { selector: "input" }) as HTMLInputElement;
     expect(passwordInput.type).toBe("password");
 
