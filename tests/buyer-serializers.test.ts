@@ -74,8 +74,7 @@ describe("buyer serializers", () => {
       { label: "Berat", value: "3,20 gram" },
       { label: "Bentuk", value: "Perhiasan" },
       { label: "Panjang", value: "18 cm" },
-      { label: "Diameter", value: "16 mm" },
-      { label: "Sertifikat", value: "Ada" }
+      { label: "Diameter", value: "16 mm" }
     ]);
     expect(lot.specs.map((item) => item.label)).not.toEqual(
       expect.arrayContaining(["Kategori", "Kondisi", "Unit Pegadaian", "Lokasi", "Mode", "Status"])
@@ -160,8 +159,7 @@ describe("buyer serializers", () => {
       { label: "Jenis Emas", value: "Kalung" },
       { label: "Kadar Emas", value: "22K / 91,6%" },
       { label: "Berat", value: "8,52 gram" },
-      { label: "Bentuk", value: "Perhiasan kalung" },
-      { label: "Sertifikat", value: "Appraisal unit Pegadaian" }
+      { label: "Bentuk", value: "Perhiasan kalung" }
     ]);
     expect(transaction.status).toBe("BUKTI_DIUNGGAH");
     expect(transaction.deadline).toBe("Menunggu verifikasi admin");

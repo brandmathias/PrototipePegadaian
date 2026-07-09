@@ -89,9 +89,15 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByLabelText("Kadar Emas")).toBeInTheDocument();
     expect(screen.getByLabelText("Panjang")).toBeInTheDocument();
     expect(screen.getByLabelText("Diameter")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Sertifikat")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Nilai gadai")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /tanggal gadai/i })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Nomor nasabah")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Logam Mulia" }));
+
+    expect(screen.getByLabelText(/Nomor Sertifikat/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nomor Sertifikat \(Opsional\)/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio", { name: "Elektronik" }));
 
@@ -132,7 +138,6 @@ describe("AdminInventoryCreateForm", () => {
     fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Perhiasan" } });
     fireEvent.change(screen.getByLabelText("Panjang"), { target: { value: "18 cm" } });
     fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
-    fireEvent.change(screen.getByLabelText("Sertifikat"), { target: { value: "Antam" } });
 
     fireEvent.change(input, {
       target: {
@@ -145,6 +150,32 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByAltText("Preview penuh media barang")).toBeInTheDocument();
 
+    expect(screen.getAllByLabelText(/checklist selesai/i)).toHaveLength(4);
+    expect(screen.getByRole("button", { name: /simpan barang gadai/i })).toBeEnabled();
+  });
+
+  it("does not require certificate number for logam mulia", async () => {
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.click(screen.getByRole("radio", { name: "Logam Mulia" }));
+    fireEvent.change(screen.getByLabelText("Nama barang"), { target: { value: "Emas Antam 10 Gram" } });
+    fireEvent.change(screen.getByLabelText("Nilai taksiran"), { target: { value: "12000000" } });
+    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "0812445511223" } });
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras" } });
+    fireEvent.change(screen.getByLabelText("Jenis Logam"), { target: { value: "Emas batangan" } });
+    fireEvent.change(screen.getByLabelText("Brand"), { target: { value: "Antam" } });
+    fireEvent.change(screen.getByLabelText("Kadar"), { target: { value: "999,9" } });
+    fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "10 gram" } });
+    expect(screen.getByLabelText(/Nomor Sertifikat/i)).toHaveValue("");
+
+    fireEvent.change(input, {
+      target: {
+        files: [new File(["foto"], "antam.jpg", { type: "image/jpeg" })]
+      }
+    });
+
+    expect(await screen.findByAltText("Preview media barang 1")).toBeInTheDocument();
     expect(screen.getAllByLabelText(/checklist selesai/i)).toHaveLength(4);
     expect(screen.getByRole("button", { name: /simpan barang gadai/i })).toBeEnabled();
   });
@@ -163,7 +194,6 @@ describe("AdminInventoryCreateForm", () => {
     fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Perhiasan" } });
     fireEvent.change(screen.getByLabelText("Panjang"), { target: { value: "18 cm" } });
     fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
-    fireEvent.change(screen.getByLabelText("Sertifikat"), { target: { value: "Antam" } });
     fireEvent.change(input, {
       target: {
         files: [new File(["foto"], "cincin.jpg", { type: "image/jpeg" })]

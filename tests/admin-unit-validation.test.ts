@@ -116,8 +116,7 @@ describe("admin unit validation", () => {
       diameter: "16 mm",
       jenisEmas: "Cincin",
       kadarEmas: "99,9%",
-      panjang: "18 cm",
-      sertifikat: "Antam"
+      panjang: "18 cm"
     });
   });
 

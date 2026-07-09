@@ -511,7 +511,9 @@ export function AdminInventoryCreateForm() {
     const hasValidDates =
       Boolean(pawnedAt && dueDate) &&
       new Date(`${dueDate}T00:00:00.000Z`) > new Date(`${pawnedAt}T00:00:00.000Z`);
-    const hasSpecifications = specificationFields.every((field) => getValue(`specifications.${field.key}`).length > 0);
+    const hasSpecifications = specificationFields
+      .filter((field) => field.required !== false)
+      .every((field) => getValue(`specifications.${field.key}`).length > 0);
 
     setChecklist({
       hasMedia: nextMedia.length > 0,
@@ -743,7 +745,10 @@ export function AdminInventoryCreateForm() {
             <div className="grid gap-4 md:grid-cols-2">
               {specificationFields.map((field) => (
                 <div className={cn("space-y-1.5", field.key === "sertifikat" && "md:col-span-2")} key={field.key}>
-                  <FieldLabel htmlFor={`specification-${field.key}`}>{field.label}</FieldLabel>
+                  <FieldLabel htmlFor={`specification-${field.key}`}>
+                    {field.label}
+                    {field.required === false ? " (Opsional)" : ""}
+                  </FieldLabel>
                   <FormInput
                     id={`specification-${field.key}`}
                     name={`specifications.${field.key}`}

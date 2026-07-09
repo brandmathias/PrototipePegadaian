@@ -319,7 +319,10 @@ export function AdminBarangEditForm({
               const suffix = getSpecificationSuffix(field.label);
               return (
                 <div className="space-y-2" key={field.key}>
-                  <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>{field.label}</FieldLabel>
+                  <FieldLabel htmlFor={`admin-barang-specification-${field.key}`}>
+                    {field.label}
+                    {field.required === false ? " (Opsional)" : ""}
+                  </FieldLabel>
                   <div className={cn("flex overflow-hidden rounded-xl border border-slate-200 bg-white", editInputGroupFocusClass)}>
                     <input
                       className="h-10 w-full bg-transparent px-3 text-sm font-semibold text-slate-800 outline-none placeholder:text-slate-300"

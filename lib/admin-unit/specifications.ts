@@ -6,6 +6,7 @@ export type BarangSpecificationField = {
   key: string;
   label: string;
   placeholder: string;
+  required?: boolean;
 };
 
 const specificationFields: Record<string, BarangSpecificationField[]> = {
@@ -22,15 +23,14 @@ const specificationFields: Record<string, BarangSpecificationField[]> = {
     { key: "berat", label: "Berat", placeholder: "Contoh: 3,20 gram" },
     { key: "bentuk", label: "Bentuk", placeholder: "Contoh: Perhiasan atau batangan" },
     { key: "panjang", label: "Panjang", placeholder: "Contoh: 18 cm" },
-    { key: "diameter", label: "Diameter", placeholder: "Contoh: 16 mm" },
-    { key: "sertifikat", label: "Sertifikat", placeholder: "Contoh: Ada, Antam, UBS" }
+    { key: "diameter", label: "Diameter", placeholder: "Contoh: 16 mm" }
   ],
   logam_mulia: [
     { key: "jenisLogam", label: "Jenis Logam", placeholder: "Contoh: Emas batangan" },
     { key: "brand", label: "Brand", placeholder: "Contoh: Antam" },
     { key: "kadar", label: "Kadar", placeholder: "Contoh: 999,9" },
     { key: "berat", label: "Berat", placeholder: "Contoh: 10 gram" },
-    { key: "nomorSertifikat", label: "Nomor Sertifikat", placeholder: "Contoh: LM-2026-001" }
+    { key: "nomorSertifikat", label: "Nomor Sertifikat", placeholder: "Contoh: LM-2026-001", required: false }
   ],
   elektronik: [
     { key: "merek", label: "Merek", placeholder: "Contoh: ASUS" },
@@ -60,8 +60,7 @@ const specificationFields: Record<string, BarangSpecificationField[]> = {
 const specificationAliases: Partial<Record<string, Record<string, string[]>>> = {
   perhiasan: {
     jenisEmas: ["jenisEmas", "jenisLogam"],
-    kadarEmas: ["kadarEmas", "kadar"],
-    sertifikat: ["sertifikat", "brand", "nomorSertifikat"]
+    kadarEmas: ["kadarEmas", "kadar"]
   },
   logam_mulia: {
     jenisLogam: ["jenisLogam", "jenisEmas", "bentuk"],
