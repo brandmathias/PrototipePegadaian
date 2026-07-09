@@ -45,6 +45,9 @@ describe("admin gadai action forms", () => {
     );
 
     expect(container.querySelector(".lucide-calendar-clock")).toBeTruthy();
+    const extensionModal = screen.getByRole("heading", { name: /catat perpanjangan gadai/i }).closest(".modal-viewport");
+    expect(extensionModal).toHaveClass("modal-viewport", "my-auto", "max-w-[42rem]");
+    expect(extensionModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
 
     fireEvent.click(screen.getByRole("button", { name: "Simpan perpanjangan" }));
 
@@ -83,6 +86,9 @@ describe("admin gadai action forms", () => {
       "src",
       "/uploads/lm-antam.jpg"
     );
+    const redeemModal = screen.getByRole("heading", { name: /catat penebusan gadai/i }).closest(".modal-viewport");
+    expect(redeemModal).toHaveClass("modal-viewport", "my-auto", "max-w-[42rem]");
+    expect(redeemModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
 
     fireEvent.click(screen.getByRole("button", { name: "Tunai" }));
     const visualTransferOption = screen

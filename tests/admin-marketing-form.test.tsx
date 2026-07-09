@@ -227,6 +227,9 @@ describe("AdminMarketingForm", () => {
 
     expect(container.querySelector("[aria-live='polite']")).toHaveClass("z-[200]");
     expect(container.querySelector(".lucide-megaphone")).toBeTruthy();
+    const marketingModal = screen.getByRole("heading", { name: /pasarkan barang/i }).closest(".modal-viewport");
+    expect(marketingModal).toHaveClass("modal-viewport", "my-auto", "max-w-[66rem]");
+    expect(marketingModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
 
     fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
 
