@@ -1500,6 +1500,15 @@ describe("superadmin pages", () => {
     );
     expect(screen.getByTestId("superadmin-ranking-row-1").className).toContain("bg-[#eefaf2]");
     expect(screen.getByTestId("superadmin-ranking-row-2").className).toContain("bg-[#fff9ea]");
+    const rankingSection = screen.getByText("Bidders Ranking Table (Arsip)").closest("section");
+    const firstRankMarker = within(rankingSection as HTMLElement).getByTestId("superadmin-ranking-marker-1");
+    const secondRankMarker = within(rankingSection as HTMLElement).getByTestId("superadmin-ranking-marker-2");
+    expect(within(rankingSection as HTMLElement).getByText("Peringkat")).toBeInTheDocument();
+    expect(firstRankMarker).toHaveClass("h-[1.65rem]", "w-8", "rounded-[0.34rem]");
+    expect(firstRankMarker.className).toContain("bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)]");
+    expect(firstRankMarker.className).not.toContain("#17824a");
+    expect(secondRankMarker).toHaveClass("h-[1.65rem]", "w-8", "rounded-[0.34rem]");
+    expect(secondRankMarker.className).toContain("bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)]");
     expect(vickreyHandover).toHaveTextContent(
       "Dokumentasi Serah Terima Barang Fisik",
     );
@@ -1753,8 +1762,8 @@ describe("superadmin pages", () => {
               createdAt: "2026-06-26T14:10:00+08:00",
               endingAt: "2026-06-26T23:10:00+08:00",
               paymentDeadline: "2026-06-27T23:59:00+08:00",
-              participants: 2,
-              revealedBidCount: 2,
+              participants: 3,
+              revealedBidCount: 3,
               pendingRevealCount: 0,
               insights: {
                 views: 26,
@@ -1794,6 +1803,18 @@ describe("superadmin pages", () => {
                   isWinner: false,
                   determinesFinalPrice: true,
                 },
+                {
+                  id: "bid-mbappe",
+                  bidderId: "buyer-mbappe",
+                  bidderName: "Kylian Mbappe",
+                  bidderImage: "/uploads/buyers/kylian-mbappe.jpg",
+                  submittedAtLabel: "26 Jun 2026, 23.11 WIB",
+                  amount: 7_500_000,
+                  isRevealed: true,
+                  rank: 3,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
               ],
             },
             history: [],
@@ -1820,6 +1841,9 @@ describe("superadmin pages", () => {
     expect(screen.getByAltText("Foto peserta Erling Haaland")).toBeInTheDocument();
     expect(screen.getByTestId("superadmin-failure-ranking-row-1").className).toContain("bg-[#eefaf2]");
     expect(screen.getByTestId("superadmin-failure-ranking-row-2").className).toContain("bg-[#fff9ea]");
+    expect(screen.getByTestId("superadmin-ranking-marker-1").className).toContain("bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)]");
+    expect(screen.getByTestId("superadmin-ranking-marker-2").className).toContain("bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)]");
+    expect(screen.getByTestId("superadmin-ranking-marker-3").className).toContain("bg-[linear-gradient(180deg,#d78330_0%,#b7641d_100%)]");
     expect(screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     expect(performancePanel.compareDocumentPosition(mechanismPanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,

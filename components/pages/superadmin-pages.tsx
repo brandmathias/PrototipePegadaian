@@ -3777,53 +3777,21 @@ function SuperAdminRankingAvatar({
 }
 
 function SuperAdminRankingMarker({ rank }: { rank: number }) {
-  const badge =
+  const tone =
     rank === 1
-      ? {
-          face: "bg-[linear-gradient(180deg,#17824a_0%,#0f6c38_100%)] border-[#0c6735] text-white shadow-[0_4px_10px_rgba(10,92,46,0.22),inset_0_1px_0_rgba(255,255,255,0.18)]",
-          ribbon: "bg-[#d43f32]",
-        }
+      ? "border-[#d99a13] bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)] text-white shadow-[0_7px_16px_-13px_rgba(171,105,0,0.7),inset_0_1px_0_rgba(255,255,255,0.38)]"
       : rank === 2
-        ? {
-            face: "bg-[linear-gradient(180deg,#b9bdc5_0%,#8f949c_100%)] border-[#8d939a] text-white shadow-[0_4px_10px_rgba(90,98,110,0.14),inset_0_1px_0_rgba(255,255,255,0.28)]",
-            ribbon: null,
-          }
+        ? "border-[#b9c1cb] bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)] text-white shadow-[0_7px_16px_-13px_rgba(75,85,99,0.52),inset_0_1px_0_rgba(255,255,255,0.48)]"
         : rank === 3
-          ? {
-              face: "bg-[linear-gradient(180deg,#d48822_0%,#b66b10_100%)] border-[#a85d0a] text-white shadow-[0_4px_10px_rgba(158,93,9,0.2),inset_0_1px_0_rgba(255,255,255,0.18)]",
-              ribbon: "bg-[#d43f32]",
-            }
-          : null;
-
-  if (badge) {
-    return (
-      <span className="relative inline-flex h-8 w-7 select-none items-start justify-center pt-[2px]">
-        {badge.ribbon ? (
-          <>
-            <span
-              className={`absolute bottom-[5px] left-[6px] h-[7px] w-[5px] origin-top rotate-[16deg] ${badge.ribbon}`}
-              style={{ clipPath: "polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)" }}
-            />
-            <span
-              className={`absolute bottom-[5px] right-[6px] h-[7px] w-[5px] origin-top -rotate-[16deg] ${badge.ribbon}`}
-              style={{ clipPath: "polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)" }}
-            />
-          </>
-        ) : null}
-        <span
-          className={`relative z-10 inline-flex h-[1.28rem] w-[1.28rem] items-center justify-center rounded-[0.22rem] border text-[0.72rem] font-black leading-none ${badge.face}`}
-        >
-          {rank}
-        </span>
-      </span>
-    );
-  }
+          ? "border-[#a95e19] bg-[linear-gradient(180deg,#d78330_0%,#b7641d_100%)] text-white shadow-[0_7px_16px_-13px_rgba(132,70,14,0.6),inset_0_1px_0_rgba(255,255,255,0.28)]"
+          : "border-[#d4dbe4] bg-[linear-gradient(180deg,#f5f7fa_0%,#dfe5ec_100%)] text-[#667085] shadow-[inset_0_1px_0_rgba(255,255,255,0.78)]";
 
   return (
-    <span className="relative inline-flex h-8 w-7 select-none items-center justify-center">
-      <span className="inline-flex h-[1.22rem] w-[1.22rem] items-center justify-center rounded-[0.3rem] border border-[#d7dde5] bg-[linear-gradient(180deg,#f8fafc_0%,#e6ebf1_100%)] text-[0.68rem] font-black leading-none text-[#667085] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
-        {rank}
-      </span>
+    <span
+      className={`inline-flex h-[1.65rem] w-8 select-none items-center justify-center rounded-[0.34rem] border text-[0.78rem] font-black leading-none ${tone}`}
+      data-testid={`superadmin-ranking-marker-${rank}`}
+    >
+      {rank}
     </span>
   );
 }
@@ -4271,7 +4239,7 @@ function SuperAdminVickreyRankingTable({
           </colgroup>
           <thead>
             <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
-              <th className="px-3 py-3 text-center">#</th>
+              <th className="px-3 py-2.5 text-center">Peringkat</th>
               <th className="px-3 py-3">Nama Peserta</th>
               <th className="px-3 py-3">Waktu Penawaran</th>
               <th className="px-3 py-3 text-right">Nominal Penawaran</th>
@@ -4290,7 +4258,7 @@ function SuperAdminVickreyRankingTable({
                   data-testid={`superadmin-ranking-row-${bid.rank}`}
                   key={bid.id}
                 >
-                  <td className="px-3 py-3.5 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
+                  <td className="px-3 py-3 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
                       <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
@@ -4920,7 +4888,7 @@ function SuperAdminVickreyFailureRankingTable({
         </colgroup>
         <thead>
           <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
-            <th className="px-3 py-3 text-center">#</th>
+            <th className="px-3 py-2.5 text-center">Peringkat</th>
             <th className="px-3 py-3">Nama Peserta</th>
             <th className="px-3 py-3">Waktu Penawaran</th>
             <th className="px-3 py-3 text-right">Nominal Penawaran</th>
@@ -4941,7 +4909,7 @@ function SuperAdminVickreyFailureRankingTable({
                   data-testid={`superadmin-failure-ranking-row-${bid.rank}`}
                   key={bid.id}
                 >
-                  <td className="px-3 py-3.5 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
+                  <td className="px-3 py-3 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
                       <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
