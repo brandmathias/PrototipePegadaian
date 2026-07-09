@@ -618,13 +618,13 @@ function CatalogLotCard({
             href={`/katalog/${lot.id}`}
           >
             {lot.mode === "fixed_price" ? (
-              <ShoppingBag className="size-3.5 shrink-0 text-white drop-shadow-[0_1px_1px_rgba(148,94,10,0.95)]" strokeWidth={2.55} />
+              <ShoppingBag className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" strokeWidth={2.55} />
             ) : (
-              <Gavel className="size-3.5 shrink-0 text-white drop-shadow-[0_1px_1px_rgba(148,94,10,0.95)]" strokeWidth={2.55} />
+              <Gavel className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" strokeWidth={2.55} />
             )}
             <span className="truncate">{lot.mode === "fixed_price" ? "Beli Sekarang" : "Ikut Lelang"}</span>
             <ChevronRight
-              className="size-3.5 shrink-0 text-[#d69b25] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
+              className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
               strokeWidth={2.6}
             />
           </Link>

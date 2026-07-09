@@ -397,5 +397,8 @@ describe("CatalogPage", () => {
       "ring-[#e4dccf]",
       "bg-[linear-gradient(180deg,#ffffff_0%,#fbfaf8_54%,#f5f1eb_100%)]"
     );
+    expect(screen.getByRole("link", { name: /lihat detail cincin emas 3/i })?.querySelector("svg")).toHaveClass(
+      "text-[#1f1f1c]"
+    );
   });
 });
