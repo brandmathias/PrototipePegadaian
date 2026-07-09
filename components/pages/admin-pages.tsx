@@ -59,8 +59,14 @@ import {
   AdminProfileWorkspace,
   type AdminProfileData,
 } from "@/components/admin/admin-profile-workspace";
-import { AdminBarangEditForm, type AdminBarangEditSubmitPayload } from "@/components/admin-unit/admin-barang-edit-form";
-import { AdminBarangMediaManager, type AdminBarangMediaDraftChange } from "@/components/admin-unit/admin-barang-media-manager";
+import {
+  AdminBarangEditForm,
+  type AdminBarangEditSubmitPayload,
+} from "@/components/admin-unit/admin-barang-edit-form";
+import {
+  AdminBarangMediaManager,
+  type AdminBarangMediaDraftChange,
+} from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
@@ -163,7 +169,7 @@ function AdminPageIntro({
 function AdminHeroPill({
   icon: Icon,
   children,
-  tone = "default"
+  tone = "default",
 }: {
   icon?: ComponentType<{ className?: string }>;
   children: ReactNode;
@@ -175,7 +181,7 @@ function AdminHeroPill({
         "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 backdrop-blur",
         tone === "danger"
           ? "bg-rose-50/92 text-rose-700 ring-rose-200"
-          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65"
+          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65",
       )}
     >
       {Icon ? <Icon className="size-4" /> : null}
@@ -254,10 +260,18 @@ function getCategoryIcon(category: unknown) {
   if (normalized.includes("logam")) {
     return Medal;
   }
-  if (normalized.includes("kendara") || normalized.includes("motor") || normalized.includes("mobil")) {
+  if (
+    normalized.includes("kendara") ||
+    normalized.includes("motor") ||
+    normalized.includes("mobil")
+  ) {
     return CarFront;
   }
-  if (normalized.includes("elektronik") || normalized.includes("televisi") || normalized.includes("gadget")) {
+  if (
+    normalized.includes("elektronik") ||
+    normalized.includes("televisi") ||
+    normalized.includes("gadget")
+  ) {
     return MonitorSmartphone;
   }
   return Package2;
@@ -268,7 +282,10 @@ function getSpecificationIcon(category: unknown, label: string) {
   const normalizedLabel = label.toLowerCase();
 
   // Emas & Perhiasan
-  if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+  if (
+    normalizedCategory.includes("emas") ||
+    normalizedCategory.includes("perhias")
+  ) {
     if (normalizedLabel.includes("jenis")) return Gem;
     if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
@@ -285,7 +302,11 @@ function getSpecificationIcon(category: unknown, label: string) {
     if (normalizedLabel.includes("brand")) return Tag;
     if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("sertifikat") || normalizedLabel.includes("nomor")) return ScrollText;
+    if (
+      normalizedLabel.includes("sertifikat") ||
+      normalizedLabel.includes("nomor")
+    )
+      return ScrollText;
     return Medal;
   }
 
@@ -373,7 +394,8 @@ function parseTimelineTime(label: string | null | undefined) {
   );
 
   if (localizedMatch) {
-    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] = localizedMatch;
+    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] =
+      localizedMatch;
     const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
 
     if (typeof month === "number") {
@@ -392,7 +414,9 @@ function parseTimelineTime(label: string | null | undefined) {
   return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
 }
 
-function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(entries: T[]) {
+function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(
+  entries: T[],
+) {
   return entries
     .map((entry, index) => ({
       entry,
@@ -564,7 +588,7 @@ function DetailActionButton({
           "h-[3.35rem] min-w-[10.75rem] rounded-[1.05rem] px-4 text-[0.92rem] font-semibold shadow-none sm:min-w-[11.5rem]",
           isPrimary
             ? "bg-[#006747] text-white hover:bg-[#005238]"
-            : "border border-[#0a9f62] bg-white text-[#0a7d51] hover:bg-[#f7fbf8]"
+            : "border border-[#0a9f62] bg-white text-[#0a7d51] hover:bg-[#f7fbf8]",
         )}
         variant={isPrimary ? "default" : "ghost"}
       >
@@ -628,7 +652,9 @@ export function AdminInventoryPage({ items }: { items: AdminInventoryItem[] }) {
         icon={Package}
         rightRail={
           <>
-            <AdminHeroPill icon={BadgeCheck}>Workspace operasional barang</AdminHeroPill>
+            <AdminHeroPill icon={BadgeCheck}>
+              Workspace operasional barang
+            </AdminHeroPill>
             <Link href="/admin/barang/tambah">
               <Button className="h-12 w-full rounded-2xl px-5 text-sm shadow-[0_18px_32px_-24px_rgba(10,106,73,0.55)] sm:w-auto sm:text-base">
                 <PackagePlus className="size-4" />
@@ -702,7 +728,9 @@ export function AdminInventoryHistoryPage({
               <ScrollText className="size-7" />
             </span>
             <div className="min-w-0">
-              <p className="page-heading-eyebrow">Admin Unit / Riwayat Barang</p>
+              <p className="page-heading-eyebrow">
+                Admin Unit / Riwayat Barang
+              </p>
               <h2 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#13211c] sm:text-4xl">
                 Riwayat Barang
               </h2>
@@ -757,7 +785,7 @@ export function AdminInventoryDetailPage({
 }) {
   const jaminanActions = [
     {
-      title: "Catat Perpanjangan",
+      title: "Perpanjang Gadai",
       description:
         "Perbarui jatuh tempo bila nasabah memperpanjang masa gadai sebelum barang dipasarkan.",
       href: `/admin/barang/${item.id}/perpanjang`,
@@ -765,7 +793,7 @@ export function AdminInventoryDetailPage({
       variant: "secondary" as const,
     },
     {
-      title: "Catat Penebusan",
+      title: "Penebusan Barang",
       description:
         "Tutup alur barang bila nasabah sudah melunasi kewajiban dan mengambil barangnya.",
       href: `/admin/barang/${item.id}/tebus`,
@@ -884,24 +912,35 @@ export function AdminInventoryDetailPage({
       : null,
     specificationRows.find(
       (row) =>
-        ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+        ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(
+          row.label,
+        ),
     )
       ? {
           label:
             specificationRows.find(
               (row) =>
-                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+                ![
+                  firstMeaningfulSpec?.label,
+                  secondMeaningfulSpec?.label,
+                ].includes(row.label),
             )?.label || "Detail",
           value:
             specificationRows.find(
               (row) =>
-                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+                ![
+                  firstMeaningfulSpec?.label,
+                  secondMeaningfulSpec?.label,
+                ].includes(row.label),
             )?.value || "-",
           icon: getSpecificationIcon(
             item.category,
             specificationRows.find(
               (row) =>
-                ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(row.label),
+                ![
+                  firstMeaningfulSpec?.label,
+                  secondMeaningfulSpec?.label,
+                ].includes(row.label),
             )?.label || "Detail",
           ),
         }
@@ -915,7 +954,11 @@ export function AdminInventoryDetailPage({
   const bottomInfoRows = [
     { label: "Tanggal Gadai", value: item.pawnedAt || "-", icon: CalendarDays },
     { label: "Nama Nasabah", value: item.ownerName || "-", icon: UserRound },
-    { label: "Nomor Telepon Nasabah", value: item.customerNumber || "-", icon: Phone },
+    {
+      label: "Nomor Telepon Nasabah",
+      value: item.customerNumber || "-",
+      icon: Phone,
+    },
   ];
 
   return (
@@ -940,7 +983,11 @@ export function AdminInventoryDetailPage({
               icon={action.icon}
               key={action.title}
               title={action.title}
-              variant={"variant" in action && action.variant === "secondary" ? "secondary" : "default"}
+              variant={
+                "variant" in action && action.variant === "secondary"
+                  ? "secondary"
+                  : "default"
+              }
             />
           ))
         ) : (
@@ -950,126 +997,143 @@ export function AdminInventoryDetailPage({
         )}
       </div>
 
-      <section className="overflow-hidden rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_16px_38px_rgba(15,23,42,0.035)] lg:p-5">
-        <div className="relative overflow-hidden rounded-[1.25rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
-          <div className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
+      <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
+        <div className="space-y-5 p-4 lg:p-5">
+          <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
+            <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
 
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start">
-            <div className="w-full shrink-0 lg:w-[20rem]">
-              <AdminBarangDetailMediaViewer
-                category={formatDisplayLabel(item.category)}
-                media={media}
-                title={String(item.name ?? "Barang")}
-              />
-            </div>
-
-            <div className="min-w-0 flex-1 space-y-4">
-              <div>
-                <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
-                  {item.name}
-                </h2>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
-                  <span className="font-medium">Kode Barang:</span>
-                  <span className="font-medium text-[#0a9f62]">{item.code}</span>
-                </div>
+            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
+              <div className="w-full shrink-0 lg:w-[18rem]">
+                <AdminBarangDetailMediaViewer
+                  category={formatDisplayLabel(item.category)}
+                  media={media}
+                  title={String(item.name ?? "Barang")}
+                />
               </div>
 
-              <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
-                {summaryMetrics.map((metric) => (
-                  <div
-                    className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
-                    key={metric.label}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
-                        <metric.icon className="size-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
-                          {metric.label}
-                        </p>
-                        <p
-                          className={cn(
-                            "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
-                            metric.label === "Nilai Taksiran"
-                              ? "text-[0.82rem] xl:text-[0.88rem]"
-                              : "text-[0.93rem]"
-                          )}
-                        >
-                          {metric.value}
-                        </p>
+              <div className="min-w-0 flex-1 space-y-4">
+                <div>
+                  <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
+                    {item.name}
+                  </h2>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
+                    <span className="font-medium">Kode Barang:</span>
+                    <span className="font-medium text-[#0a9f62]">
+                      {item.code}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
+                  {summaryMetrics.map((metric) => (
+                    <div
+                      className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                      key={metric.label}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+                          <metric.icon className="size-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
+                            {metric.label}
+                          </p>
+                          <p
+                            className={cn(
+                              "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
+                              metric.label === "Nilai Taksiran"
+                                ? "text-[0.82rem] xl:text-[0.88rem]"
+                                : "text-[0.93rem]",
+                            )}
+                          >
+                            {metric.value}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-[#eef1ee] bg-white">
-          <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
-            {topInfoRows.map((row, index) => (
-              <div
-                className={cn(
-                  "flex items-start gap-3 px-4 py-4",
-                  index < topInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
-                )}
-                key={row.label}
-              >
-                <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                  <row.icon className="size-4.5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[0.72rem] font-medium text-[#667085]">{row.label}</p>
-                  <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                    {row.value}
-                  </p>
+          <div className="overflow-hidden rounded-2xl border border-[#eef1ee] bg-white">
+            <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
+              {topInfoRows.map((row, index) => (
+                <div
+                  className={cn(
+                    "flex items-start gap-3 px-4 py-4",
+                    index < topInfoRows.length - 1
+                      ? "xl:border-r xl:border-[#eef1ee]"
+                      : null,
+                  )}
+                  key={row.label}
+                >
+                  <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                    <row.icon className="size-4.5" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[0.72rem] font-medium text-[#667085]">
+                      {row.label}
+                    </p>
+                    <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                      {row.value}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
+              {bottomInfoRows.map((row, index) => (
+                <div
+                  className={cn(
+                    "flex items-start gap-3 px-4 py-4",
+                    index < bottomInfoRows.length - 1
+                      ? "xl:border-r xl:border-[#eef1ee]"
+                      : null,
+                  )}
+                  key={row.label}
+                >
+                  <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
+                    <row.icon className="size-4.5" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[0.72rem] font-medium text-[#667085]">
+                      {row.label}
+                    </p>
+                    <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
+                      {row.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
-            {bottomInfoRows.map((row, index) => (
-              <div
-                className={cn(
-                  "flex items-start gap-3 px-4 py-4",
-                  index < bottomInfoRows.length - 1 ? "xl:border-r xl:border-[#eef1ee]" : null,
-                )}
-                key={row.label}
-              >
-                <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                  <row.icon className="size-4.5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[0.72rem] font-medium text-[#667085]">{row.label}</p>
-                  <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                    {row.value}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-          <div className="flex items-start gap-3.5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
-              <FileText className="size-5" />
-            </span>
-            <div className="min-w-0">
-              <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">Deskripsi Barang</h3>
-              <div className="mt-3 space-y-2.5 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
-                <p>{item.description || "Belum ada deskripsi barang yang dicatat."}</p>
-                {specificationRows.length > 0 ? (
+          <div className="rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+            <div className="flex items-start gap-3.5">
+              <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
+                <FileText className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
+                  Deskripsi Barang
+                </h3>
+                <div className="mt-3 space-y-2.5 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
                   <p>
-                    {specificationRows
-                      .slice(0, 3)
-                      .map((row) => `${row.label}: ${row.value}`)
-                      .join(". ")}
+                    {item.description ||
+                      "Belum ada deskripsi barang yang dicatat."}
                   </p>
-                ) : null}
+                  {specificationRows.length > 0 ? (
+                    <p>
+                      {specificationRows
+                        .slice(0, 3)
+                        .map((row) => `${row.label}: ${row.value}`)
+                        .join(". ")}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
@@ -1111,7 +1175,10 @@ export function AdminInventoryDetailPage({
                 const isFailure = entry.actionKey === "gagal";
 
                 return (
-                  <tr key={entry.id} className="align-top text-[0.9rem] text-[#41506a]">
+                  <tr
+                    key={entry.id}
+                    className="align-top text-[0.9rem] text-[#41506a]"
+                  >
                     <td className="px-4 py-3.5">
                       <span
                         className={cn(
@@ -1122,7 +1189,9 @@ export function AdminInventoryDetailPage({
                         <span
                           className={cn(
                             "grid size-5 place-items-center rounded-full border",
-                            isFailure ? "border-red-500 text-red-600" : "border-[#0a9f62] text-[#0a9f62]",
+                            isFailure
+                              ? "border-red-500 text-red-600"
+                              : "border-[#0a9f62] text-[#0a9f62]",
                           )}
                         >
                           <EntryIcon className="size-3" />
@@ -1161,13 +1230,16 @@ export function AdminInventoryEditPage({
     ? (item.media as AdminBarangMedia[])
     : [];
   const editFormId = `admin-barang-edit-${String(item.id)}`;
-  const auditCode = String(item.code ?? item.itemCode ?? "Kode SBG belum tersedia");
+  const auditCode = String(
+    item.code ?? item.itemCode ?? "Kode SBG belum tersedia",
+  );
   const auditValue = Number(item.appraisalValue ?? item.price ?? 0);
   const normalizedStatus = String(item.status ?? "").toUpperCase();
-  const [mediaDraftChange, setMediaDraftChange] = useState<AdminBarangMediaDraftChange>({
-    addedFiles: [],
-    deletedMediaIds: []
-  });
+  const [mediaDraftChange, setMediaDraftChange] =
+    useState<AdminBarangMediaDraftChange>({
+      addedFiles: [],
+      deletedMediaIds: [],
+    });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const correctionOnly =
     !["GADAI", "JAMINAN", "GAGAL"].includes(normalizedStatus) &&
@@ -1176,7 +1248,8 @@ export function AdminInventoryEditPage({
       String(item.marketingMode ?? "").toLowerCase() === "fixed_price"
     );
   const hasMediaDraftChanges =
-    mediaDraftChange.addedFiles.length > 0 || mediaDraftChange.deletedMediaIds.length > 0;
+    mediaDraftChange.addedFiles.length > 0 ||
+    mediaDraftChange.deletedMediaIds.length > 0;
 
   async function saveEdit(payload: AdminBarangEditSubmitPayload) {
     const response = hasMediaDraftChanges
@@ -1185,22 +1258,28 @@ export function AdminInventoryEditPage({
           body: (() => {
             const formData = new FormData();
             formData.set("payload", JSON.stringify(payload));
-            mediaDraftChange.deletedMediaIds.forEach((id) => formData.append("deleteMediaIds", id));
-            mediaDraftChange.addedFiles.forEach((file) => formData.append("media", file));
+            mediaDraftChange.deletedMediaIds.forEach((id) =>
+              formData.append("deleteMediaIds", id),
+            );
+            mediaDraftChange.addedFiles.forEach((file) =>
+              formData.append("media", file),
+            );
             return formData;
-          })()
+          })(),
         })
       : await fetch(`/api/admin/barang/${item.id}`, {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      throw new Error(result?.message ?? "Data barang belum berhasil diperbarui.");
+      throw new Error(
+        result?.message ?? "Data barang belum berhasil diperbarui.",
+      );
     }
   }
 
@@ -1229,17 +1308,24 @@ export function AdminInventoryEditPage({
                 Informasi Referensi Barang
               </h2>
               <p className="mt-1 max-w-[34rem] text-sm leading-6 text-slate-500">
-                Kode barang tetap terkunci. Data nasabah dan nilai taksiran dapat dikoreksi tanpa mengubah alur transaksi.
+                Kode barang tetap terkunci. Data nasabah dan nilai taksiran
+                dapat dikoreksi tanpa mengubah alur transaksi.
               </p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:min-w-[28rem]">
             <div className="border-l border-emerald-100 pl-4">
-              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">Kode Barang</p>
-              <p className="mt-1 font-headline text-[1rem] font-black text-[#006747]">{auditCode}</p>
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">
+                Kode Barang
+              </p>
+              <p className="mt-1 font-headline text-[1rem] font-black text-[#006747]">
+                {auditCode}
+              </p>
             </div>
             <div className="border-l border-emerald-100 pl-4">
-              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">Nilai Taksiran</p>
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-500">
+                Nilai Taksiran
+              </p>
               <p className="mt-1 font-headline text-[1rem] font-black text-[#006747]">
                 {auditValue > 0 ? currency.format(auditValue) : "-"}
               </p>
@@ -1253,7 +1339,7 @@ export function AdminInventoryEditPage({
           "grid gap-4 xl:items-start",
           correctionOnly
             ? "xl:grid-cols-1"
-            : "xl:grid-cols-[minmax(0,1.05fr)_minmax(23rem,0.95fr)]"
+            : "xl:grid-cols-[minmax(0,1.05fr)_minmax(23rem,0.95fr)]",
         )}
       >
         <AdminBarangEditForm
@@ -1307,7 +1393,7 @@ export function AdminInventoryEditPage({
           aria-disabled={isEditSubmitting}
           className={cn(
             "inline-flex h-12 min-w-[7rem] items-center justify-center rounded-[0.82rem] border border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f6faf8]",
-            isEditSubmitting && "pointer-events-none opacity-60"
+            isEditSubmitting && "pointer-events-none opacity-60",
           )}
           href={`/admin/barang/${item.id}`}
           onClick={(event) => {
@@ -1523,7 +1609,11 @@ export function AdminMarketingHubPage({
         description="Pilih jalur pemasaran yang mau dipantau. Harga Tetap untuk harga tetap, Lelang Tertutup untuk sesi lelang tertutup."
         eyebrow="Admin Unit / Pemasaran"
         icon={Megaphone}
-        rightRail={<AdminHeroPill icon={BadgeCheck}>Workspace pemasaran unit</AdminHeroPill>}
+        rightRail={
+          <AdminHeroPill icon={BadgeCheck}>
+            Workspace pemasaran unit
+          </AdminHeroPill>
+        }
         title="Pemasaran"
       />
 
@@ -1595,7 +1685,9 @@ export function AdminAuctionListPage({
         description={description}
         eyebrow={eyebrow}
         icon={Megaphone}
-        rightRail={<AdminHeroPill icon={Clock3}>Pantau sesi pemasaran</AdminHeroPill>}
+        rightRail={
+          <AdminHeroPill icon={Clock3}>Pantau sesi pemasaran</AdminHeroPill>
+        }
         title={title}
       />
 
@@ -1827,7 +1919,11 @@ export function AdminTransactionsPage({
         description="Kelola seluruh penyelesaian pembayaran dari penjualan langsung maupun hasil lelang, lalu terbitkan nota saat transaksi sudah benar-benar selesai."
         eyebrow="Admin Unit / Transaksi"
         icon={WalletCards}
-        rightRail={<AdminHeroPill icon={FileCheck2}>Antrian pembayaran unit</AdminHeroPill>}
+        rightRail={
+          <AdminHeroPill icon={FileCheck2}>
+            Antrian pembayaran unit
+          </AdminHeroPill>
+        }
         title="Kelola Pembayaran & Nota"
       />
 
@@ -1912,7 +2008,8 @@ export function AdminTransactionDetailPage({
   transactionId?: string;
   transaction: AdminTransactionItem;
 }) {
-  const isReceiptPaymentVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
+  const isReceiptPaymentVerified =
+    transaction.status === "LUNAS" || transaction.status === "SELESAI";
   const receiptLockMessage =
     isReceiptPaymentVerified && !transaction.handoverProofFile
       ? "Nota baru dapat dicetak setelah dokumentasi serah-terima barang fisik diunggah."
@@ -2138,7 +2235,7 @@ export function AdminTransactionDetailPage({
                     ? "Nota baru dapat dicetak setelah transaksi selesai diverifikasi."
                     : receiptLockMessage
                       ? receiptLockMessage
-                    : "Tidak ada tindakan pembayaran yang tersedia untuk status transaksi saat ini."}
+                      : "Tidak ada tindakan pembayaran yang tersedia untuk status transaksi saat ini."}
                 </div>
               )}
             </CardContent>

@@ -16,17 +16,25 @@ const baseItem = {
   description: "Lengkap",
   ownerName: "Nasabah Demo",
   customerNumber: "0812111122222",
-  media: []
+  media: [],
 };
 
 describe("AdminInventoryDetailPage", () => {
   it("keeps operational actions available before publishing without edit access", () => {
     render(<AdminInventoryDetailPage item={baseItem} />);
 
-    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /catat perpanjangan/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /catat penebusan/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /pasarkan barang/i })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /edit data barang/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /perpanjang gadai/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /penebusan barang/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /pasarkan barang/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/riwayat kronologi aset/i)).toBeInTheDocument();
   });
 
@@ -38,19 +46,28 @@ describe("AdminInventoryDetailPage", () => {
           status: "GAGAL",
           marketingMode: "vickrey",
           marketingIteration: 2,
-          nextAction: "Evaluasi harga dasar dan tayangkan ulang sebagai lelang."
+          nextAction:
+            "Evaluasi harga dasar dan tayangkan ulang sebagai lelang.",
         }}
-      />
+      />,
     );
 
-    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lelang lagi/i })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /edit data barang/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /lelang lagi/i }),
+    ).toBeInTheDocument();
   });
 
   it("keeps sold item data locked from edit access", () => {
-    render(<AdminInventoryDetailPage item={{ ...baseItem, status: "TERJUAL" }} />);
+    render(
+      <AdminInventoryDetailPage item={{ ...baseItem, status: "TERJUAL" }} />,
+    );
 
-    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /edit data barang/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows asset chronology from first action to latest with internal actors", () => {
@@ -101,8 +118,12 @@ describe("AdminInventoryDetailPage", () => {
     expect(timeline?.querySelector(".lucide-ban")).not.toBeNull();
 
     const timelineText = timeline?.textContent ?? "";
-    expect(timelineText.indexOf("Barang Masuk")).toBeLessThan(timelineText.indexOf("Dipasarkan"));
-    expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(timelineText.indexOf("Gagal"));
+    expect(timelineText.indexOf("Barang Masuk")).toBeLessThan(
+      timelineText.indexOf("Dipasarkan"),
+    );
+    expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(
+      timelineText.indexOf("Gagal"),
+    );
   });
 
   it("switches additional media thumbnails into the main preview", () => {
@@ -131,21 +152,23 @@ describe("AdminInventoryDetailPage", () => {
             },
           ],
         }}
-      />
+      />,
     );
 
     expect(
       within(screen.getByTestId("admin-detail-active-media")).getByRole("img", {
         name: /utama.jpg/i,
-      })
+      }),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /lihat media barang 2/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /lihat media barang 2/i }),
+    );
 
     expect(
       within(screen.getByTestId("admin-detail-active-media")).getByRole("img", {
         name: /samping-1.jpg/i,
-      })
+      }),
     ).toBeInTheDocument();
   });
 
@@ -169,12 +192,17 @@ describe("AdminInventoryDetailPage", () => {
             },
           ],
         }}
-      />
+      />,
     );
 
-    const thumbnailVideo = screen.getByLabelText(/thumbnail video kalung emas: barang\.mp4/i);
+    const thumbnailVideo = screen.getByLabelText(
+      /thumbnail video kalung emas: barang\.mp4/i,
+    );
     expect(thumbnailVideo).toBeInTheDocument();
-    expect(thumbnailVideo).toHaveAttribute("src", "https://example.com/barang.mp4");
+    expect(thumbnailVideo).toHaveAttribute(
+      "src",
+      "https://example.com/barang.mp4",
+    );
   });
 
   it("opens video media in the fullscreen preview", () => {
@@ -191,13 +219,19 @@ describe("AdminInventoryDetailPage", () => {
             },
           ],
         }}
-      />
+      />,
     );
 
     expect(screen.queryByText(/360\s*view/i)).not.toBeInTheDocument();
-    fireEvent.click(screen.getAllByLabelText(/buka preview penuh media barang/i)[1]);
+    fireEvent.click(
+      screen.getAllByLabelText(/buka preview penuh media barang/i)[1],
+    );
 
-    expect(screen.getByLabelText(/preview penuh video barang/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /tutup preview media barang/i })).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/preview penuh video barang/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /tutup preview media barang/i }),
+    ).toBeInTheDocument();
   });
 });
