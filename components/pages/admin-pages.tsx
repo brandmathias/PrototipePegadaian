@@ -20,7 +20,6 @@ import {
   Gem,
   HardDrive,
   Hash,
-  Landmark,
   Layers,
   Medal,
   Megaphone,
@@ -86,6 +85,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  ItemDetailInfoCard,
+  ItemDetailPriceFrame,
+  ItemDetailSectionHeading,
+} from "@/components/shared/item-detail-card-primitives";
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
@@ -850,18 +854,20 @@ export function AdminInventoryDetailPage({
     String(item.category ?? ""),
     item.specifications ?? {},
   );
-  const firstMeaningfulSpec =
-    specificationRows.find((row) =>
-      ["berat", "merek", "jenis", "tipe"].some((query) =>
-        row.label.toLowerCase().includes(query),
-      ),
-    ) ?? specificationRows[0];
-  const secondMeaningfulSpec =
-    specificationRows.find((row) =>
-      ["kadar", "kapasitas", "model", "tahun", "material"].some((query) =>
-        row.label.toLowerCase().includes(query),
-      ),
-    ) ?? specificationRows[1];
+  const marketingMode = String(item.marketingMode ?? "").toLowerCase();
+  const heroPriceLabel = marketingMode.includes("vickrey")
+    ? "Lelang Tertutup"
+    : marketingMode.includes("fixed")
+      ? "Harga Tetap"
+      : "Nilai Taksiran";
+  const heroPriceValue =
+    Number(
+      item.marketingPrice ??
+        item.price ??
+        item.basePrice ??
+        item.appraisalValue ??
+        0,
+    ) || 0;
   const timelineSourceEntries =
     history.length > 0
       ? history
@@ -877,75 +883,23 @@ export function AdminInventoryDetailPage({
           },
         ];
   const timelineEntries = sortTimelineEntries(timelineSourceEntries);
-  const summaryMetrics = [
+  const topInfoRows = [
+    ...specificationRows.map((row) => ({
+      label: row.label,
+      value: row.value || "-",
+      icon: getSpecificationIcon(item.category, row.label),
+    })),
     {
       label: "Kategori",
       value: formatDisplayLabel(item.category),
-      icon: Package2,
+      icon: Layers,
     },
+    { label: "Jatuh Tempo", value: item.dueDate || "-", icon: CalendarClock },
     {
       label: "Kondisi",
       value: formatDisplayLabel(item.condition),
-      icon: ShieldCheck,
+      icon: BadgeCheck,
     },
-    {
-      label: "Nilai Taksiran",
-      value: currency.format(item.appraisalValue),
-      icon: Landmark,
-    },
-  ];
-  const topInfoRows = [
-    firstMeaningfulSpec
-      ? {
-          label: firstMeaningfulSpec.label,
-          value: firstMeaningfulSpec.value || "-",
-          icon: getSpecificationIcon(item.category, firstMeaningfulSpec.label),
-        }
-      : null,
-    secondMeaningfulSpec &&
-    secondMeaningfulSpec.label !== firstMeaningfulSpec?.label
-      ? {
-          label: secondMeaningfulSpec.label,
-          value: secondMeaningfulSpec.value || "-",
-          icon: getSpecificationIcon(item.category, secondMeaningfulSpec.label),
-        }
-      : null,
-    specificationRows.find(
-      (row) =>
-        ![firstMeaningfulSpec?.label, secondMeaningfulSpec?.label].includes(
-          row.label,
-        ),
-    )
-      ? {
-          label:
-            specificationRows.find(
-              (row) =>
-                ![
-                  firstMeaningfulSpec?.label,
-                  secondMeaningfulSpec?.label,
-                ].includes(row.label),
-            )?.label || "Detail",
-          value:
-            specificationRows.find(
-              (row) =>
-                ![
-                  firstMeaningfulSpec?.label,
-                  secondMeaningfulSpec?.label,
-                ].includes(row.label),
-            )?.value || "-",
-          icon: getSpecificationIcon(
-            item.category,
-            specificationRows.find(
-              (row) =>
-                ![
-                  firstMeaningfulSpec?.label,
-                  secondMeaningfulSpec?.label,
-                ].includes(row.label),
-            )?.label || "Detail",
-          ),
-        }
-      : null,
-    { label: "Jatuh Tempo", value: item.dueDate || "-", icon: CalendarClock },
   ].filter(Boolean) as Array<{
     label: string;
     value: string;
@@ -997,144 +951,72 @@ export function AdminInventoryDetailPage({
         )}
       </div>
 
-      <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.04)]">
-        <div className="space-y-5 p-4 lg:p-5">
-          <div className="relative overflow-hidden rounded-[1.35rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
-            <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
+      <section className="space-y-5 rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_18px_44px_-36px_rgba(8,69,50,0.28)] lg:p-5">
+        <div className="grid gap-7 lg:grid-cols-[minmax(18rem,29.5rem)_minmax(0,1fr)] lg:items-start">
+          <AdminBarangDetailMediaViewer
+            category={formatDisplayLabel(item.category)}
+            media={media}
+            title={String(item.name ?? "Barang")}
+          />
 
-            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
-              <div className="w-full shrink-0 lg:w-[18rem]">
-                <AdminBarangDetailMediaViewer
-                  category={formatDisplayLabel(item.category)}
-                  media={media}
-                  title={String(item.name ?? "Barang")}
-                />
-              </div>
-
-              <div className="min-w-0 flex-1 space-y-4">
-                <div>
-                  <h2 className="font-headline text-[2rem] font-black tracking-[-0.04em] text-[#14213d] sm:text-[2.45rem]">
-                    {item.name}
-                  </h2>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
-                    <span className="font-medium">Kode Barang:</span>
-                    <span className="font-medium text-[#0a9f62]">
-                      {item.code}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid gap-2.5 sm:max-w-[32rem] sm:grid-cols-[0.95fr_0.92fr_1.42fr]">
-                  {summaryMetrics.map((metric) => (
-                    <div
-                      className="rounded-[0.95rem] border border-white/75 bg-white/82 px-3 py-3 shadow-[0_12px_26px_rgba(8,69,50,0.055),inset_0_1px_0_rgba(255,255,255,0.9)]"
-                      key={metric.label}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#099561] shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
-                          <metric.icon className="size-4" />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="whitespace-nowrap text-[0.68rem] font-semibold leading-4 text-[#667085]">
-                            {metric.label}
-                          </p>
-                          <p
-                            className={cn(
-                              "mt-0.5 whitespace-nowrap font-bold leading-5 text-[#14213d]",
-                              metric.label === "Nilai Taksiran"
-                                ? "text-[0.82rem] xl:text-[0.88rem]"
-                                : "text-[0.93rem]",
-                            )}
-                          >
-                            {metric.value}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          <div className="min-w-0 space-y-5">
+            <div>
+              <h2 className="font-headline text-[2.35rem] font-black leading-[1.06] tracking-[-0.045em] text-[#111827] sm:text-[3.15rem]">
+                {item.name}
+              </h2>
+              <div className="mt-5 flex flex-wrap items-center gap-2 text-[1rem] text-[#667085]">
+                <span className="font-medium">Kode Barang:</span>
+                <span className="font-medium text-[#057a35]">{item.code}</span>
               </div>
             </div>
+
+            <ItemDetailPriceFrame
+              label={heroPriceLabel}
+              value={currency.format(heroPriceValue)}
+            />
           </div>
+        </div>
 
-          <div className="overflow-hidden rounded-2xl border border-[#eef1ee] bg-white">
-            <div className="grid gap-0 border-b border-[#eef1ee] sm:grid-cols-2 xl:grid-cols-4">
-              {topInfoRows.map((row, index) => (
-                <div
-                  className={cn(
-                    "flex items-start gap-3 px-4 py-4",
-                    index < topInfoRows.length - 1
-                      ? "xl:border-r xl:border-[#eef1ee]"
-                      : null,
-                  )}
-                  key={row.label}
-                >
-                  <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                    <row.icon className="size-4.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[0.72rem] font-medium text-[#667085]">
-                      {row.label}
-                    </p>
-                    <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                      {row.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid gap-0 sm:grid-cols-2 xl:grid-cols-3">
-              {bottomInfoRows.map((row, index) => (
-                <div
-                  className={cn(
-                    "flex items-start gap-3 px-4 py-4",
-                    index < bottomInfoRows.length - 1
-                      ? "xl:border-r xl:border-[#eef1ee]"
-                      : null,
-                  )}
-                  key={row.label}
-                >
-                  <span className="mt-0.5 grid size-7 shrink-0 place-items-center text-[#0a9f62]">
-                    <row.icon className="size-4.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[0.72rem] font-medium text-[#667085]">
-                      {row.label}
-                    </p>
-                    <p className="mt-1.5 text-[0.98rem] font-medium text-[#14213d]">
-                      {row.value}
-                    </p>
-                  </div>
-                </div>
+        <div className="overflow-hidden rounded-[1.1rem] border border-[#e6ece8] bg-white">
+          <div className="space-y-4 p-4">
+            <ItemDetailSectionHeading>
+              Spesifikasi Barang
+            </ItemDetailSectionHeading>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {topInfoRows.map((row) => (
+                <ItemDetailInfoCard {...row} key={row.label} />
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#eaeeeb] bg-[linear-gradient(180deg,#ffffff,#fafcfa)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-            <div className="flex items-start gap-3.5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
-                <FileText className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-[1.05rem] font-medium text-[#0d8b56]">
-                  Deskripsi Barang
-                </h3>
-                <div className="mt-3 space-y-2.5 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
-                  <p>
-                    {item.description ||
-                      "Belum ada deskripsi barang yang dicatat."}
-                  </p>
-                  {specificationRows.length > 0 ? (
-                    <p>
-                      {specificationRows
-                        .slice(0, 3)
-                        .map((row) => `${row.label}: ${row.value}`)
-                        .join(". ")}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+          <div className="space-y-4 border-t border-[#eef2ef] p-4">
+            <ItemDetailSectionHeading>Informasi Gadai</ItemDetailSectionHeading>
+            <div className="grid gap-4 md:grid-cols-3">
+              {bottomInfoRows.map((row) => (
+                <ItemDetailInfoCard {...row} key={row.label} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-[0.95rem] border border-[#15965d] bg-white px-4 py-4 shadow-[0_18px_36px_-34px_rgba(8,69,50,0.24)]">
+          <ItemDetailSectionHeading>Deskripsi Barang</ItemDetailSectionHeading>
+          <div className="mt-5 flex items-start gap-4">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full border border-[#d9eadf] bg-[#f8fbf9] text-[#057a35]">
+              <FileText className="size-5" />
+            </span>
+            <div className="min-w-0 space-y-2.5 text-justify text-[0.92rem] leading-7 text-[#3f4a5a] [hyphens:auto] [text-justify:inter-word]">
+              <p>
+                {item.description || "Belum ada deskripsi barang yang dicatat."}
+              </p>
+              {specificationRows.length > 0 ? (
+                <p>
+                  {specificationRows
+                    .slice(0, 3)
+                    .map((row) => `${row.label}: ${row.value}`)
+                    .join(". ")}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

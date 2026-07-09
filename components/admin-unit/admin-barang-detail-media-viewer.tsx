@@ -62,10 +62,10 @@ export function AdminBarangDetailMediaViewer({
 
   if (!media.length) {
     return (
-      <div className={cn("rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_25px_rgba(0,0,0,0.012)]", className)}>
-        <div className="overflow-hidden rounded-2xl border-2 border-dashed border-emerald-500/25 bg-emerald-50/5">
-          <div className="flex h-56 w-full flex-col items-center justify-center bg-[linear-gradient(180deg,#f4f6f2,#eef2ec)] px-5 text-center">
-            <span className="grid size-11 place-items-center rounded-xl bg-emerald-50 text-[#006747]">
+      <div className={cn("space-y-3", className)}>
+        <div className="overflow-hidden rounded-[1.15rem] border border-[#e5ebe7] bg-white shadow-[0_18px_38px_-32px_rgba(8,69,50,0.24)]">
+          <div className="flex h-[18rem] w-full flex-col items-center justify-center bg-[linear-gradient(180deg,#f7f8f5,#eef2ec)] px-5 text-center lg:h-[19.5rem]">
+            <span className="grid size-11 place-items-center rounded-full border border-[#cfeadd] bg-[#f4fbf7] text-[#006747]">
               <Package2 className="size-5" />
             </span>
             <span className="mt-3 block text-xs font-extrabold text-slate-900">
@@ -82,18 +82,19 @@ export function AdminBarangDetailMediaViewer({
 
   const activeMedia = media[Math.min(activeIndex, media.length - 1)];
   const activeIsVideo = isVideoMedia(activeMedia);
-  const progressScale = media.length ? (activeIndex + 1) / media.length : 0;
-  const secondaryMedia = media
-    .map((item, index) => ({ item, index }))
-    .filter((entry) => entry.index !== activeIndex)
-    .slice(0, 4);
+  const thumbnailMedia = [
+    { item: activeMedia, index: Math.min(activeIndex, media.length - 1) },
+    ...media
+      .map((item, index) => ({ item, index }))
+      .filter((entry) => entry.index !== activeIndex),
+  ].slice(0, 5);
 
   return (
-    <div className={cn("rounded-3xl border border-slate-100 bg-white p-3 shadow-[0_4px_25px_rgba(0,0,0,0.012)]", className)}>
-      <div className="overflow-hidden rounded-2xl border-2 border-dashed border-emerald-500/25 bg-emerald-50/5">
+    <div className={cn("space-y-3", className)}>
+      <div className="overflow-hidden rounded-[1.15rem] border border-[#e5ebe7] bg-white shadow-[0_18px_38px_-32px_rgba(8,69,50,0.24)]">
         <div
           aria-label="Buka preview penuh media barang"
-          className="group relative h-56 w-full overflow-hidden rounded-[calc(1rem-2px)] bg-[linear-gradient(180deg,#f4f6f2,#eef2ec)] text-left outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#006747]/25"
+          className="group relative h-[18rem] w-full overflow-hidden bg-[linear-gradient(180deg,#f4f6f2,#eef2ec)] text-left outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#006747]/25 lg:h-[19.5rem]"
           data-testid="admin-detail-active-media"
           onClick={() => setIsFullscreenOpen(true)}
           onKeyDown={(event) => {
@@ -130,7 +131,7 @@ export function AdminBarangDetailMediaViewer({
           <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent_42%,rgba(7,28,20,0.18))]" />
           <button
             aria-label="Buka preview penuh media barang"
-            className="absolute right-3 top-3 z-[2] grid size-9 place-items-center rounded-full bg-white/92 text-[#174e3b] shadow-[0_14px_28px_-22px_rgba(8,69,50,0.42)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8]"
+            className="absolute right-3 top-3 z-[2] grid size-10 place-items-center rounded-full bg-white/95 text-[#111827] shadow-[0_16px_32px_-24px_rgba(8,69,50,0.42)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] active:scale-[0.97]"
             onClick={(event) => {
               event.stopPropagation();
               setIsFullscreenOpen(true);
@@ -139,32 +140,25 @@ export function AdminBarangDetailMediaViewer({
           >
             <Expand className="size-4" />
           </button>
-
-          {media.length > 1 ? (
-            <div className="pointer-events-none absolute inset-x-0 bottom-4 flex items-center justify-center gap-3 text-[0.64rem] font-bold text-[#17633f]">
-              <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-              <span className="relative h-px w-20 overflow-hidden rounded-full bg-white/75">
-                <span
-                  className="absolute inset-y-0 left-0 w-full origin-left rounded-full bg-[#17633f] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  style={{ transform: `scaleX(${progressScale})` }}
-                />
-              </span>
-              <span>{String(media.length).padStart(2, "0")}</span>
-            </div>
-          ) : null}
         </div>
       </div>
 
       {media.length > 1 ? (
-        <div className="mt-3 flex items-center gap-2">
-          <div className="grid flex-1 grid-cols-4 gap-2">
-            {secondaryMedia.map(({ item, index }) => {
+        <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-1 gap-3 overflow-x-auto pb-1">
+            {thumbnailMedia.map(({ item, index }) => {
               const isVideo = isVideoMedia(item);
+              const selected = index === activeIndex;
 
               return (
                 <button
                   aria-label={`Lihat media barang ${index + 1}`}
-                  className="group relative aspect-square overflow-hidden rounded-xl border border-transparent bg-[#f2f4f0] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white hover:ring-1 hover:ring-[#dfe7de] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006747]/25"
+                  className={cn(
+                    "group relative size-16 shrink-0 overflow-hidden rounded-xl border bg-[#f2f4f0] shadow-[0_14px_28px_-24px_rgba(8,69,50,0.26)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006747]/25 sm:size-[4.5rem]",
+                    selected
+                      ? "border-[#007a3d] ring-2 ring-[#007a3d]/20"
+                      : "border-[#e3e9e5] hover:border-[#b7d6c3]",
+                  )}
                   key={item.id}
                   onClick={() => setActiveIndex(index)}
                   type="button"
@@ -200,7 +194,9 @@ export function AdminBarangDetailMediaViewer({
           <button
             aria-label="Lihat media berikutnya"
             className="grid size-9 shrink-0 place-items-center rounded-full bg-white text-[#174e3b] shadow-[0_14px_32px_rgba(8,69,50,0.08)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#f7faf8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006747]/25"
-            onClick={() => setActiveIndex((current) => (current + 1) % media.length)}
+            onClick={() =>
+              setActiveIndex((current) => (current + 1) % media.length)
+            }
             type="button"
           >
             <ChevronRight className="size-4" />
@@ -265,7 +261,7 @@ export function AdminBarangDetailMediaViewer({
                 </div>
               </div>
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </div>
