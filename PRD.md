@@ -61,7 +61,7 @@ Ruang Agunan menghubungkan seluruh proses dalam satu alur:
 2. Barang yang siap dipasarkan dipublikasikan sebagai Harga Tetap atau Lelang Tertutup.
 3. Guest dan Buyer melihat katalog, filter barang, membaca detail, dan melihat statistik lot.
 4. Buyer dapat menyimpan wishlist, membeli Harga Tetap, atau mengirim bid Lelang Tertutup.
-5. Transaksi Harga Tetap berjalan melalui transfer atau bayar langsung.
+5. Transaksi Harga Tetap berjalan melalui transfer dan unggah bukti pembayaran.
 6. Lelang Tertutup berjalan privat sampai deadline, lalu settlement otomatis menentukan hasil.
 7. Admin Unit memverifikasi pembayaran dan serah terima.
 8. Buyer menerima notifikasi, melihat status transaksi, dan mencetak nota.
@@ -204,17 +204,17 @@ Alur buyer:
 
 1. Buyer membuka barang berlabel Harga Tetap.
 2. Buyer menekan tombol beli.
-3. Buyer memilih metode pembayaran transfer atau bayar langsung.
-4. Sistem membuat transaksi dengan batas waktu pembayaran.
-5. Buyer mengunggah bukti jika memilih transfer.
+3. Sistem membuat transaksi transfer dengan batas waktu pembayaran.
+4. Buyer melakukan transfer sesuai nominal dan rekening tujuan.
+5. Buyer mengunggah bukti transfer.
 6. Admin Unit memverifikasi atau menolak pembayaran.
 7. Setelah lunas, buyer menyelesaikan transaksi.
 8. Nota dapat dibuka dan dicetak.
 
 Aturan:
 
-- Transaksi Harga Tetap dapat menggunakan transfer atau bayar langsung.
-- Transfer membutuhkan bukti pembayaran.
+- Transaksi Harga Tetap hanya menggunakan metode transfer.
+- Transfer membutuhkan bukti pembayaran dari buyer.
 - Admin Unit wajib memverifikasi sebelum status menjadi lunas.
 - Barang tidak boleh kembali tampil di katalog setelah transaksi selesai.
 
@@ -567,9 +567,6 @@ dipasarkan + Lelang Tertutup
 Harga Tetap transfer:
 menunggu_pembayaran -> bukti_diunggah -> lunas -> selesai
 menunggu_pembayaran -> bukti_diunggah -> ditolak_bukti -> bukti_diunggah
-
-Harga Tetap bayar langsung:
-menunggu_konfirmasi_langsung -> lunas -> selesai
 
 Lelang Tertutup bayar langsung:
 menunggu_konfirmasi_langsung -> lunas -> selesai

@@ -96,7 +96,7 @@ Fitur:
 
 - Dashboard buyer.
 - Wishlist barang.
-- Pembelian Harga Tetap.
+- Pembelian Harga Tetap melalui transfer.
 - Bid Lelang Tertutup.
 - Riwayat transaksi.
 - Riwayat bid.
@@ -186,7 +186,7 @@ Fitur:
 
 - Upload bukti transfer.
 - Verifikasi pembayaran oleh Admin Unit.
-- Konfirmasi bayar langsung.
+- Konfirmasi bayar langsung khusus transaksi pemenang Lelang Tertutup.
 - Bukti serah terima.
 - Riwayat transaksi.
 - Nota transaksi print-friendly.
