@@ -18,7 +18,7 @@ describe("superadmin account guardrails", () => {
         nextIsActive: false,
         activeOwnerCount: 2
       })
-    ).toBe("Owner tidak dapat menonaktifkan akunnya sendiri.");
+    ).toBe("Owner tidak dapat menghapus akunnya sendiri.");
   });
 
   it("blocks demoting or deactivating the last active owner", () => {

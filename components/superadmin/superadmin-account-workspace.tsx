@@ -5,29 +5,31 @@ import {
   ArrowLeft,
   BadgeCheck,
   Ban,
+  CalendarClock,
   CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Clock3,
   Crown,
-  Filter,
   History,
   KeyRound,
   LoaderCircle,
   LockKeyhole,
   Mail,
   Phone,
+  RefreshCw,
   Search,
   ShieldCheck,
   ShieldAlert,
-  ShieldX,
   type LucideIcon,
-  UserPen,
   UserPlus,
   UsersRound,
   X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
@@ -110,29 +112,48 @@ const levelOptions = [
 type AuditActionFilter =
   | "all"
   | "create"
-  | "update_profile"
   | "change_level"
-  | "activate"
   | "deactivate"
-  | "reset_password"
-  | "rejected";
+  | "reset_password";
 
-const auditActionOptions: Array<{
+const auditActionCatalog: Record<string, {
+  label: string;
+  icon: LucideIcon;
+}> = {
+  activate: { label: "Akun Aktif", icon: BadgeCheck },
+  change_level: { label: "Perubahan Role", icon: ShieldCheck },
+  create: { label: "Akun Dibuat", icon: UserPlus },
+  deactivate: { label: "Hapus Akun", icon: Ban },
+  rejected: { label: "Aksi Ditolak", icon: ShieldAlert },
+  reset_password: { label: "Reset Password", icon: KeyRound },
+  update_profile: { label: "Profil Diperbarui", icon: UsersRound }
+};
+
+const auditActionFilterOptions: Array<{
   value: AuditActionFilter;
   label: string;
   icon: LucideIcon;
 }> = [
-  { value: "all", label: "Semua", icon: History },
+  { value: "all", label: "Semua Aktivitas", icon: History },
   { value: "reset_password", label: "Reset Password", icon: KeyRound },
   { value: "create", label: "Akun Dibuat", icon: UserPlus },
   { value: "change_level", label: "Perubahan Role", icon: ShieldCheck },
-  { value: "activate", label: "Akun Aktif", icon: BadgeCheck },
-  { value: "deactivate", label: "Akun Nonaktif", icon: Ban },
-  { value: "update_profile", label: "Profil Diperbarui", icon: UserPen },
-  { value: "rejected", label: "Aksi Ditolak", icon: ShieldX }
+  { value: "deactivate", label: "Hapus Akun", icon: Ban }
 ];
 
-const fallbackAuditAction = { value: "all" as const, label: "Aktivitas Sistem", icon: History };
+const auditTimelineOptions = [
+  { value: "all", label: "Semua Waktu", icon: CalendarClock },
+  { value: "today", label: "Hari Ini", icon: Clock3 },
+  { value: "7days", label: "7 Hari Terakhir", icon: CalendarClock },
+  { value: "30days", label: "30 Hari Terakhir", icon: CalendarClock },
+  { value: "3months", label: "Beberapa Bulan Terakhir (3 Bln)", icon: CalendarClock },
+  { value: "year", label: "Tahun Terakhir", icon: CalendarClock }
+] as const;
+
+type AuditTimelineFilter = (typeof auditTimelineOptions)[number]["value"] | "date";
+
+const dayLabels = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+const fallbackAuditAction = { label: "Aktivitas Sistem", icon: History };
 const AUDIT_PAGE_SIZE = 5;
 
 function levelTone(level: SuperAdminAccount["level"]) {
@@ -142,36 +163,84 @@ function levelTone(level: SuperAdminAccount["level"]) {
 }
 
 function getAuditActionOption(action: string) {
-  return auditActionOptions.find((option) => option.value === action) ?? fallbackAuditAction;
+  return auditActionCatalog[action] ?? fallbackAuditAction;
 }
 
 function actionLabel(action: string) {
   return getAuditActionOption(action).label;
 }
 
-function formatAuditDateRange(audits: SuperAdminAudit[]) {
-  const dates = audits
-    .map((item) => new Date(item.createdAt))
-    .filter((date) => !Number.isNaN(date.getTime()))
-    .sort((first, second) => first.getTime() - second.getTime());
+function parseAuditDate(value: string | null | undefined) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
-  if (dates.length === 0) {
-    return "Semua tanggal";
+function startOfAuditDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function sameAuditCalendarDay(left: Date, right: Date) {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
+}
+
+function buildAuditCalendarCells(month: Date) {
+  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+  const firstDayOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells: Array<number | null> = Array.from({ length: firstDayOffset }, () => null);
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push(day);
   }
 
-  const formatter = new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
-  const first = dates[0];
-  const last = dates[dates.length - 1];
-
-  if (first.toDateString() === last.toDateString()) {
-    return formatter.format(first);
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
   }
 
-  return `${formatter.format(first)} - ${formatter.format(last)}`;
+  return cells;
+}
+
+function getInitialAuditCalendarMonth(audits: SuperAdminAudit[]) {
+  const firstDate = audits.map((entry) => parseAuditDate(entry.createdAt)).find((date): date is Date => Boolean(date));
+  const source = firstDate ?? new Date();
+  return new Date(source.getFullYear(), source.getMonth(), 1);
+}
+
+function auditTimelineLabel(filter: AuditTimelineFilter, selectedDate: Date | null) {
+  if (filter === "date" && selectedDate) {
+    return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(selectedDate);
+  }
+
+  return auditTimelineOptions.find((option) => option.value === filter)?.label ?? "Semua Waktu";
+}
+
+function matchesAuditTimelineFilter(item: SuperAdminAudit, filter: AuditTimelineFilter, selectedDate: Date | null) {
+  if (filter === "all") return true;
+
+  const itemDate = parseAuditDate(item.createdAt);
+  if (!itemDate) return false;
+
+  if (filter === "date") {
+    return selectedDate ? sameAuditCalendarDay(itemDate, selectedDate) : true;
+  }
+
+  const now = new Date();
+  const today = startOfAuditDay(now);
+
+  if (filter === "today") {
+    return sameAuditCalendarDay(itemDate, now);
+  }
+
+  const daysBack = filter === "7days" ? 7 : filter === "30days" ? 30 : filter === "3months" ? 92 : 365;
+  const threshold = new Date(today);
+  threshold.setDate(today.getDate() - daysBack);
+
+  return itemDate >= threshold;
 }
 
 function StatCard({
@@ -288,13 +357,44 @@ function AuditAccountPanel({
   const searchInputId = useId();
   const [auditQuery, setAuditQuery] = useState("");
   const [actionFilter, setActionFilter] = useState<AuditActionFilter>("all");
+  const [timelineFilter, setTimelineFilter] = useState<AuditTimelineFilter>("all");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [calendarMonth, setCalendarMonth] = useState(() => getInitialAuditCalendarMonth(audits));
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!datePickerOpen) return;
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!popoverRef.current?.contains(target)) {
+        setDatePickerOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setDatePickerOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [datePickerOpen]);
 
   const filteredAudits = useMemo(() => {
     const normalized = auditQuery.trim().toLowerCase();
 
     return audits.filter((item) => {
       const matchesAction = actionFilter === "all" || item.action === actionFilter;
+      const matchesTimeline = matchesAuditTimelineFilter(item, timelineFilter, selectedDate);
       const searchable = [
         actionLabel(item.action),
         item.note,
@@ -304,13 +404,22 @@ function AuditAccountPanel({
       ].join(" ").toLowerCase();
       const matchesQuery = !normalized || searchable.includes(normalized);
 
-      return matchesAction && matchesQuery;
+      return matchesAction && matchesTimeline && matchesQuery;
     });
-  }, [actionFilter, auditQuery, audits]);
+  }, [actionFilter, auditQuery, audits, selectedDate, timelineFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [actionFilter, auditQuery, audits.length]);
+  }, [actionFilter, auditQuery, audits.length, selectedDate, timelineFilter]);
+
+  const calendarCells = useMemo(() => buildAuditCalendarCells(calendarMonth), [calendarMonth]);
+  const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(calendarMonth);
+  const hasActiveFilter = Boolean(
+    auditQuery.trim() ||
+      actionFilter !== "all" ||
+      timelineFilter !== "all" ||
+      selectedDate
+  );
 
   const totalPages = Math.max(1, Math.ceil(filteredAudits.length / AUDIT_PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -320,7 +429,14 @@ function AuditAccountPanel({
   );
   const startItem = filteredAudits.length === 0 ? 0 : (currentPage - 1) * AUDIT_PAGE_SIZE + 1;
   const endItem = Math.min(currentPage * AUDIT_PAGE_SIZE, filteredAudits.length);
-  const dateRangeLabel = formatAuditDateRange(filteredAudits.length > 0 ? filteredAudits : audits);
+
+  function resetAuditFilters() {
+    setAuditQuery("");
+    setActionFilter("all");
+    setTimelineFilter("all");
+    setSelectedDate(null);
+    setDatePickerOpen(false);
+  }
 
   return (
     <section
@@ -331,62 +447,169 @@ function AuditAccountPanel({
       data-testid="superadmin-account-audit-list"
     >
       <div className="overflow-hidden rounded-[calc(2rem-0.5rem)] border border-[#dfe8e3] bg-white">
-        <div className="grid gap-3 border-b border-[#edf2ee] px-4 py-4 lg:grid-cols-[minmax(13rem,0.76fr)_minmax(16rem,1fr)_auto_auto] lg:items-center lg:px-5">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="relative z-30 border-b border-[#edf2ee] bg-[linear-gradient(180deg,#fffefb,#fbfcfa)] px-4 py-4 lg:px-5">
+          <div className="mb-3 flex min-w-0 items-center gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#e9f6ee] text-[#006747]">
               <History className="size-5" />
             </span>
             <h3 className="font-headline text-[1.05rem] font-black tracking-[-0.02em] text-[#13211c]">{title}</h3>
           </div>
 
-          <div className="relative min-w-0">
-            <label className="sr-only" htmlFor={searchInputId}>
-              Cari aktivitas audit
-            </label>
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#006747]/70" />
-            <Input
-              className="h-11 rounded-[1.15rem] border-[#e3ebe6] bg-white pl-10 pr-3 text-[0.86rem] font-semibold shadow-[0_14px_34px_-30px_rgba(15,23,42,0.38)]"
-              id={searchInputId}
-              onChange={(event) => setAuditQuery(event.target.value)}
-              placeholder="Cari aktivitas audit..."
-              value={auditQuery}
+          <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
+            <div className="relative min-w-0 xl:w-[38rem] xl:max-w-[58%]">
+              <label className="sr-only" htmlFor={searchInputId}>
+                Cari aktivitas audit
+              </label>
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-[#0a6a49]/42" />
+              <Input
+                className="h-11 rounded-[1rem] border border-[#dce9df] bg-white pl-10 pr-3.5 text-[0.83rem] font-semibold shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-black/36 focus:border-[#0a6a49]/38 focus:bg-white focus-visible:ring-4 focus-visible:ring-[#0a6a49]/8"
+                id={searchInputId}
+                onChange={(event) => setAuditQuery(event.target.value)}
+                placeholder="Cari aktivitas audit..."
+                value={auditQuery}
+              />
+            </div>
+
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[1rem] px-3.5 text-[0.76rem] font-black text-[#66756e] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#006747] disabled:cursor-not-allowed disabled:opacity-45"
+              disabled={!hasActiveFilter}
+              onClick={resetAuditFilters}
+              type="button"
+            >
+              <RefreshCw className="size-3.5" />
+              Reset Filter
+            </button>
+          </div>
+
+          <div className="mt-2.5 grid max-w-[34rem] gap-2.5 md:grid-cols-[17rem_15rem]">
+            <div className="relative" ref={popoverRef}>
+              <button
+                className={cn(
+                  "flex h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
+                  datePickerOpen || timelineFilter !== "all"
+                    ? "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10"
+                    : "border-[#dce9df] bg-white text-[#13211c]"
+                )}
+                onClick={() => setDatePickerOpen((current) => !current)}
+                type="button"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <CalendarClock className="size-4 shrink-0 text-[#0a6a49]" />
+                  <span className="whitespace-nowrap">Linimasa: {auditTimelineLabel(timelineFilter, selectedDate)}</span>
+                </span>
+                <ChevronDown className={cn("size-4 shrink-0 transition duration-500", datePickerOpen && "rotate-180")} />
+              </button>
+
+              {datePickerOpen ? (
+                <div className="absolute left-1/2 top-full z-[90] mt-2 grid w-[min(36.25rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[1.55rem] border border-[#dcebe3] bg-white shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:left-1/2 sm:right-auto sm:grid-cols-[15rem_minmax(0,1fr)] xl:left-0 xl:translate-x-0">
+                  <div className="space-y-1 border-b border-[#edf2ef] bg-[#f8fbf8] p-2 sm:border-b-0 sm:border-r">
+                    <p className="px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.2em] text-[#52655d]">
+                      Periode
+                    </p>
+                    {auditTimelineOptions.map((option) => {
+                      const Icon = option.icon;
+                      const active = timelineFilter === option.value && !selectedDate;
+
+                      return (
+                        <button
+                          className={cn(
+                            "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                            active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white"
+                          )}
+                          key={option.value}
+                          onClick={() => {
+                            setTimelineFilter(option.value);
+                            setSelectedDate(null);
+                            setDatePickerOpen(false);
+                          }}
+                          type="button"
+                        >
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Icon className="size-4 shrink-0" />
+                            <span className="truncate">{option.label}</span>
+                          </span>
+                          {active ? <Check className="size-4 shrink-0" /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex items-center justify-between gap-4 border-b border-[#edf2ef] pb-3">
+                      <button
+                        aria-label="Bulan audit sebelumnya"
+                        className="grid size-9 place-items-center rounded-full text-[#006747] outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                        onClick={() =>
+                          setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
+                        }
+                        type="button"
+                      >
+                        <ChevronLeft className="size-4.5" strokeWidth={2} />
+                      </button>
+                      <p className="rounded-full px-4 py-2 text-center font-black tracking-[-0.01em] text-black/78">{monthLabel}</p>
+                      <button
+                        aria-label="Bulan audit berikutnya"
+                        className="grid size-9 place-items-center rounded-full text-[#006747] outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14"
+                        onClick={() =>
+                          setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))
+                        }
+                        type="button"
+                      >
+                        <ChevronRight className="size-4.5" strokeWidth={2} />
+                      </button>
+                    </div>
+                    <div className="mt-4 grid grid-cols-7 gap-0.5 text-center text-[0.62rem] font-black uppercase tracking-[0.08em] text-black/38">
+                      {dayLabels.map((day) => (
+                        <span className="py-1" key={day}>{day}</span>
+                      ))}
+                    </div>
+                    <div className="mt-1.5 grid grid-cols-7 gap-0.5 text-center text-[0.78rem] font-bold">
+                      {calendarCells.map((day, index) => {
+                        if (!day) {
+                          return <span aria-hidden="true" key={`empty-${index}`} />;
+                        }
+
+                        const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+                        const active = selectedDate ? sameAuditCalendarDay(date, selectedDate) : false;
+
+                        return (
+                          <button
+                            className={cn(
+                              "mx-auto grid size-9 place-items-center rounded-full font-mono outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                              active && "bg-[#006747] text-white shadow-[0_14px_24px_-14px_rgba(0,103,71,0.72)] hover:bg-[#006747] hover:text-white"
+                            )}
+                            key={`${calendarMonth.toISOString()}-${day}`}
+                            onClick={() => {
+                              setSelectedDate(date);
+                              setTimelineFilter("date");
+                              setDatePickerOpen(false);
+                            }}
+                            type="button"
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <AdminSelect
+              ariaLabel="Filter aktivitas audit akun"
+              className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
+              options={auditActionFilterOptions}
+              value={actionFilter}
+              onValueChange={(nextValue) => setActionFilter(nextValue as AuditActionFilter)}
             />
           </div>
 
-          <div className="inline-flex h-11 items-center gap-2 rounded-[1.15rem] border border-[#e3ebe6] bg-white px-3 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_34px_-32px_rgba(15,23,42,0.34)]">
-            <CalendarDays className="size-4 text-[#006747]" />
-            <span className="whitespace-nowrap">{dateRangeLabel}</span>
+          <div className="mt-3 flex justify-end text-[0.72rem] font-semibold text-[#52655d]">
+            <span className="text-right">
+              Menampilkan audit dari <strong className="font-black text-[#13211c]">{audits.length}</strong> aktivitas akun.
+            </span>
           </div>
-
-          <div className="inline-flex h-11 items-center gap-2 rounded-[1.15rem] border border-[#d8eadf] bg-[#f4faf6] px-3 text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#006747]">
-            <Filter className="size-4" />
-            Filter
-          </div>
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto px-4 py-3 lg:px-5">
-          {auditActionOptions.map((option) => {
-            const Icon = option.icon;
-            const active = actionFilter === option.value;
-
-            return (
-              <button
-                aria-label={`Filter audit ${option.label}`}
-                className={cn(
-                  "inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-[0.7rem] font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]",
-                  active
-                    ? "border-[#006747] bg-[#006747] text-white shadow-[0_14px_30px_-20px_rgba(0,103,71,0.7)]"
-                    : "border-[#e3ebe6] bg-white text-[#13211c] hover:border-[#b8d9c7] hover:bg-[#f8fbf8]"
-                )}
-                key={option.value}
-                onClick={() => setActionFilter(option.value)}
-                type="button"
-              >
-                <Icon className="size-3.5" />
-                {option.label}
-              </button>
-            );
-          })}
         </div>
 
         <div className="mx-4 overflow-hidden rounded-[1.2rem] border border-[#e3ebe6] lg:mx-5">
@@ -903,7 +1126,7 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
 
       {!canManage ? (
         <InlineFeedback
-          description="Akun Anda berlevel Operator. Data tetap dapat dipantau, tetapi aksi membuat, mengubah level, menonaktifkan, dan reset password hanya tersedia untuk Owner."
+          description="Akun Anda berlevel Operator. Data tetap dapat dipantau, tetapi aksi membuat, mengubah level, menghapus akun, dan reset password hanya tersedia untuk Owner."
           title="Mode read-only aktif"
           variant="info"
         />
@@ -1082,7 +1305,7 @@ export function SuperAdminAccountDetailWorkspace({
       if (pendingAction.type === "status") {
         await applyAccountPatch({ isActive: pendingAction.nextIsActive });
         toast({
-          title: pendingAction.nextIsActive ? "Akun superadmin diaktifkan." : "Akun superadmin dinonaktifkan.",
+          title: pendingAction.nextIsActive ? "Akun superadmin diaktifkan." : "Akun superadmin dihapus dari akses aktif.",
           description: `${pendingAction.account.name} sudah diperbarui.`,
           variant: "success",
           scope: "superadmin"
@@ -1207,7 +1430,7 @@ export function SuperAdminAccountDetailWorkspace({
                   type="button"
                 >
                   {account.isActive ? <Ban className="size-4" /> : <BadgeCheck className="size-4" />}
-                  {account.isActive ? "Nonaktifkan" : "Aktifkan"}
+                  {account.isActive ? "Hapus Akun" : "Aktifkan"}
                 </Button>
                 <Button
                   className="h-12 justify-center rounded-2xl border-white/25 bg-white/12 text-white hover:bg-white/18"
@@ -1317,14 +1540,14 @@ export function SuperAdminAccountDetailWorkspace({
             ? "Ya, ubah level"
             : pendingAction?.nextIsActive
               ? "Ya, aktifkan"
-              : "Ya, nonaktifkan"
+              : "Ya, hapus akun"
         }
         description={
           pendingAction?.type === "level"
             ? "Perubahan level Owner/Operator akan dicatat ke audit dan masuk ke alert Owner."
             : pendingAction?.nextIsActive
               ? "Akun akan dapat login kembali setelah aktif."
-              : "Akun akan kehilangan akses login dan session aktifnya akan diputus."
+              : "Akun akan dihapus dari akses aktif, kehilangan akses login, dan session aktifnya akan diputus."
         }
         loading={actionLoading}
         onConfirm={handleConfirmAction}
@@ -1339,7 +1562,7 @@ export function SuperAdminAccountDetailWorkspace({
             ? "Ubah level superadmin?"
             : pendingAction?.nextIsActive
               ? "Aktifkan akun superadmin?"
-              : "Nonaktifkan akun superadmin?"
+              : "Hapus akun superadmin?"
         }
         variant={pendingAction?.type === "status" && pendingAction.nextIsActive === false ? "destructive" : "default"}
       />

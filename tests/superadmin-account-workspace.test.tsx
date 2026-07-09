@@ -177,7 +177,7 @@ describe("SuperAdminAccountWorkspace", () => {
 
     expect(screen.getByRole("heading", { name: /detail akun superadmin/i })).toBeInTheDocument();
     expect(screen.getAllByText(/operator nasional/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /nonaktifkan/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /hapus akun/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /^reset password$/i })).toBeEnabled();
     expect(screen.getByText(/owner nasional membuat akun operator nasional/i)).toBeInTheDocument();
   });
@@ -197,9 +197,21 @@ describe("SuperAdminAccountWorkspace", () => {
 
     const auditPanel = screen.getByTestId("superadmin-account-audit-list");
     expect(within(auditPanel).getByPlaceholderText(/cari aktivitas audit/i)).toBeInTheDocument();
-    expect(within(auditPanel).getByRole("button", { name: /^filter audit semua$/i })).toHaveClass("bg-[#006747]");
+    expect(within(auditPanel).getByRole("button", { name: /linimasa: semua waktu/i })).toBeInTheDocument();
 
-    fireEvent.click(within(auditPanel).getByRole("button", { name: /^filter audit reset password$/i }));
+    fireEvent.click(within(auditPanel).getByRole("button", { name: /linimasa: semua waktu/i }));
+
+    expect(within(auditPanel).getByRole("button", { name: /7 hari terakhir/i })).toBeInTheDocument();
+    expect(within(auditPanel).getByRole("button", { name: /30 hari terakhir/i })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(within(auditPanel).queryByRole("button", { name: /akun aktif/i })).not.toBeInTheDocument();
+    expect(within(auditPanel).queryByRole("button", { name: /profil diperbarui/i })).not.toBeInTheDocument();
+    expect(within(auditPanel).queryByRole("button", { name: /aksi ditolak/i })).not.toBeInTheDocument();
+
+    fireEvent.change(within(auditPanel).getByLabelText(/filter aktivitas audit akun/i), {
+      target: { value: "reset_password" }
+    });
 
     expect(within(auditPanel).getByText(/mereset password sementara/i)).toBeInTheDocument();
     expect(within(auditPanel).queryByText(/membuat akun operator nasional/i)).not.toBeInTheDocument();

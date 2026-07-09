@@ -304,7 +304,7 @@ export function getSuperAdminAccessChangeBlockReason(input: {
   activeOwnerCount: number;
 }) {
   if (input.actorUserId === input.targetUserId && input.currentIsActive && !input.nextIsActive) {
-    return "Owner tidak dapat menonaktifkan akunnya sendiri.";
+    return "Owner tidak dapat menghapus akunnya sendiri.";
   }
 
   const targetCurrentlyActiveOwner = input.currentIsActive && input.currentLevel === "owner";
@@ -509,7 +509,7 @@ export async function updateSuperAdminAccount(actorUserId: string, targetUserId:
       action === "activate"
         ? `${actor.name} mengaktifkan akun ${updated.name}.`
         : action === "deactivate"
-          ? `${actor.name} menonaktifkan akun ${updated.name}.`
+          ? `${actor.name} menghapus akses akun ${updated.name}.`
           : action === "change_level"
             ? `${actor.name} mengubah level ${updated.name} menjadi ${toLevelLabel(nextLevel)}.`
             : `${actor.name} memperbarui profil ${updated.name}.`;
