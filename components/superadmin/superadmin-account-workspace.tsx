@@ -6,7 +6,10 @@ import {
   BadgeCheck,
   Ban,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Crown,
+  Filter,
   History,
   KeyRound,
   LoaderCircle,
@@ -16,13 +19,15 @@ import {
   Search,
   ShieldCheck,
   ShieldAlert,
+  ShieldX,
   type LucideIcon,
+  UserPen,
   UserPlus,
   UsersRound,
   X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
@@ -102,24 +107,71 @@ const levelOptions = [
   { value: "operator", label: "Operator" }
 ];
 
+type AuditActionFilter =
+  | "all"
+  | "create"
+  | "update_profile"
+  | "change_level"
+  | "activate"
+  | "deactivate"
+  | "reset_password"
+  | "rejected";
+
+const auditActionOptions: Array<{
+  value: AuditActionFilter;
+  label: string;
+  icon: LucideIcon;
+}> = [
+  { value: "all", label: "Semua", icon: History },
+  { value: "reset_password", label: "Reset Password", icon: KeyRound },
+  { value: "create", label: "Akun Dibuat", icon: UserPlus },
+  { value: "change_level", label: "Perubahan Role", icon: ShieldCheck },
+  { value: "activate", label: "Akun Aktif", icon: BadgeCheck },
+  { value: "deactivate", label: "Akun Nonaktif", icon: Ban },
+  { value: "update_profile", label: "Profil Diperbarui", icon: UserPen },
+  { value: "rejected", label: "Aksi Ditolak", icon: ShieldX }
+];
+
+const fallbackAuditAction = { value: "all" as const, label: "Aktivitas Sistem", icon: History };
+const AUDIT_PAGE_SIZE = 5;
+
 function levelTone(level: SuperAdminAccount["level"]) {
   return level === "owner"
     ? "border-[#d8eadf] bg-[#f0faf4] text-[#07563e]"
     : "border-[#e6e9ee] bg-[#f8fafc] text-[#475569]";
 }
 
-function actionLabel(action: string) {
-  const labels: Record<string, string> = {
-    activate: "Aktivasi",
-    change_level: "Ubah Level",
-    create: "Buat Akun",
-    deactivate: "Nonaktif",
-    rejected: "Ditolak",
-    reset_password: "Reset Password",
-    update_profile: "Perbarui Profil"
-  };
+function getAuditActionOption(action: string) {
+  return auditActionOptions.find((option) => option.value === action) ?? fallbackAuditAction;
+}
 
-  return labels[action] ?? action;
+function actionLabel(action: string) {
+  return getAuditActionOption(action).label;
+}
+
+function formatAuditDateRange(audits: SuperAdminAudit[]) {
+  const dates = audits
+    .map((item) => new Date(item.createdAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((first, second) => first.getTime() - second.getTime());
+
+  if (dates.length === 0) {
+    return "Semua tanggal";
+  }
+
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+  const first = dates[0];
+  const last = dates[dates.length - 1];
+
+  if (first.toDateString() === last.toDateString()) {
+    return formatter.format(first);
+  }
+
+  return `${formatter.format(first)} - ${formatter.format(last)}`;
 }
 
 function StatCard({
@@ -215,6 +267,205 @@ function ProfileCard({
           <h3 className="font-headline text-lg font-black tracking-[-0.02em] text-[#122018]">{title}</h3>
         </div>
         {children}
+      </div>
+    </section>
+  );
+}
+
+function AuditAccountPanel({
+  audits,
+  className,
+  emptyDescription,
+  emptyTitle,
+  title = "Audit Akun"
+}: {
+  audits: SuperAdminAudit[];
+  className?: string;
+  emptyDescription: string;
+  emptyTitle: string;
+  title?: string;
+}) {
+  const searchInputId = useId();
+  const [auditQuery, setAuditQuery] = useState("");
+  const [actionFilter, setActionFilter] = useState<AuditActionFilter>("all");
+  const [page, setPage] = useState(1);
+
+  const filteredAudits = useMemo(() => {
+    const normalized = auditQuery.trim().toLowerCase();
+
+    return audits.filter((item) => {
+      const matchesAction = actionFilter === "all" || item.action === actionFilter;
+      const searchable = [
+        actionLabel(item.action),
+        item.note,
+        item.actorName,
+        item.targetName,
+        item.createdAtLabel
+      ].join(" ").toLowerCase();
+      const matchesQuery = !normalized || searchable.includes(normalized);
+
+      return matchesAction && matchesQuery;
+    });
+  }, [actionFilter, auditQuery, audits]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [actionFilter, auditQuery, audits.length]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAudits.length / AUDIT_PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const visibleAudits = filteredAudits.slice(
+    (currentPage - 1) * AUDIT_PAGE_SIZE,
+    currentPage * AUDIT_PAGE_SIZE
+  );
+  const startItem = filteredAudits.length === 0 ? 0 : (currentPage - 1) * AUDIT_PAGE_SIZE + 1;
+  const endItem = Math.min(currentPage * AUDIT_PAGE_SIZE, filteredAudits.length);
+  const dateRangeLabel = formatAuditDateRange(filteredAudits.length > 0 ? filteredAudits : audits);
+
+  return (
+    <section
+      className={cn(
+        "rounded-[2rem] border border-white/75 bg-white/72 p-2 shadow-[0_28px_86px_-62px_rgba(8,69,50,0.5)]",
+        className
+      )}
+      data-testid="superadmin-account-audit-list"
+    >
+      <div className="overflow-hidden rounded-[calc(2rem-0.5rem)] border border-[#dfe8e3] bg-white">
+        <div className="grid gap-3 border-b border-[#edf2ee] px-4 py-4 lg:grid-cols-[minmax(13rem,0.76fr)_minmax(16rem,1fr)_auto_auto] lg:items-center lg:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#e9f6ee] text-[#006747]">
+              <History className="size-5" />
+            </span>
+            <h3 className="font-headline text-[1.05rem] font-black tracking-[-0.02em] text-[#13211c]">{title}</h3>
+          </div>
+
+          <div className="relative min-w-0">
+            <label className="sr-only" htmlFor={searchInputId}>
+              Cari aktivitas audit
+            </label>
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#006747]/70" />
+            <Input
+              className="h-11 rounded-[1.15rem] border-[#e3ebe6] bg-white pl-10 pr-3 text-[0.86rem] font-semibold shadow-[0_14px_34px_-30px_rgba(15,23,42,0.38)]"
+              id={searchInputId}
+              onChange={(event) => setAuditQuery(event.target.value)}
+              placeholder="Cari aktivitas audit..."
+              value={auditQuery}
+            />
+          </div>
+
+          <div className="inline-flex h-11 items-center gap-2 rounded-[1.15rem] border border-[#e3ebe6] bg-white px-3 text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_34px_-32px_rgba(15,23,42,0.34)]">
+            <CalendarDays className="size-4 text-[#006747]" />
+            <span className="whitespace-nowrap">{dateRangeLabel}</span>
+          </div>
+
+          <div className="inline-flex h-11 items-center gap-2 rounded-[1.15rem] border border-[#d8eadf] bg-[#f4faf6] px-3 text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#006747]">
+            <Filter className="size-4" />
+            Filter
+          </div>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto px-4 py-3 lg:px-5">
+          {auditActionOptions.map((option) => {
+            const Icon = option.icon;
+            const active = actionFilter === option.value;
+
+            return (
+              <button
+                aria-label={`Filter audit ${option.label}`}
+                className={cn(
+                  "inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-[0.7rem] font-black transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]",
+                  active
+                    ? "border-[#006747] bg-[#006747] text-white shadow-[0_14px_30px_-20px_rgba(0,103,71,0.7)]"
+                    : "border-[#e3ebe6] bg-white text-[#13211c] hover:border-[#b8d9c7] hover:bg-[#f8fbf8]"
+                )}
+                key={option.value}
+                onClick={() => setActionFilter(option.value)}
+                type="button"
+              >
+                <Icon className="size-3.5" />
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mx-4 overflow-hidden rounded-[1.2rem] border border-[#e3ebe6] lg:mx-5">
+          {visibleAudits.length === 0 ? (
+            <EmptyState
+              className="p-6"
+              description={audits.length === 0 ? emptyDescription : "Coba kata kunci atau filter aktivitas lain."}
+              icon={ShieldAlert}
+              title={audits.length === 0 ? emptyTitle : "Tidak ada aktivitas yang sesuai"}
+            />
+          ) : (
+            <div className="divide-y divide-[#edf2ee]">
+              {visibleAudits.map((item) => {
+                const option = getAuditActionOption(item.action);
+                const Icon = option.icon;
+
+                return (
+                  <article
+                    className="grid gap-3 bg-white px-4 py-3.5 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#f8fbf8] md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-center"
+                    key={item.id}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#e9f6ee] text-[#006747]">
+                        <Icon className="size-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-headline text-[0.88rem] font-black leading-5 tracking-[-0.01em] text-[#13211c]">
+                          {option.label}
+                        </p>
+                        <p className="mt-0.5 line-clamp-2 text-[0.78rem] font-semibold leading-5 text-black/52">
+                          {item.note}
+                        </p>
+                      </div>
+                    </div>
+
+                    <time className="text-[0.76rem] font-black text-[#13211c] md:text-right" dateTime={item.createdAt}>
+                      {item.createdAtLabel}
+                    </time>
+
+                    <span className="inline-flex w-fit max-w-full items-center justify-center truncate rounded-full border border-[#cae8d6] bg-[#e8f6ee] px-3 py-1 text-[0.7rem] font-black text-[#006747]">
+                      {item.actorName || "Sistem"}
+                    </span>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-3 px-4 py-3 text-center text-[0.78rem] font-semibold text-black/46 sm:flex-row sm:items-center sm:justify-center lg:px-5">
+          <span>
+            {startItem} - {endItem} dari {filteredAudits.length} aktivitas
+          </span>
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              aria-label="Halaman audit sebelumnya"
+              className="size-9 rounded-xl p-0"
+              disabled={currentPage <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              type="button"
+              variant="secondary"
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="grid size-9 place-items-center rounded-xl bg-[#006747] text-sm font-black text-white">
+              {currentPage}
+            </span>
+            <Button
+              aria-label="Halaman audit berikutnya"
+              className="size-9 rounded-xl p-0"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              type="button"
+              variant="secondary"
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -773,41 +1024,11 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
           )}
         </section>
 
-        <section className="rounded-[1.35rem] border border-[#dfe8e3] bg-white p-4 shadow-[0_24px_70px_-62px_rgba(8,69,50,0.32)]">
-          <div className="flex items-start justify-between gap-3 border-b border-[#edf2ee] pb-3">
-            <div>
-              <p className="page-heading-eyebrow">Audit Terbaru</p>
-              <h3 className="mt-1 font-headline text-[1.05rem] font-black tracking-[-0.02em] text-[#13211c]">
-                Aktivitas sensitif
-              </h3>
-            </div>
-            <span className="grid size-10 place-items-center rounded-[1rem] bg-[#fff8e5] text-[#9a6a00]">
-              <History className="size-5" />
-            </span>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {data.audit.length === 0 ? (
-              <EmptyState
-                className="p-5 md:col-span-2 xl:col-span-3"
-                description="Audit akan muncul setelah ada aksi pada akun superadmin."
-                icon={ShieldAlert}
-                title="Belum ada audit"
-              />
-            ) : (
-              data.audit.slice(0, 8).map((item) => (
-                <div className="rounded-[1.05rem] border border-[#edf2ee] bg-[#fbfcfa] px-3 py-3" key={item.id}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-white px-2 py-1 text-[0.62rem] font-black uppercase tracking-[0.13em] text-[#006747] shadow-sm">
-                      {actionLabel(item.action)}
-                    </span>
-                    <span className="text-[0.68rem] font-bold text-black/38">{item.createdAtLabel}</span>
-                  </div>
-                  <p className="mt-2 text-[0.78rem] font-semibold leading-5 text-[#13211c]">{item.note}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+        <AuditAccountPanel
+          audits={data.audit}
+          emptyDescription="Audit akan muncul setelah ada aksi pada akun superadmin."
+          emptyTitle="Belum ada audit"
+        />
       </div>
       <CreateSuperAdminPanel
         canManage={canManage}
@@ -1082,30 +1303,11 @@ export function SuperAdminAccountDetailWorkspace({
           </ProfileCard>
         </section>
 
-        <ProfileCard icon={<History className="size-5" />} title="Audit Akun">
-          {relatedAudit.length === 0 ? (
-            <EmptyState
-              className="p-5"
-              description="Belum ada audit yang langsung terkait akun ini."
-              icon={ShieldAlert}
-              title="Audit akun belum tersedia"
-            />
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {relatedAudit.map((item) => (
-                <div className="rounded-[1.05rem] border border-[#edf2ee] bg-[#fbfcfa] px-3 py-3" key={item.id}>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-white px-2 py-1 text-[0.62rem] font-black uppercase tracking-[0.13em] text-[#006747] shadow-sm">
-                      {actionLabel(item.action)}
-                    </span>
-                    <span className="text-[0.68rem] font-bold text-black/38">{item.createdAtLabel}</span>
-                  </div>
-                  <p className="mt-2 text-[0.78rem] font-semibold leading-5 text-[#13211c]">{item.note}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </ProfileCard>
+        <AuditAccountPanel
+          audits={relatedAudit}
+          emptyDescription="Belum ada audit yang langsung terkait akun ini."
+          emptyTitle="Audit akun belum tersedia"
+        />
       </div>
 
       <ConfirmDialog

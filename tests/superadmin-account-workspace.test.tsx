@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -61,6 +61,17 @@ function makeData(canManage = true) {
         targetName: "Operator Nasional",
         createdAt: "2026-06-02T00:00:00.000Z",
         createdAtLabel: "2 Jun 2026, 08.00"
+      },
+      {
+        id: "audit-2",
+        action: "reset_password",
+        note: "Owner Nasional mereset password sementara untuk Operator Nasional.",
+        actorUserId: "owner-1",
+        actorName: "Owner Nasional",
+        targetUserId: "operator-1",
+        targetName: "Operator Nasional",
+        createdAt: "2026-06-09T00:00:00.000Z",
+        createdAtLabel: "9 Jun 2026, 10.00"
       }
     ],
     stats: {
@@ -167,7 +178,31 @@ describe("SuperAdminAccountWorkspace", () => {
     expect(screen.getByRole("heading", { name: /detail akun superadmin/i })).toBeInTheDocument();
     expect(screen.getAllByText(/operator nasional/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /nonaktifkan/i })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /reset password/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^reset password$/i })).toBeEnabled();
     expect(screen.getByText(/owner nasional membuat akun operator nasional/i)).toBeInTheDocument();
+  });
+
+  it("renders account audit as a compact filterable list", () => {
+    const data = makeData(true);
+
+    render(
+      <ToastProvider>
+        <SuperAdminAccountDetailWorkspace
+          account={data.accounts[1]}
+          audit={data.audit}
+          currentUser={data.currentUser}
+        />
+      </ToastProvider>
+    );
+
+    const auditPanel = screen.getByTestId("superadmin-account-audit-list");
+    expect(within(auditPanel).getByPlaceholderText(/cari aktivitas audit/i)).toBeInTheDocument();
+    expect(within(auditPanel).getByRole("button", { name: /^filter audit semua$/i })).toHaveClass("bg-[#006747]");
+
+    fireEvent.click(within(auditPanel).getByRole("button", { name: /^filter audit reset password$/i }));
+
+    expect(within(auditPanel).getByText(/mereset password sementara/i)).toBeInTheDocument();
+    expect(within(auditPanel).queryByText(/membuat akun operator nasional/i)).not.toBeInTheDocument();
+    expect(within(auditPanel).getByText(/1 - 1 dari 1 aktivitas/i)).toBeInTheDocument();
   });
 });
