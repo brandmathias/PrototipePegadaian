@@ -3777,58 +3777,54 @@ function SuperAdminRankingAvatar({
 }
 
 function SuperAdminRankingMarker({ rank }: { rank: number }) {
-  if (rank === 1) {
-    return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-        <span
-          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#e11d48] origin-top rotate-[18deg]"
-          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
-        />
-        <span
-          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#e11d48] origin-top -rotate-[18deg]"
-          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
-        />
-        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#ffca28] to-[#ff9800] border border-[#f57c00]/30 shadow-[0_2px_6px_rgba(245,124,0,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
-          1
-        </span>
-      </div>
-    );
-  }
+  const badge =
+    rank === 1
+      ? {
+          face: "bg-[linear-gradient(180deg,#17824a_0%,#0f6c38_100%)] border-[#0c6735] text-white shadow-[0_4px_10px_rgba(10,92,46,0.22),inset_0_1px_0_rgba(255,255,255,0.18)]",
+          ribbon: "bg-[#d43f32]",
+        }
+      : rank === 2
+        ? {
+            face: "bg-[linear-gradient(180deg,#b9bdc5_0%,#8f949c_100%)] border-[#8d939a] text-white shadow-[0_4px_10px_rgba(90,98,110,0.14),inset_0_1px_0_rgba(255,255,255,0.28)]",
+            ribbon: null,
+          }
+        : rank === 3
+          ? {
+              face: "bg-[linear-gradient(180deg,#d48822_0%,#b66b10_100%)] border-[#a85d0a] text-white shadow-[0_4px_10px_rgba(158,93,9,0.2),inset_0_1px_0_rgba(255,255,255,0.18)]",
+              ribbon: "bg-[#d43f32]",
+            }
+          : null;
 
-  if (rank === 2) {
+  if (badge) {
     return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-        <span className="flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#f1f5f9] to-[#cbd5e1] border border-[#cbd5e1]/40 shadow-[0_2px_4px_rgba(100,116,139,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] text-[0.78rem] font-bold text-[#334155] leading-none">
-          2
-        </span>
-      </div>
-    );
-  }
-
-  if (rank === 3) {
-    return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
+      <span className="relative inline-flex h-8 w-7 select-none items-start justify-center pt-[2px]">
+        {badge.ribbon ? (
+          <>
+            <span
+              className={`absolute bottom-[5px] left-[6px] h-[7px] w-[5px] origin-top rotate-[16deg] ${badge.ribbon}`}
+              style={{ clipPath: "polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)" }}
+            />
+            <span
+              className={`absolute bottom-[5px] right-[6px] h-[7px] w-[5px] origin-top -rotate-[16deg] ${badge.ribbon}`}
+              style={{ clipPath: "polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)" }}
+            />
+          </>
+        ) : null}
         <span
-          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#a16207] origin-top rotate-[18deg]"
-          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
-        />
-        <span
-          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#a16207] origin-top -rotate-[18deg]"
-          style={{ clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)" }}
-        />
-        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#d97706] to-[#a16207] border border-[#a16207]/30 shadow-[0_2px_6px_rgba(161,98,7,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
-          3
+          className={`relative z-10 inline-flex h-[1.28rem] w-[1.28rem] items-center justify-center rounded-[0.22rem] border text-[0.72rem] font-black leading-none ${badge.face}`}
+        >
+          {rank}
         </span>
-      </div>
+      </span>
     );
   }
 
   return (
-    <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-      <span className="flex items-center justify-center w-[1.5rem] h-[1.5rem] rounded-full bg-[#f8fafc] border border-slate-200/80 text-[0.7rem] font-bold text-slate-500/80 leading-none font-mono">
+    <span className="relative inline-flex h-8 w-7 select-none items-center justify-center">
+      <span className="inline-flex h-[1.22rem] w-[1.22rem] items-center justify-center rounded-[0.3rem] border border-[#d7dde5] bg-[linear-gradient(180deg,#f8fafc_0%,#e6ebf1_100%)] text-[0.68rem] font-black leading-none text-[#667085] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
         {rank}
       </span>
-    </div>
+    </span>
   );
 }
 
