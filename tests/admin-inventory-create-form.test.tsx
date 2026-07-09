@@ -105,6 +105,9 @@ describe("AdminInventoryCreateForm", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 
     fireEvent.click(screen.getByRole("button", { name: /tanggal jatuh tempo/i }));
+    const calendarPopover = screen.getByRole("dialog", { name: /kalender tanggal jatuh tempo/i });
+    expect(calendarPopover).toHaveAttribute("data-placement", "right");
+    expect(calendarPopover).toHaveClass("fixed", "-translate-y-[66%]");
     fireEvent.click(screen.getByRole("button", { name: /pilih bulan dan tahun/i }));
 
     expect(screen.getByRole("button", { name: "Januari" })).toBeInTheDocument();

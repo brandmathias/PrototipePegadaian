@@ -56,8 +56,9 @@ describe("admin gadai action forms", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /jatuh tempo baru/i }));
     const calendarPopover = screen.getByRole("dialog", { name: /kalender jatuh tempo baru/i });
-    expect(calendarPopover).toHaveClass("right-0", "top-[calc(100%+0.55rem)]");
-    expect(calendarPopover.className).not.toContain("left-[calc(100%+4.5rem)]");
+    expect(calendarPopover).toHaveAttribute("data-placement", "right");
+    expect(calendarPopover).toHaveClass("fixed", "-translate-y-[66%]");
+    expect(calendarPopover.parentElement).toBe(document.body);
 
     fireEvent.click(screen.getByRole("button", { name: "Simpan perpanjangan" }));
 

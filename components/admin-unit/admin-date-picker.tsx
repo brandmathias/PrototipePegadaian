@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,13 @@ const monthNames = [
 ];
 
 const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const viewportPadding = 12;
+
+type CalendarPosition = {
+  left: number;
+  placement: "below" | "right";
+  top: number;
+};
 
 function toIsoDate(date: Date) {
   const year = date.getFullYear();
@@ -81,8 +89,10 @@ export function AdminDatePicker({
   value: string;
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const calendarRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<"day" | "monthYear">("day");
+  const [calendarPosition, setCalendarPosition] = useState<CalendarPosition | null>(null);
   const isCompact = variant === "compact";
   const selectedDate = parseIsoDate(value);
   const [visibleMonth, setVisibleMonth] = useState(
@@ -120,11 +130,16 @@ export function AdminDatePicker({
 
   useEffect(() => {
     if (!isOpen) {
+      setCalendarPosition(null);
       return;
     }
 
     function handlePointerDown(event: PointerEvent) {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedTrigger = wrapperRef.current?.contains(target);
+      const clickedCalendar = calendarRef.current?.contains(target);
+
+      if (!clickedTrigger && !clickedCalendar) {
         setIsOpen(false);
         setPickerMode("day");
       }
@@ -145,6 +160,55 @@ export function AdminDatePicker({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
+
+  useLayoutEffect(() => {
+    if (!isOpen || typeof window === "undefined") {
+      return;
+    }
+
+    function updateCalendarPosition() {
+      if (!wrapperRef.current) {
+        return;
+      }
+
+      const rect = wrapperRef.current.getBoundingClientRect();
+      const width = Math.min(isCompact ? 296 : 352, window.innerWidth - viewportPadding * 2);
+      const estimatedHeight = pickerMode === "monthYear" ? (isCompact ? 320 : 360) : (isCompact ? 390 : 430);
+      const sideGap = isCompact ? 72 : 16;
+      const canOpenRight = window.innerWidth >= 768 && rect.right + sideGap + width <= window.innerWidth - viewportPadding;
+
+      if (canOpenRight) {
+        const idealTop = rect.top + rect.height / 2;
+        const minTop = viewportPadding + estimatedHeight * 0.66;
+        const maxTop = window.innerHeight - viewportPadding - estimatedHeight * 0.34;
+
+        setCalendarPosition({
+          left: rect.right + sideGap,
+          placement: "right",
+          top: Math.min(Math.max(idealTop, minTop), maxTop)
+        });
+        return;
+      }
+
+      setCalendarPosition({
+        left: Math.min(
+          Math.max(viewportPadding, rect.right - width),
+          window.innerWidth - width - viewportPadding
+        ),
+        placement: "below",
+        top: Math.min(rect.bottom + 8, window.innerHeight - viewportPadding)
+      });
+    }
+
+    updateCalendarPosition();
+    window.addEventListener("resize", updateCalendarPosition);
+    window.addEventListener("scroll", updateCalendarPosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updateCalendarPosition);
+      window.removeEventListener("scroll", updateCalendarPosition, true);
+    };
+  }, [isCompact, isOpen, pickerMode]);
 
   function moveMonth(delta: number) {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
@@ -229,14 +293,19 @@ export function AdminDatePicker({
         </span>
       </button>
 
-      {isOpen ? (
+      {isOpen && calendarPosition && typeof document !== "undefined" ? createPortal(
         <div
           aria-label={`Kalender ${label}`}
+          data-placement={calendarPosition.placement}
+          ref={calendarRef}
+          style={{
+            left: calendarPosition.left,
+            top: calendarPosition.top
+          }}
           className={cn(
-            "absolute z-30 w-[min(22rem,calc(100vw-2rem))] rounded-[1.7rem] border border-[#dcebe3] bg-white p-4 shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5",
-            isCompact
-              ? "right-0 top-[calc(100%+0.55rem)] sm:w-[18.5rem] sm:p-4"
-              : "left-0 top-[calc(100%+0.7rem)]"
+            "fixed z-[160] w-[min(22rem,calc(100vw-2rem))] rounded-[1.7rem] border border-[#dcebe3] bg-white p-4 shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5",
+            calendarPosition.placement === "right" && "-translate-y-[66%]",
+            isCompact && "sm:w-[18.5rem] sm:p-4"
           )}
           role="dialog"
         >
@@ -409,7 +478,8 @@ export function AdminDatePicker({
               Gunakan Tanggal
             </button>
           )}
-        </div>
+        </div>,
+        document.body
       ) : null}
     </div>
   );
