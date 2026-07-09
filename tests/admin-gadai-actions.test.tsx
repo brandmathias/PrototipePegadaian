@@ -54,6 +54,11 @@ describe("admin gadai action forms", () => {
     expect(extensionModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
     expect(extensionModal?.parentElement?.parentElement).toBe(document.body);
 
+    fireEvent.click(screen.getByRole("button", { name: /jatuh tempo baru/i }));
+    const calendarPopover = screen.getByRole("dialog", { name: /kalender jatuh tempo baru/i });
+    expect(calendarPopover).toHaveClass("right-0", "top-[calc(100%+0.55rem)]");
+    expect(calendarPopover.className).not.toContain("left-[calc(100%+4.5rem)]");
+
     fireEvent.click(screen.getByRole("button", { name: "Simpan perpanjangan" }));
 
     await waitFor(() => {

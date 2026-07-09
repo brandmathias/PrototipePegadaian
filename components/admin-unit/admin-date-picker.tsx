@@ -235,7 +235,7 @@ export function AdminDatePicker({
           className={cn(
             "absolute z-30 w-[min(22rem,calc(100vw-2rem))] rounded-[1.7rem] border border-[#dcebe3] bg-white p-4 shadow-[0_30px_80px_-42px_rgba(0,70,48,0.38),0_8px_26px_-20px_rgba(0,0,0,0.18)] ring-1 ring-white/80 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] sm:p-5",
             isCompact
-              ? "right-0 top-[calc(100%+0.55rem)] sm:bottom-auto sm:left-[calc(100%+4.5rem)] sm:right-auto sm:top-1/2 sm:w-[18.5rem] sm:-translate-y-[66%] sm:p-4"
+              ? "right-0 top-[calc(100%+0.55rem)] sm:w-[18.5rem] sm:p-4"
               : "left-0 top-[calc(100%+0.7rem)]"
           )}
           role="dialog"
