@@ -284,7 +284,7 @@ describe("DashboardShell", () => {
     expect(menu).toHaveClass("overflow-y-auto");
     expect(screen.getByText("Super Admin")).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /profil/i })).toHaveAttribute("href", "/superadmin/profil");
-    expect(screen.getByRole("menuitem", { name: /bantuan/i })).toHaveAttribute("href", "/superadmin/profil#panduan");
+    expect(screen.queryByRole("menuitem", { name: /bantuan/i })).not.toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
   });
 

@@ -144,18 +144,29 @@ export function BuyerProfileSettingsForm({
     setPassword((current) => ({ ...current, [field]: value }));
   }
 
-  function saveProfile(nextProfile = profile, successCopy = "Data pembeli sudah diperbarui di akun dan profil database.") {
+  function getProfileUpdatePayload(nextProfile = profile, includeImage = false) {
+    return {
+      name: nextProfile.name,
+      ...(includeImage && nextProfile.image !== undefined ? { image: nextProfile.image } : {})
+    };
+  }
+
+  function saveProfile(
+    nextProfile = profile,
+    successCopy = "Username pembeli sudah diperbarui.",
+    options: { includeImage?: boolean } = {}
+  ) {
     setProfileFeedback(null);
     startProfileTransition(async () => {
       const response = await fetch("/api/user/profil", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nextProfile)
+        body: JSON.stringify(getProfileUpdatePayload(nextProfile, options.includeImage))
       });
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const description = payload.message ?? "Periksa kembali nama, nomor telepon, NIK, dan foto profil.";
+        const description = payload.message ?? "Periksa kembali username dan foto profil.";
         setProfileFeedback({
           title: "Profil belum tersimpan",
           description,
@@ -199,7 +210,7 @@ export function BuyerProfileSettingsForm({
       const nextProfile = { ...profile, image };
       setAvatarImage(image);
       setProfile(nextProfile);
-      saveProfile(nextProfile, "Foto profil baru sudah tersimpan.");
+      saveProfile(nextProfile, "Foto profil baru sudah tersimpan.", { includeImage: true });
     } catch (error) {
       const description = error instanceof Error ? error.message : "Foto profil belum dapat diunggah.";
       setProfileFeedback({
@@ -386,7 +397,7 @@ export function BuyerProfileSettingsForm({
                   Edit Profil
                 </p>
                 <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-foreground">
-                  Perbarui informasi pribadi
+                  Perbarui username
                 </h3>
               </div>
               <button
@@ -401,7 +412,7 @@ export function BuyerProfileSettingsForm({
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor="buyer-profile-name">
-                  Nama lengkap
+                  Username
                 </label>
                 <Input
                   autoComplete="name"
@@ -418,12 +429,15 @@ export function BuyerProfileSettingsForm({
                 </label>
                 <Input
                   autoComplete="email"
-                  className="h-12 rounded-2xl bg-white/90"
+                  className="h-12 rounded-2xl border-primary/10 bg-surface-low/80 text-muted-foreground"
+                  disabled
                   id="buyer-profile-email"
                   name="email"
-                  onChange={(event) => updateProfileField("email", event.target.value)}
                   value={profile.email}
                 />
+                <p className="text-xs font-semibold leading-5 text-muted-foreground">
+                  Email terkunci untuk audit pelanggaran dan verifikasi akun.
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor="buyer-profile-phone">
@@ -431,12 +445,15 @@ export function BuyerProfileSettingsForm({
                 </label>
                 <Input
                   autoComplete="tel"
-                  className="h-12 rounded-2xl bg-white/90"
+                  className="h-12 rounded-2xl border-primary/10 bg-surface-low/80 text-muted-foreground"
+                  disabled
                   id="buyer-profile-phone"
                   name="phoneNumber"
-                  onChange={(event) => updateProfileField("phoneNumber", event.target.value)}
                   value={profile.phoneNumber}
                 />
+                <p className="text-xs font-semibold leading-5 text-muted-foreground">
+                  Nomor telepon terkunci agar riwayat transaksi tetap konsisten.
+                </p>
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground" htmlFor="buyer-profile-national-id">
@@ -444,13 +461,16 @@ export function BuyerProfileSettingsForm({
                 </label>
                 <Input
                   autoComplete="off"
-                  className="h-12 rounded-2xl bg-white/90"
+                  className="h-12 rounded-2xl border-primary/10 bg-surface-low/80 text-muted-foreground"
+                  disabled
                   id="buyer-profile-national-id"
                   inputMode="numeric"
                   name="nationalId"
-                  onChange={(event) => updateProfileField("nationalId", event.target.value)}
                   value={profile.nationalId}
                 />
+                <p className="text-xs font-semibold leading-5 text-muted-foreground">
+                  NIK terkunci sebagai identitas utama fitur pelanggaran.
+                </p>
               </div>
               <div className="md:col-span-2">
                 <Button

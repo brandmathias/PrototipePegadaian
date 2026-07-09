@@ -40,7 +40,6 @@ import {
 import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
-import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
 import { encryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
@@ -1313,77 +1312,10 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
       throw new Error("Akun pembeli tidak ditemukan.");
     }
 
-    const [existingUserEmail] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.email, payload.email), ne(users.id, userId)))
-      .limit(1);
-
-    if (existingUserEmail) {
-      throw new Error("Email sudah digunakan akun lain.");
-    }
-
-    const [existingProfileEmail] = await tx
-      .select({ userId: buyerProfiles.userId })
-      .from(buyerProfiles)
-      .where(and(eq(buyerProfiles.email, payload.email), ne(buyerProfiles.userId, userId)))
-      .limit(1);
-
-    if (existingProfileEmail) {
-      throw new Error("Email sudah digunakan profil pembeli lain.");
-    }
-
-    const phoneVariants = getIndonesianPhoneNumberVariants(payload.phoneNumber);
-    const [existingUserPhone] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.role, "buyer"), inArray(users.phoneNumber, phoneVariants), ne(users.id, userId)))
-      .limit(1);
-
-    if (existingUserPhone) {
-      throw new Error("Nomor telepon sudah digunakan akun lain.");
-    }
-
-    const [existingProfilePhone] = await tx
-      .select({ userId: buyerProfiles.userId })
-      .from(buyerProfiles)
-      .where(and(inArray(buyerProfiles.phoneNumber, phoneVariants), ne(buyerProfiles.userId, userId)))
-      .limit(1);
-
-    if (existingProfilePhone) {
-      throw new Error("Nomor telepon sudah digunakan profil pembeli lain.");
-    }
-
-    const [existingUserNationalId] = await tx
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.role, "buyer"), eq(users.nationalId, payload.nationalId), ne(users.id, userId)))
-      .limit(1);
-
-    if (existingUserNationalId) {
-      throw new Error("Nomor KTP sudah digunakan akun lain.");
-    }
-
-    const [existingProfileNationalId] = await tx
-      .select({ userId: buyerProfiles.userId })
-      .from(buyerProfiles)
-      .where(and(eq(buyerProfiles.nationalId, payload.nationalId), ne(buyerProfiles.userId, userId)))
-      .limit(1);
-
-    if (existingProfileNationalId) {
-      throw new Error("Nomor KTP sudah digunakan profil pembeli lain.");
-    }
-
-    const emailChanged = currentUser.email !== payload.email;
-
     await tx
       .update(users)
       .set({
         name: payload.name,
-        email: payload.email,
-        emailVerified: emailChanged ? false : currentUser.emailVerified,
-        phoneNumber: payload.phoneNumber,
-        nationalId: payload.nationalId,
         ...(payload.image !== undefined ? { image: payload.image } : {}),
         updatedAt: new Date()
       })
@@ -1400,20 +1332,21 @@ export async function updateBuyerProfile(userId: string, input: unknown) {
         .update(buyerProfiles)
         .set({
           fullName: payload.name,
-          email: payload.email,
-          phoneNumber: payload.phoneNumber,
-          nationalId: payload.nationalId,
           updatedAt: new Date()
         })
         .where(eq(buyerProfiles.userId, userId));
     } else {
+      if (!currentUser.phoneNumber || !currentUser.nationalId) {
+        throw new Error("Identitas pembeli belum lengkap dan tidak dapat dibuat dari profil.");
+      }
+
       await tx.insert(buyerProfiles).values({
         id: randomUUID(),
         userId,
         fullName: payload.name,
-        email: payload.email,
-        phoneNumber: payload.phoneNumber,
-        nationalId: payload.nationalId,
+        email: currentUser.email,
+        phoneNumber: currentUser.phoneNumber,
+        nationalId: currentUser.nationalId,
         status: "active"
       });
     }

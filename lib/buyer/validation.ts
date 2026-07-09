@@ -1,8 +1,3 @@
-import {
-  validateBuyerEmail,
-  normalizeBuyerNationalId,
-  normalizeBuyerPhoneNumber
-} from "@/lib/auth/buyer-auth-validation";
 import { currency } from "@/lib/formatters/currency";
 
 export type BuyerPurchasePayload = {
@@ -32,9 +27,6 @@ export type BuyerPaymentProofPayload = {
 
 export type BuyerProfileUpdatePayload = {
   name: string;
-  email: string;
-  phoneNumber: string;
-  nationalId: string;
   image?: string | null;
 };
 
@@ -128,9 +120,12 @@ export function validateBuyerPaymentProofPayload(input: unknown): BuyerPaymentPr
 export function validateBuyerProfileUpdatePayload(input: unknown): BuyerProfileUpdatePayload {
   const payload = readRecord(input);
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
-  const email = validateBuyerEmail(String(payload.email ?? ""));
   const rawImage = "image" in payload ? payload.image : undefined;
   const image = typeof rawImage === "string" ? rawImage.trim() : rawImage === null ? null : undefined;
+
+  if ("email" in payload || "phoneNumber" in payload || "nationalId" in payload) {
+    throw new Error("Email, nomor telepon, dan NIK tidak dapat diubah dari profil.");
+  }
 
   if (name.length < 3) {
     throw new Error("Nama lengkap minimal 3 karakter.");
@@ -148,9 +143,6 @@ export function validateBuyerProfileUpdatePayload(input: unknown): BuyerProfileU
 
   return {
     name,
-    email,
-    phoneNumber: normalizeBuyerPhoneNumber(String(payload.phoneNumber ?? "")),
-    nationalId: normalizeBuyerNationalId(String(payload.nationalId ?? "")),
     ...(image !== undefined ? { image } : {})
   };
 }

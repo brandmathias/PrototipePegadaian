@@ -5,6 +5,7 @@ import {
   validateBuyerBidEscrowPayload,
   validateBuyerBidPayload,
   validateBuyerPaymentProofPayload,
+  validateBuyerProfileUpdatePayload,
   validateBuyerPurchasePayload
 } from "@/lib/buyer/validation";
 
@@ -93,5 +94,41 @@ describe("buyer validation", () => {
       fileName: "bukti-transfer.pdf",
       reference: "TRF-00991"
     });
+  });
+
+  it("accepts buyer profile updates for username and photo only", () => {
+    expect(validateBuyerProfileUpdatePayload({ name: "Buyer Baru" })).toEqual({
+      name: "Buyer Baru"
+    });
+    expect(
+      validateBuyerProfileUpdatePayload({
+        name: "Buyer Baru",
+        image: null
+      })
+    ).toEqual({
+      name: "Buyer Baru",
+      image: null
+    });
+  });
+
+  it("rejects buyer profile updates that try to change tracked identity fields", () => {
+    expect(() =>
+      validateBuyerProfileUpdatePayload({
+        name: "Buyer Baru",
+        email: "buyer.baru@example.com"
+      })
+    ).toThrow("Email, nomor telepon, dan NIK tidak dapat diubah dari profil.");
+    expect(() =>
+      validateBuyerProfileUpdatePayload({
+        name: "Buyer Baru",
+        phoneNumber: "081234567890"
+      })
+    ).toThrow("Email, nomor telepon, dan NIK tidak dapat diubah dari profil.");
+    expect(() =>
+      validateBuyerProfileUpdatePayload({
+        name: "Buyer Baru",
+        nationalId: "7371123052600002"
+      })
+    ).toThrow("Email, nomor telepon, dan NIK tidak dapat diubah dari profil.");
   });
 });

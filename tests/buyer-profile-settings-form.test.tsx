@@ -20,12 +20,12 @@ describe("BuyerProfileSettingsForm", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => ({ data: { email: "buyer.baru@example.com" } })
+        json: async () => ({ data: { name: "Buyer Baru" } })
       })
     );
   });
 
-  it("lets buyer change account email from profile settings and submits it to the profile API", async () => {
+  it("only lets buyer change username while keeping violation identity fields locked", async () => {
     const user = userEvent.setup();
 
     render(
@@ -43,11 +43,18 @@ describe("BuyerProfileSettingsForm", () => {
 
     await user.click(screen.getByRole("button", { name: /edit profil/i }));
 
+    const usernameInput = screen.getByLabelText(/^username$/i, { selector: "input" });
     const emailInput = screen.getByLabelText(/^email$/i, { selector: "input" });
-    expect(emailInput).not.toBeDisabled();
+    const phoneInput = screen.getByLabelText(/nomor telepon/i, { selector: "input" });
+    const nationalIdInput = screen.getByLabelText(/nomor ktp/i, { selector: "input" });
 
-    await user.clear(emailInput);
-    await user.type(emailInput, "buyer.baru@example.com");
+    expect(usernameInput).not.toBeDisabled();
+    expect(emailInput).toBeDisabled();
+    expect(phoneInput).toBeDisabled();
+    expect(nationalIdInput).toBeDisabled();
+
+    await user.clear(usernameInput);
+    await user.type(usernameInput, "Buyer Baru");
     await user.click(screen.getByRole("button", { name: /simpan perubahan/i }));
 
     await waitFor(() => {
@@ -61,11 +68,7 @@ describe("BuyerProfileSettingsForm", () => {
     });
 
     const [, requestInit] = vi.mocked(fetch).mock.calls[0];
-    expect(JSON.parse(String(requestInit?.body))).toEqual(
-      expect.objectContaining({
-        email: "buyer.baru@example.com"
-      })
-    );
+    expect(JSON.parse(String(requestInit?.body))).toEqual({ name: "Buyer Baru" });
     expect(router.refresh).toHaveBeenCalled();
   });
 });

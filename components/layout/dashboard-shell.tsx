@@ -521,7 +521,6 @@ export function DashboardShell({
                   <AlertCenter scope={currentUser?.role === "super_admin" ? "superadmin" : "admin-unit"} />
                   {profileHref && currentUser ? (
                     <AdminProfileMenu
-                      helpHref={`${profileHref}#panduan`}
                       image={currentUser.image}
                       name={currentUser.name}
                       profileHref={profileHref}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, CircleHelp, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -11,7 +11,6 @@ type AdminProfileMenuProps = {
   name: string;
   image?: string | null;
   profileHref?: string;
-  helpHref?: string;
   roleLabel?: string;
   className?: string;
 };
@@ -32,7 +31,6 @@ export function AdminProfileMenu({
   name,
   image,
   profileHref = "/admin/profil",
-  helpHref = "/admin/profil#panduan",
   roleLabel = "Admin Unit",
   className
 }: AdminProfileMenuProps) {
@@ -123,17 +121,6 @@ export function AdminProfileMenu({
               <UserRound className="size-4" />
             </span>
             Profil
-          </Link>
-          <Link
-            className="flex items-center gap-3 rounded-[1rem] px-3 py-2.5 font-semibold text-foreground transition duration-300 hover:bg-[#f7f7f3] hover:text-[#0a6a49] dark:text-slate-100 dark:hover:bg-white/8 dark:hover:text-emerald-100"
-            href={helpHref}
-            onClick={() => setIsOpen(false)}
-            role="menuitem"
-          >
-            <span className="grid size-8 place-items-center rounded-full bg-[#f5f3ed] text-[#0a6a49]">
-              <CircleHelp className="size-4" />
-            </span>
-            Bantuan
           </Link>
           <LogoutButton
             className="flex w-full items-center gap-3 rounded-[1rem] px-3 py-2.5 text-left font-semibold text-red-700 transition duration-300 hover:bg-red-50 disabled:opacity-60 dark:text-rose-200 dark:hover:bg-rose-300/10"
