@@ -5,6 +5,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  ArrowRight,
   BadgeCheck,
   CarFront,
   CheckCircle2,
@@ -622,11 +623,13 @@ function CatalogLotCard({
             ) : (
               <Gavel className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" strokeWidth={2.55} />
             )}
-            <span className="truncate">{lot.mode === "fixed_price" ? "Beli Sekarang" : "Ikut Lelang"}</span>
-            <ChevronRight
-              className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
-              strokeWidth={2.6}
-            />
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <span className="truncate">{lot.mode === "fixed_price" ? "Beli Sekarang" : "Ikut Lelang"}</span>
+              <ArrowRight
+                className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
+                strokeWidth={2.6}
+              />
+            </span>
           </Link>
         </div>
       </div>
