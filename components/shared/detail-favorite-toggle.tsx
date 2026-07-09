@@ -56,8 +56,11 @@ export function DetailFavoriteToggle({
         throw new Error("Failed to sync wishlist");
       }
 
-      const result = (await response.json()) as { favorited?: boolean };
+      const result = (await response.json()) as { count?: number; favorited?: boolean };
       setFavorited(Boolean(result.favorited));
+      if (typeof result.count === "number") {
+        window.dispatchEvent(new CustomEvent("pegadaian:wishlist-count-updated", { detail: { count: result.count } }));
+      }
       window.dispatchEvent(new CustomEvent("pegadaian:lot-stats-refresh", { detail: { lotId } }));
       router.refresh();
     } catch {

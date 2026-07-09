@@ -1,4 +1,4 @@
-import React from "react";
+import React, { act } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { BuyerShell } from "@/components/layout/buyer-shell";
@@ -86,6 +86,15 @@ describe("BuyerShell", () => {
     await waitFor(() => {
       expect(window.sessionStorage.getItem(BUYER_VIEWER_CACHE_KEY)).toContain("Raras Maheswari");
     });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent("pegadaian:wishlist-count-updated", { detail: { count: 5 } }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /wishlist, 5 barang disukai/i })).toHaveAttribute("href", "/wishlist");
+    });
+    expect(window.sessionStorage.getItem(BUYER_VIEWER_CACHE_KEY)).toContain('"wishlistCount":5');
   });
 
   it.each([

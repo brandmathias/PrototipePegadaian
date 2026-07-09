@@ -75,6 +75,7 @@ function getCatalogSearchValue(pathname: string, searchParams: URLSearchParams) 
 
 export function BuyerTopNav({ currentPath = "", image, name, variant = "light", wishlistCount = 0 }: BuyerTopNavProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [liveWishlistCount, setLiveWishlistCount] = useState(wishlistCount);
   const livePathname = usePathname();
   const searchParams = useSearchParams();
   const pathname = livePathname || currentPath.split(/[?#]/, 1)[0] || "/dashboard";
@@ -82,8 +83,28 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
   const catalogSearchValue = getCatalogSearchValue(pathname, searchParams);
 
   useEffect(() => {
-    writeBuyerViewerCache({ image, name, wishlistCount });
-  }, [image, name, wishlistCount]);
+    setLiveWishlistCount(wishlistCount);
+  }, [wishlistCount]);
+
+  useEffect(() => {
+    function handleWishlistCountUpdated(event: Event) {
+      const count = (event as CustomEvent<{ count?: unknown }>).detail?.count;
+
+      if (typeof count === "number" && Number.isFinite(count)) {
+        setLiveWishlistCount(Math.max(0, count));
+      }
+    }
+
+    window.addEventListener("pegadaian:wishlist-count-updated", handleWishlistCountUpdated);
+
+    return () => {
+      window.removeEventListener("pegadaian:wishlist-count-updated", handleWishlistCountUpdated);
+    };
+  }, []);
+
+  useEffect(() => {
+    writeBuyerViewerCache({ image, name, wishlistCount: liveWishlistCount });
+  }, [image, name, liveWishlistCount]);
 
   return (
     <header
@@ -161,7 +182,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
            <AlertCenter className="hidden sm:block shrink-0" scope="buyer" />
           <Link
             aria-label={
-              wishlistCount > 0 ? `Wishlist, ${wishlistCount} barang disukai` : "Wishlist"
+              liveWishlistCount > 0 ? `Wishlist, ${liveWishlistCount} barang disukai` : "Wishlist"
             }
             className={cn(
               "interactive-tap relative hidden sm:inline-flex size-10 shrink-0 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white text-[#085a41] shadow-sm transition-[transform,background-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:bg-[#eef6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f7a57] sm:size-12 sm:rounded-2xl",
@@ -175,9 +196,9 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
             href="/wishlist"
           >
             <Heart aria-hidden="true" className="size-5" />
-            {wishlistCount > 0 ? (
+            {liveWishlistCount > 0 ? (
               <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-[#d99900] px-1 text-[0.62rem] font-black leading-5 text-white shadow-[0_10px_22px_-14px_rgba(217,153,0,0.85)]">
-                {wishlistCount > 99 ? "99+" : wishlistCount}
+                {liveWishlistCount > 99 ? "99+" : liveWishlistCount}
               </span>
             ) : null}
           </Link>
@@ -274,7 +295,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
                   className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#0a6a49]/12 bg-white py-2.5 text-xs font-black text-[#085a41] shadow-sm transition hover:bg-[#eef6f1]"
                 >
                   <Heart className="size-3.5 fill-[#d99900] text-[#d99900]" />
-                  Wishlist ({wishlistCount})
+                  Wishlist ({liveWishlistCount})
                 </Link>
               </div>
             </div>

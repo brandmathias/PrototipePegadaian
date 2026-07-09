@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { CatalogHero } from "@/components/pages/catalog-hero";
@@ -21,6 +21,7 @@ describe("CatalogPage", () => {
   beforeEach(() => {
     router.push.mockClear();
     router.refresh.mockClear();
+    vi.unstubAllGlobals();
   });
 
   function makeLot(index: number, overrides: Partial<Lot> = {}): Lot {
@@ -161,6 +162,36 @@ describe("CatalogPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /sukai cincin guest/i }));
 
     expect(router.push).toHaveBeenCalledWith("/login?next=%2Fkatalog");
+  });
+
+  it("syncs the buyer wishlist count after a catalog item is liked", async () => {
+    const wishlistCountListener = vi.fn();
+    window.addEventListener("pegadaian:wishlist-count-updated", wishlistCountListener);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ count: 1, favorited: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      )
+    );
+
+    render(<CatalogPage lots={[makeLot(1, { name: "Cincin Sinkron" })]} wishlistSyncEnabled />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sukai cincin sinkron/i }));
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith("/api/user/wishlist/lot-db-1", { method: "POST" });
+    });
+    await waitFor(() => {
+      expect(wishlistCountListener).toHaveBeenCalled();
+    });
+
+    const event = wishlistCountListener.mock.calls[0]?.[0] as CustomEvent<{ count: number }>;
+    expect(event.detail.count).toBe(1);
+
+    window.removeEventListener("pegadaian:wishlist-count-updated", wishlistCountListener);
   });
 
   it("renders uploaded lot media instead of the category placeholder when media exists", () => {

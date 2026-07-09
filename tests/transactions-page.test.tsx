@@ -245,6 +245,8 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("Ipad")).toBeInTheDocument();
     expect(screen.getAllByText("Jam Tangan Lelang Gagal")).toHaveLength(1);
+    expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Unit UPC Ranotana/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam/i)).toBeInTheDocument();
     expect(screen.getByText(/Batas pembayaran 24 jam telah lewat/i)).toBeInTheDocument();
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();

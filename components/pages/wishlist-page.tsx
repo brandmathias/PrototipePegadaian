@@ -845,6 +845,10 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
         throw new Error("Failed to remove wishlist item");
       }
 
+      const result = (await response.json()) as { count?: number };
+      if (typeof result.count === "number") {
+        window.dispatchEvent(new CustomEvent("pegadaian:wishlist-count-updated", { detail: { count: result.count } }));
+      }
       window.dispatchEvent(new CustomEvent("pegadaian:lot-stats-refresh", { detail: { lotId } }));
       router.refresh();
     } catch {

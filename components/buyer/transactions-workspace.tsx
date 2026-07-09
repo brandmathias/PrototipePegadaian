@@ -619,7 +619,7 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
               </h2>
               <p className="mt-1 inline-flex items-center gap-1.5 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">
                 <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
-                <span>Unit {transaction.unit}</span>
+                <span>{transaction.unit}</span>
               </p>
 
               {/* Badges on mobile are side-by-side below title */}
@@ -719,7 +719,7 @@ function BidRow({ item }: { item: BuyerBid }) {
               <p className="mt-1 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.9rem]">Riwayat Lelang</p>
               <p className="mt-1 inline-flex items-center gap-1.5 text-[0.82rem] font-medium tracking-[-0.01em] text-slate-500 sm:text-[0.92rem]">
                 <Building2 className="size-3.5" data-testid="buyer-transaction-unit-icon" strokeWidth={1.85} />
-                <span>Unit {item.unit}</span>
+                <span>{item.unit}</span>
               </p>
 
               <div className="mt-2 flex flex-wrap items-center gap-1.5 lg:mt-3.5 lg:gap-2.5">
