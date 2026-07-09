@@ -167,19 +167,36 @@ function InfoCard({
 function ItemPriceFrame({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[0.9rem] border border-[#d6a55f]/75 bg-[linear-gradient(180deg,#fffdf8,#fffaf0)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+      className="relative overflow-hidden rounded-[0.72rem] border border-[#d8ab70]/80 bg-[linear-gradient(180deg,#fffdf9_0%,#fffaf0_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)]"
       data-testid="route-real-superadmin-item-price-frame"
     >
-      <span className="pointer-events-none absolute left-2 top-2 size-3 border-l border-t border-[#c98f45]" />
-      <span className="pointer-events-none absolute right-2 top-2 size-3 border-r border-t border-[#c98f45]" />
-      <span className="pointer-events-none absolute bottom-2 left-2 size-3 border-b border-l border-[#c98f45]" />
-      <span className="pointer-events-none absolute bottom-2 right-2 size-3 border-b border-r border-[#c98f45]" />
-      <p className="text-center text-[0.7rem] font-black uppercase tracking-[0.24em] text-[#b7791f]">
-        {label}
-      </p>
-      <p className="mt-2 text-center font-serif text-[2.45rem] font-semibold leading-none tracking-normal text-[#111111] sm:text-[3.1rem] xl:text-[3.55rem]">
-        {value}
-      </p>
+      <span className="pointer-events-none absolute inset-[0.42rem] rounded-[0.34rem] border border-[#d9a264]/80" />
+      <span className="pointer-events-none absolute inset-x-[0.8rem] top-[0.72rem] h-px bg-[#d9a264]/70" />
+      <span className="pointer-events-none absolute inset-x-[0.8rem] bottom-[0.72rem] h-px bg-[#d9a264]/70" />
+      <span className="pointer-events-none absolute left-[0.48rem] top-[0.48rem] size-4 border-l border-t border-[#c48339]" />
+      <span className="pointer-events-none absolute right-[0.48rem] top-[0.48rem] size-4 border-r border-t border-[#c48339]" />
+      <span className="pointer-events-none absolute bottom-[0.48rem] left-[0.48rem] size-4 border-b border-l border-[#c48339]" />
+      <span className="pointer-events-none absolute bottom-[0.48rem] right-[0.48rem] size-4 border-b border-r border-[#c48339]" />
+      <span className="pointer-events-none absolute left-[0.52rem] top-[0.95rem] size-1.5 rotate-45 border-l border-t border-[#c48339]" />
+      <span className="pointer-events-none absolute right-[0.52rem] top-[0.95rem] size-1.5 -rotate-45 border-r border-t border-[#c48339]" />
+      <span className="pointer-events-none absolute bottom-[0.95rem] left-[0.52rem] size-1.5 -rotate-45 border-b border-l border-[#c48339]" />
+      <span className="pointer-events-none absolute bottom-[0.95rem] right-[0.52rem] size-1.5 rotate-45 border-b border-r border-[#c48339]" />
+      <div className="relative flex min-h-[5.65rem] flex-col items-center justify-center py-1">
+        <div className="flex items-center justify-center gap-2 text-[0.61rem] font-black uppercase leading-none tracking-[0.28em] text-[#b27631]">
+          <span className="flex items-center gap-1">
+            <span className="h-px w-5 bg-[#c98f45]/75" />
+            <span className="h-px w-1.5 -rotate-45 bg-[#c98f45]/75" />
+          </span>
+          <span>{label}</span>
+          <span className="flex items-center gap-1">
+            <span className="h-px w-1.5 rotate-45 bg-[#c98f45]/75" />
+            <span className="h-px w-5 bg-[#c98f45]/75" />
+          </span>
+        </div>
+        <p className="mt-3 text-center font-serif text-[2.4rem] font-semibold leading-none tracking-normal text-[#111111] sm:text-[3rem] xl:text-[3.35rem]">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }

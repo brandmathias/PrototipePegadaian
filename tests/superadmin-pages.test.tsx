@@ -1442,8 +1442,13 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Harga yang Dibayarkan")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 21.000.000").length).toBeGreaterThan(0);
     expect(screen.getByAltText("Foto peserta Buyer Ranotana")).toBeInTheDocument();
-    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga akhir Lelang Tertutup");
-    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 21.000.000");
+    const heroPriceFrame = screen.getByTestId("superadmin-item-price-frame");
+    expect(heroPriceFrame).toHaveTextContent("Harga akhir Lelang Tertutup");
+    expect(heroPriceFrame).toHaveTextContent("Rp 21.000.000");
+    expect(heroPriceFrame).toHaveClass("rounded-[0.72rem]", "px-4", "py-3");
+    expect(heroPriceFrame.className).toContain("border-[#d8ab70]/80");
+    expect(heroPriceFrame.className).toContain("bg-[linear-gradient(180deg,#fffdf9_0%,#fffaf0_100%)]");
+    expect(heroPriceFrame.querySelectorAll("span.pointer-events-none").length).toBeGreaterThanOrEqual(11);
     expect(screen.getByText("Lelang Selesai Sempurna - Aset Telah Diserahkan")).toBeInTheDocument();
     expect(screen.getByText("Manifes Penyerahan & Pemenang")).toBeInTheDocument();
     expect(screen.getByText("Mekanisme Lelang (Arsip)")).toBeInTheDocument();
@@ -1522,8 +1527,9 @@ describe("superadmin pages", () => {
     fireEvent.click(archivedIterationOption);
     expect(screen.getByText("Sesi Harga Tetap Diarsipkan")).toBeInTheDocument();
     expect(screen.queryByText("Ringkasan Sesi Harga Tetap")).not.toBeInTheDocument();
-    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Harga Tetap");
-    expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent("Rp 20.000.000");
+    const archivedPriceFrame = screen.getByTestId("superadmin-item-price-frame");
+    expect(archivedPriceFrame).toHaveTextContent("Harga Tetap");
+    expect(archivedPriceFrame).toHaveTextContent("Rp 20.000.000");
     const fixedPriceLayout = screen.getByTestId("superadmin-fixed-price-settlement-layout");
     const fixedPricePrimaryGrid = screen.getByTestId("superadmin-fixed-price-settlement-primary-grid");
     const fixedPricePerformancePanel = screen.getByTestId("superadmin-fixed-price-performance-panel");

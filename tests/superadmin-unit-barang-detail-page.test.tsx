@@ -79,6 +79,10 @@ describe("route-real superadmin unit barang detail page", () => {
     );
     expect(priceFrame).toHaveTextContent("Nilai Taksiran");
     expect(priceFrame).toHaveTextContent("Rp 15.000.000");
+    expect(priceFrame).toHaveClass("rounded-[0.72rem]", "px-4", "py-3");
+    expect(priceFrame.className).toContain("border-[#d8ab70]/80");
+    expect(priceFrame.className).toContain("bg-[linear-gradient(180deg,#fffdf9_0%,#fffaf0_100%)]");
+    expect(priceFrame.querySelectorAll("span.pointer-events-none").length).toBeGreaterThanOrEqual(11);
     expect(timeline.querySelector("table")).not.toBeNull();
     expect(timeline).toHaveTextContent("Status");
     expect(timeline).toHaveTextContent("Tanggal & Jam");
