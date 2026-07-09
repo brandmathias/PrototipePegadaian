@@ -1,6 +1,7 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
+import PublicLayout from "@/app/(public)/layout";
 import { PublicShell } from "@/components/layout/public-shell";
 import { LoginPage } from "@/components/pages/login-page";
 import { RegisterPage } from "@/components/pages/public-pages";
@@ -8,6 +9,10 @@ import { ToastProvider } from "@/components/ui/toast";
 
 const navigationMock = vi.hoisted(() => ({
   pathname: "/katalog",
+}));
+const sessionMock = vi.hoisted(() => ({
+  getServerSession: vi.fn(),
+  getBuyerWishlistCount: vi.fn()
 }));
 
 const BUYER_VIEWER_CACHE_KEY = "pegadaian:buyer-nav-viewer:v1";
@@ -19,6 +24,14 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn()
   }),
   useSearchParams: () => new URLSearchParams("")
+}));
+
+vi.mock("@/lib/auth/session", () => ({
+  getServerSession: sessionMock.getServerSession
+}));
+
+vi.mock("@/lib/services/wishlist.service", () => ({
+  getBuyerWishlistCount: sessionMock.getBuyerWishlistCount
 }));
 
 function expectOptimizedBrandImages(container: Element, large = false, markPriority: "high" | "low" = "low") {
@@ -40,6 +53,8 @@ function expectOptimizedBrandImages(container: Element, large = false, markPrior
 describe("PublicShell", () => {
   beforeEach(() => {
     navigationMock.pathname = "/katalog";
+    sessionMock.getServerSession.mockReset();
+    sessionMock.getBuyerWishlistCount.mockReset();
     window.sessionStorage.clear();
     vi.unstubAllGlobals();
   });
@@ -185,6 +200,37 @@ describe("PublicShell", () => {
     expect(screen.getByRole("menuitem", { name: /keluar/i })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
   });
+
+  it.each([
+    ["buyer", "Raras Maheswari", "Beranda", "/dashboard", 7],
+    ["admin_unit", "Admin Unit Wanea", "Area Admin", "/admin", 0],
+    ["super_admin", "Owner Nasional", "Control Center", "/superadmin", 0]
+  ])(
+    "hydrates public layout with the %s session before root redirects",
+    async (role, name, linkLabel, homeHref, wishlistCount) => {
+      navigationMock.pathname = "/";
+      sessionMock.getServerSession.mockResolvedValue({
+        user: {
+          id: `${role}-1`,
+          name,
+          email: `${role}@example.test`,
+          image: null,
+          role,
+          isActive: true
+        }
+      });
+      sessionMock.getBuyerWishlistCount.mockResolvedValue(wishlistCount);
+
+      render(
+        <ToastProvider>
+          {await PublicLayout({ children: <div>Konten root</div> })}
+        </ToastProvider>
+      );
+
+      expect(screen.queryByRole("link", { name: "Masuk" })).not.toBeInTheDocument();
+      expect(await screen.findByRole("link", { name: linkLabel })).toHaveAttribute("href", homeHref);
+    }
+  );
 
   it.each([
     ["login", <LoginPage key="login" />, "high" as const],
