@@ -1033,6 +1033,13 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/performa & aktivitas sesi publik/i)).toBeInTheDocument();
     expect(screen.getByText("21x")).toBeInTheDocument();
     expect(screen.getByText("2 Akun")).toBeInTheDocument();
+    const bidLogSlot = screen.getByTestId("admin-vickrey-active-bid-log-slot");
+    expect(bidLogSlot).toHaveClass("flex-1", "[&>section]:h-full");
+    expect(screen.getByTestId("admin-vickrey-active-performance-panel").parentElement).toHaveClass(
+      "flex",
+      "h-full",
+      "flex-col"
+    );
     const mediaPanel = screen.getByText(/manifes fisik & media aset/i).closest("section") as HTMLElement;
     const detailButton = within(mediaPanel).getByRole("button", { name: /lihat detail/i });
     expect(screen.queryByText(/24K/i)).not.toBeInTheDocument();

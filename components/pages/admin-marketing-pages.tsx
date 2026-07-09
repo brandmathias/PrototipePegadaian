@@ -5886,14 +5886,16 @@ export function AdminVickreyAuctionDetailPage({
         <>
           <VickreyAssetNotice auction={auction} />
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(30rem,0.95fr)]">
-            <div className="space-y-4">
+          <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(30rem,0.95fr)]">
+            <div className="flex h-full flex-col gap-4">
               <VickreyActivityPanel auction={auction} onCountdownExpired={handleCountdownExpired} />
-              <VickreyBidLogTable auction={auction} showBidRows={showBidRows} />
+              <div className="flex-1 [&>section]:h-full" data-testid="admin-vickrey-active-bid-log-slot">
+                <VickreyBidLogTable auction={auction} showBidRows={showBidRows} />
+              </div>
               <VickreyPaymentPanel auction={auction} />
             </div>
 
-            <div className="space-y-4">
+            <div className="flex h-full flex-col gap-4">
               <VickreyMediaManifest auction={auction} />
               <MarketingPerformancePanel
                 insights={auction.insights}
