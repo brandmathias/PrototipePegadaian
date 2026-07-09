@@ -823,10 +823,8 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("1 Akun")).toBeInTheDocument();
     expect(screen.getByText("Cincin Wanita / Eternity Ring")).toBeInTheDocument();
     expect(screen.getByText("18 Karat atau 75%")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /edit data/i })).toHaveAttribute(
-      "href",
-      "/admin/barang/barang-fixed-3/edit"
-    );
+    expect(screen.queryByRole("link", { name: /edit data/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit data/i })).toBeDisabled();
     expect(screen.queryByRole("link", { name: /lihat log/i })).not.toBeInTheDocument();
     const verifyPaymentButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
     expect(verifyPaymentButton).toBeDisabled();
@@ -1644,11 +1642,13 @@ describe("admin pemasaran pages", () => {
     const assetPanel = screen.getByText(/detail aset lelang$/i).closest("section");
     const progressPanel = screen.getByText(/progress penyelesaian/i).closest("section");
     const settlementPerformancePanel = screen.getByTestId("admin-vickrey-settlement-performance-panel");
+    const settlementPerformanceParent = settlementPerformancePanel.parentElement;
     const rankingSection = screen.getByText(/ranking peserta lelang \(admin view\)/i).closest("section");
     expect(assetPanel).not.toHaveClass("h-full");
     expect(progressPanel?.parentElement).toHaveClass("h-full", "lg:col-start-1", "lg:row-start-3");
-    expect(settlementPerformancePanel.parentElement).toHaveClass("h-full", "lg:col-start-2", "lg:row-start-3");
-    expect(assetPanel?.compareDocumentPosition(settlementPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+    expect(settlementPerformanceParent).not.toBeNull();
+    expect(settlementPerformanceParent!).toHaveClass("h-full", "lg:col-start-2", "lg:row-start-3");
+    expect(assetPanel!.compareDocumentPosition(settlementPerformancePanel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
     expect(progressPanel!.compareDocumentPosition(rankingSection!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(

@@ -2617,25 +2617,15 @@ export function AdminFixedPriceDetailPage({
             title="Konsol Manajemen"
           />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {canShowReceiptAction ? (
-              <Button
-                className="h-12 rounded-xl border border-[#d9e1dc] bg-[#f5f7f6] px-4 text-sm font-black text-[#8a9891]"
-                disabled
-                title="Data barang tidak dapat diedit setelah pembayaran diverifikasi."
-                variant="secondary"
-              >
-                <PencilLine className="size-4" />
-                Edit Data
-              </Button>
-            ) : (
-              <Link
-                className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ccd6e5] bg-white px-4 text-sm font-black text-[#13211c] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#9fb0c7] active:scale-[0.99]"
-                href={`/admin/barang/${auction.lotId}/edit`}
-              >
-                <PencilLine className="size-4 text-[#526072]" />
-                Edit Data
-              </Link>
-            )}
+            <Button
+              className="h-12 rounded-xl border border-[#d9e1dc] bg-[#f5f7f6] px-4 text-sm font-black text-[#8a9891]"
+              disabled
+              title="Data barang tidak dapat diedit setelah masuk kelola barang."
+              variant="secondary"
+            >
+              <PencilLine className="size-4" />
+              Edit Data
+            </Button>
             <FixedPricePaymentVerificationButton
               auction={auction}
               className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"

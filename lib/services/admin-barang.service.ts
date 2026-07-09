@@ -1,14 +1,11 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { canEditMarketedBarang } from "@/lib/admin-unit/marketing-edit-policy";
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
 import { formatSbgCode } from "@/lib/barang/sbg-code";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
-  validateAdminBarangCorrectionPayload,
   validateAdminBarangPayload,
-  validateFixedPriceMarketingPricePayload,
   validateAdminBarangMediaList,
   validatePerpanjanganPayload,
   validateTebusPayload
@@ -40,66 +37,6 @@ async function assertBarangForUnit(barangId: string, unitId: string) {
   return row;
 }
 
-async function getMarketingEditContext(barangId: string) {
-  const [activeMarketing] = await db
-    .select({
-      id: pemasaran.id,
-      price: pemasaran.price,
-      mode: pemasaran.mode
-    })
-    .from(pemasaran)
-    .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif")))
-    .limit(1);
-
-  const [latestMarketing] = await db
-    .select({
-      id: pemasaran.id,
-      mode: pemasaran.mode,
-      status: pemasaran.status,
-      winnerId: pemasaran.winnerId
-    })
-    .from(pemasaran)
-    .where(eq(pemasaran.barangId, barangId))
-    .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
-    .limit(1);
-
-  if (!latestMarketing) {
-    return {
-      activeMarketingMode: activeMarketing?.mode ?? null,
-      latestMarketingMode: null,
-      latestMarketingStatus: null,
-      participantCount: 0,
-      hasWinner: false,
-      hasFailedWinnerPayment: false
-    };
-  }
-
-  const [[bidSummary], [failedTransaction]] = await Promise.all([
-    db
-      .select({
-        count: sql<number>`count(${bids.id})`
-      })
-      .from(bids)
-      .where(eq(bids.pemasaranId, latestMarketing.id)),
-    db
-      .select({
-        id: transaksi.id
-      })
-      .from(transaksi)
-      .where(and(eq(transaksi.pemasaranId, latestMarketing.id), eq(transaksi.status, "gagal")))
-      .limit(1)
-  ]);
-
-  return {
-    activeMarketingMode: activeMarketing?.mode ?? null,
-    latestMarketingMode: latestMarketing.mode,
-    latestMarketingStatus: latestMarketing.status,
-    participantCount: Number(bidSummary?.count ?? 0),
-    hasWinner: Boolean(latestMarketing.winnerId),
-    hasFailedWinnerPayment: Boolean(failedTransaction)
-  };
-}
-
 type AdminBarangUpdateInput = Parameters<typeof validateAdminBarangPayload>[0] & {
   correctionOnly?: unknown;
   marketingPrice?: unknown;
@@ -109,18 +46,6 @@ type AdminBarangMediaChangesInput = {
   addMedia?: unknown;
   deleteMediaIds?: unknown;
 };
-
-function normalizeDeletedMediaIds(input: unknown) {
-  if (input === undefined || input === null) {
-    return [];
-  }
-
-  if (!Array.isArray(input)) {
-    throw new Error("Media yang dihapus belum valid.");
-  }
-
-  return Array.from(new Set(input.map((item) => String(item ?? "").trim()).filter(Boolean)));
-}
 
 async function recordStatusChange(input: {
   barangId: string;
@@ -758,150 +683,11 @@ export async function createAdminBarang(
 export async function updateAdminBarang(
   unitId: string,
   barangId: string,
-  input: AdminBarangUpdateInput,
-  mediaChanges?: AdminBarangMediaChangesInput
+  _input: AdminBarangUpdateInput,
+  _mediaChanges?: AdminBarangMediaChangesInput
 ) {
-  const current = await assertBarangForUnit(barangId, unitId);
-  const correctionOnly = input.correctionOnly === true;
-  const mediaToAdd = validateAdminBarangMediaList(mediaChanges?.addMedia);
-  const mediaIdsToDelete = normalizeDeletedMediaIds(mediaChanges?.deleteMediaIds);
-
-  if (correctionOnly) {
-    const allowedKeys = new Set(["correctionOnly", "ownerName", "customerNumber", "appraisalValue"]);
-    if (Object.keys(input).some((key) => !allowedKeys.has(key))) {
-      throw new Error("Koreksi riwayat hanya dapat mengubah data nasabah dan nilai taksiran.");
-    }
-    if (mediaToAdd.length > 0 || mediaIdsToDelete.length > 0) {
-      throw new Error("Media barang tidak dapat diubah pada mode koreksi riwayat.");
-    }
-  }
-
-  const marketingContext = correctionOnly ? null : await getMarketingEditContext(barangId);
-
-  if (
-    !correctionOnly &&
-    !canEditMarketedBarang({ status: current.status, ...marketingContext })
-  ) {
-    throw new Error("Barang harga tetap dapat diedit saat aktif, sedangkan barang lelang hanya dapat diedit setelah gagal karena tanpa peserta atau pemenang tidak membayar dalam 24 jam.");
-  }
-
-  const payload = correctionOnly ? null : validateAdminBarangPayload(input);
-  const correction = validateAdminBarangCorrectionPayload(payload ?? input);
-  const shouldUpdateMarketingPrice = !correctionOnly && input.marketingPrice !== undefined;
-  const marketingPricePayload = shouldUpdateMarketingPrice ? validateFixedPriceMarketingPricePayload(input) : null;
-
-  if (marketingPricePayload && marketingContext?.activeMarketingMode !== "fixed_price") {
-    throw new Error("Harga pemasaran hanya dapat diperbarui untuk barang harga tetap yang masih aktif.");
-  }
-
-  const updated = await db.transaction(async (tx) => {
-    if (correction.customerNumber !== current.customerNumber) {
-      const [existingCustomer] = await tx
-        .select({ ownerName: barang.ownerName })
-        .from(barang)
-        .where(and(eq(barang.unitId, unitId), eq(barang.customerNumber, correction.customerNumber)))
-        .limit(1);
-
-      if (
-        existingCustomer &&
-        existingCustomer.ownerName.trim().toLocaleLowerCase("id-ID") !==
-          correction.ownerName.toLocaleLowerCase("id-ID")
-      ) {
-        throw new Error("Nomor telepon sudah digunakan nasabah lain di unit ini.");
-      }
-    }
-
-    await tx
-      .update(barang)
-      .set({
-        ownerName: correction.ownerName,
-        customerNumber: correction.customerNumber,
-        updatedAt: new Date()
-      })
-      .where(and(eq(barang.unitId, unitId), eq(barang.customerNumber, current.customerNumber)));
-
-    const [savedBarang] = await tx
-      .update(barang)
-      .set(
-        payload
-          ? {
-              name: payload.name,
-              category: payload.category,
-              condition: payload.condition,
-              description: payload.description,
-              specifications: payload.specifications,
-              appraisalValue: correction.appraisalValue,
-              ownerName: correction.ownerName,
-              customerNumber: correction.customerNumber,
-              pawnedAt: toUtcDate(payload.pawnedAt),
-              dueDate: toUtcDate(payload.dueDate),
-              updatedAt: new Date()
-            }
-          : {
-              appraisalValue: correction.appraisalValue,
-              updatedAt: new Date()
-            }
-      )
-      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
-      .returning();
-
-    if (!savedBarang) {
-      throw new Error("Barang tidak ditemukan di unit Anda.");
-    }
-
-    if (marketingPricePayload) {
-      await tx
-        .update(pemasaran)
-        .set({
-          price: marketingPricePayload.marketingPrice,
-          updatedAt: new Date()
-        })
-        .where(and(eq(pemasaran.barangId, barangId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")));
-    }
-
-    if (mediaToAdd.length > 0 || mediaIdsToDelete.length > 0) {
-      const currentMedia = await tx
-        .select({ id: mediaBarang.id })
-        .from(mediaBarang)
-        .where(eq(mediaBarang.barangId, barangId));
-      const currentMediaIds = new Set(currentMedia.map((item) => item.id));
-      const missingMediaId = mediaIdsToDelete.find((id) => !currentMediaIds.has(id));
-
-      if (missingMediaId) {
-        throw new Error("Media barang tidak ditemukan.");
-      }
-
-      const nextMediaCount = currentMedia.length - mediaIdsToDelete.length + mediaToAdd.length;
-      if (nextMediaCount > ADMIN_BARANG_MEDIA_LIMIT) {
-        throw new Error(`Maksimal ${ADMIN_BARANG_MEDIA_LIMIT} foto atau video untuk satu barang.`);
-      }
-
-      if (mediaIdsToDelete.length > 0) {
-        await tx
-          .delete(mediaBarang)
-          .where(and(eq(mediaBarang.barangId, barangId), inArray(mediaBarang.id, mediaIdsToDelete)));
-      }
-
-      if (mediaToAdd.length > 0) {
-        const sortOrderBase = currentMedia.length - mediaIdsToDelete.length;
-        await tx.insert(mediaBarang).values(
-          mediaToAdd.map((item, index) => ({
-            id: crypto.randomUUID(),
-            barangId,
-            type: item.type,
-            url: item.url,
-            fileName: item.fileName,
-            sizeBytes: item.sizeBytes,
-            sortOrder: sortOrderBase + index
-          }))
-        );
-      }
-    }
-
-    return savedBarang;
-  });
-
-  return serializeAdminBarang(updated);
+  await assertBarangForUnit(barangId, unitId);
+  throw new Error("Data barang tidak dapat diubah setelah masuk ke kelola barang.");
 }
 
 export async function extendAdminBarang(unitId: string, userId: string, barangId: string, input: { newDueDate?: unknown; note?: unknown }) {

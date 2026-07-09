@@ -202,11 +202,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
       "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
     );
     expect(infoCell).toHaveClass("lg:pl-2");
-    expect(
-      screen
-        .getAllByRole("link", { name: "Edit Data" })
-        .some((link) => link.getAttribute("href") === "/admin/barang/barang-1/edit")
-    ).toBe(true);
+    expect(screen.queryByRole("link", { name: "Edit Data" })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "ditebus" } });
 

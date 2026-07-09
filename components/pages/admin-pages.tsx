@@ -30,7 +30,6 @@ import {
   Package2,
   PackageCheck,
   PackagePlus,
-  PencilLine,
   Phone,
   Printer,
   Ruler,
@@ -954,18 +953,6 @@ export function AdminInventoryDetailPage({
       <section className="overflow-hidden rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_16px_38px_rgba(15,23,42,0.035)] lg:p-5">
         <div className="relative overflow-hidden rounded-[1.25rem] border border-[#dcebe2] bg-[linear-gradient(135deg,rgba(223,242,232,0.88)_0%,rgba(246,250,247,0.94)_48%,rgba(255,255,255,0.98)_100%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] lg:p-5">
           <div className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-[#006747]/[0.055]" />
-
-          <div className="relative mb-3 flex justify-end">
-            <Link href={`/admin/barang/${item.id}/edit`}>
-              <Button
-                className="h-10 rounded-xl border border-[#0a9f62]/55 bg-white/80 px-3.5 text-[0.82rem] font-semibold text-[#0a7d51] shadow-[0_10px_24px_rgba(8,69,50,0.06)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-white active:scale-[0.98]"
-                variant="ghost"
-              >
-                <PencilLine className="size-4" />
-                Edit Data Barang
-              </Button>
-            </Link>
-          </div>
 
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start">
             <div className="w-full shrink-0 lg:w-[20rem]">

@@ -408,10 +408,6 @@ function InventoryHistoryList({
                 <DetailActionLink
                   href={`/admin/barang/${entry.barangId}`}
                 />
-                <DetailActionLink
-                  href={`/admin/barang/${entry.barangId}/edit`}
-                  label="Edit Data"
-                />
               </div>
             </div>
           );

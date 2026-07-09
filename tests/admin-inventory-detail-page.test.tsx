@@ -20,17 +20,17 @@ const baseItem = {
 };
 
 describe("AdminInventoryDetailPage", () => {
-  it("keeps extension, redemption, marketing, and edit actions available before publishing", () => {
+  it("keeps operational actions available before publishing without edit access", () => {
     render(<AdminInventoryDetailPage item={baseItem} />);
 
-    expect(screen.getByRole("link", { name: /edit data barang/i })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /catat perpanjangan/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /catat penebusan/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /pasarkan barang/i })).toBeInTheDocument();
     expect(screen.getByText(/riwayat kronologi aset/i)).toBeInTheDocument();
   });
 
-  it("keeps failed auction barang editable before it is auctioned again", () => {
+  it("keeps failed auction remarketing available without edit access", () => {
     render(
       <AdminInventoryDetailPage
         item={{
@@ -43,17 +43,14 @@ describe("AdminInventoryDetailPage", () => {
       />
     );
 
-    expect(screen.getAllByRole("link", { name: /edit data barang/i })).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lelang lagi/i })).toBeInTheDocument();
   });
 
-  it("keeps customer correction access available after an item is sold", () => {
+  it("keeps sold item data locked from edit access", () => {
     render(<AdminInventoryDetailPage item={{ ...baseItem, status: "TERJUAL" }} />);
 
-    expect(screen.getByRole("link", { name: /edit data barang/i })).toHaveAttribute(
-      "href",
-      "/admin/barang/barang-demo/edit"
-    );
+    expect(screen.queryByRole("link", { name: /edit data barang/i })).not.toBeInTheDocument();
   });
 
   it("shows asset chronology from first action to latest with internal actors", () => {
