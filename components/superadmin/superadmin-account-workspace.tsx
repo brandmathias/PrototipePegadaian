@@ -481,7 +481,7 @@ function AuditAccountPanel({
             </button>
           </div>
 
-          <div className="mt-2.5 grid max-w-[34rem] gap-2.5 md:grid-cols-[17rem_15rem]">
+          <div className="mt-2.5 grid gap-2.5 xl:grid-cols-[17rem_minmax(0,1fr)]">
             <div className="relative" ref={popoverRef}>
               <button
                 className={cn(
@@ -596,13 +596,31 @@ function AuditAccountPanel({
               ) : null}
             </div>
 
-            <AdminSelect
-              ariaLabel="Filter aktivitas audit akun"
-              className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
-              options={auditActionFilterOptions}
-              value={actionFilter}
-              onValueChange={(nextValue) => setActionFilter(nextValue as AuditActionFilter)}
-            />
+            <div className="flex min-w-0 gap-2 overflow-x-auto pb-1">
+              {auditActionFilterOptions.map((option) => {
+                const Icon = option.icon;
+                const active = actionFilter === option.value;
+                const label = option.value === "all" ? "Semua" : option.label;
+
+                return (
+                  <button
+                    aria-label={`Filter audit ${option.label}`}
+                    className={cn(
+                      "inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-[0.72rem] font-black shadow-[0_12px_24px_-22px_rgba(8,69,50,0.35)] outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] focus-visible:ring-4 focus-visible:ring-[#0a6a49]/12",
+                      active
+                        ? "border-[#006747] bg-[#006747] text-white shadow-[0_14px_28px_-16px_rgba(0,103,71,0.54)]"
+                        : "border-[#dce9df] bg-white text-[#334155] hover:border-[#b9dcca] hover:bg-[#f7fbf8] hover:text-[#006747]"
+                    )}
+                    key={option.value}
+                    onClick={() => setActionFilter(option.value)}
+                    type="button"
+                  >
+                    <Icon className="size-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="mt-3 flex justify-end text-[0.72rem] font-semibold text-[#52655d]">

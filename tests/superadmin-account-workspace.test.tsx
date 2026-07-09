@@ -177,7 +177,7 @@ describe("SuperAdminAccountWorkspace", () => {
 
     expect(screen.getByRole("heading", { name: /detail akun superadmin/i })).toBeInTheDocument();
     expect(screen.getAllByText(/operator nasional/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /hapus akun/i })).toBeEnabled();
+    expect(screen.getAllByRole("button", { name: /hapus akun/i })[0]).toBeEnabled();
     expect(screen.getByRole("button", { name: /^reset password$/i })).toBeEnabled();
     expect(screen.getByText(/owner nasional membuat akun operator nasional/i)).toBeInTheDocument();
   });
@@ -209,9 +209,7 @@ describe("SuperAdminAccountWorkspace", () => {
     expect(within(auditPanel).queryByRole("button", { name: /profil diperbarui/i })).not.toBeInTheDocument();
     expect(within(auditPanel).queryByRole("button", { name: /aksi ditolak/i })).not.toBeInTheDocument();
 
-    fireEvent.change(within(auditPanel).getByLabelText(/filter aktivitas audit akun/i), {
-      target: { value: "reset_password" }
-    });
+    fireEvent.click(within(auditPanel).getByRole("button", { name: /filter audit reset password/i }));
 
     expect(within(auditPanel).getByText(/mereset password sementara/i)).toBeInTheDocument();
     expect(within(auditPanel).queryByText(/membuat akun operator nasional/i)).not.toBeInTheDocument();
