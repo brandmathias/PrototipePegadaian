@@ -228,6 +228,9 @@ describe("AdminMarketingForm", () => {
     expect(container.querySelector("[aria-live='polite']")).toHaveClass("z-[200]");
     const marketingHeading = await screen.findByRole("heading", { name: /pasarkan barang/i });
     expect(document.body.querySelector(".lucide-megaphone")).toBeTruthy();
+    const marketingIconFrame = document.body.querySelector(".lucide-megaphone")?.closest(".pointer-events-none");
+    expect(marketingIconFrame).toHaveClass("top-4");
+    expect(marketingIconFrame).not.toHaveClass("-translate-y-1/2");
     const marketingModal = marketingHeading.closest(".modal-viewport");
     expect(marketingModal).toHaveClass("modal-viewport", "my-auto", "max-w-[66rem]");
     expect(marketingModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");

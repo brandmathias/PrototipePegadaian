@@ -4157,8 +4157,8 @@ function VickreyPaymentVerificationModal({
         className="relative z-[151] mx-auto w-full max-w-[64rem] rounded-[2rem] border border-[#dce7e1] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
         role="dialog"
       >
-        <div className="relative rounded-t-[2rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
-          <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+        <div className="relative rounded-t-[2rem] bg-white px-5 pb-7 pt-24 sm:px-7 sm:pb-8 sm:pt-24">
+          <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2">
             <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
               <CheckCircle2 className="size-6" strokeWidth={2.2} />
             </div>
@@ -4497,10 +4497,10 @@ function FixedPricePaymentVerificationModal({
       <section
         aria-labelledby="fixed-price-payment-verification-title"
         aria-modal="true"
-        className="relative z-[151] mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-8 sm:max-h-[calc(100dvh-2.5rem)] sm:pt-9"
+        className="relative z-[151] mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-[74rem] flex-col overflow-visible pt-20 sm:max-h-[calc(100dvh-2.5rem)] sm:pt-20"
         role="dialog"
       >
-        <div className="pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 -translate-y-1/2 sm:top-9">
+        <div className="pointer-events-none absolute left-1/2 top-4 z-20 -translate-x-1/2">
           <div
             className={cn(
               "grid size-16 place-items-center rounded-full border-[5px] border-white text-white",
@@ -4513,7 +4513,7 @@ function FixedPricePaymentVerificationModal({
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.45rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84),0_18px_38px_-28px_rgba(8,69,50,0.24)]">
-          <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-10 sm:px-7 sm:pb-8 sm:pt-11">
+          <div className="relative shrink-0 rounded-t-[1.45rem] bg-white px-5 pb-7 pt-20 sm:px-7 sm:pb-8 sm:pt-20">
             <button
               aria-label="Tutup"
               className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97] sm:right-7 sm:top-7 sm:size-9"

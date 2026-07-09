@@ -46,6 +46,9 @@ describe("admin gadai action forms", () => {
 
     const extensionHeading = await screen.findByRole("heading", { name: /catat perpanjangan gadai/i });
     expect(document.body.querySelector(".lucide-calendar-clock")).toBeTruthy();
+    const extensionIconFrame = document.body.querySelector(".lucide-calendar-clock")?.closest(".pointer-events-none");
+    expect(extensionIconFrame).toHaveClass("top-4");
+    expect(extensionIconFrame).not.toHaveClass("-translate-y-1/2");
     const extensionModal = extensionHeading.closest(".modal-viewport");
     expect(extensionModal).toHaveClass("modal-viewport", "my-auto", "max-w-[42rem]");
     expect(extensionModal?.parentElement).toHaveClass("overflow-y-auto", "overscroll-contain");
@@ -84,6 +87,9 @@ describe("admin gadai action forms", () => {
 
     const redeemHeading = await screen.findByRole("heading", { name: /catat penebusan gadai/i });
     expect(document.body.querySelector(".lucide-receipt-text")).toBeTruthy();
+    const redeemIconFrame = document.body.querySelector(".lucide-receipt-text")?.closest(".pointer-events-none");
+    expect(redeemIconFrame).toHaveClass("top-4");
+    expect(redeemIconFrame).not.toHaveClass("-translate-y-1/2");
 
     expect(screen.getByRole("img", { name: "LM Antam 10gr Sertifikat" })).toHaveAttribute(
       "src",

@@ -2501,12 +2501,12 @@ function SuperAdminUnitDetailPopup({
         data-header-layout="floating-centered"
         role="dialog"
       >
-        <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2">
           <span className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
             <Icon className="size-6" strokeWidth={2.2} />
           </span>
         </div>
-        <div className="relative overflow-hidden rounded-[inherit] bg-white px-5 pb-5 pt-11 sm:px-7 sm:pb-6 sm:pt-12">
+        <div className="relative overflow-hidden rounded-[inherit] bg-white px-5 pb-5 pt-24 sm:px-7 sm:pb-6 sm:pt-24">
           <button
             aria-label="Tutup panel detail"
             className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.98]"

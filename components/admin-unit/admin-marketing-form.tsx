@@ -405,7 +405,7 @@ export function AdminMarketingForm({
         presentation === "modal" && "modal-viewport my-auto w-full max-w-[66rem]"
       )}
     >
-        <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2">
           <div className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
             {heroIcon ? (
               heroIcon
