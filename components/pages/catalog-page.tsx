@@ -34,7 +34,6 @@ import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { FavoriteToggleButton } from "@/components/shared/favorite-toggle-button";
 import { LotFigure } from "@/components/shared/lot-figure";
-import { buttonVariants } from "@/components/ui/button";
 import type { Lot } from "@/lib/contracts/catalog";
 import {
   ADMIN_UNIT_CATEGORY_FILTER_OPTIONS,
@@ -615,14 +614,21 @@ function CatalogLotCard({
           </div>
           <Link
             aria-label={`Lihat detail ${lot.name}`}
-            className={cn(
-              buttonVariants({ variant: lot.mode === "fixed_price" ? "accent" : "default" }),
-              "min-h-11 w-full rounded-md text-sm font-black"
-            )}
+            className="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#e4dccf] bg-[linear-gradient(180deg,#ffffff_0%,#fbfaf8_54%,#f5f1eb_100%)] px-4 py-2 text-sm font-black text-[#2b2a27] shadow-[0_12px_24px_-18px_rgba(48,35,18,0.55),0_1px_0_rgba(255,255,255,0.96),inset_0_1px_0_rgba(255,255,255,1),inset_0_-1px_0_rgba(112,82,36,0.12)] ring-1 ring-black/[0.035] transition-[transform,box-shadow,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:border-[#d7c8ad] hover:text-[#161512] hover:shadow-[0_16px_28px_-20px_rgba(48,35,18,0.62),0_1px_0_rgba(255,255,255,1),inset_0_1px_0_rgba(255,255,255,1),inset_0_-1px_0_rgba(112,82,36,0.15)] active:translate-y-0 active:scale-[0.98]"
             href={`/katalog/${lot.id}`}
           >
-            {lot.mode === "fixed_price" ? "Beli Sekarang" : "Ikut Lelang"}
-            {lot.mode === "fixed_price" ? <ShoppingBag className="size-4" /> : <Gavel className="size-4" />}
+            <span className="grid size-5 shrink-0 place-items-center rounded-[0.35rem] bg-[linear-gradient(180deg,#e2aa31_0%,#c68412_100%)] text-white shadow-[0_5px_10px_-7px_rgba(130,81,8,0.95),inset_0_1px_0_rgba(255,255,255,0.34)]">
+              {lot.mode === "fixed_price" ? (
+                <ShoppingBag className="size-3" strokeWidth={2.45} />
+              ) : (
+                <Gavel className="size-3" strokeWidth={2.45} />
+              )}
+            </span>
+            <span className="truncate">{lot.mode === "fixed_price" ? "Beli Sekarang" : "Ikut Lelang"}</span>
+            <ChevronRight
+              className="size-3.5 shrink-0 text-[#d69b25] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
+              strokeWidth={2.6}
+            />
           </Link>
         </div>
       </div>
