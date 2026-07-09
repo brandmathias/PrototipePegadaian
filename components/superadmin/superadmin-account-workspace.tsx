@@ -575,7 +575,7 @@ function AuditAccountPanel({
                         return (
                           <button
                             className={cn(
-                              "mx-auto grid size-9 place-items-center rounded-full font-mono outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                              "mx-auto grid size-9 place-items-center rounded-full text-sm font-bold outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-[#eef7f1] hover:text-[#006747] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
                               active && "bg-[#006747] text-white shadow-[0_14px_24px_-14px_rgba(0,103,71,0.72)] hover:bg-[#006747] hover:text-white"
                             )}
                             key={`${calendarMonth.toISOString()}-${day}`}
