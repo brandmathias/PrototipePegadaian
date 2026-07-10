@@ -206,9 +206,8 @@ describe("PublicShell", () => {
     ["admin_unit", "Admin Unit Wanea", "Area Admin", "/admin", 0],
     ["super_admin", "Owner Nasional", "Control Center", "/superadmin", 0]
   ])(
-    "hydrates public layout with the %s session before root redirects",
+    "hydrates public layout with the %s session on public surfaces",
     async (role, name, linkLabel, homeHref, wishlistCount) => {
-      navigationMock.pathname = "/";
       sessionMock.getServerSession.mockResolvedValue({
         user: {
           id: `${role}-1`,
@@ -223,7 +222,7 @@ describe("PublicShell", () => {
 
       render(
         <ToastProvider>
-          {await PublicLayout({ children: <div>Konten root</div> })}
+          {await PublicLayout({ children: <div>Konten katalog</div> })}
         </ToastProvider>
       );
 

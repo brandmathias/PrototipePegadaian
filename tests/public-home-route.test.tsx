@@ -1,25 +1,28 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  getServerSession: vi.fn(),
-  redirect: vi.fn((path: string) => {
-    throw new Error(`NEXT_REDIRECT:${path}`);
-  })
-}));
-
-vi.mock("next/navigation", () => ({
-  redirect: mocks.redirect
+  getServerSession: vi.fn()
 }));
 
 vi.mock("@/lib/auth/session", () => ({
   getServerSession: mocks.getServerSession
 }));
 
-import Page from "@/app/(public)/page";
+import { GET } from "@/app/route";
+
+const rootRequest = () => new Request("https://app.example.test/");
 
 describe("public home route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("handles the root redirect before the public React layout can render", () => {
+    expect(existsSync(resolve(process.cwd(), "app/route.ts"))).toBe(true);
+    expect(existsSync(resolve(process.cwd(), "app/(public)/page.tsx"))).toBe(false);
   });
 
   it.each([
@@ -37,16 +40,18 @@ describe("public home route", () => {
       }
     });
 
-    await expect(Page()).rejects.toThrow(`NEXT_REDIRECT:${expectedPath}`);
+    const response = await GET(rootRequest());
 
-    expect(mocks.redirect).toHaveBeenCalledWith(expectedPath);
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe(`https://app.example.test${expectedPath}`);
   });
 
   it("redirects guests from the root page to the catalog", async () => {
     mocks.getServerSession.mockResolvedValue(null);
 
-    await expect(Page()).rejects.toThrow("NEXT_REDIRECT:/katalog");
+    const response = await GET(rootRequest());
 
-    expect(mocks.redirect).toHaveBeenCalledWith("/katalog");
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://app.example.test/katalog");
   });
 });
