@@ -93,7 +93,10 @@ import {
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
-import { AdminSelect, type AdminSelectOption } from "@/components/admin/admin-select";
+import {
+  AdminSelect,
+  type AdminSelectOption,
+} from "@/components/admin/admin-select";
 import { AdminBarangDetailMediaViewer } from "@/components/admin-unit/admin-barang-detail-media-viewer";
 import { AdminLiveCountdown } from "@/components/admin/admin-live-countdown";
 import {
@@ -105,11 +108,12 @@ import {
   DeleteRekeningButton,
   RekeningForm,
 } from "@/components/superadmin/rekening-form";
-import {
-  UnitForm,
-} from "@/components/superadmin/unit-form";
+import { UnitForm } from "@/components/superadmin/unit-form";
 import { HandoverProofCard } from "@/components/shared/handover-proof-card";
-import { BankLogoMark, getBankDisplayName } from "@/components/shared/bank-logo";
+import {
+  BankLogoMark,
+  getBankDisplayName,
+} from "@/components/shared/bank-logo";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { DetailActionLink } from "@/components/shared/detail-action-link";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
@@ -128,7 +132,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
-import { ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, compareCategoryFilterLabels } from "@/lib/catalog/categories";
+import {
+  ADMIN_UNIT_CATEGORY_FILTER_OPTIONS,
+  compareCategoryFilterLabels,
+} from "@/lib/catalog/categories";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import { formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
@@ -346,7 +353,8 @@ function parseTimelineTime(label: string | null | undefined) {
   );
 
   if (localizedMatch) {
-    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] = localizedMatch;
+    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] =
+      localizedMatch;
     const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
 
     if (typeof month === "number") {
@@ -365,7 +373,9 @@ function parseTimelineTime(label: string | null | undefined) {
   return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
 }
 
-function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(entries: T[]) {
+function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(
+  entries: T[],
+) {
   return entries
     .map((entry, index) => ({
       entry,
@@ -505,7 +515,9 @@ export type SuperAdminMonitoringData = {
     lifecycle: SuperAdminLifecycleItem[];
     validatedTrend: SuperAdminValidatedTrendPoint[];
     validatedTrendEvents?: SuperAdminValidatedTrendEvent[];
-    validatedTrendRanges?: Partial<Record<SuperAdminValidatedTrendRangeKey, SuperAdminValidatedTrendRange>> &
+    validatedTrendRanges?: Partial<
+      Record<SuperAdminValidatedTrendRangeKey, SuperAdminValidatedTrendRange>
+    > &
       Record<"week" | "month" | "year", SuperAdminValidatedTrendRange>;
     complianceLevels?: SuperAdminComplianceLevel[];
     validatedTransactionValueLabel?: string;
@@ -531,11 +543,7 @@ export type SuperAdminBlacklistItem = {
 };
 
 type SuperAdminRestrictionLevelFilter =
-  | "Semua"
-  | "Level 1"
-  | "Level 2"
-  | "Level 3"
-  | "Berakhir";
+  "Semua" | "Level 1" | "Level 2" | "Level 3" | "Berakhir";
 
 const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
   "Semua",
@@ -546,7 +554,20 @@ const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
 ];
 
 const DAY_MS = 86_400_000;
-const dashboardMonthLabels = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const dashboardMonthLabels = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
 
 function getSuperadminInitials(name: string) {
   return name
@@ -573,30 +594,36 @@ function getRestrictionLevelMeta(level: number) {
   if (level >= 3) {
     return {
       avatar: "bg-rose-50 text-rose-700 ring-rose-100",
-      badge: "bg-red-600 text-white shadow-[0_14px_26px_-20px_rgba(220,38,38,0.72)]",
+      badge:
+        "bg-red-600 text-white shadow-[0_14px_26px_-20px_rgba(220,38,38,0.72)]",
       label: "Level 3 (365 Hari)",
-      progress: "bg-red-600"
+      progress: "bg-red-600",
     };
   }
 
   if (level === 2) {
     return {
       avatar: "bg-orange-50 text-orange-700 ring-orange-100",
-      badge: "bg-orange-500 text-white shadow-[0_14px_26px_-20px_rgba(249,115,22,0.72)]",
+      badge:
+        "bg-orange-500 text-white shadow-[0_14px_26px_-20px_rgba(249,115,22,0.72)]",
       label: "Level 2 (30 Hari)",
-      progress: "bg-orange-500"
+      progress: "bg-orange-500",
     };
   }
 
   return {
     avatar: "bg-amber-50 text-amber-800 ring-amber-100",
-    badge: "bg-amber-400 text-amber-950 shadow-[0_14px_26px_-20px_rgba(245,158,11,0.72)]",
+    badge:
+      "bg-amber-400 text-amber-950 shadow-[0_14px_26px_-20px_rgba(245,158,11,0.72)]",
     label: "Level 1 (7 Hari)",
-    progress: "bg-amber-400"
+    progress: "bg-amber-400",
   };
 }
 
-function getRestrictionProgress(entry: SuperAdminBlacklistItem, serverNow?: string) {
+function getRestrictionProgress(
+  entry: SuperAdminBlacklistItem,
+  serverNow?: string,
+) {
   if (!entry.countdownAt) return 100;
 
   const targetTime = new Date(entry.countdownAt).getTime();
@@ -613,11 +640,21 @@ function getRestrictionProgress(entry: SuperAdminBlacklistItem, serverNow?: stri
   return Math.min(Math.max((remainingMs / durationMs) * 100, 4), 100);
 }
 
-function matchesSuperadminRestrictionQuery(entry: SuperAdminBlacklistItem, query: string) {
+function matchesSuperadminRestrictionQuery(
+  entry: SuperAdminBlacklistItem,
+  query: string,
+) {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return true;
 
-  return [entry.name, entry.email, entry.unit, entry.reason, entry.status, String(entry.total)]
+  return [
+    entry.name,
+    entry.email,
+    entry.unit,
+    entry.reason,
+    entry.status,
+    String(entry.total),
+  ]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
 }
@@ -625,7 +662,7 @@ function matchesSuperadminRestrictionQuery(entry: SuperAdminBlacklistItem, query
 function SuperAdminHeroPill({
   children,
   icon: Icon,
-  tone = "default"
+  tone = "default",
 }: {
   children: ReactNode;
   icon?: LucideIcon;
@@ -637,7 +674,7 @@ function SuperAdminHeroPill({
         "inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] shadow-[0_16px_34px_-28px_rgba(8,69,50,0.35)] ring-1 backdrop-blur",
         tone === "danger"
           ? "bg-rose-50/92 text-rose-700 ring-rose-200"
-          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65"
+          : "bg-white/75 text-[#0a6a49] ring-[#8fd0a9]/65",
       )}
     >
       {Icon ? <Icon className="size-4" /> : null}
@@ -921,15 +958,39 @@ const dashboardChartFrame = {
   left: 76,
 };
 const dashboardAmountAxisMax = 25_000_000;
-const dashboardAmountTickValues = [5_000_000, 10_000_000, 15_000_000, 20_000_000, 25_000_000];
-const dashboardTrendRangeOptions: Array<ReportRangeOption<SuperAdminValidatedTrendRangeKey>> = [
-  { value: "last7", label: "7 Hari Terakhir", helper: "Rentang mingguan berjalan" },
+const dashboardAmountTickValues = [
+  5_000_000, 10_000_000, 15_000_000, 20_000_000, 25_000_000,
+];
+const dashboardTrendRangeOptions: Array<
+  ReportRangeOption<SuperAdminValidatedTrendRangeKey>
+> = [
+  {
+    value: "last7",
+    label: "7 Hari Terakhir",
+    helper: "Rentang mingguan berjalan",
+  },
   { value: "last30", label: "30 Hari Terakhir", helper: "Pergerakan harian" },
-  { value: "last3Months", label: "3 Bulan Terakhir", helper: "Ringkasan bulanan" },
-  { value: "last12Months", label: "12 Bulan Terakhir", helper: "Satu tahun ke belakang" },
+  {
+    value: "last3Months",
+    label: "3 Bulan Terakhir",
+    helper: "Ringkasan bulanan",
+  },
+  {
+    value: "last12Months",
+    label: "12 Bulan Terakhir",
+    helper: "Satu tahun ke belakang",
+  },
   { value: "month", label: "Bulan Berlangsung", helper: "Default dashboard" },
-  { value: "yearToDate", label: "Tahun Berjalan", helper: "Januari hingga bulan ini" },
-  { value: "allTime", label: "Semua Waktu", helper: "Seluruh transaksi tervalidasi" },
+  {
+    value: "yearToDate",
+    label: "Tahun Berjalan",
+    helper: "Januari hingga bulan ini",
+  },
+  {
+    value: "allTime",
+    label: "Semua Waktu",
+    helper: "Seluruh transaksi tervalidasi",
+  },
 ];
 
 type SuperAdminDashboardCard = {
@@ -1020,7 +1081,9 @@ function formatDashboardMonthLabel(date: Date) {
   return `${dashboardMonthLabels[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-function createDashboardTrendPoint(label: string): SuperAdminValidatedTrendPoint {
+function createDashboardTrendPoint(
+  label: string,
+): SuperAdminValidatedTrendPoint {
   return {
     amount: 0,
     count: 0,
@@ -1036,7 +1099,9 @@ function addEventToDashboardPoint(
   event: SuperAdminValidatedTrendEvent,
 ) {
   const amount = Number(event.amount ?? 0);
-  const mode = String(event.transactionType ?? event.marketingMode ?? "").toLowerCase();
+  const mode = String(
+    event.transactionType ?? event.marketingMode ?? "",
+  ).toLowerCase();
 
   if (mode.includes("fixed")) {
     point.fixedPriceAmount = Number(point.fixedPriceAmount ?? 0) + amount;
@@ -1056,7 +1121,10 @@ function buildCustomDashboardTrendRange(
   const start = parseDashboardDateKey(range.startDate);
   const end = parseDashboardDateKey(range.endDate);
   end.setHours(23, 59, 59, 999);
-  const dayCount = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY_MS));
+  const dayCount = Math.max(
+    1,
+    Math.round((end.getTime() - start.getTime()) / DAY_MS),
+  );
   const points =
     dayCount <= 31
       ? Array.from({ length: dayCount }, (_, index) => {
@@ -1066,9 +1134,19 @@ function buildCustomDashboardTrendRange(
           return createDashboardTrendPoint(formatDashboardDayLabel(date));
         })
       : Array.from(
-          { length: (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1 },
+          {
+            length:
+              (end.getFullYear() - start.getFullYear()) * 12 +
+              end.getMonth() -
+              start.getMonth() +
+              1,
+          },
           (_, index) => {
-            const date = new Date(start.getFullYear(), start.getMonth() + index, 1);
+            const date = new Date(
+              start.getFullYear(),
+              start.getMonth() + index,
+              1,
+            );
             return createDashboardTrendPoint(formatDashboardMonthLabel(date));
           },
         );
@@ -1081,8 +1159,14 @@ function buildCustomDashboardTrendRange(
 
     const pointIndex =
       dayCount <= 31
-        ? Math.floor((parseDashboardDateKey(toDashboardDateKey(occurredAt)).getTime() - start.getTime()) / DAY_MS)
-        : (occurredAt.getFullYear() - start.getFullYear()) * 12 + occurredAt.getMonth() - start.getMonth();
+        ? Math.floor(
+            (parseDashboardDateKey(toDashboardDateKey(occurredAt)).getTime() -
+              start.getTime()) /
+              DAY_MS,
+          )
+        : (occurredAt.getFullYear() - start.getFullYear()) * 12 +
+          occurredAt.getMonth() -
+          start.getMonth();
     const point = points[pointIndex];
     if (point) {
       addEventToDashboardPoint(point, event);
@@ -1233,8 +1317,9 @@ export function SuperAdminDashboardPage({
     vickrey: true,
     fixedPrice: true,
   });
-  const [activeTrendRange, setActiveTrendRange] =
-    useState<SuperAdminValidatedTrendRangeKey | "custom">("month");
+  const [activeTrendRange, setActiveTrendRange] = useState<
+    SuperAdminValidatedTrendRangeKey | "custom"
+  >("month");
   const [customTrendRange, setCustomTrendRange] =
     useState<ReportCustomRange | null>(null);
   const [activeTrendIndex, setActiveTrendIndex] = useState<number | null>(null);
@@ -1242,7 +1327,7 @@ export function SuperAdminDashboardPage({
   const yearTrendPoints =
     governance?.validatedTrend?.length === 12
       ? governance.validatedTrend
-      : governance?.validatedTrend ?? [];
+      : (governance?.validatedTrend ?? []);
   const fallbackTrendRange = {
     label: "Tahun Ini",
     points: yearTrendPoints,
@@ -1268,8 +1353,14 @@ export function SuperAdminDashboardPage({
     activeTrendRange === "custom" ? "month" : activeTrendRange;
   const activeTrendRangeData =
     activeTrendRange === "custom" && customTrendRange
-      ? buildCustomDashboardTrendRange(governance?.validatedTrendEvents ?? [], customTrendRange)
-      : trendRanges[activePresetTrendRange] ?? trendRanges.month ?? trendRanges.year ?? fallbackTrendRange;
+      ? buildCustomDashboardTrendRange(
+          governance?.validatedTrendEvents ?? [],
+          customTrendRange,
+        )
+      : (trendRanges[activePresetTrendRange] ??
+        trendRanges.month ??
+        trendRanges.year ??
+        fallbackTrendRange);
   const trendPoints = activeTrendRangeData.points;
   const trendSummary =
     activeTrendRangeData.summary ?? summarizeDashboardTrend(trendPoints);
@@ -1330,8 +1421,7 @@ export function SuperAdminDashboardPage({
   });
   const activeTrendPoint =
     activeTrendIndex !== null ? chartPoints[activeTrendIndex] : null;
-  const averageTransaction =
-    currentPeriodVolume > 0 ? currentPeriodAverage : 0;
+  const averageTransaction = currentPeriodVolume > 0 ? currentPeriodAverage : 0;
   const dashboardCards: SuperAdminDashboardCard[] = [
     {
       label: "Unit Aktif Nasional",
@@ -1667,7 +1757,10 @@ export function SuperAdminDashboardPage({
                   const showLabel =
                     active ||
                     shouldShowDashboardAxisLabel(index, chartPoints.length);
-                  const labelWidth = Math.max(42, point.label.length * 6.2 + 18);
+                  const labelWidth = Math.max(
+                    42,
+                    point.label.length * 6.2 + 18,
+                  );
 
                   return (
                     <g key={point.label}>
@@ -1675,12 +1768,18 @@ export function SuperAdminDashboardPage({
                         <rect
                           className="transition-[fill,opacity] duration-200 ease-[cubic-bezier(0.2,0,0,1)]"
                           fill={active ? "#87ca7f" : "#9bd191"}
-                          height={hasStackedSegments ? totalHeight : fixedHeight}
+                          height={
+                            hasStackedSegments ? totalHeight : fixedHeight
+                          }
                           opacity={active ? 1 : 0.96}
                           rx="6"
                           width={barWidth}
                           x={x}
-                          y={hasStackedSegments ? totalY : dashboardChartFrame.bottom - fixedHeight}
+                          y={
+                            hasStackedSegments
+                              ? totalY
+                              : dashboardChartFrame.bottom - fixedHeight
+                          }
                         />
                       ) : null}
                       {vickreyHeight > 0 ? (
@@ -1805,7 +1904,9 @@ export function SuperAdminDashboardPage({
                         Lelang Tertutup
                       </span>
                       <span className="font-black text-[#00563b]">
-                        {formatFullCurrency(getTrendVickreyAmount(activeTrendPoint))}
+                        {formatFullCurrency(
+                          getTrendVickreyAmount(activeTrendPoint),
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 rounded-[0.72rem] bg-[#f6fbf5] px-2.5 py-2">
@@ -1814,7 +1915,9 @@ export function SuperAdminDashboardPage({
                         Harga Tetap
                       </span>
                       <span className="font-black text-[#3f8d42]">
-                        {formatFullCurrency(getTrendFixedPriceAmount(activeTrendPoint))}
+                        {formatFullCurrency(
+                          getTrendFixedPriceAmount(activeTrendPoint),
+                        )}
                       </span>
                     </div>
                   </div>
@@ -2146,7 +2249,10 @@ const unitDetailModeOptions = [
 ] as const;
 
 function normalizeUnitDetailOptionValue(value: string) {
-  return value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
 }
 
 function formatUnitDetailCategory(value: string) {
@@ -2168,7 +2274,10 @@ function getSuperAdminSpecificationIcon(category: unknown, label: string) {
   const normalizedLabel = label.toLowerCase();
 
   // Emas & Perhiasan
-  if (normalizedCategory.includes("emas") || normalizedCategory.includes("perhias")) {
+  if (
+    normalizedCategory.includes("emas") ||
+    normalizedCategory.includes("perhias")
+  ) {
     if (normalizedLabel.includes("jenis")) return Gem;
     if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
@@ -2185,7 +2294,11 @@ function getSuperAdminSpecificationIcon(category: unknown, label: string) {
     if (normalizedLabel.includes("brand")) return Tag;
     if (normalizedLabel.includes("kadar")) return Gauge;
     if (normalizedLabel.includes("berat")) return Scale;
-    if (normalizedLabel.includes("sertifikat") || normalizedLabel.includes("nomor")) return ScrollText;
+    if (
+      normalizedLabel.includes("sertifikat") ||
+      normalizedLabel.includes("nomor")
+    )
+      return ScrollText;
     return Medal;
   }
 
@@ -2223,11 +2336,19 @@ function getSuperAdminSpecificationIcon(category: unknown, label: string) {
 function getUnitDetailMarketingModeValue(value: string) {
   const normalized = normalizeUnitDetailOptionValue(value);
 
-  if (normalized.includes("fixed") || normalized.includes("harga_tetap") || normalized === "tetap") {
+  if (
+    normalized.includes("fixed") ||
+    normalized.includes("harga_tetap") ||
+    normalized === "tetap"
+  ) {
     return "fixed_price";
   }
 
-  if (normalized.includes("vickrey") || normalized.includes("lelang") || normalized.includes("tertutup")) {
+  if (
+    normalized.includes("vickrey") ||
+    normalized.includes("lelang") ||
+    normalized.includes("tertutup")
+  ) {
     return "vickrey";
   }
 
@@ -2236,10 +2357,15 @@ function getUnitDetailMarketingModeValue(value: string) {
 
 function getUnitDetailMarketingModeLabel(value: string) {
   const modeValue = getUnitDetailMarketingModeValue(value);
-  return unitDetailModeOptions.find((option) => option.value === modeValue)?.label ?? value;
+  return (
+    unitDetailModeOptions.find((option) => option.value === modeValue)?.label ??
+    value
+  );
 }
 
-function getUnitDetailStatusToneClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
+function getUnitDetailStatusToneClass(
+  tone: SuperAdminUnitBarangItem["operationalTone"],
+) {
   if (tone === "amber") {
     return "bg-amber-50 text-amber-700 ring-amber-100";
   }
@@ -2260,14 +2386,18 @@ function getUnitDetailDisplayStatus(status: string) {
   const normalizedStatus = normalizeUnitDetailOptionValue(status);
 
   if (
-    ["bukti_diunggah", "menunggu_pembayaran", "menunggu_konfirmasi_langsung"].includes(
-      normalizedStatus,
-    )
+    [
+      "bukti_diunggah",
+      "menunggu_pembayaran",
+      "menunggu_konfirmasi_langsung",
+    ].includes(normalizedStatus)
   ) {
     return "Sedang Dipasarkan";
   }
 
-  if (["ada_tindak_lanjut", "gagal", "ditolak_bukti"].includes(normalizedStatus)) {
+  if (
+    ["ada_tindak_lanjut", "gagal", "ditolak_bukti"].includes(normalizedStatus)
+  ) {
     return "Gagal";
   }
 
@@ -2284,12 +2414,15 @@ function getUnitDetailDisplayTone(
   if (displayStatus === "Sedang Dipasarkan") return "blue";
   if (displayStatus === "Siap Dipasarkan") return "emerald";
   if (displayStatus === "Gagal") return "red";
-  if (displayStatus === "Ditebus" || displayStatus === "Terjual") return "slate";
+  if (displayStatus === "Ditebus" || displayStatus === "Terjual")
+    return "slate";
 
   return fallbackTone;
 }
 
-function getUnitDetailStatusDotClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
+function getUnitDetailStatusDotClass(
+  tone: SuperAdminUnitBarangItem["operationalTone"],
+) {
   if (tone === "amber") return "bg-amber-500";
   if (tone === "red") return "bg-rose-500";
   if (tone === "blue") return "bg-blue-500";
@@ -2494,40 +2627,40 @@ function SuperAdminUnitDetailPopup({
         className="my-auto w-full max-w-xl py-8 sm:py-10"
         data-safe-floating-header-frame="true"
       >
-      <section
-        aria-label={title}
-        aria-modal="true"
-        className="toast-enter relative z-[121] w-full overflow-visible rounded-[1.75rem] border border-[#dfe8e3] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
-        data-header-layout="floating-centered"
-        role="dialog"
-      >
-        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2">
-          <span className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
-            <Icon className="size-6" strokeWidth={2.2} />
-          </span>
-        </div>
-        <div className="relative overflow-hidden rounded-[inherit] bg-white px-5 pb-5 pt-24 sm:px-7 sm:pb-6 sm:pt-24">
-          <button
-            aria-label="Tutup panel detail"
-            className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.98]"
-            onClick={() => onOpenChange(false)}
-            type="button"
-          >
-            <X className="size-4.5" strokeWidth={2.2} />
-          </button>
-          <div className="mx-auto max-w-md text-center">
-            <h2 className="text-center font-headline text-[1.35rem] font-black tracking-tight text-[#15231d] sm:text-[1.5rem]">
-              {title}
-            </h2>
-            <p className="mt-2 text-center text-[0.82rem] font-semibold leading-6 text-slate-500">
-              {subtitle}
-            </p>
+        <section
+          aria-label={title}
+          aria-modal="true"
+          className="toast-enter relative z-[121] w-full overflow-visible rounded-[1.75rem] border border-[#dfe8e3] bg-white shadow-[0_42px_120px_-52px_rgba(3,21,14,0.82),0_18px_38px_-28px_rgba(8,69,50,0.24)]"
+          data-header-layout="floating-centered"
+          role="dialog"
+        >
+          <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2">
+            <span className="grid size-16 place-items-center rounded-full border-[5px] border-white bg-[#006747] text-white shadow-[0_18px_30px_-18px_rgba(0,103,71,0.7)]">
+              <Icon className="size-6" strokeWidth={2.2} />
+            </span>
           </div>
-          <div className="mt-5 grid gap-3 border-t border-[#edf2ee] pt-5 sm:grid-cols-2">
-            {children}
+          <div className="relative overflow-hidden rounded-[inherit] bg-white px-5 pb-5 pt-24 sm:px-7 sm:pb-6 sm:pt-24">
+            <button
+              aria-label="Tutup panel detail"
+              className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-slate-400 transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-slate-100 hover:text-slate-700 active:scale-[0.98]"
+              onClick={() => onOpenChange(false)}
+              type="button"
+            >
+              <X className="size-4.5" strokeWidth={2.2} />
+            </button>
+            <div className="mx-auto max-w-md text-center">
+              <h2 className="text-center font-headline text-[1.35rem] font-black tracking-tight text-[#15231d] sm:text-[1.5rem]">
+                {title}
+              </h2>
+              <p className="mt-2 text-center text-[0.82rem] font-semibold leading-6 text-slate-500">
+                {subtitle}
+              </p>
+            </div>
+            <div className="mt-5 grid gap-3 border-t border-[#edf2ee] pt-5 sm:grid-cols-2">
+              {children}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       </div>
     </div>,
     document.body,
@@ -2541,7 +2674,8 @@ function SuperAdminUnitDetailAccountLedger({
   accounts: SuperAdminUnitAccount[];
   unitId: string;
 }) {
-  const [previewAccount, setPreviewAccount] = useState<SuperAdminUnitAccount | null>(null);
+  const [previewAccount, setPreviewAccount] =
+    useState<SuperAdminUnitAccount | null>(null);
 
   return (
     <>
@@ -2576,15 +2710,25 @@ function SuperAdminUnitDetailAccountLedger({
                     loading="lazy"
                     sizes="40px"
                   />
-                  <span className="truncate">{getBankDisplayName(account.bankName)}</span>
+                  <span className="truncate">
+                    {getBankDisplayName(account.bankName)}
+                  </span>
                 </div>
                 <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-mono font-bold text-black/58 md:block md:rounded-none md:bg-transparent md:p-0">
-                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Rekening</span>
-                  <span className="min-w-0 truncate">{account.accountNumber}</span>
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">
+                    Rekening
+                  </span>
+                  <span className="min-w-0 truncate">
+                    {account.accountNumber}
+                  </span>
                 </p>
                 <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/55 md:block md:rounded-none md:bg-transparent md:p-0">
-                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Pemilik</span>
-                  <span className="min-w-0 truncate text-right md:text-left">{account.accountHolder}</span>
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">
+                    Pemilik
+                  </span>
+                  <span className="min-w-0 truncate text-right md:text-left">
+                    {account.accountHolder}
+                  </span>
                 </p>
                 <div className="flex justify-start gap-1.5 md:justify-end">
                   <button
@@ -2613,10 +2757,26 @@ function SuperAdminUnitDetailAccountLedger({
         subtitle="Informasi rekening operasional yang sudah tersimpan pada unit ini."
         title="Detail Rekening Unit"
       >
-        <SuperAdminUnitDetailPopupRow icon={Landmark} label="Bank" value={previewAccount?.bankName ?? "-"} />
-        <SuperAdminUnitDetailPopupRow icon={CreditCard} label="Nomor Rekening" value={previewAccount?.accountNumber ?? "-"} />
-        <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Pemilik" value={previewAccount?.accountHolder ?? "-"} />
-        <SuperAdminUnitDetailPopupRow icon={Building2} label="Cabang" value={previewAccount?.branch || "-"} />
+        <SuperAdminUnitDetailPopupRow
+          icon={Landmark}
+          label="Bank"
+          value={previewAccount?.bankName ?? "-"}
+        />
+        <SuperAdminUnitDetailPopupRow
+          icon={CreditCard}
+          label="Nomor Rekening"
+          value={previewAccount?.accountNumber ?? "-"}
+        />
+        <SuperAdminUnitDetailPopupRow
+          icon={UserRound}
+          label="Nama Pemilik"
+          value={previewAccount?.accountHolder ?? "-"}
+        />
+        <SuperAdminUnitDetailPopupRow
+          icon={Building2}
+          label="Cabang"
+          value={previewAccount?.branch || "-"}
+        />
       </SuperAdminUnitDetailPopup>
     </>
   );
@@ -2627,7 +2787,9 @@ function SuperAdminUnitDetailAdminLedger({
 }: {
   admins: SuperAdminUnitDetail["admins"];
 }) {
-  const [previewAdmin, setPreviewAdmin] = useState<SuperAdminUnitDetail["admins"][number] | null>(null);
+  const [previewAdmin, setPreviewAdmin] = useState<
+    SuperAdminUnitDetail["admins"][number] | null
+  >(null);
 
   return (
     <>
@@ -2658,20 +2820,26 @@ function SuperAdminUnitDetailAdminLedger({
                   <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.68rem] font-black text-[#006747]">
                     {getSuperAdminInitials(admin.name)}
                   </span>
-                  <span className="truncate font-black text-[#13211c]">{admin.name}</span>
+                  <span className="truncate font-black text-[#13211c]">
+                    {admin.name}
+                  </span>
                 </div>
                 <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/50 md:justify-start md:rounded-none md:bg-transparent md:p-0">
-                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Email</span>
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">
+                    Email
+                  </span>
                   <span className="flex min-w-0 items-center gap-1.5">
-                  <Mail className="size-3.5 shrink-0 text-[#006747]" />
-                  <span className="truncate">{admin.email}</span>
+                    <Mail className="size-3.5 shrink-0 text-[#006747]" />
+                    <span className="truncate">{admin.email}</span>
                   </span>
                 </p>
                 <p className="flex min-w-0 items-center justify-between gap-3 rounded-[0.85rem] bg-[#f8fbf8] px-3 py-2 font-semibold text-black/46 md:justify-start md:rounded-none md:bg-transparent md:p-0">
-                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">Telepon</span>
+                  <span className="font-body text-[0.62rem] font-black uppercase tracking-[0.14em] text-black/36 md:hidden">
+                    Telepon
+                  </span>
                   <span className="flex min-w-0 items-center gap-1.5">
-                  <Phone className="size-3.5 shrink-0 text-[#006747]" />
-                  <span className="truncate">{admin.phone || "-"}</span>
+                    <Phone className="size-3.5 shrink-0 text-[#006747]" />
+                    <span className="truncate">{admin.phone || "-"}</span>
                   </span>
                 </p>
                 <div className="flex justify-start gap-1.5 md:justify-end">
@@ -2705,9 +2873,21 @@ function SuperAdminUnitDetailAdminLedger({
         subtitle="Informasi admin penanggung jawab yang sudah terhubung ke unit ini."
         title="Detail Admin Unit"
       >
-        <SuperAdminUnitDetailPopupRow icon={UserRound} label="Nama Admin" value={previewAdmin?.name ?? "-"} />
-        <SuperAdminUnitDetailPopupRow icon={Mail} label="Email" value={previewAdmin?.email ?? "-"} />
-        <SuperAdminUnitDetailPopupRow icon={Phone} label="Nomor Telepon" value={previewAdmin?.phone || "-"} />
+        <SuperAdminUnitDetailPopupRow
+          icon={UserRound}
+          label="Nama Admin"
+          value={previewAdmin?.name ?? "-"}
+        />
+        <SuperAdminUnitDetailPopupRow
+          icon={Mail}
+          label="Email"
+          value={previewAdmin?.email ?? "-"}
+        />
+        <SuperAdminUnitDetailPopupRow
+          icon={Phone}
+          label="Nomor Telepon"
+          value={previewAdmin?.phone || "-"}
+        />
       </SuperAdminUnitDetailPopup>
     </>
   );
@@ -2724,7 +2904,8 @@ function SuperAdminUnitInventorySection({
   const [categoryFilter, setCategoryFilter] = useState(unitDetailFilterAll);
   const [statusFilter, setStatusFilter] = useState(unitDetailFilterAll);
   const [modeFilter, setModeFilter] = useState(unitDetailFilterAll);
-  const [pageSize, setPageSize] = useState<(typeof unitDetailPageSizeOptions)[number]>(10);
+  const [pageSize, setPageSize] =
+    useState<(typeof unitDetailPageSizeOptions)[number]>(10);
   const [currentPage, setCurrentPage] = useState(1);
   const categoryOptions = useMemo(() => {
     const categoryMap = new Map<string, string>(
@@ -2743,15 +2924,18 @@ function SuperAdminUnitInventorySection({
 
     return [
       { label: "Semua Kategori", value: unitDetailFilterAll },
-      ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort((left, right) =>
-        compareCategoryFilterLabels(left.label, right.label),
+      ...Array.from(categoryMap, ([value, label]) => ({ label, value })).sort(
+        (left, right) => compareCategoryFilterLabels(left.label, right.label),
       ),
     ];
   }, [items]);
   const statusOptions = useMemo(
     () => [
       { label: "Semua Status", value: unitDetailFilterAll },
-      ...unitDetailOperationalStatusOptions.map((status) => ({ label: status, value: status })),
+      ...unitDetailOperationalStatusOptions.map((status) => ({
+        label: status,
+        value: status,
+      })),
     ],
     [],
   );
@@ -2793,13 +2977,17 @@ function SuperAdminUnitInventorySection({
     filteredItems.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const currentPageEnd = Math.min(currentPage * pageSize, filteredItems.length);
   const collateralCount = items.filter(
-    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Barang Jaminan",
+    (item) =>
+      getUnitDetailDisplayStatus(item.operationalStatus) === "Barang Jaminan",
   ).length;
   const readyCount = items.filter(
-    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Siap Dipasarkan",
+    (item) =>
+      getUnitDetailDisplayStatus(item.operationalStatus) === "Siap Dipasarkan",
   ).length;
   const marketedCount = items.filter(
-    (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Sedang Dipasarkan",
+    (item) =>
+      getUnitDetailDisplayStatus(item.operationalStatus) ===
+      "Sedang Dipasarkan",
   ).length;
   const soldCount = items.filter(
     (item) => getUnitDetailDisplayStatus(item.operationalStatus) === "Terjual",
@@ -2866,7 +3054,9 @@ function SuperAdminUnitInventorySection({
                 Daftar Barang Unit
               </h3>
               <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-black/52">
-                Daftar lengkap barang pada {unit.name}, termasuk status operasional, mode pemasaran, nilai barang, dan akses detail setiap barang.
+                Daftar lengkap barang pada {unit.name}, termasuk status
+                operasional, mode pemasaran, nilai barang, dan akses detail
+                setiap barang.
               </p>
             </div>
           </div>
@@ -3011,7 +3201,9 @@ function SuperAdminUnitInventorySection({
                 </thead>
                 <tbody className="divide-y divide-[#edf2ee] bg-white">
                   {paginatedItems.map((item, index) => {
-                    const operationalStatus = getUnitDetailDisplayStatus(item.operationalStatus);
+                    const operationalStatus = getUnitDetailDisplayStatus(
+                      item.operationalStatus,
+                    );
                     const operationalTone = getUnitDetailDisplayTone(
                       item.operationalStatus,
                       item.operationalTone,
@@ -3019,76 +3211,81 @@ function SuperAdminUnitInventorySection({
 
                     return (
                       <tr
-                      className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
-                      key={item.id}
-                    >
-                      <td className="px-5 py-3.5 font-semibold text-[#273954]">
-                        {formatDashboardCount(currentPageStart + index)}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="relative grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
-                          {item.imageUrl ? (
-                            <Image
-                              alt={item.name}
-                              className="size-full object-cover"
-                              fill
-                              quality={60}
-                              sizes="48px"
-                              src={item.imageUrl}
-                            />
-                          ) : (
-                            <Package className="size-5 text-[#7b9186]" strokeWidth={1.8} />
+                        className="transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f8fbf9]"
+                        key={item.id}
+                      >
+                        <td className="px-5 py-3.5 font-semibold text-[#273954]">
+                          {formatDashboardCount(currentPageStart + index)}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="relative grid size-12 place-items-center overflow-hidden rounded-lg border border-[#dfe8e2] bg-[#f5faf7]">
+                            {item.imageUrl ? (
+                              <Image
+                                alt={item.name}
+                                className="size-full object-cover"
+                                fill
+                                quality={60}
+                                sizes="48px"
+                                src={item.imageUrl}
+                              />
+                            ) : (
+                              <Package
+                                className="size-5 text-[#7b9186]"
+                                strokeWidth={1.8}
+                              />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <p className="font-bold leading-tight text-[#13211c]">
+                            {item.name}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-[#536279]">
+                            ({item.code})
+                          </p>
+                        </td>
+                        <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                          {formatUnitDetailCategory(item.category)}
+                        </td>
+                        <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
+                          {getUnitDetailMarketingModeLabel(
+                            item.marketingModeLabel,
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <p className="font-bold leading-tight text-[#13211c]">
-                          {item.name}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-[#536279]">
-                          ({item.code})
-                        </p>
-                      </td>
-                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
-                        {formatUnitDetailCategory(item.category)}
-                      </td>
-                      <td className="px-4 py-3.5 text-center font-semibold text-[#273954]">
-                        {getUnitDetailMarketingModeLabel(item.marketingModeLabel)}
-                      </td>
-                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#273954]">
-                        {formatFullCurrency(item.value)}
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
-                            getUnitDetailStatusToneClass(operationalTone),
-                          )}
-                        >
+                        </td>
+                        <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-[#273954]">
+                          {formatFullCurrency(item.value)}
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
                           <span
                             className={cn(
-                              "size-1.5 rounded-full",
-                              getUnitDetailStatusDotClass(operationalTone),
+                              "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ring-1",
+                              getUnitDetailStatusToneClass(operationalTone),
                             )}
-                          />
-                          {operationalStatus}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center justify-center gap-2">
-                          <DetailActionLink
-                            className="min-h-9 rounded-lg px-3 text-xs"
-                            href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
-                          />
-                          <button
-                            aria-label={`Menu ${item.name}`}
-                            className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
-                            type="button"
                           >
-                            <MoreVertical className="size-4" />
-                          </button>
-                        </div>
-                      </td>
+                            <span
+                              className={cn(
+                                "size-1.5 rounded-full",
+                                getUnitDetailStatusDotClass(operationalTone),
+                              )}
+                            />
+                            {operationalStatus}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center justify-center gap-2">
+                            <DetailActionLink
+                              className="min-h-9 rounded-lg px-3 text-xs"
+                              href={`/superadmin/unit/${unit.id}/barang/${item.id}`}
+                            />
+                            <button
+                              aria-label={`Menu ${item.name}`}
+                              className="grid size-9 place-items-center rounded-lg text-[#8a97a8] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#f5faf7] hover:text-[#273954]"
+                              type="button"
+                            >
+                              <MoreVertical className="size-4" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
@@ -3101,7 +3298,8 @@ function SuperAdminUnitInventorySection({
         <div className="mt-4 flex flex-col gap-3 text-sm font-semibold text-[#536279] lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <p>
-              Menampilkan {formatDashboardCount(currentPageStart)}-{formatDashboardCount(currentPageEnd)} dari{" "}
+              Menampilkan {formatDashboardCount(currentPageStart)}-
+              {formatDashboardCount(currentPageEnd)} dari{" "}
               {formatDashboardCount(filteredItems.length)} barang
             </p>
             <label className="inline-flex items-center gap-2 text-xs font-bold text-[#536279]">
@@ -3110,7 +3308,9 @@ function SuperAdminUnitInventorySection({
                 ariaLabel="Jumlah barang per halaman"
                 className="w-[6.25rem]"
                 onValueChange={(value) =>
-                  setPageSize(Number(value) as (typeof unitDetailPageSizeOptions)[number])
+                  setPageSize(
+                    Number(value) as (typeof unitDetailPageSizeOptions)[number],
+                  )
                 }
                 options={unitDetailPageSizeOptions.map((option) => ({
                   label: String(option),
@@ -3135,7 +3335,8 @@ function SuperAdminUnitInventorySection({
             </button>
             {visiblePages.map((page, index) => {
               const previousPage = visiblePages[index - 1];
-              const shouldShowGap = previousPage !== undefined && page - previousPage > 1;
+              const shouldShowGap =
+                previousPage !== undefined && page - previousPage > 1;
 
               return (
                 <span className="inline-flex items-center gap-1.5" key={page}>
@@ -3164,7 +3365,9 @@ function SuperAdminUnitInventorySection({
               aria-label="Halaman berikutnya"
               className="grid size-9 place-items-center rounded-lg border border-[#d8e4de] bg-white text-[#536279] shadow-[0_12px_28px_-24px_rgba(8,69,50,0.42)] transition-[transform,border-color,background-color,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#afd4bd] hover:bg-[#f8fbf9] hover:text-[#00563b] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(totalPages, page + 1))
+              }
               type="button"
             >
               <ChevronRight className="size-4" />
@@ -3205,8 +3408,12 @@ export function SuperAdminUnitDetailPage({
         icon={ShieldCheck}
         rightRail={
           <>
-            <SuperAdminHeroPill icon={Building2}>{unit.code}</SuperAdminHeroPill>
-            <SuperAdminHeroPill icon={BadgeCheck}>{unit.status}</SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={Building2}>
+              {unit.code}
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={BadgeCheck}>
+              {unit.status}
+            </SuperAdminHeroPill>
           </>
         }
         title="Detail Inventori Unit"
@@ -3303,7 +3510,10 @@ export function SuperAdminManagementUnitDetailPage({
                 />
               </div>
               <div className="xl:col-span-7">
-                <SuperAdminUnitDetailAccountLedger accounts={unit.accounts} unitId={unit.id} />
+                <SuperAdminUnitDetailAccountLedger
+                  accounts={unit.accounts}
+                  unitId={unit.id}
+                />
               </div>
             </div>
           </SuperAdminUnitDetailSetupSection>
@@ -3337,7 +3547,8 @@ export function SuperAdminManagementUnitDetailPage({
           <div className="flex min-w-0 items-center gap-2 text-[0.72rem] font-bold text-black/48">
             <Info className="size-4 shrink-0 text-[#64756e]" />
             <span className="min-w-0">
-              Perubahan profil unit disimpan melalui tombol ini. Rekening dan admin baru memakai tombol tambah pada section masing-masing.
+              Perubahan profil unit disimpan melalui tombol ini. Rekening dan
+              admin baru memakai tombol tambah pada section masing-masing.
             </span>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -3389,7 +3600,9 @@ function formatSuperAdminDateTime(value?: string | null) {
   return formatAppDateTime(parsed);
 }
 
-function getSuperAdminMarketingModeLabel(session?: SuperAdminUnitBarangMarketingSession | null) {
+function getSuperAdminMarketingModeLabel(
+  session?: SuperAdminUnitBarangMarketingSession | null,
+) {
   if (!session) {
     return "Belum dipasarkan";
   }
@@ -3397,17 +3610,25 @@ function getSuperAdminMarketingModeLabel(session?: SuperAdminUnitBarangMarketing
   return getUnitDetailMarketingModeLabel(session.mode);
 }
 
-function getSuperAdminMarketingPriceLabel(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminMarketingPriceLabel(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
-    return session.finalPrice ? "Harga akhir Lelang Tertutup" : "Harga dasar Lelang Tertutup";
+    return session.finalPrice
+      ? "Harga akhir Lelang Tertutup"
+      : "Harga dasar Lelang Tertutup";
   }
 
   return "Harga Tetap";
 }
 
-function getSuperAdminMarketingPriceValue(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminMarketingPriceValue(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
-    return session.finalPrice ?? session.basePrice ?? session.appraisalValue ?? 0;
+    return (
+      session.finalPrice ?? session.basePrice ?? session.appraisalValue ?? 0
+    );
   }
 
   return session.price ?? session.finalPrice ?? session.appraisalValue ?? 0;
@@ -3456,7 +3677,9 @@ function SuperAdminItemPriceFrame({
   );
 }
 
-function getSuperAdminMarketingSummary(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminMarketingSummary(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   if (session.note) {
     return session.note;
   }
@@ -3474,12 +3697,16 @@ function getSuperAdminMarketingSummary(session: SuperAdminUnitBarangMarketingSes
   return "Belum ada pembeli pada sesi ini.";
 }
 
-function getSuperAdminIterationHistory(marketing: SuperAdminUnitBarangMarketingSession | null) {
+function getSuperAdminIterationHistory(
+  marketing: SuperAdminUnitBarangMarketingSession | null,
+) {
   if (!marketing) {
     return [];
   }
 
-  const rows = marketing.iterationHistory?.length ? marketing.iterationHistory : [];
+  const rows = marketing.iterationHistory?.length
+    ? marketing.iterationHistory
+    : [];
   const uniqueRows = new Map<string, SuperAdminUnitBarangMarketingSession>();
 
   for (const row of rows) {
@@ -3492,7 +3719,8 @@ function getSuperAdminIterationHistory(marketing: SuperAdminUnitBarangMarketingS
   });
 
   return Array.from(uniqueRows.values()).sort((left, right) => {
-    const iterationDiff = Number(right.iteration ?? 0) - Number(left.iteration ?? 0);
+    const iterationDiff =
+      Number(right.iteration ?? 0) - Number(left.iteration ?? 0);
     if (iterationDiff !== 0) {
       return iterationDiff;
     }
@@ -3503,9 +3731,14 @@ function getSuperAdminIterationHistory(marketing: SuperAdminUnitBarangMarketingS
   });
 }
 
-function getSuperAdminMarketingDateLabel(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminMarketingDateLabel(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   const dateLabel = formatSuperAdminDateTime(
-    session.endingAt ?? session.soldAt ?? session.paymentDeadline ?? session.createdAt,
+    session.endingAt ??
+      session.soldAt ??
+      session.paymentDeadline ??
+      session.createdAt,
   );
 
   return dateLabel !== "-" ? dateLabel : session.ending || "-";
@@ -3515,17 +3748,24 @@ function getSuperAdminWinnerBid(session: SuperAdminUnitBarangMarketingSession) {
   return (session.bids ?? []).find((bid) => bid.isWinner) ?? null;
 }
 
-function getSuperAdminHighestBidAmount(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminHighestBidAmount(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   const amounts = (session.bids ?? [])
     .map((bid) => bid.amount)
-    .filter((amount): amount is number => typeof amount === "number" && Number.isFinite(amount))
+    .filter(
+      (amount): amount is number =>
+        typeof amount === "number" && Number.isFinite(amount),
+    )
     .sort((left, right) => right - left);
 
   return amounts[0] ?? session.finalPrice ?? session.basePrice ?? null;
 }
 
 function formatSuperAdminOptionalCurrency(value?: number | null) {
-  return typeof value === "number" && Number.isFinite(value) ? formatFullCurrency(value) : "Rp ********";
+  return typeof value === "number" && Number.isFinite(value)
+    ? formatFullCurrency(value)
+    : "Rp ********";
 }
 
 function getSuperAdminCurrencyDigitCount(value?: number | null) {
@@ -3598,23 +3838,38 @@ function getSuperAdminMechanismDateTextClass(value?: string | null) {
   return "text-[0.58rem] sm:text-[0.64rem] xl:text-[0.7rem]";
 }
 
-function isSuperAdminVickreyPaymentVerified(session: SuperAdminUnitBarangMarketingSession) {
-  return session.transactionStatus === "LUNAS" || session.transactionStatus === "SELESAI";
+function isSuperAdminVickreyPaymentVerified(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  return (
+    session.transactionStatus === "LUNAS" ||
+    session.transactionStatus === "SELESAI"
+  );
 }
 
-function isSuperAdminVickreyPaymentFulfilled(session: SuperAdminUnitBarangMarketingSession) {
+function isSuperAdminVickreyPaymentFulfilled(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   return session.transactionStatus === "SELESAI";
 }
 
-function isSuperAdminAutoCompleted(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
+function isSuperAdminAutoCompleted(
+  session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">,
+) {
   return session.completionSource === "auto_handover_grace";
 }
 
-function getSuperAdminCompletionLabel(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
-  return isSuperAdminAutoCompleted(session) ? "Selesai otomatis" : "Selesai oleh buyer";
+function getSuperAdminCompletionLabel(
+  session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">,
+) {
+  return isSuperAdminAutoCompleted(session)
+    ? "Selesai otomatis"
+    : "Selesai oleh buyer";
 }
 
-function getSuperAdminProgressCompletionLabel(session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">) {
+function getSuperAdminProgressCompletionLabel(
+  session: Pick<SuperAdminUnitBarangMarketingSession, "completionSource">,
+) {
   return isSuperAdminAutoCompleted(session) ? "Selesai otomatis" : "Selesai";
 }
 
@@ -3628,8 +3883,11 @@ function getSuperAdminVerifiedDetail(
   return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
 }
 
-function getSuperAdminReceiptLockMessage(session: SuperAdminUnitBarangMarketingSession) {
-  return isSuperAdminVickreyPaymentVerified(session) && !session.handoverProofUrl
+function getSuperAdminReceiptLockMessage(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  return isSuperAdminVickreyPaymentVerified(session) &&
+    !session.handoverProofUrl
     ? "Nota belum tersedia. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik terlebih dahulu."
     : null;
 }
@@ -3640,37 +3898,51 @@ const FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES = new Set([
   "DIBATALKAN_OTOMATIS",
 ]);
 
-function getSuperAdminVickreyFailureKind(session: SuperAdminUnitBarangMarketingSession) {
-  const hasWinnerTrace = Boolean(session.winner || session.buyerName || session.transactionId);
-  const failedTransaction = FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(session.transactionStatus ?? "");
+function getSuperAdminVickreyFailureKind(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  const hasWinnerTrace = Boolean(
+    session.winner || session.buyerName || session.transactionId,
+  );
+  const failedTransaction = FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(
+    session.transactionStatus ?? "",
+  );
 
   return hasWinnerTrace || failedTransaction ? "unpaid" : "no_bids";
 }
 
-function isSuperAdminVickreyFailureArchive(session: SuperAdminUnitBarangMarketingSession) {
+function isSuperAdminVickreyFailureArchive(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   if (getUnitDetailMarketingModeValue(session.mode) !== "vickrey") {
     return false;
   }
 
-  const noWinnerAfterReveal = !session.transactionId && !session.winner && !session.buyerName;
+  const noWinnerAfterReveal =
+    !session.transactionId && !session.winner && !session.buyerName;
 
   return (
     session.status === "GAGAL" ||
-    FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(session.transactionStatus ?? "") ||
+    FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES.has(
+      session.transactionStatus ?? "",
+    ) ||
     noWinnerAfterReveal
   );
 }
 
-function getSuperAdminVickreyArchiveDate(session: SuperAdminUnitBarangMarketingSession) {
-  return formatSuperAdminDateTime(session.soldAt ?? session.paymentDeadline ?? session.endingAt ?? session.createdAt);
+function getSuperAdminVickreyArchiveDate(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  return formatSuperAdminDateTime(
+    session.soldAt ??
+      session.paymentDeadline ??
+      session.endingAt ??
+      session.createdAt,
+  );
 }
 
 function getSuperAdminInitials(name?: string | null) {
-  const parts = (name ?? "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (!parts.length) {
     return "SA";
@@ -3690,32 +3962,56 @@ function getSuperAdminRankingRowClasses(
   },
 ) {
   const isRunnerUp = bid.determinesFinalPrice;
+  const rankTone =
+    bid.rank === 1
+      ? {
+          rowTone: "bg-[#fff7db]",
+          amountTone: "text-[#8f5a00]",
+        }
+      : bid.rank === 2
+        ? {
+            rowTone: "bg-[#f3f6f9]",
+            amountTone: "text-[#475467]",
+          }
+        : bid.rank === 3
+          ? {
+              rowTone: "bg-[#fff0df]",
+              amountTone: "text-[#8f3b00]",
+            }
+          : {
+              rowTone: "bg-[#f7f8fa]",
+              amountTone: "text-[#667085]",
+            };
 
   if (bid.isWinner) {
     return {
-      rowTone: "bg-[#eefaf2]",
-      amountTone: failure ? "text-[#111b46]" : "text-[#006747]",
-      status: failure ? "Gagal / Pelanggaran" : fulfilled ? "Lunas & Diserahkan" : "Pemenang",
+      rowTone: rankTone.rowTone,
+      amountTone: rankTone.amountTone,
+      status: failure
+        ? "Gagal / Pelanggaran"
+        : fulfilled
+          ? "Lunas & Diserahkan"
+          : "Pemenang",
       statusTone: failure
         ? "border border-[#fecaca] bg-[#fff1f2] text-[#b42318]"
-        : "border border-[#cfe8d8] bg-[#f1fbf6] text-[#006747]",
+        : "border border-[#f6d365] bg-[#fff6d8] text-[#8f5a00]",
       StatusIcon: failure ? X : CheckCircle2,
     };
   }
 
   if (isRunnerUp) {
     return {
-      rowTone: "bg-[#fff9ea]",
-      amountTone: "text-[#111b46]",
+      rowTone: rankTone.rowTone,
+      amountTone: rankTone.amountTone,
       status: "Harga yang Dibayarkan",
-      statusTone: "border border-[#fde2a5] bg-[#fff4da] text-[#c26b00]",
+      statusTone: "border border-[#d0d5dd] bg-[#f8fafc] text-[#475467]",
       StatusIcon: ReceiptText,
     };
   }
 
   return {
-    rowTone: "bg-white",
-    amountTone: "text-[#111b46]",
+    rowTone: rankTone.rowTone,
+    amountTone: rankTone.amountTone,
     status: fulfilled || failure ? "Tidak Menang" : "-",
     statusTone: "border border-[#dce5e1] bg-[#f7f9f8] text-[#667085]",
     StatusIcon: CircleX,
@@ -3758,12 +4054,12 @@ function getSuperAdminRankingBadge(rank: number) {
   }
 
   return {
-    accent: "silver" as const,
+    accent: "slate" as const,
     text: "text-[#475467]",
-    circle: "bg-[linear-gradient(180deg,#f8fafc,#d7dde5)]",
-    ring: "ring-[#cfd4dc]",
+    circle: "bg-[linear-gradient(180deg,#f8fafc,#e2e8f0)]",
+    ring: "ring-[#d0d5dd]",
     border: "border-[#e5e7eb]",
-    ribbon: "bg-[#bfc7d1]",
+    ribbon: "bg-[#98a2b3]",
   };
 }
 
@@ -3782,7 +4078,13 @@ function SuperAdminRankingAvatar({
     <span
       className={`relative size-8 shrink-0 overflow-hidden rounded-full border-2 bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ${badgeTone.border} ${badgeTone.ring}`}
     >
-      <Image alt={`Foto peserta ${bidderName}`} className="object-cover" fill sizes="32px" src={bidderImage} />
+      <Image
+        alt={`Foto peserta ${bidderName}`}
+        className="object-cover"
+        fill
+        sizes="32px"
+        src={bidderImage}
+      />
     </span>
   ) : (
     <span
@@ -3829,7 +4131,9 @@ function getSuperAdminMarketingReceiptImageUrl(
     return session.primaryMedia.url;
   }
 
-  const sessionImage = session.media?.find((entry) => entry.type !== "video")?.url;
+  const sessionImage = session.media?.find(
+    (entry) => entry.type !== "video",
+  )?.url;
   if (sessionImage) {
     return sessionImage;
   }
@@ -3837,7 +4141,9 @@ function getSuperAdminMarketingReceiptImageUrl(
   return itemMedia.find((entry) => entry.type !== "video")?.url;
 }
 
-function getSuperAdminMarketingPaymentMethodLabel(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminMarketingPaymentMethodLabel(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   if (session.paymentMethod === "BAYAR_LANGSUNG") {
     return "Langsung di unit";
   }
@@ -3846,10 +4152,14 @@ function getSuperAdminMarketingPaymentMethodLabel(session: SuperAdminUnitBarangM
     return "Transfer Bank";
   }
 
-  return session.paymentMethod ? formatSuperAdminDisplayLabel(session.paymentMethod) : "Transfer Bank";
+  return session.paymentMethod
+    ? formatSuperAdminDisplayLabel(session.paymentMethod)
+    : "Transfer Bank";
 }
 
-function getSuperAdminVickreyReceiptPrintRootId(session: SuperAdminUnitBarangMarketingSession) {
+function getSuperAdminVickreyReceiptPrintRootId(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
   return `superadmin-vickrey-receipt-print-root-${String(session.transactionId || session.id).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
 }
 
@@ -3896,7 +4206,7 @@ function SuperAdminHandoverProofAuditCard({
           ? formatSuperAdminDateTime(session.handoverProofUploadedAt)
           : null,
         uploadedBy: session.handoverProofUploadedBy,
-        location: unitName ?? session.unitName
+        location: unitName ?? session.unitName,
       }}
     />
   );
@@ -3918,9 +4228,19 @@ function SuperAdminMarketingArchiveStatusCard({
 
   return (
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <p className={`text-[0.78rem] font-black uppercase tracking-[0.04em] ${eyebrowClass}`}>{eyebrow}</p>
-      <p className={`mt-2 font-headline text-[1rem] font-black leading-tight ${titleClass}`}>{title}</p>
-      <p className="mt-2 text-[0.74rem] font-semibold leading-5 text-[#52655d]">{detail}</p>
+      <p
+        className={`text-[0.78rem] font-black uppercase tracking-[0.04em] ${eyebrowClass}`}
+      >
+        {eyebrow}
+      </p>
+      <p
+        className={`mt-2 font-headline text-[1rem] font-black leading-tight ${titleClass}`}
+      >
+        {title}
+      </p>
+      <p className="mt-2 text-[0.74rem] font-semibold leading-5 text-[#52655d]">
+        {detail}
+      </p>
     </section>
   );
 }
@@ -3947,7 +4267,8 @@ function SuperAdminVickreySettlementBanner({
                 Lelang Selesai Sempurna - Aset Telah Diserahkan
               </h2>
               <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
-                Pembayaran telah dilunasi 100% oleh pemenang dan barang telah diserahkan kepada pemenang.
+                Pembayaran telah dilunasi 100% oleh pemenang dan barang telah
+                diserahkan kepada pemenang.
               </p>
             </div>
           </div>
@@ -3981,7 +4302,8 @@ function SuperAdminVickreySettlementBanner({
                 Pembayaran Terverifikasi - Menunggu Buyer Selesai
               </h2>
               <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
-                Admin sudah memverifikasi pembayaran. Tahap final baru tercapai setelah buyer menekan Pembelian Selesai.
+                Admin sudah memverifikasi pembayaran. Tahap final baru tercapai
+                setelah buyer menekan Pembelian Selesai.
               </p>
             </div>
           </div>
@@ -4027,7 +4349,9 @@ function SuperAdminVickreySettlementBanner({
             {session.paymentDeadline ? (
               <AdminLiveCountdown
                 expiredLabel="Batas bayar terlewati"
-                fallbackLabel={formatSuperAdminDateTime(session.paymentDeadline)}
+                fallbackLabel={formatSuperAdminDateTime(
+                  session.paymentDeadline,
+                )}
                 prefix="Sisa"
                 serverNow={serverNow}
                 targetAt={session.paymentDeadline}
@@ -4047,13 +4371,19 @@ function SuperAdminVickreyWinnerProfilePanel({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const winnerName = session.buyerName || session.winner || "Pemenang belum tercatat";
+  const winnerName =
+    session.buyerName || session.winner || "Pemenang belum tercatat";
   const winnerBid = getSuperAdminWinnerBid(session);
-  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
+  const winnerId =
+    winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
-  const title = verified ? "Manifes Penyerahan & Pemenang" : "Detail Pemenang Lelang";
-  const actionLabel = fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai";
+  const title = verified
+    ? "Manifes Penyerahan & Pemenang"
+    : "Detail Pemenang Lelang";
+  const actionLabel = fulfilled
+    ? "Barang Sudah Diambil"
+    : "Menunggu Buyer Selesai";
 
   return (
     <section
@@ -4061,7 +4391,10 @@ function SuperAdminVickreyWinnerProfilePanel({
       data-testid="superadmin-vickrey-winner-profile"
     >
       {verified ? (
-        <CheckCircle2 className="pointer-events-none absolute -right-4 -top-5 size-20 text-[#f3f8f5]" strokeWidth={2.4} />
+        <CheckCircle2
+          className="pointer-events-none absolute -right-4 -top-5 size-20 text-[#f3f8f5]"
+          strokeWidth={2.4}
+        />
       ) : null}
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
         {title}
@@ -4085,7 +4418,8 @@ function SuperAdminVickreyWinnerProfilePanel({
               ) : null}
             </div>
             <p className="mt-2 text-[0.74rem] font-bold text-[#52655d]">
-              Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
+              Member ID:{" "}
+              <span className="font-mono text-[#111b46]">{winnerId}</span>
             </p>
           </div>
         </div>
@@ -4094,7 +4428,9 @@ function SuperAdminVickreyWinnerProfilePanel({
           <div className="grid min-w-0 gap-1.5">
             <p className="flex min-w-0 items-center gap-2">
               <Phone className="size-4 shrink-0 text-[#40558b]" />
-              <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
+              <span className="min-w-0 truncate">
+                {session.buyerPhone || "Nomor telepon belum tercatat"}
+              </span>
             </p>
             <p className="flex min-w-0 items-center gap-2">
               <Mail className="size-4 shrink-0 text-[#40558b]" />
@@ -4131,7 +4467,11 @@ function SuperAdminVickreyMechanismPanel({
   const paymentPrice = session.finalPrice ?? session.basePrice ?? null;
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
-  const statusLabel = fulfilled ? "Selesai & Diarsipkan" : verified ? "Terverifikasi" : "Menang";
+  const statusLabel = fulfilled
+    ? "Selesai & Diarsipkan"
+    : verified
+      ? "Terverifikasi"
+      : "Menang";
   const executionLabel = formatSuperAdminDateTime(session.endingAt);
 
   return (
@@ -4141,34 +4481,48 @@ function SuperAdminVickreyMechanismPanel({
     >
       <div className="flex items-center gap-2">
         <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-          {fulfilled ? "Mekanisme Lelang (Arsip)" : "Mekanisme Lelang: Lelang Tertutup"}
+          {fulfilled
+            ? "Mekanisme Lelang (Arsip)"
+            : "Mekanisme Lelang: Lelang Tertutup"}
         </p>
         <Info className="size-3.5 text-[#2f6fff]" />
       </div>
 
-      <div className={`mt-4 grid items-stretch gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}>
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
+      <div
+        className={`mt-4 grid items-stretch gap-3 ${fulfilled ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3"}`}
+      >
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#f6d365] bg-[#fff7db] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+          <p className="text-[0.66rem] font-black text-[#8f5a00]">
+            Penawaran Tertinggi
+          </p>
+          <p
+            className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#a16207] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}
+          >
             {formatSuperAdminOptionalCurrency(highestBid)}
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#8a6100]">
             Penawaran tertinggi oleh pemenang
           </p>
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#92400e]">Harga Bayar</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d0d5dd] bg-[#f8fafc] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <p className="text-[0.66rem] font-black text-[#475467]">
+            Harga Bayar
+          </p>
+          <p
+            className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#667085] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}
+          >
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#667085]">
             Harga yang harus dibayarkan pemenang
           </p>
         </div>
 
         <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#40558b]">{fulfilled ? "Status Lelang" : "Status"}</p>
+          <p className="text-[0.66rem] font-black text-[#40558b]">
+            {fulfilled ? "Status Lelang" : "Status"}
+          </p>
           <span
             className={`mt-2 inline-flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap rounded-full bg-[#e9f8ef] px-2 py-1 font-black uppercase leading-none tracking-[-0.02em] text-[#006747] ${getSuperAdminMechanismBadgeTextClass(statusLabel)}`}
           >
@@ -4176,13 +4530,19 @@ function SuperAdminVickreyMechanismPanel({
             <Trophy className="size-3 shrink-0" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#40558b]">
-            {fulfilled ? "Berkas final pemenang" : verified ? "Menunggu konfirmasi buyer" : "Pemenang utama lelang"}
+            {fulfilled
+              ? "Berkas final pemenang"
+              : verified
+                ? "Menunggu konfirmasi buyer"
+                : "Pemenang utama lelang"}
           </p>
         </div>
 
         {fulfilled ? (
           <div className="min-w-0 overflow-hidden rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
-            <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
+            <p className="text-[0.66rem] font-black text-[#40558b]">
+              Waktu Pelaksanaan
+            </p>
             <p
               className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getSuperAdminMechanismDateTextClass(executionLabel)}`}
             >
@@ -4220,8 +4580,9 @@ function SuperAdminVickreyMechanismPanel({
           </div>
         ) : (
           <p>
-            <span className="font-black text-[#006747]">Catatan Admin:</span> Harga akhir mengikuti mekanisme lelang
-            dan dihitung dari penawaran tertinggi kedua.
+            <span className="font-black text-[#006747]">Catatan Admin:</span>{" "}
+            Harga akhir mengikuti mekanisme lelang dan dihitung dari penawaran
+            tertinggi kedua.
           </p>
         )}
       </div>
@@ -4234,7 +4595,9 @@ function SuperAdminVickreyRankingTable({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const rows = [...(session.bids ?? [])].sort((left, right) => (left.rank || 0) - (right.rank || 0));
+  const rows = [...(session.bids ?? [])].sort(
+    (left, right) => (left.rank || 0) - (right.rank || 0),
+  );
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
 
   return (
@@ -4242,7 +4605,9 @@ function SuperAdminVickreyRankingTable({
       <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
         <Crown className="size-3.5 shrink-0 text-[#40558b]" strokeWidth={2} />
         <h3 className="text-[0.78rem] font-black uppercase tracking-[0.035em] text-[#111b46]">
-          {fulfilled ? "Bidders Ranking Table (Arsip)" : "Ranking Peserta Lelang (Admin View)"}
+          {fulfilled
+            ? "Bidders Ranking Table (Arsip)"
+            : "Ranking Peserta Lelang (Admin View)"}
         </h3>
       </div>
       <div>
@@ -4265,9 +4630,10 @@ function SuperAdminVickreyRankingTable({
           </thead>
           <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
             {rows.map((bid) => {
-              const { amountTone, rowTone, status, statusTone, StatusIcon } = getSuperAdminRankingRowClasses(bid, {
-                fulfilled,
-              });
+              const { amountTone, rowTone, status, statusTone, StatusIcon } =
+                getSuperAdminRankingRowClasses(bid, {
+                  fulfilled,
+                });
 
               return (
                 <tr
@@ -4275,20 +4641,32 @@ function SuperAdminVickreyRankingTable({
                   data-testid={`superadmin-ranking-row-${bid.rank}`}
                   key={bid.id}
                 >
-                  <td className="px-3 py-3 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
+                  <td className="px-3 py-3 text-center">
+                    <SuperAdminRankingMarker rank={bid.rank} />
+                  </td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
-                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">{bid.bidderName}</p>
+                      <SuperAdminRankingAvatar
+                        bidderImage={bid.bidderImage}
+                        bidderName={bid.bidderName}
+                        rank={bid.rank}
+                      />
+                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">
+                        {bid.bidderName}
+                      </p>
                     </div>
                   </td>
                   <td className="px-3 py-3.5">
                     <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
                       <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
-                      <span className="break-words">{bid.submittedAtLabel}</span>
+                      <span className="break-words">
+                        {bid.submittedAtLabel}
+                      </span>
                     </div>
                   </td>
-                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}>
+                  <td
+                    className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}
+                  >
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
                   <td className="px-3 py-3.5 text-center">
@@ -4299,7 +4677,9 @@ function SuperAdminVickreyRankingTable({
                         className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}
                       >
                         <StatusIcon className="size-3.5 shrink-0" />
-                        <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
+                        <span className="min-w-0 whitespace-normal break-words text-center">
+                          {status}
+                        </span>
                       </span>
                     )}
                   </td>
@@ -4324,28 +4704,96 @@ function SuperAdminVickreyProgressPanel({
 }) {
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
-  const buyerActor = session.buyerName || session.winner ? `Buyer: ${session.buyerName || session.winner}` : "Buyer";
+  const buyerActor =
+    session.buyerName || session.winner
+      ? `Buyer: ${session.buyerName || session.winner}`
+      : "Buyer";
   const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : null;
-  const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+  const completionActor =
+    session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   const steps = fulfilled
     ? [
-        { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
-        { label: "Selesai", status: getSuperAdminProgressCompletionLabel(session), actor: completionActor, occurredAt: formatSuperAdminDateTime(session.completedAt), icon: CheckCircle2, tone: "done" as const },
+        {
+          label: "Pembayaran",
+          status: "Selesai",
+          actor: buyerActor,
+          occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
+          icon: CheckCircle2,
+          tone: "done" as const,
+        },
+        {
+          label: "Verifikasi",
+          status: "Selesai",
+          actor: adminActor,
+          occurredAt: formatSuperAdminDateTime(session.soldAt),
+          icon: ShieldCheck,
+          tone: "done" as const,
+        },
+        {
+          label: "Selesai",
+          status: getSuperAdminProgressCompletionLabel(session),
+          actor: completionActor,
+          occurredAt: formatSuperAdminDateTime(session.completedAt),
+          icon: CheckCircle2,
+          tone: "done" as const,
+        },
       ]
     : verified
       ? [
-          { label: "Pembayaran", status: "Selesai", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: CheckCircle2, tone: "done" as const },
-          { label: "Verifikasi", status: "Selesai", actor: adminActor, occurredAt: formatSuperAdminDateTime(session.soldAt), icon: ShieldCheck, tone: "done" as const },
-          { label: "Selesai", status: "Menunggu buyer", actor: buyerActor, icon: CheckCircle2, tone: "current" as const },
+          {
+            label: "Pembayaran",
+            status: "Selesai",
+            actor: buyerActor,
+            occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
+            icon: CheckCircle2,
+            tone: "done" as const,
+          },
+          {
+            label: "Verifikasi",
+            status: "Selesai",
+            actor: adminActor,
+            occurredAt: formatSuperAdminDateTime(session.soldAt),
+            icon: ShieldCheck,
+            tone: "done" as const,
+          },
+          {
+            label: "Selesai",
+            status: "Menunggu buyer",
+            actor: buyerActor,
+            icon: CheckCircle2,
+            tone: "current" as const,
+          },
         ]
       : [
-          { label: "Pembayaran", status: "Berjalan", actor: buyerActor, occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt), icon: WalletCards, tone: "current" as const },
-          { label: "Verifikasi", status: "Belum terjadi", icon: FileText, tone: "pending" as const },
-          { label: "Selesai", status: "Belum terjadi", icon: CheckCircle2, tone: "pending" as const },
+          {
+            label: "Pembayaran",
+            status: "Berjalan",
+            actor: buyerActor,
+            occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
+            icon: WalletCards,
+            tone: "current" as const,
+          },
+          {
+            label: "Verifikasi",
+            status: "Belum terjadi",
+            icon: FileText,
+            tone: "pending" as const,
+          },
+          {
+            label: "Selesai",
+            status: "Belum terjadi",
+            icon: CheckCircle2,
+            tone: "pending" as const,
+          },
         ];
 
-  return <CompactTransactionProgress density="tight" steps={steps} title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"} />;
+  return (
+    <CompactTransactionProgress
+      density="tight"
+      steps={steps}
+      title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
+    />
+  );
 }
 
 function SuperAdminVickreyNotePanel({
@@ -4353,7 +4801,8 @@ function SuperAdminVickreyNotePanel({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const paymentPrice =
+    session.finalPrice ?? session.basePrice ?? session.price ?? 0;
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
 
@@ -4367,20 +4816,25 @@ function SuperAdminVickreyNotePanel({
           Ringkasan Transaksi
         </p>
         <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-          Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
+          Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup
+          pembelian.
         </p>
 
         <div className="mt-4 flex flex-1 flex-col justify-between space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
-            <span className="whitespace-nowrap font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">
+              {formatFullCurrency(paymentPrice)}
+            </span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
             <div className="flex items-end justify-between gap-4">
               <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
                 Total Pelunasan Kasir
               </span>
-              <span className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+              <span
+                className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}
+              >
                 {formatFullCurrency(paymentPrice)}
               </span>
             </div>
@@ -4403,7 +4857,9 @@ function SuperAdminVickreyNotePanel({
         <div className="mt-4 space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
-            <span className="whitespace-nowrap font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">
+              {formatFullCurrency(paymentPrice)}
+            </span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
             <div className="flex items-end justify-between gap-4">
@@ -4422,7 +4878,9 @@ function SuperAdminVickreyNotePanel({
 
   return (
     <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">Total Pembayaran</p>
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        Total Pembayaran
+      </p>
       <div className="mt-4 space-y-3 text-[0.8rem] font-bold text-[#111b46]">
         <div className="flex items-center justify-between gap-4">
           <span>Harga Bayar (Second Price)</span>
@@ -4432,12 +4890,18 @@ function SuperAdminVickreyNotePanel({
           <div className="flex items-end justify-between gap-4">
             <span className="text-[0.84rem] font-black">Status Pembayaran</span>
             <span className="font-headline text-[1.15rem] font-black leading-none text-[#7c2d12]">
-              {formatSuperAdminDisplayLabel(session.transactionStatus) || "Menunggu bayar"}
+              {formatSuperAdminDisplayLabel(session.transactionStatus) ||
+                "Menunggu bayar"}
             </span>
           </div>
         </div>
         <div className="rounded-lg border border-[#fde2a5] bg-[#fffbeb] px-3 py-2.5 text-[0.72rem] font-semibold leading-5 text-[#9a3412]">
-          Status saat ini: <span className="font-black">{formatSuperAdminDisplayLabel(session.transactionStatus) || "Menunggu Bayar"}</span>. Menunggu pelunasan oleh pemenang hingga batas waktu yang ditentukan.
+          Status saat ini:{" "}
+          <span className="font-black">
+            {formatSuperAdminDisplayLabel(session.transactionStatus) ||
+              "Menunggu Bayar"}
+          </span>
+          . Menunggu pelunasan oleh pemenang hingga batas waktu yang ditentukan.
         </div>
       </div>
     </section>
@@ -4451,7 +4915,8 @@ function SuperAdminVickreyFinalSummaryPanel({
   receiptContext: SuperAdminMarketingReceiptContext;
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const paymentPrice =
+    session.finalPrice ?? session.basePrice ?? session.price ?? 0;
   const receiptLockMessage = getSuperAdminReceiptLockMessage(session);
   const canPrintReceipt = !receiptLockMessage;
 
@@ -4464,21 +4929,26 @@ function SuperAdminVickreyFinalSummaryPanel({
         Ringkasan Transaksi
       </p>
       <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#52655d]">
-        Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup pembelian.
+        Cetak nota resmi dan arsipkan berkas lelang setelah buyer menutup
+        pembelian.
       </p>
 
       <div className="mt-4 grid flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.52fr)] lg:items-stretch">
         <div className="flex h-full flex-col justify-between space-y-2 rounded-xl border border-[#e4ebe7] bg-[#f8faf9] px-3 py-3 text-[0.76rem] font-bold text-[#52655d]">
           <div className="flex min-h-10 items-center justify-between gap-4">
             <span>Harga akhir lelang</span>
-            <span className="whitespace-nowrap font-mono text-[#111b46]">{formatFullCurrency(paymentPrice)}</span>
+            <span className="whitespace-nowrap font-mono text-[#111b46]">
+              {formatFullCurrency(paymentPrice)}
+            </span>
           </div>
           <div className="border-t border-[#dfe7e2] pt-2">
             <div className="flex min-h-10 items-center justify-between gap-4">
               <span className="text-[0.66rem] font-black uppercase tracking-[0.06em] text-[#006747]">
                 Total Pelunasan Kasir
               </span>
-              <span className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}>
+              <span
+                className={`whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#006747] ${getSuperAdminCompactCurrencyTextClass(paymentPrice)}`}
+              >
                 {formatFullCurrency(paymentPrice)}
               </span>
             </div>
@@ -4503,7 +4973,9 @@ function SuperAdminVickreyFinalSummaryPanel({
             </Button>
           )}
           {receiptLockMessage ? (
-            <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+            <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+              {receiptLockMessage}
+            </p>
           ) : null}
         </div>
       </div>
@@ -4522,14 +4994,23 @@ function SuperAdminVickreyReceiptInlinePrint({
   buttonClassName: string;
   label?: string;
 }) {
-  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? 0;
-  const imageUrl = getSuperAdminMarketingReceiptImageUrl(session, receiptContext.itemMedia);
+  const paymentPrice =
+    session.finalPrice ?? session.basePrice ?? session.price ?? 0;
+  const imageUrl = getSuperAdminMarketingReceiptImageUrl(
+    session,
+    receiptContext.itemMedia,
+  );
   const isCompleted = isSuperAdminVickreyPaymentFulfilled(session);
   const paymentMethodLabel = getSuperAdminMarketingPaymentMethodLabel(session);
   const verifiedAt = formatSuperAdminDateTime(
-    session.soldAt ?? session.paymentDeadline ?? session.endingAt ?? session.createdAt,
+    session.soldAt ??
+      session.paymentDeadline ??
+      session.endingAt ??
+      session.createdAt,
   );
-  const noteNumber = String(session.reference || session.transactionId || session.id).replace(/^#/, "");
+  const noteNumber = String(
+    session.reference || session.transactionId || session.id,
+  ).replace(/^#/, "");
 
   return (
     <TransactionReceiptInlinePrint
@@ -4552,7 +5033,11 @@ function SuperAdminVickreyReceiptInlinePrint({
         itemTitle={receiptContext.itemTitle}
         noteNumber={noteNumber}
         paymentMethodLabel={paymentMethodLabel}
-        statusLabel={isCompleted ? getSuperAdminCompletionLabel(session) : "Terverifikasi admin"}
+        statusLabel={
+          isCompleted
+            ? getSuperAdminCompletionLabel(session)
+            : "Terverifikasi admin"
+        }
         subtotal={paymentPrice}
         terms={getSuperAdminVickreyReceiptTerms(receiptContext.unitName)}
         total={paymentPrice}
@@ -4608,13 +5093,20 @@ function SuperAdminVickreyActionFooter({
             session={session}
           />
         ) : (
-          <Button className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]" disabled title={receiptLockMessage ?? undefined} variant="secondary">
+          <Button
+            className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
+            disabled
+            title={receiptLockMessage ?? undefined}
+            variant="secondary"
+          >
             <Printer className="size-4" />
             Cetak Nota
           </Button>
         )}
         {receiptLockMessage ? (
-          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+            {receiptLockMessage}
+          </p>
         ) : null}
       </div>
     );
@@ -4630,13 +5122,19 @@ function SuperAdminVickreyActionFooter({
             session={session}
           />
         ) : (
-          <Button className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white" disabled title={receiptLockMessage ?? undefined}>
+          <Button
+            className="h-12 rounded-lg bg-[#006747] px-5 text-[0.9rem] font-black text-white"
+            disabled
+            title={receiptLockMessage ?? undefined}
+          >
             <Printer className="size-4" />
             Cetak Nota
           </Button>
         )}
         {receiptLockMessage ? (
-          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">{receiptLockMessage}</p>
+          <p className="text-[0.72rem] font-semibold leading-5 text-[#52655d]">
+            {receiptLockMessage}
+          </p>
         ) : null}
         <Button
           className="h-12 rounded-lg border border-[#d8e4de] bg-white px-5 text-[0.86rem] font-black text-[#111b46]"
@@ -4679,7 +5177,9 @@ function SuperAdminVickreyFailureBanner({
           </span>
           <div className="min-w-0">
             <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#7f1d1d] sm:text-[1.12rem]">
-              {unpaid ? "Lelang Gagal - Pemenang Dikenakan Sanksi" : "Lelang Gagal - Tidak Ada Peserta"}
+              {unpaid
+                ? "Lelang Gagal - Pemenang Dikenakan Sanksi"
+                : "Lelang Gagal - Tidak Ada Peserta"}
             </h2>
             <p className="mt-1 max-w-3xl text-[0.8rem] font-semibold leading-5 text-[#9f1239]">
               {unpaid
@@ -4697,7 +5197,8 @@ function SuperAdminVickreyFailureBanner({
             {unpaid ? "Batas 24 Jam Terlewati" : "Tidak Ada Bid Masuk"}
           </p>
           <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#9f1239]">
-            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)} - {session.code || session.id}
+            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)} -{" "}
+            {session.code || session.id}
           </p>
         </div>
       </div>
@@ -4711,13 +5212,18 @@ function SuperAdminVickreyFailureProfilePanel({
   session: SuperAdminUnitBarangMarketingSession;
 }) {
   const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
-  const winnerName = session.buyerName || session.winner || "Pemenang tidak tercatat";
+  const winnerName =
+    session.buyerName || session.winner || "Pemenang tidak tercatat";
   const winnerBid = getSuperAdminWinnerBid(session);
-  const winnerId = winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
+  const winnerId =
+    winnerBid?.bidderId || session.buyerNationalId || session.reference || "-";
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-[#e5d8d8] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(127,29,29,0.34)]">
-      <X className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#fff1f2]" strokeWidth={2.6} />
+      <X
+        className="pointer-events-none absolute -right-5 -top-6 size-24 text-[#fff1f2]"
+        strokeWidth={2.6}
+      />
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
         {unpaid ? "Manifes Penyerahan & Pemenang" : "Manifes Kegagalan Sesi"}
       </p>
@@ -4725,10 +5231,16 @@ function SuperAdminVickreyFailureProfilePanel({
         <div className="flex min-w-0 items-center gap-4">
           <span
             className={`grid size-14 shrink-0 place-items-center rounded-full border font-headline text-[1.1rem] font-black ${
-              unpaid ? "border-[#fecaca] bg-[#fff1f2] text-[#991b1b]" : "border-[#dfe7e2] bg-[#eef3f1] text-[#006747]"
+              unpaid
+                ? "border-[#fecaca] bg-[#fff1f2] text-[#991b1b]"
+                : "border-[#dfe7e2] bg-[#eef3f1] text-[#006747]"
             }`}
           >
-            {unpaid ? getSuperAdminInitials(winnerName) : <UsersRound className="size-6" />}
+            {unpaid ? (
+              getSuperAdminInitials(winnerName)
+            ) : (
+              <UsersRound className="size-6" />
+            )}
           </span>
           <div className="min-w-0">
             <h3 className="truncate font-headline text-[1.08rem] font-black leading-tight text-[#111b46]">
@@ -4737,7 +5249,8 @@ function SuperAdminVickreyFailureProfilePanel({
             <p className="mt-2 text-[0.74rem] font-bold leading-5 text-[#52655d]">
               {unpaid ? (
                 <>
-                  Member ID: <span className="font-mono text-[#111b46]">{winnerId}</span>
+                  Member ID:{" "}
+                  <span className="font-mono text-[#111b46]">{winnerId}</span>
                 </>
               ) : (
                 "Tidak ada peserta mengirim bid pada sesi ini."
@@ -4751,7 +5264,9 @@ function SuperAdminVickreyFailureProfilePanel({
             <>
               <p className="flex min-w-0 items-center gap-2">
                 <Phone className="size-4 shrink-0 text-[#40558b]" />
-                <span className="min-w-0 truncate">{session.buyerPhone || "Nomor telepon belum tercatat"}</span>
+                <span className="min-w-0 truncate">
+                  {session.buyerPhone || "Nomor telepon belum tercatat"}
+                </span>
               </p>
               <p className="flex min-w-0 items-center gap-2">
                 <Mail className="size-4 shrink-0 text-[#40558b]" />
@@ -4796,8 +5311,11 @@ function SuperAdminVickreyFailureMechanismPanel({
 }) {
   const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
   const highestBid = getSuperAdminHighestBidAmount(session);
-  const paymentPrice = session.finalPrice ?? session.basePrice ?? session.price ?? null;
-  const executionLabel = formatSuperAdminDateTime(session.endingAt ?? session.createdAt);
+  const paymentPrice =
+    session.finalPrice ?? session.basePrice ?? session.price ?? null;
+  const executionLabel = formatSuperAdminDateTime(
+    session.endingAt ?? session.createdAt,
+  );
 
   return (
     <section
@@ -4812,39 +5330,59 @@ function SuperAdminVickreyFailureMechanismPanel({
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d6efe1] bg-[#f1fbf6] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#006747]">Penawaran Tertinggi</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#006747] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}>
-            {unpaid ? formatSuperAdminOptionalCurrency(highestBid) : "Belum ada bid"}
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#f6d365] bg-[#fff7db] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+          <p className="text-[0.66rem] font-black text-[#8f5a00]">
+            Penawaran Tertinggi
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#2f6a52]">
-            {unpaid ? "Bid tertinggi dari pemenang gagal bayar" : "Tidak ada penawaran yang tersimpan"}
+          <p
+            className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#a16207] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(highestBid)}`}
+          >
+            {unpaid
+              ? formatSuperAdminOptionalCurrency(highestBid)
+              : "Belum ada bid"}
+          </p>
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#8a6100]">
+            {unpaid
+              ? "Bid tertinggi dari pemenang gagal bayar"
+              : "Tidak ada penawaran yang tersimpan"}
           </p>
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-lg border border-[#fde2a5] bg-[#fff8e7] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#92400e]">{unpaid ? "Harga Bayar" : "Harga Dasar"}</p>
-          <p className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#f59e0b] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}>
+        <div className="min-w-0 overflow-hidden rounded-lg border border-[#d0d5dd] bg-[#f8fafc] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)]">
+          <p className="text-[0.66rem] font-black text-[#475467]">
+            {unpaid ? "Harga Bayar" : "Harga Dasar"}
+          </p>
+          <p
+            className={`mt-2 max-w-full whitespace-nowrap font-headline font-black leading-none tracking-[-0.04em] text-[#667085] [font-variant-numeric:tabular-nums] ${getSuperAdminMechanismCurrencyTextClass(paymentPrice)}`}
+          >
             {formatSuperAdminOptionalCurrency(paymentPrice)}
           </p>
-          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#b45309]">
-            {unpaid ? "Nilai final sebelum sesi dibatalkan" : "Nilai awal untuk penjadwalan ulang"}
+          <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#667085]">
+            {unpaid
+              ? "Nilai final sebelum sesi dibatalkan"
+              : "Nilai awal untuk penjadwalan ulang"}
           </p>
         </div>
 
         <div className="rounded-lg border border-[#fecaca] bg-[#fff1f2] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#991b1b]">Status Lelang</p>
+          <p className="text-[0.66rem] font-black text-[#991b1b]">
+            Status Lelang
+          </p>
           <span className="mt-2 inline-flex min-w-fit items-center gap-1.5 whitespace-nowrap rounded-full bg-[#b91c1c] px-3 py-1 text-[0.62rem] font-black uppercase text-white">
             {unpaid ? "Batal / Gagal" : "Tanpa Bid"}
             <X className="size-3.5" />
           </span>
           <p className="mt-1 text-[0.68rem] font-semibold leading-4 text-[#9f1239]">
-            {unpaid ? "Pemenang gagal memenuhi batas bayar" : "Sesi belum menghasilkan pemenang"}
+            {unpaid
+              ? "Pemenang gagal memenuhi batas bayar"
+              : "Sesi belum menghasilkan pemenang"}
           </p>
         </div>
 
         <div className="rounded-lg border border-[#e7ece9] bg-[#f8faf9] px-3.5 py-3">
-          <p className="text-[0.66rem] font-black text-[#40558b]">Waktu Pelaksanaan</p>
+          <p className="text-[0.66rem] font-black text-[#40558b]">
+            Waktu Pelaksanaan
+          </p>
           <p
             className={`mt-2 whitespace-nowrap font-mono font-black leading-none tracking-[-0.03em] text-[#111b46] ${getSuperAdminMechanismDateTextClass(executionLabel)}`}
           >
@@ -4867,7 +5405,9 @@ function SuperAdminVickreyFailureMechanismPanel({
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
             Hasil
           </span>
-          {unpaid ? session.buyerName || session.winner || "-" : "Belum menghasilkan pemenang"}
+          {unpaid
+            ? session.buyerName || session.winner || "-"
+            : "Belum menghasilkan pemenang"}
         </p>
         <p>
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
@@ -4885,7 +5425,9 @@ function SuperAdminVickreyFailureRankingTable({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const rows = [...(session.bids ?? [])].sort((left, right) => (left.rank || 0) - (right.rank || 0));
+  const rows = [...(session.bids ?? [])].sort(
+    (left, right) => (left.rank || 0) - (right.rank || 0),
+  );
 
   return (
     <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
@@ -4915,10 +5457,11 @@ function SuperAdminVickreyFailureRankingTable({
         <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
           {rows.length ? (
             rows.map((bid) => {
-              const { amountTone, rowTone, status, statusTone, StatusIcon } = getSuperAdminRankingRowClasses(bid, {
-                failure: true,
-                fulfilled: false,
-              });
+              const { amountTone, rowTone, status, statusTone, StatusIcon } =
+                getSuperAdminRankingRowClasses(bid, {
+                  failure: true,
+                  fulfilled: false,
+                });
 
               return (
                 <tr
@@ -4926,26 +5469,42 @@ function SuperAdminVickreyFailureRankingTable({
                   data-testid={`superadmin-failure-ranking-row-${bid.rank}`}
                   key={bid.id}
                 >
-                  <td className="px-3 py-3 text-center"><SuperAdminRankingMarker rank={bid.rank} /></td>
+                  <td className="px-3 py-3 text-center">
+                    <SuperAdminRankingMarker rank={bid.rank} />
+                  </td>
                   <td className="px-3 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar bidderImage={bid.bidderImage} bidderName={bid.bidderName} rank={bid.rank} />
-                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">{bid.bidderName}</p>
+                      <SuperAdminRankingAvatar
+                        bidderImage={bid.bidderImage}
+                        bidderName={bid.bidderName}
+                        rank={bid.rank}
+                      />
+                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">
+                        {bid.bidderName}
+                      </p>
                     </div>
                   </td>
                   <td className="px-3 py-3.5">
                     <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
                       <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
-                      <span className="break-words">{bid.submittedAtLabel}</span>
+                      <span className="break-words">
+                        {bid.submittedAtLabel}
+                      </span>
                     </div>
                   </td>
-                  <td className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}>
+                  <td
+                    className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}
+                  >
                     {formatSuperAdminOptionalCurrency(bid.amount)}
                   </td>
                   <td className="px-3 py-3.5 text-center">
-                    <span className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}>
+                    <span
+                      className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}
+                    >
                       <StatusIcon className="size-3.5 shrink-0" />
-                      <span className="min-w-0 whitespace-normal break-words text-center">{status}</span>
+                      <span className="min-w-0 whitespace-normal break-words text-center">
+                        {status}
+                      </span>
                     </span>
                   </td>
                 </tr>
@@ -4953,7 +5512,10 @@ function SuperAdminVickreyFailureRankingTable({
             })
           ) : (
             <tr>
-              <td className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]" colSpan={5}>
+              <td
+                className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]"
+                colSpan={5}
+              >
                 Belum ada peserta yang mengirim penawaran.
               </td>
             </tr>
@@ -4976,17 +5538,61 @@ function SuperAdminVickreyFailureProgressPanel({
   const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
   const steps = unpaid
     ? [
-        { label: "Pemenang Diumumkan", status: "Selesai", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: Trophy, tone: "done" as const },
-        { label: "Gagal Bayar", status: "Terjadi", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.paymentDeadline), icon: X, tone: "failed" as const },
-        { label: "Selesai", status: "Belum tercapai", icon: CheckCircle2, tone: "pending" as const },
+        {
+          label: "Pemenang Diumumkan",
+          status: "Selesai",
+          actor: "Sistem",
+          occurredAt: formatSuperAdminDateTime(session.endingAt),
+          icon: Trophy,
+          tone: "done" as const,
+        },
+        {
+          label: "Gagal Bayar",
+          status: "Terjadi",
+          actor: "Sistem",
+          occurredAt: formatSuperAdminDateTime(session.paymentDeadline),
+          icon: X,
+          tone: "failed" as const,
+        },
+        {
+          label: "Selesai",
+          status: "Belum tercapai",
+          icon: CheckCircle2,
+          tone: "pending" as const,
+        },
       ]
     : [
-        { label: "Sesi Ditutup", status: "Selesai", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: CheckCircle2, tone: "done" as const },
-        { label: "Tanpa Bid", status: "Terjadi", actor: "Sistem", occurredAt: formatSuperAdminDateTime(session.endingAt), icon: X, tone: "failed" as const },
-        { label: "Lelang Ulang", status: "Belum dijadwalkan", icon: RefreshCcw, tone: "pending" as const },
+        {
+          label: "Sesi Ditutup",
+          status: "Selesai",
+          actor: "Sistem",
+          occurredAt: formatSuperAdminDateTime(session.endingAt),
+          icon: CheckCircle2,
+          tone: "done" as const,
+        },
+        {
+          label: "Tanpa Bid",
+          status: "Terjadi",
+          actor: "Sistem",
+          occurredAt: formatSuperAdminDateTime(session.endingAt),
+          icon: X,
+          tone: "failed" as const,
+        },
+        {
+          label: "Lelang Ulang",
+          status: "Belum dijadwalkan",
+          icon: RefreshCcw,
+          tone: "pending" as const,
+        },
       ];
 
-  return <CompactTransactionProgress density="tight" steps={steps} title="Progress Penyelesaian" />;
+  return (
+    <CompactTransactionProgress
+      density="tight"
+      steps={steps}
+      title="Progress Penyelesaian"
+    />
+  );
 }
 
 function SuperAdminFixedPriceProgressPanel({
@@ -4997,10 +5603,15 @@ function SuperAdminFixedPriceProgressPanel({
   const fulfilled = session.transactionStatus === "SELESAI";
   const verified = session.transactionStatus === "LUNAS" || fulfilled;
   const rejected = session.transactionStatus === "DITOLAK_BUKTI";
-  const submitted = Boolean(session.transactionId) && !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
-  const buyerActor = session.buyerName ? `Buyer: ${session.buyerName}` : "Buyer";
+  const submitted =
+    Boolean(session.transactionId) &&
+    !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
+  const buyerActor = session.buyerName
+    ? `Buyer: ${session.buyerName}`
+    : "Buyer";
   const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : null;
-  const completionActor = session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+  const completionActor =
+    session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   if (rejected) {
     return (
       <CompactTransactionProgress
@@ -5038,31 +5649,65 @@ function SuperAdminFixedPriceProgressPanel({
   const steps = [
     {
       label: "Pembayaran",
-      status: submitted ? "Selesai" : session.transactionId ? "Berjalan" : "Belum terjadi",
+      status: submitted
+        ? "Selesai"
+        : session.transactionId
+          ? "Berjalan"
+          : "Belum terjadi",
       actor: submitted || session.transactionId ? buyerActor : null,
-      occurredAt: submitted ? formatSuperAdminDateTime(session.transactionCreatedAt) : null,
+      occurredAt: submitted
+        ? formatSuperAdminDateTime(session.transactionCreatedAt)
+        : null,
       icon: WalletCards,
-      tone: submitted ? ("done" as const) : session.transactionId ? ("current" as const) : ("pending" as const),
+      tone: submitted
+        ? ("done" as const)
+        : session.transactionId
+          ? ("current" as const)
+          : ("pending" as const),
     },
     {
       label: "Verifikasi",
-      status: verified ? "Selesai" : submitted ? "Menunggu admin" : "Belum terjadi",
+      status: verified
+        ? "Selesai"
+        : submitted
+          ? "Menunggu admin"
+          : "Belum terjadi",
       actor: verified ? adminActor : null,
       occurredAt: verified ? formatSuperAdminDateTime(session.soldAt) : null,
       icon: ShieldCheck,
-      tone: verified ? ("done" as const) : submitted ? ("current" as const) : ("pending" as const),
+      tone: verified
+        ? ("done" as const)
+        : submitted
+          ? ("current" as const)
+          : ("pending" as const),
     },
     {
       label: "Selesai",
-      status: fulfilled ? getSuperAdminProgressCompletionLabel(session) : verified ? "Menunggu buyer" : "Belum terjadi",
+      status: fulfilled
+        ? getSuperAdminProgressCompletionLabel(session)
+        : verified
+          ? "Menunggu buyer"
+          : "Belum terjadi",
       actor: fulfilled ? completionActor : verified ? buyerActor : null,
-      occurredAt: fulfilled ? formatSuperAdminDateTime(session.completedAt) : null,
+      occurredAt: fulfilled
+        ? formatSuperAdminDateTime(session.completedAt)
+        : null,
       icon: fulfilled ? CheckCircle2 : CircleDot,
-      tone: fulfilled ? ("done" as const) : verified ? ("current" as const) : ("pending" as const),
+      tone: fulfilled
+        ? ("done" as const)
+        : verified
+          ? ("current" as const)
+          : ("pending" as const),
     },
   ];
 
-  return <CompactTransactionProgress density="tight" steps={steps} title="Progress Penyelesaian" />;
+  return (
+    <CompactTransactionProgress
+      density="tight"
+      steps={steps}
+      title="Progress Penyelesaian"
+    />
+  );
 }
 
 function SuperAdminFixedPriceWorkspace({
@@ -5075,45 +5720,59 @@ function SuperAdminFixedPriceWorkspace({
     ? session.transactionStatus === "SELESAI"
     : session.status === "SELESAI" || Boolean(session.soldAt);
   const verified = session.transactionStatus === "LUNAS";
-  const hasBuyer = Boolean(session.transactionId || session.buyerName || session.winner);
-  const isFailed = rejected || session.status === "GAGAL" || session.transactionStatus === "GAGAL";
+  const hasBuyer = Boolean(
+    session.transactionId || session.buyerName || session.winner,
+  );
+  const isFailed =
+    rejected ||
+    session.status === "GAGAL" ||
+    session.transactionStatus === "GAGAL";
   const statusTitle = rejected
     ? "Pembayaran Harga Tetap Ditolak"
     : isFailed
-    ? "Sesi Harga Tetap Diarsipkan"
-    : sold
-      ? "Pembelian Harga Tetap Selesai"
-      : verified
-        ? "Pembayaran Harga Tetap Terverifikasi"
-        : hasBuyer
-          ? "Bukti Pembayaran Masuk"
-          : "Masih Tersedia di Katalog";
+      ? "Sesi Harga Tetap Diarsipkan"
+      : sold
+        ? "Pembelian Harga Tetap Selesai"
+        : verified
+          ? "Pembayaran Harga Tetap Terverifikasi"
+          : hasBuyer
+            ? "Bukti Pembayaran Masuk"
+            : "Masih Tersedia di Katalog";
   const statusDetail = rejected
     ? `Admin unit menolak bukti pembayaran${session.rejectionReason ? ` dengan alasan: ${session.rejectionReason}` : ""}. Barang tetap tersedia untuk pembeli lain.`
     : isFailed
-    ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
-    : sold
-      ? isSuperAdminAutoCompleted(session)
-        ? "Penjualan harga tetap selesai otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
-        : "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
-      : verified
-        ? getSuperAdminVerifiedDetail(session)
-        : hasBuyer
-          ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
-          : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
+      ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
+      : sold
+        ? isSuperAdminAutoCompleted(session)
+          ? "Penjualan harga tetap selesai otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
+          : "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
+        : verified
+          ? getSuperAdminVerifiedDetail(session)
+          : hasBuyer
+            ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
+            : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
   const shouldAutoRefresh =
     Boolean(session.transactionId) &&
-    !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(session.transactionStatus ?? "");
+    !["SELESAI", "DITOLAK_BUKTI", "GAGAL"].includes(
+      session.transactionStatus ?? "",
+    );
 
   return (
-    <div className="space-y-2" data-testid="superadmin-fixed-price-settlement-layout">
+    <div
+      className="space-y-2"
+      data-testid="superadmin-fixed-price-settlement-layout"
+    >
       <StatusSyncRefresh enabled={shouldAutoRefresh} />
       <section
         className={cn(
           "rounded-lg px-3 py-2.5 shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]",
-          isFailed ? "border border-[#fecaca] bg-[#fff1f2]" : "border border-[#b9e4cc] bg-[#f4fcf6]",
+          isFailed
+            ? "border border-[#fecaca] bg-[#fff1f2]"
+            : "border border-[#b9e4cc] bg-[#f4fcf6]",
         )}
-        data-testid={rejected ? "superadmin-payment-verification-audit" : undefined}
+        data-testid={
+          rejected ? "superadmin-payment-verification-audit" : undefined
+        }
       >
         <div className="flex items-center gap-3">
           <span
@@ -5129,16 +5788,20 @@ function SuperAdminFixedPriceWorkspace({
             )}
           </span>
           <div className="min-w-0">
-            <h2 className={cn(
-              "font-headline text-[0.82rem] font-black uppercase tracking-[0.02em]",
-              isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
-            )}>
+            <h2
+              className={cn(
+                "font-headline text-[0.82rem] font-black uppercase tracking-[0.02em]",
+                isFailed ? "text-[#7f1d1d]" : "text-[#075b3f]",
+              )}
+            >
               {statusTitle}
             </h2>
-            <p className={cn(
-              "mt-1 text-[0.68rem] font-semibold leading-4",
-              isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
-            )}>
+            <p
+              className={cn(
+                "mt-1 text-[0.68rem] font-semibold leading-4",
+                isFailed ? "text-[#9f1239]" : "text-[#2f6a52]",
+              )}
+            >
               {statusDetail}
             </p>
           </div>
@@ -5146,10 +5809,7 @@ function SuperAdminFixedPriceWorkspace({
       </section>
 
       <div
-        className={cn(
-          "grid items-stretch gap-2",
-          hasBuyer && "xl:grid-cols-2",
-        )}
+        className={cn("grid items-stretch gap-2", hasBuyer && "xl:grid-cols-2")}
         data-testid="superadmin-fixed-price-settlement-primary-grid"
       >
         <MarketingPerformancePanel
@@ -5224,7 +5884,10 @@ function SuperAdminVickreyWorkspace({
   if (verified || fulfilled) {
     if (fulfilled) {
       return (
-        <div className="space-y-4" data-testid="superadmin-vickrey-settlement-layout">
+        <div
+          className="space-y-4"
+          data-testid="superadmin-vickrey-settlement-layout"
+        >
           <SuperAdminVickreySettlementBanner session={session} />
           <div
             className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]"
@@ -5263,7 +5926,10 @@ function SuperAdminVickreyWorkspace({
             />
           </div>
 
-          <SuperAdminVickreyFinalSummaryPanel receiptContext={receiptContext} session={session} />
+          <SuperAdminVickreyFinalSummaryPanel
+            receiptContext={receiptContext}
+            session={session}
+          />
 
           <SuperAdminReadOnlyAuditFooter
             icon={ShieldCheck}
@@ -5274,7 +5940,10 @@ function SuperAdminVickreyWorkspace({
     }
 
     return (
-      <div className="space-y-4" data-testid="superadmin-vickrey-settlement-layout">
+      <div
+        className="space-y-4"
+        data-testid="superadmin-vickrey-settlement-layout"
+      >
         <SuperAdminVickreySettlementBanner session={session} />
         <div
           className="grid gap-4 xl:grid-cols-3"
@@ -5284,7 +5953,10 @@ function SuperAdminVickreyWorkspace({
           <SuperAdminVickreyProgressPanel session={session} />
           <div className="grid gap-4">
             <SuperAdminVickreyNotePanel session={session} />
-            <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
+            <SuperAdminVickreyActionFooter
+              receiptContext={receiptContext}
+              session={session}
+            />
           </div>
         </div>
 
@@ -5340,7 +6012,10 @@ function SuperAdminVickreyWorkspace({
             testId="superadmin-vickrey-active-performance-panel"
           />
           <SuperAdminVickreyNotePanel session={session} />
-          <SuperAdminVickreyActionFooter receiptContext={receiptContext} session={session} />
+          <SuperAdminVickreyActionFooter
+            receiptContext={receiptContext}
+            session={session}
+          />
         </div>
       </div>
       <SuperAdminReadOnlyAuditFooter
@@ -5379,10 +6054,22 @@ function SuperAdminDetailInfoCard({
           <Icon className={compact ? "size-3" : "size-4"} strokeWidth={1.9} />
         </span>
         <div className="min-w-0">
-          <p className={cn("font-black uppercase tracking-[0.16em] text-[#6a7d73]", compact ? "text-[0.52rem]" : "text-[0.68rem]")}>
+          <p
+            className={cn(
+              "font-black uppercase tracking-[0.16em] text-[#6a7d73]",
+              compact ? "text-[0.52rem]" : "text-[0.68rem]",
+            )}
+          >
             {label}
           </p>
-          <div className={cn("font-bold text-[#13211c]", compact ? "mt-0.5 text-[0.72rem] leading-4" : "mt-1.5 text-[0.95rem] leading-6")}>
+          <div
+            className={cn(
+              "font-bold text-[#13211c]",
+              compact
+                ? "mt-0.5 text-[0.72rem] leading-4"
+                : "mt-1.5 text-[0.95rem] leading-6",
+            )}
+          >
             {value}
           </div>
         </div>
@@ -5403,7 +6090,8 @@ export function SuperAdminMarketingAuditPanel({
   selectedIterationId?: string;
 }) {
   const iterationHistory = getSuperAdminIterationHistory(marketing);
-  const [internalSelectedIterationId, setInternalSelectedIterationId] = useState(() => marketing?.id ?? "");
+  const [internalSelectedIterationId, setInternalSelectedIterationId] =
+    useState(() => marketing?.id ?? "");
 
   useEffect(() => {
     setInternalSelectedIterationId(marketing?.id ?? "");
@@ -5414,13 +6102,19 @@ export function SuperAdminMarketingAuditPanel({
   }
 
   const latestIterationId = iterationHistory[0]?.id;
-  const selectedIterationId = controlledSelectedIterationId ?? internalSelectedIterationId;
+  const selectedIterationId =
+    controlledSelectedIterationId ?? internalSelectedIterationId;
   const selectedIteration =
-    iterationHistory.find((entry) => entry.id === selectedIterationId) ?? iterationHistory[0] ?? marketing;
+    iterationHistory.find((entry) => entry.id === selectedIterationId) ??
+    iterationHistory[0] ??
+    marketing;
   const selectedStatus = formatSuperAdminDisplayLabel(selectedIteration.status);
-  const selectedStatusKey = normalizeUnitDetailOptionValue(selectedIteration.status);
+  const selectedStatusKey = normalizeUnitDetailOptionValue(
+    selectedIteration.status,
+  );
   const selectedIsFailed =
-    selectedStatusKey.includes("gagal") || selectedStatusKey.includes("ditolak");
+    selectedStatusKey.includes("gagal") ||
+    selectedStatusKey.includes("ditolak");
   const selectedIsSettled =
     selectedStatusKey.includes("selesai") ||
     selectedStatusKey.includes("terverifikasi") ||
@@ -5432,11 +6126,14 @@ export function SuperAdminMarketingAuditPanel({
       selectedStatusKey.includes("menunggu") ||
       selectedStatusKey.includes("jalan") ||
       selectedStatusKey.includes("proses"));
-  const isVickrey = getUnitDetailMarketingModeValue(selectedIteration.mode) === "vickrey";
-  const iterationOptions: AdminSelectOption[] = iterationHistory.map((entry, index) => ({
-    value: entry.id,
-    label: `Iterasi ${entry.iteration ?? iterationHistory.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
-  }));
+  const isVickrey =
+    getUnitDetailMarketingModeValue(selectedIteration.mode) === "vickrey";
+  const iterationOptions: AdminSelectOption[] = iterationHistory.map(
+    (entry, index) => ({
+      value: entry.id,
+      label: `Iterasi ${entry.iteration ?? iterationHistory.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
+    }),
+  );
   const handleSelectedIterationChange = (iterationId: string) => {
     setInternalSelectedIterationId(iterationId);
     onSelectedIterationChange?.(iterationId);
@@ -5511,7 +6208,10 @@ export function SuperAdminMarketingAuditPanel({
 
       <div className="border-t border-[#e6eee9] pt-2">
         {isVickrey ? (
-          <SuperAdminVickreyWorkspace receiptContext={receiptContext} session={selectedIteration} />
+          <SuperAdminVickreyWorkspace
+            receiptContext={receiptContext}
+            session={selectedIteration}
+          />
         ) : (
           <SuperAdminFixedPriceWorkspace session={selectedIteration} />
         )}
@@ -5542,7 +6242,10 @@ function SuperAdminAssetTimeline({
           },
         ];
   const timelineEntries = sortTimelineEntries(timelineSourceEntries);
-  const iconMap: Record<SuperAdminUnitBarangHistoryEntry["actionKey"], LucideIcon> = {
+  const iconMap: Record<
+    SuperAdminUnitBarangHistoryEntry["actionKey"],
+    LucideIcon
+  > = {
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
     ditebus: ReceiptText,
@@ -5573,9 +6276,13 @@ function SuperAdminAssetTimeline({
           <thead>
             <tr className="border-b border-[#edf2ee] text-[0.62rem] font-black uppercase tracking-[0.14em] text-[#006747]">
               <th className="border-b border-[#edf2ee] px-3 py-3">Status</th>
-              <th className="border-b border-[#edf2ee] px-3 py-3">Tanggal & Jam</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">
+                Tanggal & Jam
+              </th>
               <th className="border-b border-[#edf2ee] px-3 py-3">Deskripsi</th>
-              <th className="border-b border-[#edf2ee] px-3 py-3">Aktor / Sumber</th>
+              <th className="border-b border-[#edf2ee] px-3 py-3">
+                Aktor / Sumber
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#edf2ee] text-[0.78rem] font-semibold text-[#52655d]">
@@ -5600,9 +6307,7 @@ function SuperAdminAssetTimeline({
                   <td className="px-3 py-3 font-mono text-[0.72rem] leading-5 text-[#40558b]">
                     {entry.createdAtLabel || "-"}
                   </td>
-                  <td className="px-3 py-3 leading-5">
-                    {entry.note}
-                  </td>
+                  <td className="px-3 py-3 leading-5">{entry.note}</td>
                   <td className="px-3 py-3">
                     <span className="inline-flex items-center gap-2 font-black text-[#006747]">
                       <UserRound className="size-4 shrink-0" />
@@ -5624,7 +6329,8 @@ export function SuperAdminUnitBarangDetailPage({
 }: {
   detail: SuperAdminUnitBarangDetail | null;
 }) {
-  const [selectedMarketingIterationId, setSelectedMarketingIterationId] = useState(() => detail?.marketing?.id ?? "");
+  const [selectedMarketingIterationId, setSelectedMarketingIterationId] =
+    useState(() => detail?.marketing?.id ?? "");
 
   useEffect(() => {
     setSelectedMarketingIterationId(detail?.marketing?.id ?? "");
@@ -5633,7 +6339,9 @@ export function SuperAdminUnitBarangDetailPage({
   if (!detail) {
     return (
       <Card className="border border-border/70 bg-white p-8">
-        <p className="text-muted-foreground">Barang tidak ditemukan pada unit ini.</p>
+        <p className="text-muted-foreground">
+          Barang tidak ditemukan pada unit ini.
+        </p>
       </Card>
     );
   }
@@ -5641,10 +6349,14 @@ export function SuperAdminUnitBarangDetailPage({
   const { item, marketing, unit } = detail;
   const itemName = String(item.name ?? "Detail Barang");
   const itemCode = String(item.code ?? item.id);
-  const media = Array.isArray(item.media) ? item.media : marketing?.media ?? [];
+  const media = Array.isArray(item.media)
+    ? item.media
+    : (marketing?.media ?? []);
   const marketingIterations = getSuperAdminIterationHistory(marketing);
   const selectedMarketingIteration =
-    marketingIterations.find((entry) => entry.id === selectedMarketingIterationId) ??
+    marketingIterations.find(
+      (entry) => entry.id === selectedMarketingIterationId,
+    ) ??
     marketingIterations[0] ??
     marketing;
   const heroPriceLabel = selectedMarketingIteration
@@ -5688,9 +6400,17 @@ export function SuperAdminUnitBarangDetailPage({
     icon: LucideIcon;
   }>;
   const bottomInfoRows = [
-    { label: "Tanggal Gadai", value: item.pawnedAt || item.date || "-", icon: CalendarDays },
+    {
+      label: "Tanggal Gadai",
+      value: item.pawnedAt || item.date || "-",
+      icon: CalendarDays,
+    },
     { label: "Nama Nasabah", value: item.ownerName || "-", icon: UserRound },
-    { label: "Nomor Telepon Nasabah", value: item.customerNumber || "-", icon: Phone },
+    {
+      label: "Nomor Telepon Nasabah",
+      value: item.customerNumber || "-",
+      icon: Phone,
+    },
   ];
 
   return (
@@ -5751,7 +6471,9 @@ export function SuperAdminUnitBarangDetailPage({
               <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start">
                 <div className="w-full shrink-0 lg:w-[18rem]">
                   <AdminBarangDetailMediaViewer
-                    category={formatUnitDetailCategory(String(item.category ?? ""))}
+                    category={formatUnitDetailCategory(
+                      String(item.category ?? ""),
+                    )}
                     media={media}
                     title={itemName}
                   />
@@ -5764,7 +6486,9 @@ export function SuperAdminUnitBarangDetailPage({
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.95rem] text-[#667085]">
                       <span className="font-medium">Kode Barang:</span>
-                      <span className="font-medium text-[#0a9f62]">{itemCode}</span>
+                      <span className="font-medium text-[#0a9f62]">
+                        {itemCode}
+                      </span>
                     </div>
                   </div>
 
@@ -5814,26 +6538,26 @@ export function SuperAdminUnitBarangDetailPage({
                   Spesifikasi Barang
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {topInfoRows.map((row) => (
-                  <div
-                    className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
-                    key={row.label}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
-                        <row.icon className="size-4.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[0.72rem] font-medium text-[#667085]">
-                          {row.label}
-                        </p>
-                        <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
-                          {row.value}
-                        </p>
+                  {topInfoRows.map((row) => (
+                    <div
+                      className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
+                      key={row.label}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
+                          <row.icon className="size-4.5" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[0.72rem] font-medium text-[#667085]">
+                            {row.label}
+                          </p>
+                          <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
+                            {row.value}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
                 </div>
               </div>
 
@@ -5844,26 +6568,26 @@ export function SuperAdminUnitBarangDetailPage({
                   Informasi Gadai
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {bottomInfoRows.map((row) => (
-                  <div
-                    className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
-                    key={row.label}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
-                        <row.icon className="size-4.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[0.72rem] font-medium text-[#667085]">
-                          {row.label}
-                        </p>
-                        <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
-                          {row.value}
-                        </p>
+                  {bottomInfoRows.map((row) => (
+                    <div
+                      className="rounded-[1rem] border border-[#e7eeea] bg-white px-4 py-4 shadow-[0_10px_26px_-24px_rgba(8,69,50,0.24)]"
+                      key={row.label}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-[#f4fbf7] text-[#0a9f62] ring-1 ring-[#d8eadf]">
+                          <row.icon className="size-4.5" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[0.72rem] font-medium text-[#667085]">
+                            {row.label}
+                          </p>
+                          <p className="mt-1.5 break-words text-[0.98rem] font-medium leading-6 text-[#14213d]">
+                            {row.value}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
                 </div>
               </div>
             </div>
@@ -5878,7 +6602,8 @@ export function SuperAdminUnitBarangDetailPage({
                     Deskripsi Barang
                   </h3>
                   <p className="mt-3 text-justify text-[0.96rem] leading-7 text-[#5f6f86] [hyphens:auto] [text-justify:inter-word]">
-                    {item.description || "Belum ada deskripsi barang yang dicatat."}
+                    {item.description ||
+                      "Belum ada deskripsi barang yang dicatat."}
                   </p>
                 </div>
               </div>
@@ -5900,7 +6625,9 @@ export function SuperAdminUnitBarangDetailPage({
             unitAddress: unit.address,
             unitName: unit.name,
           }}
-          selectedIterationId={selectedMarketingIteration?.id ?? selectedMarketingIterationId}
+          selectedIterationId={
+            selectedMarketingIteration?.id ?? selectedMarketingIterationId
+          }
         />
       ) : null}
     </div>
@@ -6060,7 +6787,9 @@ export function SuperAdminManagementPage({
 }) {
   const [query, setQuery] = useState("");
   const [adminQuery, setAdminQuery] = useState("");
-  const [pageSize, setPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
+  const [pageSize, setPageSize] = useState<number>(
+    managementUnitPageSizeOptions[0],
+  );
   const [pageIndex, setPageIndex] = useState(0);
   const filteredUnits = useMemo(() => {
     const normalized = query.toLowerCase();
@@ -6077,7 +6806,10 @@ export function SuperAdminManagementPage({
   }, [query, units]);
   const totalPages = Math.max(1, Math.ceil(filteredUnits.length / pageSize));
   const currentPage = Math.min(pageIndex, totalPages - 1);
-  const visibleUnits = filteredUnits.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+  const visibleUnits = filteredUnits.slice(
+    currentPage * pageSize,
+    currentPage * pageSize + pageSize,
+  );
   const pageStart = filteredUnits.length === 0 ? 0 : currentPage * pageSize + 1;
   const pageEnd = Math.min(filteredUnits.length, (currentPage + 1) * pageSize);
   const activeAdmins = useMemo(() => {
@@ -6125,7 +6857,10 @@ export function SuperAdminManagementPage({
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link className="w-full sm:w-auto" href="/superadmin/manajemen-unit/tambah">
+                  <Link
+                    className="w-full sm:w-auto"
+                    href="/superadmin/manajemen-unit/tambah"
+                  >
                     <Button
                       className="min-h-10 w-full rounded-[1.05rem] px-4 text-[0.78rem] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98] sm:w-auto"
                       type="button"
@@ -6194,7 +6929,9 @@ export function SuperAdminManagementPage({
 
                       <div className="flex min-w-0 items-center gap-1.5 text-[0.76rem] font-bold text-[#13211c] lg:mt-0.5 lg:justify-center">
                         <MapPin className="size-4 shrink-0 text-[#006747]" />
-                        <span className="min-w-0 whitespace-nowrap">{unit.domicile}</span>
+                        <span className="min-w-0 whitespace-nowrap">
+                          {unit.domicile}
+                        </span>
                       </div>
 
                       <div className="flex min-w-0 flex-wrap justify-start gap-2 lg:justify-end">
@@ -6210,12 +6947,21 @@ export function SuperAdminManagementPage({
 
               <div className="flex flex-col gap-3 border-t border-[#e5eee9] bg-[#fbfcfa] px-4 py-3 text-[0.72rem] font-semibold text-black/48 lg:flex-row lg:items-center lg:justify-between lg:px-5">
                 <p>
-                  Menampilkan <span className="font-black text-[#13211c]">{pageStart}</span> sampai{" "}
-                  <span className="font-black text-[#13211c]">{pageEnd}</span> dari{" "}
-                  <span className="font-black text-[#13211c]">{filteredUnits.length}</span> unit
+                  Menampilkan{" "}
+                  <span className="font-black text-[#13211c]">{pageStart}</span>{" "}
+                  sampai{" "}
+                  <span className="font-black text-[#13211c]">{pageEnd}</span>{" "}
+                  dari{" "}
+                  <span className="font-black text-[#13211c]">
+                    {filteredUnits.length}
+                  </span>{" "}
+                  unit
                 </p>
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                  <label className="font-bold text-black/45" htmlFor="management-unit-page-size">
+                  <label
+                    className="font-bold text-black/45"
+                    htmlFor="management-unit-page-size"
+                  >
                     Baris per halaman:
                   </label>
                   <AdminSelect
@@ -6246,13 +6992,15 @@ export function SuperAdminManagementPage({
                     </button>
                     {Array.from({ length: totalPages }, (_, index) => (
                       <button
-                        aria-current={index === currentPage ? "page" : undefined}
+                        aria-current={
+                          index === currentPage ? "page" : undefined
+                        }
                         className={cn(
                           "grid size-8 place-items-center rounded-xl text-[0.72rem] font-black transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                           "size-10 md:size-8",
                           index === currentPage
                             ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46),inset_0_1px_0_rgba(255,255,255,0.9)]"
-                            : "text-black/52 hover:bg-white hover:text-[#0a6a49]"
+                            : "text-black/52 hover:bg-white hover:text-[#0a6a49]",
                         )}
                         key={index}
                         type="button"
@@ -6266,7 +7014,9 @@ export function SuperAdminManagementPage({
                       className="grid size-10 place-items-center rounded-xl text-black/42 transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35 md:size-8"
                       disabled={currentPage >= totalPages - 1}
                       type="button"
-                      onClick={() => setPageIndex(Math.min(totalPages - 1, currentPage + 1))}
+                      onClick={() =>
+                        setPageIndex(Math.min(totalPages - 1, currentPage + 1))
+                      }
                     >
                       <ChevronRight className="size-4" />
                     </button>
@@ -6307,7 +7057,11 @@ export function SuperAdminManagementPage({
                         : "Admin unit aktif yang tersimpan di database akan muncul sebagai feed singkat."
                     }
                     icon={UserCog}
-                    title={adminQuery ? "Admin tidak ditemukan" : "Belum ada admin aktif"}
+                    title={
+                      adminQuery
+                        ? "Admin tidak ditemukan"
+                        : "Belum ada admin aktif"
+                    }
                   />
                 ) : (
                   activeAdmins.slice(0, 6).map((admin) => (
@@ -6365,8 +7119,12 @@ export function SuperAdminCreateUnitPage() {
         icon={Building2}
         rightRail={
           <>
-            <SuperAdminHeroPill icon={Landmark}>Rekening utama aktif</SuperAdminHeroPill>
-            <SuperAdminHeroPill icon={UserCog}>Admin penanggung jawab</SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={Landmark}>
+              Rekening utama aktif
+            </SuperAdminHeroPill>
+            <SuperAdminHeroPill icon={UserCog}>
+              Admin penanggung jawab
+            </SuperAdminHeroPill>
           </>
         }
         title="Registrasi & Setup Unit Pelaksana Baru"
@@ -6466,7 +7224,10 @@ export function SuperAdminPolicyPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-4 rounded-[0.9rem] border border-orange-300 bg-orange-50/60 px-4 py-3.5 text-orange-700">
-                  <AlertTriangle className="size-7 shrink-0" strokeWidth={2.1} />
+                  <AlertTriangle
+                    className="size-7 shrink-0"
+                    strokeWidth={2.1}
+                  />
                   <p className="text-sm font-semibold leading-5">
                     Pelanggaran berikutnya memicu sanksi Kritis Tier 3 (Lock
                     Akses Login)
@@ -6502,8 +7263,7 @@ export function SuperAdminPolicyPage() {
                 </span>
                 <p className="mt-5 font-headline text-2xl font-black uppercase leading-tight tracking-[-0.02em]">
                   Ban Total 360 Hari
-                  <br />
-                  + Lock Login Access
+                  <br />+ Lock Login Access
                 </p>
                 <p className="mt-4 text-sm font-semibold text-[#42526b]">
                   Dilarang masuk ke aplikasi sama sekali.
@@ -6603,11 +7363,14 @@ export function SuperAdminMonitoringPage({
   const unitRows = useMemo(() => data.unitRows ?? [], [data.unitRows]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeMetricIndex, setActiveMetricIndex] = useState<number | null>(null);
+  const [activeMetricIndex, setActiveMetricIndex] = useState<number | null>(
+    null,
+  );
   const [activeChartTooltip, setActiveChartTooltip] =
     useState<MonitoringChartTooltip | null>(null);
-  const [monitoringRange, setMonitoringRange] =
-    useState<SuperAdminValidatedTrendRangeKey | "custom">("month");
+  const [monitoringRange, setMonitoringRange] = useState<
+    SuperAdminValidatedTrendRangeKey | "custom"
+  >("month");
   const [monitoringCustomRange, setMonitoringCustomRange] =
     useState<ReportCustomRange | null>(null);
   const chartPlotRef = useRef<HTMLDivElement | null>(null);
@@ -6712,10 +7475,7 @@ export function SuperAdminMonitoringPage({
     },
     {
       label: "Terjual",
-      value: unitRows.reduce(
-        (sum, row) => sum + Number(row.soldItems ?? 0),
-        0,
-      ),
+      value: unitRows.reduce((sum, row) => sum + Number(row.soldItems ?? 0), 0),
       detail: "Selesai dari transaksi terverifikasi",
       icon: BadgeCheck,
       iconClass: "bg-[#e8f3ec] text-[#007a4d] ring-[#cfe8d8]",
@@ -6755,7 +7515,8 @@ export function SuperAdminMonitoringPage({
     ? monitoringChartToneClasses[activeChartTooltip.key]
     : null;
   const setAnchoredChartTooltip = (
-    event: ReactFocusEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    event:
+      ReactFocusEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
     tooltip: Omit<MonitoringChartTooltip, "anchorX">,
   ) => {
     const plotRect = chartPlotRef.current?.getBoundingClientRect();
@@ -6930,19 +7691,19 @@ export function SuperAdminMonitoringPage({
                       <div className="flex h-40 items-end justify-center gap-1.5">
                         {monitoringChartSeries.map((series) => {
                           const value = Number(row[series.key] ?? 0);
-                          const height = value > 0
-                            ? Math.max((value / maxChartValue) * 100, 8)
-                            : 1;
+                          const height =
+                            value > 0
+                              ? Math.max((value / maxChartValue) * 100, 8)
+                              : 1;
                           const tooltipId = `${row.id}-${series.key}`;
-                          const active =
-                            activeChartTooltip?.id === tooltipId;
+                          const active = activeChartTooltip?.id === tooltipId;
 
                           return (
                             <div
                               className="flex h-full flex-col items-center justify-end gap-1"
                               key={series.key}
                             >
-                              {(value > 0 || filteredUnitRows.length <= 8) ? (
+                              {value > 0 || filteredUnitRows.length <= 8 ? (
                                 <span className="text-[0.68rem] font-black text-[#13211c]">
                                   {formatDashboardCount(value)}
                                 </span>
@@ -6981,7 +7742,9 @@ export function SuperAdminMonitoringPage({
                                       value,
                                     })
                                   }
-                                  onMouseLeave={() => setActiveChartTooltip(null)}
+                                  onMouseLeave={() =>
+                                    setActiveChartTooltip(null)
+                                  }
                                   style={{ height: `${height}%` }}
                                   type="button"
                                 />
@@ -7192,7 +7955,9 @@ export function SuperAdminMonitoringPage({
                     size="sm"
                     type="button"
                     variant="secondary"
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }
                   >
                     <ChevronLeft className="size-4" />
                     Prev
@@ -7215,7 +7980,9 @@ export function SuperAdminMonitoringPage({
                           )}
                           size="sm"
                           type="button"
-                          variant={currentPage === page ? "default" : "secondary"}
+                          variant={
+                            currentPage === page ? "default" : "secondary"
+                          }
                           onClick={() => setCurrentPage(page)}
                         >
                           {page}
@@ -7316,7 +8083,8 @@ export function SuperAdminBlacklistPage({
         </div>
         <div className="flex flex-wrap gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-muted-foreground">
           <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
-            {ledgerEntries.length} akun {isExpiredHistory ? "berakhir" : "aktif"}
+            {ledgerEntries.length} akun{" "}
+            {isExpiredHistory ? "berakhir" : "aktif"}
           </span>
         </div>
       </div>
@@ -7325,10 +8093,13 @@ export function SuperAdminBlacklistPage({
         <div className="border-b border-[#edf2ee] p-4 sm:p-5">
           <div>
             <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
-              {isExpiredHistory ? "Riwayat Pembatasan Berakhir" : "Pembatasan Aktif"}
+              {isExpiredHistory
+                ? "Riwayat Pembatasan Berakhir"
+                : "Pembatasan Aktif"}
             </h2>
             <p className="mt-1 text-xs font-semibold text-muted-foreground">
-              Ledger blacklist buyer berdasarkan level pelanggaran real dari sistem.
+              Ledger blacklist buyer berdasarkan level pelanggaran real dari
+              sistem.
             </p>
           </div>
 
@@ -7365,7 +8136,11 @@ export function SuperAdminBlacklistPage({
                   : "Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
               }
               icon={ShieldBan}
-              title={isExpiredHistory ? "Belum ada riwayat berakhir" : "Belum ada blacklist aktif"}
+              title={
+                isExpiredHistory
+                  ? "Belum ada riwayat berakhir"
+                  : "Belum ada blacklist aktif"
+              }
             />
           </div>
         ) : filteredEntries.length === 0 ? (
@@ -7379,11 +8154,11 @@ export function SuperAdminBlacklistPage({
           </div>
         ) : (
           <>
-              <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
+            <div className="hidden grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.65fr)_minmax(11rem,0.75fr)_minmax(12rem,0.85fr)_7rem] gap-4 border-b border-[#edf2ee] bg-[#fbfcfb] px-5 py-3 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#536279] lg:grid">
               <div>Pengguna</div>
               <div>Unit Asal</div>
               <div>Tingkat Pelanggaran</div>
-                <div>{isExpiredHistory ? "Berakhir Pada" : "Sisa Waktu"}</div>
+              <div>{isExpiredHistory ? "Berakhir Pada" : "Sisa Waktu"}</div>
               <div className="text-right">Aksi</div>
             </div>
 
@@ -7486,16 +8261,14 @@ export function SuperAdminBlacklistPage({
           tidak membayar dalam 24 jam.
         </p>
         <p>
-          Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru, dan level
-          3 menangguhkan akun selama 365 hari.
+          Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru,
+          dan level 3 menangguhkan akun selama 365 hari.
         </p>
         <p>
           Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk
           tindak lanjut operasional.
         </p>
       </section>
-
     </div>
   );
 }
-
