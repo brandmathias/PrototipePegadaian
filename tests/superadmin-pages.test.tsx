@@ -782,6 +782,9 @@ describe("superadmin pages", () => {
     const barPlot = screen.getByTestId("monitoring-chart-bar-plot");
     expect(yAxis).toHaveClass("top-5", "bottom-[4.6rem]");
     expect(barPlot).toHaveClass("top-5", "bottom-[4.6rem]");
+    Array.from(barPlot.children).forEach((unitGroup) => {
+      expect(unitGroup).toHaveClass("h-full");
+    });
     expect(
       Array.from(
         yAxis.querySelectorAll("[data-monitoring-y-axis-tick]"),

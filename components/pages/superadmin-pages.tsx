@@ -7729,7 +7729,7 @@ export function SuperAdminMonitoringPage({
                 >
                   {filteredUnitRows.map((row) => (
                     <div
-                      className="flex min-w-[6.4rem] flex-1 items-end justify-center gap-1.5"
+                      className="flex h-full min-w-[6.4rem] flex-1 items-end justify-center gap-1.5"
                       key={row.id}
                     >
                       {monitoringChartSeries.map((series) => {
