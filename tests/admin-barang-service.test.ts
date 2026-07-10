@@ -887,7 +887,8 @@ describe("listAdminBarangHistory", () => {
     ]);
     expect(relistPublish).toEqual(
       expect.objectContaining({
-        actorName: "Maria Supit",
+        actorName: "Sistem Otomatis",
+        actorRole: null,
         createdAt: rejectedAt.toISOString(),
         note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap."
       })

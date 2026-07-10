@@ -272,7 +272,17 @@ async function relistRejectedFixedPriceMarketing(
     oldStatus: input.itemStatus,
     newStatus: "gagal",
     changedByUserId: input.adminId,
-    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}.`
+    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}.`,
+    createdAt: input.now
+  });
+  await tx.insert(riwayatStatusBarang).values({
+    id: randomUUID(),
+    barangId: input.barangId,
+    oldStatus: "gagal",
+    newStatus: "dipasarkan",
+    changedByUserId: null,
+    note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
+    createdAt: input.now
   });
 }
 

@@ -172,6 +172,113 @@ try {
       + (select count(*) from updated_item_creators)::integer as repaired_references
   `);
 
+  const fixedPriceRepairDeletedHistory = await client.query(`
+    delete from "riwayat_status_barang"
+    where "new_status" = 'gagal'
+      and (
+        "note" ilike 'Repair DB:%'
+        or "note" ilike 'Repair DB production:%'
+        or (
+          "note" ilike 'Bukti pembayaran harga tetap ditolak admin unit.%'
+          and "note" ilike '%Barang dipasarkan ulang otomatis ke iterasi %'
+        )
+      )
+  `);
+
+  const fixedPriceRepairCleanedNotes = await client.query(`
+    update "riwayat_status_barang"
+    set "note" = regexp_replace(
+      "note",
+      ' Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya[.]?$',
+      '',
+      'i'
+    )
+    where "new_status" = 'gagal'
+      and "note" ilike 'Verifikasi bukti pembayaran harga tetap ditolak admin unit.%'
+      and "note" ilike '%Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.%'
+  `);
+
+  const fixedPriceRepairSyncedRelists = await client.query(`
+    with rejected_relist as (
+      select distinct on (next_p."id")
+        next_p."id" as next_marketing_id,
+        next_p."barang_id",
+        coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
+      from "pemasaran" previous_p
+      inner join "transaksi" t
+        on t."pemasaran_id" = previous_p."id"
+       and t."type" = 'fixed_price'
+       and t."status" = 'ditolak_bukti'
+      inner join "pemasaran" next_p
+        on next_p."barang_id" = previous_p."barang_id"
+       and next_p."mode" = 'fixed_price'
+       and next_p."iteration" = previous_p."iteration" + 1
+      where previous_p."mode" = 'fixed_price'
+      order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+    )
+    update "pemasaran" relisted
+    set "starts_at" = rejected_relist.rejected_at,
+        "created_at" = rejected_relist.rejected_at
+    from rejected_relist
+    where relisted."id" = rejected_relist.next_marketing_id
+      and (
+        relisted."starts_at" is distinct from rejected_relist.rejected_at
+        or relisted."created_at" is distinct from rejected_relist.rejected_at
+      )
+  `);
+
+  const fixedPriceRepairInsertedRelistHistory = await client.query(`
+    with rejected_relist as (
+      select distinct on (next_p."id")
+        next_p."id" as next_marketing_id,
+        next_p."barang_id",
+        coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
+      from "pemasaran" previous_p
+      inner join "transaksi" t
+        on t."pemasaran_id" = previous_p."id"
+       and t."type" = 'fixed_price'
+       and t."status" = 'ditolak_bukti'
+      inner join "pemasaran" next_p
+        on next_p."barang_id" = previous_p."barang_id"
+       and next_p."mode" = 'fixed_price'
+       and next_p."iteration" = previous_p."iteration" + 1
+      where previous_p."mode" = 'fixed_price'
+      order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+    )
+    insert into "riwayat_status_barang" (
+      "id",
+      "barang_id",
+      "old_status",
+      "new_status",
+      "changed_by_user_id",
+      "note",
+      "created_at"
+    )
+    select
+      'fixed-price-relist-history-' || rejected_relist.next_marketing_id,
+      rejected_relist."barang_id",
+      'gagal',
+      'dipasarkan',
+      null,
+      'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.',
+      rejected_relist.rejected_at
+    from rejected_relist
+    where not exists (
+      select 1
+      from "riwayat_status_barang" history
+      where history."barang_id" = rejected_relist."barang_id"
+        and history."new_status" = 'dipasarkan'
+        and history."changed_by_user_id" is null
+        and history."note" = 'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'
+        and history."created_at" between rejected_relist.rejected_at - interval '60 seconds'
+          and rejected_relist.rejected_at + interval '60 seconds'
+    )
+    on conflict ("id") do update
+    set "changed_by_user_id" = null,
+        "note" = excluded."note",
+        "created_at" = excluded."created_at"
+  `);
+
   const retiredColumnAudit = await client.query(`
     select table_name, column_name
     from information_schema.columns
@@ -241,7 +348,7 @@ try {
 
   await client.query("commit");
   console.log(
-    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi.`,
+    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi, relist harga tetap disinkronkan ${fixedPriceRepairSyncedRelists.rowCount ?? 0} pemasaran dan ${fixedPriceRepairInsertedRelistHistory.rowCount ?? 0} riwayat sistem (${fixedPriceRepairDeletedHistory.rowCount ?? 0} repair lama dihapus, ${fixedPriceRepairCleanedNotes.rowCount ?? 0} catatan dibersihkan).`,
   );
 } catch (error) {
   await client.query("rollback").catch(() => undefined);

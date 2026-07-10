@@ -451,8 +451,8 @@ function getMarketingPublishContext(
   }
 
   return {
-    actorName: rejectedTransaction?.actorName ?? row.actorName,
-    actorRole: rejectedTransaction?.actorRole ?? row.actorRole,
+    actorName: null,
+    actorRole: null,
     createdAt: rejectedAt,
     relisted: true
   };

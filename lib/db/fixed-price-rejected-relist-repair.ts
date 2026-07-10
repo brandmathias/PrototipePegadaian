@@ -167,8 +167,8 @@ export const SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL = `
 with rejected_relist as (
   select distinct on (next_p."id")
     next_p."id" as next_marketing_id,
-    coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at,
-    t."verified_by_user_id" as rejected_by_user_id
+    next_p."barang_id",
+    coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
   from "pemasaran" previous_p
   inner join "transaksi" t
     on t."pemasaran_id" = previous_p."id"
@@ -183,21 +183,65 @@ with rejected_relist as (
 )
 update "pemasaran" relisted
 set "starts_at" = rejected_relist.rejected_at,
-    "created_at" = rejected_relist.rejected_at,
-    "created_by_user_id" = coalesce(
-      rejected_relist.rejected_by_user_id,
-      relisted."created_by_user_id"
-    )
+    "created_at" = rejected_relist.rejected_at
 from rejected_relist
 where relisted."id" = rejected_relist.next_marketing_id
   and (
     relisted."starts_at" is distinct from rejected_relist.rejected_at
     or relisted."created_at" is distinct from rejected_relist.rejected_at
-    or (
-      rejected_relist.rejected_by_user_id is not null
-      and relisted."created_by_user_id" is distinct from rejected_relist.rejected_by_user_id
-    )
   )
+`.trim();
+
+export const INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL = `
+with rejected_relist as (
+  select distinct on (next_p."id")
+    next_p."id" as next_marketing_id,
+    next_p."barang_id",
+    coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
+  from "pemasaran" previous_p
+  inner join "transaksi" t
+    on t."pemasaran_id" = previous_p."id"
+   and t."type" = 'fixed_price'
+   and t."status" = 'ditolak_bukti'
+  inner join "pemasaran" next_p
+    on next_p."barang_id" = previous_p."barang_id"
+   and next_p."mode" = 'fixed_price'
+   and next_p."iteration" = previous_p."iteration" + 1
+  where previous_p."mode" = 'fixed_price'
+  order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+)
+insert into "riwayat_status_barang" (
+  "id",
+  "barang_id",
+  "old_status",
+  "new_status",
+  "changed_by_user_id",
+  "note",
+  "created_at"
+)
+select
+  'fixed-price-relist-history-' || rejected_relist.next_marketing_id,
+  rejected_relist."barang_id",
+  'gagal',
+  'dipasarkan',
+  null,
+  'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.',
+  rejected_relist.rejected_at
+from rejected_relist
+where not exists (
+  select 1
+  from "riwayat_status_barang" history
+  where history."barang_id" = rejected_relist."barang_id"
+    and history."new_status" = 'dipasarkan'
+    and history."changed_by_user_id" is null
+    and history."note" = 'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'
+    and history."created_at" between rejected_relist.rejected_at - interval '60 seconds'
+      and rejected_relist.rejected_at + interval '60 seconds'
+)
+on conflict ("id") do update
+set "changed_by_user_id" = null,
+    "note" = excluded."note",
+    "created_at" = excluded."created_at"
 `.trim();
 
 function resolveRejectedRelistTimestamp(candidate: FixedPriceRejectedRelistCandidate, fallback: Date) {
@@ -268,6 +312,7 @@ export async function repairFixedPriceRejectedRelists(
       applied += 1;
     }
 
+    await client.query(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL);
     await client.query("commit");
   } catch (error) {
     await client.query("rollback").catch(() => undefined);

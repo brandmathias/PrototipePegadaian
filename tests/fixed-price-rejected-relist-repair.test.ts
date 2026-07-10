@@ -7,6 +7,7 @@ import {
   CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL,
   DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL,
   FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL,
+  INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL,
   SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL,
   repairFixedPriceRejectedRelists,
   type FixedPriceRejectedRelistCandidate
@@ -87,8 +88,11 @@ describe("fixed-price rejected relist repair", () => {
     expect(client.query).toHaveBeenCalledWith(DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL);
     expect(client.query).toHaveBeenCalledWith(CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL);
     expect(client.query).toHaveBeenCalledWith(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL);
-    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).toContain(
-      `"created_by_user_id" = coalesce`
+    expect(client.query).toHaveBeenCalledWith(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL);
+    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).not.toContain(`"created_by_user_id"`);
+    expect(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL).toContain(`"changed_by_user_id"`);
+    expect(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL).toContain(
+      `'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'`
     );
     expect(client.query).toHaveBeenCalledWith("commit");
   });
@@ -128,6 +132,7 @@ describe("fixed-price rejected relist repair", () => {
       expect.stringContaining(`insert into "riwayat_status_barang"`),
       expect.anything()
     );
+    expect(client.query).toHaveBeenCalledWith(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL);
   });
 
   it("exposes a production repair script", () => {
@@ -136,5 +141,14 @@ describe("fixed-price rejected relist repair", () => {
     expect(packageJson.scripts["db:repair:fixed-price-relist"]).toBe(
       "tsx scripts/repair-fixed-price-rejected-relist.ts"
     );
+  });
+
+  it("runs the fixed-price relist chronology repair during production startup", () => {
+    const startupScript = readFileSync(join(process.cwd(), "scripts", "start-production.mjs"), "utf8");
+
+    expect(startupScript).toContain(`fixed-price-relist-history-`);
+    expect(startupScript).toContain(`"created_at" = rejected_relist.rejected_at`);
+    expect(startupScript).toContain(`'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'`);
+    expect(startupScript).toContain(`riwayat sistem`);
   });
 });

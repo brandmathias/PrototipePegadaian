@@ -224,12 +224,16 @@ describe("admin transaction service", () => {
   });
 
   it("records failed item history when admin rejects a harga tetap proof", async () => {
+    const rejectedAt = new Date("2026-06-03T10:00:00.000Z");
+    vi.useFakeTimers();
+    vi.setSystemTime(rejectedAt);
     const updatedTransaction = {
       ...makeTransactionJoin("bukti_diunggah", "fixed_price").transaction,
       status: "ditolak_bukti",
       rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
       verifiedByUserId: "admin-1",
-      verifiedAt: new Date("2026-06-03T10:00:00.000Z")
+      verifiedAt: rejectedAt,
+      updatedAt: rejectedAt
     };
     mocks.query.limit
       .mockResolvedValueOnce([makeTransactionJoin("bukti_diunggah", "fixed_price")])
@@ -250,6 +254,7 @@ describe("admin transaction service", () => {
     });
     const createMarketingValuesSpy = vi.fn().mockResolvedValue(undefined);
     const statusHistoryValuesSpy = mockInsertValues();
+    const relistHistoryValuesSpy = mockInsertValues();
 
     mocks.db.update
       .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
@@ -261,6 +266,9 @@ describe("admin transaction service", () => {
       }))
       .mockImplementationOnce(() => ({
         values: statusHistoryValuesSpy
+      }))
+      .mockImplementationOnce(() => ({
+        values: relistHistoryValuesSpy
       }));
 
     await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
@@ -273,7 +281,18 @@ describe("admin transaction service", () => {
         oldStatus: "dipasarkan",
         newStatus: "gagal",
         changedByUserId: "admin-1",
-        note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal uang yang dikirim tidak sesuai harga barang."
+        note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal uang yang dikirim tidak sesuai harga barang.",
+        createdAt: rejectedAt
+      })
+    );
+    expect(relistHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        oldStatus: "gagal",
+        newStatus: "dipasarkan",
+        changedByUserId: null,
+        note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
+        createdAt: rejectedAt
       })
     );
     expect(mocks.serializeAdminTransaction).toHaveBeenLastCalledWith(
@@ -324,6 +343,7 @@ describe("admin transaction service", () => {
       returning: vi.fn().mockResolvedValue([{ id: "pm-fixed-iteration-6" }])
     });
     const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
+    const relistHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
 
     mocks.db.update
       .mockImplementationOnce(() => ({ set: transactionSetSpy }))
@@ -331,7 +351,8 @@ describe("admin transaction service", () => {
       .mockImplementationOnce(() => ({ set: updateItemSetSpy }));
     mocks.db.insert
       .mockImplementationOnce(() => ({ values: createMarketingValuesSpy }))
-      .mockImplementationOnce(() => ({ values: statusHistoryValuesSpy }));
+      .mockImplementationOnce(() => ({ values: statusHistoryValuesSpy }))
+      .mockImplementationOnce(() => ({ values: relistHistoryValuesSpy }));
 
     await rejectAdminTransactionProof("unit-1", "admin-1", "trx-fixed-rejected", {
       reason: "Uang dikirim bukan ke rekening tujuan"
@@ -374,7 +395,18 @@ describe("admin transaction service", () => {
         oldStatus: "dipasarkan",
         newStatus: "gagal",
         changedByUserId: "admin-1",
-        note: expect.stringMatching(/harga tetap ditolak/i)
+        note: expect.stringMatching(/harga tetap ditolak/i),
+        createdAt: rejectedAt
+      })
+    );
+    expect(relistHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        barangId: "barang-1",
+        oldStatus: "gagal",
+        newStatus: "dipasarkan",
+        changedByUserId: null,
+        note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
+        createdAt: rejectedAt
       })
     );
     expectTransactionViewsRevalidated();
