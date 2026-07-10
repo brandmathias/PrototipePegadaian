@@ -1,9 +1,12 @@
 import { getAuthenticatedLoginRedirectPath } from "@/lib/auth/guards";
 import { getServerSession } from "@/lib/auth/session";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const session = await getServerSession();
   const redirectPath = getAuthenticatedLoginRedirectPath(session?.user) ?? "/katalog";
 
-  return Response.redirect(new URL(redirectPath, request.url), 307);
+  return new Response(null, {
+    status: 307,
+    headers: { Location: redirectPath }
+  });
 }

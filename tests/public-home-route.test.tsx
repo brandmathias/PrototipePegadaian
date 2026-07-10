@@ -13,7 +13,7 @@ vi.mock("@/lib/auth/session", () => ({
 
 import { GET } from "@/app/route";
 
-const rootRequest = () => new Request("https://app.example.test/");
+const rootRequest = () => new Request("http://0.0.0.0:3000/");
 
 describe("public home route", () => {
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe("public home route", () => {
     const response = await GET(rootRequest());
 
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe(`https://app.example.test${expectedPath}`);
+    expect(response.headers.get("location")).toBe(expectedPath);
   });
 
   it("redirects guests from the root page to the catalog", async () => {
@@ -52,6 +52,6 @@ describe("public home route", () => {
     const response = await GET(rootRequest());
 
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("https://app.example.test/katalog");
+    expect(response.headers.get("location")).toBe("/katalog");
   });
 });
