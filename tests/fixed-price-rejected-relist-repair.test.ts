@@ -4,7 +4,10 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL,
+  DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL,
   FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL,
+  SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL,
   repairFixedPriceRejectedRelists,
   type FixedPriceRejectedRelistCandidate
 } from "@/lib/db/fixed-price-rejected-relist-repair";
@@ -70,15 +73,32 @@ describe("fixed-price rejected relist repair", () => {
     );
   });
 
+  it("cleans legacy repair audit rows and timestamps even when no stuck session remains", async () => {
+    const client = makeClient([]);
+
+    const result = await repairFixedPriceRejectedRelists(client, { apply: true });
+
+    expect(result).toEqual({
+      applied: 0,
+      candidates: [],
+      skipped: 0
+    });
+    expect(client.query).toHaveBeenCalledWith("begin");
+    expect(client.query).toHaveBeenCalledWith(DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL);
+    expect(client.query).toHaveBeenCalledWith(CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL);
+    expect(client.query).toHaveBeenCalledWith(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL);
+    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).toContain(
+      `"created_by_user_id" = coalesce`
+    );
+    expect(client.query).toHaveBeenCalledWith("commit");
+  });
+
   it("archives the rejected active session and creates the next fixed-price iteration", async () => {
     const client = makeClient([candidate]);
 
     const result = await repairFixedPriceRejectedRelists(client, {
       apply: true,
-      idFactory: vi
-        .fn()
-        .mockReturnValueOnce("pm-fixed-iterasi-6")
-        .mockReturnValueOnce("history-fixed-reject"),
+      idFactory: vi.fn().mockReturnValueOnce("pm-fixed-iterasi-6"),
       nowFactory: () => new Date("2026-07-06T08:00:00.000Z")
     });
 
@@ -104,16 +124,9 @@ describe("fixed-price rejected relist repair", () => {
         rejectedAt
       ])
     );
-    expect(client.query).toHaveBeenCalledWith(
+    expect(client.query).not.toHaveBeenCalledWith(
       expect.stringContaining(`insert into "riwayat_status_barang"`),
-      expect.arrayContaining([
-        "history-fixed-reject",
-        "barang-emas-1",
-        "dipasarkan",
-        "admin-verifikator",
-        "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6.",
-        rejectedAt
-      ])
+      expect.anything()
     );
   });
 

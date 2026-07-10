@@ -137,32 +137,68 @@ set "status" = 'dipasarkan',
 where "id" = $1
 `.trim();
 
-const INSERT_REPAIR_HISTORY_SQL = `
-insert into "riwayat_status_barang" (
-  "id",
-  "barang_id",
-  "old_status",
-  "new_status",
-  "changed_by_user_id",
-  "note",
-  "created_at"
-) values (
-  $1,
-  $2,
-  $3,
-  'gagal',
-  $4,
-  $5,
-  $6
-)
+export const DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL = `
+delete from "riwayat_status_barang"
+where "new_status" = 'gagal'
+  and (
+    "note" ilike 'Repair DB:%'
+    or "note" ilike 'Repair DB production:%'
+    or (
+      "note" ilike 'Bukti pembayaran harga tetap ditolak admin unit.%'
+      and "note" ilike '%Barang dipasarkan ulang otomatis ke iterasi %'
+    )
+  )
 `.trim();
 
-function buildRejectedRelistAuditNote(candidate: FixedPriceRejectedRelistCandidate, nextIteration: number) {
-  const reason = candidate.rejection_reason?.trim();
-  const reasonText = reason && reason !== "-" ? ` Alasan: ${reason.replace(/[.!?]+$/u, "")}.` : "";
+export const CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL = `
+update "riwayat_status_barang"
+set "note" = regexp_replace(
+  "note",
+  ' Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya[.]?$',
+  '',
+  'i'
+)
+where "new_status" = 'gagal'
+  and "note" ilike 'Verifikasi bukti pembayaran harga tetap ditolak admin unit.%'
+  and "note" ilike '%Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.%'
+`.trim();
 
-  return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${nextIteration}.`;
-}
+export const SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL = `
+with rejected_relist as (
+  select distinct on (next_p."id")
+    next_p."id" as next_marketing_id,
+    coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at,
+    t."verified_by_user_id" as rejected_by_user_id
+  from "pemasaran" previous_p
+  inner join "transaksi" t
+    on t."pemasaran_id" = previous_p."id"
+   and t."type" = 'fixed_price'
+   and t."status" = 'ditolak_bukti'
+  inner join "pemasaran" next_p
+    on next_p."barang_id" = previous_p."barang_id"
+   and next_p."mode" = 'fixed_price'
+   and next_p."iteration" = previous_p."iteration" + 1
+  where previous_p."mode" = 'fixed_price'
+  order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+)
+update "pemasaran" relisted
+set "starts_at" = rejected_relist.rejected_at,
+    "created_at" = rejected_relist.rejected_at,
+    "created_by_user_id" = coalesce(
+      rejected_relist.rejected_by_user_id,
+      relisted."created_by_user_id"
+    )
+from rejected_relist
+where relisted."id" = rejected_relist.next_marketing_id
+  and (
+    relisted."starts_at" is distinct from rejected_relist.rejected_at
+    or relisted."created_at" is distinct from rejected_relist.rejected_at
+    or (
+      rejected_relist.rejected_by_user_id is not null
+      and relisted."created_by_user_id" is distinct from rejected_relist.rejected_by_user_id
+    )
+  )
+`.trim();
 
 function resolveRejectedRelistTimestamp(candidate: FixedPriceRejectedRelistCandidate, fallback: Date) {
   if (!candidate.rejected_at) {
@@ -187,7 +223,7 @@ export async function repairFixedPriceRejectedRelists(
 ) {
   const candidates = await listFixedPriceRejectedRelistCandidates(client);
 
-  if (!options.apply || candidates.length === 0) {
+  if (!options.apply) {
     return { applied: 0, candidates, skipped: 0 };
   }
 
@@ -198,6 +234,10 @@ export async function repairFixedPriceRejectedRelists(
 
   await client.query("begin");
   try {
+    await client.query(DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL);
+    await client.query(CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL);
+    await client.query(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL);
+
     for (const candidate of candidates) {
       const price = candidate.price ?? candidate.amount;
       if (!price) {
@@ -224,14 +264,6 @@ export async function repairFixedPriceRejectedRelists(
         now
       ]);
       await client.query(KEEP_ITEM_MARKETED_SQL, [candidate.barang_id, now]);
-      await client.query(INSERT_REPAIR_HISTORY_SQL, [
-        idFactory(),
-        candidate.barang_id,
-        candidate.item_status,
-        actorId,
-        buildRejectedRelistAuditNote(candidate, nextIteration),
-        now
-      ]);
 
       applied += 1;
     }

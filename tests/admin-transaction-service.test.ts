@@ -273,7 +273,7 @@ describe("admin transaction service", () => {
         oldStatus: "dipasarkan",
         newStatus: "gagal",
         changedByUserId: "admin-1",
-        note: expect.stringMatching(/harga tetap ditolak/i)
+        note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal uang yang dikirim tidak sesuai harga barang."
       })
     );
     expect(mocks.serializeAdminTransaction).toHaveBeenLastCalledWith(

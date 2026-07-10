@@ -3187,8 +3187,8 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
 
   if (isFixedPricePaymentRejected(auction)) {
     const rejectionDetail = auction.rejectionReason
-      ? `Bukti pembayaran ditolak admin unit. Alasan: ${auction.rejectionReason}. Transaksi dibatalkan dan barang dapat kembali tersedia di katalog pada iterasi berikutnya.`
-      : "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang dapat kembali tersedia di katalog pada iterasi berikutnya.";
+      ? `Bukti pembayaran ditolak admin unit. Alasan: ${auction.rejectionReason}. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.`
+      : "Bukti pembayaran ditolak admin unit. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.";
 
     return {
       badgeClassName: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c]",

@@ -272,7 +272,7 @@ async function relistRejectedFixedPriceMarketing(
     oldStatus: input.itemStatus,
     newStatus: "gagal",
     changedByUserId: input.adminId,
-    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}. Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.`
+    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}.`
   });
 }
 

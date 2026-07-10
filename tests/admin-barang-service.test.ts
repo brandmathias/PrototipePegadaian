@@ -638,7 +638,7 @@ describe("listAdminBarangHistory", () => {
       expect.arrayContaining([
         expect.objectContaining({
           actionKey: "dipasarkan",
-          note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 1."
+          note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap."
         }),
         expect.objectContaining({
           actionKey: "gagal",
@@ -646,7 +646,7 @@ describe("listAdminBarangHistory", () => {
         }),
         expect.objectContaining({
           actionKey: "dipasarkan",
-          note: "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup iterasi 2."
+          note: "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup."
         }),
         expect.objectContaining({
           actionKey: "terjual",
@@ -739,7 +739,7 @@ describe("listAdminBarangHistory", () => {
     expect(result.map((entry) => entry.note).join(" ")).not.toMatch(/Vickrey|Repair DB/i);
   });
 
-  it("renders repaired fixed-price relist audit notes without database maintenance wording", async () => {
+  it("omits database repair audit rows from the business chronology", async () => {
     const baseRow = {
       barangId: "barang-repair",
       barangCode: "BRG-REPAIR",
@@ -769,13 +769,7 @@ describe("listAdminBarangHistory", () => {
 
     const result = await listAdminBarangHistory("unit-1", undefined, "barang-repair");
 
-    expect(result[0]).toEqual(
-      expect.objectContaining({
-        actorName: "Sistem Otomatis",
-        note: "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal kurang. Barang dipasarkan ulang otomatis ke iterasi 6."
-      })
-    );
-    expect(result[0].note).not.toMatch(/Repair DB/i);
+    expect(result).toEqual([]);
   });
 
   it("normalizes production repair history and aligns fixed-price relist chronology to the rejection time", async () => {
@@ -872,28 +866,35 @@ describe("listAdminBarangHistory", () => {
     const result = await listAdminBarangHistory("unit-1", undefined, "barang-production-repair");
     const notes = result.map((entry) => entry.note).join(" ");
     const firstPublish = result.find((entry) => entry.id === "hist-published-generic");
-    const repairFailure = result.find((entry) => entry.id === "hist-repair-production");
-    const relistPublish = result.find(
-      (entry) => entry.actionKey === "dipasarkan" && entry.note.includes("iterasi 6")
+    const failedEntries = result.filter((entry) => entry.actionKey === "gagal");
+    const relistPublish = result.find((entry) => entry.id === "marketing-pm-6");
+    const rejectionMomentEntries = result.filter(
+      (entry) => entry.createdAt === rejectedAt.toISOString()
     );
 
-    expect(notes).not.toMatch(/Repair DB|production/i);
+    expect(notes).not.toMatch(/Repair DB|production|iterasi|dipasarkan ulang otomatis/i);
     expect(firstPublish).toEqual(
       expect.objectContaining({
-        note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 5."
+        note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap."
       })
     );
-    expect(repairFailure).toEqual(
+    expect(failedEntries).toEqual([
       expect.objectContaining({
+        id: "transaction-failed-pm-5",
         createdAt: rejectedAt.toISOString(),
-        note: "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6."
+        note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan."
       })
-    );
+    ]);
     expect(relistPublish).toEqual(
       expect.objectContaining({
+        actorName: "Maria Supit",
         createdAt: rejectedAt.toISOString(),
-        note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 6."
+        note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap."
       })
     );
+    expect(rejectionMomentEntries.map((entry) => entry.actionKey)).toEqual([
+      "gagal",
+      "dipasarkan"
+    ]);
   });
 });

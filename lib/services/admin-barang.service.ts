@@ -225,12 +225,15 @@ function formatRejectedRelistHistoryNote(repairNote: RepairRelistHistoryNote) {
   const reasonText =
     repairNote.reason && repairNote.reason !== "-" ? ` Alasan: ${appendSentencePeriod(repairNote.reason)}` : "";
 
-  return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${repairNote.iteration}.`;
+  return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText}`;
 }
 
-function formatMarketingPublishedHistoryNote(input: { iteration?: number | null; mode?: string | null }) {
+function formatMarketingPublishedHistoryNote(
+  input: { mode?: string | null },
+  options: { relisted?: boolean } = {}
+) {
   const modeLabel = formatMarketingModeLabel(input.mode);
-  return `Barang dipublikasikan ke katalog sebagai sesi ${modeLabel}${input.iteration ? ` iterasi ${input.iteration}` : ""}.`;
+  return `Barang dipublikasikan${options.relisted ? " kembali" : ""} ke katalog sebagai sesi ${modeLabel}.`;
 }
 
 function isGenericCatalogPublishNote(note: string | null | undefined) {
@@ -246,6 +249,9 @@ function normalizeHistoryNote(note: string | null | undefined) {
   }
 
   return value
+    .replace(/\s+Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya\.?$/iu, "")
+    .replace(/\s+Barang dipasarkan ulang otomatis ke iterasi\s+\d+\.?$/iu, "")
+    .replace(/\s+iterasi\s+\d+(?=\.)/giu, "")
     .replace(/\bVickrey Auction\b/giu, "Lelang Tertutup")
     .replace(/\bVickrey\b/giu, "Lelang Tertutup");
 }
@@ -408,21 +414,48 @@ function getRejectedFixedPriceTransactionTime(transaction: AdminBarangTransactio
   return transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt;
 }
 
-function getFixedPriceRelistPublishedAt(
+function getMarketingPublishContext(
   row: AdminBarangMarketingTimelineRow,
   previousMarketingById: Map<string, AdminBarangMarketingTimelineRow | null>,
   latestTransactionByMarketingId: Map<string, AdminBarangTransactionTimelineRow>
 ) {
   if (row.mode !== "fixed_price") {
-    return row.createdAt;
+    return {
+      actorName: row.actorName,
+      actorRole: row.actorRole,
+      createdAt: row.createdAt,
+      relisted: false
+    };
   }
 
   const previousMarketing = previousMarketingById.get(row.marketingId);
   if (!previousMarketing || previousMarketing.mode !== "fixed_price") {
-    return row.createdAt;
+    return {
+      actorName: row.actorName,
+      actorRole: row.actorRole,
+      createdAt: row.createdAt,
+      relisted: false
+    };
   }
 
-  return getRejectedFixedPriceTransactionTime(latestTransactionByMarketingId.get(previousMarketing.marketingId)) ?? row.createdAt;
+  const rejectedTransaction = latestTransactionByMarketingId.get(previousMarketing.marketingId);
+  const rejectedAt = getRejectedFixedPriceTransactionTime(rejectedTransaction);
+
+  if (!rejectedAt) {
+    return {
+      actorName: row.actorName,
+      actorRole: row.actorRole,
+      createdAt: row.createdAt,
+      relisted: false
+    };
+  }
+
+  return {
+    actorName: rejectedTransaction?.actorName ?? row.actorName,
+    actorRole: rejectedTransaction?.actorRole ?? row.actorRole,
+    createdAt: rejectedAt,
+    relisted: true
+  };
 }
 
 function findNearbyMarketingRow(
@@ -633,9 +666,10 @@ export async function listAdminBarangHistory(
     }
 
     const repairRelistNote = parseRepairRelistHistoryNote(row.note);
-    const repairedAt = repairRelistNote
-      ? getRejectedFixedPriceTransactionTime(latestTransactionByMarketingId.get(repairRelistNote.marketingId))
-      : null;
+    if (repairRelistNote) {
+      continue;
+    }
+
     const publishedMarketing =
       action.actionKey === "dipasarkan" && isGenericCatalogPublishNote(row.note)
         ? findNearbyMarketingRow(marketingRows, {
@@ -643,7 +677,6 @@ export async function listAdminBarangHistory(
             createdAt: row.createdAt
           })
         : null;
-    const createdAt = repairedAt ?? row.createdAt;
     const entry = {
       id: row.id,
       barangId: row.barangId,
@@ -661,8 +694,8 @@ export async function listAdminBarangHistory(
       note: publishedMarketing ? formatMarketingPublishedHistoryNote(publishedMarketing) : normalizeHistoryNote(row.note),
       actorName: normalizeHistoryActorName(row.actorName),
       actorRole: row.actorRole,
-      createdAt: createdAt.toISOString(),
-      createdAtLabel: formatAppDateTime(createdAt)
+      createdAt: row.createdAt.toISOString(),
+      createdAtLabel: formatAppDateTime(row.createdAt)
     };
 
     if (!hasDuplicateHistoryEntry(normalizedStatusRows, entry)) {
@@ -695,16 +728,18 @@ export async function listAdminBarangHistory(
   const nextMarketingStartById = getNextMarketingStartById(marketingRows);
 
   for (const row of marketingRows) {
-    const publishedAt = getFixedPriceRelistPublishedAt(row, previousMarketingById, latestTransactionByMarketingId);
+    const publishContext = getMarketingPublishContext(row, previousMarketingById, latestTransactionByMarketingId);
     const marketingEntry = createSyntheticHistoryEntry(row, {
       id: `marketing-${row.marketingId}`,
       actionKey: "dipasarkan",
       actionLabel: "Dipasarkan",
       actionTone: "success",
-      note: formatMarketingPublishedHistoryNote(row),
-      actorName: row.actorName,
-      actorRole: row.actorRole,
-      createdAt: publishedAt
+      note: formatMarketingPublishedHistoryNote(row, {
+        relisted: publishContext.relisted
+      }),
+      actorName: publishContext.actorName,
+      actorRole: publishContext.actorRole,
+      createdAt: publishContext.createdAt
     });
 
     if (!hasNearbyHistoryEntry(timelineEntries, marketingEntry)) {
@@ -793,8 +828,18 @@ export async function listAdminBarangHistory(
     }
   }
 
-  const sortedHistory = timelineEntries
-    .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime());
+  const actionOrder: Record<AdminBarangHistoryEntry["actionKey"], number> = {
+    gagal: 0,
+    dipasarkan: 1,
+    terjual: 2,
+    ditebus: 3,
+    perpanjangan: 4,
+    input_baru: 5
+  };
+  const sortedHistory = timelineEntries.sort((left, right) => {
+    const timeDelta = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    return timeDelta || actionOrder[left.actionKey] - actionOrder[right.actionKey];
+  });
 
   return typeof limit === "number" ? sortedHistory.slice(0, limit) : sortedHistory;
 }
