@@ -741,7 +741,7 @@ describe("publishAdminBarang", () => {
       expect.objectContaining({
         oldStatus: "dipasarkan",
         newStatus: "dipasarkan",
-        note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog."
+        note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
       })
     );
   });

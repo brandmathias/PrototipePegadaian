@@ -154,6 +154,13 @@ insert into "riwayat_status_barang" (
 )
 `.trim();
 
+function buildRejectedRelistAuditNote(candidate: FixedPriceRejectedRelistCandidate, nextIteration: number) {
+  const reason = candidate.rejection_reason?.trim();
+  const reasonText = reason && reason !== "-" ? ` Alasan: ${reason.replace(/[.!?]+$/u, "")}.` : "";
+
+  return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${nextIteration}.`;
+}
+
 export async function listFixedPriceRejectedRelistCandidates(client: RepairQueryClient) {
   return (await client.query(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL)).rows as FixedPriceRejectedRelistCandidate[];
 }
@@ -210,7 +217,7 @@ export async function repairFixedPriceRejectedRelists(
         candidate.barang_id,
         candidate.item_status,
         actorId,
-        `Repair DB: bukti pembayaran harga tetap transaksi ${candidate.transaction_id} sudah ditolak, tetapi pemasaran ${candidate.marketing_id} masih aktif. Alasan: ${candidate.rejection_reason ?? "-"}. Barang dipasarkan ulang otomatis ke iterasi ${nextIteration}.`,
+        buildRejectedRelistAuditNote(candidate, nextIteration),
         now
       ]);
 

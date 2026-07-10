@@ -107,7 +107,8 @@ describe("fixed-price rejected relist repair", () => {
         "history-fixed-reject",
         "barang-emas-1",
         "dipasarkan",
-        "admin-verifikator"
+        "admin-verifikator",
+        "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6."
       ])
     );
   });

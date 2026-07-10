@@ -655,4 +655,126 @@ describe("listAdminBarangHistory", () => {
       ])
     );
   });
+
+  it("keeps failed marketing chronology synced to the real failure event once", async () => {
+    const baseRow = {
+      barangId: "barang-chronology",
+      barangCode: "BRG-CHRONOLOGY",
+      barangName: "Kalung Salib Emas 17K",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Kalung emas.",
+      specifications: {},
+      ownerName: "Nasabah Chronology",
+      customerNumber: "NSB-CHRONOLOGY"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-failed",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal.",
+            actorName: null,
+            actorRole: null,
+            createdAt: new Date("2026-05-27T07:51:00.000Z")
+          },
+          {
+            ...baseRow,
+            id: "hist-failed-duplicate",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Sesi Vickrey berakhir tanpa penawar sehingga barang masuk status gagal.",
+            actorName: null,
+            actorRole: null,
+            createdAt: new Date("2026-05-27T07:51:30.000Z")
+          },
+          {
+            ...baseRow,
+            id: "hist-input",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang hasil input gadai dicatat sebagai barang jaminan unit.",
+            actorName: "Admin Input",
+            actorRole: "admin_unit",
+            createdAt: new Date("2026-05-26T07:28:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-vickrey-failed",
+            mode: "vickrey",
+            status: "gagal",
+            iteration: 1,
+            createdAt: new Date("2026-05-26T07:36:00.000Z"),
+            updatedAt: new Date("2026-05-27T07:51:00.000Z"),
+            endsAt: new Date("2026-05-27T07:36:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 0
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-1", undefined, "barang-chronology");
+    const failedEntries = result.filter((entry) => entry.actionKey === "gagal");
+
+    expect(failedEntries).toHaveLength(1);
+    expect(failedEntries[0]).toEqual(
+      expect.objectContaining({
+        id: "hist-failed",
+        createdAt: "2026-05-27T07:51:00.000Z",
+        note: "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
+      })
+    );
+    expect(result.map((entry) => entry.actionKey)).toEqual(["gagal", "dipasarkan", "input_baru"]);
+    expect(result.map((entry) => entry.note).join(" ")).not.toMatch(/Vickrey|Repair DB/i);
+  });
+
+  it("renders repaired fixed-price relist audit notes without database maintenance wording", async () => {
+    const baseRow = {
+      barangId: "barang-repair",
+      barangCode: "BRG-REPAIR",
+      barangName: "Jam Tangan Harga Tetap",
+      category: "aksesoris",
+      condition: "baik",
+      description: "Jam tangan.",
+      specifications: {},
+      ownerName: "Nasabah Repair",
+      customerNumber: "NSB-REPAIR",
+      actorName: "Repair DB",
+      actorRole: "admin_unit"
+    };
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockHistoryQuery([
+        {
+          ...baseRow,
+          id: "hist-repair",
+          oldStatus: "dipasarkan",
+          newStatus: "gagal",
+          note: "Repair DB: bukti pembayaran harga tetap transaksi trx-1 sudah ditolak, tetapi pemasaran pm-5 masih aktif. Alasan: Nominal kurang. Barang dipasarkan ulang otomatis ke iterasi 6.",
+          createdAt: new Date("2026-07-06T08:00:00.000Z")
+        }
+      ])
+    );
+
+    const result = await listAdminBarangHistory("unit-1", undefined, "barang-repair");
+
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        actorName: "Sistem Otomatis",
+        note: "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal kurang. Barang dipasarkan ulang otomatis ke iterasi 6."
+      })
+    );
+    expect(result[0].note).not.toMatch(/Repair DB/i);
+  });
 });

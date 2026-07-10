@@ -109,6 +109,8 @@ type AdminBarangMarketingTimelineRow = AdminBarangTimelineSourceRow & {
   status: string;
   iteration: number | null;
   createdAt: Date;
+  updatedAt: Date | null;
+  endsAt: Date | null;
   actorName: string | null;
   actorRole: string | null;
   bidCount: number;
@@ -194,6 +196,39 @@ function appendSentencePeriod(value: string) {
   return `${value.trim().replace(/[.!?]+$/u, "")}.`;
 }
 
+function normalizeHistoryNote(note: string | null | undefined) {
+  const value = String(note ?? "").trim();
+  const repairRelistMatch = value.match(
+    /^Repair DB:\s*bukti pembayaran harga tetap transaksi\s+\S+\s+sudah ditolak,\s+tetapi pemasaran\s+\S+\s+masih aktif\.\s+Alasan:\s*(.*?)\.\s+Barang dipasarkan ulang otomatis ke iterasi\s+(\d+)\.?$/iu
+  );
+
+  if (repairRelistMatch) {
+    const reason = repairRelistMatch[1]?.trim();
+    const iteration = repairRelistMatch[2];
+    const reasonText = reason && reason !== "-" ? ` Alasan: ${appendSentencePeriod(reason)}` : "";
+
+    return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${iteration}.`;
+  }
+
+  return value
+    .replace(/\bVickrey Auction\b/giu, "Lelang Tertutup")
+    .replace(/\bVickrey\b/giu, "Lelang Tertutup");
+}
+
+function normalizeHistoryActorName(actorName: string | null | undefined) {
+  const value = String(actorName ?? "").trim();
+
+  if (!value || /^repair db$/iu.test(value)) {
+    return "Sistem Otomatis";
+  }
+
+  return value;
+}
+
+function normalizeHistoryNoteForComparison(note: string) {
+  return normalizeHistoryNote(note).toLowerCase().replace(/\s+/gu, " ").trim();
+}
+
 function createSyntheticHistoryEntry(
   source: AdminBarangTimelineSourceRow,
   input: {
@@ -221,8 +256,8 @@ function createSyntheticHistoryEntry(
     actionKey: input.actionKey,
     actionLabel: input.actionLabel,
     actionTone: input.actionTone,
-    note: input.note,
-    actorName: input.actorName ?? "Sistem Otomatis",
+    note: normalizeHistoryNote(input.note),
+    actorName: normalizeHistoryActorName(input.actorName),
     actorRole: input.actorRole ?? null,
     createdAt: input.createdAt.toISOString(),
     createdAtLabel: formatAppDateTime(input.createdAt)
@@ -243,6 +278,67 @@ function hasNearbyHistoryEntry(
     const entryTime = new Date(entry.createdAt).getTime();
 
     return Math.abs(entryTime - candidateTime) <= 60_000;
+  });
+}
+
+function hasDuplicateHistoryEntry(
+  entries: AdminBarangHistoryEntry[],
+  candidate: Pick<AdminBarangHistoryEntry, "actionKey" | "barangId" | "createdAt" | "note">
+) {
+  const candidateTime = new Date(candidate.createdAt).getTime();
+  const candidateNote = normalizeHistoryNoteForComparison(candidate.note);
+
+  return entries.some((entry) => {
+    if (entry.barangId !== candidate.barangId || entry.actionKey !== candidate.actionKey) {
+      return false;
+    }
+
+    if (normalizeHistoryNoteForComparison(entry.note) !== candidateNote) {
+      return false;
+    }
+
+    const entryTime = new Date(entry.createdAt).getTime();
+
+    return Math.abs(entryTime - candidateTime) <= 60_000;
+  });
+}
+
+function getNextMarketingStartById(rows: AdminBarangMarketingTimelineRow[]) {
+  const groupedRows = rows.reduce((map, row) => {
+    const collection = map.get(row.barangId) ?? [];
+    collection.push(row);
+    map.set(row.barangId, collection);
+    return map;
+  }, new Map<string, AdminBarangMarketingTimelineRow[]>());
+  const nextMarketingStartById = new Map<string, Date | null>();
+
+  for (const collection of groupedRows.values()) {
+    const sortedRows = [...collection].sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
+
+    sortedRows.forEach((row, index) => {
+      nextMarketingStartById.set(row.marketingId, sortedRows[index + 1]?.createdAt ?? null);
+    });
+  }
+
+  return nextMarketingStartById;
+}
+
+function hasStatusFailureForMarketingWindow(
+  entries: AdminBarangHistoryEntry[],
+  row: AdminBarangMarketingTimelineRow,
+  nextMarketingStartedAt: Date | null | undefined
+) {
+  const startedAt = row.createdAt.getTime();
+  const nextStartedAt = nextMarketingStartedAt?.getTime() ?? Number.POSITIVE_INFINITY;
+
+  return entries.some((entry) => {
+    if (entry.barangId !== row.barangId || entry.actionKey !== "gagal") {
+      return false;
+    }
+
+    const entryTime = new Date(entry.createdAt).getTime();
+
+    return entryTime >= startedAt && entryTime <= nextStartedAt;
   });
 }
 
@@ -377,6 +473,8 @@ export async function listAdminBarangHistory(
         status: pemasaran.status,
         iteration: pemasaran.iteration,
         createdAt: pemasaran.createdAt,
+        updatedAt: pemasaran.updatedAt,
+        endsAt: pemasaran.endsAt,
         actorName: marketingCreator.name,
         actorRole: marketingCreator.role,
         bidCount: sql<number>`count(${bids.id})`
@@ -427,7 +525,7 @@ export async function listAdminBarangHistory(
       continue;
     }
 
-    normalizedStatusRows.push({
+    const entry = {
       id: row.id,
       barangId: row.barangId,
       barangCode: row.barangCode,
@@ -441,12 +539,16 @@ export async function listAdminBarangHistory(
       actionKey: action.actionKey,
       actionLabel: action.actionLabel,
       actionTone: action.actionTone,
-      note: row.note,
-      actorName: row.actorName ?? "Sistem Otomatis",
+      note: normalizeHistoryNote(row.note),
+      actorName: normalizeHistoryActorName(row.actorName),
       actorRole: row.actorRole,
       createdAt: row.createdAt.toISOString(),
       createdAtLabel: formatAppDateTime(row.createdAt)
-    });
+    };
+
+    if (!hasDuplicateHistoryEntry(normalizedStatusRows, entry)) {
+      normalizedStatusRows.push(entry);
+    }
   }
 
   const normalizedExtensionRows = extensionRows.map((row) => ({
@@ -463,14 +565,15 @@ export async function listAdminBarangHistory(
     actionKey: "perpanjangan" as const,
     actionLabel: "Diperpanjang",
     actionTone: "warning" as const,
-    note: row.note || "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran.",
-    actorName: row.actorName ?? "Sistem Otomatis",
+    note: normalizeHistoryNote(row.note || "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran."),
+    actorName: normalizeHistoryActorName(row.actorName),
     actorRole: row.actorRole,
     createdAt: row.createdAt.toISOString(),
     createdAtLabel: formatAppDateTime(row.createdAt)
   }));
 
   const timelineEntries = [...normalizedStatusRows, ...normalizedExtensionRows];
+  const nextMarketingStartById = getNextMarketingStartById(marketingRows);
   const latestTransactionByMarketingId = transactionRows.reduce((map, row) => {
     if (!map.has(row.marketingId)) {
       map.set(row.marketingId, row);
@@ -521,6 +624,12 @@ export async function listAdminBarangHistory(
     }
 
     if (transaction?.status === "ditolak_bukti") {
+      const nextMarketingStartedAt = nextMarketingStartById.get(row.marketingId);
+
+      if (hasStatusFailureForMarketingWindow(timelineEntries, row, nextMarketingStartedAt)) {
+        continue;
+      }
+
       const failedEntry = createSyntheticHistoryEntry(row, {
         id: `transaction-failed-${row.marketingId}`,
         actionKey: "gagal",
@@ -545,6 +654,12 @@ export async function listAdminBarangHistory(
       continue;
     }
 
+    const nextMarketingStartedAt = nextMarketingStartById.get(row.marketingId);
+
+    if (hasStatusFailureForMarketingWindow(timelineEntries, row, nextMarketingStartedAt)) {
+      continue;
+    }
+
     const failedEntry = createSyntheticHistoryEntry(row, {
       id: `marketing-failed-${row.marketingId}`,
       actionKey: "gagal",
@@ -558,7 +673,7 @@ export async function listAdminBarangHistory(
           : "Sesi Harga Tetap ditutup sebagai pemasaran gagal dan membutuhkan tindak lanjut unit.",
       actorName: transaction?.actorName,
       actorRole: transaction?.actorRole,
-      createdAt: transaction?.paymentDeadline ?? transaction?.updatedAt ?? row.createdAt
+      createdAt: transaction?.paymentDeadline ?? transaction?.updatedAt ?? row.updatedAt ?? row.endsAt ?? row.createdAt
     });
 
     if (!hasNearbyHistoryEntry(timelineEntries, failedEntry)) {
