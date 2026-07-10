@@ -7340,6 +7340,7 @@ const monitoringChartToneClasses: Record<
     value: "text-[#1d4ed8]",
   },
 };
+const monitoringChartPlotFrameClass = "absolute bottom-[4.6rem] top-5";
 type MonitoringChartTooltip = {
   anchorX: number;
   id: string;
@@ -7351,6 +7352,22 @@ type MonitoringChartTooltip = {
 
 function getCompactUnitName(name: string) {
   return name.replace(/^Pegadaian\s+/i, "");
+}
+
+function getMonitoringChartAxisTicks(maxValue: number) {
+  const roundedMax = Math.max(1, Math.ceil(maxValue));
+
+  if (roundedMax <= 5) {
+    return Array.from(
+      { length: roundedMax + 1 },
+      (_, index) => roundedMax - index,
+    );
+  }
+
+  const step = Math.ceil(roundedMax / 4);
+  const axisMax = step * 4;
+
+  return Array.from({ length: 5 }, (_, index) => axisMax - step * index);
 }
 
 export function SuperAdminMonitoringPage({
@@ -7416,6 +7433,8 @@ export function SuperAdminMonitoringPage({
       monitoringChartSeries.map((series) => Number(row[series.key] ?? 0)),
     ),
   );
+  const chartAxisTicks = getMonitoringChartAxisTicks(maxChartValue);
+  const chartAxisMaxValue = chartAxisTicks[0] ?? maxChartValue;
   const chartMinWidth = Math.max(920, filteredUnitRows.length * 128);
   const activeUnitCount = unitRows.length;
   const topMarketedUnit = [...unitRows].sort(
@@ -7672,91 +7691,115 @@ export function SuperAdminMonitoringPage({
                 ref={chartPlotRef}
                 style={{ minWidth: `${chartMinWidth}px` }}
               >
-                <div className="absolute inset-x-0 bottom-[4.6rem] top-5 flex flex-col justify-between">
-                  {[4, 3, 2, 1, 0].map((tick) => (
+                <span className="absolute left-11 top-0 text-[0.68rem] font-black uppercase text-[#536279]">
+                  Jumlah Barang
+                </span>
+                <div
+                  className={cn(
+                    monitoringChartPlotFrameClass,
+                    "inset-x-0 flex flex-col justify-between",
+                  )}
+                  data-testid="monitoring-chart-y-axis"
+                >
+                  {chartAxisTicks.map((tick) => (
                     <div className="flex items-center gap-3" key={tick}>
-                      <span className="w-8 text-right text-xs font-semibold text-[#435476]">
-                        {Math.round((maxChartValue / 4) * tick)}
+                      <span
+                        className="w-8 text-right text-xs font-semibold text-[#435476]"
+                        data-monitoring-y-axis-tick={tick}
+                      >
+                        {tick}
                       </span>
-                      <span className="h-px flex-1 border-t border-dashed border-[#dce5ef]" />
+                      <span
+                        className={cn(
+                          "h-px flex-1 border-t",
+                          tick === 0
+                            ? "border-[#c9d6e1]"
+                            : "border-dashed border-[#dce5ef]",
+                        )}
+                      />
                     </div>
                   ))}
                 </div>
-                <div className="relative ml-11 flex h-full items-end gap-5 px-2 pb-12 pt-8">
+                <div
+                  className={cn(
+                    monitoringChartPlotFrameClass,
+                    "left-11 right-0 flex items-end gap-5 px-2",
+                  )}
+                  data-testid="monitoring-chart-bar-plot"
+                >
                   {filteredUnitRows.map((row) => (
                     <div
-                      className="flex min-w-[6.4rem] flex-1 flex-col items-center"
+                      className="flex min-w-[6.4rem] flex-1 items-end justify-center gap-1.5"
                       key={row.id}
                     >
-                      <div className="flex h-40 items-end justify-center gap-1.5">
-                        {monitoringChartSeries.map((series) => {
-                          const value = Number(row[series.key] ?? 0);
-                          const height =
-                            value > 0
-                              ? Math.max((value / maxChartValue) * 100, 8)
-                              : 1;
-                          const tooltipId = `${row.id}-${series.key}`;
-                          const active = activeChartTooltip?.id === tooltipId;
+                      {monitoringChartSeries.map((series) => {
+                        const value = Number(row[series.key] ?? 0);
+                        const height =
+                          value > 0
+                            ? Math.max((value / chartAxisMaxValue) * 100, 8)
+                            : 1;
+                        const tooltipId = `${row.id}-${series.key}`;
+                        const active = activeChartTooltip?.id === tooltipId;
 
-                          return (
-                            <div
-                              className="flex h-full flex-col items-center justify-end gap-1"
-                              key={series.key}
-                            >
-                              {value > 0 || filteredUnitRows.length <= 8 ? (
-                                <span className="text-[0.68rem] font-black text-[#13211c]">
-                                  {formatDashboardCount(value)}
-                                </span>
-                              ) : null}
-                              <div className="relative h-full w-4">
-                                <button
-                                  aria-describedby={
-                                    active
-                                      ? "monitoring-chart-tooltip"
-                                      : undefined
-                                  }
-                                  aria-label={`${series.label} ${row.unitName}: ${formatDashboardCount(value)} item`}
-                                  className={cn(
-                                    "absolute bottom-0 left-0 w-4 rounded-t-md border border-white/50 outline-none shadow-[0_10px_18px_-14px_rgba(15,23,42,0.5)] transition-[height,opacity,transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-x-125 hover:opacity-95 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
-                                    value > 0
-                                      ? series.barClass
-                                      : "bg-[#dfe6ee]",
-                                    active && "scale-x-125 opacity-95",
-                                  )}
-                                  onBlur={() => setActiveChartTooltip(null)}
-                                  onFocus={(event) =>
-                                    setAnchoredChartTooltip(event, {
-                                      id: tooltipId,
-                                      key: series.key,
-                                      label: series.label,
-                                      row,
-                                      value,
-                                    })
-                                  }
-                                  onMouseEnter={(event) =>
-                                    setAnchoredChartTooltip(event, {
-                                      id: tooltipId,
-                                      key: series.key,
-                                      label: series.label,
-                                      row,
-                                      value,
-                                    })
-                                  }
-                                  onMouseLeave={() =>
-                                    setActiveChartTooltip(null)
-                                  }
-                                  style={{ height: `${height}%` }}
-                                  type="button"
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-3 w-28 truncate text-center text-xs font-bold text-[#273954]">
+                        return (
+                          <div className="relative h-full w-4" key={series.key}>
+                            {value > 0 || filteredUnitRows.length <= 8 ? (
+                              <span
+                                className="absolute left-1/2 -translate-x-1/2 text-[0.68rem] font-black text-[#13211c]"
+                                style={{ bottom: `calc(${height}% + 0.3rem)` }}
+                              >
+                                {formatDashboardCount(value)}
+                              </span>
+                            ) : null}
+                            <button
+                              aria-describedby={
+                                active ? "monitoring-chart-tooltip" : undefined
+                              }
+                              aria-label={`${series.label} ${row.unitName}: ${formatDashboardCount(value)} item`}
+                              className={cn(
+                                "absolute bottom-0 left-0 w-4 rounded-t-md border border-white/50 outline-none shadow-[0_10px_18px_-14px_rgba(15,23,42,0.5)] transition-[height,opacity,transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-x-125 hover:opacity-95 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+                                value > 0 ? series.barClass : "bg-[#dfe6ee]",
+                                active && "scale-x-125 opacity-95",
+                              )}
+                              onBlur={() => setActiveChartTooltip(null)}
+                              onFocus={(event) =>
+                                setAnchoredChartTooltip(event, {
+                                  id: tooltipId,
+                                  key: series.key,
+                                  label: series.label,
+                                  row,
+                                  value,
+                                })
+                              }
+                              onMouseEnter={(event) =>
+                                setAnchoredChartTooltip(event, {
+                                  id: tooltipId,
+                                  key: series.key,
+                                  label: series.label,
+                                  row,
+                                  value,
+                                })
+                              }
+                              onMouseLeave={() => setActiveChartTooltip(null)}
+                              style={{ height: `${height}%` }}
+                              type="button"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute bottom-0 left-11 right-0 flex gap-5 px-2">
+                  {filteredUnitRows.map((row) => (
+                    <div
+                      className="min-w-[6.4rem] flex-1 text-center"
+                      key={row.id}
+                    >
+                      <p className="w-full truncate text-xs font-bold text-[#273954]">
                         {getCompactUnitName(row.unitName)}
                       </p>
-                      <p className="mt-0.5 text-center text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#536279]">
+                      <p className="mt-0.5 text-[0.62rem] font-bold uppercase text-[#536279]">
                         ({row.unitCode})
                       </p>
                     </div>

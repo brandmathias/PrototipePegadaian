@@ -718,6 +718,77 @@ describe("superadmin pages", () => {
     expect(screen.queryByText(/risk heat indicator/i)).not.toBeInTheDocument();
   }, 10000);
 
+  it("aligns monitoring chart bars with the item-count y-axis", () => {
+    render(
+      <SuperAdminMonitoringPage
+        data={
+          {
+            summary: {
+              headline: "Pantau seluruh unit dari satu control center.",
+              metrics: [{ label: "Total Unit", value: "3", detail: "3 aktif" }],
+              spotlight: [],
+              priorities: [],
+            },
+            unitRows: [
+              {
+                id: "unit-ranotana",
+                unitName: "UPC Ranotana",
+                unitCode: "CP-MND-11793",
+                collateralItems: 5,
+                marketedItems: 0,
+                soldItems: 0,
+                validatedTransactionValue: 0,
+                followUpItems: 0,
+                heldTransactions: 0,
+                activeViolations: 0,
+                status: "Aktif",
+              },
+              {
+                id: "unit-sarinah",
+                unitName: "UPC Sarinah",
+                unitCode: "CP-JKT-11888",
+                collateralItems: 5,
+                marketedItems: 0,
+                soldItems: 0,
+                validatedTransactionValue: 0,
+                followUpItems: 0,
+                heldTransactions: 0,
+                activeViolations: 0,
+                status: "Aktif",
+              },
+              {
+                id: "unit-wanea",
+                unitName: "UPC Wanea",
+                unitCode: "CP-MND-11787",
+                collateralItems: 4,
+                marketedItems: 5,
+                soldItems: 5,
+                validatedTransactionValue: 0,
+                followUpItems: 0,
+                heldTransactions: 0,
+                activeViolations: 0,
+                status: "Aktif",
+              },
+            ],
+            unitsNeedAttention: [],
+            pendingMonitoring: [],
+          } as any
+        }
+      />,
+    );
+
+    expect(screen.getByText("Jumlah Barang")).toBeInTheDocument();
+    const yAxis = screen.getByTestId("monitoring-chart-y-axis");
+    const barPlot = screen.getByTestId("monitoring-chart-bar-plot");
+    expect(yAxis).toHaveClass("top-5", "bottom-[4.6rem]");
+    expect(barPlot).toHaveClass("top-5", "bottom-[4.6rem]");
+    expect(
+      Array.from(
+        yAxis.querySelectorAll("[data-monitoring-y-axis-tick]"),
+      ).map((node) => node.textContent),
+    ).toEqual(["5", "4", "3", "2", "1", "0"]);
+  });
+
   it("renders superadmin unit detail as monitoring inventory without management forms", () => {
     const unitItems = Array.from({ length: 12 }, (_, index) => {
       const itemNumber = index + 1;
