@@ -358,6 +358,7 @@ describe("admin transaction service", () => {
         iteration: 6,
         status: "aktif",
         createdByUserId: "admin-1",
+        createdAt: rejectedAt,
         updatedAt: rejectedAt
       })
     );

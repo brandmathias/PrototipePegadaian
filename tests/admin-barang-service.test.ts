@@ -777,4 +777,123 @@ describe("listAdminBarangHistory", () => {
     );
     expect(result[0].note).not.toMatch(/Repair DB/i);
   });
+
+  it("normalizes production repair history and aligns fixed-price relist chronology to the rejection time", async () => {
+    const publishedAt = new Date("2026-06-22T21:00:00.000Z");
+    const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
+    const repairAt = new Date("2026-07-06T14:48:00.000Z");
+    const baseRow = {
+      barangId: "barang-production-repair",
+      barangCode: "BRG-PROD-REPAIR",
+      barangName: "Kalung Salib Emas 17K",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Kalung emas.",
+      specifications: {},
+      ownerName: "Nasabah Production",
+      customerNumber: "NSB-PROD"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-published-generic",
+            oldStatus: "jaminan",
+            newStatus: "dipasarkan",
+            note: "Barang dipublikasikan ke katalog.",
+            actorName: "Hendra Wijaya",
+            actorRole: "admin_unit",
+            createdAt: publishedAt
+          },
+          {
+            ...baseRow,
+            id: "hist-repair-production",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Repair DB production: bukti pembayaran harga tetap transaksi trx-ditolak sudah ditolak, tetapi pemasaran pm-5 masih aktif. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6.",
+            actorName: "Hendra Wijaya",
+            actorRole: "admin_unit",
+            createdAt: repairAt
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "pm-6",
+            mode: "fixed_price",
+            status: "aktif",
+            iteration: 6,
+            createdAt: repairAt,
+            updatedAt: repairAt,
+            endsAt: null,
+            actorName: "Hendra Wijaya",
+            actorRole: "admin_unit",
+            bidCount: 0
+          },
+          {
+            ...baseRow,
+            marketingId: "pm-5",
+            mode: "fixed_price",
+            status: "gagal",
+            iteration: 5,
+            createdAt: publishedAt,
+            updatedAt: rejectedAt,
+            endsAt: null,
+            actorName: "Hendra Wijaya",
+            actorRole: "admin_unit",
+            bidCount: 0
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "pm-5",
+            type: "fixed_price",
+            status: "ditolak_bukti",
+            rejectionReason: "Uang dikirim bukan ke rekening tujuan",
+            createdAt: new Date("2026-07-06T07:10:00.000Z"),
+            updatedAt: rejectedAt,
+            verifiedAt: rejectedAt,
+            completedAt: null,
+            paymentDeadline: null,
+            actorName: "Maria Supit",
+            actorRole: "admin_unit"
+          }
+        ])
+      );
+
+    const result = await listAdminBarangHistory("unit-1", undefined, "barang-production-repair");
+    const notes = result.map((entry) => entry.note).join(" ");
+    const firstPublish = result.find((entry) => entry.id === "hist-published-generic");
+    const repairFailure = result.find((entry) => entry.id === "hist-repair-production");
+    const relistPublish = result.find(
+      (entry) => entry.actionKey === "dipasarkan" && entry.note.includes("iterasi 6")
+    );
+
+    expect(notes).not.toMatch(/Repair DB|production/i);
+    expect(firstPublish).toEqual(
+      expect.objectContaining({
+        note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 5."
+      })
+    );
+    expect(repairFailure).toEqual(
+      expect.objectContaining({
+        createdAt: rejectedAt.toISOString(),
+        note: "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6."
+      })
+    );
+    expect(relistPublish).toEqual(
+      expect.objectContaining({
+        createdAt: rejectedAt.toISOString(),
+        note: "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap iterasi 6."
+      })
+    );
+  });
 });

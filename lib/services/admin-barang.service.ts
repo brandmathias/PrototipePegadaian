@@ -196,18 +196,53 @@ function appendSentencePeriod(value: string) {
   return `${value.trim().replace(/[.!?]+$/u, "")}.`;
 }
 
-function normalizeHistoryNote(note: string | null | undefined) {
+type RepairRelistHistoryNote = {
+  iteration: string;
+  marketingId: string;
+  reason: string | undefined;
+  transactionId: string;
+};
+
+function parseRepairRelistHistoryNote(note: string | null | undefined): RepairRelistHistoryNote | null {
   const value = String(note ?? "").trim();
   const repairRelistMatch = value.match(
-    /^Repair DB:\s*bukti pembayaran harga tetap transaksi\s+\S+\s+sudah ditolak,\s+tetapi pemasaran\s+\S+\s+masih aktif\.\s+Alasan:\s*(.*?)\.\s+Barang dipasarkan ulang otomatis ke iterasi\s+(\d+)\.?$/iu
+    /^Repair DB(?:\s+production)?:\s*bukti pembayaran harga tetap transaksi\s+(\S+)\s+sudah ditolak,\s+tetapi pemasaran\s+(\S+)\s+masih aktif\.\s+Alasan:\s*(.*?)\.\s+Barang dipasarkan ulang otomatis ke iterasi\s+(\d+)\.?$/iu
   );
 
-  if (repairRelistMatch) {
-    const reason = repairRelistMatch[1]?.trim();
-    const iteration = repairRelistMatch[2];
-    const reasonText = reason && reason !== "-" ? ` Alasan: ${appendSentencePeriod(reason)}` : "";
+  if (!repairRelistMatch) {
+    return null;
+  }
 
-    return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${iteration}.`;
+  return {
+    transactionId: repairRelistMatch[1],
+    marketingId: repairRelistMatch[2],
+    reason: repairRelistMatch[3]?.trim(),
+    iteration: repairRelistMatch[4]
+  };
+}
+
+function formatRejectedRelistHistoryNote(repairNote: RepairRelistHistoryNote) {
+  const reasonText =
+    repairNote.reason && repairNote.reason !== "-" ? ` Alasan: ${appendSentencePeriod(repairNote.reason)}` : "";
+
+  return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${repairNote.iteration}.`;
+}
+
+function formatMarketingPublishedHistoryNote(input: { iteration?: number | null; mode?: string | null }) {
+  const modeLabel = formatMarketingModeLabel(input.mode);
+  return `Barang dipublikasikan ke katalog sebagai sesi ${modeLabel}${input.iteration ? ` iterasi ${input.iteration}` : ""}.`;
+}
+
+function isGenericCatalogPublishNote(note: string | null | undefined) {
+  return /^Barang dipublikasikan ke katalog\.?$/iu.test(String(note ?? "").trim());
+}
+
+function normalizeHistoryNote(note: string | null | undefined) {
+  const value = String(note ?? "").trim();
+  const repairRelistNote = parseRepairRelistHistoryNote(value);
+
+  if (repairRelistNote) {
+    return formatRejectedRelistHistoryNote(repairRelistNote);
   }
 
   return value
@@ -218,7 +253,7 @@ function normalizeHistoryNote(note: string | null | undefined) {
 function normalizeHistoryActorName(actorName: string | null | undefined) {
   const value = String(actorName ?? "").trim();
 
-  if (!value || /^repair db$/iu.test(value)) {
+  if (!value || /^repair db(?:\s+production)?$/iu.test(value)) {
     return "Sistem Otomatis";
   }
 
@@ -323,6 +358,29 @@ function getNextMarketingStartById(rows: AdminBarangMarketingTimelineRow[]) {
   return nextMarketingStartById;
 }
 
+function getPreviousMarketingById(rows: AdminBarangMarketingTimelineRow[]) {
+  const groupedRows = rows.reduce((map, row) => {
+    const collection = map.get(row.barangId) ?? [];
+    collection.push(row);
+    map.set(row.barangId, collection);
+    return map;
+  }, new Map<string, AdminBarangMarketingTimelineRow[]>());
+  const previousMarketingById = new Map<string, AdminBarangMarketingTimelineRow | null>();
+
+  for (const collection of groupedRows.values()) {
+    const sortedRows = [...collection].sort((left, right) => {
+      const iterationDelta = Number(left.iteration ?? 0) - Number(right.iteration ?? 0);
+      return iterationDelta || left.createdAt.getTime() - right.createdAt.getTime();
+    });
+
+    sortedRows.forEach((row, index) => {
+      previousMarketingById.set(row.marketingId, sortedRows[index - 1] ?? null);
+    });
+  }
+
+  return previousMarketingById;
+}
+
 function hasStatusFailureForMarketingWindow(
   entries: AdminBarangHistoryEntry[],
   row: AdminBarangMarketingTimelineRow,
@@ -340,6 +398,47 @@ function hasStatusFailureForMarketingWindow(
 
     return entryTime >= startedAt && entryTime <= nextStartedAt;
   });
+}
+
+function getRejectedFixedPriceTransactionTime(transaction: AdminBarangTransactionTimelineRow | undefined) {
+  if (!transaction || transaction.type !== "fixed_price" || transaction.status !== "ditolak_bukti") {
+    return null;
+  }
+
+  return transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt;
+}
+
+function getFixedPriceRelistPublishedAt(
+  row: AdminBarangMarketingTimelineRow,
+  previousMarketingById: Map<string, AdminBarangMarketingTimelineRow | null>,
+  latestTransactionByMarketingId: Map<string, AdminBarangTransactionTimelineRow>
+) {
+  if (row.mode !== "fixed_price") {
+    return row.createdAt;
+  }
+
+  const previousMarketing = previousMarketingById.get(row.marketingId);
+  if (!previousMarketing || previousMarketing.mode !== "fixed_price") {
+    return row.createdAt;
+  }
+
+  return getRejectedFixedPriceTransactionTime(latestTransactionByMarketingId.get(previousMarketing.marketingId)) ?? row.createdAt;
+}
+
+function findNearbyMarketingRow(
+  rows: AdminBarangMarketingTimelineRow[],
+  input: Pick<AdminBarangHistoryEntry, "barangId"> & { createdAt: Date }
+) {
+  const inputTime = input.createdAt.getTime();
+
+  return rows
+    .filter((row) => row.barangId === input.barangId)
+    .map((row) => ({
+      distance: Math.abs(row.createdAt.getTime() - inputTime),
+      row
+    }))
+    .filter((candidate) => candidate.distance <= 60_000)
+    .sort((left, right) => left.distance - right.distance)[0]?.row;
 }
 
 export async function listAdminBarang(unitId: string) {
@@ -517,6 +616,14 @@ export async function listAdminBarangHistory(
       .orderBy(desc(transaksi.createdAt))
   ]);
 
+  const latestTransactionByMarketingId = transactionRows.reduce((map, row) => {
+    if (!map.has(row.marketingId)) {
+      map.set(row.marketingId, row);
+    }
+
+    return map;
+  }, new Map<string, AdminBarangTransactionTimelineRow>());
+  const previousMarketingById = getPreviousMarketingById(marketingRows);
   const normalizedStatusRows: AdminBarangHistoryEntry[] = [];
 
   for (const row of statusRows) {
@@ -525,6 +632,18 @@ export async function listAdminBarangHistory(
       continue;
     }
 
+    const repairRelistNote = parseRepairRelistHistoryNote(row.note);
+    const repairedAt = repairRelistNote
+      ? getRejectedFixedPriceTransactionTime(latestTransactionByMarketingId.get(repairRelistNote.marketingId))
+      : null;
+    const publishedMarketing =
+      action.actionKey === "dipasarkan" && isGenericCatalogPublishNote(row.note)
+        ? findNearbyMarketingRow(marketingRows, {
+            barangId: row.barangId,
+            createdAt: row.createdAt
+          })
+        : null;
+    const createdAt = repairedAt ?? row.createdAt;
     const entry = {
       id: row.id,
       barangId: row.barangId,
@@ -539,11 +658,11 @@ export async function listAdminBarangHistory(
       actionKey: action.actionKey,
       actionLabel: action.actionLabel,
       actionTone: action.actionTone,
-      note: normalizeHistoryNote(row.note),
+      note: publishedMarketing ? formatMarketingPublishedHistoryNote(publishedMarketing) : normalizeHistoryNote(row.note),
       actorName: normalizeHistoryActorName(row.actorName),
       actorRole: row.actorRole,
-      createdAt: row.createdAt.toISOString(),
-      createdAtLabel: formatAppDateTime(row.createdAt)
+      createdAt: createdAt.toISOString(),
+      createdAtLabel: formatAppDateTime(createdAt)
     };
 
     if (!hasDuplicateHistoryEntry(normalizedStatusRows, entry)) {
@@ -574,25 +693,18 @@ export async function listAdminBarangHistory(
 
   const timelineEntries = [...normalizedStatusRows, ...normalizedExtensionRows];
   const nextMarketingStartById = getNextMarketingStartById(marketingRows);
-  const latestTransactionByMarketingId = transactionRows.reduce((map, row) => {
-    if (!map.has(row.marketingId)) {
-      map.set(row.marketingId, row);
-    }
-
-    return map;
-  }, new Map<string, AdminBarangTransactionTimelineRow>());
 
   for (const row of marketingRows) {
-    const modeLabel = formatMarketingModeLabel(row.mode);
+    const publishedAt = getFixedPriceRelistPublishedAt(row, previousMarketingById, latestTransactionByMarketingId);
     const marketingEntry = createSyntheticHistoryEntry(row, {
       id: `marketing-${row.marketingId}`,
       actionKey: "dipasarkan",
       actionLabel: "Dipasarkan",
       actionTone: "success",
-      note: `Barang dipublikasikan ke katalog sebagai sesi ${modeLabel}${row.iteration ? ` iterasi ${row.iteration}` : ""}.`,
+      note: formatMarketingPublishedHistoryNote(row),
       actorName: row.actorName,
       actorRole: row.actorRole,
-      createdAt: row.createdAt
+      createdAt: publishedAt
     });
 
     if (!hasNearbyHistoryEntry(timelineEntries, marketingEntry)) {

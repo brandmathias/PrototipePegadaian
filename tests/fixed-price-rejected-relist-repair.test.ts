@@ -32,6 +32,7 @@ function makeClient(candidates: FixedPriceRejectedRelistCandidate[]) {
 }
 
 describe("fixed-price rejected relist repair", () => {
+  const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
   const candidate: FixedPriceRejectedRelistCandidate = {
     marketing_id: "pm-fixed-iterasi-5",
     barang_id: "barang-emas-1",
@@ -43,8 +44,9 @@ describe("fixed-price rejected relist repair", () => {
     item_status: "dipasarkan",
     transaction_id: "trx-ditolak-1",
     rejection_reason: "Uang dikirim bukan ke rekening tujuan",
-    verified_by_user_id: "admin-verifikator"
-  };
+    verified_by_user_id: "admin-verifikator",
+    rejected_at: rejectedAt
+  } as FixedPriceRejectedRelistCandidate;
 
   it("only reports stuck sessions during dry-run", async () => {
     const client = makeClient([candidate]);
@@ -89,7 +91,7 @@ describe("fixed-price rejected relist repair", () => {
     expect(client.query).toHaveBeenCalledWith("commit");
     expect(client.query).toHaveBeenCalledWith(
       expect.stringContaining(`update "pemasaran"`),
-      ["pm-fixed-iterasi-5", new Date("2026-07-06T08:00:00.000Z")]
+      ["pm-fixed-iterasi-5", rejectedAt]
     );
     expect(client.query).toHaveBeenCalledWith(
       expect.stringContaining(`insert into "pemasaran"`),
@@ -98,7 +100,8 @@ describe("fixed-price rejected relist repair", () => {
         "barang-emas-1",
         "12500000",
         6,
-        "admin-verifikator"
+        "admin-verifikator",
+        rejectedAt
       ])
     );
     expect(client.query).toHaveBeenCalledWith(
@@ -108,7 +111,8 @@ describe("fixed-price rejected relist repair", () => {
         "barang-emas-1",
         "dipasarkan",
         "admin-verifikator",
-        "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6."
+        "Bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan. Barang dipasarkan ulang otomatis ke iterasi 6.",
+        rejectedAt
       ])
     );
   });

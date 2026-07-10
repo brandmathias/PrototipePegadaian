@@ -9,6 +9,7 @@ export type FixedPriceRejectedRelistCandidate = {
   marketing_id: string;
   max_iteration: number;
   price: string | null;
+  rejected_at?: Date | string | null;
   rejection_reason: string | null;
   transaction_id: string;
   verified_by_user_id: string | null;
@@ -31,6 +32,7 @@ with latest_rejected_transaction as (
     t."amount",
     t."rejection_reason",
     t."verified_by_user_id",
+    coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at,
     t."created_at",
     t."updated_at"
   from "transaksi" t
@@ -52,6 +54,7 @@ select
   p."created_by_user_id",
   b."status" as item_status,
   rejected."id" as transaction_id,
+  rejected."rejected_at",
   rejected."rejection_reason",
   rejected."verified_by_user_id"
 from "pemasaran" p
@@ -161,6 +164,15 @@ function buildRejectedRelistAuditNote(candidate: FixedPriceRejectedRelistCandida
   return `Bukti pembayaran harga tetap ditolak admin unit.${reasonText} Barang dipasarkan ulang otomatis ke iterasi ${nextIteration}.`;
 }
 
+function resolveRejectedRelistTimestamp(candidate: FixedPriceRejectedRelistCandidate, fallback: Date) {
+  if (!candidate.rejected_at) {
+    return fallback;
+  }
+
+  const rejectedAt = new Date(candidate.rejected_at);
+  return Number.isNaN(rejectedAt.getTime()) ? fallback : rejectedAt;
+}
+
 export async function listFixedPriceRejectedRelistCandidates(client: RepairQueryClient) {
   return (await client.query(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL)).rows as FixedPriceRejectedRelistCandidate[];
 }
@@ -193,7 +205,7 @@ export async function repairFixedPriceRejectedRelists(
         continue;
       }
 
-      const now = nowFactory();
+      const now = resolveRejectedRelistTimestamp(candidate, nowFactory());
       const actorId = candidate.verified_by_user_id ?? candidate.created_by_user_id;
       const nextIteration = Number(candidate.max_iteration ?? candidate.iteration) + 1;
       const archived = await client.query(ARCHIVE_MARKETING_SQL, [candidate.marketing_id, now]);
