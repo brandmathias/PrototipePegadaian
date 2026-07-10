@@ -7356,16 +7356,8 @@ function getCompactUnitName(name: string) {
 
 function getMonitoringChartAxisTicks(maxValue: number) {
   const roundedMax = Math.max(1, Math.ceil(maxValue));
-
-  if (roundedMax <= 5) {
-    return Array.from(
-      { length: roundedMax + 1 },
-      (_, index) => roundedMax - index,
-    );
-  }
-
-  const step = Math.ceil(roundedMax / 4);
-  const axisMax = step * 4;
+  const axisMax = Math.max(8, Math.ceil(roundedMax / 8) * 8);
+  const step = axisMax / 4;
 
   return Array.from({ length: 5 }, (_, index) => axisMax - step * index);
 }
@@ -7697,28 +7689,40 @@ export function SuperAdminMonitoringPage({
                 <div
                   className={cn(
                     monitoringChartPlotFrameClass,
-                    "inset-x-0 flex flex-col justify-between",
+                    "inset-x-0",
                   )}
                   data-testid="monitoring-chart-y-axis"
                 >
-                  {chartAxisTicks.map((tick) => (
-                    <div className="flex items-center gap-3" key={tick}>
-                      <span
-                        className="w-8 text-right text-xs font-semibold text-[#435476]"
-                        data-monitoring-y-axis-tick={tick}
+                  {chartAxisTicks.map((tick) => {
+                    const axisPosition =
+                      chartAxisMaxValue > 0
+                        ? (tick / chartAxisMaxValue) * 100
+                        : 0;
+
+                    return (
+                      <div
+                        className="absolute left-0 right-0 flex translate-y-1/2 items-center gap-3"
+                        data-monitoring-y-axis-row={tick}
+                        key={tick}
+                        style={{ bottom: `${axisPosition}%` }}
                       >
-                        {tick}
-                      </span>
-                      <span
-                        className={cn(
-                          "h-px flex-1 border-t",
-                          tick === 0
-                            ? "border-[#c9d6e1]"
-                            : "border-dashed border-[#dce5ef]",
-                        )}
-                      />
-                    </div>
-                  ))}
+                        <span
+                          className="w-8 text-right text-xs font-semibold text-[#435476]"
+                          data-monitoring-y-axis-tick={tick}
+                        >
+                          {tick}
+                        </span>
+                        <span
+                          className={cn(
+                            "h-px flex-1 border-t",
+                            tick === 0
+                              ? "border-[#c9d6e1]"
+                              : "border-dashed border-[#dce5ef]",
+                          )}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
                 <div
                   className={cn(

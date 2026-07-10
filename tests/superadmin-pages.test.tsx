@@ -789,7 +789,20 @@ describe("superadmin pages", () => {
       Array.from(
         yAxis.querySelectorAll("[data-monitoring-y-axis-tick]"),
       ).map((node) => node.textContent),
-    ).toEqual(["5", "4", "3", "2", "1", "0"]);
+    ).toEqual(["8", "6", "4", "2", "0"]);
+    expect(
+      Array.from(
+        yAxis.querySelectorAll<HTMLElement>(
+          "[data-monitoring-y-axis-row]",
+        ),
+      ).map((row) => [row.dataset.monitoringYAxisRow, row.style.bottom]),
+    ).toEqual([
+      ["8", "100%"],
+      ["6", "75%"],
+      ["4", "50%"],
+      ["2", "25%"],
+      ["0", "0%"],
+    ]);
   });
 
   it("renders superadmin unit detail as monitoring inventory without management forms", () => {
