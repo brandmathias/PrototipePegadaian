@@ -1,4 +1,3 @@
-import { Gavel, type LucideIcon } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -47,12 +46,10 @@ export function ItemDetailInfoCard({
 }
 
 export function ItemDetailPriceFrame({
-  icon: Icon = Gavel,
   label,
   testId,
   value,
 }: {
-  icon?: LucideIcon;
   label: string;
   testId?: string;
   value: ReactNode;
@@ -66,18 +63,10 @@ export function ItemDetailPriceFrame({
       <span className="pointer-events-none absolute right-2 top-2 size-6 border-r-2 border-t-2 border-[#057a35]" />
       <span className="pointer-events-none absolute bottom-2 left-2 size-6 border-b-2 border-l-2 border-[#057a35]" />
       <span className="pointer-events-none absolute bottom-2 right-2 size-6 border-b-2 border-r-2 border-[#057a35]" />
-      <span className="pointer-events-none absolute left-2 top-8 size-2 rotate-45 border-l-2 border-t-2 border-[#057a35]" />
-      <span className="pointer-events-none absolute right-2 top-8 size-2 -rotate-45 border-r-2 border-t-2 border-[#057a35]" />
-      <span className="pointer-events-none absolute bottom-8 left-2 size-2 -rotate-45 border-b-2 border-l-2 border-[#057a35]" />
-      <span className="pointer-events-none absolute bottom-8 right-2 size-2 rotate-45 border-b-2 border-r-2 border-[#057a35]" />
-
       <div className="relative flex min-h-[8.75rem] flex-col items-center justify-center">
         <div className="flex items-center justify-center gap-3 text-[0.82rem] font-black uppercase leading-none tracking-[0.2em] text-[#057a35]">
           <span className="h-px w-14 bg-[#16854d]/70" />
-          <span className="flex items-center gap-2 whitespace-nowrap">
-            <Icon className="size-4" />
-            {label}
-          </span>
+          <span className="whitespace-nowrap">{label}</span>
           <span className="h-px w-14 bg-[#16854d]/70" />
         </div>
         <p
