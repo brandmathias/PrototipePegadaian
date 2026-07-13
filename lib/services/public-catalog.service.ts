@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, isNull, lte, ne, notExists, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lte, ne, notExists, or, sql } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializePublicLot } from "@/lib/buyer/serializers";
@@ -147,7 +147,13 @@ export async function listPublicLotsWithLimit(limit?: number) {
         fixedPriceCatalogAvailabilityPredicate()
       )
     )
-    .orderBy(desc(pemasaran.createdAt));
+    .orderBy(
+      sql`(
+        select min("catalog_history"."created_at")
+        from "pemasaran" "catalog_history"
+        where "catalog_history"."barang_id" = ${barang.id}
+      ) desc`
+    );
 
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
 

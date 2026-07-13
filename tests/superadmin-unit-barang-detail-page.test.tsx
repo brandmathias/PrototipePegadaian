@@ -1,10 +1,71 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SuperAdminUnitBarangDetailPage } from "@/components/pages/superadmin-unit-barang-detail-page";
 
 describe("route-real superadmin unit barang detail page", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        disconnect() {}
+        observe() {}
+        unobserve() {}
+      }
+    );
+  });
+
+  it("opens the marketing iteration selected by a notification link", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: { id: "unit-1", name: "UPC Wanea", address: "Wanea" },
+            item: {
+              id: "barang-1",
+              code: "BRG-001",
+              name: "Kalung Emas",
+              category: "perhiasan",
+              condition: "baik",
+              appraisalValue: 9_000_000,
+              specifications: {},
+              media: []
+            },
+            operationalStatus: "Sedang Dipasarkan",
+            operationalTone: "blue",
+            marketing: {
+              id: "pm-2",
+              lotId: "barang-1",
+              lot: "Kalung Emas",
+              mode: "FIXED_PRICE",
+              status: "AKTIF",
+              iteration: 2,
+              price: 20_000_000,
+              iterationHistory: [
+                {
+                  id: "pm-1",
+                  lotId: "barang-1",
+                  lot: "Kalung Emas",
+                  mode: "FIXED_PRICE",
+                  status: "GAGAL",
+                  iteration: 1,
+                  price: 10_000_000
+                }
+              ]
+            },
+            history: []
+          } as any
+        }
+        initialMarketingIterationId="pm-1"
+      />
+    );
+
+    expect(screen.getByTestId("route-real-superadmin-item-price-frame")).toHaveTextContent(
+      "Rp 10.000.000"
+    );
+  });
+
   it("places asset chronology below the item detail card as a compact full-width table", () => {
     render(
       <SuperAdminUnitBarangDetailPage

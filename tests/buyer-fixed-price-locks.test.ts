@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
   return {
     db,
     listActiveAdminUnitNotificationRecipientIds: vi.fn().mockResolvedValue(["admin-unit-1"]),
+    listActiveSuperAdminNotificationRecipientIds: vi.fn().mockResolvedValue(["superadmin-1"]),
     notifyAdminUnitPaymentProofUploaded: vi.fn(),
     revalidateTag: vi.fn(),
     serializeBuyerTransaction: vi.fn((row) => row)
@@ -32,6 +33,7 @@ vi.mock("@/lib/services/cron.service", () => ({
 
 vi.mock("@/lib/services/notification-events", () => ({
   listActiveAdminUnitNotificationRecipientIds: mocks.listActiveAdminUnitNotificationRecipientIds,
+  listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitPaymentProofUploaded: mocks.notifyAdminUnitPaymentProofUploaded
 }));
 
@@ -300,6 +302,7 @@ describe("createFixedPricePurchase locking rules", () => {
           referenceNumber: "BRI-2026-001",
           proofUrl: null,
           unitId: "unit-1",
+          lotId: "barang-1",
           lotName: "Cincin Emas"
         })
       )
@@ -349,6 +352,9 @@ describe("createFixedPricePurchase locking rules", () => {
       expect.objectContaining({
         transactionId: "trx-proof-1",
         pemasaranId: "pemasaran-1",
+        barangId: "barang-1",
+        unitId: "unit-1",
+        superAdminUserIds: ["superadmin-1"],
         lotName: "Cincin Emas"
       })
     );

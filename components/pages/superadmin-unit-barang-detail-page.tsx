@@ -239,15 +239,17 @@ function AssetTimeline({ detail }: { detail: SuperAdminUnitBarangDetail }) {
 
 export function SuperAdminUnitBarangDetailPage({
   detail,
+  initialMarketingIterationId,
 }: {
   detail: SuperAdminUnitBarangDetail | null;
+  initialMarketingIterationId?: string;
 }) {
   const [selectedMarketingIterationId, setSelectedMarketingIterationId] =
-    useState(() => detail?.marketing?.id ?? "");
+    useState(() => initialMarketingIterationId ?? detail?.marketing?.id ?? "");
 
   useEffect(() => {
-    setSelectedMarketingIterationId(detail?.marketing?.id ?? "");
-  }, [detail?.marketing?.id]);
+    setSelectedMarketingIterationId(initialMarketingIterationId ?? detail?.marketing?.id ?? "");
+  }, [detail?.marketing?.id, initialMarketingIterationId]);
 
   if (!detail) {
     return (

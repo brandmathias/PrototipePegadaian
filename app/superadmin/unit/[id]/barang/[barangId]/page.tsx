@@ -10,15 +10,25 @@ const getCachedSuperAdminUnitBarangDetail = unstable_cache(
 );
 
 export default async function Page({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ id: string; barangId: string }>;
+  searchParams?: Promise<{ iteration?: string | string[] }>;
 }) {
-  const { barangId, id } = await params;
+  const [{ barangId, id }, query] = await Promise.all([params, searchParams]);
+  const initialMarketingIterationId = Array.isArray(query?.iteration)
+    ? query.iteration[0]
+    : query?.iteration;
 
   try {
     const detail = await getCachedSuperAdminUnitBarangDetail(id, barangId);
-    return <SuperAdminUnitBarangDetailPage detail={detail} />;
+    return (
+      <SuperAdminUnitBarangDetailPage
+        detail={detail}
+        initialMarketingIterationId={initialMarketingIterationId}
+      />
+    );
   } catch (error) {
     if (
       error instanceof Error &&

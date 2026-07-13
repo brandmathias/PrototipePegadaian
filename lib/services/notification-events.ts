@@ -80,6 +80,10 @@ function uniqueIds(userIds: string[]) {
   return Array.from(new Set(userIds.filter(Boolean)));
 }
 
+function getSuperAdminIterationHref(unitId: string, barangId: string, pemasaranId: string) {
+  return `/superadmin/unit/${encodeURIComponent(unitId)}/barang/${encodeURIComponent(barangId)}?iteration=${encodeURIComponent(pemasaranId)}#marketing-audit`;
+}
+
 async function createForUsers(
   userIds: string[],
   input: Omit<Parameters<typeof createNotificationOnce>[0], "userId">
@@ -314,20 +318,36 @@ export async function syncBuyerRestrictionNotifications(userId: string) {
 
 export async function notifyAdminUnitPaymentProofUploaded(input: {
   adminUserIds: string[];
-  pemasaranId?: string | null;
+  superAdminUserIds: string[];
+  unitId: string;
+  barangId: string;
+  pemasaranId: string;
   transactionId: string;
   lotName: string;
 }) {
-  return createForUsers(input.adminUserIds, {
-    title: `Pembayaran Masuk: ${input.lotName}`,
-    message: "Pembeli telah mengunggah bukti pembayaran. Silakan lakukan verifikasi.",
-    type: "admin_payment_proof_uploaded",
-    entityType: "transaction",
-    entityId: input.transactionId,
-    actionHref: input.pemasaranId
-      ? `/admin/pemasaran/fixed-price/${input.pemasaranId}`
-      : `/admin/transaksi/${input.transactionId}`
-  });
+  const title = `Pembayaran Masuk: ${input.lotName}`;
+  const adminMessage = "Pembeli telah mengunggah bukti pembayaran. Silakan lakukan verifikasi.";
+  const superAdminMessage =
+    "Pembeli telah mengunggah bukti pembayaran. Buka iterasi terkait untuk memantau; verifikasi tetap dilakukan admin unit.";
+
+  return Promise.all([
+    createForUsers(input.adminUserIds, {
+      title,
+      message: adminMessage,
+      type: "admin_payment_proof_uploaded",
+      entityType: "transaction",
+      entityId: input.transactionId,
+      actionHref: `/admin/pemasaran/fixed-price/${input.pemasaranId}`
+    }),
+    createForUsers(input.superAdminUserIds, {
+      title,
+      message: superAdminMessage,
+      type: "admin_payment_proof_uploaded",
+      entityType: "transaction",
+      entityId: input.transactionId,
+      actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
+    })
+  ]);
 }
 
 export async function notifyAdminUnitBidSubmitted(input: {
@@ -347,6 +367,9 @@ export async function notifyAdminUnitBidSubmitted(input: {
 
 export async function notifyAdminUnitVickreyResult(input: {
   adminUserIds: string[];
+  superAdminUserIds: string[];
+  unitId: string;
+  barangId: string;
   pemasaranId: string;
   lotName: string;
   result: "winner_selected" | "no_winner" | "payment_overdue";
@@ -359,19 +382,34 @@ export async function notifyAdminUnitVickreyResult(input: {
         ? "Batas waktu pembayaran pemenang lelang telah lewat. Transaksi dibatalkan secara otomatis."
         : "Sesi lelang telah berakhir tanpa pemenang. Silakan tinjau untuk menentukan langkah selanjutnya.";
 
-  return createForUsers(input.adminUserIds, {
-    title: `Lelang Berakhir: ${input.lotName}`,
-    message,
-    type: input.result === "payment_overdue" ? "admin_payment_overdue" : "admin_vickrey_result",
-    entityType: "pemasaran",
-    entityId: input.pemasaranId,
-    actionHref: `/admin/pemasaran/vickrey-auction/${input.pemasaranId}`,
-    ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
-    metadata: {
-      result: input.result,
-      occurredAt: input.occurredAt?.toISOString() ?? null
-    }
-  });
+  const type = input.result === "payment_overdue" ? "admin_payment_overdue" : "admin_vickrey_result";
+  const metadata = {
+    result: input.result,
+    occurredAt: input.occurredAt?.toISOString() ?? null
+  };
+
+  return Promise.all([
+    createForUsers(input.adminUserIds, {
+      title: `Lelang Berakhir: ${input.lotName}`,
+      message,
+      type,
+      entityType: "pemasaran",
+      entityId: input.pemasaranId,
+      actionHref: `/admin/pemasaran/vickrey-auction/${input.pemasaranId}`,
+      ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
+      metadata
+    }),
+    createForUsers(input.superAdminUserIds, {
+      title: `Lelang Berakhir: ${input.lotName}`,
+      message,
+      type,
+      entityType: "pemasaran",
+      entityId: input.pemasaranId,
+      actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId),
+      ...(input.occurredAt ? { createdAt: input.occurredAt } : {}),
+      metadata
+    })
+  ]);
 }
 
 export async function notifySuperAdminPolicyAlert(input: {

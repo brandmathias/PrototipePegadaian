@@ -46,6 +46,7 @@ export function DeferredSuperAdminMarketingAudit({
   return (
     <div
       className="[contain-intrinsic-size:auto_70rem] [content-visibility:auto]"
+      id="marketing-audit"
       ref={markerRef}
     >
       {visible ? (

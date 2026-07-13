@@ -483,9 +483,15 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
 
     if (settledStatus === "selesai") {
       summary.completed += 1;
-      const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(session.item.unitId);
+      const [adminUserIds, superAdminUserIds] = await Promise.all([
+        listActiveAdminUnitNotificationRecipientIds(session.item.unitId),
+        listActiveSuperAdminNotificationRecipientIds()
+      ]);
       await notifyAdminUnitVickreyResult({
         adminUserIds,
+        superAdminUserIds,
+        unitId: session.item.unitId,
+        barangId: session.item.id,
         pemasaranId: session.marketing.id,
         lotName: session.item.name,
         result: "winner_selected"
@@ -498,9 +504,15 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
       }
     } else if (settledStatus === "gagal") {
       summary.failed += 1;
-      const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(session.item.unitId);
+      const [adminUserIds, superAdminUserIds] = await Promise.all([
+        listActiveAdminUnitNotificationRecipientIds(session.item.unitId),
+        listActiveSuperAdminNotificationRecipientIds()
+      ]);
       await notifyAdminUnitVickreyResult({
         adminUserIds,
+        superAdminUserIds,
+        unitId: session.item.unitId,
+        barangId: session.item.id,
         pemasaranId: session.marketing.id,
         lotName: session.item.name,
         result: "no_winner"
@@ -749,6 +761,9 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
       await Promise.all([
         notifyAdminUnitVickreyResult({
           adminUserIds,
+          superAdminUserIds,
+          unitId: row.item.unitId,
+          barangId: row.item.id,
           pemasaranId: row.marketing.id,
           lotName: row.item.name,
           result: "payment_overdue",

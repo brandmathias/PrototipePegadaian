@@ -34,6 +34,7 @@ import {
 import type { BuyerBid, BuyerBidVerification, BuyerTransaction } from "@/lib/contracts/buyer";
 import {
   listActiveAdminUnitNotificationRecipientIds,
+  listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitBidSubmitted,
   notifyAdminUnitPaymentProofUploaded
 } from "@/lib/services/notification-events";
@@ -942,9 +943,15 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     .returning();
 
   if (hasProof) {
-    const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.item.unitId);
+    const [adminUserIds, superAdminUserIds] = await Promise.all([
+      listActiveAdminUnitNotificationRecipientIds(row.item.unitId),
+      listActiveSuperAdminNotificationRecipientIds()
+    ]);
     await notifyAdminUnitPaymentProofUploaded({
       adminUserIds,
+      superAdminUserIds,
+      unitId: row.item.unitId,
+      barangId: row.item.id,
       pemasaranId,
       transactionId: created.id,
       lotName: row.item.name
@@ -1190,9 +1197,15 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
     .returning();
 
-  const adminUserIds = await listActiveAdminUnitNotificationRecipientIds(row.unitId);
+  const [adminUserIds, superAdminUserIds] = await Promise.all([
+    listActiveAdminUnitNotificationRecipientIds(row.unitId),
+    listActiveSuperAdminNotificationRecipientIds()
+  ]);
   await notifyAdminUnitPaymentProofUploaded({
     adminUserIds,
+    superAdminUserIds,
+    unitId: row.unitId,
+    barangId: row.lotId,
     pemasaranId: row.pemasaranId,
     transactionId: updated.id,
     lotName: row.lotName

@@ -168,12 +168,18 @@ describe("notification event helpers", () => {
   it("creates admin unit operational notifications for payment proof and auction results", async () => {
     await notifyAdminUnitPaymentProofUploaded({
       adminUserIds: ["admin-1", "admin-2"],
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-fixed-1",
       pemasaranId: "pm-fixed-1",
       transactionId: "trx-fixed-1",
       lotName: "Kalung Emas"
     });
     await notifyAdminUnitVickreyResult({
       adminUserIds: ["admin-1"],
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-vickrey-1",
       pemasaranId: "pm-vickrey-1",
       lotName: "Motor Racing",
       result: "winner_selected"
@@ -204,6 +210,26 @@ describe("notification event helpers", () => {
         entityId: "pm-vickrey-1",
         actionHref: "/admin/pemasaran/vickrey-auction/pm-vickrey-1",
         title: "Lelang Berakhir: Motor Racing"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "admin_payment_proof_uploaded",
+        entityId: "trx-fixed-1",
+        message:
+          "Pembeli telah mengunggah bukti pembayaran. Buka iterasi terkait untuk memantau; verifikasi tetap dilakukan admin unit.",
+        actionHref:
+          "/superadmin/unit/unit-1/barang/barang-fixed-1?iteration=pm-fixed-1#marketing-audit"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "admin_vickrey_result",
+        entityId: "pm-vickrey-1",
+        actionHref:
+          "/superadmin/unit/unit-1/barang/barang-vickrey-1?iteration=pm-vickrey-1#marketing-audit"
       })
     );
   });
