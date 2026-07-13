@@ -23,9 +23,12 @@ import {
 } from "@/lib/db/schema";
 import {
   listActiveSuperAdminNotificationRecipientIds,
+  notifyHandoverProofUploaded,
   notifyPaymentRejected,
   notifyPaymentVerified,
-  notifySuperAdminPaymentRejected
+  notifySuperAdminHandoverProofUploaded,
+  notifySuperAdminPaymentRejected,
+  notifySuperAdminPaymentVerified
 } from "@/lib/services/notification-events";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 
@@ -199,6 +202,20 @@ export async function uploadAdminTransactionHandoverProof(
     throw new Error("Transaksi tidak ditemukan.");
   }
 
+  const superAdminUserIds = await listActiveSuperAdminNotificationRecipientIds();
+  await notifyHandoverProofUploaded({
+    userId: updated.userId,
+    transactionId: updated.id,
+    lotName: row.item.name
+  });
+  await notifySuperAdminHandoverProofUploaded({
+    superAdminUserIds,
+    unitId,
+    barangId: row.item.id,
+    pemasaranId: row.transaction.pemasaranId,
+    transactionId: updated.id,
+    lotName: row.item.name
+  });
   revalidateTransactionViews();
 
   return serializeTransactionJoin(await getTransactionForUnit(unitId, updated.id));
@@ -331,6 +348,14 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     transactionType: row.transaction.type,
     unitName: row.unit.name,
     unitAddress: row.unit.address
+  });
+  await notifySuperAdminPaymentVerified({
+    superAdminUserIds: await listActiveSuperAdminNotificationRecipientIds(),
+    unitId,
+    barangId: row.item.id,
+    pemasaranId: row.transaction.pemasaranId,
+    transactionId: updated.id,
+    lotName: row.item.name
   });
   revalidateTransactionViews();
 

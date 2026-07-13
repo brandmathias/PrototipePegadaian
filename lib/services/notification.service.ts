@@ -10,6 +10,7 @@ export type NotificationType =
   | "vickrey_loss"
   | "payment_verified"
   | "payment_rejected"
+  | "handover_proof_uploaded"
   | "payment_deadline"
   | "blacklist_active"
   | "transaction_created"

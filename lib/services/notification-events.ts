@@ -240,6 +240,19 @@ export async function notifyPaymentRejected(
   });
 }
 
+export async function notifyHandoverProofUploaded(input: TransactionEventInput) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: `Bukti serah-terima ${input.lotName} sudah tersedia`,
+    message:
+      "Admin unit sudah mengunggah bukti serah-terima barang. Silakan cek detail transaksi dan tekan Pembelian Selesai setelah barang diterima.",
+    type: "handover_proof_uploaded",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: `/transaksi/${input.transactionId}`
+  });
+}
+
 export async function notifyPaymentDeadlineSoon(input: TransactionEventInput) {
   return createNotificationOnce({
     userId: input.userId,
@@ -361,6 +374,24 @@ export async function notifyAdminUnitPaymentProofUploaded(input: {
   ]);
 }
 
+export async function notifySuperAdminPaymentVerified(input: {
+  superAdminUserIds: string[];
+  unitId: string;
+  barangId: string;
+  pemasaranId: string;
+  transactionId: string;
+  lotName: string;
+}) {
+  return createForUsers(input.superAdminUserIds, {
+    title: `Pembayaran Disetujui: ${input.lotName}`,
+    message: "Admin unit menyetujui bukti pembayaran. Buka iterasi terkait untuk memantau proses serah-terima.",
+    type: "payment_verified",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
+  });
+}
+
 export async function notifySuperAdminPaymentRejected(input: {
   superAdminUserIds: string[];
   unitId: string;
@@ -376,6 +407,24 @@ export async function notifySuperAdminPaymentRejected(input: {
     title: `Bukti Pembayaran Ditolak: ${input.lotName}`,
     message: `Admin unit menolak bukti pembayaran.${reason} Buka iterasi terkait untuk memantau.`,
     type: "payment_rejected",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
+  });
+}
+
+export async function notifySuperAdminHandoverProofUploaded(input: {
+  superAdminUserIds: string[];
+  unitId: string;
+  barangId: string;
+  pemasaranId: string;
+  transactionId: string;
+  lotName: string;
+}) {
+  return createForUsers(input.superAdminUserIds, {
+    title: `Bukti Serah Terima Diunggah: ${input.lotName}`,
+    message: "Admin unit mengunggah bukti serah-terima barang. Buka iterasi terkait untuk memantau penyelesaian transaksi.",
+    type: "handover_proof_uploaded",
     entityType: "transaction",
     entityId: input.transactionId,
     actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)

@@ -28,6 +28,9 @@ import {
   notifyPaymentDeadlineSoon,
   notifyPaymentRejected,
   notifyPaymentVerified,
+  notifyHandoverProofUploaded,
+  notifySuperAdminHandoverProofUploaded,
+  notifySuperAdminPaymentVerified,
   notifySuperAdminPaymentRejected,
   notifySuperAdminPolicyAlert,
   notifyVickreyLoss,
@@ -112,6 +115,66 @@ describe("notification event helpers", () => {
       expect.objectContaining({
         type: "payment_rejected",
         message: expect.stringMatching(/Nominal belum sesuai/i)
+      })
+    );
+  });
+
+  it("creates a buyer notification when admin uploads handover proof", async () => {
+    await notifyHandoverProofUploaded({
+      userId: "buyer-1",
+      transactionId: "trx-1",
+      lotName: "Kalung Emas"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "buyer-1",
+        type: "handover_proof_uploaded",
+        entityType: "transaction",
+        entityId: "trx-1",
+        actionHref: "/transaksi/trx-1",
+        title: "Bukti serah-terima Kalung Emas sudah tersedia",
+        message: expect.stringMatching(/Pembelian Selesai/i)
+      })
+    );
+  });
+
+  it("creates read-only superadmin notifications for payment approval and handover proof", async () => {
+    await notifySuperAdminPaymentVerified({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed-1",
+      transactionId: "trx-1",
+      lotName: "Kalung Emas"
+    });
+    await notifySuperAdminHandoverProofUploaded({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed-1",
+      transactionId: "trx-1",
+      lotName: "Kalung Emas"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "payment_verified",
+        entityId: "trx-1",
+        title: "Pembayaran Disetujui: Kalung Emas",
+        actionHref:
+          "/superadmin/unit/unit-1/barang/barang-1?iteration=pm-fixed-1#marketing-audit"
+      })
+    );
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "handover_proof_uploaded",
+        entityId: "trx-1",
+        title: "Bukti Serah Terima Diunggah: Kalung Emas",
+        actionHref:
+          "/superadmin/unit/unit-1/barang/barang-1?iteration=pm-fixed-1#marketing-audit"
       })
     );
   });

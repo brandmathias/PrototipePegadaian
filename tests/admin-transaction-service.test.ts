@@ -18,9 +18,12 @@ const mocks = vi.hoisted(() => {
     query,
     revalidateTag: vi.fn(),
     serializeAdminTransaction: vi.fn((row) => row),
+    notifyHandoverProofUploaded: vi.fn(),
     notifyPaymentRejected: vi.fn(),
     notifyPaymentVerified: vi.fn(),
+    notifySuperAdminHandoverProofUploaded: vi.fn(),
     notifySuperAdminPaymentRejected: vi.fn(),
+    notifySuperAdminPaymentVerified: vi.fn(),
     listActiveSuperAdminNotificationRecipientIds: vi.fn().mockResolvedValue(["owner-1"])
   };
 });
@@ -34,9 +37,12 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 }));
 
 vi.mock("@/lib/services/notification-events", () => ({
+  notifyHandoverProofUploaded: mocks.notifyHandoverProofUploaded,
   notifyPaymentRejected: mocks.notifyPaymentRejected,
   notifyPaymentVerified: mocks.notifyPaymentVerified,
+  notifySuperAdminHandoverProofUploaded: mocks.notifySuperAdminHandoverProofUploaded,
   notifySuperAdminPaymentRejected: mocks.notifySuperAdminPaymentRejected,
+  notifySuperAdminPaymentVerified: mocks.notifySuperAdminPaymentVerified,
   listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds
 }));
 
@@ -230,6 +236,14 @@ describe("admin transaction service", () => {
       transactionType: "fixed_price",
       unitName: "UPC Ranotana",
       unitAddress: "Jl. Sam Ratulangi"
+    });
+    expect(mocks.notifySuperAdminPaymentVerified).toHaveBeenCalledWith({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed",
+      transactionId: "trx-fixed-rejected",
+      lotName: "Cincin Emas Berlian"
     });
     expectTransactionViewsRevalidated();
 
@@ -468,6 +482,19 @@ describe("admin transaction service", () => {
       })
     );
     expect(setPayload).not.toHaveProperty("status");
+    expect(mocks.notifyHandoverProofUploaded).toHaveBeenCalledWith({
+      userId: "buyer-1",
+      transactionId: "trx-fixed-rejected",
+      lotName: "Cincin Emas Berlian"
+    });
+    expect(mocks.notifySuperAdminHandoverProofUploaded).toHaveBeenCalledWith({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed",
+      transactionId: "trx-fixed-rejected",
+      lotName: "Cincin Emas Berlian"
+    });
     expectTransactionViewsRevalidated();
   });
 });
