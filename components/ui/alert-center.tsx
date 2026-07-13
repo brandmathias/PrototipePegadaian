@@ -302,36 +302,36 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
         <>
           <div
             className={cn(
-              "mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
+              "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl",
               notification.variant === "success"
                 ? "bg-primary/12 text-primary dark:bg-emerald-300/10 dark:text-emerald-200"
                 : notification.variant === "error"
                   ? "bg-destructive/12 text-destructive dark:bg-rose-300/10 dark:text-rose-200"
                   : "bg-accent/20 text-accent-foreground dark:bg-amber-300/10 dark:text-amber-200",
               isLoserNotification
-                ? "border border-[#f1d3d6] bg-[linear-gradient(180deg,rgba(255,250,250,0.98),rgba(255,239,241,0.96))] text-[#c43d48] shadow-[0_14px_28px_-22px_rgba(196,61,72,0.55)]"
+                ? "border border-[#f1d3d6] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,239,241,0.96))] text-[#c43d48] shadow-[0_14px_28px_-22px_rgba(196,61,72,0.55)]"
                 : ""
             )}
           >
-            <Icon aria-hidden="true" className="size-4" />
+            <Icon aria-hidden="true" className="size-3.5" />
           </div>
           <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <p className={cn("text-sm font-semibold text-black/82 dark:text-slate-100", isLoserNotification ? "text-[#3f2529] dark:text-rose-100" : "")}>
+            <p className={cn("text-[0.82rem] font-bold text-black/82 dark:text-slate-100", isLoserNotification ? "text-[#3f2529] dark:text-rose-100" : "")}>
               {notification.title}
             </p>
             {!notification.read ? (
-              <span className={cn("mt-1 size-2 rounded-full bg-[#0f7a57]", isLoserNotification ? "bg-[#d14f59]" : "")} />
+              <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full bg-[#0f7a57]", isLoserNotification ? "bg-[#d14f59]" : "")} />
             ) : null}
           </div>
           {notification.description ? (
-            <p className={cn("mt-1 text-sm leading-6 text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
+            <p className={cn("mt-0.5 text-[0.74rem] leading-relaxed text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
               {notification.description}
             </p>
           ) : null}
-          <div className={cn("mt-2 flex items-center justify-between gap-3 text-xs font-medium text-black/42 dark:text-slate-400", isLoserNotification ? "text-[#8d6c70] dark:text-rose-100/52" : "")}>
-            <span className="inline-flex items-center gap-2">
-              <Clock3 aria-hidden="true" className="size-3.5" />
+          <div className={cn("mt-1.5 flex items-center justify-between gap-3 text-[0.66rem] font-medium text-black/42 dark:text-slate-400", isLoserNotification ? "text-[#8d6c70] dark:text-rose-100/52" : "")}>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock3 aria-hidden="true" className="size-3" />
               {formatNotificationDateTime(notification.createdAt)}
             </span>
             {notification.href ? (
@@ -375,48 +375,45 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             type="button"
           />
           <div
-            className="feedback-pop modal-viewport fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[90] overflow-hidden rounded-[1.25rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:absolute sm:right-0 sm:left-auto sm:top-[calc(100%+0.85rem)] sm:w-[min(38rem,calc(100vw-1.5rem))] sm:max-w-[calc(100vw-1.5rem)] sm:rounded-[1.6rem]"
+            className="feedback-pop modal-viewport fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[90] overflow-hidden rounded-[1.25rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:absolute sm:right-0 sm:left-auto sm:top-[calc(100%+0.85rem)] sm:w-[min(28rem,calc(100vw-1.5rem))] sm:max-w-[calc(100vw-1.5rem)] sm:rounded-[1.6rem]"
             role="dialog"
           >
-          <div className="border-b border-black/6 px-5 pb-4 pt-4 dark:border-white/8">
+          <div className="border-b border-black/6 px-4 pb-3 pt-3.5 dark:border-white/8">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.15em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                 {copy.label}
               </p>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <Link
-                  className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-3.5 py-1.5 text-[0.72rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   href={notificationCenterHref}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Bell className="size-3.5 shrink-0" />
+                  <Bell className="size-3 shrink-0" />
                   Lihat semua
                 </Link>
                 <button
-                  className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-3.5 py-1.5 text-[0.72rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   onClick={handleMarkAllAsRead}
                   type="button"
                 >
-                  <CheckCheck className="size-3.5 shrink-0" />
+                  <CheckCheck className="size-3 shrink-0" />
                   Tandai dibaca
                 </button>
               </div>
             </div>
-            <h3 className="mt-3 font-headline text-[clamp(1.25rem,2.5vw,1.75rem)] font-black leading-[1.12] text-[#085a41] dark:text-emerald-100">
+            <h3 className="mt-2 font-headline text-[1.12rem] font-black leading-tight text-[#085a41] dark:text-emerald-100">
               {copy.title}
             </h3>
-            <p className="mt-1.5 text-sm leading-6 text-black/58 dark:text-slate-300/72">
-              {copy.description}
-            </p>
           </div>
 
-          <div className="max-h-[calc(100dvh-env(safe-area-inset-top)-7rem)] overflow-y-auto overscroll-contain px-3 py-3 sm:max-h-[min(26rem,calc(100dvh-12rem))]">
+          <div className="max-h-[calc(100dvh-env(safe-area-inset-top)-7rem)] overflow-y-auto overscroll-contain px-2.5 py-2.5 sm:max-h-[min(26rem,calc(100dvh-12rem))]">
             {displayedNotifications.length ? (
               <div className="space-y-2">
                 {displayedNotifications.map((notification, index) => {
                   const isLoserNotification = notification.type === "vickrey_loss";
                   const className = cn(
-                    "group interactive-card flex w-full items-start gap-3 rounded-[1.25rem] border px-4 py-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
+                    "group interactive-card flex w-full items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-[transform,border-color,background-color,box-shadow] duration-200",
                     notification.read
                       ? "border-black/6 bg-white/70 dark:border-white/8 dark:bg-white/[0.045]"
                       : "border-[#9fd1bc] bg-[#f3fbf6] shadow-[0_8px_22px_rgba(8,90,65,0.08)] dark:border-emerald-300/18 dark:bg-emerald-300/8 dark:shadow-[0_12px_30px_-24px_rgba(52,211,153,0.28)]",
