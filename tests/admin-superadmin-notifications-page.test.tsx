@@ -90,6 +90,8 @@ describe("admin and superadmin notification pages", () => {
     expect(hero).toHaveClass("rounded-[2.35rem]");
     expect(screen.getByText("Admin Unit / Notifikasi")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pusat notifikasi unit/i })).toBeInTheDocument();
+    expect(screen.getByText(/ringkasan bukti pembayaran, hasil lelang, dan transaksi unit/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Halo,/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: /ilustrasi operasional notifikasi admin unit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 
@@ -108,7 +110,10 @@ describe("admin and superadmin notification pages", () => {
       "rounded-[2.35rem]"
     );
     expect(screen.getByRole("heading", { name: /pusat notifikasi operasional/i })).toBeInTheDocument();
-    expect(screen.getByText(/risiko operasional lintas unit/i)).toBeInTheDocument();
+    expect(screen.getByText(/ringkasan notifikasi lintas unit/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /semua notifikasi nasional/i })).toBeInTheDocument();
+    expect(screen.queryByText(/alert nasional/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Halo,/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 
     const notificationLink = screen.getByRole("link", { name: /pembatasan buyer aktif/i });

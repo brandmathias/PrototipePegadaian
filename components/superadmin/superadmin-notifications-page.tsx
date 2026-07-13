@@ -10,13 +10,12 @@ type SuperAdminNotificationsPageProps = {
 };
 
 export function SuperAdminNotificationsPage({
-  notifications,
-  superAdminName
+  notifications
 }: SuperAdminNotificationsPageProps) {
   return (
     <div className="space-y-5 md:space-y-6">
       <AdminPageHero
-        description={`Halo, ${superAdminName?.trim() || "Superadmin Nasional"}. Pantau risiko operasional lintas unit seperti pembatasan buyer, pelanggaran pembayaran, dan transaksi yang membutuhkan perhatian read-only dari pusat.`}
+        description="Ringkasan notifikasi lintas unit untuk memantau risiko, pelanggaran, dan perkembangan transaksi secara read-only dari pusat."
         eyebrow="Superadmin / Notifikasi"
         icon={Bell}
         title="Pusat Notifikasi Operasional"
@@ -24,12 +23,12 @@ export function SuperAdminNotificationsPage({
 
       <RoleNotificationsPanel
         copy={{
-          allTitle: "Semua Alert Nasional",
-          unreadTitle: "Alert Nasional Belum Dibaca",
-          emptyAllTitle: "Belum ada alert nasional",
-          emptyUnreadTitle: "Semua alert nasional sudah dibaca",
+          allTitle: "Semua Notifikasi Nasional",
+          unreadTitle: "Notifikasi Nasional Belum Dibaca",
+          emptyAllTitle: "Belum ada notifikasi nasional",
+          emptyUnreadTitle: "Semua notifikasi nasional sudah dibaca",
           emptyDescription:
-            "Alert akan muncul saat ada pembatasan buyer, pelanggaran pembayaran, atau kejadian transaksi penting lintas unit."
+            "Notifikasi akan muncul saat ada pembatasan buyer, pelanggaran pembayaran, atau kejadian transaksi penting lintas unit."
         }}
         initialNotifications={notifications}
         scope="superadmin"

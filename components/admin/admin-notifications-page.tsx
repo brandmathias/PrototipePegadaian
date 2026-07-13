@@ -10,15 +10,12 @@ type AdminUnitNotificationsPageProps = {
 };
 
 export function AdminUnitNotificationsPage({
-  adminName,
   notifications
 }: AdminUnitNotificationsPageProps) {
-  const operatorLabel = adminName?.trim() || "Admin Unit";
-
   return (
     <div className="space-y-5 md:space-y-6">
       <AdminPageHero
-        description={`Halo, ${operatorLabel}. Pantau bukti pembayaran, bid masuk, hasil lelang, dan alert transaksi unit dari satu ruang admin yang ringkas.`}
+        description="Ringkasan bukti pembayaran, hasil lelang, dan transaksi unit yang membutuhkan tindakan atau verifikasi admin."
         eyebrow="Admin Unit / Notifikasi"
         icon={Bell}
         title="Pusat Notifikasi Unit"
