@@ -19,7 +19,9 @@ const mocks = vi.hoisted(() => {
     revalidateTag: vi.fn(),
     serializeAdminTransaction: vi.fn((row) => row),
     notifyPaymentRejected: vi.fn(),
-    notifyPaymentVerified: vi.fn()
+    notifyPaymentVerified: vi.fn(),
+    notifySuperAdminPaymentRejected: vi.fn(),
+    listActiveSuperAdminNotificationRecipientIds: vi.fn().mockResolvedValue(["owner-1"])
   };
 });
 
@@ -33,7 +35,9 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 
 vi.mock("@/lib/services/notification-events", () => ({
   notifyPaymentRejected: mocks.notifyPaymentRejected,
-  notifyPaymentVerified: mocks.notifyPaymentVerified
+  notifyPaymentVerified: mocks.notifyPaymentVerified,
+  notifySuperAdminPaymentRejected: mocks.notifySuperAdminPaymentRejected,
+  listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds
 }));
 
 vi.mock("next/cache", () => ({
@@ -219,6 +223,14 @@ describe("admin transaction service", () => {
         note: expect.stringMatching(/harga tetap disetujui/i)
       })
     );
+    expect(mocks.notifyPaymentVerified).toHaveBeenCalledWith({
+      userId: "buyer-1",
+      transactionId: "trx-fixed-rejected",
+      lotName: "Cincin Emas Berlian",
+      transactionType: "fixed_price",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi"
+    });
     expectTransactionViewsRevalidated();
 
   });
@@ -300,6 +312,15 @@ describe("admin transaction service", () => {
         verifiedByName: "Maria Supit"
       })
     );
+    expect(mocks.notifySuperAdminPaymentRejected).toHaveBeenCalledWith({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed",
+      transactionId: "trx-fixed-rejected",
+      lotName: "Cincin Emas Berlian",
+      reason: "Nominal uang yang dikirim tidak sesuai harga barang"
+    });
     expectTransactionViewsRevalidated();
   });
 

@@ -21,7 +21,12 @@ import {
   units,
   users
 } from "@/lib/db/schema";
-import { notifyPaymentRejected, notifyPaymentVerified } from "@/lib/services/notification-events";
+import {
+  listActiveSuperAdminNotificationRecipientIds,
+  notifyPaymentRejected,
+  notifyPaymentVerified,
+  notifySuperAdminPaymentRejected
+} from "@/lib/services/notification-events";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 
 const handoverUploader = alias(users, "transaction_handover_uploader");
@@ -322,7 +327,10 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
   await notifyPaymentVerified({
     userId: updated.userId,
     transactionId: updated.id,
-    lotName: row.item.name
+    lotName: row.item.name,
+    transactionType: row.transaction.type,
+    unitName: row.unit.name,
+    unitAddress: row.unit.address
   });
   revalidateTransactionViews();
 
@@ -383,6 +391,15 @@ export async function rejectAdminTransactionProof(
 
   await notifyPaymentRejected({
     userId: updated.userId,
+    transactionId: updated.id,
+    lotName: row.item.name,
+    reason: payload.reason
+  });
+  await notifySuperAdminPaymentRejected({
+    superAdminUserIds: await listActiveSuperAdminNotificationRecipientIds(),
+    unitId,
+    barangId: row.item.id,
+    pemasaranId: row.transaction.pemasaranId,
     transactionId: updated.id,
     lotName: row.item.name,
     reason: payload.reason

@@ -199,11 +199,22 @@ export async function ensureVickreyLossNotifications(userId: string) {
   );
 }
 
-export async function notifyPaymentVerified(input: TransactionEventInput) {
+export async function notifyPaymentVerified(
+  input: TransactionEventInput & {
+    transactionType?: string;
+    unitName?: string;
+    unitAddress?: string;
+  }
+) {
+  const message =
+    input.transactionType === "fixed_price" && input.unitName && input.unitAddress
+      ? `Pembayaran Anda telah diverifikasi. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}. Buka detail transaksi untuk melihat informasi lengkap.`
+      : "Admin unit sudah memverifikasi pembayaran Anda. Silakan buka detail transaksi untuk melanjutkan atau melihat nota.";
+
   return createNotificationOnce({
     userId: input.userId,
     title: `Pembayaran ${input.lotName} terverifikasi`,
-    message: "Admin unit sudah memverifikasi pembayaran Anda. Silakan buka detail transaksi untuk melanjutkan atau melihat nota.",
+    message,
     type: "payment_verified",
     entityType: "transaction",
     entityId: input.transactionId,
@@ -348,6 +359,27 @@ export async function notifyAdminUnitPaymentProofUploaded(input: {
       actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
     })
   ]);
+}
+
+export async function notifySuperAdminPaymentRejected(input: {
+  superAdminUserIds: string[];
+  unitId: string;
+  barangId: string;
+  pemasaranId: string;
+  transactionId: string;
+  lotName: string;
+  reason?: string | null;
+}) {
+  const reason = input.reason ? ` Alasan: ${input.reason}.` : "";
+
+  return createForUsers(input.superAdminUserIds, {
+    title: `Bukti Pembayaran Ditolak: ${input.lotName}`,
+    message: `Admin unit menolak bukti pembayaran.${reason} Buka iterasi terkait untuk memantau.`,
+    type: "payment_rejected",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
+  });
 }
 
 export async function notifyAdminUnitBidSubmitted(input: {

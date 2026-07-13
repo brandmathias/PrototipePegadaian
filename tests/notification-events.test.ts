@@ -28,6 +28,7 @@ import {
   notifyPaymentDeadlineSoon,
   notifyPaymentRejected,
   notifyPaymentVerified,
+  notifySuperAdminPaymentRejected,
   notifySuperAdminPolicyAlert,
   notifyVickreyLoss,
   notifyVickreyWinner
@@ -86,7 +87,10 @@ describe("notification event helpers", () => {
     await notifyPaymentVerified({
       userId: "buyer-1",
       transactionId: "trx-1",
-      lotName: "Kalung Emas"
+      lotName: "Kalung Emas",
+      transactionType: "fixed_price",
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi"
     });
     await notifyPaymentRejected({
       userId: "buyer-1",
@@ -99,6 +103,8 @@ describe("notification event helpers", () => {
       expect.objectContaining({
         type: "payment_verified",
         title: "Pembayaran Kalung Emas terverifikasi",
+        message:
+          "Pembayaran Anda telah diverifikasi. Segera lakukan pengambilan barang di UPC Ranotana, Jl. Sam Ratulangi. Buka detail transaksi untuk melihat informasi lengkap.",
         actionHref: "/transaksi/trx-1"
       })
     );
@@ -230,6 +236,30 @@ describe("notification event helpers", () => {
         entityId: "pm-vickrey-1",
         actionHref:
           "/superadmin/unit/unit-1/barang/barang-vickrey-1?iteration=pm-vickrey-1#marketing-audit"
+      })
+    );
+  });
+
+  it("creates a read-only superadmin notification when payment proof is rejected", async () => {
+    await notifySuperAdminPaymentRejected({
+      superAdminUserIds: ["owner-1"],
+      unitId: "unit-1",
+      barangId: "barang-1",
+      pemasaranId: "pm-fixed-1",
+      transactionId: "trx-1",
+      lotName: "Kalung Emas",
+      reason: "Nominal belum sesuai"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "owner-1",
+        type: "payment_rejected",
+        entityId: "trx-1",
+        title: "Bukti Pembayaran Ditolak: Kalung Emas",
+        message: expect.stringMatching(/Nominal belum sesuai/i),
+        actionHref:
+          "/superadmin/unit/unit-1/barang/barang-1?iteration=pm-fixed-1#marketing-audit"
       })
     );
   });
