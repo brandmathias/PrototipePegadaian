@@ -334,14 +334,6 @@ export function RoleNotificationsPanel({
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <button
-            className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef]"
-            onClick={() => setActiveFilter("all")}
-            type="button"
-          >
-            <Bell className="size-4" />
-            Lihat semua
-          </button>
-          <button
             className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef] disabled:cursor-not-allowed disabled:opacity-55"
             disabled={unreadCount === 0}
             onClick={markAllAsRead}

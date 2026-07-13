@@ -82,17 +82,16 @@ const superAdminNotifications: PersistedNotification[] = [
 ];
 
 describe("admin and superadmin notification pages", () => {
-  it("renders admin unit notifications with the existing admin dashboard hero style", () => {
+  it("renders admin unit notifications with the shared Kelola Barang hero treatment", () => {
     render(<AdminUnitNotificationsPage adminName="Admin Unit Ranotana" notifications={adminNotifications} />);
 
-    const hero = screen.getByLabelText("Hero notifikasi admin unit");
-    expect(hero).toHaveClass("admin-hero");
-    expect(screen.getByText("Admin Unit")).toBeInTheDocument();
+    const hero = screen.getByRole("heading", { name: /pusat notifikasi operasional/i }).closest("section");
+    expect(hero).not.toBeNull();
+    expect(hero).toHaveClass("rounded-[2.35rem]");
+    expect(screen.getByText("Admin Unit / Notifikasi")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pusat notifikasi operasional/i })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /ilustrasi operasional notifikasi admin unit/i })).toHaveAttribute(
-      "src",
-      "/assets/hero-admin-unit-illustration.png"
-    );
+    expect(screen.queryByRole("img", { name: /ilustrasi operasional notifikasi admin unit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 
     const notificationLink = screen.getByRole("link", {
       name: /pembayaran masuk: kalung salib emas 17k/i
@@ -101,12 +100,16 @@ describe("admin and superadmin notification pages", () => {
     expect(within(notificationLink).getByText(/silakan lakukan verifikasi/i)).toBeInTheDocument();
   });
 
-  it("renders superadmin notifications with the existing superadmin hero style", () => {
+  it("renders superadmin notifications with the shared Monitoring Unit hero treatment", () => {
     render(<SuperAdminNotificationsPage notifications={superAdminNotifications} />);
 
     expect(screen.getByText("Superadmin / Notifikasi")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /alert kebijakan nasional/i }).closest("section")).toHaveClass(
+      "rounded-[2.35rem]"
+    );
     expect(screen.getByRole("heading", { name: /alert kebijakan nasional/i })).toBeInTheDocument();
     expect(screen.getByText(/risiko operasional lintas unit/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 
     const notificationLink = screen.getByRole("link", { name: /pembatasan buyer aktif/i });
     expect(notificationLink).toHaveAttribute("href", "/superadmin/blacklist/detail/buyer-1");

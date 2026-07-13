@@ -152,7 +152,8 @@ describe("buyer transaction detail page", () => {
     );
     expect(screen.getByText(/0115489623/i)).toBeInTheDocument();
     expect(screen.getByText(/0115489623/i)).toHaveClass("text-[1.24rem]");
-    expect(screen.getByText(/0115489623/i)).toHaveClass("whitespace-normal", "break-words");
+    expect(screen.getByText(/0115489623/i)).toHaveClass("whitespace-nowrap");
+    expect(screen.getByText(/0115489623/i)).not.toHaveClass("whitespace-normal", "break-words");
     expect(screen.getByText(/0115489623/i)).not.toHaveClass("truncate");
     expect(screen.getByText(/1234567890/i)).toBeInTheDocument();
     expect(screen.getByText(/98765432109876/i)).toBeInTheDocument();

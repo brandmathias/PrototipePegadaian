@@ -428,7 +428,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
         data-account-accent
       />
 
-      <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2.5rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(3.1rem,0.58fr)_minmax(7.4rem,1fr)_2.5rem]">
+      <div className="grid grid-cols-[4.55rem_minmax(0,1fr)_2.5rem] items-center gap-x-3 gap-y-2 sm:grid-cols-[5.3rem_minmax(4.5rem,5.75rem)_minmax(0,1fr)_2.5rem]">
         <BankLogoMark
           bankName={account.bankName}
           className="h-11 w-[4.6rem] justify-start rounded-none bg-transparent"
@@ -447,7 +447,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
           <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">
             Nomor Rekening
           </p>
-          <p className="mt-1.5 whitespace-normal break-words font-headline text-[1.24rem] font-black leading-[1.12] tracking-[0.035em] text-primary">
+          <p className="mt-1.5 whitespace-nowrap font-headline text-[1.24rem] font-black leading-[1.12] tracking-[0.035em] text-primary">
             {account.accountNumber}
           </p>
         </div>

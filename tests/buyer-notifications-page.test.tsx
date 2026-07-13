@@ -84,6 +84,10 @@ describe("BuyerNotificationsPage", () => {
 
     expect(screen.getByRole("heading", { name: /^notifikasi$/i })).toBeInTheDocument();
     expect(screen.getByText(/informasi terbaru dan penting/i)).toBeInTheDocument();
+    const heroSummary = screen.getByLabelText("Ringkasan notifikasi");
+    expect(heroSummary).toBeInTheDocument();
+    expect(within(heroSummary).getByText(/membutuhkan perhatian/i)).toHaveTextContent("2 membutuhkan perhatian");
+    expect(within(heroSummary).getByText(/pembayaran, lelang, dan keamanan akun/i)).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /ilustrasi notifikasi pembeli/i })).toHaveAttribute(
       "src",
       "/uploads/Background Hero Section Halaman Notifikasi Buyer.png"
@@ -91,6 +95,7 @@ describe("BuyerNotificationsPage", () => {
 
     expect(screen.getByRole("button", { name: /semua 3/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /belum dibaca 2/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /semua notifikasi/i })).toBeInTheDocument();
     expect(screen.getByText("3 notifikasi")).toBeInTheDocument();
 

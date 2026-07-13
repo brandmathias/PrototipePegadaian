@@ -230,6 +230,25 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
           <p className="mt-5 max-w-sm font-sans text-base font-semibold leading-8 text-[#2f3339] md:text-lg">
             Informasi terbaru dan penting yang perlu Anda ketahui.
           </p>
+          <aside
+            aria-label="Ringkasan notifikasi"
+            className="mt-6 max-w-[34rem] rounded-[1.2rem] border border-[#cfe4d7] bg-white/78 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_14px_32px_-28px_rgba(8,69,50,0.42)]"
+          >
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#eaf5ee] text-[#0b6b44]">
+                <Bell className="size-5" />
+              </span>
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.14em] text-[#0b6b44]">Ringkasan notifikasi</p>
+                <p className="mt-1 text-sm font-semibold text-[#2f3339]">
+                  <strong className="font-black">{unreadCount}</strong> membutuhkan perhatian
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs font-semibold leading-5 text-[#59635d]">
+              Pembayaran, lelang, dan keamanan akun dirangkum di satu tempat.
+            </p>
+          </aside>
         </div>
       </section>
 
@@ -277,14 +296,6 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef]"
-              onClick={() => setActiveFilter("all")}
-              type="button"
-            >
-              <Bell className="size-4" />
-              Lihat semua
-            </button>
             <button
               className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef] disabled:cursor-not-allowed disabled:opacity-55"
               disabled={unreadCount === 0}

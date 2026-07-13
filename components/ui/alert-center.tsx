@@ -391,21 +391,21 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   {copy.description}
                 </p>
               </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
                 <Link
-                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
+                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   href={notificationCenterHref}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Bell className="size-4" />
+                  <Bell className="size-3.5 shrink-0" />
                   Lihat semua
                 </Link>
                 <button
-                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
+                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   onClick={handleMarkAllAsRead}
                   type="button"
                 >
-                  <CheckCheck className="size-4" />
+                  <CheckCheck className="size-3.5 shrink-0" />
                   Tandai dibaca
                 </button>
               </div>
