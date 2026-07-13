@@ -103,6 +103,7 @@ describe("BuyerNotificationsPage", () => {
     const rejectedLink = screen.getByRole("link", {
       name: /bukti pembayaran sepasang cincin emas polos perlu diperbaiki/i
     });
+    expect(rejectedLink).toHaveClass("group", "hover:-translate-y-0.5");
     expect(rejectedLink).toHaveAttribute("href", "/transaksi/trx-fixed-rejected");
     expect(within(rejectedLink).getByText(/admin unit menolak bukti pembayaran/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan ambil barang pada unit terkait/i)).toBeInTheDocument();

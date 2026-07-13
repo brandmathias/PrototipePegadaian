@@ -98,6 +98,7 @@ describe("admin and superadmin notification pages", () => {
     const notificationLink = screen.getByRole("link", {
       name: /pembayaran masuk: kalung salib emas 17k/i
     });
+    expect(notificationLink).toHaveClass("group", "hover:-translate-y-0.5");
     expect(notificationLink).toHaveAttribute("href", "/admin/transaksi/trx-admin-1");
     expect(within(notificationLink).getByText(/silakan lakukan verifikasi/i)).toBeInTheDocument();
   });

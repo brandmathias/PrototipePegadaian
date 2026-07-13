@@ -191,7 +191,12 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
 
     return (
       <>
-        <span className={cn("grid size-16 shrink-0 place-items-center rounded-[1.05rem]", tone.iconWrap)}>
+        <span
+          className={cn(
+            "grid size-16 shrink-0 place-items-center rounded-[1.05rem] transition-[transform,box-shadow] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06] group-hover:shadow-[0_10px_22px_-16px_rgba(8,69,50,0.4)] motion-reduce:transition-none motion-reduce:transform-none",
+            tone.iconWrap
+          )}
+        >
           <Icon className="size-7" strokeWidth={1.8} />
         </span>
         <span className="min-w-0">
@@ -330,7 +335,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
             {visibleNotifications.map((notification) => {
               const tone = getNotificationTone(notification.type);
               const className = cn(
-                "grid w-full gap-4 py-5 text-left transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center",
+                "group relative grid w-full gap-4 rounded-[1.1rem] px-2.5 py-5 text-left transition-[transform,background-color,box-shadow] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-26px_rgba(8,69,50,0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b6b44]/25 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center md:px-3.5",
                 tone.row,
                 !notification.isRead && "bg-white"
               );
