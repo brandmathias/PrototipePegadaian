@@ -63,7 +63,8 @@ const config: Config = {
       },
       fontFamily: {
         headline: ["var(--font-manrope)"],
-        body: ["var(--font-inter)"]
+        body: ["var(--font-inter)"],
+        jakarta: ["var(--font-plus-jakarta-sans)", "sans-serif"]
       },
       backgroundImage: {
         sovereign: "linear-gradient(135deg, #004a23 0%, #006432 100%)",

@@ -19,7 +19,7 @@ export function SuperAdminNotificationsPage({
         description={`Halo, ${superAdminName?.trim() || "Superadmin Nasional"}. Pantau risiko operasional lintas unit seperti pembatasan buyer, pelanggaran pembayaran, dan transaksi yang membutuhkan perhatian read-only dari pusat.`}
         eyebrow="Superadmin / Notifikasi"
         icon={Bell}
-        title="Alert Kebijakan Nasional"
+        title="Pusat Notifikasi Operasional"
       />
 
       <RoleNotificationsPanel

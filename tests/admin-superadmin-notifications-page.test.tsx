@@ -85,11 +85,11 @@ describe("admin and superadmin notification pages", () => {
   it("renders admin unit notifications with the shared Kelola Barang hero treatment", () => {
     render(<AdminUnitNotificationsPage adminName="Admin Unit Ranotana" notifications={adminNotifications} />);
 
-    const hero = screen.getByRole("heading", { name: /pusat notifikasi operasional/i }).closest("section");
+    const hero = screen.getByRole("heading", { name: /pusat notifikasi unit/i }).closest("section");
     expect(hero).not.toBeNull();
     expect(hero).toHaveClass("rounded-[2.35rem]");
     expect(screen.getByText("Admin Unit / Notifikasi")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pusat notifikasi operasional/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pusat notifikasi unit/i })).toBeInTheDocument();
     expect(screen.queryByRole("img", { name: /ilustrasi operasional notifikasi admin unit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 
@@ -104,10 +104,10 @@ describe("admin and superadmin notification pages", () => {
     render(<SuperAdminNotificationsPage notifications={superAdminNotifications} />);
 
     expect(screen.getByText("Superadmin / Notifikasi")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /alert kebijakan nasional/i }).closest("section")).toHaveClass(
+    expect(screen.getByRole("heading", { name: /pusat notifikasi operasional/i }).closest("section")).toHaveClass(
       "rounded-[2.35rem]"
     );
-    expect(screen.getByRole("heading", { name: /alert kebijakan nasional/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pusat notifikasi operasional/i })).toBeInTheDocument();
     expect(screen.getByText(/risiko operasional lintas unit/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
 

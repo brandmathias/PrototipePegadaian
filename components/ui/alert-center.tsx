@@ -385,7 +385,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
               </p>
               <div className="flex shrink-0 items-center gap-1.5">
                 <Link
-                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold font-jakarta text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   href={notificationCenterHref}
                   onClick={() => setIsOpen(false)}
                 >
@@ -393,7 +393,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   Lihat semua
                 </Link>
                 <button
-                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-1 text-[0.68rem] font-semibold font-jakarta text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   onClick={handleMarkAllAsRead}
                   type="button"
                 >

@@ -21,7 +21,7 @@ export function AdminUnitNotificationsPage({
         description={`Halo, ${operatorLabel}. Pantau bukti pembayaran, bid masuk, hasil lelang, dan alert transaksi unit dari satu ruang admin yang ringkas.`}
         eyebrow="Admin Unit / Notifikasi"
         icon={Bell}
-        title="Pusat Notifikasi Operasional"
+        title="Pusat Notifikasi Unit"
       />
 
       <RoleNotificationsPanel

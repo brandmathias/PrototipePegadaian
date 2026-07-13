@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,12 +20,15 @@
     sans-serif;
   --font-manrope:
     "Trebuchet MS", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-plus-jakarta-sans:
+    "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
 
   html {
     width: 100%;

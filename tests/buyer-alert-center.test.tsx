@@ -136,6 +136,8 @@ describe("buyer alert center", () => {
     expect(screen.getByRole("heading", { name: "Notifikasi Penting" })).toBeInTheDocument();
     expect(viewAll).toHaveClass("shrink-0", "whitespace-nowrap");
     expect(markAll).toHaveClass("shrink-0", "whitespace-nowrap");
+    expect(viewAll).toHaveClass("font-jakarta");
+    expect(markAll).toHaveClass("font-jakarta");
     expect(screen.getByRole("dialog")).toHaveClass("sm:w-[min(28rem,calc(100vw-1.5rem))]");
     expect(screen.getByText("Jumat, 22 Mei 2026 • 08.00 WIB")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();

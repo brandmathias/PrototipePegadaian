@@ -272,7 +272,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
       <div className="inline-flex rounded-full border border-[#b8d9ca] bg-white p-1 shadow-[0_14px_34px_-28px_rgba(8,69,50,0.42)]">
         <button
           className={cn(
-            "interactive-tap inline-flex min-w-[8.4rem] items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "interactive-tap inline-flex min-w-[8.4rem] items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black font-jakarta transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
             activeFilter === "all"
               ? "bg-[#0b6b44] text-white shadow-[0_16px_30px_-22px_rgba(8,69,50,0.7)]"
               : "text-[#1f2a26] hover:bg-[#f4faf7]"
@@ -287,7 +287,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
         </button>
         <button
           className={cn(
-            "interactive-tap inline-flex min-w-[10.4rem] items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            "interactive-tap inline-flex min-w-[10.4rem] items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black font-jakarta transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
             activeFilter === "unread"
               ? "bg-[#0b6b44] text-white shadow-[0_16px_30px_-22px_rgba(8,69,50,0.7)]"
               : "text-[#1f2a26] hover:bg-[#f4faf7]"
@@ -314,7 +314,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
-              className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef] disabled:cursor-not-allowed disabled:opacity-55"
+              className="interactive-tap inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.9rem] bg-[#f3f4f3] px-4 text-sm font-black font-jakarta text-[#0b6b44] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-[#eaf4ef] disabled:cursor-not-allowed disabled:opacity-55"
               disabled={unreadCount === 0}
               onClick={markAllAsRead}
               type="button"
