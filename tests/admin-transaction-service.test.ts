@@ -251,6 +251,7 @@ describe("admin transaction service", () => {
 
   it("records failed item history when admin rejects a harga tetap proof", async () => {
     const rejectedAt = new Date("2026-06-03T10:00:00.000Z");
+    const relistedAt = new Date(rejectedAt.getTime() + 1);
     vi.useFakeTimers();
     vi.setSystemTime(rejectedAt);
     const updatedTransaction = {
@@ -318,7 +319,7 @@ describe("admin transaction service", () => {
         newStatus: "dipasarkan",
         changedByUserId: null,
         note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
-        createdAt: rejectedAt
+        createdAt: relistedAt
       })
     );
     expect(mocks.serializeAdminTransaction).toHaveBeenLastCalledWith(
@@ -340,6 +341,7 @@ describe("admin transaction service", () => {
 
   it("archives a rejected harga tetap iteration and relists the item on the next iteration", async () => {
     const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
+    const relistedAt = new Date(rejectedAt.getTime() + 1);
     vi.useFakeTimers();
     vi.setSystemTime(rejectedAt);
 
@@ -408,20 +410,20 @@ describe("admin transaction service", () => {
         basePrice: null,
         durationDays: null,
         durationSeconds: null,
-        startsAt: rejectedAt,
+        startsAt: relistedAt,
         endsAt: null,
         revealEndsAt: null,
         iteration: 6,
         status: "aktif",
         createdByUserId: "admin-1",
-        createdAt: rejectedAt,
-        updatedAt: rejectedAt
+        createdAt: relistedAt,
+        updatedAt: relistedAt
       })
     );
     expect(updateItemSetSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "dipasarkan",
-        updatedAt: rejectedAt
+        updatedAt: relistedAt
       })
     );
     expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
@@ -441,7 +443,7 @@ describe("admin transaction service", () => {
         newStatus: "dipasarkan",
         changedByUserId: null,
         note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
-        createdAt: rejectedAt
+        createdAt: relistedAt
       })
     );
     expectTransactionViewsRevalidated();

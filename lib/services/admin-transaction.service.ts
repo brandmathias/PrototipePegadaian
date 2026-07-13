@@ -269,6 +269,8 @@ async function relistRejectedFixedPriceMarketing(
     return;
   }
 
+  const relistedAt = new Date(input.now.getTime() + 1);
+
   await tx.insert(pemasaran).values({
     id: randomUUID(),
     barangId: input.barangId,
@@ -277,17 +279,17 @@ async function relistRejectedFixedPriceMarketing(
     basePrice: null,
     durationDays: null,
     durationSeconds: null,
-    startsAt: input.now,
+    startsAt: relistedAt,
     endsAt: null,
     revealEndsAt: null,
     iteration: Number(input.sourceIteration ?? 0) + 1,
     status: "aktif",
     createdByUserId: input.adminId,
-    createdAt: input.now,
-    updatedAt: input.now
+    createdAt: relistedAt,
+    updatedAt: relistedAt
   });
 
-  await tx.update(barang).set({ status: "dipasarkan", updatedAt: input.now }).where(eq(barang.id, input.barangId));
+  await tx.update(barang).set({ status: "dipasarkan", updatedAt: relistedAt }).where(eq(barang.id, input.barangId));
   await tx.insert(riwayatStatusBarang).values({
     id: randomUUID(),
     barangId: input.barangId,
@@ -304,7 +306,7 @@ async function relistRejectedFixedPriceMarketing(
     newStatus: "dipasarkan",
     changedByUserId: null,
     note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
-    createdAt: input.now
+    createdAt: relistedAt
   });
 }
 

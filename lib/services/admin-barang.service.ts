@@ -414,6 +414,17 @@ function getRejectedFixedPriceTransactionTime(transaction: AdminBarangTransactio
   return transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt;
 }
 
+function getRejectedFixedPriceRelistTimelineTime(marketingCreatedAt: Date, rejectedAt: Date) {
+  const marketingTime = marketingCreatedAt.getTime();
+  const rejectedTime = rejectedAt.getTime();
+
+  if (marketingTime > rejectedTime && marketingTime - rejectedTime <= 60_000) {
+    return marketingCreatedAt;
+  }
+
+  return new Date(rejectedTime + 1);
+}
+
 function getMarketingPublishContext(
   row: AdminBarangMarketingTimelineRow,
   previousMarketingById: Map<string, AdminBarangMarketingTimelineRow | null>,
@@ -453,9 +464,26 @@ function getMarketingPublishContext(
   return {
     actorName: null,
     actorRole: null,
-    createdAt: rejectedAt,
+    createdAt: getRejectedFixedPriceRelistTimelineTime(row.createdAt, rejectedAt),
     relisted: true
   };
+}
+
+function getSameMomentTimelineOrder(entry: AdminBarangHistoryEntry) {
+  if (entry.actionKey === "dipasarkan" && /\bdipublikasikan kembali\b/iu.test(entry.note)) {
+    return 0;
+  }
+
+  const actionOrder: Record<AdminBarangHistoryEntry["actionKey"], number> = {
+    gagal: 1,
+    terjual: 2,
+    ditebus: 3,
+    perpanjangan: 4,
+    dipasarkan: 5,
+    input_baru: 6
+  };
+
+  return actionOrder[entry.actionKey];
 }
 
 function findNearbyMarketingRow(
@@ -828,17 +856,9 @@ export async function listAdminBarangHistory(
     }
   }
 
-  const actionOrder: Record<AdminBarangHistoryEntry["actionKey"], number> = {
-    gagal: 0,
-    dipasarkan: 1,
-    terjual: 2,
-    ditebus: 3,
-    perpanjangan: 4,
-    input_baru: 5
-  };
   const sortedHistory = timelineEntries.sort((left, right) => {
     const timeDelta = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
-    return timeDelta || actionOrder[left.actionKey] - actionOrder[right.actionKey];
+    return timeDelta || getSameMomentTimelineOrder(left) - getSameMomentTimelineOrder(right);
   });
 
   return typeof limit === "number" ? sortedHistory.slice(0, limit) : sortedHistory;

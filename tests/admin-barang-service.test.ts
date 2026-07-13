@@ -544,6 +544,49 @@ describe("listAdminBarangHistory", () => {
     ]);
   });
 
+  it("orders same-moment fixed-price relist after the rejected payment in newest-first chronology", async () => {
+    const eventAt = new Date("2026-07-13T01:05:00.000Z");
+    const baseRow = {
+      barangId: "barang-same-moment-relist",
+      barangCode: "BRG-SAME-MOMENT",
+      barangName: "Emas Batangan ANTAM 5 Gram",
+      category: "emas",
+      condition: "baik",
+      description: "Emas batangan.",
+      specifications: {},
+      ownerName: "Nasabah Same Moment",
+      customerNumber: "NSB-SAME",
+      actorRole: "admin_unit"
+    };
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockHistoryQuery([
+        {
+          ...baseRow,
+          id: "hist-rejected",
+          oldStatus: "dipasarkan",
+          newStatus: "gagal",
+          note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan.",
+          actorName: "Andika Pratama",
+          createdAt: eventAt
+        },
+        {
+          ...baseRow,
+          id: "hist-relisted",
+          oldStatus: "gagal",
+          newStatus: "dipasarkan",
+          note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
+          actorName: null,
+          createdAt: eventAt
+        }
+      ])
+    );
+
+    const result = await listAdminBarangHistory("unit-1", undefined, "barang-same-moment-relist");
+
+    expect(result.map((entry) => entry.id)).toEqual(["hist-relisted", "hist-rejected"]);
+  });
+
   it("fills missing marketed, sold, and failed milestones from pemasaran and transaksi history", async () => {
     const baseRow = {
       barangId: "barang-sync",
@@ -775,6 +818,7 @@ describe("listAdminBarangHistory", () => {
   it("normalizes production repair history and aligns fixed-price relist chronology to the rejection time", async () => {
     const publishedAt = new Date("2026-06-22T21:00:00.000Z");
     const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
+    const relistedAt = new Date(rejectedAt.getTime() + 1);
     const repairAt = new Date("2026-07-06T14:48:00.000Z");
     const baseRow = {
       barangId: "barang-production-repair",
@@ -868,8 +912,9 @@ describe("listAdminBarangHistory", () => {
     const firstPublish = result.find((entry) => entry.id === "hist-published-generic");
     const failedEntries = result.filter((entry) => entry.actionKey === "gagal");
     const relistPublish = result.find((entry) => entry.id === "marketing-pm-6");
-    const rejectionMomentEntries = result.filter(
-      (entry) => entry.createdAt === rejectedAt.toISOString()
+    const rejectionSequenceEntries = result.filter(
+      (entry) => new Date(entry.createdAt).getTime() >= rejectedAt.getTime()
+        && new Date(entry.createdAt).getTime() <= relistedAt.getTime()
     );
 
     expect(notes).not.toMatch(/Repair DB|production|iterasi|dipasarkan ulang otomatis/i);
@@ -889,13 +934,13 @@ describe("listAdminBarangHistory", () => {
       expect.objectContaining({
         actorName: "Sistem Otomatis",
         actorRole: null,
-        createdAt: rejectedAt.toISOString(),
+        createdAt: relistedAt.toISOString(),
         note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap."
       })
     );
-    expect(rejectionMomentEntries.map((entry) => entry.actionKey)).toEqual([
-      "gagal",
-      "dipasarkan"
+    expect(rejectionSequenceEntries.map((entry) => entry.actionKey)).toEqual([
+      "dipasarkan",
+      "gagal"
     ]);
   });
 });
