@@ -133,10 +133,10 @@ describe("buyer alert center", () => {
     const viewAll = screen.getByRole("link", { name: /lihat semua/i });
     const markAll = screen.getByRole("button", { name: /tandai dibaca/i });
     expect(viewAll).toHaveAttribute("href", "/notifikasi");
-    expect(viewAll).toHaveClass("min-w-0", "whitespace-nowrap");
-    expect(markAll).toHaveClass("min-w-0", "whitespace-nowrap");
-    expect(viewAll).toHaveClass("flex-1", "lg:flex-none");
-    expect(markAll).toHaveClass("flex-1", "lg:flex-none");
+    expect(screen.getByRole("heading", { name: "Notifikasi Penting" })).toBeInTheDocument();
+    expect(viewAll).toHaveClass("shrink-0", "whitespace-nowrap");
+    expect(markAll).toHaveClass("shrink-0", "whitespace-nowrap");
+    expect(screen.getByRole("dialog")).toHaveClass("sm:w-[min(46rem,calc(100vw-1.5rem))]");
     expect(screen.getByText("Jumat, 22 Mei 2026 • 08.00 WIB")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalledWith("/api/user/notifikasi/read-all", {

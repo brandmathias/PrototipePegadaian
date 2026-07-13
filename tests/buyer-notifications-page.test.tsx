@@ -82,12 +82,12 @@ describe("BuyerNotificationsPage", () => {
   it("renders the buyer notification page with the referenced hero and real notification content", () => {
     render(<BuyerNotificationsPage initialNotifications={notifications} />);
 
-    expect(screen.getByRole("heading", { name: /^notifikasi$/i })).toBeInTheDocument();
-    expect(screen.getByText(/informasi terbaru dan penting/i)).toBeInTheDocument();
-    const heroSummary = screen.getByLabelText("Ringkasan notifikasi");
-    expect(heroSummary).toBeInTheDocument();
-    expect(within(heroSummary).getByText(/membutuhkan perhatian/i)).toHaveTextContent("2 membutuhkan perhatian");
-    expect(within(heroSummary).getByText(/pembayaran, lelang, dan keamanan akun/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pusat notifikasi ruang agunan/i })).toBeInTheDocument();
+    expect(screen.getByText(/temukan pembaruan terbaru, pengingat penting, status pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Transaksi");
+    expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Pembayaran");
+    expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Aktivitas Akun");
+    expect(screen.getByRole("searchbox", { name: /cari notifikasi, status pembayaran, atau aktivitas akun/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /ilustrasi notifikasi pembeli/i })).toHaveAttribute(
       "src",
       "/uploads/Background Hero Section Halaman Notifikasi Buyer.png"

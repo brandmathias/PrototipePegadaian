@@ -214,7 +214,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
     if (scope === "buyer") {
       return {
         label: "Pusat Notifikasi Pembeli",
-        title: "Notifikasi penting",
+        title: "Notifikasi Penting",
         description: "Ringkasan penting dari lelang, pembayaran, dan pembatasan akun tersimpan di sini.",
         emptyTitle: "Belum ada notifikasi penting.",
         emptyDescription: "Notifikasi akan muncul saat ada hasil lelang, perubahan pembayaran, deadline, atau pembatasan akun."
@@ -375,37 +375,37 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             type="button"
           />
           <div
-            className="feedback-pop modal-viewport fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[90] overflow-hidden rounded-[1.25rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:absolute sm:right-0 sm:left-auto sm:top-[calc(100%+0.85rem)] sm:w-[min(28rem,calc(100vw-1.5rem))] sm:max-w-[calc(100vw-1.5rem)] sm:rounded-[1.6rem]"
+            className="feedback-pop modal-viewport fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.75rem)] z-[90] overflow-hidden rounded-[1.25rem] border border-black/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,247,244,0.98))] shadow-[0_24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(16,26,21,0.98),rgba(9,18,14,0.98))] dark:shadow-[0_28px_70px_rgba(0,0,0,0.5)] sm:absolute sm:right-0 sm:left-auto sm:top-[calc(100%+0.85rem)] sm:w-[min(46rem,calc(100vw-1.5rem))] sm:max-w-[calc(100vw-1.5rem)] sm:rounded-[1.6rem] md:w-[min(58rem,calc(100vw-2rem))] xl:w-[min(68rem,calc(100vw-3rem))]"
             role="dialog"
           >
           <div className="border-b border-black/6 px-5 py-4 dark:border-white/8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-6">
+              <div className="min-w-0">
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                   {copy.label}
                 </p>
-                <h3 className="mt-2 font-headline text-[1.2rem] font-black leading-tight text-[#085a41] dark:text-emerald-100 sm:text-[1.45rem]">
+                <h3 className="mt-2 font-headline text-[clamp(1.25rem,2.5vw,2.15rem)] font-black leading-[1.08] text-[#085a41] dark:text-emerald-100">
                   {copy.title}
                 </h3>
-                <p className="mt-1 text-sm leading-6 text-black/58 dark:text-slate-300/72">
+                <p className="mt-2 max-w-[48rem] text-sm leading-6 text-black/58 dark:text-slate-300/72 sm:text-base sm:leading-7">
                   {copy.description}
                 </p>
               </div>
-              <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:shrink-0">
+              <div className="flex shrink-0 items-center gap-2">
                 <Link
-                  className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] lg:flex-none dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-3 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] sm:min-h-11 sm:gap-2 sm:px-5 sm:text-sm dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   href={notificationCenterHref}
                   onClick={() => setIsOpen(false)}
                 >
-                  <Bell className="size-3.5 shrink-0" />
+                  <Bell className="size-3.5 shrink-0 sm:size-4" />
                   Lihat semua
                 </Link>
                 <button
-                  className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] lg:flex-none dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-3 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] sm:min-h-11 sm:gap-2 sm:px-5 sm:text-sm dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   onClick={handleMarkAllAsRead}
                   type="button"
                 >
-                  <CheckCheck className="size-3.5 shrink-0" />
+                  <CheckCheck className="size-3.5 shrink-0 sm:size-4" />
                   Tandai dibaca
                 </button>
               </div>
