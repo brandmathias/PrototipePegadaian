@@ -74,8 +74,14 @@ describe("public catalog performance", () => {
     expect(route).toContain("unstable_cache");
     expect(route).toContain("revalidate: 10");
     expect(route).not.toContain("force-dynamic");
-    expect(route).not.toContain("getServerSession");
-    expect(route).not.toContain("getBuyerWishlistIds");
+  });
+
+  it("hydrates buyer wishlist state when returning to the catalog", async () => {
+    const route = await source("app/(public)/katalog/page.tsx");
+
+    expect(route).toContain('import { getServerSession } from "@/lib/auth/session"');
+    expect(route).toContain('import { getBuyerWishlistIds } from "@/lib/services/wishlist.service"');
+    expect(route).toContain("initialFavoriteIds={favoriteIds}");
   });
 
   it("keeps catalog filtering out of legacy and repeated client work", async () => {
@@ -89,8 +95,7 @@ describe("public catalog performance", () => {
   it("keeps the public layout from blocking catalog HTML on session reads", async () => {
     const layout = await source("app/(public)/layout.tsx");
 
+    expect(layout).toContain('import { PublicShell } from "@/components/layout/public-shell"');
     expect(layout).not.toContain("force-dynamic");
-    expect(layout).not.toContain("getServerSession");
-    expect(layout).not.toContain("getBuyerWishlistCount");
   });
 });

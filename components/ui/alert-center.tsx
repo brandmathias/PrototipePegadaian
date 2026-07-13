@@ -379,7 +379,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             role="dialog"
           >
           <div className="border-b border-black/6 px-5 py-4 dark:border-white/8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-[#0a6a49]/58 dark:text-emerald-200/62">
                   {copy.label}
@@ -391,9 +391,9 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   {copy.description}
                 </p>
               </div>
-              <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
+              <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:shrink-0">
                 <Link
-                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] lg:flex-none dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   href={notificationCenterHref}
                   onClick={() => setIsOpen(false)}
                 >
@@ -401,7 +401,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   Lihat semua
                 </Link>
                 <button
-                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
+                  className="inline-flex min-h-10 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/8 bg-white px-2.5 py-2 text-[0.7rem] font-semibold text-[#0a6a49] transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#eef6f1] active:scale-[0.98] lg:flex-none dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10"
                   onClick={handleMarkAllAsRead}
                   type="button"
                 >

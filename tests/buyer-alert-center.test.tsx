@@ -135,6 +135,8 @@ describe("buyer alert center", () => {
     expect(viewAll).toHaveAttribute("href", "/notifikasi");
     expect(viewAll).toHaveClass("min-w-0", "whitespace-nowrap");
     expect(markAll).toHaveClass("min-w-0", "whitespace-nowrap");
+    expect(viewAll).toHaveClass("flex-1", "lg:flex-none");
+    expect(markAll).toHaveClass("flex-1", "lg:flex-none");
     expect(screen.getByText("Jumat, 22 Mei 2026 • 08.00 WIB")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalledWith("/api/user/notifikasi/read-all", {

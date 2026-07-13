@@ -4,7 +4,9 @@ import { connection } from "next/server";
 
 import { CatalogHero } from "@/components/pages/catalog-hero";
 import { CatalogPage } from "@/components/pages/catalog-page";
+import { getServerSession } from "@/lib/auth/session";
 import { listPublicLots } from "@/lib/services/public-catalog.service";
+import { getBuyerWishlistIds } from "@/lib/services/wishlist.service";
 
 export const revalidate = 10;
 
@@ -28,10 +30,13 @@ function CatalogResultsFallback() {
 async function CatalogResults() {
   await connection();
 
-  const lots = await getCachedPublicLots();
+  const [lots, session] = await Promise.all([getCachedPublicLots(), getServerSession()]);
+  const favoriteIds =
+    session?.user?.role === "buyer" ? await getBuyerWishlistIds(session.user.id) : [];
 
   return (
     <CatalogPage
+      initialFavoriteIds={favoriteIds}
       lots={lots}
       serverNow={new Date().toISOString()}
       wishlistSyncEnabled
