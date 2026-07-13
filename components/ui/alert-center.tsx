@@ -32,6 +32,18 @@ type AlertCenterProps = {
   className?: string;
 };
 
+function getNotificationCenterHref(scope: AlertCenterProps["scope"]) {
+  if (scope === "buyer") {
+    return "/notifikasi";
+  }
+
+  if (scope === "admin-unit") {
+    return "/admin/notifikasi";
+  }
+
+  return "/superadmin/notifikasi";
+}
+
 function formatNotificationDateTime(timestamp: number | string) {
   const value = typeof timestamp === "number" ? timestamp : new Date(timestamp).getTime();
 
@@ -148,6 +160,7 @@ function getNotificationIcon(type: string, variant: "success" | "error" | "info"
 export function AlertCenter({ scope, className }: AlertCenterProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const notificationCenterHref = getNotificationCenterHref(scope);
   const buyerNotifications = useBuyerNotifications(scope === "buyer");
   const adminUnitNotifications = useAdminUnitNotifications(scope === "admin-unit");
   const superAdminNotifications = useSuperAdminNotifications(scope === "superadmin");
@@ -378,14 +391,24 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
                   {copy.description}
                 </p>
               </div>
-              <button
-                className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
-                onClick={handleMarkAllAsRead}
-                type="button"
-              >
-                <CheckCheck className="size-4" />
-                Tandai dibaca
-              </button>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                <Link
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
+                  href={notificationCenterHref}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Bell className="size-4" />
+                  Lihat semua
+                </Link>
+                <button
+                  className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-black/8 bg-white px-3 py-2 text-xs font-semibold text-[#0a6a49] transition-colors hover:bg-[#eef6f1] dark:border-white/10 dark:bg-white/6 dark:text-emerald-100 dark:hover:bg-white/10 sm:w-auto"
+                  onClick={handleMarkAllAsRead}
+                  type="button"
+                >
+                  <CheckCheck className="size-4" />
+                  Tandai dibaca
+                </button>
+              </div>
             </div>
           </div>
 

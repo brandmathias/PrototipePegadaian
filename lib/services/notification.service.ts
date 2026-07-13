@@ -206,6 +206,20 @@ export async function listUserNotifications(userId: string, options: Notificatio
   return rows.filter((row) => isDisplayableNotification(row, userId)).map(serializeNotification);
 }
 
+export async function listAllUserNotifications(userId: string, options: Pick<NotificationListOptions, "unreadOnly"> = {}) {
+  const whereClause = options.unreadOnly
+    ? and(displayableNotificationWhere(userId), eq(notifications.isRead, false))
+    : displayableNotificationWhere(userId);
+
+  const rows = await db
+    .select()
+    .from(notifications)
+    .where(whereClause)
+    .orderBy(desc(notifications.createdAt));
+
+  return rows.filter((row) => isDisplayableNotification(row, userId)).map(serializeNotification);
+}
+
 export async function getUnreadNotificationCount(userId: string) {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })

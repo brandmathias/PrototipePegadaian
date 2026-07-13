@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
+import { AdminInventoryCreatePage } from "@/components/pages/admin-pages";
 import { ToastProvider } from "@/components/ui/toast";
 
 const router = vi.hoisted(() => ({
@@ -60,6 +61,15 @@ describe("AdminInventoryCreateForm", () => {
     expect(await screen.findByText("5/5 media terpilih")).toBeInTheDocument();
     expect(screen.getByText(/batas upload tetap 5 media per barang/i)).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /hapus foto-/i })).toHaveLength(5);
+  });
+
+  it("uses the standard admin unit hero on the create barang page", () => {
+    const { container } = renderWithToast(<AdminInventoryCreatePage />);
+
+    expect(screen.getByText("Admin Unit / Input Barang")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /tambahkan barang gadai/i })).toBeInTheDocument();
+    expect(container.querySelector(".hero-surface")).not.toBeInTheDocument();
+    expect(container.querySelector("section")?.className).toContain("rounded-[2.35rem]");
   });
 
   it("renders uploaded video thumbnails with video preview frames", async () => {

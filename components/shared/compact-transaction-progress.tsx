@@ -100,7 +100,7 @@ export function CompactTransactionProgress({
                       "font-black uppercase text-[#6b7b73]",
                       tight
                         ? "mt-0.5 whitespace-normal break-words text-[0.48rem] leading-3 tracking-[0.05em]"
-                        : "mt-1 truncate text-[0.62rem] tracking-[0.08em]",
+                        : "mt-1 whitespace-normal break-words text-[0.58rem] leading-3 tracking-[0.065em]",
                     )}
                   >
                     {step.actor}

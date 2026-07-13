@@ -20,6 +20,7 @@ describe("buyer auth guards", () => {
     );
     expect(getSafeBuyerNextPath("/transaksi/TRX-2026-0033")).toBe("/transaksi/TRX-2026-0033");
     expect(getSafeBuyerNextPath("/profil")).toBe("/profil");
+    expect(getSafeBuyerNextPath("/notifikasi")).toBe("/notifikasi");
   });
 
   it("falls back when next path is missing or external", () => {

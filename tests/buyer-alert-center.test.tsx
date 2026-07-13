@@ -130,6 +130,8 @@ describe("buyer alert center", () => {
 
     expect(screen.getByText(/anda memenangkan lelang motor racing/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan bayar langsung/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat semua/i })).toHaveAttribute("href", "/notifikasi");
+    expect(screen.getByRole("button", { name: /tandai dibaca/i })).toBeInTheDocument();
     expect(screen.getByText("Jumat, 22 Mei 2026 • 08.00 WIB")).toBeInTheDocument();
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalledWith("/api/user/notifikasi/read-all", {
@@ -340,6 +342,7 @@ describe("buyer alert center", () => {
     expect(await screen.findByText("1")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
 
+    expect(screen.getByRole("link", { name: /lihat semua/i })).toHaveAttribute("href", "/admin/notifikasi");
     const link = await screen.findByRole("link", { name: /bukti pembayaran harga tetap kalung emas masuk/i });
     expect(link).toHaveAttribute("href", "/admin/transaksi/trx-1");
     expect(screen.getByText(/menunggu verifikasi unit/i)).toBeInTheDocument();
@@ -408,6 +411,7 @@ describe("buyer alert center", () => {
     expect(await screen.findByText("1")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /buka pusat alert/i }));
 
+    expect(screen.getByRole("link", { name: /lihat semua/i })).toHaveAttribute("href", "/superadmin/notifikasi");
     const link = await screen.findByRole("link", { name: /pembatasan buyer aktif/i });
     expect(link).toHaveAttribute("href", "/superadmin/blacklist/detail/buyer-1");
     expect(within(link).getByText(/pelanggaran pembayaran/i)).toBeInTheDocument();

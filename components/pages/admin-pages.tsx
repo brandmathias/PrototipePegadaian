@@ -759,10 +759,23 @@ export function AdminInventoryHistoryPage({
 export function AdminInventoryCreatePage() {
   return (
     <div className="space-y-6">
-      <AdminPageIntro
-        eyebrow="Admin Unit / Input Barang"
-        title="Tambahkan Barang Gadai"
+      <AdminPageHero
         description="Gunakan formulir ini untuk mencatat barang masuk beserta appraisal, informasi nasabah, jadwal jatuh tempo, dan media pendukung sebelum lanjut ke proses berikutnya."
+        eyebrow="Admin Unit / Input Barang"
+        icon={PackagePlus}
+        rightRail={
+          <>
+            <AdminHeroPill icon={FileCheck2}>
+              Formulir barang jaminan
+            </AdminHeroPill>
+            <Link href="/admin/barang">
+              <Button className="h-12 w-full rounded-2xl px-5 text-sm sm:w-auto sm:text-base" variant="secondary">
+                Kembali ke Daftar Barang
+              </Button>
+            </Link>
+          </>
+        }
+        title="Tambahkan Barang Gadai"
       />
 
       <AdminInventoryCreateForm />

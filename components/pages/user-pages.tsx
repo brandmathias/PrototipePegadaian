@@ -447,7 +447,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
           <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">
             Nomor Rekening
           </p>
-          <p className="mt-1.5 truncate font-headline text-[1.24rem] font-black leading-none tracking-[0.04em] text-primary">
+          <p className="mt-1.5 whitespace-normal break-words font-headline text-[1.24rem] font-black leading-[1.12] tracking-[0.035em] text-primary">
             {account.accountNumber}
           </p>
         </div>
@@ -459,7 +459,7 @@ function DestinationAccountRow({ account }: { account: BuyerBankAccount }) {
 
       <div className="mt-3 border-t border-[#eadfbe] pt-3">
         <p className="text-[0.5rem] font-black uppercase leading-none tracking-[0.15em] text-black/42">Atas Nama</p>
-        <p className="mt-1.5 line-clamp-1 text-[0.86rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
+        <p className="mt-1.5 whitespace-normal break-words text-[0.86rem] font-black uppercase leading-5 tracking-[0.01em] text-[#202421]">
           {account.accountHolder}
         </p>
       </div>

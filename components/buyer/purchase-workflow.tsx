@@ -180,13 +180,13 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                   <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     Nomor Rekening
                   </p>
-                  <p className="mt-1 overflow-x-auto whitespace-nowrap font-headline text-2xl font-black tracking-normal text-primary">
+                  <p className="mt-1 whitespace-normal break-words font-headline text-2xl font-black leading-tight tracking-normal text-primary">
                     {accountNumber}
                   </p>
                   <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     Atas Nama
                   </p>
-                  <p className="mt-1 text-sm font-bold text-foreground">{accountHolder}</p>
+                  <p className="mt-1 whitespace-normal break-words text-sm font-bold leading-5 text-foreground">{accountHolder}</p>
                 </div>
               </div>
             </div>
