@@ -83,6 +83,7 @@ describe("BuyerNotificationsPage", () => {
     render(<BuyerNotificationsPage initialNotifications={notifications} />);
 
     expect(screen.getByRole("heading", { name: /pusat notifikasi ruang agunan/i })).toBeInTheDocument();
+    expect(screen.getByTestId("buyer-notifications-hero")).toHaveClass("min-h-[340px]", "md:min-h-[380px]");
     expect(screen.getByText(/temukan pembaruan terbaru, pengingat penting, status pembayaran/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Transaksi");
     expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Pembayaran");

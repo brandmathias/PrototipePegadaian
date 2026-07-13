@@ -215,10 +215,13 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
 
   return (
     <div className="space-y-6 md:space-y-7">
-      <section className="relative min-h-[27rem] overflow-hidden rounded-[2rem] border border-primary/10 bg-white shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46)] md:min-h-[27rem]">
+      <section
+        className="relative min-h-[340px] overflow-hidden rounded-[2rem] border border-primary/10 bg-[linear-gradient(90deg,#fffdf8_0%,#f8f3ff_58%,#efe9ff_100%)] shadow-[0_24px_70px_-48px_rgba(8,69,50,0.46)] md:min-h-[380px]"
+        data-testid="buyer-notifications-hero"
+      >
         <Image
           alt="Ilustrasi notifikasi pembeli"
-          className="object-cover object-right"
+          className="object-contain object-right"
           fill
           priority
           fetchPriority="high"
@@ -227,15 +230,15 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
           src={BUYER_NOTIFICATION_HERO_IMAGE}
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.99)_0%,rgba(255,255,255,0.95)_42%,rgba(255,255,255,0.2)_78%,rgba(255,255,255,0)_100%)]" />
-        <div className="relative flex min-h-[27rem] max-w-4xl flex-col justify-center px-6 py-10 md:px-12 lg:px-16">
-          <h1 className="max-w-3xl font-headline text-4xl font-black leading-[1.08] tracking-tight text-[#101923] md:text-5xl lg:text-[3.25rem]">
+        <div className="relative flex min-h-[340px] max-w-3xl flex-col justify-center px-6 py-8 md:min-h-[380px] md:px-10">
+          <h1 className="mt-2 max-w-3xl font-headline text-4xl font-black leading-[1.03] tracking-tight text-[#101923] md:text-5xl">
             Pusat Notifikasi Ruang Agunan
           </h1>
-          <p className="mt-5 max-w-3xl text-base font-medium leading-7 text-[#24365f] md:text-lg md:leading-8">
+          <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#24365f] md:text-base md:leading-7">
             Temukan pembaruan terbaru, pengingat penting, status pembayaran, aktivitas lelang, dan informasi penting akun Anda dalam satu tempat yang terstruktur dan mudah dipantau.
           </p>
 
-          <div aria-label="Kategori notifikasi" className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm font-semibold text-[#24365f] md:gap-x-5 md:text-base">
+          <div aria-label="Kategori notifikasi" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-[#24365f] md:gap-x-5 md:text-base">
             <span className="inline-flex items-center gap-2">
               <ReceiptText className="size-5 text-[#0b7a4b]" strokeWidth={1.8} />
               Transaksi
@@ -252,12 +255,12 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
             </span>
           </div>
 
-          <label className="relative mt-7 block w-full max-w-3xl" htmlFor="buyer-notification-search">
+          <label className="relative mt-5 block w-full max-w-3xl" htmlFor="buyer-notification-search">
             <span className="sr-only">Cari notifikasi</span>
             <Search className="pointer-events-none absolute left-5 top-1/2 size-6 -translate-y-1/2 text-[#101923]" strokeWidth={1.8} />
             <input
               aria-label="Cari notifikasi, status pembayaran, atau aktivitas akun"
-              className="h-14 w-full rounded-xl border border-slate-200 bg-white/90 pl-14 pr-5 text-base font-semibold text-[#24365f] shadow-[0_12px_34px_-28px_rgba(15,23,42,0.45),inset_0_1px_0_rgba(255,255,255,0.92)] outline-none transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-[#697796] focus:border-primary/30 focus:ring-4 focus:ring-primary/10"
+              className="h-12 w-full rounded-xl border border-slate-200 bg-white/90 pl-14 pr-5 text-sm font-semibold text-[#24365f] shadow-[0_12px_34px_-28px_rgba(15,23,42,0.45),inset_0_1px_0_rgba(255,255,255,0.92)] outline-none transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] placeholder:text-[#697796] md:text-base focus:border-primary/30 focus:ring-4 focus:ring-primary/10"
               id="buyer-notification-search"
               placeholder="Cari notifikasi, status pembayaran, atau aktivitas akun..."
               type="search"
