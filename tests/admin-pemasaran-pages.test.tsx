@@ -1548,9 +1548,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getAllByText("Rp 85.000.000").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Rp 78.000.000").length).toBeGreaterThan(0);
     expect(screen.getByText(/ranking peserta lelang \(admin view\)/i)).toBeInTheDocument();
-    const rankingTable = container.querySelector("table");
-    expect(rankingTable).toHaveClass("table-fixed");
-    expect(rankingTable).not.toHaveClass("min-w-[45rem]");
+    expect(screen.getByTestId("admin-vickrey-ranking")).toBeInTheDocument();
     expect(screen.getAllByText(/total pembayaran/i).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
     expect(screen.getByRole("heading", { name: /verifikasi transaksi pemenang lelang/i })).toBeInTheDocument();

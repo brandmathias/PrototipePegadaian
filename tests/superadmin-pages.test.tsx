@@ -1619,6 +1619,9 @@ describe("superadmin pages", () => {
     expect(
       screen.getByText("Bidders Ranking Table (Arsip)"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("superadmin-vickrey-ranking"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Harga yang Dibayarkan")).toBeInTheDocument();
     expect(screen.getAllByText("Rp 21.000.000").length).toBeGreaterThan(0);
     expect(
@@ -1750,23 +1753,12 @@ describe("superadmin pages", () => {
     expect(
       within(rankingSection as HTMLElement).getByText("Peringkat"),
     ).toBeInTheDocument();
-    expect(firstRankMarker).toHaveClass(
-      "h-[1.65rem]",
-      "w-8",
-      "rounded-[0.34rem]",
-    );
-    expect(firstRankMarker.className).toContain(
-      "bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)]",
-    );
-    expect(firstRankMarker.className).not.toContain("#17824a");
-    expect(secondRankMarker).toHaveClass(
-      "h-[1.65rem]",
-      "w-8",
-      "rounded-[0.34rem]",
-    );
-    expect(secondRankMarker.className).toContain(
-      "bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)]",
-    );
+    expect(
+      within(firstRankMarker).getByRole("img", { name: "Peringkat 1" }),
+    ).toBeInTheDocument();
+    expect(
+      within(secondRankMarker).getByRole("img", { name: "Peringkat 2" }),
+    ).toBeInTheDocument();
     expect(vickreyHandover).toHaveTextContent(
       "Dokumentasi Serah Terima Barang Fisik",
     );
@@ -2204,15 +2196,13 @@ describe("superadmin pages", () => {
     expect(
       screen.getByTestId("superadmin-failure-ranking-row-2").className,
     ).toContain("bg-[#f3f6f9]");
-    expect(
-      screen.getByTestId("superadmin-ranking-marker-1").className,
-    ).toContain("bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)]");
-    expect(
-      screen.getByTestId("superadmin-ranking-marker-2").className,
-    ).toContain("bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)]");
-    expect(
-      screen.getByTestId("superadmin-ranking-marker-3").className,
-    ).toContain("bg-[linear-gradient(180deg,#d78330_0%,#b7641d_100%)]");
+    for (const rank of [1, 2, 3]) {
+      expect(
+        within(
+          screen.getByTestId(`superadmin-ranking-marker-${rank}`),
+        ).getByRole("img", { name: `Peringkat ${rank}` }),
+      ).toBeInTheDocument();
+    }
     expect(
       screen.queryByRole("button", { name: /jadwalkan pasarkan ulang/i }),
     ).not.toBeInTheDocument();

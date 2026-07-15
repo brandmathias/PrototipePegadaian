@@ -237,6 +237,8 @@ describe("admin blacklist cross-unit history", () => {
     expect(entry.unpaidAuctionTraces[0]).toEqual(
       expect.objectContaining({
         id: "violation-sarinah-l1",
+        imageUrl:
+          "/media/violation-items/kalung-emas-rantai-singapura-22k.webp",
         itemName: "Kalung Emas Rantai Singapura 22K",
       }),
     );

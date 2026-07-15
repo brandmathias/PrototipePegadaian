@@ -8,6 +8,7 @@ import { filterCountedBuyerViolationHistory } from "@/lib/buyer/violation-histor
 import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
+import { resolveViolationItemImageUrl } from "@/lib/blacklist/violation-item-media";
 import {
   validateBuyerBidEscrowPayload,
   validateBuyerBidPayload,
@@ -387,7 +388,10 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
       amount: toNumber(row.transaction.amount),
       auctionMode: row.auction.mode,
       escalationEligible: row.violation.escalationEligible,
-      imageUrl: row.media?.url ?? null,
+      imageUrl: resolveViolationItemImageUrl({
+        databaseUrl: row.media?.url,
+        itemName: row.item.name,
+      }),
       itemCode: row.item.code,
       itemName: row.item.name,
       note: row.violation.note,

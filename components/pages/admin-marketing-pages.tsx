@@ -73,6 +73,10 @@ import { CompactTransactionProgress } from "@/components/shared/compact-transact
 import { LotFigure } from "@/components/shared/lot-figure";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
+import {
+  VickreyRankingTable,
+  type VickreyRankingRow,
+} from "@/components/shared/vickrey-ranking-table";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import {
   printReceiptElementInIsolatedFrame,
@@ -168,6 +172,7 @@ export type MarketingSession = {
     id: string;
     bidderId: string;
     bidderName: string;
+    bidderImage?: string | null;
     submittedAtLabel: string;
     amount?: number | null;
     isRevealed?: boolean;
@@ -4107,189 +4112,53 @@ function VickreyMechanismPanel({ auction }: { auction: MarketingSession }) {
   );
 }
 
-function RankingMarker({ rank }: { rank: number }) {
-  if (rank === 1) {
-    return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-        {/* Ribbons */}
-        <span
-          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#e11d48] origin-top rotate-[18deg]"
-          style={{
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)",
-          }}
-        />
-        <span
-          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#e11d48] origin-top -rotate-[18deg]"
-          style={{
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)",
-          }}
-        />
-        {/* Medal Circle */}
-        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#ffca28] to-[#ff9800] border border-[#f57c00]/30 shadow-[0_2px_6px_rgba(245,124,0,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
-          1
-        </span>
-      </div>
-    );
-  }
-
-  if (rank === 2) {
-    return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-        {/* Silver Circle */}
-        <span className="flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#f1f5f9] to-[#cbd5e1] border border-[#cbd5e1]/40 shadow-[0_2px_4px_rgba(100,116,139,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] text-[0.78rem] font-bold text-[#334155] leading-none">
-          2
-        </span>
-      </div>
-    );
-  }
-
-  if (rank === 3) {
-    return (
-      <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-        {/* Ribbons */}
-        <span
-          className="absolute bottom-1.5 left-[4px] w-[7px] h-3 bg-[#a16207] origin-top rotate-[18deg]"
-          style={{
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)",
-          }}
-        />
-        <span
-          className="absolute bottom-1.5 right-[4px] w-[7px] h-3 bg-[#a16207] origin-top -rotate-[18deg]"
-          style={{
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 50% 75%, 0% 100%)",
-          }}
-        />
-        {/* Medal Circle */}
-        <span className="relative z-10 flex items-center justify-center w-[1.65rem] h-[1.65rem] rounded-full bg-gradient-to-b from-[#d97706] to-[#a16207] border border-[#a16207]/30 shadow-[0_2px_6px_rgba(161,98,7,0.36),inset_0_1px_0_rgba(255,255,255,0.4)] text-[0.78rem] font-bold text-white leading-none">
-          3
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative inline-flex items-center justify-center w-7 h-9 select-none">
-      <span className="flex items-center justify-center w-[1.5rem] h-[1.5rem] rounded-full bg-[#f8fafc] border border-slate-200/80 text-[0.7rem] font-bold text-slate-500/80 leading-none font-mono">
-        {rank}
-      </span>
-    </div>
-  );
-}
-
 function VickreyWinnerRankingTable({ auction }: { auction: MarketingSession }) {
-  const rows = [...(auction.bids ?? [])].sort(
-    (left, right) => (left.rank || 0) - (right.rank || 0),
-  );
   const fulfilled = isVickreyPaymentFulfilled(auction);
+  const rows: VickreyRankingRow[] = [...(auction.bids ?? [])]
+    .sort((left, right) => (left.rank || 0) - (right.rank || 0))
+    .map((bid) => {
+      const statusLabel = fulfilled
+        ? bid.isWinner
+          ? "Lunas & Diserahkan"
+          : "Tidak Menang"
+        : bid.isWinner
+          ? "Pemenang"
+          : bid.determinesFinalPrice
+            ? "Harga Bayar"
+            : "-";
+      const statusKind: VickreyRankingRow["statusKind"] = fulfilled
+        ? bid.isWinner
+          ? "settled"
+          : "lost"
+        : bid.isWinner
+          ? "winner"
+          : bid.determinesFinalPrice
+            ? "payment"
+            : "none";
+
+      return {
+        amountLabel: formatOptionalCurrency(bid.amount),
+        bidderImage: bid.bidderImage,
+        bidderName: bid.bidderName,
+        id: bid.id,
+        rank: bid.rank,
+        statusKind,
+        statusLabel,
+        submittedAtLabel: bid.submittedAtLabel,
+      };
+    });
 
   return (
-    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-          {fulfilled
-            ? "Bidders Ranking Table (Arsip)"
-            : "Ranking Peserta Lelang (Admin View)"}
-        </h3>
-      </div>
-      <div>
-        <table className="w-full table-fixed text-left text-[0.72rem]">
-          <colgroup>
-            <col className="w-[7%]" />
-            <col className="w-[25%]" />
-            <col className="w-[22%]" />
-            <col className="w-[24%]" />
-            <col className="w-[22%]" />
-          </colgroup>
-          <thead>
-            <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
-              <th className="px-2 py-2.5 text-center">#</th>
-              <th className="px-2 py-2.5">Nama Peserta</th>
-              <th className="px-2 py-2.5">Waktu Penawaran</th>
-              <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
-              <th className="px-2 py-2.5 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
-            {rows.map((bid) => {
-              const isRunnerUp = bid.determinesFinalPrice;
-              const rowTone =
-                bid.rank === 1
-                  ? "bg-[#fff7db]"
-                  : bid.rank === 2
-                    ? "bg-[#f3f6f9]"
-                    : bid.rank === 3
-                      ? "bg-[#fff0df]"
-                      : "bg-[#f7f8fa] text-[#667085]";
-              const status = fulfilled
-                ? bid.isWinner
-                  ? "Lunas & Diserahkan"
-                  : "Tidak Menang"
-                : bid.isWinner
-                  ? "Pemenang"
-                  : isRunnerUp
-                    ? "Harga Bayar"
-                    : "-";
-              const statusTone = fulfilled
-                ? bid.isWinner
-                  ? "bg-[#e9f8ef] text-[#006747]"
-                  : "bg-[#eef2f0] text-[#8b9a93]"
-                : bid.isWinner
-                  ? "bg-[#006747] text-white"
-                  : isRunnerUp
-                    ? "border border-[#d0d5dd] bg-[#f8fafc] text-[#475467]"
-                    : "text-[#40558b]";
-
-              return (
-                <tr
-                  className={`${rowTone} transition-colors duration-200 hover:bg-[#fbfaf5]`}
-                  key={bid.id}
-                >
-                  <td className="px-2 py-2.5 text-center">
-                    <RankingMarker rank={bid.rank} />
-                  </td>
-                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
-                    {bid.bidderName}
-                  </td>
-                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
-                    {bid.submittedAtLabel}
-                  </td>
-                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
-                    {formatOptionalCurrency(bid.amount)}
-                  </td>
-                  <td className="px-2 py-2.5 text-center">
-                    {status === "-" ? (
-                      <span className="font-black text-[#40558b]">-</span>
-                    ) : (
-                      <span
-                        className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}
-                      >
-                        {fulfilled ? (
-                          bid.isWinner ? (
-                            <CheckCircle2 className="size-3" />
-                          ) : (
-                            <X className="size-3" />
-                          )
-                        ) : bid.isWinner ? (
-                          <Trophy className="size-3" />
-                        ) : (
-                          <ReceiptText className="size-3" />
-                        )}
-                        <span className="min-w-0 whitespace-normal break-words text-center">
-                          {status}
-                        </span>
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        Total {auction.participants ?? rows.length} peserta
-      </div>
-    </section>
+    <VickreyRankingTable
+      rows={rows}
+      testIdPrefix="admin-vickrey-ranking"
+      title={
+        fulfilled
+          ? "Bidders Ranking Table (Arsip)"
+          : "Ranking Peserta Lelang (Admin View)"
+      }
+      totalParticipants={auction.participants ?? rows.length}
+    />
   );
 }
 
@@ -6300,108 +6169,34 @@ function VickreyFailureRankingTable({
 }: {
   auction: MarketingSession;
 }) {
-  const rows = [...(auction.bids ?? [])].sort(
-    (left, right) => (left.rank || 0) - (right.rank || 0),
-  );
+  const rows: VickreyRankingRow[] = [...(auction.bids ?? [])]
+    .sort((left, right) => (left.rank || 0) - (right.rank || 0))
+    .map((bid) => ({
+      amountLabel: formatOptionalCurrency(bid.amount),
+      bidderImage: bid.bidderImage,
+      bidderName: bid.bidderName,
+      id: bid.id,
+      rank: bid.rank,
+      statusKind: bid.isWinner
+        ? "violation"
+        : bid.determinesFinalPrice
+          ? "payment"
+          : "lost",
+      statusLabel: bid.isWinner
+        ? "Gagal / Pelanggaran"
+        : bid.determinesFinalPrice
+          ? "Harga Pembanding"
+          : "Tidak Menang",
+      submittedAtLabel: bid.submittedAtLabel,
+    }));
 
   return (
-    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
-          Bidders Ranking Table (Arsip)
-        </h3>
-      </div>
-      <table className="w-full table-fixed text-left text-[0.72rem]">
-        <colgroup>
-          <col className="w-[7%]" />
-          <col className="w-[25%]" />
-          <col className="w-[22%]" />
-          <col className="w-[24%]" />
-          <col className="w-[22%]" />
-        </colgroup>
-        <thead>
-          <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.56rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:text-[0.6rem]">
-            <th className="px-2 py-2.5 text-center">#</th>
-            <th className="px-2 py-2.5">Nama Peserta</th>
-            <th className="px-2 py-2.5">Waktu Penawaran</th>
-            <th className="px-2 py-2.5 text-right">Nominal Penawaran</th>
-            <th className="px-2 py-2.5 text-center">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
-          {rows.length ? (
-            rows.map((bid) => {
-              const rowTone =
-                bid.rank === 1
-                  ? "bg-[#fff7db]"
-                  : bid.rank === 2
-                    ? "bg-[#f3f6f9]"
-                    : bid.rank === 3
-                      ? "bg-[#fff0df]"
-                      : "bg-[#f7f8fa] text-[#667085]";
-              const status = bid.isWinner
-                ? "Gagal / Pelanggaran"
-                : bid.determinesFinalPrice
-                  ? "Harga Pembanding"
-                  : "Tidak Menang";
-              const statusTone = bid.isWinner
-                ? "bg-[#b91c1c] text-white"
-                : bid.determinesFinalPrice
-                  ? "border border-[#d0d5dd] bg-[#f8fafc] text-[#475467]"
-                  : "bg-[#eef2f0] text-[#40558b]";
-
-              return (
-                <tr
-                  className={`${rowTone} transition-colors duration-200 hover:bg-[#fbfaf5]`}
-                  key={bid.id}
-                >
-                  <td className="px-2 py-2.5 text-center">
-                    <RankingMarker rank={bid.rank} />
-                  </td>
-                  <td className="break-words px-2 py-2.5 text-[0.68rem] leading-4 sm:text-[0.72rem]">
-                    {bid.bidderName}
-                  </td>
-                  <td className="break-words px-2 py-2.5 font-mono text-[0.62rem] leading-4 text-[#40558b]">
-                    {bid.submittedAtLabel}
-                  </td>
-                  <td className="break-words px-2 py-2.5 text-right font-mono text-[0.68rem] font-black leading-4">
-                    {formatOptionalCurrency(bid.amount)}
-                  </td>
-                  <td className="px-2 py-2.5 text-center">
-                    <span
-                      className={`inline-flex max-w-full items-center justify-center gap-1 rounded-full px-2 py-1 text-[0.55rem] font-black uppercase leading-3 sm:text-[0.58rem] ${statusTone}`}
-                    >
-                      {bid.isWinner ? (
-                        <X className="size-3" />
-                      ) : bid.determinesFinalPrice ? (
-                        <ReceiptText className="size-3" />
-                      ) : (
-                        <CheckCircle2 className="size-3" />
-                      )}
-                      <span className="min-w-0 whitespace-normal break-words text-center">
-                        {status}
-                      </span>
-                    </span>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td
-                className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]"
-                colSpan={5}
-              >
-                Belum ada peserta yang mengirim penawaran.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      <div className="border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        Total {auction.participants ?? rows.length} peserta
-      </div>
-    </section>
+    <VickreyRankingTable
+      rows={rows}
+      testIdPrefix="admin-vickrey-failure-ranking"
+      title="Bidders Ranking Table (Arsip)"
+      totalParticipants={auction.participants ?? rows.length}
+    />
   );
 }
 

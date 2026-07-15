@@ -28,10 +28,8 @@ import {
   ChevronRight,
   Circle,
   CircleDot,
-  CircleX,
   Clock3,
   Cpu,
-  Crown,
   CreditCard,
   Download,
   Eye,
@@ -93,6 +91,10 @@ import {
 
 import { AdminPageHero } from "@/components/admin/admin-page-hero";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
+import {
+  VickreyRankingTable,
+  type VickreyRankingRow,
+} from "@/components/shared/vickrey-ranking-table";
 import {
   AdminSelect,
   type AdminSelectOption,
@@ -3951,168 +3953,19 @@ function getSuperAdminInitials(name?: string | null) {
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
 }
 
-function getSuperAdminRankingRowClasses(
+function getSuperAdminRankingStatus(
   bid: NonNullable<SuperAdminUnitBarangMarketingSession["bids"]>[number],
-  {
-    fulfilled,
-    failure = false,
-  }: {
-    fulfilled: boolean;
-    failure?: boolean;
-  },
+  fulfilled: boolean,
 ) {
-  const isRunnerUp = bid.determinesFinalPrice;
-  const rankTone =
-    bid.rank === 1
-      ? {
-          rowTone: "bg-[#fff7db]",
-          amountTone: "text-[#8f5a00]",
-        }
-      : bid.rank === 2
-        ? {
-            rowTone: "bg-[#f3f6f9]",
-            amountTone: "text-[#475467]",
-          }
-        : bid.rank === 3
-          ? {
-              rowTone: "bg-[#fff0df]",
-              amountTone: "text-[#8f3b00]",
-            }
-          : {
-              rowTone: "bg-[#f7f8fa]",
-              amountTone: "text-[#667085]",
-            };
-
   if (bid.isWinner) {
-    return {
-      rowTone: rankTone.rowTone,
-      amountTone: rankTone.amountTone,
-      status: failure
-        ? "Gagal / Pelanggaran"
-        : fulfilled
-          ? "Lunas & Diserahkan"
-          : "Pemenang",
-      statusTone: failure
-        ? "border border-[#fecaca] bg-[#fff1f2] text-[#b42318]"
-        : "border border-[#f6d365] bg-[#fff6d8] text-[#8f5a00]",
-      StatusIcon: failure ? X : CheckCircle2,
-    };
+    return fulfilled ? "Lunas & Diserahkan" : "Pemenang";
   }
 
-  if (isRunnerUp) {
-    return {
-      rowTone: rankTone.rowTone,
-      amountTone: rankTone.amountTone,
-      status: "Harga yang Dibayarkan",
-      statusTone: "border border-[#d0d5dd] bg-[#f8fafc] text-[#475467]",
-      StatusIcon: ReceiptText,
-    };
+  if (bid.determinesFinalPrice) {
+    return "Harga yang Dibayarkan";
   }
 
-  return {
-    rowTone: rankTone.rowTone,
-    amountTone: rankTone.amountTone,
-    status: fulfilled || failure ? "Tidak Menang" : "-",
-    statusTone: "border border-[#dce5e1] bg-[#f7f9f8] text-[#667085]",
-    StatusIcon: CircleX,
-  };
-}
-
-function getSuperAdminRankingBadge(rank: number) {
-  if (rank === 1) {
-    return {
-      accent: "gold" as const,
-      text: "text-[#8f5a00]",
-      circle: "bg-[linear-gradient(180deg,#ffc934,#f1ab00)]",
-      ring: "ring-[#f6c453]",
-      border: "border-[#ffe8a3]",
-      ribbon: "bg-[#db4b39]",
-    };
-  }
-
-  if (rank === 2) {
-    return {
-      accent: "silver" as const,
-      tone: "text-[#98a2b3]",
-      text: "text-[#475467]",
-      circle: "bg-[linear-gradient(180deg,#f5f7fa,#cfd6df)]",
-      ring: "ring-[#d0d5dd]",
-      border: "border-[#f8fafc]",
-      ribbon: "bg-[#bfc7d1]",
-    };
-  }
-
-  if (rank === 3) {
-    return {
-      accent: "bronze" as const,
-      text: "text-[#8f3b00]",
-      circle: "bg-[linear-gradient(180deg,#d89340,#b96b1c)]",
-      ring: "ring-[#d59a63]",
-      border: "border-[#f5d0b0]",
-      ribbon: "bg-[#db4b39]",
-    };
-  }
-
-  return {
-    accent: "slate" as const,
-    text: "text-[#475467]",
-    circle: "bg-[linear-gradient(180deg,#f8fafc,#e2e8f0)]",
-    ring: "ring-[#d0d5dd]",
-    border: "border-[#e5e7eb]",
-    ribbon: "bg-[#98a2b3]",
-  };
-}
-
-function SuperAdminRankingAvatar({
-  bidderImage,
-  bidderName,
-  rank,
-}: {
-  bidderImage?: string | null;
-  bidderName: string;
-  rank: number;
-}) {
-  const badgeTone = getSuperAdminRankingBadge(rank);
-
-  return bidderImage ? (
-    <span
-      className={`relative size-8 shrink-0 overflow-hidden rounded-full border-2 bg-[#d9e3dc] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ${badgeTone.border} ${badgeTone.ring}`}
-    >
-      <Image
-        alt={`Foto peserta ${bidderName}`}
-        className="object-cover"
-        fill
-        sizes="32px"
-        src={bidderImage}
-      />
-    </span>
-  ) : (
-    <span
-      className={`grid size-8 shrink-0 place-items-center rounded-full border-2 bg-[#d9e3dc] text-[0.62rem] font-black uppercase tracking-[0.05em] text-[#14213d] shadow-[0_14px_24px_-18px_rgba(0,0,0,0.5)] ring-1 ${badgeTone.border} ${badgeTone.ring}`}
-    >
-      {getSuperAdminInitials(bidderName)}
-    </span>
-  );
-}
-
-function SuperAdminRankingMarker({ rank }: { rank: number }) {
-  const tone =
-    rank === 1
-      ? "border-[#d99a13] bg-[linear-gradient(180deg,#f7c63f_0%,#eba818_100%)] text-white shadow-[0_7px_16px_-13px_rgba(171,105,0,0.7),inset_0_1px_0_rgba(255,255,255,0.38)]"
-      : rank === 2
-        ? "border-[#b9c1cb] bg-[linear-gradient(180deg,#d5dbe3_0%,#aeb7c2_100%)] text-white shadow-[0_7px_16px_-13px_rgba(75,85,99,0.52),inset_0_1px_0_rgba(255,255,255,0.48)]"
-        : rank === 3
-          ? "border-[#a95e19] bg-[linear-gradient(180deg,#d78330_0%,#b7641d_100%)] text-white shadow-[0_7px_16px_-13px_rgba(132,70,14,0.6),inset_0_1px_0_rgba(255,255,255,0.28)]"
-          : "border-[#d4dbe4] bg-[linear-gradient(180deg,#f5f7fa_0%,#dfe5ec_100%)] text-[#667085] shadow-[inset_0_1px_0_rgba(255,255,255,0.78)]";
-
-  return (
-    <span
-      className={`inline-flex h-[1.65rem] w-8 select-none items-center justify-center rounded-[0.34rem] border text-[0.78rem] font-black leading-none ${tone}`}
-      data-testid={`superadmin-ranking-marker-${rank}`}
-    >
-      {rank}
-    </span>
-  );
+  return fulfilled ? "Tidak Menang" : "-";
 }
 
 export type SuperAdminMarketingReceiptContext = {
@@ -4595,105 +4448,46 @@ function SuperAdminVickreyRankingTable({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const rows = [...(session.bids ?? [])].sort(
-    (left, right) => (left.rank || 0) - (right.rank || 0),
-  );
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const rows: VickreyRankingRow[] = [...(session.bids ?? [])]
+    .sort((left, right) => (left.rank || 0) - (right.rank || 0))
+    .map((bid) => {
+      const statusLabel = getSuperAdminRankingStatus(bid, fulfilled);
+      const statusKind: VickreyRankingRow["statusKind"] = bid.isWinner
+        ? fulfilled
+          ? "settled"
+          : "winner"
+        : bid.determinesFinalPrice
+          ? "payment"
+          : statusLabel === "-"
+            ? "none"
+            : "lost";
+
+      return {
+        amountLabel: formatSuperAdminOptionalCurrency(bid.amount),
+        bidderImage: bid.bidderImage,
+        bidderName: bid.bidderName,
+        id: bid.id,
+        rank: bid.rank,
+        statusKind,
+        statusLabel,
+        submittedAtLabel: bid.submittedAtLabel,
+      };
+    });
 
   return (
-    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <Crown className="size-3.5 shrink-0 text-[#40558b]" strokeWidth={2} />
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.035em] text-[#111b46]">
-          {fulfilled
-            ? "Bidders Ranking Table (Arsip)"
-            : "Ranking Peserta Lelang (Admin View)"}
-        </h3>
-      </div>
-      <div>
-        <table className="w-full table-fixed text-left text-[0.72rem]">
-          <colgroup>
-            <col className="w-[8%]" />
-            <col className="w-[29%]" />
-            <col className="w-[22%]" />
-            <col className="w-[18%]" />
-            <col className="w-[23%]" />
-          </colgroup>
-          <thead>
-            <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
-              <th className="px-3 py-2.5 text-center">Peringkat</th>
-              <th className="px-3 py-3">Nama Peserta</th>
-              <th className="px-3 py-3">Waktu Penawaran</th>
-              <th className="px-3 py-3 text-right">Nominal Penawaran</th>
-              <th className="px-3 py-3 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
-            {rows.map((bid) => {
-              const { amountTone, rowTone, status, statusTone, StatusIcon } =
-                getSuperAdminRankingRowClasses(bid, {
-                  fulfilled,
-                });
-
-              return (
-                <tr
-                  className={`${rowTone} transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f7fbf9]`}
-                  data-testid={`superadmin-ranking-row-${bid.rank}`}
-                  key={bid.id}
-                >
-                  <td className="px-3 py-3 text-center">
-                    <SuperAdminRankingMarker rank={bid.rank} />
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar
-                        bidderImage={bid.bidderImage}
-                        bidderName={bid.bidderName}
-                        rank={bid.rank}
-                      />
-                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">
-                        {bid.bidderName}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
-                      <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
-                      <span className="break-words">
-                        {bid.submittedAtLabel}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}
-                  >
-                    {formatSuperAdminOptionalCurrency(bid.amount)}
-                  </td>
-                  <td className="px-3 py-3.5 text-center">
-                    {status === "-" ? (
-                      <span className="font-black text-[#40558b]">-</span>
-                    ) : (
-                      <span
-                        className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}
-                      >
-                        <StatusIcon className="size-3.5 shrink-0" />
-                        <span className="min-w-0 whitespace-normal break-words text-center">
-                          {status}
-                        </span>
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex items-center gap-2 border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        <UsersRound className="size-3.5 shrink-0 text-[#667085]" />
-        <span>Total {session.participants ?? rows.length} peserta</span>
-      </div>
-    </section>
+    <VickreyRankingTable
+      markerTestIdPrefix="superadmin-ranking"
+      rows={rows}
+      rowTestIdPrefix="superadmin-ranking"
+      testIdPrefix="superadmin-vickrey-ranking"
+      title={
+        fulfilled
+          ? "Bidders Ranking Table (Arsip)"
+          : "Ranking Peserta Lelang (Admin View)"
+      }
+      totalParticipants={session.participants ?? rows.length}
+    />
   );
 }
 
@@ -5425,108 +5219,36 @@ function SuperAdminVickreyFailureRankingTable({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const rows = [...(session.bids ?? [])].sort(
-    (left, right) => (left.rank || 0) - (right.rank || 0),
-  );
+  const rows: VickreyRankingRow[] = [...(session.bids ?? [])]
+    .sort((left, right) => (left.rank || 0) - (right.rank || 0))
+    .map((bid) => ({
+      amountLabel: formatSuperAdminOptionalCurrency(bid.amount),
+      bidderImage: bid.bidderImage,
+      bidderName: bid.bidderName,
+      id: bid.id,
+      rank: bid.rank,
+      statusKind: bid.isWinner
+        ? "violation"
+        : bid.determinesFinalPrice
+          ? "payment"
+          : "lost",
+      statusLabel: bid.isWinner
+        ? "Gagal / Pelanggaran"
+        : bid.determinesFinalPrice
+          ? "Harga yang Dibayarkan"
+          : "Tidak Menang",
+      submittedAtLabel: bid.submittedAtLabel,
+    }));
 
   return (
-    <section className="overflow-hidden rounded-xl border border-[#dfe7e2] bg-white shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
-      <div className="flex items-center gap-2 border-b border-[#edf2ee] bg-[#fbfcfb] px-4 py-3">
-        <Crown className="size-3.5 shrink-0 text-[#40558b]" strokeWidth={2} />
-        <h3 className="text-[0.78rem] font-black uppercase tracking-[0.035em] text-[#111b46]">
-          Bidders Ranking Table (Arsip)
-        </h3>
-      </div>
-      <table className="w-full table-fixed text-left text-[0.72rem]">
-        <colgroup>
-          <col className="w-[8%]" />
-          <col className="w-[29%]" />
-          <col className="w-[22%]" />
-          <col className="w-[18%]" />
-          <col className="w-[23%]" />
-        </colgroup>
-        <thead>
-          <tr className="border-b border-[#edf2ee] bg-[#f8faf9] text-[0.58rem] font-black uppercase tracking-[0.045em] text-[#40558b] sm:text-[0.62rem]">
-            <th className="px-3 py-2.5 text-center">Peringkat</th>
-            <th className="px-3 py-3">Nama Peserta</th>
-            <th className="px-3 py-3">Waktu Penawaran</th>
-            <th className="px-3 py-3 text-right">Nominal Penawaran</th>
-            <th className="px-3 py-3 text-center">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#edf2ee] font-bold text-[#111b46]">
-          {rows.length ? (
-            rows.map((bid) => {
-              const { amountTone, rowTone, status, statusTone, StatusIcon } =
-                getSuperAdminRankingRowClasses(bid, {
-                  failure: true,
-                  fulfilled: false,
-                });
-
-              return (
-                <tr
-                  className={`${rowTone} transition-colors duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#fbfaf5]`}
-                  data-testid={`superadmin-failure-ranking-row-${bid.rank}`}
-                  key={bid.id}
-                >
-                  <td className="px-3 py-3 text-center">
-                    <SuperAdminRankingMarker rank={bid.rank} />
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <SuperAdminRankingAvatar
-                        bidderImage={bid.bidderImage}
-                        bidderName={bid.bidderName}
-                        rank={bid.rank}
-                      />
-                      <p className="truncate text-[0.82rem] font-black leading-5 text-[#14213d]">
-                        {bid.bidderName}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3.5">
-                    <div className="flex items-center gap-2 font-mono text-[0.68rem] font-bold leading-4 text-[#40558b]">
-                      <Clock3 className="size-3.5 shrink-0 text-[#667085]" />
-                      <span className="break-words">
-                        {bid.submittedAtLabel}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    className={`break-words px-3 py-3.5 text-right font-mono text-[0.78rem] font-black leading-4 ${amountTone}`}
-                  >
-                    {formatSuperAdminOptionalCurrency(bid.amount)}
-                  </td>
-                  <td className="px-3 py-3.5 text-center">
-                    <span
-                      className={`inline-flex max-w-full items-center justify-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.56rem] font-black uppercase leading-3 tracking-[0.02em] sm:text-[0.6rem] ${statusTone}`}
-                    >
-                      <StatusIcon className="size-3.5 shrink-0" />
-                      <span className="min-w-0 whitespace-normal break-words text-center">
-                        {status}
-                      </span>
-                    </span>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td
-                className="px-4 py-5 text-center text-[0.78rem] font-semibold leading-5 text-[#52655d]"
-                colSpan={5}
-              >
-                Belum ada peserta yang mengirim penawaran.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      <div className="flex items-center gap-2 border-t border-[#edf2ee] bg-[#fbfcfb] px-4 py-2.5 text-[0.68rem] font-black text-[#40558b]">
-        <UsersRound className="size-3.5 shrink-0 text-[#667085]" />
-        <span>Total {session.participants ?? rows.length} peserta</span>
-      </div>
-    </section>
+    <VickreyRankingTable
+      markerTestIdPrefix="superadmin-ranking"
+      rows={rows}
+      rowTestIdPrefix="superadmin-failure-ranking"
+      testIdPrefix="superadmin-failure-ranking"
+      title="Bidders Ranking Table (Arsip)"
+      totalParticipants={session.participants ?? rows.length}
+    />
   );
 }
 

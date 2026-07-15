@@ -8,6 +8,7 @@ import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import {
   getBlacklistRestrictionPolicy,
 } from "@/lib/blacklist/restrictions";
+import { resolveViolationItemImageUrl } from "@/lib/blacklist/violation-item-media";
 import { db } from "@/lib/db/client";
 import {
   barang,
@@ -143,7 +144,10 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
       itemCondition: row.item.condition,
       itemDescription: row.item.description,
       itemAppraisalValue: toNullableNumber(row.item.appraisalValue),
-      imageUrl: row.media?.url ?? null,
+      imageUrl: resolveViolationItemImageUrl({
+        databaseUrl: row.media?.url,
+        itemName: row.item.name,
+      }),
       imageFileName: row.media?.fileName ?? null,
       auctionMode: row.auction.mode,
       basePrice: toNullableNumber(row.auction.basePrice ?? row.auction.price),

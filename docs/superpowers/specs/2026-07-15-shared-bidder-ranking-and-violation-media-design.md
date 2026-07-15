@@ -37,8 +37,8 @@ Menyamakan tampilan bidders ranking pada admin unit dan superadmin, sekaligus me
 ## Image sources
 
 - Kalung: The Glorious Studio, Pexels — https://www.pexels.com/photo/close-up-photo-of-gold-necklace-14111399/
-- Cincin: Melike B, Pexels — https://www.pexels.com/photo/golden-ring-with-diamond-12168877/
-- Gelang: Melike B, Pexels — https://www.pexels.com/photo/gold-bracelet-in-close-up-photography-12194239/
+- Cincin: Alberta Studios, Pexels — https://www.pexels.com/photo/gold-ring-with-diamonds-9838994/
+- Gelang: Melike B, Pexels — https://www.pexels.com/photo/photo-of-a-gold-bracelet-12194316/
 - Lisensi: https://www.pexels.com/legal-pages/license/
 
 ## Acceptance criteria
