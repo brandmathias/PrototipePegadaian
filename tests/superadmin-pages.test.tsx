@@ -13,6 +13,7 @@ import {
   SuperAdminBlacklistPage,
   SuperAdminCreateUnitPage,
   SuperAdminDashboardPage,
+  SuperAdminManagementAdminDetailPage,
   SuperAdminManagementUnitDetailPage,
   SuperAdminManagementPage,
   SuperAdminPolicyPage,
@@ -2610,6 +2611,7 @@ describe("superadmin pages", () => {
             name: "Admin Manado",
             unitId: "unit-1",
             unit: "Pegadaian CP Manado",
+            unitCode: "CP-MND-01",
             email: "admin.manado@example.com",
             phone: "-",
             status: "Aktif",
@@ -2620,6 +2622,7 @@ describe("superadmin pages", () => {
             name: "Admin Wanea",
             unitId: "unit-2",
             unit: "UPC Wanea",
+            unitCode: "UPC-WNA-02",
             email: "admin.wanea@example.com",
             phone: "-",
             status: "Aktif",
@@ -2664,19 +2667,30 @@ describe("superadmin pages", () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/1 unit aktif/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/1 rekening utama/i)).not.toBeInTheDocument();
-    const detailLink = screen.getByRole("link", { name: /lihat detail/i });
+    expect(screen.queryByText("Admin Unit Aktif")).not.toBeInTheDocument();
+    expect(screen.getAllByText("CP-MND-01").length).toBeGreaterThan(0);
+    const detailLinks = screen.getAllByRole("link", { name: /lihat detail/i });
+    const detailLink = detailLinks.find(
+      (link) => link.getAttribute("href") === "/superadmin/manajemen-unit/unit-1",
+    );
 
-    expect(detailLink).toHaveAttribute(
+    expect(detailLink).toBeTruthy();
+    expect(detailLink!).toHaveAttribute(
       "href",
       "/superadmin/manajemen-unit/unit-1",
     );
-    expect(detailLink).toHaveClass(
+    expect(detailLink!).toHaveClass(
       "border-[#d8e4de]",
       "text-[#075b3f]",
       "hover:border-[#006747]",
       "hover:bg-[#006747]",
       "hover:text-white",
     );
+    expect(
+      detailLinks.find(
+        (link) => link.getAttribute("href") === "/superadmin/manajemen-unit/admin/admin-1",
+      ),
+    ).toBeTruthy();
     expect(
       screen.queryByRole("link", { name: /^rekening$/i }),
     ).not.toBeInTheDocument();
@@ -2961,7 +2975,7 @@ describe("superadmin pages", () => {
     expect(within(listbox).getByRole("option", { name: /Pegadaian CP Jakarta/i })).toBeInTheDocument();
   });
 
-  it("shows admin detail without the superadmin audit log", () => {
+  it("routes admin detail to a full account page without opening a popup", () => {
     render(
       <SuperAdminManagementPage
         admins={[
@@ -2970,6 +2984,7 @@ describe("superadmin pages", () => {
             name: "Admin Manado",
             unitId: "unit-1",
             unit: "Pegadaian CP Manado",
+            unitCode: "CP-MND-01",
             email: "admin.manado@example.com",
             phone: "081234567890",
             status: "Aktif",
@@ -2980,15 +2995,37 @@ describe("superadmin pages", () => {
       />,
     );
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /lihat detail admin admin manado/i }),
+    const adminDetailLink = screen.getByRole("link", { name: /lihat detail/i });
+
+    expect(adminDetailLink).toHaveAttribute(
+      "href",
+      "/superadmin/manajemen-unit/admin/admin-1",
+    );
+    expect(screen.queryByRole("dialog", { name: /detail admin unit/i })).not.toBeInTheDocument();
+  });
+
+  it("renders admin unit account detail as a full page without audit log", () => {
+    render(
+      <SuperAdminManagementAdminDetailPage
+        admin={{
+          id: "admin-1",
+          name: "Admin Manado",
+          unitId: "unit-1",
+          unit: "Pegadaian CP Manado",
+          unitCode: "CP-MND-01",
+          email: "admin.manado@example.com",
+          phone: "081234567890",
+          status: "Aktif",
+          lastLogin: "15 Juli 2026, 10.00",
+        }}
+      />,
     );
 
-    expect(screen.getByRole("dialog", { name: /detail admin unit/i })).toBeInTheDocument();
-    const dialog = screen.getByRole("dialog", { name: /detail admin unit/i });
-    expect(within(dialog).getByText("Admin Manado")).toBeInTheDocument();
-    expect(within(dialog).getByText("15 Juli 2026, 10.00")).toBeInTheDocument();
-    expect(within(dialog).queryByTestId("superadmin-account-audit-list")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /detail akun admin unit/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Admin Manado").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("CP-MND-01").length).toBeGreaterThan(0);
+    expect(screen.getByText("15 Juli 2026, 10.00")).toBeInTheDocument();
+    expect(screen.queryByTestId("superadmin-account-audit-list")).not.toBeInTheDocument();
   });
 
   it("renders read-only violation policy page", () => {

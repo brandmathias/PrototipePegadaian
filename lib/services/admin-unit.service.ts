@@ -101,6 +101,7 @@ export async function listAdminUnits() {
       name: row.name,
       unitId: row.unitId,
       unit: row.unitName ?? "Belum ditetapkan",
+      unitCode: row.unitCode ?? "",
       email: row.email,
       phone: row.phoneNumber ?? "-",
       status: toAdminStatus(row.isActive),
@@ -140,6 +141,7 @@ export async function getAdminUnitById(adminId: string) {
     phone: row.phoneNumber ?? "",
     unitId: row.unitId,
     unit: row.unitName ?? "Belum ditetapkan",
+    unitCode: row.unitCode ?? "",
     status: toAdminStatus(row.isActive)
   };
 }

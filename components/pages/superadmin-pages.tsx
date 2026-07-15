@@ -418,6 +418,7 @@ export type SuperAdminAdminItem = {
   name: string;
   unitId: string | null;
   unit: string;
+  unitCode?: string;
   email: string;
   phone: string;
   status: string;
@@ -6859,66 +6860,166 @@ function SuperAdminManagementAdminModal({
   );
 }
 
-function SuperAdminManagementAdminDetailModal({
+export function SuperAdminManagementAdminDetailPage({
   admin,
-  open,
-  onOpenChange,
 }: {
   admin: SuperAdminAdminItem | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
 }) {
+  if (!admin) {
+    return (
+      <div className="space-y-6">
+        <AdminPageHero
+          description="Akun admin unit tidak ditemukan atau sudah tidak aktif."
+          eyebrow="Superadmin / Detail Admin Unit"
+          icon={UserCog}
+          title="Detail Akun Admin Unit"
+        />
+        <EmptyState
+          description="Kembali ke manajemen unit untuk memilih admin unit yang masih aktif."
+          icon={SearchX}
+          title="Admin unit tidak ditemukan"
+        />
+      </div>
+    );
+  }
+
+  const unitCode = admin.unitCode || admin.unitId || "-";
+
   return (
-    <SuperAdminUnitDetailPopup
-      icon={UserCog}
-      onOpenChange={onOpenChange}
-      open={open}
-      subtitle="Informasi akun, unit penugasan, dan aktivitas login admin unit."
-      title="Detail Admin Unit"
-    >
-      <div className="sm:col-span-2 overflow-hidden rounded-[1.25rem] border border-[#0a6a49]/15 bg-[#023d31] p-4 text-white shadow-[0_22px_48px_-34px_rgba(2,61,49,0.75)]">
-        <div className="flex items-center gap-3">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-white/80 bg-white font-headline text-lg font-black text-[#0a6a49]">
-            {getSuperAdminInitials(admin?.name)}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate font-headline text-lg font-black tracking-[-0.02em]">
-              {admin?.name ?? "-"}
+    <div className="relative -my-6 min-h-[calc(100dvh-4rem)] w-full overflow-hidden rounded-[2rem] bg-[#f5f8f5] py-6 sm:-my-8 sm:py-8 md:-my-10 md:py-10">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_8%_8%,rgba(10,106,73,0.13),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.78),rgba(245,248,245,0.96))]" />
+        <div className="absolute right-[-10rem] top-12 size-[26rem] rounded-full border border-[#d8ad38]/18" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-[1500px] space-y-5 px-4 sm:px-5 md:space-y-6 lg:px-6">
+        <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="page-heading-eyebrow">Superadmin / Detail Admin Unit</p>
+            <h1 className="mt-2 font-headline text-3xl font-black tracking-[-0.04em] text-[#122018] md:text-4xl">
+              Detail Akun Admin Unit
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56 md:text-base">
+              Informasi identitas, unit penugasan, dan aktivitas login akun admin unit.
             </p>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
-              <span className="inline-flex items-center gap-1.5">
-                <Building2 className="size-3.5" />
-                {admin?.unit ?? "Belum ditetapkan"}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d8ad38]/35 bg-[#d8ad38]/10 px-2 py-1 text-[#f4d675]">
-                <BadgeCheck className="size-3.5" />
-                {admin?.status ?? "-"}
-              </span>
+          </div>
+          <Link
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-[#d8e4de] bg-white px-4 text-sm font-bold text-[#075b3f] shadow-[0_14px_30px_-26px_rgba(8,69,50,0.45)] transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-[#006747] hover:bg-[#006747] hover:text-white active:translate-y-0 active:scale-[0.98]"
+            href="/superadmin/manajemen-unit"
+          >
+            <ArrowLeft className="size-4" />
+            Kembali
+          </Link>
+        </section>
+
+        <section className="rounded-[2.25rem] border border-white/75 bg-white/70 p-2 shadow-[0_34px_110px_-72px_rgba(6,66,46,0.68)]">
+          <div className="relative overflow-hidden rounded-[calc(2.25rem-0.5rem)] border border-[#0a6a49]/18 bg-[#023d31] p-5 text-white md:p-7">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,61,49,0.96),rgba(3,86,63,0.78)_52%,rgba(2,61,49,0.64))]" />
+            <div className="absolute -right-20 -top-24 size-64 rounded-full border border-[#d8ad38]/45" />
+            <div className="absolute bottom-0 right-8 h-px w-1/2 bg-gradient-to-r from-transparent via-[#d8ad38]/70 to-transparent" />
+
+            <div className="relative grid gap-6 lg:grid-cols-[auto_minmax(0,1fr)_13rem] lg:items-center">
+              <div className="relative grid size-28 shrink-0 place-items-center rounded-[2rem] border-4 border-white/88 bg-white text-3xl font-black text-[#0a6a49] shadow-[0_24px_62px_-38px_rgba(0,0,0,0.8)] md:size-32">
+                <span>{getSuperAdminInitials(admin.name)}</span>
+                <span className="absolute -bottom-1.5 -right-1.5 grid size-8 place-items-center rounded-full border-[3px] border-white bg-[#0a6a49] text-white">
+                  <BadgeCheck className="size-4" />
+                </span>
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="font-headline text-2xl font-black tracking-[-0.03em] md:text-3xl">
+                    {admin.name}
+                  </h2>
+                  <span className="inline-flex items-center gap-2 rounded-full border border-[#d8ad38]/45 bg-[#d8ad38]/12 px-3 py-1.5 text-xs font-bold text-[#f4d675]">
+                    <BadgeCheck className="size-3.5" />
+                    {admin.status}
+                  </span>
+                </div>
+                <div className="mt-5 grid gap-3 text-sm text-white/88 sm:grid-cols-2">
+                  <span className="inline-flex min-w-0 items-center gap-2">
+                    <Mail className="size-4 shrink-0 text-white/72" />
+                    <span className="truncate">{admin.email}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <Phone className="size-4 shrink-0 text-white/72" />
+                    {admin.phone || "-"}
+                  </span>
+                  <span className="inline-flex items-center gap-2 sm:col-span-2">
+                    <Building2 className="size-4 shrink-0 text-white/72" />
+                    {admin.unit} ({unitCode})
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="grid gap-3 md:grid-cols-4">
+          <SuperAdminDetailInfoCard icon={Building2} label="Unit Penugasan" value={admin.unit} />
+          <SuperAdminDetailInfoCard icon={Hash} label="Kode Unit" value={unitCode} />
+          <SuperAdminDetailInfoCard icon={BadgeCheck} label="Status" value={admin.status} />
+          <SuperAdminDetailInfoCard icon={Clock3} label="Login Terakhir" value={admin.lastLogin} />
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <div className="rounded-[1.5rem] border border-white/75 bg-white/86 p-5 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)]">
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
+                <UserCog className="size-5" />
+              </span>
+              <h2 className="font-headline text-xl font-black tracking-[-0.03em] text-[#122018]">
+                Informasi Akun
+              </h2>
+            </div>
+            <div className="mt-5 divide-y divide-[#e7eee9]">
+              {[
+                ["Nama Lengkap", admin.name],
+                ["Email", admin.email],
+                ["Nomor Telepon", admin.phone || "-"],
+                ["ID Admin", admin.id],
+              ].map(([label, value]) => (
+                <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4" key={label}>
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-black/42">
+                    {label}
+                  </p>
+                  <p className="min-w-0 break-words text-sm font-bold text-[#122018]">
+                    {value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[1.5rem] border border-white/75 bg-white/86 p-5 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)]">
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
+                <ShieldCheck className="size-5" />
+              </span>
+              <h2 className="font-headline text-xl font-black tracking-[-0.03em] text-[#122018]">
+                Akses & Penugasan
+              </h2>
+            </div>
+            <div className="mt-5 rounded-[1.35rem] border border-[#0a6a49]/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
+              <p className="text-sm font-semibold text-[#122018]">Admin unit aktif</p>
+              <p className="mt-1 text-sm leading-6 text-black/54">
+                Akun ini dapat mengelola operasional unit yang ditugaskan, termasuk barang, pemasaran, dan riwayat unit sesuai hak akses admin unit.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3">
+                  <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">Unit</p>
+                  <p className="mt-1 text-sm font-black text-[#122018]">{admin.unit}</p>
+                </div>
+                <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3">
+                  <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">Kode</p>
+                  <p className="mt-1 text-sm font-black text-[#0a6a49]">{unitCode}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-      <SuperAdminUnitDetailPopupRow
-        icon={Mail}
-        label="Email"
-        value={admin?.email ?? "-"}
-      />
-      <SuperAdminUnitDetailPopupRow
-        icon={Phone}
-        label="Nomor Telepon"
-        value={admin?.phone || "-"}
-      />
-      <SuperAdminUnitDetailPopupRow
-        icon={Building2}
-        label="Unit Penugasan"
-        value={admin?.unit ?? "Belum ditetapkan"}
-      />
-      <SuperAdminUnitDetailPopupRow
-        icon={Clock3}
-        label="Login Terakhir"
-        value={admin?.lastLogin ?? "Belum pernah login"}
-      />
-    </SuperAdminUnitDetailPopup>
+    </div>
   );
 }
 
@@ -6936,7 +7037,6 @@ export function SuperAdminManagementPage({
   const [adminPageSize, setAdminPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
   const [adminPageIndex, setAdminPageIndex] = useState(0);
   const [createAdminOpen, setCreateAdminOpen] = useState(false);
-  const [previewAdmin, setPreviewAdmin] = useState<SuperAdminAdminItem | null>(null);
 
   const filteredUnits = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -6955,8 +7055,8 @@ export function SuperAdminManagementPage({
   const filteredAdmins = useMemo(() => {
     const normalized = adminQuery.trim().toLowerCase();
     return admins.filter((admin) =>
-      [admin.name, admin.email, admin.phone, admin.unit].some((value) =>
-        value.toLowerCase().includes(normalized),
+      [admin.name, admin.email, admin.phone, admin.unit, admin.unitCode ?? ""].some((value) =>
+        String(value).toLowerCase().includes(normalized),
       ),
     );
   }, [adminQuery, admins]);
@@ -7061,8 +7161,7 @@ export function SuperAdminManagementPage({
           <div className="border-b border-[#e5eee9] bg-[#fbfcfa] px-4 py-4 lg:px-5">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="page-heading-eyebrow">Admin Unit Aktif</p>
-                <h2 className="mt-1 font-headline text-[1.2rem] font-black tracking-[-0.03em] text-[#13211c]">Direktori Admin Unit</h2>
+                <h2 className="font-headline text-[1.2rem] font-black tracking-[-0.03em] text-[#13211c]">Direktori Admin Unit</h2>
               </div>
               <Button className="min-h-10 w-full rounded-full px-5 text-[0.78rem] active:scale-[0.98] md:w-auto" onClick={() => setCreateAdminOpen(true)} type="button">
                 <Plus className="size-4" />
@@ -7083,17 +7182,15 @@ export function SuperAdminManagementPage({
           ) : (
             <div className="divide-y divide-[#edf2ee]">
               {visibleAdmins.map((admin) => (
-                <article className="grid gap-3 px-4 py-3.5 transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(11rem,1.05fr)_minmax(12rem,1.25fr)_minmax(9rem,0.9fr)_minmax(10rem,0.95fr)_7rem] lg:items-center lg:gap-4 lg:px-5" key={admin.id}>
+                <article className="grid gap-3 px-4 py-3 transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(11rem,1.05fr)_minmax(12rem,1.25fr)_minmax(9rem,0.9fr)_minmax(10rem,0.95fr)_7rem] lg:items-center lg:gap-4 lg:px-5" key={admin.id}>
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.72rem] font-black text-[#006747]">{getSuperAdminInitials(admin.name)}</span>
-                    <span className="truncate font-black text-[#13211c]">{admin.name}</span>
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.66rem] font-black text-[#006747]">{getSuperAdminInitials(admin.name)}</span>
+                    <Link className="truncate text-[0.82rem] font-black text-[#13211c] transition-colors hover:text-[#006747]" href={`/superadmin/manajemen-unit/admin/${admin.id}`}>{admin.name}</Link>
                   </div>
                   <p className="flex min-w-0 items-center gap-2 truncate text-[0.78rem] font-semibold text-black/55"><Mail className="size-3.5 shrink-0 text-[#006747]" />{admin.email}</p>
                   <p className="flex items-center gap-2 text-[0.78rem] font-semibold text-black/52"><Phone className="size-3.5 text-[#006747]" />{admin.phone || "-"}</p>
-                  <p className="min-w-0"><span className="block truncate text-[0.78rem] font-black text-[#13211c]">{admin.unit}</span><span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-[#edf7ef] px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.12em] text-[#006747]"><BadgeCheck className="size-3" />Aktif</span></p>
-                  <button aria-label={`Lihat detail admin ${admin.name}`} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-full border border-[#d8e4de] px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#075b3f] transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#006747] hover:text-white active:scale-[0.98] sm:w-auto" onClick={() => setPreviewAdmin(admin)} type="button">
-                    Detail <ChevronRight className="size-3.5" />
-                  </button>
+                  <p className="min-w-0"><span className="block truncate text-[0.78rem] font-black text-[#13211c]">{admin.unit}</span><span className="mt-0.5 block truncate text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#006747]">{admin.unitCode || admin.unitId || "-"}</span></p>
+                  <DetailActionLink className="w-full sm:w-auto" href={`/superadmin/manajemen-unit/admin/${admin.id}`} />
                 </article>
               ))}
             </div>
@@ -7116,7 +7213,6 @@ export function SuperAdminManagementPage({
       </section>
 
       <SuperAdminManagementAdminModal onOpenChange={setCreateAdminOpen} open={createAdminOpen} units={units} />
-      <SuperAdminManagementAdminDetailModal admin={previewAdmin} onOpenChange={(open) => { if (!open) setPreviewAdmin(null); }} open={Boolean(previewAdmin)} />
     </div>
   );
 }

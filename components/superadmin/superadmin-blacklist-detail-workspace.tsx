@@ -340,7 +340,7 @@ function TriggerCaseCard({
   const imageUrl = trace?.imageUrl ?? trace?.primaryImage?.url ?? null;
 
   return (
-    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
+    <section className="flex h-full flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
       <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
         Kasus Terakhir
       </h2>
@@ -513,7 +513,7 @@ function CountdownPanel({
   }, [serverNow]);
 
   return (
-    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
+    <section className="flex h-full flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
       <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
         Masa Berlaku Hukuman
       </h2>
@@ -541,7 +541,7 @@ function CountdownPanel({
           </div>
         ))}
       </div>
-      <p className={cn("mt-3 text-sm font-black", tone.text)}>
+      <p className={cn("mt-3 text-sm font-black xl:mt-auto xl:pt-4", tone.text)}>
         {ticker.label}
       </p>
     </section>
@@ -591,19 +591,25 @@ function ViolationRecordSummary({
 function ViolationLevelGuide() {
   const levels = [
     {
+      badgeTone: "text-amber-700",
       description: "Pelanggaran awal atau ringan. Pembatasan sementara dan akun dapat dipulihkan setelah masa hukuman berakhir.",
+      headingTone: "text-amber-800",
       label: "Level 1",
-      tone: "border-amber-200 bg-amber-50/55 text-amber-800",
+      tone: "border-amber-200 bg-amber-50/55",
     },
     {
+      badgeTone: "text-orange-700",
       description: "Pelanggaran berulang atau menengah. Pembatasan lebih ketat dan memerlukan perhatian dari unit.",
+      headingTone: "text-orange-800",
       label: "Level 2",
-      tone: "border-orange-200 bg-orange-50/55 text-orange-800",
+      tone: "border-orange-200 bg-orange-50/55",
     },
     {
+      badgeTone: "text-rose-700",
       description: "Pelanggaran berat atau akumulatif. Pembatasan tertinggi dan berisiko mendapat tindak lanjut.",
+      headingTone: "text-rose-700",
       label: "Level 3",
-      tone: "border-rose-200 bg-rose-50/55 text-rose-700",
+      tone: "border-rose-200 bg-rose-50/55",
     },
   ];
 
@@ -618,10 +624,10 @@ function ViolationLevelGuide() {
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {levels.map((level, index) => (
           <article className={cn("rounded-[1rem] border p-4", level.tone)} key={level.label}>
-            <span className="inline-flex rounded-full bg-white/75 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] ring-1 ring-black/5">
+            <span className={cn("inline-flex rounded-full bg-white/75 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] ring-1 ring-black/5", level.badgeTone)}>
               {level.label}
             </span>
-            <div className="mt-3 flex items-center gap-2">
+            <div className={cn("mt-3 flex items-center gap-2", level.headingTone)}>
               {index === 2 ? <Lock className="size-4" /> : <ShieldAlert className="size-4" />}
               <h3 className="font-headline text-base font-black">{level.label}</h3>
             </div>
@@ -699,37 +705,33 @@ export function SuperadminBlacklistDetailWorkspace({
         </div>
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.8fr)_minmax(21rem,0.95fr)]">
-        <div className="space-y-5">
-          <TriggerCaseCard trace={selectedTrace} unitFallback={unitFallback} />
-
-          <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
-                Riwayat Pelanggaran (Timeline)
-              </h2>
-              <div className="w-full sm:w-[24rem]">
-                <ViolationRecordSummary summary={violationRecordSummary} />
-              </div>
-            </div>
-            <div className="mt-5">
-              {items.map((item) => (
-                <TimelineItemCard
-                  expanded={item.id === expandedId}
-                  item={item}
-                  key={item.id}
-                  onToggle={() => setExpandedId((current) => (current === item.id ? "" : item.id))}
-                />
-              ))}
-            </div>
-          </section>
-          <ViolationLevelGuide />
-        </div>
-
-        <aside className="space-y-5">
-          <CountdownPanel currentViolation={currentViolation} entry={entry} serverNow={serverNow} />
-        </aside>
+      <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1.8fr)_minmax(21rem,0.95fr)]">
+        <TriggerCaseCard trace={selectedTrace} unitFallback={unitFallback} />
+        <CountdownPanel currentViolation={currentViolation} entry={entry} serverNow={serverNow} />
       </div>
+
+      <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
+            Riwayat Pelanggaran (Timeline)
+          </h2>
+          <div className="w-full sm:w-[24rem]">
+            <ViolationRecordSummary summary={violationRecordSummary} />
+          </div>
+        </div>
+        <div className="mt-5">
+          {items.map((item) => (
+            <TimelineItemCard
+              expanded={item.id === expandedId}
+              item={item}
+              key={item.id}
+              onToggle={() => setExpandedId((current) => (current === item.id ? "" : item.id))}
+            />
+          ))}
+        </div>
+      </section>
+
+      <ViolationLevelGuide />
     </div>
   );
 }
