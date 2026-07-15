@@ -209,6 +209,59 @@ describe("listAdminBarang", () => {
     expect(result.media).toEqual(mediaRows);
   });
 
+  it("uses the violation item fallback media when the stored media rows are empty", async () => {
+    const current = {
+      id: "barang-violation",
+      name: "Kalung Emas Rantai Singapura 22K",
+      status: "gagal",
+      unitId: "unit-sarinah"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([current])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([])
+          })
+        })
+      }))
+      .mockImplementationOnce(() => ({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([])
+            })
+          })
+        })
+      }));
+
+    const result = await getAdminBarangById("unit-sarinah", "barang-violation");
+
+    expect(result.previewImageUrl).toBe(
+      "/media/violation-items/kalung-emas-rantai-singapura-22k.webp"
+    );
+    expect(result.media).toEqual([
+      expect.objectContaining({
+        type: "foto",
+        url: "/media/violation-items/kalung-emas-rantai-singapura-22k.webp"
+      })
+    ]);
+  });
+
   it("rejects barang updates after the item has entered kelola barang", async () => {
     const current = {
       id: "barang-fixed",
@@ -356,6 +409,62 @@ describe("listAdminBarangHistory", () => {
         actionTone: "default"
       })
     ]);
+  });
+
+  it("anchors a stale barang masuk timestamp ten days before its first marketing event", async () => {
+    const baseRow = {
+      barangId: "barang-stale-input",
+      barangCode: "BRG-STALE-INPUT",
+      barangName: "Kalung Emas Rantai Singapura 22K",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Barang untuk uji pelanggaran lintas unit.",
+      specifications: {},
+      ownerName: "Nasabah Demo",
+      customerNumber: "NSB-STALE"
+    };
+    const marketedAt = new Date("2026-04-30T01:07:00.000Z");
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-stale-input",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang hasil input gadai dicatat sebagai barang jaminan unit.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: new Date("2025-10-25T01:07:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-stale-input",
+            mode: "vickrey",
+            status: "gagal",
+            iteration: 1,
+            createdAt: marketedAt,
+            updatedAt: marketedAt,
+            endsAt: new Date("2026-05-01T01:07:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 0
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const result = await listAdminBarangHistory("unit-sarinah", undefined, "barang-stale-input");
+    const inputEntry = result.find((entry) => entry.actionKey === "input_baru");
+
+    expect(inputEntry?.createdAt).toBe("2026-04-20T01:07:00.000Z");
+    expect(inputEntry?.createdAtLabel).toContain("20 Apr 2026");
   });
 
   it("keeps legacy entry without exposing intermediate statuses in riwayat barang", async () => {

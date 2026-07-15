@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
+import { resolveViolationItemMedia } from "@/lib/blacklist/violation-item-media";
 import { formatSbgCode } from "@/lib/barang/sbg-code";
 import {
   ADMIN_BARANG_MEDIA_LIMIT,
@@ -502,6 +503,44 @@ function findNearbyMarketingRow(
     .sort((left, right) => left.distance - right.distance)[0]?.row;
 }
 
+const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000;
+
+function alignStaleInitialHistoryDates(
+  entries: AdminBarangHistoryEntry[],
+  marketingRows: AdminBarangMarketingTimelineRow[]
+) {
+  const firstMarketingAtByBarang = new Map<string, Date>();
+
+  for (const row of marketingRows) {
+    const current = firstMarketingAtByBarang.get(row.barangId);
+    if (!current || row.createdAt < current) {
+      firstMarketingAtByBarang.set(row.barangId, row.createdAt);
+    }
+  }
+
+  return entries.map((entry) => {
+    if (entry.actionKey !== "input_baru") {
+      return entry;
+    }
+
+    const firstMarketingAt = firstMarketingAtByBarang.get(entry.barangId);
+    const inputAt = new Date(entry.createdAt);
+    if (
+      !firstMarketingAt ||
+      firstMarketingAt.getTime() - inputAt.getTime() <= TEN_DAYS_MS
+    ) {
+      return entry;
+    }
+
+    const alignedAt = new Date(firstMarketingAt.getTime() - TEN_DAYS_MS);
+    return {
+      ...entry,
+      createdAt: alignedAt.toISOString(),
+      createdAtLabel: formatAppDateTime(alignedAt)
+    };
+  });
+}
+
 export async function listAdminBarang(unitId: string) {
   const rows = await db
     .select()
@@ -856,7 +895,10 @@ export async function listAdminBarangHistory(
     }
   }
 
-  const sortedHistory = timelineEntries.sort((left, right) => {
+  const sortedHistory = alignStaleInitialHistoryDates(
+    timelineEntries,
+    marketingRows
+  ).sort((left, right) => {
     const timeDelta = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     return timeDelta || getSameMomentTimelineOrder(left) - getSameMomentTimelineOrder(right);
   });
@@ -867,6 +909,9 @@ export async function listAdminBarangHistory(
 export async function getAdminBarangById(unitId: string, barangId: string) {
   const row = await assertBarangForUnit(barangId, unitId);
   const media = await db.select().from(mediaBarang).where(eq(mediaBarang.barangId, barangId)).orderBy(mediaBarang.sortOrder);
+  const resolvedMedia = media.length
+    ? media
+    : resolveViolationItemMedia({ itemName: row.name, media: [] });
   const [activeMarketing] = await db
     .select()
     .from(pemasaran)
@@ -881,14 +926,14 @@ export async function getAdminBarangById(unitId: string, barangId: string) {
 
   return {
     ...serializeAdminBarang(row, {
-      mediaCount: media.length,
+      mediaCount: resolvedMedia.length,
       marketingIteration: latestMarketing?.iteration ?? null,
       marketingMode: activeMarketing?.mode ?? latestMarketing?.mode ?? null,
-      previewImageUrl: media.find(isLikelyImageMedia)?.url ?? null
+      previewImageUrl: resolvedMedia.find(isLikelyImageMedia)?.url ?? null
     }),
     activeMarketingId: activeMarketing?.mode === "fixed_price" ? activeMarketing.id : null,
     marketingPrice: activeMarketing?.mode === "fixed_price" ? Number(activeMarketing.price ?? 0) : null,
-    media
+    media: resolvedMedia
   };
 }
 
