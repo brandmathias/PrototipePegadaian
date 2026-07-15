@@ -47,6 +47,50 @@ const rows: VickreyRankingRow[] = [
 ];
 
 describe("VickreyRankingTable", () => {
+  it("uses one font family and renders bid date and time on separate lines", () => {
+    render(
+      <VickreyRankingTable
+        rows={rows}
+        testIdPrefix="shared-ranking"
+        title="Bidders Ranking Table (Arsip)"
+        totalParticipants={5}
+      />,
+    );
+
+    const ranking = screen.getByTestId("shared-ranking");
+    const firstRow = screen.getByTestId("shared-ranking-row-1");
+    const bidDate = within(firstRow).getByText("31 Mei 2026");
+    const bidTime = within(firstRow).getByText("09.00 WIB");
+    const amount = within(firstRow).getByText("Rp 8.800.000");
+
+    expect(ranking).toHaveClass("font-jakarta");
+    expect(bidDate.parentElement).toHaveClass("flex-col");
+    expect(bidTime).toHaveClass("text-[#a56600]");
+    expect(bidDate.parentElement).not.toHaveClass("font-mono");
+    expect(amount).not.toHaveClass("font-mono");
+  });
+
+  it("stacks compact-row amount and status on mobile", () => {
+    render(
+      <VickreyRankingTable
+        rows={rows}
+        testIdPrefix="shared-ranking"
+        title="Bidders Ranking Table (Arsip)"
+        totalParticipants={5}
+      />,
+    );
+
+    const fourthRow = screen.getByTestId("shared-ranking-row-4");
+    const status = within(fourthRow).getByText("Tidak Menang").parentElement;
+
+    expect(status?.parentElement).toHaveClass(
+      "col-span-2",
+      "col-start-2",
+      "row-start-4",
+      "md:row-auto",
+    );
+  });
+
   it("renders prominent podium rows and a responsive compact continuation", () => {
     render(
       <VickreyRankingTable
@@ -80,9 +124,14 @@ describe("VickreyRankingTable", () => {
     expect(screen.getByTestId("shared-ranking-row-4")).toHaveClass(
       "md:min-h-[4rem]",
     );
-    expect(
-      screen.getByRole("img", { name: "Foto peserta Safira Melani" }),
-    ).toHaveAttribute("src", expect.stringContaining("%2Fuploads%2Fsafira.webp"));
+    const participantPhoto = screen.getByRole("img", {
+      name: "Foto peserta Safira Melani",
+    });
+    expect(participantPhoto).toHaveAttribute(
+      "src",
+      expect.stringContaining("%2Fuploads%2Fsafira.webp"),
+    );
+    expect(participantPhoto.parentElement).toHaveClass("size-12", "md:size-14");
     expect(ranking).toHaveTextContent("Total 5 peserta");
   });
 });

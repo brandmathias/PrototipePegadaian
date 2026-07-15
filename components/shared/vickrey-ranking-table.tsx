@@ -138,7 +138,7 @@ function RankingAvatar({ row }: { row: VickreyRankingRow }) {
   return (
     <span
       className={cn(
-        "relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full border-2 text-xs font-black uppercase tracking-[0.04em] text-[#14213d] shadow-[0_14px_26px_-20px_rgba(15,23,42,0.58)] ring-1 md:size-12 md:text-sm",
+        "relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-full border-2 text-sm font-black uppercase tracking-[0.04em] text-[#14213d] shadow-[0_14px_26px_-20px_rgba(15,23,42,0.58)] ring-1 md:size-14 md:text-base",
         podiumTone,
       )}
     >
@@ -147,7 +147,7 @@ function RankingAvatar({ row }: { row: VickreyRankingRow }) {
           alt={`Foto peserta ${row.bidderName}`}
           className="object-cover"
           fill
-          sizes="(max-width: 767px) 44px, 48px"
+          sizes="(max-width: 767px) 48px, 56px"
           src={row.bidderImage}
         />
       ) : (
@@ -178,6 +178,25 @@ function RankingRow({
         : row.rank === 3
           ? "text-[#b2420c]"
           : "text-[#17366e]";
+  const clockTone =
+    row.rank === 1
+      ? "border-[#e7b94f] text-[#c47b00]"
+      : row.rank === 2
+        ? "border-[#aeb7c5] text-[#34466f]"
+        : row.rank === 3
+          ? "border-[#ef9a73] text-[#d83b16]"
+          : "border-[#9fd7bf] text-[#08724f]";
+  const timeTone =
+    row.rank === 1
+      ? "text-[#a56600]"
+      : row.rank === 2
+        ? "text-[#243a71]"
+        : row.rank === 3
+          ? "text-[#c52d18]"
+          : "text-[#08724f]";
+  const [submittedDate, ...submittedTimeParts] =
+    row.submittedAtLabel.split(",");
+  const submittedTime = submittedTimeParts.join(",").trim();
   const status = STATUS_STYLES[row.statusKind];
   const StatusIcon = status.Icon;
 
@@ -192,8 +211,7 @@ function RankingRow({
     >
       <div
         className={cn(
-          "col-start-1 row-start-1 self-center md:col-auto md:row-auto",
-          isPodium ? "row-span-4" : "row-span-3",
+          "col-start-1 row-span-4 row-start-1 self-center md:col-auto md:row-auto",
         )}
       >
         <RankingMarker
@@ -209,16 +227,33 @@ function RankingRow({
         </p>
       </div>
 
-      <div className="col-span-2 col-start-2 flex min-w-0 items-center gap-2 font-mono text-[0.76rem] font-bold leading-5 text-[#34466f] md:col-auto md:col-span-1 md:text-[0.82rem]">
-        <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#d5ded9] bg-white/75 text-[#08724f] md:size-9">
+      <div className="col-span-2 col-start-2 flex min-w-0 items-center gap-2 text-[0.74rem] font-semibold text-[#34466f] md:col-auto md:col-span-1 md:text-[0.78rem]">
+        <span
+          className={cn(
+            "grid size-8 shrink-0 place-items-center rounded-full border bg-white/75 md:size-9",
+            clockTone,
+          )}
+        >
           <Clock3 className="size-4 md:size-[1.1rem]" />
         </span>
-        <span className="min-w-0 break-words">{row.submittedAtLabel}</span>
+        <span className="flex min-w-0 flex-col leading-[1.28]">
+          <span className="whitespace-nowrap">{submittedDate.trim()}</span>
+          {submittedTime ? (
+            <span
+              className={cn(
+                "whitespace-nowrap text-[0.8rem] font-black md:text-[0.84rem]",
+                timeTone,
+              )}
+            >
+              {submittedTime}
+            </span>
+          ) : null}
+        </span>
       </div>
 
       <p
         className={cn(
-          "col-start-2 whitespace-nowrap font-mono font-black leading-5 md:col-auto md:col-span-1 md:text-right md:text-[1.08rem]",
+          "col-start-2 whitespace-nowrap font-black leading-5 [font-variant-numeric:tabular-nums] md:col-auto md:col-span-1 md:text-right md:text-[1.08rem]",
           isPodium ? "text-base" : "text-[0.92rem]",
           isPodium && "col-span-2",
           !isPodium &&
@@ -234,7 +269,7 @@ function RankingRow({
           "flex md:col-auto md:col-span-1 md:justify-center",
           isPodium && "col-span-2 col-start-2",
           !isPodium &&
-            "col-start-3 row-start-3 justify-self-end md:row-auto md:justify-self-auto",
+            "col-span-2 col-start-2 row-start-4 justify-self-start md:row-auto md:justify-self-auto",
         )}
       >
         {row.statusKind === "none" && row.statusLabel === "-" ? (
@@ -270,7 +305,7 @@ export function VickreyRankingTable({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl border border-[#dfe7e2] bg-white p-2 shadow-[0_24px_58px_-44px_rgba(8,69,50,0.38)] sm:p-3"
+      className="overflow-hidden rounded-2xl border border-[#dfe7e2] bg-white p-2 font-jakarta shadow-[0_24px_58px_-44px_rgba(8,69,50,0.38)] sm:p-3"
       data-testid={testIdPrefix}
     >
       <div className="flex items-center gap-2.5 px-2 py-2.5 sm:px-3">
@@ -278,7 +313,7 @@ export function VickreyRankingTable({
           className="size-5 shrink-0 text-[#e5a315]"
           strokeWidth={2.1}
         />
-        <h3 className="font-headline text-sm font-black uppercase tracking-[0.035em] text-[#086844] sm:text-base">
+        <h3 className="text-sm font-black uppercase tracking-[0.035em] text-[#086844] sm:text-base">
           {title}
         </h3>
       </div>
