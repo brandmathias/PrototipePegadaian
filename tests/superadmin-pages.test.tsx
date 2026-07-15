@@ -3031,8 +3031,13 @@ describe("superadmin pages", () => {
 
     expect(screen.getByRole("heading", { name: /detail akun admin unit/i })).toBeInTheDocument();
     expect(screen.getAllByText("Admin Manado").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("CP-MND-01").length).toBeGreaterThan(0);
+    expect(screen.getByText(/CP-MND-01/)).toBeInTheDocument();
     expect(screen.getByText("15 Juli 2026, 10.00")).toBeInTheDocument();
+    expect(screen.getByText("Login Terakhir").closest("div")).toHaveTextContent("15 Juli 2026, 10.00");
+    expect(screen.queryByText("Unit Penugasan")).not.toBeInTheDocument();
+    expect(screen.queryByText("Kode Unit")).not.toBeInTheDocument();
+    expect(screen.queryByText("Status")).not.toBeInTheDocument();
+    expect(screen.queryByText("Akses & Penugasan")).not.toBeInTheDocument();
     expect(screen.queryByTestId("superadmin-account-audit-list")).not.toBeInTheDocument();
   });
 

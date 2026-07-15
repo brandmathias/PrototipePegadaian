@@ -6900,7 +6900,7 @@ export function SuperAdminManagementAdminDetailPage({
               Detail Akun Admin Unit
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56 md:text-base">
-              Informasi identitas, unit penugasan, dan aktivitas login akun admin unit.
+              Informasi identitas dan aktivitas login akun admin unit.
             </p>
           </div>
           <Link
@@ -6955,15 +6955,8 @@ export function SuperAdminManagementAdminDetailPage({
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-4">
-          <SuperAdminDetailInfoCard icon={Building2} label="Unit Penugasan" value={admin.unit} />
-          <SuperAdminDetailInfoCard icon={Hash} label="Kode Unit" value={unitCode} />
-          <SuperAdminDetailInfoCard icon={BadgeCheck} label="Status" value={admin.status} />
-          <SuperAdminDetailInfoCard icon={Clock3} label="Login Terakhir" value={admin.lastLogin} />
-        </section>
-
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="rounded-[1.5rem] border border-white/75 bg-white/86 p-5 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)]">
+        <section>
+          <div className="w-full rounded-[1.5rem] border border-white/75 bg-white/86 p-5 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)]">
             <div className="flex items-center gap-3">
               <span className="grid size-10 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
                 <UserCog className="size-5" />
@@ -6978,6 +6971,7 @@ export function SuperAdminManagementAdminDetailPage({
                 ["Email", admin.email],
                 ["Nomor Telepon", admin.phone || "-"],
                 ["ID Admin", admin.id],
+                ["Login Terakhir", admin.lastLogin],
               ].map(([label, value]) => (
                 <div className="grid gap-1 py-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4" key={label}>
                   <p className="text-xs font-black uppercase tracking-[0.14em] text-black/42">
@@ -6988,33 +6982,6 @@ export function SuperAdminManagementAdminDetailPage({
                   </p>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/75 bg-white/86 p-5 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)]">
-            <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-2xl bg-[#0a6a49]/8 text-[#0a6a49]">
-                <ShieldCheck className="size-5" />
-              </span>
-              <h2 className="font-headline text-xl font-black tracking-[-0.03em] text-[#122018]">
-                Akses & Penugasan
-              </h2>
-            </div>
-            <div className="mt-5 rounded-[1.35rem] border border-[#0a6a49]/10 bg-[linear-gradient(180deg,#ffffff,#f8fbf8)] p-4">
-              <p className="text-sm font-semibold text-[#122018]">Admin unit aktif</p>
-              <p className="mt-1 text-sm leading-6 text-black/54">
-                Akun ini dapat mengelola operasional unit yang ditugaskan, termasuk barang, pemasaran, dan riwayat unit sesuai hak akses admin unit.
-              </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3">
-                  <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">Unit</p>
-                  <p className="mt-1 text-sm font-black text-[#122018]">{admin.unit}</p>
-                </div>
-                <div className="rounded-[1rem] border border-[#e4ece7] bg-white px-4 py-3">
-                  <p className="text-[0.64rem] font-black uppercase tracking-[0.16em] text-[#6a7d73]">Kode</p>
-                  <p className="mt-1 text-sm font-black text-[#0a6a49]">{unitCode}</p>
-                </div>
-              </div>
             </div>
           </div>
         </section>
