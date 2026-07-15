@@ -114,7 +114,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     appraisalValue: 23_900_000, basePrice: 21_600_000, ownerName: "Nabila Azzahra", customerNumber: "082191684350",
     itemEnteredAt: date("2026-04-21T10:00:00+07:00"), auctionStartsAt: date("2026-05-01T10:00:00+07:00"), auctionEndsAt: date("2026-05-01T11:00:00+07:00"), violationOccurredAt: date("2026-05-02T11:00:00+07:00"), dueDate: date("2026-08-19T10:00:00+07:00"),
     bids: [
-      { bidderEmail: "kirana@gmail.com", amount: 23_650_000, submittedAt: date("2026-05-01T10:11:00+07:00") }, { bidderEmail: "adrian@gmail.com", amount: 23_150_000, submittedAt: date("2026-05-01T10:23:00+07:00") }, { bidderEmail: "viona@gmail.com", amount: 22_700_000, submittedAt: date("2026-05-01T10:36:00+07:00") }, { bidderEmail: "rangga@gmail.com", amount: 22_150_000, submittedAt: date("2026-05-01T10:48:00+07:00") }
+      { bidderEmail: "kirana@gmail.com", amount: 23_650_000, submittedAt: date("2026-05-01T10:11:00+07:00") }, { bidderEmail: "adrian@gmail.com", amount: 23_150_000, submittedAt: date("2026-05-01T10:23:00+07:00") }, { bidderEmail: "bagus@gmail.com", amount: 22_950_000, submittedAt: date("2026-05-01T10:30:00+07:00") }, { bidderEmail: "viona@gmail.com", amount: 22_700_000, submittedAt: date("2026-05-01T10:36:00+07:00") }, { bidderEmail: "rangga@gmail.com", amount: 22_150_000, submittedAt: date("2026-05-01T10:48:00+07:00") }
     ],
     media: { publicPath: "/media/violation-items/gelang-emas-bangle-polos-22k.webp", sourceUrl: "https://www.pexels.com/photo/photo-of-a-gold-bracelet-12194316/", credit: "Melike B / Pexels", license: "Pexels License", sizeBytes: 56_438 }
   }),

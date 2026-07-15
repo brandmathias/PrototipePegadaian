@@ -48,6 +48,15 @@ describe("renewed cross-unit violation production scenario", () => {
     }
   });
 
+  it("includes every eligible buyer and omits Bagus only while his payment remains unresolved", () => {
+    const allBuyerEmails = ["bagus@gmail.com", "kirana@gmail.com", "adrian@gmail.com", "viona@gmail.com", "rangga@gmail.com"];
+    for (const incident of RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.slice(0, 4)) {
+      expect(incident.bidderEmails).toEqual(expect.arrayContaining(allBuyerEmails));
+    }
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[1]?.bidderEmails).toContain("bagus@gmail.com");
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.at(-1)?.bidderEmails).not.toContain("bagus@gmail.com");
+  });
+
   it("finishes with one active Level 2 and one active Level 3 restriction", () => {
     expect(getRenewedExpectedFinalRestrictions()).toEqual([
       {
