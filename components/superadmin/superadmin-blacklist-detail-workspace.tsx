@@ -11,13 +11,11 @@ import {
   ChevronUp,
   Clock3,
   FileWarning,
-  Gavel,
   Lock,
   MapPin,
   PackageOpen,
   Receipt,
   ShieldAlert,
-  ShieldCheck,
   ShoppingBag,
   Timer
 } from "lucide-react";
@@ -177,14 +175,6 @@ function getDurationDays(level: number) {
   if (level === 1) return 7;
 
   return 0;
-}
-
-function getRestrictionCopy(level: number) {
-  if (level >= 3) return "Pembatasan 365 hari";
-  if (level === 2) return "Transaksi baru dibatasi";
-  if (level === 1) return "Lelang Tertutup dibatasi";
-
-  return "Tidak ada pembatasan";
 }
 
 function getDeadline(item: ViolationItem | undefined) {
@@ -352,7 +342,7 @@ function TriggerCaseCard({
   return (
     <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
       <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
-        Kasus Pemicu Utama
+        Kasus Terakhir
       </h2>
       <div className="mt-4 grid gap-4 rounded-[1.1rem] border border-[#edf1ee] bg-[#fbfcfb] p-3 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-center">
         <div className="relative min-h-32 overflow-hidden rounded-[1rem] border border-[#e1e8e4] bg-white">
@@ -558,91 +548,86 @@ function CountdownPanel({
   );
 }
 
-function SystemLogPanel({ entry, level }: { entry: SuperadminBlacklistDetailEntry; level: number }) {
-  const latestHistory = Array.isArray(entry.history) ? entry.history[0] : null;
+function getViolationRecordSummary(entry: SuperadminBlacklistDetailEntry, recordedCount: number) {
+  const summary = entry.crossUnitViolationSummary;
+  const currentUnitCount = Math.max(
+    0,
+    Number(summary?.currentUnitViolationCount ?? recordedCount),
+  );
+  const externalUnitCount = Math.max(0, Number(summary?.externalViolationCount ?? 0));
+
+  return {
+    currentUnitCount,
+    externalUnitCount,
+    total: Math.max(recordedCount, currentUnitCount + externalUnitCount),
+  };
+}
+
+function ViolationRecordSummary({
+  summary,
+}: {
+  summary: ReturnType<typeof getViolationRecordSummary>;
+}) {
+  return (
+    <dl className="grid grid-cols-3 divide-x divide-[#e1ebe5] overflow-hidden rounded-[0.95rem] border border-[#dfe8e3] bg-[#fbfcfb] text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+      {[
+        ["Pelanggaran Tercatat", summary.total],
+        ["Di Unit Terkait", summary.currentUnitCount],
+        ["Di Luar Unit", summary.externalUnitCount],
+      ].map(([label, value]) => (
+        <div className="min-w-0 px-2 py-2.5" key={label}>
+          <dt className="text-[0.56rem] font-black uppercase tracking-[0.08em] text-[#64756e] sm:text-[0.6rem]">
+            {label}
+          </dt>
+          <dd className="mt-1 text-xs font-black text-[#0a6a49] sm:text-sm">
+            {value} kasus
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function ViolationLevelGuide() {
+  const levels = [
+    {
+      description: "Pelanggaran awal atau ringan. Pembatasan sementara dan akun dapat dipulihkan setelah masa hukuman berakhir.",
+      label: "Level 1",
+      tone: "border-amber-200 bg-amber-50/55 text-amber-800",
+    },
+    {
+      description: "Pelanggaran berulang atau menengah. Pembatasan lebih ketat dan memerlukan perhatian dari unit.",
+      label: "Level 2",
+      tone: "border-orange-200 bg-orange-50/55 text-orange-800",
+    },
+    {
+      description: "Pelanggaran berat atau akumulatif. Pembatasan tertinggi dan berisiko mendapat tindak lanjut.",
+      label: "Level 3",
+      tone: "border-rose-200 bg-rose-50/55 text-rose-700",
+    },
+  ];
 
   return (
     <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
       <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
-        Log Keputusan Sistem
+        Keterangan Level Pelanggaran
       </h2>
-      <div className="mt-4 grid gap-4 rounded-[1rem] border border-[#e2e8f0] bg-[#fbfcfb] p-4 sm:grid-cols-[4rem_minmax(0,1fr)]">
-        <span className="grid size-16 place-items-center rounded-[1rem] bg-[#eef2f1] text-[#152331]">
-          {String(entry.status ?? "").toUpperCase() === "AKTIF" ? <Lock className="size-7" /> : <ShieldCheck className="size-7 text-[#0a6a49]" />}
-        </span>
-        <div>
-          <p className="text-sm font-semibold leading-7 text-[#1f2a37]">
-            Pembatasan Level {level} diterapkan karena pemenang tidak membayar dalam 1x24 jam.
-          </p>
-          {latestHistory ? (
-            <p className="mt-3 text-xs font-bold leading-5 text-[#64756e]">
-              Terakhir: {latestHistory.actionLabel ?? latestHistory.action} oleh {latestHistory.actorLabel ?? "Sistem"} pada {latestHistory.date ?? "-"}.
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function getCrossUnitViolationSummary(entry: SuperadminBlacklistDetailEntry) {
-  const summary = entry.crossUnitViolationSummary;
-  if (!summary || summary.hasExternalViolations === false) return null;
-
-  const externalViolationCount = Math.max(0, Number(summary.externalViolationCount ?? 0));
-  if (externalViolationCount <= 0) return null;
-
-  return {
-    currentUnitViolationCount: Math.max(0, Number(summary.currentUnitViolationCount ?? 0)),
-    effectiveViolationTotal: Math.max(
-      0,
-      Number(summary.effectiveViolationTotal ?? entry.violations ?? entry.level ?? 0),
-    ),
-    externalUnitCount: Math.max(0, Number(summary.externalUnitCount ?? 0)),
-    externalViolationCount,
-  };
-}
-
-function CrossUnitContextCard({
-  level,
-  summary,
-}: {
-  level: number;
-  summary: NonNullable<ReturnType<typeof getCrossUnitViolationSummary>>;
-}) {
-  return (
-    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
-      <div className="flex items-start gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#f7f6f1] text-[#0a6a49] ring-1 ring-[#dfe8e3]">
-          <Lock className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
-            Konteks Lintas Unit
-          </p>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#42526b]">
-            Level {level} mempertimbangkan {summary.externalViolationCount} pelanggaran terdahulu di luar unit ini.
-            Detail barang, nominal, unit, dan timeline lintas unit disembunyikan untuk admin unit.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        <DossierTile
-          icon={<Gavel className="size-4" />}
-          label="Unit Ini"
-          value={`${summary.currentUnitViolationCount} kasus`}
-        />
-        <DossierTile
-          icon={<ShieldAlert className="size-4" />}
-          label="Luar Unit"
-          value={`${summary.externalViolationCount} catatan`}
-        />
-        <DossierTile
-          icon={<Lock className="size-4" />}
-          label="Level Efektif"
-          value={`Level ${Math.min(Math.max(summary.effectiveViolationTotal, 0), 3)}`}
-        />
+      <p className="mt-1 text-sm leading-6 text-[#52625b]">
+        Level pelanggaran menunjukkan tingkat pembatasan akun berdasarkan riwayat gagal bayar dan akumulasi pelanggaran buyer.
+      </p>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {levels.map((level, index) => (
+          <article className={cn("rounded-[1rem] border p-4", level.tone)} key={level.label}>
+            <span className="inline-flex rounded-full bg-white/75 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] ring-1 ring-black/5">
+              {level.label}
+            </span>
+            <div className="mt-3 flex items-center gap-2">
+              {index === 2 ? <Lock className="size-4" /> : <ShieldAlert className="size-4" />}
+              <h3 className="font-headline text-base font-black">{level.label}</h3>
+            </div>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#52625b]">{level.description}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -667,7 +652,7 @@ export function SuperadminBlacklistDetailWorkspace({
   const isAdminUnit = scope === "admin-unit";
   const listHref = isAdminUnit ? "/admin/blacklist" : "/superadmin/blacklist";
   const unitFallback = isAdminUnit ? (entry.unitName ?? entry.unit ?? "Unit ini") : (entry.unitName ?? entry.unit ?? "-");
-  const crossUnitSummary = isAdminUnit ? getCrossUnitViolationSummary(entry) : null;
+  const violationRecordSummary = getViolationRecordSummary(entry, items.length);
 
   return (
     <div className="space-y-6">
@@ -679,18 +664,6 @@ export function SuperadminBlacklistDetailWorkspace({
         }
         eyebrow={isAdminUnit ? "Admin Unit / Detail Pelanggaran" : "Superadmin / Detail Pelanggaran"}
         icon={Ban}
-        rightRail={
-          <>
-            <span className={cn("inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.14em] ring-1", levelTone.badge)}>
-              <ShieldAlert className="size-4" />
-              Status: Level {level} ({getDurationDays(level)} Hari)
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#0a6a49] ring-1 ring-[#8fd0a9]/65">
-              <Gavel className="size-4" />
-              {items.length} kasus
-            </span>
-          </>
-        }
         title="Detail Pelanggaran Pengguna"
       />
 
@@ -731,9 +704,14 @@ export function SuperadminBlacklistDetailWorkspace({
           <TriggerCaseCard trace={selectedTrace} unitFallback={unitFallback} />
 
           <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
-            <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
-              Riwayat Pelanggaran (Timeline)
-            </h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
+                Riwayat Pelanggaran (Timeline)
+              </h2>
+              <div className="w-full sm:w-[24rem]">
+                <ViolationRecordSummary summary={violationRecordSummary} />
+              </div>
+            </div>
             <div className="mt-5">
               {items.map((item) => (
                 <TimelineItemCard
@@ -745,25 +723,11 @@ export function SuperadminBlacklistDetailWorkspace({
               ))}
             </div>
           </section>
+          <ViolationLevelGuide />
         </div>
 
         <aside className="space-y-5">
           <CountdownPanel currentViolation={currentViolation} entry={entry} serverNow={serverNow} />
-          <SystemLogPanel entry={entry} level={level} />
-          <section className="rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm font-semibold leading-6 text-[#52625b] shadow-[0_20px_54px_-48px_rgba(8,69,50,0.34)]">
-            <p className="font-headline text-base font-black text-[#15231d]">
-              Ketetapan Level
-            </p>
-            <p className="mt-2">
-              {getRestrictionCopy(level)}.{" "}
-              {isAdminUnit
-                ? "Data ini bersumber dari riwayat pelanggaran pembayaran buyer pada barang lelang unit ini dan status blacklist aktif pengguna."
-                : "Data ini bersumber dari riwayat pelanggaran pembayaran dan status blacklist aktif pengguna."}
-            </p>
-          </section>
-          {crossUnitSummary ? (
-            <CrossUnitContextCard level={level} summary={crossUnitSummary} />
-          ) : null}
         </aside>
       </div>
     </div>

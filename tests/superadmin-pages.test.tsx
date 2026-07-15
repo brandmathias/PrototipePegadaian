@@ -2494,13 +2494,19 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText(/Pelanggaran Level 2/i).length).toBeGreaterThan(
       0,
     );
-    expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
+    expect(screen.getByText("Kasus Terakhir")).toBeInTheDocument();
     expect(
       screen.getByText("Riwayat Pelanggaran (Timeline)"),
     ).toBeInTheDocument();
+    expect(screen.getByText("Pelanggaran Tercatat")).toBeInTheDocument();
+    expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
+    expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
+    expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
     expect(screen.getByText("Dtk")).toBeInTheDocument();
-    expect(screen.getByText("Log Keputusan Sistem")).toBeInTheDocument();
+    expect(screen.queryByText("Log Keputusan Sistem")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ketetapan Level")).not.toBeInTheDocument();
+    expect(screen.queryByText("Konteks Lintas Unit")).not.toBeInTheDocument();
     expect(screen.getByText("Masa hukuman selesai")).toBeInTheDocument();
     expect(
       screen.getAllByText(/Tidak Bayar Dalam 1x24 Jam/i).length,
@@ -2578,7 +2584,7 @@ describe("superadmin pages", () => {
     expect(screen.getAllByText(/Kasus #1: Iphone/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Masa hukuman aktif/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Masa hukuman selesai/i)).toHaveLength(1);
-    expect(screen.getByText(/Transaksi baru dibatasi/i)).toBeInTheDocument();
+    expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
     expect(
       screen.getByText(/12 Juni 2026 - 12 Juli 2026/i),
     ).toBeInTheDocument();

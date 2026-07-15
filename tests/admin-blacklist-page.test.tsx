@@ -171,11 +171,16 @@ describe("AdminBlacklistPage", () => {
 
     expect(screen.getByText("Detail Pelanggaran Pengguna")).toBeInTheDocument();
     expect(screen.queryByText("Detail Kasus Nasabah")).not.toBeInTheDocument();
-    expect(screen.getByText("Kasus Pemicu Utama")).toBeInTheDocument();
+    expect(screen.getByText("Kasus Terakhir")).toBeInTheDocument();
     expect(screen.getByText("Riwayat Pelanggaran (Timeline)")).toBeInTheDocument();
+    expect(screen.getByText("Pelanggaran Tercatat")).toBeInTheDocument();
+    expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
+    expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
+    expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
-    expect(screen.getByText("Log Keputusan Sistem")).toBeInTheDocument();
-    expect(screen.getByText("Ketetapan Level")).toBeInTheDocument();
+    expect(screen.queryByText("Log Keputusan Sistem")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ketetapan Level")).not.toBeInTheDocument();
+    expect(screen.queryByText("Konteks Lintas Unit")).not.toBeInTheDocument();
     expect(screen.getByText(/Dossier unit/i)).toBeInTheDocument();
     expect(screen.getAllByText(/barang lelang unit ini/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Dossier nasional/i)).not.toBeInTheDocument();
@@ -241,7 +246,7 @@ describe("AdminBlacklistPage", () => {
       />,
     );
 
-    expect(screen.queryByText(/Level 3/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Pelanggaran Level 3/i })).not.toBeInTheDocument();
     expect(screen.getAllByText(/Level 2/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Level 1/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/30 hari/i).length).toBeGreaterThan(0);
@@ -277,13 +282,11 @@ describe("AdminBlacklistPage", () => {
       />,
     );
 
-    expect(screen.getByText("Konteks Lintas Unit")).toBeInTheDocument();
-    expect(
-      screen.getByText(/1 pelanggaran terdahulu di luar unit ini/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/detail barang, nominal, unit, dan timeline lintas unit disembunyikan/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Pelanggaran Tercatat")).toBeInTheDocument();
+    expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
+    expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
+    expect(screen.getAllByText("1 kasus").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Konteks Lintas Unit")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Pelanggaran Level 2/i })).toBeInTheDocument();
     expect(screen.queryByText("UPC Unit Lain")).not.toBeInTheDocument();
     expect(screen.queryByText("Barang Unit Lain")).not.toBeInTheDocument();
