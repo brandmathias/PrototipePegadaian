@@ -594,7 +594,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-amber-100 text-amber-700 ring-amber-200",
       cardTone: "border-amber-300 bg-amber-50/30",
-      description: "Pelanggaran pertama. Selama 7 hari buyer tidak bisa menawar pada Lelang Tertutup, tetapi pembelian barang Harga Tetap masih bisa dilakukan.",
+      description: "Pelanggaran awal / ringan, pembatasan sementara, dan masih dapat dipulihkan setelah masa hukuman berakhir.",
       headingTone: "text-amber-800",
       icon: AlertTriangle,
       iconTone: "text-amber-600",
@@ -603,7 +603,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-orange-100 text-orange-700 ring-orange-200",
       cardTone: "border-orange-300 bg-orange-50/25",
-      description: "Pelanggaran kedua. Selama 30 hari buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap.",
+      description: "Pelanggaran berulang / menengah, pembatasan lebih ketat, dan perlu perhatian lebih dari unit.",
       headingTone: "text-orange-800",
       icon: AlertTriangle,
       iconTone: "text-orange-600",
@@ -612,7 +612,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-rose-100 text-rose-700 ring-rose-200",
       cardTone: "border-rose-300 bg-rose-50/45",
-      description: "Pelanggaran ketiga atau lebih. Akun ditangguhkan 365 hari sehingga buyer tidak bisa login masuk ke dalam sistem.",
+      description: "Pelanggaran berat / akumulatif, pembatasan tertinggi, dan akun memiliki risiko pembatasan lanjutan.",
       headingTone: "text-rose-700",
       icon: Lock,
       iconTone: "text-rose-600",
@@ -641,7 +641,7 @@ function ViolationLevelGuide() {
                 <Icon className={cn("size-4 shrink-0", level.iconTone)} />
                 <h3 className={cn("font-headline text-base font-black", level.headingTone)}>{level.label}</h3>
               </div>
-              <p className="mt-2 max-w-[17.5rem] text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
+              <p className="mt-2 text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
             </article>
           );
         })}

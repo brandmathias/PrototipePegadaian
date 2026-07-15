@@ -2503,12 +2503,12 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
     expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
     expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
-    expect(screen.getByText(/Selama 7 hari buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembelian barang Harga Tetap masih bisa dilakukan/i)).toBeInTheDocument();
-    expect(screen.getByText(/Selama 30 hari buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak bisa membeli barang Harga Tetap/i)).toBeInTheDocument();
-    expect(screen.getByText(/Akun ditangguhkan 365 hari/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak bisa login masuk ke dalam sistem/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pelanggaran awal \/ ringan/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembatasan sementara/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pelanggaran berulang \/ menengah/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembatasan lebih ketat/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pelanggaran berat \/ akumulatif/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembatasan tertinggi/i)).toBeInTheDocument();
     expect(screen.queryByText(/penyelesaian transaksi/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tindak lanjut/i)).not.toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
