@@ -13,3 +13,10 @@ Seluruh gambar di bawah dipakai sebagai foto barang pada arsip pemasaran dan pel
 | `kalung-emas-rantai-cuban-22k.webp` | [Gold necklace](https://www.pexels.com/photo/close-up-photo-of-gold-necklace-14111399/) oleh The Glorious Studio | [Pexels License](https://www.pexels.com/license/) |
 
 Perubahan format dan ukuran tidak mengubah informasi atribusi atau ketentuan lisensi sumber.
+
+## Skenario lintas unit lanjutan
+
+| Berkas | Sumber dan kreator | Lisensi |
+| --- | --- | --- |
+| `laptop-14-inci-core-i5.webp` | [Gray Laptop Computer](https://www.pexels.com/photo/gray-laptop-computer-1279109/) oleh Caio | [Pexels License](https://www.pexels.com/license/) |
+| `gelang-emas-bangle-zircon-22k.webp` | [A Beautiful Gold Bangle Bracelet](https://www.pexels.com/photo/a-beautiful-gold-bangle-bracelet-12194323/) oleh Melike B | [Pexels License](https://www.pexels.com/license/) |
