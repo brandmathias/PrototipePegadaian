@@ -84,6 +84,7 @@ import {
   type LucideIcon,
   UserCog,
   UserRound,
+  UserPlus,
   UsersRound,
   WalletCards,
   X,
@@ -6500,7 +6501,7 @@ export function SuperAdminAdminsPage({
 
 const managementUnitPageSizeOptions = [10, 20, 50] as const;
 
-export function SuperAdminManagementPage({
+function LegacySuperAdminManagementPage({
   units,
   admins,
 }: {
@@ -6820,6 +6821,345 @@ export function SuperAdminManagementPage({
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function SuperAdminManagementAdminModal({
+  units,
+  open,
+  onOpenChange,
+}: {
+  units: SuperAdminUnitListItem[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <SuperAdminUnitDetailPopup
+      icon={UserPlus}
+      onOpenChange={onOpenChange}
+      open={open}
+      subtitle="Isi identitas, kredensial sementara, dan unit penugasan admin baru."
+      title="Tambah Admin Unit"
+    >
+      <div className="sm:col-span-2">
+        <AdminUnitForm
+          onSuccess={() => onOpenChange(false)}
+          showNationalIdField
+          showTitle={false}
+          submitLabel="Simpan Admin Unit"
+          units={units.map((unit) => ({
+            id: unit.id,
+            name: unit.name,
+            code: unit.code,
+          }))}
+        />
+      </div>
+    </SuperAdminUnitDetailPopup>
+  );
+}
+
+function SuperAdminManagementAdminDetailModal({
+  admin,
+  open,
+  onOpenChange,
+}: {
+  admin: SuperAdminAdminItem | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <SuperAdminUnitDetailPopup
+      icon={UserCog}
+      onOpenChange={onOpenChange}
+      open={open}
+      subtitle="Informasi akun, unit penugasan, dan aktivitas login admin unit."
+      title="Detail Admin Unit"
+    >
+      <div className="sm:col-span-2 overflow-hidden rounded-[1.25rem] border border-[#0a6a49]/15 bg-[#023d31] p-4 text-white shadow-[0_22px_48px_-34px_rgba(2,61,49,0.75)]">
+        <div className="flex items-center gap-3">
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl border-2 border-white/80 bg-white font-headline text-lg font-black text-[#0a6a49]">
+            {getSuperAdminInitials(admin?.name)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-headline text-lg font-black tracking-[-0.02em]">
+              {admin?.name ?? "-"}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+              <span className="inline-flex items-center gap-1.5">
+                <Building2 className="size-3.5" />
+                {admin?.unit ?? "Belum ditetapkan"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d8ad38]/35 bg-[#d8ad38]/10 px-2 py-1 text-[#f4d675]">
+                <BadgeCheck className="size-3.5" />
+                {admin?.status ?? "-"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <SuperAdminUnitDetailPopupRow
+        icon={Mail}
+        label="Email"
+        value={admin?.email ?? "-"}
+      />
+      <SuperAdminUnitDetailPopupRow
+        icon={Phone}
+        label="Nomor Telepon"
+        value={admin?.phone || "-"}
+      />
+      <SuperAdminUnitDetailPopupRow
+        icon={Building2}
+        label="Unit Penugasan"
+        value={admin?.unit ?? "Belum ditetapkan"}
+      />
+      <SuperAdminUnitDetailPopupRow
+        icon={Clock3}
+        label="Login Terakhir"
+        value={admin?.lastLogin ?? "Belum pernah login"}
+      />
+    </SuperAdminUnitDetailPopup>
+  );
+}
+
+export function SuperAdminManagementPage({
+  units,
+  admins,
+}: {
+  units: SuperAdminUnitListItem[];
+  admins: SuperAdminAdminItem[];
+}) {
+  const [query, setQuery] = useState("");
+  const [adminQuery, setAdminQuery] = useState("");
+  const [pageSize, setPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [adminPageSize, setAdminPageSize] = useState<number>(managementUnitPageSizeOptions[0]);
+  const [adminPageIndex, setAdminPageIndex] = useState(0);
+  const [createAdminOpen, setCreateAdminOpen] = useState(false);
+  const [previewAdmin, setPreviewAdmin] = useState<SuperAdminAdminItem | null>(null);
+
+  const filteredUnits = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return units.filter((unit) =>
+      [unit.name, unit.code, unit.address, unit.domicile].some((value) =>
+        value.toLowerCase().includes(normalized),
+      ),
+    );
+  }, [query, units]);
+  const totalPages = Math.max(1, Math.ceil(filteredUnits.length / pageSize));
+  const currentPage = Math.min(pageIndex, totalPages - 1);
+  const visibleUnits = filteredUnits.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+  const unitStart = filteredUnits.length === 0 ? 0 : currentPage * pageSize + 1;
+  const unitEnd = Math.min(filteredUnits.length, (currentPage + 1) * pageSize);
+
+  const filteredAdmins = useMemo(() => {
+    const normalized = adminQuery.trim().toLowerCase();
+    return admins.filter((admin) =>
+      [admin.name, admin.email, admin.phone, admin.unit].some((value) =>
+        value.toLowerCase().includes(normalized),
+      ),
+    );
+  }, [adminQuery, admins]);
+  const adminTotalPages = Math.max(1, Math.ceil(filteredAdmins.length / adminPageSize));
+  const currentAdminPage = Math.min(adminPageIndex, adminTotalPages - 1);
+  const visibleAdmins = filteredAdmins.slice(
+    currentAdminPage * adminPageSize,
+    currentAdminPage * adminPageSize + adminPageSize,
+  );
+  const adminStart = filteredAdmins.length === 0 ? 0 : currentAdminPage * adminPageSize + 1;
+  const adminEnd = Math.min(filteredAdmins.length, (currentAdminPage + 1) * adminPageSize);
+
+  useEffect(() => setPageIndex(0), [filteredUnits.length, pageSize, query]);
+  useEffect(() => setAdminPageIndex(0), [adminQuery, admins.length, adminPageSize]);
+
+  return (
+    <div className="space-y-6 md:space-y-7">
+      <AdminPageHero
+        description="Kelola unit, rekening aktif utama, dan admin unit dari data database dalam tampilan ledger yang ringkas."
+        eyebrow="Superadmin / Manajemen Unit"
+        icon={Building2}
+        title="Manajemen Unit"
+      />
+
+      <section className="rounded-[1.75rem] border border-[#dfe8e3] bg-white p-1.5 shadow-[0_30px_90px_-72px_rgba(8,69,50,0.52)]">
+        <div className="overflow-hidden rounded-[1.35rem] border border-[#edf2ee]">
+          <div className="grid gap-3 border-b border-[#e5eee9] bg-[#fbfcfa] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center lg:px-5">
+            <div className="relative min-w-0">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-black/35" />
+              <Input
+                aria-label="Cari unit"
+                className="h-11 rounded-[1.15rem] bg-white pl-10 text-[0.88rem] font-semibold shadow-[0_16px_34px_-30px_rgba(15,23,42,0.34)]"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Cari unit, kode, domisili, atau alamat..."
+                value={query}
+              />
+            </div>
+            <Link className="w-full sm:w-auto" href="/superadmin/manajemen-unit/tambah">
+              <Button className="min-h-10 w-full rounded-full px-5 text-[0.78rem] active:scale-[0.98] sm:w-auto" type="button">
+                <Plus className="size-4" />
+                Tambah Unit
+              </Button>
+            </Link>
+          </div>
+
+          <div className="hidden grid-cols-[minmax(10rem,1fr)_minmax(7rem,0.62fr)_minmax(0,1.45fr)_minmax(9rem,0.82fr)_7rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.66rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+            <span>Unit</span>
+            <span>Admin Unit</span>
+            <span>Alamat</span>
+            <span>Domisili</span>
+            <span className="text-right">Aksi</span>
+          </div>
+
+          {visibleUnits.length === 0 ? (
+            <EmptyState className="m-5 p-6" description="Coba kata kunci lain atau tambahkan unit baru." icon={SearchX} title="Belum ada unit yang sesuai" />
+          ) : (
+            <div className="divide-y divide-[#edf2ee]">
+              {visibleUnits.map((unit) => (
+                <article className="grid gap-4 px-4 py-4 transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(10rem,1fr)_minmax(7rem,0.62fr)_minmax(0,1.45fr)_minmax(9rem,0.82fr)_7rem] lg:items-center lg:gap-4 lg:px-5" key={unit.id}>
+                  <div className="flex min-w-0 gap-3">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-[1.05rem] border border-[#d9e8df] bg-[linear-gradient(180deg,#fdfcf8,#edf7ef)] text-[#006747] shadow-[0_18px_34px_-28px_rgba(10,106,73,0.42),inset_0_1px_0_rgba(255,255,255,0.9)]">
+                      <Building2 className="size-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <Link className="block truncate font-headline text-[0.98rem] font-black leading-tight tracking-[-0.02em] text-[#13211c] hover:text-[#006747]" href={`/superadmin/manajemen-unit/${unit.id}`}>
+                        {unit.name}
+                      </Link>
+                      <p className="mt-1 text-[0.7rem] font-black uppercase tracking-[0.16em] text-[#006747]">{unit.code}</p>
+                    </div>
+                  </div>
+                  <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[#f0f7f3] px-3 py-2 text-[0.76rem] font-black text-[#13211c]">
+                    <UsersRound className="size-4 text-[#006747]" />
+                    {unit.adminCount} Admin
+                  </div>
+                  <p className="whitespace-normal break-words text-[0.78rem] font-semibold leading-5 text-black/58">{unit.address}</p>
+                  <p className="flex items-center gap-1.5 text-[0.76rem] font-bold text-[#13211c]"><MapPin className="size-4 text-[#006747]" />{unit.domicile}</p>
+                  <DetailActionLink className="w-full sm:w-auto" href={`/superadmin/manajemen-unit/${unit.id}`} />
+                </article>
+              ))}
+            </div>
+          )}
+
+          <ManagementPagination
+            currentPage={currentPage}
+            end={unitEnd}
+            onNext={() => setPageIndex(Math.min(totalPages - 1, currentPage + 1))}
+            onPageChange={setPageIndex}
+            onPrevious={() => setPageIndex(Math.max(0, currentPage - 1))}
+            pageSize={pageSize}
+            pageSizeId="management-unit-page-size"
+            setPageSize={(value) => { setPageSize(value); setPageIndex(0); }}
+            start={unitStart}
+            total={filteredUnits.length}
+            totalPages={totalPages}
+            label="unit"
+          />
+        </div>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-[#dfe8e3] bg-white p-1.5 shadow-[0_30px_90px_-72px_rgba(8,69,50,0.52)]">
+        <div className="overflow-hidden rounded-[1.35rem] border border-[#edf2ee]">
+          <div className="border-b border-[#e5eee9] bg-[#fbfcfa] px-4 py-4 lg:px-5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="page-heading-eyebrow">Admin Unit Aktif</p>
+                <h2 className="mt-1 font-headline text-[1.2rem] font-black tracking-[-0.03em] text-[#13211c]">Direktori Admin Unit</h2>
+              </div>
+              <Button className="min-h-10 w-full rounded-full px-5 text-[0.78rem] active:scale-[0.98] md:w-auto" onClick={() => setCreateAdminOpen(true)} type="button">
+                <Plus className="size-4" />
+                Tambah Admin Unit
+              </Button>
+            </div>
+            <div className="relative mt-4">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-black/35" />
+              <Input aria-label="Cari admin unit aktif" className="h-11 rounded-[1.15rem] bg-white pl-10 text-[0.84rem] font-semibold" onChange={(event) => setAdminQuery(event.target.value)} placeholder="Cari nama admin, email, atau nomor telepon..." value={adminQuery} />
+            </div>
+          </div>
+
+          <div className="hidden grid-cols-[minmax(11rem,1.05fr)_minmax(12rem,1.25fr)_minmax(9rem,0.9fr)_minmax(10rem,0.95fr)_7rem] gap-4 border-b border-[#edf2ee] px-5 py-3 text-[0.66rem] font-black uppercase tracking-[0.16em] text-black/38 lg:grid">
+            <span>Nama Admin</span><span>Email</span><span>Nomor Telepon</span><span>Unit</span><span className="text-right">Aksi</span>
+          </div>
+          {visibleAdmins.length === 0 ? (
+            <EmptyState className="m-5 p-6" description="Admin aktif yang sesuai pencarian akan muncul di sini." icon={UserCog} title="Admin tidak ditemukan" />
+          ) : (
+            <div className="divide-y divide-[#edf2ee]">
+              {visibleAdmins.map((admin) => (
+                <article className="grid gap-3 px-4 py-3.5 transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#f8fbf8] lg:grid-cols-[minmax(11rem,1.05fr)_minmax(12rem,1.25fr)_minmax(9rem,0.9fr)_minmax(10rem,0.95fr)_7rem] lg:items-center lg:gap-4 lg:px-5" key={admin.id}>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full border border-[#bce9cf] bg-[#ecfff3] font-headline text-[0.72rem] font-black text-[#006747]">{getSuperAdminInitials(admin.name)}</span>
+                    <span className="truncate font-black text-[#13211c]">{admin.name}</span>
+                  </div>
+                  <p className="flex min-w-0 items-center gap-2 truncate text-[0.78rem] font-semibold text-black/55"><Mail className="size-3.5 shrink-0 text-[#006747]" />{admin.email}</p>
+                  <p className="flex items-center gap-2 text-[0.78rem] font-semibold text-black/52"><Phone className="size-3.5 text-[#006747]" />{admin.phone || "-"}</p>
+                  <p className="min-w-0"><span className="block truncate text-[0.78rem] font-black text-[#13211c]">{admin.unit}</span><span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-[#edf7ef] px-2 py-1 text-[0.6rem] font-black uppercase tracking-[0.12em] text-[#006747]"><BadgeCheck className="size-3" />Aktif</span></p>
+                  <button aria-label={`Lihat detail admin ${admin.name}`} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-full border border-[#d8e4de] px-3 text-[0.68rem] font-black uppercase tracking-[0.08em] text-[#075b3f] transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#006747] hover:text-white active:scale-[0.98] sm:w-auto" onClick={() => setPreviewAdmin(admin)} type="button">
+                    Detail <ChevronRight className="size-3.5" />
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+          <ManagementPagination
+            currentPage={currentAdminPage}
+            end={adminEnd}
+            onNext={() => setAdminPageIndex(Math.min(adminTotalPages - 1, currentAdminPage + 1))}
+            onPageChange={setAdminPageIndex}
+            onPrevious={() => setAdminPageIndex(Math.max(0, currentAdminPage - 1))}
+            pageSize={adminPageSize}
+            pageSizeId="management-admin-page-size"
+            setPageSize={(value) => { setAdminPageSize(value); setAdminPageIndex(0); }}
+            start={adminStart}
+            total={filteredAdmins.length}
+            totalPages={adminTotalPages}
+            label="admin"
+          />
+        </div>
+      </section>
+
+      <SuperAdminManagementAdminModal onOpenChange={setCreateAdminOpen} open={createAdminOpen} units={units} />
+      <SuperAdminManagementAdminDetailModal admin={previewAdmin} onOpenChange={(open) => { if (!open) setPreviewAdmin(null); }} open={Boolean(previewAdmin)} />
+    </div>
+  );
+}
+
+function ManagementPagination({
+  currentPage,
+  end,
+  label,
+  onNext,
+  onPageChange,
+  onPrevious,
+  pageSize,
+  pageSizeId,
+  setPageSize,
+  start,
+  total,
+  totalPages,
+}: {
+  currentPage: number;
+  end: number;
+  label: string;
+  onNext: () => void;
+  onPageChange: (page: number) => void;
+  onPrevious: () => void;
+  pageSize: number;
+  pageSizeId: string;
+  setPageSize: (value: number) => void;
+  start: number;
+  total: number;
+  totalPages: number;
+}) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-[#e5eee9] bg-[#fbfcfa] px-4 py-3 text-[0.72rem] font-semibold text-black/48 lg:flex-row lg:items-center lg:justify-between lg:px-5">
+      <p>Menampilkan <span className="font-black text-[#13211c]">{start}</span> sampai <span className="font-black text-[#13211c]">{end}</span> dari <span className="font-black text-[#13211c]">{total}</span> {label}</p>
+      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <label className="font-bold text-black/45" htmlFor={pageSizeId}>Baris per halaman:</label>
+        <AdminSelect ariaLabel={`Baris per halaman ${label}`} className="min-w-[4.8rem]" id={pageSizeId} options={managementUnitPageSizeOptions.map((size) => ({ value: size, label: String(size) }))} placement="top" size="compact" value={pageSize} onValueChange={(value) => setPageSize(Number(value))} />
+        <div className="ml-0 flex max-w-full flex-wrap items-center gap-1 lg:ml-3">
+          <button aria-label={`Halaman ${label} sebelumnya`} className="grid size-9 place-items-center rounded-xl text-black/42 hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35" disabled={currentPage === 0} onClick={onPrevious} type="button"><ChevronLeft className="size-4" /></button>
+          {Array.from({ length: totalPages }, (_, index) => <button aria-current={index === currentPage ? "page" : undefined} className={cn("grid size-8 place-items-center rounded-xl text-[0.72rem] font-black", index === currentPage ? "border border-[#0a6a49]/15 bg-white text-[#0a6a49] shadow-[0_16px_30px_-26px_rgba(10,106,73,0.46)]" : "text-black/52 hover:bg-white hover:text-[#0a6a49]")} key={index} onClick={() => onPageChange(index)} type="button">{index + 1}</button>)}
+          <button aria-label={`Halaman ${label} berikutnya`} className="grid size-9 place-items-center rounded-xl text-black/42 hover:bg-white hover:text-[#0a6a49] disabled:cursor-not-allowed disabled:opacity-35" disabled={currentPage >= totalPages - 1} onClick={onNext} type="button"><ChevronRight className="size-4" /></button>
+        </div>
+      </div>
     </div>
   );
 }

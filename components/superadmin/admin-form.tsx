@@ -4,6 +4,7 @@ import { LoaderCircle, Trash2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
+import { AdminSelect } from "@/components/admin/admin-select";
 import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,7 @@ type AdminFormProps = {
   showNationalIdField?: boolean;
   showUnitField?: boolean;
   submitLabel?: string;
+  onSuccess?: () => void;
   initialValue?: {
     name: string;
     email: string;
@@ -37,6 +39,7 @@ export function AdminUnitForm({
   showNationalIdField = false,
   showUnitField = true,
   submitLabel,
+  onSuccess,
   initialValue
 }: AdminFormProps) {
   const router = useRouter();
@@ -113,6 +116,7 @@ export function AdminUnitForm({
         setCredentialFieldsUnlocked(false);
       }
       router.refresh();
+      onSuccess?.();
     } catch (caughtError) {
       const errorMessage =
         caughtError instanceof Error
@@ -214,18 +218,17 @@ export function AdminUnitForm({
                 </span>
               </div>
             ) : (
-              <select
-                className="h-11 w-full rounded-xl border border-transparent bg-surface-low px-4 py-2 text-sm font-semibold text-foreground focus-visible:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              <AdminSelect
+                ariaLabel="Unit penugasan admin unit"
+                className="[&_.admin-select-trigger]:rounded-xl [&_.admin-select-trigger]:border-transparent [&_.admin-select-trigger]:bg-surface-low [&_.admin-select-trigger]:text-sm [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger[aria-expanded='true']]:border-primary/20 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-menu]:rounded-2xl [&_.admin-select-option]:text-sm"
                 id={unitIdField}
-                onChange={(event) => setUnitId(event.target.value)}
+                onValueChange={setUnitId}
+                options={units.map((unit) => ({
+                  value: unit.id,
+                  label: `${unit.name} (${unit.code})`
+                }))}
                 value={unitId}
-              >
-                {units.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.name} ({unit.code})
-                  </option>
-                ))}
-              </select>
+              />
             )}
           </div>
         ) : null}

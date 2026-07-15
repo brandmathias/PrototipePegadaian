@@ -921,7 +921,7 @@ describe("superadmin pages", () => {
       screen.queryByRole("button", { name: /tambah rekening/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /tambah admin/i }),
+      screen.queryByRole("button", { name: /tambah admin unit/i }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /simpan perubahan/i }),
@@ -2657,8 +2657,8 @@ describe("superadmin pages", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: /tambah admin/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: /tambah admin unit/i }),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: /direktori admin/i }),
     ).not.toBeInTheDocument();
@@ -2877,13 +2877,13 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Nonaktif")).not.toBeInTheDocument();
     expect(screen.queryByText("Perlu Review")).not.toBeInTheDocument();
     expect(screen.queryByText("Pegadaian CP Unit 11")).not.toBeInTheDocument();
-    expect(screen.getByText(/Menampilkan/).textContent).toContain(
+    expect(screen.getAllByText(/Menampilkan/)[0]).toHaveTextContent(
       "1 sampai 10 dari 82 unit",
     );
     expect(screen.queryByText("...")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "9" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "10" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "10" })[0]);
     const listbox = screen.getByRole("listbox");
 
     expect(
@@ -2900,9 +2900,95 @@ describe("superadmin pages", () => {
 
     expect(screen.getByText("Pegadaian CP Unit 20")).toBeInTheDocument();
     expect(screen.queryByText("Pegadaian CP Unit 21")).not.toBeInTheDocument();
-    expect(screen.getByText(/Menampilkan/).textContent).toContain(
+    expect(screen.getAllByText(/Menampilkan/)[0]).toHaveTextContent(
       "1 sampai 20 dari 82 unit",
     );
+  });
+
+  it("opens the add-admin modal with the animated unit selector", () => {
+    render(
+      <SuperAdminManagementPage
+        admins={[
+          {
+            id: "admin-1",
+            name: "Admin Manado",
+            unitId: "unit-1",
+            unit: "Pegadaian CP Manado",
+            email: "admin.manado@example.com",
+            phone: "081234567890",
+            status: "Aktif",
+            lastLogin: "15 Juli 2026, 10.00",
+          },
+        ]}
+        units={[
+          {
+            id: "unit-1",
+            code: "CP-MND-01",
+            name: "Pegadaian CP Manado",
+            address: "Jl. Sam Ratulangi",
+            domicile: "Sulawesi Utara",
+            status: "Aktif",
+            adminCount: 1,
+            accountCount: 1,
+            activeAccount: null,
+          },
+          {
+            id: "unit-2",
+            code: "CP-JKT-02",
+            name: "Pegadaian CP Jakarta",
+            address: "Jl. Sudirman",
+            domicile: "DKI Jakarta",
+            status: "Aktif",
+            adminCount: 0,
+            accountCount: 1,
+            activeAccount: null,
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /tambah admin unit/i }),
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /tambah admin unit/i });
+    expect(within(dialog).getByLabelText(/unit penugasan admin unit/i)).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/Pegadaian CP Manado/).length).toBeGreaterThan(0);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: /Pegadaian CP Manado/i }));
+
+    const listbox = screen.getByRole("listbox");
+    expect(within(listbox).getByRole("option", { name: /Pegadaian CP Jakarta/i })).toBeInTheDocument();
+  });
+
+  it("shows admin detail without the superadmin audit log", () => {
+    render(
+      <SuperAdminManagementPage
+        admins={[
+          {
+            id: "admin-1",
+            name: "Admin Manado",
+            unitId: "unit-1",
+            unit: "Pegadaian CP Manado",
+            email: "admin.manado@example.com",
+            phone: "081234567890",
+            status: "Aktif",
+            lastLogin: "15 Juli 2026, 10.00",
+          },
+        ]}
+        units={[]}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /lihat detail admin admin manado/i }),
+    );
+
+    expect(screen.getByRole("dialog", { name: /detail admin unit/i })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /detail admin unit/i });
+    expect(within(dialog).getByText("Admin Manado")).toBeInTheDocument();
+    expect(within(dialog).getByText("15 Juli 2026, 10.00")).toBeInTheDocument();
+    expect(within(dialog).queryByTestId("superadmin-account-audit-list")).not.toBeInTheDocument();
   });
 
   it("renders read-only violation policy page", () => {
