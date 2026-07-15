@@ -22,11 +22,26 @@ function required<T extends Identity>(values: Map<string, T>, key: string, label
 }
 
 function blacklistId(email: string) {
-  return `81000000-0000-4000-8000-${String(email === "bagus@gmail.com" ? 1 : 2).padStart(12, "0")}`;
+  const sequence = {
+    "bagus@gmail.com": 1,
+    "kirana@gmail.com": 2,
+    "adrian@gmail.com": 3,
+    "viona@gmail.com": 4,
+    "rangga@gmail.com": 5
+  }[email];
+  if (!sequence) throw new Error(`Blacklist untuk ${email} tidak dikenal.`);
+  return `81000000-0000-4000-8000-${String(sequence).padStart(12, "0")}`;
 }
 
 function bidId(incident: number, bid: number) {
   return `820${incident}${bid}00-0000-4000-8000-${String(incident * 10 + bid).padStart(12, "0")}`;
+}
+
+function getItemCategory(name: string) {
+  if (/laptop/i.test(name)) return "Elektronik";
+  if (/jam tangan/i.test(name)) return "Jam Tangan";
+  if (/emas batangan/i.test(name)) return "Logam Mulia";
+  return "Perhiasan";
 }
 
 export function buildRenewedCrossUnitViolationSeedRows(context: RenewedCrossUnitViolationSeedContext) {
@@ -45,7 +60,7 @@ export function buildRenewedCrossUnitViolationSeedRows(context: RenewedCrossUnit
     const buyer = required(context.usersByEmail, entry.buyerEmail, "Buyer");
     const unit = required(context.unitsByName, entry.unitName, "Unit");
     const admin = required(context.adminsByEmail, entry.unitAdminEmail, "Admin unit");
-    barang.push({ id: entry.ids.barang, unitId: unit.id, code: entry.itemCode, name: entry.itemName, category: /laptop/i.test(entry.itemName) ? "Elektronik" : "Perhiasan", condition: "Baik", description: entry.description, specifications: entry.specifications, appraisalValue: entry.appraisalValue, ownerName: entry.ownerName, customerNumber: entry.customerNumber, pawnedAt: entry.itemEnteredAt, dueDate: entry.dueDate, status: "gagal", createdByUserId: admin.id, createdAt: entry.itemEnteredAt, updatedAt: entry.violationOccurredAt });
+    barang.push({ id: entry.ids.barang, unitId: unit.id, code: entry.itemCode, name: entry.itemName, category: getItemCategory(entry.itemName), condition: "Baik", description: entry.description, specifications: entry.specifications, appraisalValue: entry.appraisalValue, ownerName: entry.ownerName, customerNumber: entry.customerNumber, pawnedAt: entry.itemEnteredAt, dueDate: entry.dueDate, status: "gagal", createdByUserId: admin.id, createdAt: entry.itemEnteredAt, updatedAt: entry.violationOccurredAt });
     mediaBarang.push({ id: entry.ids.media, barangId: entry.ids.barang, type: "foto", url: entry.media.publicPath, fileName: entry.media.publicPath.split("/").at(-1), sizeBytes: entry.media.sizeBytes, sortOrder: 0, createdAt: entry.itemEnteredAt });
     pemasaran.push({ id: entry.ids.pemasaran, barangId: entry.ids.barang, mode: "vickrey", basePrice: entry.basePrice, durationDays: Math.floor(getRenewedScenarioDurationHours(entry) / 24), durationSeconds: Math.round(getRenewedScenarioDurationHours(entry) * 3600), startsAt: entry.auctionStartsAt, endsAt: entry.auctionEndsAt, revealEndsAt: new Date(entry.auctionEndsAt.getTime() + 10 * 60 * 1000), winnerId: buyer.id, finalPrice: entry.finalPrice, iteration: 1, status: "gagal", createdByUserId: admin.id, createdAt: entry.auctionStartsAt, updatedAt: entry.violationOccurredAt });
     entry.bids.forEach((bid, bidOffset) => {

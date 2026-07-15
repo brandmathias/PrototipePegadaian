@@ -18,7 +18,7 @@ describe("renewed cross-unit violation production scenario", () => {
     });
   });
 
-  it("creates the requested Sarinah and Ranotana escalation paths", () => {
+  it("creates the requested active restrictions while preserving sequential escalation", () => {
     expect(
       RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map(({ buyerEmail, level, unitName }) => ({
         buyerEmail,
@@ -30,7 +30,21 @@ describe("renewed cross-unit violation production scenario", () => {
       { buyerEmail: "kirana@gmail.com", level: 1, unitName: "UPC Ranotana" },
       { buyerEmail: "kirana@gmail.com", level: 2, unitName: "UPC Ranotana" },
       { buyerEmail: "bagus@gmail.com", level: 2, unitName: "UPC Sarinah" },
-      { buyerEmail: "kirana@gmail.com", level: 3, unitName: "UPC Ranotana" }
+      { buyerEmail: "kirana@gmail.com", level: 3, unitName: "UPC Ranotana" },
+      { buyerEmail: "rangga@gmail.com", level: 1, unitName: "UPC Ranotana" },
+      { buyerEmail: "rangga@gmail.com", level: 2, unitName: "UPC Ranotana" },
+      { buyerEmail: "adrian@gmail.com", level: 1, unitName: "UPC Sarinah" },
+      { buyerEmail: "viona@gmail.com", level: 1, unitName: "UPC Ranotana" }
+    ]);
+  });
+
+  it("keeps the original five incident IDs first so production can replace the prior seed safely", () => {
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.slice(0, 5).map((incident) => incident.ids.violation)).toEqual([
+      "74000000-0000-4000-8000-000000000061",
+      "74000000-0000-4000-8000-000000000062",
+      "74000000-0000-4000-8000-000000000063",
+      "74000000-0000-4000-8000-000000000064",
+      "74000000-0000-4000-8000-000000000065"
     ]);
   });
 
@@ -48,22 +62,43 @@ describe("renewed cross-unit violation production scenario", () => {
     }
   });
 
-  it("includes every eligible buyer and omits Bagus only while his payment remains unresolved", () => {
+  it("excludes buyers from later auctions after their payment becomes unresolved", () => {
     const allBuyerEmails = ["bagus@gmail.com", "kirana@gmail.com", "adrian@gmail.com", "viona@gmail.com", "rangga@gmail.com"];
     for (const incident of RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.slice(0, 4)) {
       expect(incident.bidderEmails).toEqual(expect.arrayContaining(allBuyerEmails));
     }
     expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[1]?.bidderEmails).toContain("bagus@gmail.com");
-    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.at(-1)?.bidderEmails).not.toContain("bagus@gmail.com");
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[4]?.bidderEmails).not.toContain("bagus@gmail.com");
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[6]?.bidderEmails).toEqual(["rangga@gmail.com", "adrian@gmail.com", "viona@gmail.com"]);
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[7]?.bidderEmails).toEqual(["adrian@gmail.com", "viona@gmail.com"]);
+    expect(RENEWED_CROSS_UNIT_VIOLATION_SCENARIO[8]?.bidderEmails).toEqual(["viona@gmail.com"]);
   });
 
-  it("finishes with one active Level 2 and one active Level 3 restriction", () => {
+  it("finishes with active Level 1 and Level 2 restrictions in Sarinah plus active Level 1 to 3 restrictions in Ranotana", () => {
     expect(getRenewedExpectedFinalRestrictions()).toEqual([
+      {
+        buyerEmail: "adrian@gmail.com",
+        level: 1,
+        unitName: "UPC Sarinah",
+        blockedUntil: new Date("2026-07-23T00:25:00+07:00")
+      },
       {
         buyerEmail: "bagus@gmail.com",
         level: 2,
         unitName: "UPC Sarinah",
         blockedUntil: new Date("2026-08-14T23:45:00+07:00")
+      },
+      {
+        buyerEmail: "viona@gmail.com",
+        level: 1,
+        unitName: "UPC Ranotana",
+        blockedUntil: new Date("2026-07-23T00:35:00+07:00")
+      },
+      {
+        buyerEmail: "rangga@gmail.com",
+        level: 2,
+        unitName: "UPC Ranotana",
+        blockedUntil: new Date("2026-08-15T00:15:00+07:00")
       },
       {
         buyerEmail: "kirana@gmail.com",

@@ -20,14 +20,14 @@ const context: RenewedCrossUnitViolationSeedContext = {
 describe("renewed cross-unit violation seed rows", () => {
   it("builds complete rows while suspending only the active Level 3 account", () => {
     const rows = buildRenewedCrossUnitViolationSeedRows(context);
-    expect(rows.barang).toHaveLength(5);
-    expect(rows.mediaBarang).toHaveLength(5);
-    expect(rows.pemasaran).toHaveLength(5);
-    expect(rows.transaksi).toHaveLength(5);
-    expect(rows.pelanggaranUser).toHaveLength(5);
-    expect(rows.riwayatStatusBarang).toHaveLength(20);
-    expect(rows.blacklists).toHaveLength(2);
-    expect(rows.blacklistActionLogs).toHaveLength(5);
+    expect(rows.barang).toHaveLength(9);
+    expect(rows.mediaBarang).toHaveLength(9);
+    expect(rows.pemasaran).toHaveLength(9);
+    expect(rows.transaksi).toHaveLength(9);
+    expect(rows.pelanggaranUser).toHaveLength(9);
+    expect(rows.riwayatStatusBarang).toHaveLength(36);
+    expect(rows.blacklists).toHaveLength(5);
+    expect(rows.blacklistActionLogs).toHaveLength(9);
     expect(rows.suspendedUserIds).toEqual(["buyer-kirana"]);
   });
 });

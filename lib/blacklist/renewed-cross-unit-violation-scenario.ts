@@ -43,7 +43,7 @@ export type RenewedCrossUnitViolationIncident = {
   bidderEmails: RenewedCrossUnitEmail[];
   bids: ScenarioBid[];
   blockedUntil: Date;
-  buyerEmail: "bagus@gmail.com" | "kirana@gmail.com";
+  buyerEmail: RenewedCrossUnitEmail;
   customerNumber: string;
   description: string;
   dueDate: Date;
@@ -153,6 +153,54 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
       { bidderEmail: "kirana@gmail.com", amount: 20_850_000, submittedAt: date("2026-07-15T00:01:30+07:00") }, { bidderEmail: "adrian@gmail.com", amount: 20_450_000, submittedAt: date("2026-07-15T00:02:10+07:00") }, { bidderEmail: "viona@gmail.com", amount: 20_000_000, submittedAt: date("2026-07-15T00:03:00+07:00") }, { bidderEmail: "rangga@gmail.com", amount: 19_500_000, submittedAt: date("2026-07-15T00:04:00+07:00") }
     ],
     media: { publicPath: "/media/violation-items/gelang-emas-bangle-zircon-22k.webp", sourceUrl: "https://www.pexels.com/photo/a-beautiful-gold-bangle-bracelet-12194323/", credit: "Melike B / Pexels", license: "Pexels License", sizeBytes: 31_404 }
+  }),
+  incident({
+    ids: ids(66), buyerEmail: "rangga@gmail.com", level: 1, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
+    itemCode: "SBG-1179300000000066", itemName: "Emas Batangan ANTAM 5 Gram Bersertifikat",
+    description: "Emas batangan ANTAM 24 karat berbobot 5 gram dalam kemasan sertifikat asli. Segel kemasan utuh, nomor seri dapat dibaca, dan fisik emas terjaga tanpa kerusakan yang mengurangi nilai jual.",
+    specifications: { "Jenis Barang": "Emas batangan", "Merek": "ANTAM", "Kadar Emas": "24K / 99,99%", Berat: "5 gram", Kemasan: "CertiCard tersegel", Kondisi: "Baik" },
+    appraisalValue: 9_250_000, basePrice: 8_400_000, ownerName: "Yusuf Kurniawan", customerNumber: "085271943806",
+    itemEnteredAt: date("2026-05-03T09:00:00+07:00"), auctionStartsAt: date("2026-05-13T09:00:00+07:00"), auctionEndsAt: date("2026-05-13T10:00:00+07:00"), violationOccurredAt: date("2026-05-14T10:00:00+07:00"), dueDate: date("2026-09-01T09:00:00+07:00"),
+    bids: [
+      { bidderEmail: "rangga@gmail.com", amount: 9_100_000, submittedAt: date("2026-05-13T09:09:00+07:00") }, { bidderEmail: "bagus@gmail.com", amount: 8_850_000, submittedAt: date("2026-05-13T09:21:00+07:00") }, { bidderEmail: "kirana@gmail.com", amount: 8_700_000, submittedAt: date("2026-05-13T09:33:00+07:00") }, { bidderEmail: "adrian@gmail.com", amount: 8_550_000, submittedAt: date("2026-05-13T09:42:00+07:00") }, { bidderEmail: "viona@gmail.com", amount: 8_450_000, submittedAt: date("2026-05-13T09:54:00+07:00") }
+    ],
+    media: { publicPath: "/media/violation-items/emas-batangan-10-gram-bersertifikat.webp", sourceUrl: "https://www.pexels.com/photo/close-up-photo-of-gold-bars-8442318/", credit: "Zlataky.cz / Pexels", license: "Pexels License", sizeBytes: 67_662 }
+  }),
+  incident({
+    ids: ids(67), buyerEmail: "rangga@gmail.com", level: 2, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
+    itemCode: "SBG-1179300000000067", itemName: "Jam Tangan Seiko 5 Automatic 21 Jewels",
+    description: "Jam tangan Seiko 5 Automatic dengan mesin 21 jewels, dial hitam, dan gelang stainless steel. Mesin bergerak normal, crown berfungsi, kaca bersih, serta terdapat gores pemakaian ringan pada bagian clasp.",
+    specifications: { "Merek": "Seiko", Seri: "Seiko 5 Automatic", Mesin: "Automatic 21 jewels", Diameter: "37 mm", Material: "Stainless steel", Kondisi: "Baik, bekas pakai ringan" },
+    appraisalValue: 3_950_000, basePrice: 3_400_000, ownerName: "Rama Prasetya", customerNumber: "081257693184",
+    itemEnteredAt: date("2026-07-05T00:10:00+07:00"), auctionStartsAt: date("2026-07-15T00:10:00+07:00"), auctionEndsAt: date("2026-07-15T00:15:00+07:00"), violationOccurredAt: date("2026-07-16T00:15:00+07:00"), dueDate: date("2026-11-05T00:10:00+07:00"),
+    bids: [
+      { bidderEmail: "rangga@gmail.com", amount: 3_850_000, submittedAt: date("2026-07-15T00:10:35+07:00") }, { bidderEmail: "adrian@gmail.com", amount: 3_650_000, submittedAt: date("2026-07-15T00:11:55+07:00") }, { bidderEmail: "viona@gmail.com", amount: 3_500_000, submittedAt: date("2026-07-15T00:13:20+07:00") }
+    ],
+    media: { publicPath: "/media/violation-items/seiko-5-automatic-6309-5320.webp", sourceUrl: "https://commons.wikimedia.org/wiki/File:Seiko_5.jpg", credit: "Isik / Wikimedia Commons", license: "CC BY-SA 4.0", sizeBytes: 13_622 }
+  }),
+  incident({
+    ids: ids(68), buyerEmail: "adrian@gmail.com", level: 1, unitName: "UPC Sarinah", unitAdminEmail: "bagas.prakoso@pegadaian.co.id",
+    itemCode: "SBG-1188800000000068", itemName: "Anting Emas Hoop Pilin 22K 4,15 Gram",
+    description: "Sepasang anting emas kuning 22 karat model hoop dengan detail pilin halus. Pengunci bekerja rapat, bentuk lingkar tetap simetris, dan permukaan emas memiliki bekas pemakaian ringan yang wajar.",
+    specifications: { "Jenis Barang": "Anting hoop", "Kadar Emas": "22K / 91,6%", Berat: "4,15 gram", Diameter: "2,2 cm", Pengunci: "Snap closure", Kondisi: "Baik" },
+    appraisalValue: 9_900_000, basePrice: 8_850_000, ownerName: "Nadya Permata", customerNumber: "081388402761",
+    itemEnteredAt: date("2026-07-05T00:20:00+07:00"), auctionStartsAt: date("2026-07-15T00:20:00+07:00"), auctionEndsAt: date("2026-07-15T00:25:00+07:00"), violationOccurredAt: date("2026-07-16T00:25:00+07:00"), dueDate: date("2026-11-05T00:20:00+07:00"),
+    bids: [
+      { bidderEmail: "adrian@gmail.com", amount: 9_650_000, submittedAt: date("2026-07-15T00:20:30+07:00") }, { bidderEmail: "viona@gmail.com", amount: 9_250_000, submittedAt: date("2026-07-15T00:22:40+07:00") }
+    ],
+    media: { publicPath: "/media/violation-items/anting-emas-hoop-pilin-22k.webp", sourceUrl: "https://www.pexels.com/photo/gold-hoop-earrings-12144805/", credit: "Duygu Kamar / Pexels", license: "Pexels License", sizeBytes: 30_668 }
+  }),
+  incident({
+    ids: ids(69), buyerEmail: "viona@gmail.com", level: 1, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
+    itemCode: "SBG-1179300000000069", itemName: "Gelang Emas Rantai Figaro 18K 12,40 Gram",
+    description: "Gelang emas kuning 18 karat model rantai Figaro dengan susunan mata rantai padat dan pengunci lobster. Rantai utuh, pengunci masih rapat, dan kilau emas tetap merata dengan tanda pemakaian sangat ringan.",
+    specifications: { "Jenis Barang": "Gelang rantai Figaro", "Kadar Emas": "18K / 75%", Berat: "12,40 gram", Panjang: "18 cm", Pengunci: "Lobster clasp", Kondisi: "Baik" },
+    appraisalValue: 14_150_000, basePrice: 12_650_000, ownerName: "Dewi Larasati", customerNumber: "085244918375",
+    itemEnteredAt: date("2026-07-05T00:30:00+07:00"), auctionStartsAt: date("2026-07-15T00:30:00+07:00"), auctionEndsAt: date("2026-07-15T00:35:00+07:00"), violationOccurredAt: date("2026-07-16T00:35:00+07:00"), dueDate: date("2026-11-05T00:30:00+07:00"),
+    bids: [
+      { bidderEmail: "viona@gmail.com", amount: 13_200_000, submittedAt: date("2026-07-15T00:31:10+07:00") }
+    ],
+    media: { publicPath: "/media/violation-items/gelang-emas-rantai-figaro-18k.webp", sourceUrl: "https://www.pexels.com/photo/close-up-photo-of-gold-chain-link-bracelet-12155925/", credit: "Duygu Kamar / Pexels", license: "Pexels License", sizeBytes: 31_966 }
   })
 ];
 
@@ -191,7 +239,10 @@ export function validateRenewedCrossUnitViolationScenario() {
 
 export function getRenewedExpectedFinalRestrictions() {
   return [
+    { buyerEmail: "adrian@gmail.com", level: 1 as const, unitName: "UPC Sarinah" as const, blockedUntil: date("2026-07-23T00:25:00+07:00") },
     { buyerEmail: "bagus@gmail.com", level: 2 as const, unitName: "UPC Sarinah" as const, blockedUntil: date("2026-08-14T23:45:00+07:00") },
+    { buyerEmail: "viona@gmail.com", level: 1 as const, unitName: "UPC Ranotana" as const, blockedUntil: date("2026-07-23T00:35:00+07:00") },
+    { buyerEmail: "rangga@gmail.com", level: 2 as const, unitName: "UPC Ranotana" as const, blockedUntil: date("2026-08-15T00:15:00+07:00") },
     { buyerEmail: "kirana@gmail.com", level: 3 as const, unitName: "UPC Ranotana" as const, blockedUntil: date("2027-07-16T00:05:00+07:00") }
   ];
 }

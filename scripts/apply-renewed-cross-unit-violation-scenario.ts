@@ -23,7 +23,16 @@ const itemIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.b
 const marketingIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.pemasaran);
 const violationIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.violation);
 const transactionIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.transaksi);
-const blacklistIds = ["81000000-0000-4000-8000-000000000001", "81000000-0000-4000-8000-000000000002"];
+const blacklistIds = [
+  "81000000-0000-4000-8000-000000000001",
+  "81000000-0000-4000-8000-000000000002",
+  "81000000-0000-4000-8000-000000000003",
+  "81000000-0000-4000-8000-000000000004",
+  "81000000-0000-4000-8000-000000000005"
+];
+const legacyViolationIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.slice(0, 5).map((entry) => entry.ids.violation);
+const legacyItemIds = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.slice(0, 5).map((entry) => entry.ids.barang);
+const legacyBlacklistIds = blacklistIds.slice(0, 2);
 
 if (!connectionString) throw new Error("DATABASE_URL belum diatur.");
 if (apply && !production) throw new Error("Penerapan ditolak. Set SCENARIO_TARGET=production secara eksplisit.");
@@ -73,10 +82,15 @@ async function loadContext(client: Client): Promise<RenewedCrossUnitViolationSee
 
 async function preflight(client: Client, context: Awaited<ReturnType<typeof loadContext>>) {
   const userIds = [...context.usersByEmail.values()].map((row) => row.id);
-  const existing = await client.query<{ count: string }>(`select count(*)::text as count from pelanggaran_user where id=any($1::text[])`, [violationIds]);
-  const count = Number(existing.rows[0]?.count ?? 0);
-  if (count !== 0 && count !== violationIds.length) throw new Error(`Skenario parsial terdeteksi: ${count}/${violationIds.length}.`);
-  if (context.activeByEmail.get("bagus@gmail.com") !== true || context.activeByEmail.get("kirana@gmail.com") !== (count !== 0 ? false : true)) throw new Error("Status akun target tidak aman untuk skenario ini.");
+  const existing = await client.query<{ id: string }>(`select id from pelanggaran_user where id=any($1::text[])`, [violationIds]);
+  const existingIds = new Set(existing.rows.map((row) => row.id));
+  const hasLegacySeed = existingIds.size === legacyViolationIds.length && legacyViolationIds.every((id) => existingIds.has(id));
+  const hasCompleteSeed = existingIds.size === violationIds.length;
+  if (existingIds.size !== 0 && !hasLegacySeed && !hasCompleteSeed) throw new Error(`Skenario parsial terdeteksi: ${existingIds.size}/${violationIds.length}.`);
+  const expectedActive = new Map(RENEWED_CROSS_UNIT_EMAILS.map((email) => [email, email !== "kirana@gmail.com"]));
+  for (const [email, isActive] of expectedActive) {
+    if (context.activeByEmail.get(email) !== (existingIds.size === 0 ? true : isActive)) throw new Error(`Status akun ${email} tidak aman untuk skenario ini.`);
+  }
   for (const [table, ids, label] of [["pelanggaran_user", violationIds, "pelanggaran"], ["blacklist", blacklistIds, "blacklist"]] as const) {
     const foreign = await client.query<{ id: string }>(`select id from ${table} where user_id=any($1::text[]) and not (id=any($2::text[])) limit 1`, [userIds, ids]);
     if (foreign.rows.length) throw new Error(`Preflight gagal: ${label} asing pada buyer target.`);
@@ -85,8 +99,10 @@ async function preflight(client: Client, context: Awaited<ReturnType<typeof load
   if (openTransactions.rows.length) throw new Error("Preflight gagal: ada transaksi aktif pada buyer target.");
   const activeBids = await client.query(`select bid.id from bids bid join pemasaran p on p.id=bid.pemasaran_id where bid.user_id=any($1::text[]) and p.status='aktif' and not (p.id=any($2::text[])) limit 1`, [userIds, marketingIds]);
   if (activeBids.rows.length) throw new Error("Preflight gagal: ada bid aktif pada buyer target.");
-  const collisions = await client.query(`select id from barang where id=any($1::text[]) union all select id from blacklist where id=any($2::text[]) limit 1`, [itemIds, blacklistIds]);
-  if (count === 0 && collisions.rows.length) throw new Error("Preflight gagal: ID skenario sudah dipakai.");
+  const permittedItems = hasLegacySeed ? legacyItemIds : hasCompleteSeed ? itemIds : [];
+  const permittedBlacklists = hasLegacySeed ? legacyBlacklistIds : hasCompleteSeed ? blacklistIds : [];
+  const collisions = await client.query(`select id from barang where id=any($1::text[]) and not (id=any($2::text[])) union all select id from blacklist where id=any($3::text[]) and not (id=any($4::text[])) limit 1`, [itemIds, permittedItems, blacklistIds, permittedBlacklists]);
+  if (collisions.rows.length) throw new Error("Preflight gagal: ID skenario sudah dipakai.");
   if (Date.now() < Math.max(...RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.violationOccurredAt.getTime()))) throw new Error("Pelanggaran terakhir masih berada di masa depan.");
 }
 
@@ -103,19 +119,22 @@ async function applyRows(client: Client, context: RenewedCrossUnitViolationSeedC
   await insertRows(client, "riwayat_status_barang", [["id","id"],["barang_id","barangId"],["old_status","oldStatus"],["new_status","newStatus"],["changed_by_user_id","changedByUserId"],["note","note"],["created_at","createdAt"]], rows.riwayatStatusBarang);
   await insertRows(client, "blacklist", [["id","id"],["unit_id","unitId"],["user_id","userId"],["national_id","nationalId"],["total_violations","totalViolations"],["is_active","isActive"],["blocked_at","blockedAt"],["blocked_until","blockedUntil"],["updated_at","updatedAt"]], rows.blacklists);
   await insertRows(client, "blacklist_action_log", [["id","id"],["blacklist_id","blacklistId"],["target_user_id","targetUserId"],["action","action"],["note","note"],["created_at","createdAt"]], rows.blacklistActionLogs);
+  const activeUserIds = [...context.usersByEmail.values()].map((user) => user.id).filter((id) => !rows.suspendedUserIds.includes(id));
+  await client.query(`update "user" set is_active=true,updated_at=$2 where id=any($1::text[])`, [activeUserIds, RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.at(-1)?.violationOccurredAt]);
   await client.query(`update "user" set is_active=false,updated_at=$2 where id=any($1::text[])`, [rows.suspendedUserIds, RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.at(-1)?.violationOccurredAt]);
   await client.query(`delete from session where user_id=any($1::text[])`, [rows.suspendedUserIds]);
   return rows;
 }
 
 async function audit(client: Client) {
-  const checks: Array<[string, string[], number]> = [["barang",itemIds,5],["media_barang",RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.media),5],["pemasaran",marketingIds,5],["transaksi",transactionIds,5],["pelanggaran_user",violationIds,5],["blacklist",blacklistIds,2]];
+  const scenarioCount = RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.length;
+  const checks: Array<[string, string[], number]> = [["barang",itemIds,scenarioCount],["media_barang",RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.map((entry) => entry.ids.media),scenarioCount],["pemasaran",marketingIds,scenarioCount],["transaksi",transactionIds,scenarioCount],["pelanggaran_user",violationIds,scenarioCount],["blacklist",blacklistIds,getRenewedExpectedFinalRestrictions().length]];
   for (const [table, ids, expected] of checks) { const result = await client.query<{ count: string }>(`select count(*)::text as count from "${table}" where id=any($1::text[])`, [ids]); if (Number(result.rows[0]?.count) !== expected) throw new Error(`Audit ${table} gagal.`); }
   const history = await client.query<{ count: string }>(`select count(*)::text as count from riwayat_status_barang where barang_id=any($1::text[])`, [itemIds]);
-  if (Number(history.rows[0]?.count) !== 20) throw new Error("Audit riwayat barang gagal.");
+  if (Number(history.rows[0]?.count) !== scenarioCount * 4) throw new Error("Audit riwayat barang gagal.");
   const final = await client.query<{ email: string; total_violations: number; blocked_until: Date; unit_name: string }>(`select lower(u.email) email,bl.total_violations,bl.blocked_until,un.name unit_name from blacklist bl join "user" u on u.id=bl.user_id join units un on un.id=bl.unit_id where bl.id=any($1::text[])`, [blacklistIds]);
   for (const expected of getRenewedExpectedFinalRestrictions()) { const actual=final.rows.find((row) => row.email===expected.buyerEmail); if (!actual || actual.total_violations!==expected.level || actual.unit_name!==expected.unitName || actual.blocked_until.getTime()!==expected.blockedUntil.getTime()) throw new Error(`Audit pembatasan ${expected.buyerEmail} gagal.`); }
-  return { items: 5, bids: RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.reduce((total, entry) => total + entry.bids.length, 0), violations: 5, restrictions: final.rows.map((row) => ({ email: row.email, level: row.total_violations, unit: row.unit_name, blockedUntil: row.blocked_until.toISOString() })) };
+  return { items: scenarioCount, bids: RENEWED_CROSS_UNIT_VIOLATION_SCENARIO.reduce((total, entry) => total + entry.bids.length, 0), violations: scenarioCount, restrictions: final.rows.map((row) => ({ email: row.email, level: row.total_violations, unit: row.unit_name, blockedUntil: row.blocked_until.toISOString() })) };
 }
 
 async function main() {
