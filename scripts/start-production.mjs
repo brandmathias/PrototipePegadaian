@@ -77,6 +77,36 @@ try {
     from "bids" as bid
     on conflict ("pemasaran_id", "viewer_key") do nothing;
   `);
+  const crossUnitHistoryDateSync = await client.query(`
+    with first_marketing as (
+      select
+        "barang_id",
+        min("created_at") as first_marketed_at
+      from "pemasaran"
+      group by "barang_id"
+    ),
+    stale_initial_history as (
+      select
+        history."id",
+        first_marketing.first_marketed_at - interval '10 days' as target_created_at
+      from "riwayat_status_barang" as history
+      inner join "barang" as item on item."id" = history."barang_id"
+      inner join first_marketing on first_marketing."barang_id" = history."barang_id"
+      where history."old_status" is null
+        and history."new_status" in ('gadai', 'jaminan')
+        and item."name" in (
+          'Kalung Emas Rantai Singapura 22K',
+          'Cincin Emas Solitaire 22K',
+          'Gelang Emas Bangle Polos 22K'
+        )
+        and history."created_at" < first_marketing.first_marketed_at - interval '10 days'
+    )
+    update "riwayat_status_barang" as history
+    set "created_at" = stale_initial_history.target_created_at
+    from stale_initial_history
+    where history."id" = stale_initial_history."id"
+    returning history."id"
+  `);
   await client.query(canonicalCodeMigrationSql);
   await client.query(customerDataStandardMigrationSql);
   const unitAdminAuditRepair = await client.query(`
@@ -348,7 +378,7 @@ try {
 
   await client.query("commit");
   console.log(
-    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi, relist harga tetap disinkronkan ${fixedPriceRepairSyncedRelists.rowCount ?? 0} pemasaran dan ${fixedPriceRepairInsertedRelistHistory.rowCount ?? 0} riwayat sistem (${fixedPriceRepairDeletedHistory.rowCount ?? 0} repair lama dihapus, ${fixedPriceRepairCleanedNotes.rowCount ?? 0} catatan dibersihkan).`,
+    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, sinkronisasi tanggal riwayat lintas unit memperbarui ${crossUnitHistoryDateSync.rowCount ?? 0} riwayat, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi, relist harga tetap disinkronkan ${fixedPriceRepairSyncedRelists.rowCount ?? 0} pemasaran dan ${fixedPriceRepairInsertedRelistHistory.rowCount ?? 0} riwayat sistem (${fixedPriceRepairDeletedHistory.rowCount ?? 0} repair lama dihapus, ${fixedPriceRepairCleanedNotes.rowCount ?? 0} catatan dibersihkan).`,
   );
 } catch (error) {
   await client.query("rollback").catch(() => undefined);
