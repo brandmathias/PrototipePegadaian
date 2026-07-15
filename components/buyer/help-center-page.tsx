@@ -46,7 +46,7 @@ const faqItems = [
   {
     question: "Akun saya dibatasi Level 2, apakah saya masih bisa membeli barang Harga Tetap?",
     answer:
-      "Tidak. Pada Level 2, sistem membatasi transaksi baru, termasuk Lelang Tertutup dan pembelian Harga Tetap. Pada Level 1, pembelian Harga Tetap masih dapat tersedia, tetapi fitur Lelang Tertutup dan beberapa penyelesaian transaksi tetap mengikuti status pembatasan yang aktif."
+      "Tidak. Pada Level 2, buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap selama 30 hari. Pada Level 1, hanya penawaran Lelang Tertutup yang dibatasi selama 7 hari, sehingga pembelian Harga Tetap masih bisa dilakukan. Pada Level 3, akun ditangguhkan 365 hari dan buyer tidak bisa login ke sistem."
   },
   {
     question: "Berapa lama masa pembatasan fitur bidding berlangsung?",

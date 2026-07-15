@@ -757,7 +757,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
+    expect(screen.queryByText(/transaksi baru dan upload pembayaran ditahan/i)).not.toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/panel bukti serah-terima barang/i);
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
     expect(within(handoverPanel).queryByRole("button", { name: /pembelian selesai/i })).not.toBeInTheDocument();
@@ -785,11 +785,11 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
+    expect(screen.queryByText(/transaksi baru dan upload pembayaran ditahan/i)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeEnabled();
   });
 
-  it("blocks proof upload while the buyer has an active blacklist", () => {
+  it("allows proof upload for an existing transaction while the buyer has an active blacklist", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -799,7 +799,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/transaksi baru dan upload pembayaran ditahan/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/transaksi baru dan upload pembayaran ditahan/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeInTheDocument();
   });
 });

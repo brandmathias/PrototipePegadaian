@@ -45,23 +45,23 @@ const LEVEL_RULES: Record<
     duration: "7 hari",
     durationDays: 7,
     label: "Level 1: Lelang Tertutup dibatasi",
-    restriction: "Tidak bisa ikut Lelang Tertutup. Harga Tetap masih boleh.",
+    restriction: "Tidak bisa menawar pada Lelang Tertutup. Pembelian Harga Tetap masih bisa dilakukan.",
     tone: "success",
   },
   2: {
     duration: "30 hari",
     durationDays: 30,
-    label: "Level 2: Transaksi baru dibatasi",
+    label: "Level 2: Lelang Tertutup dan Harga Tetap dibatasi",
     restriction:
-      "Tidak bisa ikut Lelang Tertutup dan tidak bisa membuat transaksi Harga Tetap baru.",
+      "Tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap.",
     tone: "warning",
   },
   3: {
     duration: "365 hari",
     durationDays: 365,
-    label: "Level 3: Ditangguhkan 365 hari",
+    label: "Level 3: Login akun ditangguhkan 365 hari",
     restriction:
-      "Tidak bisa membuat transaksi baru sampai masa pembatasan 365 hari selesai.",
+      "Akun ditangguhkan 365 hari sehingga buyer tidak bisa login masuk ke dalam sistem.",
     tone: "danger",
   },
 };

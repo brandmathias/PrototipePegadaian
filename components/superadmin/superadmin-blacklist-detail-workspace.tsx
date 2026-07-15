@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  AlertTriangle,
   Ban,
   CalendarClock,
   ChevronDown,
@@ -591,49 +592,59 @@ function ViolationRecordSummary({
 function ViolationLevelGuide() {
   const levels = [
     {
-      badgeTone: "text-amber-700",
-      description: "Pelanggaran awal atau ringan. Pembatasan sementara dan akun dapat dipulihkan setelah masa hukuman berakhir.",
+      badgeTone: "bg-amber-100 text-amber-700 ring-amber-200",
+      cardTone: "border-amber-300 bg-amber-50/30",
+      description: "Pelanggaran pertama. Selama 7 hari buyer tidak bisa menawar pada Lelang Tertutup, tetapi pembelian barang Harga Tetap masih bisa dilakukan.",
       headingTone: "text-amber-800",
+      icon: AlertTriangle,
+      iconTone: "text-amber-600",
       label: "Level 1",
-      tone: "border-amber-200 bg-amber-50/55",
     },
     {
-      badgeTone: "text-orange-700",
-      description: "Pelanggaran berulang atau menengah. Pembatasan lebih ketat dan memerlukan perhatian dari unit.",
+      badgeTone: "bg-orange-100 text-orange-700 ring-orange-200",
+      cardTone: "border-orange-300 bg-orange-50/25",
+      description: "Pelanggaran kedua. Selama 30 hari buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap.",
       headingTone: "text-orange-800",
+      icon: AlertTriangle,
+      iconTone: "text-orange-600",
       label: "Level 2",
-      tone: "border-orange-200 bg-orange-50/55",
     },
     {
-      badgeTone: "text-rose-700",
-      description: "Pelanggaran berat atau akumulatif. Pembatasan tertinggi dan berisiko mendapat tindak lanjut.",
+      badgeTone: "bg-rose-100 text-rose-700 ring-rose-200",
+      cardTone: "border-rose-300 bg-rose-50/45",
+      description: "Pelanggaran ketiga atau lebih. Akun ditangguhkan 365 hari sehingga buyer tidak bisa login masuk ke dalam sistem.",
       headingTone: "text-rose-700",
+      icon: Lock,
+      iconTone: "text-rose-600",
       label: "Level 3",
-      tone: "border-rose-200 bg-rose-50/55",
     },
   ];
 
   return (
-    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
-      <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
+    <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white px-4 py-4 shadow-[0_18px_48px_-44px_rgba(8,69,50,0.34)] sm:px-5">
+      <h2 className="font-headline text-base font-black tracking-[-0.02em] text-[#15231d]">
         Keterangan Level Pelanggaran
       </h2>
-      <p className="mt-1 text-sm leading-6 text-[#52625b]">
+      <p className="mt-1 max-w-[62rem] text-xs font-semibold leading-5 text-[#52625b]">
         Level pelanggaran menunjukkan tingkat pembatasan akun berdasarkan riwayat gagal bayar dan akumulasi pelanggaran buyer.
       </p>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {levels.map((level, index) => (
-          <article className={cn("rounded-[1rem] border p-4", level.tone)} key={level.label}>
-            <span className={cn("inline-flex rounded-full bg-white/75 px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.12em] ring-1 ring-black/5", level.badgeTone)}>
-              {level.label}
-            </span>
-            <div className={cn("mt-3 flex items-center gap-2", level.headingTone)}>
-              {index === 2 ? <Lock className="size-4" /> : <ShieldAlert className="size-4" />}
-              <h3 className="font-headline text-base font-black">{level.label}</h3>
-            </div>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#52625b]">{level.description}</p>
-          </article>
-        ))}
+      <div className="mt-4 grid max-w-[72rem] gap-4 md:grid-cols-3">
+        {levels.map((level) => {
+          const Icon = level.icon;
+
+          return (
+            <article className={cn("min-h-[8.2rem] rounded-[1rem] border px-4 py-3.5", level.cardTone)} key={level.label}>
+              <span className={cn("inline-flex rounded-full px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.1em] ring-1", level.badgeTone)}>
+                {level.label}
+              </span>
+              <div className="mt-3 flex items-center gap-2">
+                <Icon className={cn("size-4 shrink-0", level.iconTone)} />
+                <h3 className={cn("font-headline text-base font-black", level.headingTone)}>{level.label}</h3>
+              </div>
+              <p className="mt-2 max-w-[17.5rem] text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

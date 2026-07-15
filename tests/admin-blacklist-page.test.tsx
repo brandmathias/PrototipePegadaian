@@ -250,7 +250,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getAllByText(/Level 2/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Level 1/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/30 hari/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/365 hari/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Pelanggaran Level 3/i })).not.toBeInTheDocument();
   });
 
   it("shows safe cross-unit context without exposing other unit violation details", () => {

@@ -8466,8 +8466,9 @@ export function SuperAdminBlacklistPage({
           tidak membayar dalam 24 jam.
         </p>
         <p>
-          Level 1 menahan bid Lelang Tertutup, level 2 menahan transaksi baru,
-          dan level 3 menangguhkan akun selama 365 hari.
+          Level 1 menahan bid Lelang Tertutup selama 7 hari, level 2
+          menahan bid Lelang Tertutup dan pembelian Harga Tetap selama 30
+          hari, sedangkan level 3 menangguhkan login akun selama 365 hari.
         </p>
         <p>
           Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk

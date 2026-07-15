@@ -51,6 +51,16 @@ Ruang Agunan tidak hanya berfungsi sebagai katalog aset, tetapi juga sebagai pro
 
 ---
 
+## Aturan Level Pelanggaran
+
+| Level | Dampak | Durasi |
+| --- | --- | --- |
+| Level 1 | Buyer tidak bisa menawar pada Lelang Tertutup, tetapi masih bisa membeli barang Harga Tetap. | 7 hari |
+| Level 2 | Buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap. | 30 hari |
+| Level 3 | Akun buyer ditangguhkan sehingga tidak bisa login masuk ke dalam sistem. | 365 hari |
+
+---
+
 ## 👨‍🎓 Identitas Pengembang
 
 | Informasi | Detail |

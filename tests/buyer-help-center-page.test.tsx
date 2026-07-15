@@ -35,8 +35,10 @@ describe("BuyerHelpCenterPage", () => {
     );
 
     expect(screen.getByText(/Tidak\. Pada Level 2/i)).toBeInTheDocument();
-    expect(screen.getByText(/membatasi transaksi baru/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembelian Harga Tetap/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak bisa membeli barang Harga Tetap/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pada Level 1/i)).toBeInTheDocument();
+    expect(screen.queryByText(/penyelesaian transaksi/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/masih dapat membeli barang Harga Tetap pada Level 2/i)).not.toBeInTheDocument();
   });
 

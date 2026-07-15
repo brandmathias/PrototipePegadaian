@@ -55,17 +55,17 @@ const VICKREY_TERMS = [
 const VIOLATION_LEVELS = [
   {
     duration: "7 hari",
-    impact: "Tidak bisa ikut Lelang Tertutup.",
+    impact: "Tidak bisa ikut Lelang Tertutup. Harga Tetap tetap bisa dibeli.",
     label: "Level 1"
   },
   {
     duration: "30 hari",
-    impact: "Tidak bisa ikut Lelang Tertutup dan tidak bisa membuat pembelian Harga Tetap baru.",
+    impact: "Tidak bisa ikut Lelang Tertutup dan tidak bisa membeli barang Harga Tetap.",
     label: "Level 2"
   },
   {
     duration: "365 hari",
-    impact: "Akun ditangguhkan penuh dan pulih otomatis setelah masa pembatasan selesai.",
+    impact: "Akun ditangguhkan 365 hari dan tidak bisa login ke sistem.",
     label: "Level 3+"
   }
 ];

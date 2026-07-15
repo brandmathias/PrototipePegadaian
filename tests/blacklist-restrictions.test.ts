@@ -8,7 +8,7 @@ import {
 } from "@/lib/blacklist/restrictions";
 
 describe("blacklist restriction policy", () => {
-  it("uses three graduated levels with harga tetap blocked from the second violation", () => {
+  it("uses three graduated levels with settlement kept outside blacklist restrictions", () => {
     expect(getBlacklistRestrictionPolicy(0)).toMatchObject({
       level: 0,
       durationDays: 0,
@@ -20,21 +20,21 @@ describe("blacklist restriction policy", () => {
       durationDays: 7,
       blocksVickrey: true,
       blocksFixedPrice: false,
-      blocksTransactionSettlement: true
+      blocksTransactionSettlement: false
     });
     expect(getBlacklistRestrictionPolicy(2)).toMatchObject({
       level: 2,
       durationDays: 30,
       blocksVickrey: true,
       blocksFixedPrice: true,
-      blocksTransactionSettlement: true
+      blocksTransactionSettlement: false
     });
     expect(getBlacklistRestrictionPolicy(3)).toMatchObject({
       level: 3,
       durationDays: 365,
       blocksVickrey: true,
       blocksFixedPrice: true,
-      blocksTransactionSettlement: true,
+      blocksTransactionSettlement: false,
       suspendsLogin: true
     });
     expect(getBlacklistRestrictionPolicy(9)).toMatchObject({

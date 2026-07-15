@@ -365,7 +365,7 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
               {
                 icon: <ShoppingCart className="size-5" />,
                 title: "Pembelian Harga Tetap Baru",
-                description: "Transaksi beli langsung baru ikut dibatasi sesuai level pembatasan aktif."
+                description: "Pembelian barang Harga Tetap ikut dibatasi pada Level 2 dan Level 3."
               }
             ]
           : []),

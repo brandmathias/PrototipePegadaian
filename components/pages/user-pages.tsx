@@ -56,6 +56,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BuyerSessionUser } from "@/lib/auth/guards";
+import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { isFixedPriceBuyerCatalogHiddenStatus } from "@/lib/buyer/fixed-price-visibility";
 import {
   getBuyerBidMonitoringHref,
@@ -123,7 +124,7 @@ type BuyerDashboardViolation = {
 };
 
 const BUYER_SETTLEMENT_LOCKED_MESSAGE =
-  "Akun Anda sedang dalam masa pembatasan. Transaksi baru dan upload pembayaran ditahan, tetapi transaksi yang sudah lunas tetap bisa diselesaikan setelah bukti serah-terima tersedia.";
+  "Akun Anda sedang dalam masa pembatasan sesuai level aktif.";
 
 const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png";
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
@@ -1864,7 +1865,10 @@ export function TransactionDetailPage({
           ? "Bukti Pembayaran"
           : "Unggah Bukti"
     : "Status Konfirmasi";
-  const settlementLockMessage = buyerStatus?.blacklist.active
+  const blacklistPolicy = buyerStatus?.blacklist.active
+    ? getBlacklistRestrictionPolicy(buyerStatus.blacklist.totalViolations)
+    : null;
+  const settlementLockMessage = blacklistPolicy?.blocksTransactionSettlement
     ? BUYER_SETTLEMENT_LOCKED_MESSAGE
     : null;
   const handoverLockMessage = transaction.handoverProof

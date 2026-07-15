@@ -314,12 +314,13 @@ describe("buyer vickrey pages", () => {
     expect(within(dialog).getByText(/level 1/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/7 hari/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/tidak bisa ikut lelang tertutup\./i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/harga tetap tetap bisa dibeli/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 2/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/30 hari/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/tidak bisa membuat pembelian harga tetap baru/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/tidak bisa membeli barang harga tetap/i)).toBeInTheDocument();
     expect(within(dialog).getByText(/level 3\+/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/365 hari/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/pulih otomatis/i)).toBeInTheDocument();
+    expect(within(dialog).getAllByText(/365 hari/i).length).toBeGreaterThan(0);
+    expect(within(dialog).getByText(/tidak bisa login ke sistem/i)).toBeInTheDocument();
     expect(within(dialog).queryByText(/escrow terenkripsi/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/admin unit tidak dapat melihat nominal bid/i)).not.toBeInTheDocument();
 

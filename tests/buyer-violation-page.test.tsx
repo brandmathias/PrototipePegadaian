@@ -21,7 +21,7 @@ const activeLevelTwoData: BuyerViolationPageData = {
       active: true,
       incidentId: "violation-2",
       until: "12 Juli 2026",
-      reason: "Akun sedang dibatasi untuk membuat transaksi baru dan menyelesaikan transaksi berjalan sampai masa pembatasan berakhir.",
+      reason: "Akun sedang dibatasi untuk menawar Lelang Tertutup dan membeli barang Harga Tetap sampai masa pembatasan berakhir.",
       violations: 2
     }
   },
@@ -103,8 +103,8 @@ describe("BuyerViolationPage", () => {
     expect(screen.getByText(/12 juli 2026/i)).toBeInTheDocument();
     expect(within(restrictedFeaturesSection).getByText(/pengajuan bid lelang baru/i)).toBeInTheDocument();
     expect(within(restrictedFeaturesSection).getByText(/pembelian harga tetap baru/i)).toBeInTheDocument();
-    expect(within(restrictedFeaturesSection).getByText(/penyelesaian transaksi berjalan/i)).toBeInTheDocument();
-    expect(within(restrictedFeaturesSection).getByText(/3 fitur dibatasi pada level 2/i)).toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).queryByText(/penyelesaian transaksi berjalan/i)).not.toBeInTheDocument();
+    expect(within(restrictedFeaturesSection).getByText(/2 fitur dibatasi pada level 2/i)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /fitur yang tetap aktif/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/unduh bukti transaksi lama/i)).not.toBeInTheDocument();
     expect(restrictedFeaturesSection).toHaveClass("min-h-[20rem]");

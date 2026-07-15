@@ -36,7 +36,7 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       durationDays: 7,
       blocksVickrey: true,
       blocksFixedPrice: false,
-      blocksTransactionSettlement: true,
+      blocksTransactionSettlement: false,
       suspendsLogin: false,
       label: "Level 1: Lelang Tertutup dibatasi"
     };
@@ -48,9 +48,9 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
       durationDays: 30,
       blocksVickrey: true,
       blocksFixedPrice: true,
-      blocksTransactionSettlement: true,
+      blocksTransactionSettlement: false,
       suspendsLogin: false,
-      label: "Level 2: Transaksi baru dibatasi"
+      label: "Level 2: Lelang Tertutup dan Harga Tetap dibatasi"
     };
   }
 
@@ -59,9 +59,9 @@ export function getBlacklistRestrictionPolicy(totalViolations: number | null | u
     durationDays: 365,
     blocksVickrey: true,
     blocksFixedPrice: true,
-    blocksTransactionSettlement: true,
+    blocksTransactionSettlement: false,
     suspendsLogin: true,
-    label: "Level 3: Akun ditangguhkan 365 hari"
+    label: "Level 3: Login akun ditangguhkan 365 hari"
   };
 }
 

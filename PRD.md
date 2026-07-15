@@ -577,9 +577,9 @@ menunggu_konfirmasi_langsung -> gagal jika melewati batas pembayaran
 
 | Level | Dampak | Durasi |
 | --- | --- | --- |
-| Level 1 | Membatasi Lelang Tertutup | 7 hari |
-| Level 2 | Membatasi Lelang Tertutup dan transaksi baru | 30 hari |
-| Level 3+ | Membatasi transaksi baru dan prioritas review | 365 hari |
+| Level 1 | Buyer tidak bisa menawar pada Lelang Tertutup, tetapi masih bisa membeli barang Harga Tetap | 7 hari |
+| Level 2 | Buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap | 30 hari |
+| Level 3+ | Akun buyer ditangguhkan sehingga tidak bisa login masuk ke dalam sistem | 365 hari |
 
 ---
 
