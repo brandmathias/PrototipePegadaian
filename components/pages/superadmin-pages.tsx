@@ -8426,22 +8426,6 @@ export function SuperAdminBlacklistPage({
           </>
         )}
       </section>
-
-      <section className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-[#fbfcfb] p-4 text-sm leading-6 text-muted-foreground shadow-[0_18px_48px_-42px_rgba(8,69,50,0.34)] md:grid-cols-3">
-        <p>
-          Pelanggaran buyer aktif hanya dibuat saat pemenang Lelang Tertutup
-          tidak membayar dalam 24 jam.
-        </p>
-        <p>
-          Level 1 menahan bid Lelang Tertutup selama 7 hari, level 2
-          menahan bid Lelang Tertutup dan pembelian Harga Tetap selama 30
-          hari, sedangkan level 3 menangguhkan login akun selama 365 hari.
-        </p>
-        <p>
-          Fixed price ditolak, lelang tanpa bid, dan pemasaran gagal masuk
-          tindak lanjut operasional.
-        </p>
-      </section>
     </div>
   );
 }
