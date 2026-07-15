@@ -628,18 +628,18 @@ function ViolationLevelGuide() {
       <p className="mt-1 max-w-[62rem] text-xs font-semibold leading-5 text-[#52625b]">
         Level pelanggaran menunjukkan tingkat pembatasan akun berdasarkan riwayat gagal bayar dan akumulasi pelanggaran buyer.
       </p>
-      <div className="mt-4 grid max-w-[72rem] gap-4 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
         {levels.map((level) => {
           const Icon = level.icon;
 
           return (
-            <article className={cn("min-h-[8.2rem] rounded-[1rem] border px-4 py-3.5", level.cardTone)} key={level.label}>
+            <article className={cn("rounded-[1rem] border px-4 py-3.5", level.cardTone)} key={level.label}>
               <span className={cn("inline-flex rounded-full px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.1em] ring-1", level.badgeTone)}>
                 {level.label}
               </span>
-              <div className="mt-3 flex items-center gap-2">
-                <Icon className={cn("size-4 shrink-0", level.iconTone)} />
-                <h3 className={cn("font-headline text-base font-black", level.headingTone)}>{level.label}</h3>
+              <div className="mt-3 flex items-center gap-2.5">
+                <Icon className={cn("size-5 shrink-0", level.iconTone)} />
+                <h3 className={cn("font-headline text-lg font-black", level.headingTone)}>{level.label}</h3>
               </div>
               <p className="mt-2 text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
             </article>
