@@ -13,6 +13,13 @@ const VIOLATION_ITEM_IMAGE_BY_NAME = new Map<string, string>([
   ],
 ]);
 
+export type ViolationItemMedia = {
+  id: string;
+  type: "foto" | "video";
+  url: string;
+  fileName: string;
+};
+
 function normalizeViolationItemName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("id-ID");
 }
@@ -32,4 +39,30 @@ export function resolveViolationItemImageUrl({
     VIOLATION_ITEM_IMAGE_BY_NAME.get(normalizeViolationItemName(itemName)) ??
     null
   );
+}
+
+export function resolveViolationItemMedia({
+  itemName,
+  media,
+}: {
+  itemName: string;
+  media: ViolationItemMedia[];
+}): ViolationItemMedia[] {
+  if (media.length) {
+    return media;
+  }
+
+  const url = resolveViolationItemImageUrl({ itemName });
+  if (!url) {
+    return media;
+  }
+
+  return [
+    {
+      fileName: itemName,
+      id: `violation-fallback-${normalizeViolationItemName(itemName).replace(/\s+/g, "-")}`,
+      type: "foto",
+      url,
+    },
+  ];
 }

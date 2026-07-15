@@ -87,6 +87,38 @@ describe("admin unit serializers", () => {
     expect(fixedPrice.visibility).toBeUndefined();
   });
 
+  it("uses the violation fallback photo when archived marketing has no uploaded media", () => {
+    const archivedAuction = serializeAdminPemasaran(
+      {
+        id: "pm-failed",
+        barangId: "barang-failed",
+        mode: "vickrey",
+        price: null,
+        basePrice: "11500000",
+        durationDays: 1,
+        durationSeconds: 3600,
+        startsAt: new Date("2026-04-29T01:07:00Z"),
+        endsAt: new Date("2026-04-30T01:07:00Z"),
+        revealEndsAt: new Date("2026-04-30T01:17:00Z"),
+        winnerId: null,
+        finalPrice: null,
+        iteration: 1,
+        status: "gagal",
+        createdByUserId: "admin-1",
+        createdAt: new Date("2026-04-29T01:07:00Z"),
+        updatedAt: new Date("2026-05-01T01:07:00Z"),
+      },
+      {
+        lotName: "Kalung Emas Rantai Singapura 22K",
+        media: [],
+      },
+    );
+
+    expect(archivedAuction.primaryMedia?.url).toBe(
+      "/media/violation-items/kalung-emas-rantai-singapura-22k.webp",
+    );
+  });
+
   it("hides bid nominal while vickrey result is locked", () => {
     const auction = serializeAdminPemasaran(
       {

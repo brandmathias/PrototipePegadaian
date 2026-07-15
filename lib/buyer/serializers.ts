@@ -1,5 +1,6 @@
 import { getCountdownState } from "@/lib/countdown";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { resolveViolationItemMedia } from "@/lib/blacklist/violation-item-media";
 import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
 import type { BuyerBankAccount, BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot, LotInsights } from "@/lib/contracts/catalog";
@@ -249,6 +250,15 @@ function getBuyerBankAccounts(row: BuyerTransactionShape) {
 export function serializePublicLot(row: PublicLotShape): Lot {
   const isVickrey = row.marketingMode === "vickrey";
   const price = toNumber(isVickrey ? row.marketingBasePrice : row.marketingPrice);
+  const media = resolveViolationItemMedia({
+    itemName: row.itemName,
+    media: (row.media ?? []).map((item) => ({
+      id: item.id,
+      type: item.type === "video" ? "video" : "foto",
+      url: item.url,
+      fileName: item.fileName || row.itemName,
+    })),
+  });
   const categoryLabel = resolveAdminUnitCategoryLabel({
     category: row.category,
     itemName: row.itemName,
@@ -284,13 +294,7 @@ export function serializePublicLot(row: PublicLotShape): Lot {
       participants: 0,
       views: 0
     },
-    media:
-      row.media?.map((item) => ({
-        id: item.id,
-        type: item.type === "video" ? "video" : "foto",
-        url: item.url,
-        fileName: item.fileName || row.itemName
-      })) ?? [],
+    media,
     specs: getBarangSpecificationRows(row.category, row.specifications, row.itemName)
   };
 }

@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { revalidateTag } from "next/cache";
 
+import { resolveViolationItemImageUrl } from "@/lib/blacklist/violation-item-media";
 import { db } from "@/lib/db/client";
 import { account, barang, pemasaran, transaksi, unitAccounts, units, users } from "@/lib/db/schema";
 import { getAdminBarangById, listAdminBarangHistory } from "@/lib/services/admin-barang.service";
@@ -407,7 +408,10 @@ export async function getUnitById(unitId: string) {
       code: item.code,
       name: item.name,
       category: item.category,
-      imageUrl: item.imageUrl,
+      imageUrl: resolveViolationItemImageUrl({
+        databaseUrl: item.imageUrl,
+        itemName: item.name,
+      }),
       marketingModeLabel: resolveUnitMarketingModeLabel({
         activeMarketingMode: item.activeMarketingMode,
         itemStatus: item.status,

@@ -3,6 +3,30 @@ import { describe, expect, it } from "vitest";
 import { serializeBuyerBid, serializeBuyerTransaction, serializePublicLot } from "@/lib/buyer/serializers";
 
 describe("buyer serializers", () => {
+  it("uses the same violation fallback photo in the buyer catalog", () => {
+    const lot = serializePublicLot({
+      marketingId: "pm-violation",
+      marketingMode: "vickrey",
+      marketingPrice: null,
+      marketingBasePrice: "11500000",
+      endsAt: new Date("2026-04-30T10:07:00+08:00"),
+      itemId: "barang-violation",
+      itemCode: "SBG-1188800000000046",
+      itemName: "Kalung Emas Rantai Singapura 22K",
+      category: "perhiasan",
+      condition: "Baik",
+      description: "Kalung emas rantai Singapura.",
+      unitName: "UPC Sarinah",
+      unitAddress: "Jl. Sarinah, Jakarta",
+      account: null,
+      media: [],
+    });
+
+    expect(lot.media[0]?.url).toBe(
+      "/media/violation-items/kalung-emas-rantai-singapura-22k.webp",
+    );
+  });
+
   it("preserves realtime lot insights from the catalog service", () => {
     const lot = serializePublicLot({
       marketingId: "pm-realtime",

@@ -1,5 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
 
+import { resolveViolationItemMedia } from "@/lib/blacklist/violation-item-media";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import type { barang, bids, pemasaran, transaksi } from "@/lib/db/schema/admin";
 import { formatAppDateTime } from "@/lib/timezone";
@@ -178,12 +179,15 @@ export function serializeAdminPemasaran(
   } = { lotName: "-" }
 ) {
   const isVickrey = row.mode === "vickrey";
-  const media = (extra.media ?? []).map((item) => ({
-    id: item.id,
-    type: item.type === "video" ? "video" : "foto",
-    url: item.url,
-    fileName: item.fileName ?? ""
-  }));
+  const media = resolveViolationItemMedia({
+    itemName: extra.lotName,
+    media: (extra.media ?? []).map((item) => ({
+      id: item.id,
+      type: item.type === "video" ? "video" : "foto",
+      url: item.url,
+      fileName: item.fileName ?? "",
+    })),
+  });
   const primaryMedia = media[0] ?? null;
   const ended = row.endsAt ? row.endsAt.getTime() <= Date.now() : true;
   const revealEnded = row.revealEndsAt ? row.revealEndsAt.getTime() <= Date.now() : ended;
