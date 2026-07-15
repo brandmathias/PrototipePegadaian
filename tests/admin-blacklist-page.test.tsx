@@ -177,6 +177,12 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
     expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
     expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
+    expect(screen.getByText(/Selama 7 hari, buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pembelian barang Harga Tetap tetap tersedia/i)).toBeInTheDocument();
+    expect(screen.getByText(/Selama 30 hari, buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak bisa membeli barang Harga Tetap/i)).toBeInTheDocument();
+    expect(screen.getByText(/Selama 365 hari, akun buyer ditangguhkan/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak bisa login masuk ke sistem/i)).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
     expect(screen.queryByText("Log Keputusan Sistem")).not.toBeInTheDocument();
     expect(screen.queryByText("Ketetapan Level")).not.toBeInTheDocument();

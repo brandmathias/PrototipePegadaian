@@ -594,8 +594,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-amber-100 text-amber-700 ring-amber-200",
       cardTone: "border-amber-300 bg-amber-50/30",
-      description: "Pelanggaran awal / ringan, pembatasan sementara, dan masih dapat dipulihkan setelah masa hukuman berakhir.",
-      headingTone: "text-amber-800",
+      description: "Selama 7 hari, buyer tidak bisa menawar pada Lelang Tertutup. Pembelian barang Harga Tetap tetap tersedia, sehingga buyer masih bisa membeli barang dengan harga langsung.",
       icon: AlertTriangle,
       iconTone: "text-amber-600",
       label: "Level 1",
@@ -603,8 +602,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-orange-100 text-orange-700 ring-orange-200",
       cardTone: "border-orange-300 bg-orange-50/25",
-      description: "Pelanggaran berulang / menengah, pembatasan lebih ketat, dan perlu perhatian lebih dari unit.",
-      headingTone: "text-orange-800",
+      description: "Selama 30 hari, buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap. Akun tetap dapat dibuka untuk melihat riwayat dan informasi.",
       icon: AlertTriangle,
       iconTone: "text-orange-600",
       label: "Level 2",
@@ -612,8 +610,7 @@ function ViolationLevelGuide() {
     {
       badgeTone: "bg-rose-100 text-rose-700 ring-rose-200",
       cardTone: "border-rose-300 bg-rose-50/45",
-      description: "Pelanggaran berat / akumulatif, pembatasan tertinggi, dan akun memiliki risiko pembatasan lanjutan.",
-      headingTone: "text-rose-700",
+      description: "Selama 365 hari, akun buyer ditangguhkan. Buyer tidak bisa login masuk ke sistem sampai masa penangguhan selesai.",
       icon: Lock,
       iconTone: "text-rose-600",
       label: "Level 3",
@@ -634,14 +631,13 @@ function ViolationLevelGuide() {
 
           return (
             <article className={cn("rounded-[1rem] border px-4 py-3.5", level.cardTone)} key={level.label}>
-              <span className={cn("inline-flex rounded-full px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-[0.1em] ring-1", level.badgeTone)}>
-                {level.label}
-              </span>
-              <div className="mt-3 flex items-center gap-2.5">
-                <Icon className={cn("size-5 shrink-0", level.iconTone)} />
-                <h3 className={cn("font-headline text-lg font-black", level.headingTone)}>{level.label}</h3>
+              <div className={cn("inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-sm font-black ring-1", level.badgeTone)}>
+                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white/70 ring-1 ring-white/80">
+                  <Icon className={cn("size-3.5", level.iconTone)} />
+                </span>
+                <h3 className="font-headline text-sm font-black tracking-[-0.01em]">{level.label}</h3>
               </div>
-              <p className="mt-2 text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
+              <p className="mt-3 text-justify text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
             </article>
           );
         })}
