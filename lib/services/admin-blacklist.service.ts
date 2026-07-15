@@ -2,7 +2,6 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 
 import {
   deriveEffectiveBlacklistState,
-  hasCountedBlacklistViolations,
 } from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
@@ -129,10 +128,14 @@ function buildViolationScopeContext<T extends Record<string, any>>({
     ...trace,
     restrictionLevel: levelByTraceId.get(String(trace.id)) ?? trace.restrictionLevel,
   }));
-  const visibleLocalTraces =
-    globalMilestones.length > 0
-      ? annotatedLocalTraces.filter((trace) => levelByTraceId.has(String(trace.id)))
-      : annotatedLocalTraces;
+  const localTraceIds = new Set(localTraces.map((trace) => String(trace.id)));
+  const localMilestones = globalMilestones.filter((milestone) =>
+    localTraceIds.has(String(milestone.trace.id)),
+  );
+  const latestLocalMilestone = localMilestones.at(-1) ?? null;
+  const visibleLocalTraces = annotatedLocalTraces.filter((trace) =>
+    levelByTraceId.has(String(trace.id)),
+  );
   const currentUnitMilestoneCount = globalMilestones.filter(
     (milestone) => milestone.trace.unitId === unitId,
   ).length;
@@ -157,6 +160,14 @@ function buildViolationScopeContext<T extends Record<string, any>>({
     },
     effectiveBlockedUntil: effectiveState.blockedUntil,
     effectiveTotalViolations: globalTotal,
+    localRestriction: latestLocalMilestone
+      ? {
+          blockedUntil: latestLocalMilestone.blockedUntil,
+          level: latestLocalMilestone.level,
+          occurredAt: latestLocalMilestone.occurredAt,
+          traceId: String(latestLocalMilestone.trace.id),
+        }
+      : null,
   };
 }
 
@@ -229,15 +240,21 @@ async function listUnpaidAuctionTraces(unitId: string, userId?: string) {
 }
 
 export async function listAdminBlacklist(unitId: string) {
+  const traces = await listUnpaidAuctionTraces(unitId);
+  const tracesByUser = groupByUser(traces);
+  const localUserIds = [...new Set(traces.map((trace) => trace.userId))];
+
+  if (localUserIds.length === 0) {
+    return [];
+  }
+
   const rows = await db
     .select({ blacklist: blacklists, unit: units, user: users })
     .from(blacklists)
     .innerJoin(users, eq(users.id, blacklists.userId))
     .leftJoin(units, eq(units.id, blacklists.unitId))
-    .where(eq(blacklists.unitId, unitId))
+    .where(inArray(blacklists.userId, localUserIds))
     .orderBy(desc(blacklists.updatedAt));
-  const traces = await listUnpaidAuctionTraces(unitId);
-  const tracesByUser = groupByUser(traces);
   const factsByUser = groupByUser(
     await listViolationEscalationFacts(rows.map((row) => row.user.id)),
   );
@@ -251,22 +268,29 @@ export async function listAdminBlacklist(unitId: string) {
       unitId,
       userFacts: factsByUser[row.user.id] ?? [],
     });
-    if (!hasCountedBlacklistViolations(scopeContext.effectiveTotalViolations)) {
+    if (!scopeContext.localRestriction) {
       return [];
     }
 
-    const effectiveBlockedUntil =
-      row.blacklist.isActive
-        ? scopeContext.effectiveBlockedUntil
-        : row.blacklist.blockedUntil;
-    const serialized = serializeBlacklist(row, scopeContext.effectiveTotalViolations, effectiveBlockedUntil);
-    const latestTrace = scopeContext.annotatedLocalTraces[0] ?? null;
+    const serialized = serializeBlacklist(
+      row,
+      scopeContext.localRestriction.level,
+      scopeContext.localRestriction.blockedUntil,
+    );
+    const latestTrace = scopeContext.annotatedLocalTraces.find(
+      (trace) => String(trace.id) === scopeContext.localRestriction?.traceId,
+    ) ?? null;
+    const localIncidentAt = scopeContext.localRestriction.occurredAt;
 
     return [{
       ...serialized,
       crossUnitViolationSummary: scopeContext.crossUnitViolationSummary,
+      lastIncident: localIncidentAt.toISOString().slice(0, 10),
+      lastIncidentAt: localIncidentAt.toISOString(),
       reason: latestTrace?.note ?? serialized.reason,
       latestUnpaidAuction: latestTrace,
+      unit: unitId,
+      unitName: latestTrace?.unitName ?? unitId,
       unpaidAuctionCount: scopeContext.annotatedLocalTraces.length,
       unpaidAuctionTraces: scopeContext.annotatedLocalTraces,
     }];
@@ -277,15 +301,32 @@ export async function getAdminBlacklistByUserId(
   unitId: string,
   userId: string,
 ) {
+  const traces = await listUnpaidAuctionTraces(unitId, userId);
+
+  if (traces.length === 0) {
+    throw new Error("Riwayat blacklist tidak ditemukan di unit Anda.");
+  }
+
   const [row] = await db
     .select({ blacklist: blacklists, unit: units, user: users })
     .from(blacklists)
     .innerJoin(users, eq(users.id, blacklists.userId))
     .leftJoin(units, eq(units.id, blacklists.unitId))
-    .where(and(eq(blacklists.unitId, unitId), eq(blacklists.userId, userId)))
+    .where(eq(blacklists.userId, userId))
     .limit(1);
 
   if (!row) {
+    throw new Error("Riwayat blacklist tidak ditemukan di unit Anda.");
+  }
+
+  const scopeContext = buildViolationScopeContext({
+    localTraces: traces,
+    storedBlockedUntil: row.blacklist.blockedUntil,
+    storedTotalViolations: row.blacklist.totalViolations,
+    unitId,
+    userFacts: await listViolationEscalationFacts([userId]),
+  });
+  if (!scopeContext.localRestriction) {
     throw new Error("Riwayat blacklist tidak ditemukan di unit Anda.");
   }
 
@@ -299,30 +340,25 @@ export async function getAdminBlacklistByUserId(
     .where(eq(blacklistActionLogs.blacklistId, row.blacklist.id))
     .orderBy(desc(blacklistActionLogs.createdAt));
 
-  const traces = await listUnpaidAuctionTraces(unitId, userId);
-  const scopeContext = buildViolationScopeContext({
-    localTraces: traces,
-    storedBlockedUntil: row.blacklist.blockedUntil,
-    storedTotalViolations: row.blacklist.totalViolations,
-    unitId,
-    userFacts: await listViolationEscalationFacts([userId]),
-  });
-  if (!hasCountedBlacklistViolations(scopeContext.effectiveTotalViolations)) {
-    throw new Error("Riwayat blacklist tidak ditemukan di unit Anda.");
-  }
-
-  const effectiveBlockedUntil =
-    row.blacklist.isActive
-      ? scopeContext.effectiveBlockedUntil
-      : row.blacklist.blockedUntil;
-  const serialized = serializeBlacklist(row, scopeContext.effectiveTotalViolations, effectiveBlockedUntil);
-  const latestTrace = scopeContext.annotatedLocalTraces[0] ?? null;
+  const serialized = serializeBlacklist(
+    row,
+    scopeContext.localRestriction.level,
+    scopeContext.localRestriction.blockedUntil,
+  );
+  const latestTrace = scopeContext.annotatedLocalTraces.find(
+    (trace) => String(trace.id) === scopeContext.localRestriction?.traceId,
+  ) ?? null;
+  const localIncidentAt = scopeContext.localRestriction.occurredAt;
 
   return {
     ...serialized,
     crossUnitViolationSummary: scopeContext.crossUnitViolationSummary,
+    lastIncident: localIncidentAt.toISOString().slice(0, 10),
+    lastIncidentAt: localIncidentAt.toISOString(),
     reason: latestTrace?.note ?? serialized.reason,
     latestUnpaidAuction: latestTrace,
+    unit: unitId,
+    unitName: latestTrace?.unitName ?? unitId,
     unpaidAuctionCount: scopeContext.annotatedLocalTraces.length,
     unpaidAuctionTraces: scopeContext.annotatedLocalTraces,
     history: history.map(serializeBlacklistHistoryEntry),
