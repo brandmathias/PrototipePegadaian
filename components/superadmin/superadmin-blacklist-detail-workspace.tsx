@@ -592,37 +592,37 @@ function ViolationRecordSummary({
 function ViolationLevelGuide() {
   const levels = [
     {
-      badgeTone: "bg-amber-100 text-amber-700 ring-amber-200",
-      cardTone: "border-amber-300 bg-amber-50/30",
+      badgeTone: "bg-amber-200 text-amber-950 ring-amber-300",
+      cardTone: "border-amber-400 bg-amber-50/70",
       description: "Selama 7 hari, buyer tidak bisa menawar pada Lelang Tertutup. Pembelian barang Harga Tetap tetap tersedia, sehingga buyer masih bisa membeli barang dengan harga langsung.",
       icon: AlertTriangle,
-      iconTone: "text-amber-600",
+      iconTone: "bg-amber-500 text-white ring-amber-600/35",
       label: "Level 1",
     },
     {
-      badgeTone: "bg-orange-100 text-orange-700 ring-orange-200",
-      cardTone: "border-orange-300 bg-orange-50/25",
+      badgeTone: "bg-orange-200 text-orange-950 ring-orange-300",
+      cardTone: "border-orange-400 bg-orange-50/70",
       description: "Selama 30 hari, buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap. Akun tetap dapat dibuka untuk melihat riwayat dan informasi.",
       icon: AlertTriangle,
-      iconTone: "text-orange-600",
+      iconTone: "bg-orange-500 text-white ring-orange-600/35",
       label: "Level 2",
     },
     {
-      badgeTone: "bg-rose-100 text-rose-700 ring-rose-200",
-      cardTone: "border-rose-300 bg-rose-50/45",
+      badgeTone: "bg-rose-200 text-rose-950 ring-rose-300",
+      cardTone: "border-rose-400 bg-rose-50/70",
       description: "Selama 365 hari, akun buyer ditangguhkan. Buyer tidak bisa login masuk ke sistem sampai masa penangguhan selesai.",
       icon: Lock,
-      iconTone: "text-rose-600",
+      iconTone: "bg-rose-600 text-white ring-rose-700/35",
       label: "Level 3",
     },
   ];
 
   return (
     <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white px-4 py-4 shadow-[0_18px_48px_-44px_rgba(8,69,50,0.34)] sm:px-5">
-      <h2 className="font-headline text-base font-black tracking-[-0.02em] text-[#15231d]">
+      <h2 className="font-headline text-[1.05rem] font-black tracking-[-0.02em] text-[#15231d]">
         Keterangan Level Pelanggaran
       </h2>
-      <p className="mt-1 max-w-[62rem] text-xs font-semibold leading-5 text-[#52625b]">
+      <p className="mt-1 max-w-[62rem] text-[0.8rem] font-semibold leading-5 text-[#52625b]">
         Level pelanggaran menunjukkan tingkat pembatasan akun berdasarkan riwayat gagal bayar dan akumulasi pelanggaran buyer.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -630,14 +630,14 @@ function ViolationLevelGuide() {
           const Icon = level.icon;
 
           return (
-            <article className={cn("rounded-[1rem] border px-4 py-3.5", level.cardTone)} key={level.label}>
-              <div className={cn("inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 text-sm font-black ring-1", level.badgeTone)}>
-                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white/70 ring-1 ring-white/80">
-                  <Icon className={cn("size-3.5", level.iconTone)} />
+            <article className={cn("rounded-[1rem] border px-4 py-4", level.cardTone)} key={level.label}>
+              <div className={cn("inline-flex items-center gap-2.5 rounded-full px-3.5 py-2 text-[0.9rem] font-black leading-none ring-1", level.badgeTone)}>
+                <span className={cn("grid size-7 shrink-0 place-items-center rounded-full ring-1", level.iconTone)}>
+                  <Icon className="size-4" />
                 </span>
-                <h3 className="font-headline text-sm font-black tracking-[-0.01em]">{level.label}</h3>
+                <h3 className="font-headline text-[0.9rem] font-black tracking-[-0.01em]">{level.label}</h3>
               </div>
-              <p className="mt-3 text-justify text-xs font-semibold leading-5 text-[#52625b]">{level.description}</p>
+              <p className="mt-3 text-justify text-[0.82rem] font-semibold leading-[1.5] text-[#40514a] sm:text-sm">{level.description}</p>
             </article>
           );
         })}

@@ -2503,6 +2503,15 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
     expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
     expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
+    const levelOneBadge = screen
+      .getAllByRole("heading", { name: "Level 1" })
+      .at(-1)?.parentElement;
+    if (!levelOneBadge) throw new Error("Badge Level 1 tidak ditemukan.");
+    expect(levelOneBadge).toHaveClass("px-3.5", "py-2", "text-[0.9rem]");
+    expect(levelOneBadge.querySelector("span")).toHaveClass(
+      "bg-amber-500",
+      "text-white",
+    );
     expect(screen.getByText(/Selama 7 hari, buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
     expect(screen.getByText(/Pembelian barang Harga Tetap tetap tersedia/i)).toBeInTheDocument();
     expect(screen.getByText(/Selama 30 hari, buyer tidak bisa menawar pada Lelang Tertutup/i)).toBeInTheDocument();
