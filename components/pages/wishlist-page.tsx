@@ -28,6 +28,7 @@ import {
   Timer,
   X,
 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { AdminSelect } from "@/components/admin/admin-select";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -700,21 +701,34 @@ function WishlistCard({
           </div>
 
           {unavailable ? (
-            <div className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-sm font-black text-[#77736b]">
-              {actionLabel}
-              {isFixedPrice ? <ShoppingBag className="size-4" /> : <Gavel className="size-4" />}
+            <div className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-sm font-black text-[#77736b]">
+              {isFixedPrice ? (
+                <ShoppingBag className="size-3.5 shrink-0" strokeWidth={2.55} />
+              ) : (
+                <Gavel className="size-3.5 shrink-0" strokeWidth={2.55} />
+              )}
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <span className="truncate">{actionLabel}</span>
+              </span>
             </div>
           ) : (
             <Link
               aria-label={`${actionLabel} ${item.lot.name}`}
-              className={cn(
-                buttonVariants({ variant: isFixedPrice ? "accent" : "default" }),
-                "min-h-11 w-full rounded-md text-sm font-black",
-              )}
+              className="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white bg-[linear-gradient(180deg,#ffffff_0%,#fbfaf8_54%,#f5f1eb_100%)] px-4 py-2 text-sm font-black text-[#2b2a27] shadow-[0_12px_24px_-18px_rgba(48,35,18,0.55),0_1px_0_rgba(255,255,255,0.96),inset_0_1px_0_rgba(255,255,255,1),inset_0_-1px_0_rgba(112,82,36,0.12)] ring-1 ring-[#e4dccf] transition-[transform,box-shadow,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:border-white hover:text-[#161512] hover:shadow-[0_16px_28px_-20px_rgba(48,35,18,0.62),0_1px_0_rgba(255,255,255,1),inset_0_1px_0_rgba(255,255,255,1),inset_0_-1px_0_rgba(112,82,36,0.15)] hover:ring-[#d7c8ad] active:translate-y-0 active:scale-[0.98]"
               href={`/katalog/${item.lot.id}`}
             >
-              {actionLabel}
-              {isFixedPrice ? <ShoppingBag className="size-4" /> : <Gavel className="size-4" />}
+              {isFixedPrice ? (
+                <ShoppingBag className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" strokeWidth={2.55} />
+              ) : (
+                <Gavel className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" strokeWidth={2.55} />
+              )}
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <span className="truncate">{actionLabel}</span>
+                <ArrowRight
+                  className="size-3.5 shrink-0 text-[#1f1f1c] drop-shadow-[0_1px_0_rgba(255,255,255,0.9)] transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5"
+                  strokeWidth={2.6}
+                />
+              </span>
             </Link>
           )}
         </div>
