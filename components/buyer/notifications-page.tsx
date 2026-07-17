@@ -207,21 +207,41 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
       <>
         <span
           className={cn(
-            "grid size-16 shrink-0 place-items-center rounded-[1.05rem] transition-[transform,box-shadow] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06] group-hover:shadow-[0_10px_22px_-16px_rgba(8,69,50,0.4)] motion-reduce:transition-none motion-reduce:transform-none",
+            "grid size-16 shrink-0 place-items-center rounded-[1.05rem] transition-[transform,box-shadow,opacity] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06] group-hover:shadow-[0_10px_22px_-16px_rgba(8,69,50,0.4)] motion-reduce:transition-none motion-reduce:transform-none",
+            notification.isRead ? "opacity-40" : "",
             tone.iconWrap
           )}
         >
           <Icon className="size-7" strokeWidth={1.8} />
         </span>
         <span className="min-w-0">
-          <span className="block font-headline text-base font-black leading-tight text-[#111827] md:text-[1.02rem]">
+          <span
+            className={cn(
+              "block font-headline text-base leading-tight md:text-[1.02rem]",
+              notification.isRead
+                ? "font-semibold text-[#9ca3af]"
+                : "font-black text-[#111827]"
+            )}
+          >
             {notification.title}
           </span>
-          <span className="mt-2 block text-sm font-semibold leading-6 text-[#6a6f78]">
+          <span
+            className={cn(
+              "mt-2 block text-sm leading-6",
+              notification.isRead
+                ? "font-medium text-[#c4cad4]"
+                : "font-semibold text-[#6a6f78]"
+            )}
+          >
             {notification.message}
           </span>
         </span>
-        <span className="flex items-center gap-3 text-sm font-semibold leading-6 text-[#6b7280] md:justify-self-end md:text-right">
+        <span
+          className={cn(
+            "flex items-center gap-3 text-sm font-semibold leading-6 md:justify-self-end md:text-right",
+            notification.isRead ? "text-[#c4cad4]" : "text-[#6b7280]"
+          )}
+        >
           {formatNotificationDateTime(displayTimestamp)}
           <span className="relative flex size-2.5 shrink-0">
             {!notification.isRead && (
@@ -229,7 +249,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
             )}
             <span
               aria-label={notification.isRead ? "Sudah dibaca" : "Belum dibaca"}
-              className={cn("relative inline-block size-2.5 shrink-0 rounded-full", tone.dot, notification.isRead && "opacity-35")}
+              className={cn("relative inline-block size-2.5 shrink-0 rounded-full", tone.dot, notification.isRead && "opacity-25")}
             />
           </span>
         </span>
@@ -354,8 +374,10 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
             {visibleNotifications.map((notification) => {
               const tone = getNotificationTone(notification.type);
               const className = cn(
-                "group relative grid w-full gap-4 rounded-[1.1rem] border border-transparent border-l-transparent px-2.5 py-5 text-left transition-[transform,background-color,box-shadow,border-color] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-26px_rgba(8,69,50,0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b6b44]/25 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center md:px-3.5",
-                notification.isRead ? tone.row : cn(tone.unreadBg, tone.unreadBorder)
+                "group relative grid w-full gap-4 rounded-[1.1rem] border-l-[5px] px-2.5 py-5 text-left transition-[transform,background-color,box-shadow,border-color] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-26px_rgba(8,69,50,0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b6b44]/25 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center md:px-3.5",
+                notification.isRead
+                  ? "border-l-[#e5e7eb] bg-[#f9fafb] hover:bg-[#f3f4f6]"
+                  : cn(tone.unreadBg, tone.unreadBorder)
               );
 
               if (notification.actionHref) {
