@@ -41,7 +41,7 @@ describe("AdminProfileWorkspace", () => {
     );
   });
 
-  it("renders admin unit profile hero, security access, and toggled forms", () => {
+  it("renders admin unit profile hero, security access, and toggled password form, but not edit profile options", () => {
     render(<AdminProfileWorkspace profile={profile} />);
 
     expect(screen.getByRole("heading", { name: /profil admin unit/i })).toBeInTheDocument();
@@ -51,43 +51,9 @@ describe("AdminProfileWorkspace", () => {
     expect(screen.getAllByText(/2 sesi aktif/i).length).toBeGreaterThan(0);
     expect(screen.queryByText("Sesi Login Terbaru")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /edit profil/i }));
-    expect(screen.getByRole("heading", { name: /perbarui informasi admin unit/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit profil/i })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /ubah password/i }));
     expect(screen.getByRole("heading", { name: /ubah kata sandi/i })).toBeInTheDocument();
-  });
-
-  it("lets admin unit change email and persists it through the profile endpoint", async () => {
-    const user = userEvent.setup();
-
-    render(<AdminProfileWorkspace profile={profile} />);
-
-    await user.click(screen.getByRole("button", { name: /edit profil/i }));
-
-    const emailInput = screen.getByLabelText(/email kerja/i, { selector: "input" });
-    expect(emailInput).not.toBeDisabled();
-
-    await user.clear(emailInput);
-    await user.type(emailInput, "admin.baru@pegadaian.co.id");
-    await user.click(screen.getByRole("button", { name: /simpan perubahan/i }));
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/admin/profil",
-        expect.objectContaining({
-          method: "PUT",
-          body: expect.any(String)
-        })
-      );
-    });
-
-    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
-    expect(JSON.parse(String(requestInit?.body))).toEqual(
-      expect.objectContaining({
-        email: "admin.baru@pegadaian.co.id"
-      })
-    );
-    expect(router.refresh).toHaveBeenCalled();
   });
 });

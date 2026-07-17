@@ -8,19 +8,15 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
-  Clock3,
   KeyRound,
   LockKeyhole,
   Mail,
-  PenLine,
   Phone,
   ShieldCheck
 } from "lucide-react";
 
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const ADMIN_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil Admin Unit.png";
@@ -263,21 +259,9 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
                   className="h-12 justify-center rounded-2xl bg-white text-[#0a6a49] shadow-[0_18px_42px_-28px_rgba(0,0,0,0.7)] hover:bg-[#f3fbf6]"
                   onClick={() => {
                     setFeedback(null);
-                    setActivePanel((current) => (current === "profile" ? null : "profile"));
-                  }}
-                  type="button"
-                >
-                  <PenLine className="size-4" />
-                  Edit Profil
-                </Button>
-                <Button
-                  className="h-12 justify-center rounded-2xl border-white/25 bg-white/12 text-white hover:bg-white/18"
-                  onClick={() => {
-                    setFeedback(null);
                     setActivePanel((current) => (current === "password" ? null : "password"));
                   }}
                   type="button"
-                  variant="ghost"
                 >
                   <LockKeyhole className="size-4" />
                   Ubah Password
@@ -286,49 +270,6 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
             </div>
           </div>
         </section>
-
-        {activePanel === "profile" ? (
-          <section className="rounded-[2rem] border border-white/70 bg-white/82 p-2 shadow-[0_24px_76px_-58px_rgba(8,69,50,0.5)]">
-            <div className="rounded-[calc(2rem-0.5rem)] border border-[#0a6a49]/10 bg-white/92 p-5 md:p-6">
-              <div className="mb-5">
-                <p className="text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#0a6a49]/55">Edit Profil</p>
-                <h3 className="font-headline text-2xl font-black tracking-[-0.03em] text-[#122018]">{profile.profileEditHeading ?? "Perbarui informasi admin unit"}</h3>
-              </div>
-              <div className="grid gap-5 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-name">Nama admin</label>
-                  <Input id="admin-profile-name" className="h-12 rounded-2xl bg-white" value={profileForm.name} onChange={(event) => setProfileForm((current) => ({ ...current, name: event.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-phone">Nomor telepon</label>
-                  <Input id="admin-profile-phone" className="h-12 rounded-2xl bg-white" value={profileForm.phone} onChange={(event) => setProfileForm((current) => ({ ...current, phone: event.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-unit">{workspaceFieldLabel}</label>
-                  <Input id="admin-profile-unit" className="h-12 rounded-2xl bg-white" value={profileForm.unitName} onChange={(event) => setProfileForm((current) => ({ ...current, unitName: event.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-email">Email kerja</label>
-                  <Input
-                    id="admin-profile-email"
-                    autoComplete="email"
-                    className="h-12 rounded-2xl bg-white"
-                    value={profileForm.email}
-                    onChange={(event) => setProfileForm((current) => ({ ...current, email: event.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-[0.18em] text-black/45" htmlFor="admin-profile-address">{workspaceAddressLabel}</label>
-                  <Textarea id="admin-profile-address" className="min-h-28 rounded-2xl bg-white" value={profileForm.address} onChange={(event) => setProfileForm((current) => ({ ...current, address: event.target.value }))} />
-                </div>
-              </div>
-              <Button className="mt-5 h-12 rounded-2xl px-5" disabled={isProfilePending} type="button" onClick={saveProfile}>
-                <PenLine className="size-4" />
-                {isProfilePending ? "Menyimpan..." : "Simpan Perubahan"}
-              </Button>
-            </div>
-          </section>
-        ) : null}
 
         {activePanel === "password" ? (
           <section className="rounded-[2rem] border border-white/70 bg-white/82 p-2 shadow-[0_24px_76px_-58px_rgba(8,69,50,0.5)]">
@@ -366,20 +307,14 @@ export function AdminProfileWorkspace({ profile }: { profile: AdminProfileData }
           </div>
         ) : null}
 
-        <section className="grid overflow-hidden rounded-[1.5rem] border border-white/75 bg-white/86 shadow-[0_22px_68px_-56px_rgba(8,69,50,0.5)] md:grid-cols-4">
-          <InfoTile icon={<Building2 className="size-5" />} label={workspaceLabel} value={profileForm.unitName} />
-          <InfoTile icon={<BadgeCheck className="size-5" />} label="Peran" value={profile.roleLabel} />
-          <InfoTile icon={<Clock3 className="size-5" />} label="Terakhir Ubah" value={profile.updatedAt} />
-          <InfoTile icon={<CalendarDays className="size-5" />} label="Bergabung Sejak" value={profile.joinedAt} />
-        </section>
-
         <section className="grid gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
           <ProfileCard icon={<Building2 className="size-5" />} title={workspaceSectionTitle}>
             <div className="space-y-5">
               <DetailRow label={workspaceLabel} value={profileForm.unitName} />
               <DetailRow label={workspaceCodeLabel} value={profile.unitCode} />
-              <DetailRow label={workspaceAddressLabel} value={profileForm.address} />
-              <DetailRow accent label={workspacePhoneLabel} value={profileForm.phone || "-"} />
+              {profile.unitCode !== "SUPERADMIN" && (
+                <DetailRow label={workspaceAddressLabel} value={profileForm.address} />
+              )}
             </div>
           </ProfileCard>
 
