@@ -42,6 +42,8 @@ type NotificationTone = {
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   iconWrap: string;
   row: string;
+  unreadBg: string;
+  unreadBorder: string;
 };
 
 const ROLE_NOTIFICATION_ENDPOINTS = {
@@ -114,7 +116,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#ef1d1d]",
       icon: AlertTriangle,
       iconWrap: "bg-[#fff0f1] text-[#ef1d1d]",
-      row: "hover:bg-[#fffafa]"
+      row: "hover:bg-[#fffafa]",
+      unreadBg: "bg-[#fff5f6] hover:bg-[#fff0f2] border-red-200/80 shadow-[0_8px_30px_rgba(239,29,29,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#ef1d1d]"
     };
   }
 
@@ -123,7 +127,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#f28c13]",
       icon: ShieldAlert,
       iconWrap: "bg-[#fff7ec] text-[#f28c13]",
-      row: "hover:bg-[#fffaf3]"
+      row: "hover:bg-[#fffaf3]",
+      unreadBg: "bg-[#fffbf2] hover:bg-[#fff7e6] border-amber-200/80 shadow-[0_8px_30px_rgba(242,140,19,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#f28c13]"
     };
   }
 
@@ -132,7 +138,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#0b7a4b]",
       icon: Banknote,
       iconWrap: "bg-[#effaf4] text-[#0b7a4b]",
-      row: "hover:bg-[#f7fcf9]"
+      row: "hover:bg-[#f7fcf9]",
+      unreadBg: "bg-[#f3fbf7] hover:bg-[#ebf7f0] border-emerald-200/80 shadow-[0_8px_30px_rgba(11,122,75,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#0b7a4b]"
     };
   }
 
@@ -141,7 +149,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#1e6fcb]",
       icon: HandCoins,
       iconWrap: "bg-[#eff6ff] text-[#1e6fcb]",
-      row: "hover:bg-[#f8fbff]"
+      row: "hover:bg-[#f8fbff]",
+      unreadBg: "bg-[#f4f9ff] hover:bg-[#eaf3ff] border-blue-200/80 shadow-[0_8px_30px_rgba(30,111,203,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#1e6fcb]"
     };
   }
 
@@ -150,7 +160,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#1e6fcb]",
       icon: Flag,
       iconWrap: "bg-[#eff6ff] text-[#1e6fcb]",
-      row: "hover:bg-[#f8fbff]"
+      row: "hover:bg-[#f8fbff]",
+      unreadBg: "bg-[#f4f9ff] hover:bg-[#eaf3ff] border-blue-200/80 shadow-[0_8px_30px_rgba(30,111,203,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#1e6fcb]"
     };
   }
 
@@ -159,7 +171,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#0b7a4b]",
       icon: type === "payment_verified" ? BadgeCheck : CheckCircle2,
       iconWrap: "bg-[#effaf4] text-[#0b7a4b]",
-      row: "hover:bg-[#f7fcf9]"
+      row: "hover:bg-[#f7fcf9]",
+      unreadBg: "bg-[#f3fbf7] hover:bg-[#ebf7f0] border-emerald-200/80 shadow-[0_8px_30px_rgba(11,122,75,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#0b7a4b]"
     };
   }
 
@@ -168,7 +182,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#0b7a4b]",
       icon: Trophy,
       iconWrap: "bg-[#effaf4] text-[#0b7a4b]",
-      row: "hover:bg-[#f7fcf9]"
+      row: "hover:bg-[#f7fcf9]",
+      unreadBg: "bg-[#f3fbf7] hover:bg-[#ebf7f0] border-emerald-200/80 shadow-[0_8px_30px_rgba(11,122,75,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#0b7a4b]"
     };
   }
 
@@ -177,7 +193,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#1e6fcb]",
       icon: Clock3,
       iconWrap: "bg-[#eff6ff] text-[#1e6fcb]",
-      row: "hover:bg-[#f8fbff]"
+      row: "hover:bg-[#f8fbff]",
+      unreadBg: "bg-[#f4f9ff] hover:bg-[#eaf3ff] border-blue-200/80 shadow-[0_8px_30px_rgba(30,111,203,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#1e6fcb]"
     };
   }
 
@@ -186,7 +204,9 @@ function getNotificationTone(type: string): NotificationTone {
       dot: "bg-[#0b7a4b]",
       icon: Ban,
       iconWrap: "bg-[#effaf4] text-[#0b7a4b]",
-      row: "hover:bg-[#f7fcf9]"
+      row: "hover:bg-[#f7fcf9]",
+      unreadBg: "bg-[#f3fbf7] hover:bg-[#ebf7f0] border-emerald-200/80 shadow-[0_8px_30px_rgba(11,122,75,0.02)]",
+      unreadBorder: "border-l-[5px] border-l-[#0b7a4b]"
     };
   }
 
@@ -194,7 +214,9 @@ function getNotificationTone(type: string): NotificationTone {
     dot: "bg-[#0b7a4b]",
     icon: Info,
     iconWrap: "bg-[#f1f7f4] text-[#0b5d3e]",
-    row: "hover:bg-[#f8fbfa]"
+    row: "hover:bg-[#f8fbfa]",
+    unreadBg: "bg-[#f8fbfa] hover:bg-[#f1f8f5] border-emerald-100/80 shadow-[0_8px_30px_rgba(11,122,75,0.01)]",
+    unreadBorder: "border-l-[5px] border-l-[#0b7a4b]"
   };
 }
 
@@ -284,10 +306,15 @@ export function RoleNotificationsPanel({
         </span>
         <span className="flex items-center gap-3 text-sm font-semibold leading-6 text-[#6b7280] md:justify-self-end md:text-right">
           {formatNotificationDateTime(displayTimestamp)}
-          <span
-            aria-label={notification.isRead ? "Sudah dibaca" : "Belum dibaca"}
-            className={cn("inline-block size-2.5 shrink-0 rounded-full", tone.dot, notification.isRead && "opacity-35")}
-          />
+          <span className="relative flex size-2.5 shrink-0">
+            {!notification.isRead && (
+              <span className={cn("status-pulse absolute -inset-0.5 rounded-full", tone.dot, "opacity-75")} />
+            )}
+            <span
+              aria-label={notification.isRead ? "Sudah dibaca" : "Belum dibaca"}
+              className={cn("relative inline-block size-2.5 shrink-0 rounded-full", tone.dot, notification.isRead && "opacity-35")}
+            />
+          </span>
         </span>
       </>
     );
@@ -355,9 +382,8 @@ export function RoleNotificationsPanel({
           {visibleNotifications.map((notification) => {
             const tone = getNotificationTone(notification.type);
             const className = cn(
-              "group relative grid w-full gap-4 rounded-[1.1rem] px-2.5 py-5 text-left transition-[transform,background-color,box-shadow] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-26px_rgba(8,69,50,0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b6b44]/25 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center md:px-3.5",
-              tone.row,
-              !notification.isRead && "bg-white"
+              "group relative grid w-full gap-4 rounded-[1.1rem] border border-transparent border-l-transparent px-2.5 py-5 text-left transition-[transform,background-color,box-shadow,border-color] duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-26px_rgba(8,69,50,0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b6b44]/25 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:grid-cols-[4.5rem_minmax(0,1fr)] md:grid-cols-[4.5rem_minmax(0,1fr)_minmax(13rem,18rem)] md:items-center md:px-3.5",
+              notification.isRead ? tone.row : cn(tone.unreadBg, tone.unreadBorder)
             );
 
             if (notification.actionHref) {
