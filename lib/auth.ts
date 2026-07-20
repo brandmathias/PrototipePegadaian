@@ -2,7 +2,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth, APIError } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
-import { and, eq, gt, inArray, isNull, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
@@ -11,6 +11,7 @@ import {
   normalizeBuyerPhoneNumber
 } from "@/lib/auth/buyer-auth-validation";
 import { ensureBuyerRegistrationIdentityIsAvailable } from "@/lib/auth/buyer-registration-guard";
+import { getLevelThreeLoginSuspensionMessage } from "@/lib/auth/login-suspension";
 import { getIndonesianPhoneNumberVariants } from "@/lib/phone-number";
 
 export const auth = betterAuth({
@@ -89,8 +90,40 @@ export const auth = betterAuth({
           .limit(1);
 
         if (existingUser && existingUser.isActive === false) {
+          const [activeBlacklist] = await db
+            .select({
+              blockedUntil: schema.blacklists.blockedUntil,
+              isActive: schema.blacklists.isActive,
+              totalViolations: schema.blacklists.totalViolations
+            })
+            .from(schema.blacklists)
+            .where(and(eq(schema.blacklists.userId, existingUser.id), eq(schema.blacklists.isActive, true)))
+            .limit(1);
+          const violationRows = activeBlacklist
+            ? await db
+                .select({
+                  createdAt: schema.pelanggaranUser.createdAt,
+                  escalationEligible: schema.pelanggaranUser.escalationEligible,
+                  paymentDeadline: schema.transaksi.paymentDeadline
+                })
+                .from(schema.pelanggaranUser)
+                .leftJoin(schema.transaksi, eq(schema.transaksi.id, schema.pelanggaranUser.transaksiId))
+                .where(eq(schema.pelanggaranUser.userId, existingUser.id))
+                .orderBy(desc(schema.pelanggaranUser.createdAt))
+            : [];
+          const suspensionMessage = getLevelThreeLoginSuspensionMessage({
+            blacklist: activeBlacklist ?? null,
+            traces: violationRows.map((row) => ({
+              createdAt: row.paymentDeadline ?? row.createdAt,
+              escalationEligible: row.escalationEligible,
+              occurredAt: row.paymentDeadline ?? row.createdAt
+            }))
+          });
+
           throw new APIError("FORBIDDEN", {
-            message: "Akun ini sudah dinonaktifkan. Hubungi super admin untuk bantuan akses."
+            message:
+              suspensionMessage ??
+              "Akun ini sudah dinonaktifkan. Hubungi super admin untuk bantuan akses."
           });
         }
       }

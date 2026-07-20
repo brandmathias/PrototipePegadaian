@@ -8,6 +8,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { getRoleHomePath, getSafeBuyerNextPath, getSafeRoleNextPath, isAuthRole } from "@/lib/auth/guards";
 import { validateBuyerLoginPayload } from "@/lib/auth/buyer-auth-validation";
+import { isLevelThreeLoginSuspensionMessage } from "@/lib/auth/login-suspension";
 import { LoginSuccessTransition } from "@/components/auth/login-success-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,12 +66,13 @@ export function LoginForm() {
 
       if (result.error) {
         const message = result.error.message ?? "Masuk belum berhasil. Coba lagi.";
+        const isLevelThreeSuspension = isLevelThreeLoginSuspensionMessage(message);
         setError(message);
         toast({
           description: message,
-          duration: 5200,
+          duration: isLevelThreeSuspension ? 7600 : 5200,
           scope: "global",
-          title: "Masuk belum berhasil",
+          title: isLevelThreeSuspension ? "Akun ditangguhkan Level 3" : "Masuk belum berhasil",
           variant: "error"
         });
         return;

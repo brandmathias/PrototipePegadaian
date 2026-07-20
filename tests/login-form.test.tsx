@@ -158,6 +158,35 @@ describe("LoginForm", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Email atau kata sandi tidak cocok.");
   });
 
+  it("shows compact Level 3 suspension details with the recovery time", async () => {
+    authMocks.signInEmail.mockResolvedValue({
+      error: {
+        message:
+          "Akun Anda ditangguhkan karena akumulasi 3 pelanggaran tidak membayar lelang yang dimenangkan. Akses login dibuka kembali pada 15 Jul 2027, 07.00 WIB."
+      }
+    });
+
+    renderWithToast(<LoginForm />);
+
+    fireEvent.change(screen.getByLabelText(/email akun/i), {
+      target: {
+        value: "tiara@gmail.com"
+      }
+    });
+    fireEvent.change(screen.getByLabelText(/kata sandi/i, { selector: "input" }), {
+      target: {
+        value: "password-rahasia"
+      }
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^masuk$/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Akun ditangguhkan Level 3");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "akumulasi 3 pelanggaran tidak membayar lelang yang dimenangkan"
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("Akses login dibuka kembali pada 15 Jul 2027, 07.00 WIB.");
+  });
+
   it("uses the register visual feedback and password reveal interaction", async () => {
     authMocks.signUpEmail.mockResolvedValue({
       error: {
