@@ -17,7 +17,9 @@ import { barang, bids, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatu
 import { formatAppDateTime } from "@/lib/timezone";
 
 function toUtcDate(value: string) {
-  return new Date(`${value}T00:00:00.000Z`);
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T00:00:00.000Z`)
+    : new Date(value);
 }
 
 function isLikelyImageMedia(media: { type: string; url: string }) {
@@ -944,6 +946,8 @@ export async function createAdminBarang(
 ) {
   const payload = validateAdminBarangPayload(input);
   const media = validateAdminBarangMediaList(input.media);
+  const now = new Date();
+  const dueDate = new Date(now.getTime() + payload.totalDurationSeconds * 1000);
 
   const created = await db.transaction(async (tx) => {
     const [unit] = await tx
@@ -982,7 +986,7 @@ export async function createAdminBarang(
         ownerName: payload.ownerName,
         customerNumber: payload.customerNumber,
         pawnedAt: toUtcDate(payload.pawnedAt),
-        dueDate: toUtcDate(payload.dueDate),
+        dueDate,
         status: "jaminan",
         createdByUserId: userId
       })
@@ -994,7 +998,7 @@ export async function createAdminBarang(
       oldStatus: null,
       newStatus: "jaminan",
       changedByUserId: userId,
-      note: "Barang hasil input gadai dicatat sebagai barang jaminan unit."
+        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit dengan durasi jatuh tempo ${payload.durationDays} hari ${payload.durationHours} jam ${payload.durationMinutes} menit ${payload.durationSeconds} detik.`
     });
 
     if (media.length > 0) {

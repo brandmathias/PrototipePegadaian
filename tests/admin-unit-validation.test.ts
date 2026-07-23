@@ -68,14 +68,17 @@ describe("admin unit validation", () => {
     });
   });
 
-  it("normalizes barang input using only appraisal value", () => {
+  it("normalizes barang input and a precise due duration", () => {
     const payload = validateAdminBarangPayload({
       name: "  Cincin Emas 18K ",
       category: "emas",
       condition: "baik",
       appraisalValue: "8500000",
       pawnedAt: "2026-04-01",
-      dueDate: "2026-05-01",
+      durationDays: "0",
+      durationHours: "0",
+      durationMinutes: "5",
+      durationSeconds: "0",
       ownerName: " Raras Maheswari ",
       customerNumber: "0812345678901",
       description: "Barang lengkap."
@@ -85,6 +88,7 @@ describe("admin unit validation", () => {
     expect(payload.ownerName).toBe("Raras Maheswari");
     expect(payload.customerNumber).toBe("0812345678901");
     expect(payload.appraisalValue).toBe("8500000");
+    expect(payload.totalDurationSeconds).toBe(300);
     expect(payload).not.toHaveProperty("loanValue");
   });
 
@@ -95,7 +99,10 @@ describe("admin unit validation", () => {
       condition: "baik",
       appraisalValue: "18500000",
       pawnedAt: "2026-04-01",
-      dueDate: "2026-05-01",
+      durationDays: "30",
+      durationHours: "0",
+      durationMinutes: "0",
+      durationSeconds: "0",
       ownerName: "Raras Maheswari",
       customerNumber: "0812345678901",
       specifications: {
@@ -120,7 +127,7 @@ describe("admin unit validation", () => {
     });
   });
 
-  it("rejects invalid appraisal and due date", () => {
+  it("rejects invalid appraisal, pawn date, and duration", () => {
     expect(() =>
       validateAdminBarangPayload({
         name: "Laptop",
@@ -128,7 +135,10 @@ describe("admin unit validation", () => {
         condition: "baik",
         appraisalValue: "0",
         pawnedAt: "2026-04-01",
-        dueDate: "2026-05-01",
+        durationDays: "30",
+        durationHours: "0",
+        durationMinutes: "0",
+        durationSeconds: "0",
         ownerName: "Budi"
       })
     ).toThrow("Nilai taksiran harus lebih dari 0.");
@@ -140,10 +150,28 @@ describe("admin unit validation", () => {
         condition: "baik",
         appraisalValue: "5000000",
         pawnedAt: "2026-02-31",
-        dueDate: "2026-03-15",
+        durationDays: "30",
+        durationHours: "0",
+        durationMinutes: "0",
+        durationSeconds: "0",
         ownerName: "Budi"
       })
     ).toThrow("Tanggal gadai belum valid.");
+
+    expect(() =>
+      validateAdminBarangPayload({
+        name: "Laptop",
+        category: "elektronik",
+        condition: "baik",
+        appraisalValue: "5000000",
+        pawnedAt: "2026-03-01",
+        durationDays: "0",
+        durationHours: "0",
+        durationMinutes: "0",
+        durationSeconds: "0",
+        ownerName: "Budi Santoso"
+      })
+    ).toThrow("Durasi jatuh tempo harus lebih dari 0 detik.");
   });
 
   it("validates perpanjangan date must move forward", () => {

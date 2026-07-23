@@ -36,7 +36,10 @@ async function readBarangPayload(request: Request) {
     ownerName: formData.get("ownerName"),
     customerNumber: formData.get("customerNumber"),
     pawnedAt: formData.get("pawnedAt"),
-    dueDate: formData.get("dueDate"),
+    durationDays: formData.get("durationDays"),
+    durationHours: formData.get("durationHours"),
+    durationMinutes: formData.get("durationMinutes"),
+    durationSeconds: formData.get("durationSeconds"),
     specifications
   };
 

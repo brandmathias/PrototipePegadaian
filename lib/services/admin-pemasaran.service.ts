@@ -400,6 +400,7 @@ async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
   const item = await getBarangForUnit(barangId, unitId);
+  const now = new Date();
   const latestMarketing = item.status === "dipasarkan" ? await getLatestMarketingForBarang(barangId) : null;
   const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketing?.status === "gagal";
   const canRepublishActiveFixedPrice =
@@ -418,8 +419,11 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi harga tetap aktif tanpa transaksi.");
   }
 
+  if ((item.status === "jaminan" || item.status === "gadai") && item.dueDate.getTime() > now.getTime()) {
+    throw new Error("Barang baru dapat dipasarkan setelah durasi jatuh tempo berakhir.");
+  }
+
   const payload = validatePemasaranPayload(input);
-  const now = new Date();
   let derivedDurationDays: number | null = null;
   let derivedDurationSeconds: number | null = null;
   let endsAt: Date | null = null;

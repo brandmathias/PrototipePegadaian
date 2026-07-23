@@ -119,6 +119,8 @@ export function serializeAdminBarang(
     receivedAt: toDateLabel(row.createdAt),
     pawnedAt: toDateLabel(row.pawnedAt),
     dueDate: toDateLabel(row.dueDate),
+    dueAt: row.dueDate.toISOString(),
+    dueDateTime: toDateTimeLabel(row.dueDate),
     appraisalValue: toNumber(row.appraisalValue),
     ownerName: row.ownerName,
     customerNumber: row.customerNumber,

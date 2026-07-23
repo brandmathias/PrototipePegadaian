@@ -117,18 +117,14 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
   });
 
-  it("opens direct month and year selection from the custom due-date calendar", () => {
+  it("renders precise duration controls for the due deadline", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 
-    fireEvent.click(screen.getByRole("button", { name: /tanggal jatuh tempo/i }));
-    const calendarPopover = screen.getByRole("dialog", { name: /kalender tanggal jatuh tempo/i });
-    expect(calendarPopover).toHaveAttribute("data-placement", "right");
-    expect(calendarPopover).toHaveClass("fixed", "-translate-y-[66%]");
-    fireEvent.click(screen.getByRole("button", { name: /pilih bulan dan tahun/i }));
-
-    expect(screen.getByRole("button", { name: "Januari" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Desember" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "2026" })).toBeInTheDocument();
+    expect(screen.getByText("Durasi jatuh tempo")).toBeInTheDocument();
+    expect(screen.getByLabelText("Hari")).toHaveValue(30);
+    expect(screen.getByLabelText("Jam")).toHaveValue(0);
+    expect(screen.getByLabelText("Menit")).toHaveValue(0);
+    expect(screen.getByLabelText("Detik")).toHaveValue(0);
   });
 
   it("updates checklist readiness from form fields, dates, specifications, and media", async () => {

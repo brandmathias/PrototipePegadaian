@@ -1,4 +1,5 @@
 type InventoryMetricItem = {
+  dueAt?: unknown;
   dueDate?: unknown;
   status?: unknown;
 };
@@ -65,8 +66,15 @@ export function isAdminInventoryReadyForMarketing(item: InventoryMetricItem, now
     return false;
   }
 
-  const days = getDaysUntilDateLabel(item.dueDate, now);
-  return days !== null && days <= 0;
+  const dueAt = item.dueAt ?? item.dueDate;
+  const deadline =
+    dueAt instanceof Date
+      ? dueAt
+      : /^\d{4}-\d{2}-\d{2}$/.test(String(dueAt ?? ""))
+        ? new Date(`${String(dueAt)}T00:00:00.000Z`)
+        : new Date(String(dueAt ?? ""));
+
+  return !Number.isNaN(deadline.getTime()) && deadline.getTime() <= now.getTime();
 }
 
 export function getAdminInventoryMetrics(items: InventoryMetricItem[], now = new Date()) {

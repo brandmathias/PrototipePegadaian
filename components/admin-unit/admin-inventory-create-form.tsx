@@ -20,7 +20,6 @@ import {
   X
 } from "lucide-react";
 
-import { AdminDatePicker, getDateAfter } from "@/components/admin-unit/admin-date-picker";
 import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput, getCurrencyInputDigits } from "@/components/ui/currency-input";
@@ -40,13 +39,9 @@ type MediaPreview = {
 type ChecklistState = {
   hasMedia: boolean;
   hasCoreData: boolean;
-  hasValidDates: boolean;
+  hasValidDuration: boolean;
   hasSpecifications: boolean;
 };
-
-function dateAfter(days: number) {
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
 
 function FieldLabel({
   children,
@@ -459,7 +454,7 @@ export function AdminInventoryCreateForm() {
   const [checklist, setChecklist] = useState<ChecklistState>({
     hasMedia: false,
     hasCoreData: false,
-    hasValidDates: false,
+    hasValidDuration: false,
     hasSpecifications: false
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -469,9 +464,8 @@ export function AdminInventoryCreateForm() {
   const [customerNumber, setCustomerNumber] = useState("");
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const defaultDueDate = useMemo(() => dateAfter(30), []);
   const pawnedAt = defaultPawnedAt;
-  const [dueDate, setDueDate] = useState(defaultDueDate);
+  const [duration, setDuration] = useState({ days: "30", hours: "0", minutes: "0", seconds: "0" });
   const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
   const activeMedia = media[activeMediaIndex] ?? media[0] ?? null;
   const checklistItems = useMemo(
@@ -485,8 +479,8 @@ export function AdminInventoryCreateForm() {
         text: "Nama barang, nilai taksiran, nama penggadai, dan nomor telepon nasabah sudah terisi."
       },
       {
-        done: checklist.hasValidDates,
-        text: "Tanggal jatuh tempo berada setelah tanggal gadai."
+        done: checklist.hasValidDuration,
+        text: "Durasi jatuh tempo sudah lebih dari 0 detik."
       },
       {
         done: checklist.hasSpecifications,
@@ -506,11 +500,17 @@ export function AdminInventoryCreateForm() {
 
     const formData = new FormData(form);
     const getValue = (name: string) => String(formData.get(name) ?? "").trim();
-    const pawnedAt = getValue("pawnedAt");
-    const dueDate = getValue("dueDate");
-    const hasValidDates =
-      Boolean(pawnedAt && dueDate) &&
-      new Date(`${dueDate}T00:00:00.000Z`) > new Date(`${pawnedAt}T00:00:00.000Z`);
+    const durationDays = Number(getValue("durationDays"));
+    const durationHours = Number(getValue("durationHours"));
+    const durationMinutes = Number(getValue("durationMinutes"));
+    const durationSeconds = Number(getValue("durationSeconds"));
+    const hasValidDuration =
+      [durationDays, durationHours, durationMinutes, durationSeconds].every(Number.isInteger) &&
+      durationDays >= 0 &&
+      durationHours >= 0 && durationHours <= 23 &&
+      durationMinutes >= 0 && durationMinutes <= 59 &&
+      durationSeconds >= 0 && durationSeconds <= 59 &&
+      durationDays * 86_400 + durationHours * 3_600 + durationMinutes * 60 + durationSeconds > 0;
     const hasSpecifications = specificationFields
       .filter((field) => field.required !== false)
       .every((field) => getValue(`specifications.${field.key}`).length > 0);
@@ -518,7 +518,7 @@ export function AdminInventoryCreateForm() {
     setChecklist({
       hasMedia: nextMedia.length > 0,
       hasCoreData: ["name", "appraisalValue", "ownerName", "customerNumber"].every((name) => getValue(name).length > 0),
-      hasValidDates,
+      hasValidDuration,
       hasSpecifications
     });
   }
@@ -538,13 +538,7 @@ export function AdminInventoryCreateForm() {
 
   useEffect(() => {
     refreshChecklist();
-  }, [dueDate, pawnedAt]);
-
-  useEffect(() => {
-    if (new Date(`${dueDate}T00:00:00.000Z`) <= new Date(`${pawnedAt}T00:00:00.000Z`)) {
-      setDueDate(getDateAfter(pawnedAt, 30));
-    }
-  }, [dueDate, pawnedAt]);
+  }, [duration, pawnedAt]);
 
   useEffect(() => {
     if (!isMediaPreviewOpen) {
@@ -762,16 +756,34 @@ export function AdminInventoryCreateForm() {
             <FieldLabel htmlFor="appraisalValue">Nilai taksiran</FieldLabel>
             <MoneyInput id="appraisalValue" min={1} name="appraisalValue" placeholder="Masukkan nilai taksiran" required />
           </div>
-          <div className="space-y-1.5">
-            <AdminDatePicker
-              id="dueDate"
-              label="Tanggal jatuh tempo"
-              minDate={getDateAfter(pawnedAt, 1)}
-              name="dueDate"
-              onChange={setDueDate}
-              required
-              value={dueDate}
-            />
+          <div className="rounded-2xl border border-emerald-100 bg-[linear-gradient(145deg,#f5fbf7_0%,#ffffff_72%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] md:col-span-2">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+              <FieldLabel>Durasi jatuh tempo</FieldLabel>
+              <p className="text-xs font-medium text-slate-500">Pemasaran tersedia setelah durasi berakhir.</p>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {([
+                ["days", "durationDays", "Hari", undefined],
+                ["hours", "durationHours", "Jam", 23],
+                ["minutes", "durationMinutes", "Menit", 59],
+                ["seconds", "durationSeconds", "Detik", 59]
+              ] as const).map(([key, name, label, max]) => (
+                <div className="space-y-1.5" key={key}>
+                  <FieldLabel htmlFor={name}>{label}</FieldLabel>
+                  <Input
+                    className="h-11 rounded-xl border-emerald-100 bg-white text-sm font-bold tabular-nums text-slate-800 shadow-[0_10px_24px_-22px_rgba(0,103,71,0.7)] transition-[border-color,box-shadow,transform] duration-200 ease-out focus:border-[#006747]/45 focus:ring-[#bde8d0]/55"
+                    id={name}
+                    inputMode="numeric"
+                    max={max}
+                    min={0}
+                    name={name}
+                    onChange={(event) => setDuration((current) => ({ ...current, [key]: event.target.value }))}
+                    type="number"
+                    value={duration[key]}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="customerNumber">Nomor nasabah</FieldLabel>

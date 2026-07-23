@@ -458,7 +458,8 @@ describe("publishAdminBarang", () => {
       id: "barang-1",
       unitId: "unit-1",
       name: "Laptop ThinkPad",
-      status: "jaminan"
+      status: "jaminan",
+      dueDate: new Date("2026-05-11T08:30:45.000+08:00")
     };
     const createdRow = {
       id: "marketing-1",
@@ -537,6 +538,33 @@ describe("publishAdminBarang", () => {
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects marketing before the barang due deadline", async () => {
+    const item = {
+      id: "barang-belum-tempo",
+      unitId: "unit-1",
+      name: "Laptop Belum Tempo",
+      status: "jaminan",
+      dueDate: new Date("2026-05-12T08:35:45.000+08:00")
+    };
+
+    mocks.db.select.mockImplementationOnce(() => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([item])
+        })
+      })
+    }));
+
+    await expect(
+      publishAdminBarang("unit-1", "user-1", "barang-belum-tempo", {
+        mode: "fixed_price",
+        price: "1500000"
+      })
+    ).rejects.toThrow("Barang baru dapat dipasarkan setelah durasi jatuh tempo berakhir.");
+
+    expect(mocks.db.transaction).not.toHaveBeenCalled();
+  });
+
   it("allows a failed vickrey lot without bidders to be republished as harga tetap", async () => {
     const item = {
       id: "barang-failed",
@@ -548,7 +576,8 @@ describe("publishAdminBarang", () => {
       description: "Sesi lelang sebelumnya gagal karena tidak ada peserta.",
       appraisalValue: 10000000,
       specifications: {},
-      status: "dipasarkan"
+      status: "dipasarkan",
+      dueDate: new Date("2026-05-11T08:30:45.000+08:00")
     };
     const createdRow = {
       id: "marketing-fixed",
@@ -642,7 +671,8 @@ describe("publishAdminBarang", () => {
       description: "Sesi harga tetap aktif belum memiliki transaksi buyer.",
       appraisalValue: 15000000,
       specifications: {},
-      status: "dipasarkan"
+      status: "dipasarkan",
+      dueDate: new Date("2026-05-11T08:30:45.000+08:00")
     };
     const createdRow = {
       id: "marketing-fixed-new",

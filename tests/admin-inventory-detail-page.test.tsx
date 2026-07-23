@@ -38,6 +38,21 @@ describe("AdminInventoryDetailPage", () => {
     expect(screen.getByText(/riwayat kronologi aset/i)).toBeInTheDocument();
   });
 
+  it("locks marketing until the precise due deadline has elapsed", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={{
+          ...baseItem,
+          dueAt: "2099-05-01T00:05:00.000Z",
+          dueDateTime: "1 Mei 2099, 08.05"
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("link", { name: /pasarkan barang/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/menunggu jatuh tempo/i)).toBeInTheDocument();
+  });
+
   it("keeps failed auction remarketing available without edit access", () => {
     render(
       <AdminInventoryDetailPage

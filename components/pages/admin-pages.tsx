@@ -68,6 +68,7 @@ import {
 } from "@/components/admin-unit/admin-barang-media-manager";
 import { AdminExtensionForm } from "@/components/admin-unit/admin-extension-form";
 import { AdminInventoryCreateForm } from "@/components/admin-unit/admin-inventory-create-form";
+import { AdminMarketingAvailabilityAction } from "@/components/admin-unit/admin-marketing-availability-action";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { AdminRedeemForm } from "@/components/admin-unit/admin-redeem-form";
 import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
@@ -817,13 +818,6 @@ export function AdminInventoryDetailPage({
       icon: ReceiptText,
       variant: "secondary" as const,
     },
-    {
-      title: "Pasarkan Barang",
-      description:
-        "Pilih harga tetap atau Lelang Tertutup, lalu tayangkan ke katalog pembeli.",
-      href: `/admin/barang/${item.id}/pasarkan`,
-      icon: Megaphone,
-    },
   ];
 
   const actions =
@@ -907,7 +901,7 @@ export function AdminInventoryDetailPage({
       value: formatDisplayLabel(item.category),
       icon: Layers,
     },
-    { label: "Jatuh Tempo", value: item.dueDate || "-", icon: CalendarClock },
+    { label: "Jatuh Tempo", value: item.dueDateTime || item.dueDate || "-", icon: CalendarClock },
     {
       label: "Kondisi",
       value: formatDisplayLabel(item.condition),
@@ -962,6 +956,9 @@ export function AdminInventoryDetailPage({
             Tidak ada aksi lanjutan yang perlu dijalankan dari halaman ini.
           </div>
         )}
+        {item.status === "GADAI" || item.status === "JAMINAN" ? (
+          <AdminMarketingAvailabilityAction dueAt={item.dueAt} href={`/admin/barang/${item.id}/pasarkan`} />
+        ) : null}
       </div>
 
       <section className="space-y-5 rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_18px_44px_-36px_rgba(8,69,50,0.28)] lg:p-5">
