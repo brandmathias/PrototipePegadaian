@@ -1,0 +1,83 @@
+@startuml
+title Sequence Diagram Pengelolaan Barang
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor "Admin Unit" as Admin
+participant Frontend
+participant Backend
+participant Database
+
+Admin -> Frontend: Membuka halaman Kelola Barang
+Frontend -> Backend: Meminta daftar barang unit
+activate Backend
+Backend -> Database: Mengambil data barang dan statusnya
+activate Database
+Database --> Backend: Daftar barang unit
+deactivate Database
+Backend --> Frontend: Mengirim daftar barang
+Frontend --> Admin: Menampilkan daftar barang unit
+
+Admin -> Frontend: Memilih aksi pengelolaan barang
+
+alt Menambah barang baru
+  Admin -> Frontend: Mengisi data barang baru
+  Frontend -> Backend: Mengirim data barang
+  Backend -> Database: Memvalidasi dan menyimpan barang
+  activate Database
+  Database --> Backend: Barang berhasil disimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim data barang terbaru
+  Frontend --> Admin: Menampilkan barang baru pada daftar
+else Perpanjangan
+  Admin -> Frontend: Mengisi tanggal perpanjangan
+  Frontend -> Backend: Mengirim perubahan jatuh tempo
+  Backend -> Database: Memperbarui jatuh tempo\ndan menyimpan riwayat perpanjangan
+  activate Database
+  Database --> Backend: Perpanjangan berhasil disimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim status perpanjangan
+  Frontend --> Admin: Menampilkan tanggal jatuh tempo terbaru
+else Penebusan
+  Admin -> Frontend: Mengonfirmasi penebusan barang
+  Frontend -> Backend: Mengirim data penebusan
+  Backend -> Database: Memperbarui status barang menjadi ditebus\ndan menyimpan riwayat status
+  activate Database
+  Database --> Backend: Penebusan berhasil disimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim status penebusan
+  Frontend --> Admin: Menampilkan barang telah ditebus
+else Pemasaran
+  Admin -> Frontend: Memilih mode Harga Tetap\natau Lelang Tertutup dan mengisi data pemasaran
+  Frontend -> Backend: Mengirim data pemasaran
+  Backend -> Database: Memeriksa status dan tanggal jatuh tempo barang
+  activate Database
+  Database --> Backend: Hasil pemeriksaan jatuh tempo
+  deactivate Database
+
+  alt Barang belum jatuh tempo
+    Backend --> Frontend: Menolak pemasaran
+    Frontend --> Admin: Menampilkan barang belum dapat dipasarkan
+  else Barang sudah jatuh tempo
+    Backend -> Database: Menyimpan data pemasaran\ndan memperbarui status barang
+    activate Database
+    Database --> Backend: Pemasaran berhasil dibuat
+    deactivate Database
+    Backend --> Frontend: Mengirim status pemasaran aktif
+    Frontend --> Admin: Menampilkan barang siap dipasarkan
+  end
+end
+
+deactivate Backend
+@enduml

@@ -38,7 +38,7 @@ describe("AdminInventoryDetailPage", () => {
     expect(screen.getByText(/riwayat kronologi aset/i)).toBeInTheDocument();
   });
 
-  it("locks marketing until the precise due deadline has elapsed", () => {
+  it("shows the marketing action as a disabled button until the precise due deadline has elapsed", () => {
     render(
       <AdminInventoryDetailPage
         item={{
@@ -50,7 +50,8 @@ describe("AdminInventoryDetailPage", () => {
     );
 
     expect(screen.queryByRole("link", { name: /pasarkan barang/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/menunggu jatuh tempo/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pasarkan barang/i })).toBeDisabled();
+    expect(screen.queryByText(/menunggu jatuh tempo/i)).not.toBeInTheDocument();
   });
 
   it("keeps failed auction remarketing available without edit access", () => {

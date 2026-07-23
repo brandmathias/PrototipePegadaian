@@ -1,0 +1,97 @@
+@startuml
+title Sequence Diagram Pembelian Barang Harga Tetap
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Buyer
+participant Frontend
+participant Backend
+participant Database
+actor "Admin Unit" as Admin
+
+Buyer -> Frontend: Membuka detail barang Harga Tetap
+Frontend -> Backend: Meminta detail barang dan informasi pembayaran
+activate Backend
+Backend -> Database: Mengambil data barang, harga, dan rekening tujuan
+activate Database
+Database --> Backend: Detail barang Harga Tetap
+deactivate Database
+Backend --> Frontend: Mengirim detail pembelian
+deactivate Backend
+Frontend --> Buyer: Menampilkan detail dan instruksi pembayaran
+
+Buyer -> Frontend: Memulai pembelian, melakukan transfer,\ndan mengunggah bukti pembayaran
+Frontend -> Backend: Membuat transaksi dan mengunggah bukti pembayaran
+activate Backend
+Backend -> Database: Menyimpan transaksi dan bukti pembayaran
+activate Database
+Database --> Backend: Status menunggu verifikasi tersimpan
+deactivate Database
+Backend --> Frontend: Mengirim status menunggu verifikasi
+deactivate Backend
+Frontend --> Buyer: Menampilkan bukti pembayaran telah dikirim
+
+Admin -> Frontend: Membuka detail transaksi
+Frontend -> Backend: Meminta detail transaksi dan bukti pembayaran
+activate Backend
+Backend -> Database: Mengambil data transaksi dan bukti pembayaran
+activate Database
+Database --> Backend: Detail transaksi dan bukti pembayaran
+deactivate Database
+Backend --> Frontend: Mengirim detail transaksi
+deactivate Backend
+Frontend --> Admin: Menampilkan detail transaksi dan bukti pembayaran
+
+Admin -> Frontend: Memilih menerima atau menolak pembayaran
+Frontend -> Backend: Mengirim keputusan verifikasi pembayaran
+activate Backend
+
+alt Bukti pembayaran tidak valid
+  Backend -> Database: Menyimpan status pembayaran ditolak\ndan alasan penolakan
+  activate Database
+  Database --> Backend: Status penolakan tersimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim status pembayaran ditolak
+  Frontend --> Buyer: Menampilkan pembayaran ditolak dan alasannya
+  Frontend --> Admin: Menampilkan hasil verifikasi pembayaran
+else Bukti pembayaran valid
+  Backend -> Database: Menyimpan status pembayaran diterima
+  activate Database
+  Database --> Backend: Status pembayaran diterima
+  deactivate Database
+  Backend --> Frontend: Mengirim status pembayaran diterima
+  Frontend --> Buyer: Menampilkan pembayaran diterima\ndan instruksi pengambilan barang
+  Frontend --> Admin: Menampilkan status pembayaran diterima
+
+  Admin -> Frontend: Menyerahkan barang dan mengunggah\nbukti serah terima
+  Frontend -> Backend: Mengirim bukti serah terima
+  Backend -> Database: Menyimpan bukti serah terima
+  activate Database
+  Database --> Backend: Bukti serah terima tersimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim status bukti serah terima tersedia
+  Frontend --> Buyer: Menampilkan bukti serah terima dan\nopsi Pembelian Selesai
+
+  Buyer -> Frontend: Mengonfirmasi Pembelian Selesai
+  Frontend -> Backend: Mengirim konfirmasi penyelesaian transaksi
+  Backend -> Database: Memperbarui status transaksi menjadi selesai
+  activate Database
+  Database --> Backend: Transaksi selesai tersimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim status transaksi selesai
+  Frontend --> Buyer: Menampilkan transaksi telah selesai
+end
+
+deactivate Backend
+@enduml

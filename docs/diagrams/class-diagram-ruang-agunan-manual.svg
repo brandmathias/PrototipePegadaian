@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1110" viewBox="0 0 1600 1110">
+  <style>
+    .title { font: 700 24px Arial, sans-serif; fill: #151515; }
+    .class-title { font: 700 15px Arial, sans-serif; fill: #111; text-anchor: middle; }
+    .content { font: 13px Arial, sans-serif; fill: #161616; }
+    .method { font: 13px Arial, sans-serif; fill: #161616; }
+    .line { stroke: #303030; stroke-width: 1.3; fill: none; }
+    .box { fill: #fff; stroke: #222; stroke-width: 1.35; }
+    .sep { stroke: #333; stroke-width: 1; }
+    .multi { font: 12px Arial, sans-serif; fill: #222; }
+  </style>
+  <rect width="1600" height="1110" fill="#fff"/>
+  <text x="800" y="38" class="title" text-anchor="middle">Class Diagram Aplikasi Manajemen Barang Jaminan dan Pemasaran</text>
+
+  <!-- Relationship lines are placed behind the classes. -->
+  <path class="line" d="M790 155 H860"/>
+  <text x="800" y="147" class="content">0..*</text><text x="832" y="147" class="content">0..1</text>
+  <path class="line" d="M1080 182 H1300"/>
+  <polygon points="1080,182 1091,176 1102,182 1091,188" fill="#222"/>
+  <text x="1108" y="174" class="content">1</text><text x="1265" y="174" class="content">0..*</text>
+  <path class="line" d="M680 330 V365 H750 V410"/>
+  <text x="687" y="351" class="content">1</text><text x="757" y="400" class="content">0..*</text>
+  <path class="line" d="M970 305 V350 H810 V410"/>
+  <text x="976" y="330" class="content">1</text><text x="817" y="400" class="content">0..*</text>
+  <path class="line" d="M625 535 H455"/>
+  <polygon points="625,535 614,529 603,535 614,541" fill="#222"/>
+  <text x="603" y="525" class="content">1</text><text x="470" y="525" class="content">0..*</text>
+  <path class="line" d="M875 540 H1040"/>
+  <polygon points="875,540 886,534 897,540 886,546" fill="#222"/>
+  <text x="905" y="530" class="content">1</text><text x="1002" y="530" class="content">0..*</text>
+  <path class="line" d="M1040 600 H990 V805"/>
+  <polygon points="1040,600 1029,594 1018,600 1029,606" fill="#222"/>
+  <text x="1010" y="590" class="content">1</text><text x="997" y="795" class="content">0..*</text>
+  <path class="line" d="M1165 670 V755"/>
+  <text x="1172" y="715" class="content">1</text><text x="1172" y="747" class="content">0..*</text>
+  <path class="line" d="M1110 790 H1040 V730 H655 V875 H610"/>
+  <text x="1090" y="780" class="content">1</text><text x="618" y="865" class="content">0..1</text>
+  <path class="line" d="M370 885 H300 V880 H300"/>
+  <text x="332" y="875" class="content">0..*</text><text x="304" y="875" class="content">1</text>
+
+  <!-- User -->
+  <rect class="box" x="570" y="80" width="220" height="250"/>
+  <line class="sep" x1="570" y1="112" x2="790" y2="112"/><line class="sep" x1="570" y1="248" x2="790" y2="248"/>
+  <text x="680" y="101" class="class-title">User</text>
+  <text x="580" y="132" class="content"><tspan x="580" dy="0">- id: string</tspan><tspan x="580" dy="18">- name: string</tspan><tspan x="580" dy="18">- email: string</tspan><tspan x="580" dy="18">- role: string</tspan><tspan x="580" dy="18">- phoneNumber: string</tspan><tspan x="580" dy="18">- nationalId: string</tspan><tspan x="580" dy="18">- isActive: boolean</tspan></text>
+  <text x="580" y="269" class="method"><tspan x="580" dy="0">+ login()</tspan><tspan x="580" dy="18">+ updateProfile()</tspan><tspan x="580" dy="18">+ kelolaAkunUnit()</tspan></text>
+
+  <!-- Unit -->
+  <rect class="box" x="860" y="80" width="220" height="225"/>
+  <line class="sep" x1="860" y1="112" x2="1080" y2="112"/><line class="sep" x1="860" y1="230" x2="1080" y2="230"/>
+  <text x="970" y="101" class="class-title">Unit</text>
+  <text x="870" y="132" class="content"><tspan x="870" dy="0">- id: string</tspan><tspan x="870" dy="18">- code: string</tspan><tspan x="870" dy="18">- name: string</tspan><tspan x="870" dy="18">- address: string</tspan><tspan x="870" dy="18">- domicile: string</tspan><tspan x="870" dy="18">- isActive: boolean</tspan></text>
+  <text x="870" y="251" class="method"><tspan x="870" dy="0">+ tambahUnit()</tspan><tspan x="870" dy="18">+ ubahUnit()</tspan><tspan x="870" dy="18">+ kelolaRekening()</tspan></text>
+
+  <!-- Rekening Unit -->
+  <rect class="box" x="1300" y="95" width="220" height="210"/>
+  <line class="sep" x1="1300" y1="127" x2="1520" y2="127"/><line class="sep" x1="1300" y1="245" x2="1520" y2="245"/>
+  <text x="1410" y="116" class="class-title">RekeningUnit</text>
+  <text x="1310" y="147" class="content"><tspan x="1310" dy="0">- id: string</tspan><tspan x="1310" dy="18">- bankName: string</tspan><tspan x="1310" dy="18">- accountNumber: string</tspan><tspan x="1310" dy="18">- accountHolderName: string</tspan><tspan x="1310" dy="18">- branchName: string</tspan><tspan x="1310" dy="18">- isActive: boolean</tspan></text>
+  <text x="1310" y="266" class="method"><tspan x="1310" dy="0">+ simpanRekening()</tspan><tspan x="1310" dy="18">+ setRekeningAktif()</tspan></text>
+
+  <!-- Riwayat Perpanjangan -->
+  <rect class="box" x="225" y="430" width="230" height="185"/>
+  <line class="sep" x1="225" y1="462" x2="455" y2="462"/><line class="sep" x1="225" y1="570" x2="455" y2="570"/>
+  <text x="340" y="451" class="class-title">RiwayatPerpanjangan</text>
+  <text x="235" y="482" class="content"><tspan x="235" dy="0">- id: string</tspan><tspan x="235" dy="18">- oldDueDate: DateTime</tspan><tspan x="235" dy="18">- newDueDate: DateTime</tspan><tspan x="235" dy="18">- note: string</tspan><tspan x="235" dy="18">- createdAt: DateTime</tspan></text>
+  <text x="235" y="591" class="method">+ catatPerpanjangan()</text>
+
+  <!-- Barang -->
+  <rect class="box" x="625" y="410" width="250" height="280"/>
+  <line class="sep" x1="625" y1="442" x2="875" y2="442"/><line class="sep" x1="625" y1="607" x2="875" y2="607"/>
+  <text x="750" y="431" class="class-title">Barang</text>
+  <text x="635" y="462" class="content"><tspan x="635" dy="0">- id: string</tspan><tspan x="635" dy="18">- code: string</tspan><tspan x="635" dy="18">- name: string</tspan><tspan x="635" dy="18">- category: string</tspan><tspan x="635" dy="18">- condition: string</tspan><tspan x="635" dy="18">- appraisalValue: decimal</tspan><tspan x="635" dy="18">- ownerName: string</tspan><tspan x="635" dy="18">- dueDate: DateTime</tspan><tspan x="635" dy="18">- status: string</tspan></text>
+  <text x="635" y="628" class="method"><tspan x="635" dy="0">+ tambahBarang()</tspan><tspan x="635" dy="18">+ ubahBarang()</tspan><tspan x="635" dy="18">+ perpanjangJatuhTempo()</tspan><tspan x="635" dy="18">+ tebusBarang()</tspan></text>
+
+  <!-- Pemasaran -->
+  <rect class="box" x="1040" y="420" width="250" height="250"/>
+  <line class="sep" x1="1040" y1="452" x2="1290" y2="452"/><line class="sep" x1="1040" y1="598" x2="1290" y2="598"/>
+  <text x="1165" y="441" class="class-title">Pemasaran</text>
+  <text x="1050" y="472" class="content"><tspan x="1050" dy="0">- id: string</tspan><tspan x="1050" dy="18">- mode: string</tspan><tspan x="1050" dy="18">- price: decimal</tspan><tspan x="1050" dy="18">- basePrice: decimal</tspan><tspan x="1050" dy="18">- startsAt: DateTime</tspan><tspan x="1050" dy="18">- endsAt: DateTime</tspan><tspan x="1050" dy="18">- finalPrice: decimal</tspan><tspan x="1050" dy="18">- status: string</tspan></text>
+  <text x="1050" y="619" class="method"><tspan x="1050" dy="0">+ pasarkanHargaTetap()</tspan><tspan x="1050" dy="18">+ pasarkanLelangTertutup()</tspan><tspan x="1050" dy="18">+ selesaikanLelang()</tspan></text>
+
+  <!-- Bid -->
+  <rect class="box" x="770" y="805" width="220" height="180"/>
+  <line class="sep" x1="770" y1="837" x2="990" y2="837"/><line class="sep" x1="770" y1="945" x2="990" y2="945"/>
+  <text x="880" y="826" class="class-title">Bid</text>
+  <text x="780" y="857" class="content"><tspan x="780" dy="0">- id: string</tspan><tspan x="780" dy="18">- bidHash: string</tspan><tspan x="780" dy="18">- nominal: decimal</tspan><tspan x="780" dy="18">- revealedAt: DateTime</tspan><tspan x="780" dy="18">- createdAt: DateTime</tspan></text>
+  <text x="780" y="966" class="method"><tspan x="780" dy="0">+ buatPenawaran()</tspan><tspan x="780" dy="18">+ revealPenawaran()</tspan></text>
+
+  <!-- Transaksi -->
+  <rect class="box" x="1110" y="755" width="270" height="350"/>
+  <line class="sep" x1="1110" y1="787" x2="1380" y2="787"/><line class="sep" x1="1110" y1="987" x2="1380" y2="987"/>
+  <text x="1245" y="776" class="class-title">Transaksi</text>
+  <text x="1120" y="807" class="content"><tspan x="1120" dy="0">- id: string</tspan><tspan x="1120" dy="18">- type: string</tspan><tspan x="1120" dy="18">- amount: decimal</tspan><tspan x="1120" dy="18">- status: string</tspan><tspan x="1120" dy="18">- proofUrl: string</tspan><tspan x="1120" dy="18">- rejectionReason: string</tspan><tspan x="1120" dy="18">- paymentDeadline: DateTime</tspan><tspan x="1120" dy="18">- verifiedAt: DateTime</tspan><tspan x="1120" dy="18">- handoverProofUrl: string</tspan><tspan x="1120" dy="18">- completedAt: DateTime</tspan></text>
+  <text x="1120" y="1008" class="method"><tspan x="1120" dy="0">+ uploadBuktiPembayaran()</tspan><tspan x="1120" dy="18">+ verifikasiPembayaran()</tspan><tspan x="1120" dy="18">+ unggahBuktiSerahTerima()</tspan><tspan x="1120" dy="18">+ konfirmasiSelesai()</tspan></text>
+
+  <!-- Pelanggaran User -->
+  <rect class="box" x="370" y="790" width="240" height="190"/>
+  <line class="sep" x1="370" y1="822" x2="610" y2="822"/><line class="sep" x1="370" y1="912" x2="610" y2="912"/>
+  <text x="490" y="811" class="class-title">PelanggaranUser</text>
+  <text x="380" y="842" class="content"><tspan x="380" dy="0">- id: string</tspan><tspan x="380" dy="18">- note: string</tspan><tspan x="380" dy="18">- escalationEligible: boolean</tspan><tspan x="380" dy="18">- createdAt: DateTime</tspan></text>
+  <text x="380" y="933" class="method"><tspan x="380" dy="0">+ catatPelanggaran()</tspan><tspan x="380" dy="18">+ tentukanLevelPelanggaran()</tspan></text>
+
+  <!-- Blacklist -->
+  <rect class="box" x="80" y="800" width="220" height="170"/>
+  <line class="sep" x1="80" y1="832" x2="300" y2="832"/><line class="sep" x1="80" y1="922" x2="300" y2="922"/>
+  <text x="190" y="821" class="class-title">Blacklist</text>
+  <text x="90" y="852" class="content"><tspan x="90" dy="0">- id: string</tspan><tspan x="90" dy="18">- totalViolations: integer</tspan><tspan x="90" dy="18">- isActive: boolean</tspan><tspan x="90" dy="18">- blockedAt: DateTime</tspan><tspan x="90" dy="18">- blockedUntil: DateTime</tspan></text>
+  <text x="90" y="943" class="method"><tspan x="90" dy="0">+ aktifkanPembatasan()</tspan><tspan x="90" dy="18">+ pulihkanAkses()</tspan></text>
+</svg>

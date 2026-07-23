@@ -1,0 +1,134 @@
+@startuml
+title Sequence Diagram Pembelian Barang Lelang Tertutup
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Buyer
+actor "Admin Unit" as Admin
+participant Frontend
+participant Backend
+participant "Cron Otomatis" as Cron
+participant Database
+
+Buyer -> Frontend: Membuka detail barang Lelang Tertutup
+Frontend -> Backend: Meminta detail lelang dan harga dasar
+activate Backend
+Backend -> Database: Mengambil detail barang, harga dasar,\ndan waktu akhir lelang
+activate Database
+Database --> Backend: Data lelang aktif
+deactivate Database
+Backend --> Frontend: Mengirim detail lelang
+Frontend --> Buyer: Menampilkan detail dan aturan penawaran
+
+Buyer -> Frontend: Menyetujui aturan dan memasukkan nominal bid
+Frontend -> Backend: Mengirim penawaran tertutup
+Backend -> Database: Memvalidasi nominal bid terhadap harga dasar
+activate Database
+Database --> Backend: Hasil validasi penawaran
+deactivate Database
+
+alt Nominal bid tidak memenuhi harga dasar
+  Backend --> Frontend: Menolak penawaran
+  Frontend --> Buyer: Menampilkan nominal penawaran tidak valid
+else Nominal bid valid
+  Backend -> Database: Menyimpan bid tertutup
+  activate Database
+  Database --> Backend: Bid berhasil dicatat
+  deactivate Database
+  Backend --> Frontend: Mengirim konfirmasi penawaran
+  Frontend --> Buyer: Menampilkan penawaran berhasil direkam
+
+  Cron -> Backend: Menjalankan settlement saat waktu lelang berakhir
+  activate Cron
+  Backend -> Database: Mengambil seluruh bid yang valid
+  activate Database
+  Database --> Backend: Data peserta dan bid tertutup
+  deactivate Database
+
+  alt Tidak ada penawaran valid
+    Backend -> Database: Menetapkan lelang gagal\ndan memperbarui status barang
+    activate Database
+    Database --> Backend: Status lelang gagal tersimpan
+    deactivate Database
+    Backend --> Frontend: Mengirim informasi lelang gagal
+    Frontend --> Buyer: Menampilkan lelang tidak memiliki pemenang
+    Backend --> Cron: Settlement lelang selesai
+    deactivate Cron
+  else Ada penawaran valid
+    Backend -> Database: Menentukan pemenang dan harga akhir\nsesuai metode Vickrey, lalu membuat transaksi
+    activate Database
+    Database --> Backend: Pemenang dan batas pembayaran 24 jam
+    deactivate Database
+    Backend --> Frontend: Mengirim notifikasi hasil lelang
+    Frontend --> Buyer: Menampilkan status pemenang/bukan pemenang\ndan batas pembayaran
+    Backend --> Cron: Settlement lelang selesai
+    deactivate Cron
+
+    alt Pemenang membayar dalam 24 jam
+      Admin -> Frontend: Membuka detail transaksi dan bukti pembayaran
+      Frontend -> Backend: Meminta detail transaksi dan bukti pembayaran
+      Backend -> Database: Mengambil data transaksi dan bukti pembayaran
+      activate Database
+      Database --> Backend: Detail transaksi dan bukti pembayaran
+      deactivate Database
+      Backend --> Frontend: Mengirim detail transaksi
+      Frontend --> Admin: Menampilkan detail transaksi dan bukti pembayaran
+
+      Admin -> Frontend: Memilih pembayaran diterima
+      Frontend -> Backend: Mengirim hasil verifikasi pembayaran
+      Backend -> Database: Memperbarui status pembayaran diterima
+      activate Database
+      Database --> Backend: Pembayaran terverifikasi
+      deactivate Database
+      Backend --> Frontend: Mengirim hasil verifikasi pembayaran
+      Frontend --> Admin: Menampilkan pembayaran terverifikasi
+      Backend --> Frontend: Mengirim instruksi serah terima
+      Frontend --> Buyer: Menampilkan pembayaran diterima\ndan instruksi pengambilan barang
+
+      Admin -> Frontend: Menyerahkan barang dan mengunggah\nbukti serah terima
+      Frontend -> Backend: Mengirim bukti serah terima
+      Backend -> Database: Menyimpan bukti serah terima
+      activate Database
+      Database --> Backend: Bukti serah terima tersimpan
+      deactivate Database
+      Backend --> Frontend: Mengonfirmasi bukti serah terima tersimpan
+      Frontend --> Admin: Menampilkan bukti serah terima tersimpan
+      Backend --> Frontend: Mengirim opsi penyelesaian transaksi
+      Frontend --> Buyer: Menampilkan bukti serah terima\ndan tombol Pembelian Selesai
+
+      Buyer -> Frontend: Mengonfirmasi Pembelian Selesai
+      Frontend -> Backend: Mengirim konfirmasi penyelesaian
+      Backend -> Database: Memperbarui status transaksi menjadi selesai
+      activate Database
+      Database --> Backend: Transaksi selesai tersimpan
+      deactivate Database
+      Backend --> Frontend: Mengirim status transaksi selesai
+      Frontend --> Buyer: Menampilkan transaksi telah selesai
+    else Pemenang tidak membayar hingga 24 jam
+      Cron -> Backend: Memproses transaksi yang melewati batas pembayaran
+      activate Cron
+      Backend -> Database: Membatalkan transaksi, mencatat pelanggaran,\ndan mengaktifkan pembatasan bila diperlukan
+      activate Database
+      Database --> Backend: Pelanggaran dan status gagal tersimpan
+      deactivate Database
+      Backend --> Cron: Pemrosesan pelanggaran selesai
+      deactivate Cron
+      Backend --> Frontend: Mengirim informasi pembayaran terlambat
+      Frontend --> Buyer: Menampilkan transaksi gagal dan status pelanggaran
+    end
+  end
+end
+
+deactivate Backend
+@enduml

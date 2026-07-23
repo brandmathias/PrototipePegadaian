@@ -1,0 +1,55 @@
+@startuml
+title Sequence Diagram Manajemen Unit dan Akun Admin Unit
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Superadmin
+participant Frontend
+participant Backend
+participant Database
+
+Superadmin -> Frontend: Membuka halaman Manajemen Unit
+Frontend -> Backend: Meminta data unit dan akun admin unit
+activate Backend
+Backend -> Database: Mengambil data unit, rekening unit,\ndan akun admin unit
+activate Database
+Database --> Backend: Data manajemen unit
+deactivate Database
+Backend --> Frontend: Mengirim daftar unit dan admin unit
+Frontend --> Superadmin: Menampilkan daftar unit dan admin unit
+
+Superadmin -> Frontend: Memilih Tambah atau Kelola Unit
+Frontend --> Superadmin: Menampilkan formulir unit dan admin unit
+Superadmin -> Frontend: Mengisi atau memperbarui data unit,\nrekening, dan akun admin unit
+Frontend -> Backend: Mengirim data manajemen unit
+
+Backend -> Database: Memvalidasi kode unit, unit tujuan,\nemail, dan nomor telepon admin
+activate Database
+Database --> Backend: Hasil validasi data
+deactivate Database
+
+alt Data tidak valid atau sudah digunakan
+  Backend --> Frontend: Mengirim pesan kesalahan validasi
+  Frontend --> Superadmin: Menampilkan pesan kesalahan
+else Data valid
+  Backend -> Database: Menyimpan atau memperbarui data unit,\nrekening, dan akun admin unit
+  activate Database
+  Database --> Backend: Data berhasil disimpan
+  deactivate Database
+  Backend --> Frontend: Mengirim hasil penyimpanan
+  Frontend --> Superadmin: Menampilkan daftar data terbaru
+end
+
+deactivate Backend
+@enduml

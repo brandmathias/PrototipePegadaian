@@ -1,0 +1,97 @@
+@startuml
+title Sequence Diagram Pelanggaran Buyer
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Buyer
+participant Frontend
+participant Backend
+participant Database
+participant "Cron Otomatis" as Cron
+
+Cron -> Backend: Memeriksa transaksi Lelang Tertutup\nyang melewati batas pembayaran 24 jam
+activate Backend
+Backend -> Database: Mengambil transaksi pemenang\nyang belum dibayar
+activate Database
+Database --> Backend: Data transaksi terlambat
+deactivate Database
+
+Backend -> Database: Membatalkan transaksi dan\nmencatat pelanggaran buyer
+activate Database
+Database --> Backend: Pelanggaran tercatat
+deactivate Database
+
+Backend -> Database: Memeriksa riwayat pelanggaran buyer
+activate Database
+Database --> Backend: Total pelanggaran sebelumnya
+deactivate Database
+Backend -> Database: Menentukan level, masa pembatasan,\ndan fitur yang dibatasi
+activate Database
+Database --> Backend: Status pembatasan aktif
+deactivate Database
+
+alt Level 1: 7 hari
+  note right of Backend
+  <b>Level 1 — 7 hari</b>
+  Tidak dapat menawar pada Lelang Tertutup.
+  Harga Tetap masih dapat dibeli.
+  end note
+  Backend --> Frontend: Mengirim pembatasan penawaran\nLelang Tertutup
+  Frontend --> Buyer: Menampilkan Level 1 dan waktu berakhir
+else Level 2: 30 hari
+  note right of Backend
+  <b>Level 2 — 30 hari</b>
+  Tidak dapat menawar pada Lelang Tertutup.
+  Tidak dapat membeli barang Harga Tetap.
+  end note
+  Backend --> Frontend: Mengirim pembatasan Lelang Tertutup\ndan pembelian Harga Tetap
+  Frontend --> Buyer: Menampilkan Level 2 dan waktu berakhir
+else Level 3: 365 hari
+  note right of Backend
+  <b>Level 3 — 365 hari</b>
+  Akun ditangguhkan.
+  Buyer tidak dapat login.
+  Akses fitur sistem dinonaktifkan.
+  end note
+  Backend -> Database: Menonaktifkan akun dan menghapus sesi aktif
+  activate Database
+  Database --> Backend: Akun ditangguhkan
+  deactivate Database
+  Backend --> Frontend: Mengirim informasi penangguhan akun\ndan waktu akses dibuka kembali
+  Frontend --> Buyer: Menampilkan Level 3 saat mencoba login
+end
+
+note right of Backend
+<b>Catatan audit</b>
+Riwayat pelanggaran tetap disimpan
+untuk kebutuhan penelusuran.
+end note
+
+Cron -> Backend: Memeriksa masa pembatasan yang telah berakhir
+Backend -> Database: Menonaktifkan blacklist aktif dan,\nuntuk Level 3, mengaktifkan kembali akun
+activate Database
+Database --> Backend: Akses buyer dipulihkan
+deactivate Database
+
+Buyer -> Frontend: Mengakses kembali fitur yang sebelumnya dibatasi
+Frontend -> Backend: Memeriksa status pembatasan buyer
+Backend -> Database: Membaca status pembatasan terbaru
+activate Database
+Database --> Backend: Tidak ada pembatasan aktif
+deactivate Database
+Backend --> Frontend: Mengizinkan akses fitur sesuai peran
+Frontend --> Buyer: Menampilkan fitur yang kembali dapat diakses
+
+deactivate Backend
+@enduml

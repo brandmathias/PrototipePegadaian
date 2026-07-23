@@ -1,0 +1,172 @@
+@startuml
+title Entity Relationship Diagram (ERD) Ruang Agunan
+
+left to right direction
+hide circle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 6
+skinparam entity {
+  BorderColor #6B7280
+  BackgroundColor #FFFFFF
+  FontColor #111827
+}
+
+' ERD fisik domain utama. Seluruh tabel dan kolom yang ditampilkan
+' menggunakan nama yang benar-benar ada pada skema database aplikasi.
+' Tabel sesi, akun autentikasi, notifikasi, audit, dan riwayat pendukung
+' tidak ditampilkan agar ERD tetap terbaca dalam satu halaman skripsi.
+
+entity "user" as User {
+  * id <<PK>>
+  --
+  name
+  email
+  role
+  phoneNumber
+  nationalId
+  unitId
+  isActive
+}
+
+entity "units" as Unit {
+  * id <<PK>>
+  --
+  code
+  name
+  address
+  domicile
+  isActive
+}
+
+entity "rekening_unit" as RekeningUnit {
+  * id <<PK>>
+  --
+  unitId <<FK>>
+  bankName
+  accountNumber
+  accountHolderName
+  isActive
+}
+
+entity "buyer_profile" as BuyerProfile {
+  * id <<PK>>
+  --
+  userId <<FK>>
+  fullName
+  email
+  phoneNumber
+  nationalId
+  status
+}
+
+entity "barang" as Barang {
+  * id <<PK>>
+  --
+  unitId <<FK>>
+  createdByUserId <<FK>>
+  code
+  name
+  category
+  appraisalValue
+  dueDate
+  status
+}
+
+entity "media_barang" as MediaBarang {
+  * id <<PK>>
+  --
+  barangId <<FK>>
+  type
+  url
+  fileName
+  sortOrder
+}
+
+entity "pemasaran" as Pemasaran {
+  * id <<PK>>
+  --
+  barangId <<FK>>
+  winnerId <<FK>>
+  createdByUserId <<FK>>
+  mode
+  price
+  basePrice
+  endsAt
+  status
+}
+
+entity "bid" as Bid {
+  * id <<PK>>
+  --
+  pemasaranId <<FK>>
+  userId <<FK>>
+  bidHash
+  encryptedBidPayload
+  nominal
+  revealedAt
+}
+
+entity "transaksi" as Transaksi {
+  * id <<PK>>
+  --
+  pemasaranId <<FK>>
+  userId <<FK>>
+  verifiedByUserId <<FK>>
+  type
+  amount
+  status
+  paymentDeadline
+  proofUrl
+}
+
+entity "pelanggaran_user" as PelanggaranUser {
+  * id <<PK>>
+  --
+  userId <<FK>>
+  pemasaranId <<FK>>
+  transaksiId <<FK>>
+  unitId <<FK>>
+  note
+  escalationEligible
+}
+
+entity "blacklist" as Blacklist {
+  * id <<PK>>
+  --
+  userId <<FK>>
+  unitId <<FK>>
+  nationalId
+  totalViolations
+  blockedAt
+  blockedUntil
+  isActive
+}
+
+User }o--|| Unit : unitId (relasi logis)
+Unit ||--o{ RekeningUnit : unitId
+Unit ||--o{ Barang : unitId
+User ||--o{ Barang : createdByUserId
+User ||--o| BuyerProfile : userId
+Barang ||--o{ MediaBarang : barangId
+Barang ||--o{ Pemasaran : barangId
+User ||--o{ Pemasaran : winnerId / createdByUserId
+Pemasaran ||--o{ Bid : pemasaranId
+User ||--o{ Bid : userId
+Pemasaran ||--o{ Transaksi : pemasaranId
+User ||--o{ Transaksi : userId / verifiedByUserId
+Transaksi ||--o{ PelanggaranUser : transaksiId
+Pemasaran ||--o{ PelanggaranUser : pemasaranId
+User ||--o{ PelanggaranUser : userId
+Unit ||--o{ PelanggaranUser : unitId
+User ||--o{ Blacklist : userId
+Unit ||--o{ Blacklist : unitId
+
+legend right
+  *  Primary Key (PK)
+  <<FK>>  Foreign Key (FK)
+  user.unitId merupakan kolom penugasan admin unit
+  yang berindeks, tetapi belum memiliki constraint FK eksplisit.
+endlegend
+
+@enduml

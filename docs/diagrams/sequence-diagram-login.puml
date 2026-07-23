@@ -1,0 +1,60 @@
+@startuml
+title Sequence Diagram Login
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Pengguna
+participant Frontend
+participant Backend
+participant Database
+
+Pengguna -> Frontend: Membuka halaman login
+Frontend --> Pengguna: Menampilkan formulir login
+
+Pengguna -> Frontend: Mengisi email dan kata sandi\nkemudian menekan tombol Masuk
+Frontend -> Backend: Mengirim permintaan login
+activate Backend
+Backend -> Database: Memeriksa akun, kredensial,\nstatus akun, dan peran pengguna
+activate Database
+Database --> Backend: Hasil validasi dan data pengguna
+deactivate Database
+
+alt Kredensial tidak valid
+  Backend --> Frontend: Mengirim pesan kredensial tidak valid
+  Frontend --> Pengguna: Menampilkan pesan kesalahan
+else Buyer ditangguhkan karena Level 3
+  Backend -> Database: Mengambil data blacklist\ndan waktu berakhir penangguhan
+  activate Database
+  Database --> Backend: Status penangguhan aktif
+  deactivate Database
+  Backend --> Frontend: Menolak login beserta informasi\nwaktu akses dibuka kembali
+  Frontend --> Pengguna: Menampilkan pemberitahuan penangguhan
+else Kredensial valid dan akun aktif
+  Backend -> Database: Membuat sesi autentikasi
+  activate Database
+  Database --> Backend: Sesi berhasil dibuat
+  deactivate Database
+  Backend --> Frontend: Mengirim hasil login dan peran pengguna
+
+  alt Peran Buyer
+    Frontend --> Pengguna: Menampilkan Dashboard Buyer
+  else Peran Admin Unit
+    Frontend --> Pengguna: Menampilkan Dashboard Admin Unit
+  else Peran Superadmin
+    Frontend --> Pengguna: Menampilkan Dashboard Superadmin
+  end
+end
+
+deactivate Backend
+@enduml

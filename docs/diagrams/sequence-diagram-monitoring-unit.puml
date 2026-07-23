@@ -1,0 +1,61 @@
+@startuml
+title Sequence Diagram Monitoring Unit oleh Superadmin
+hide footbox
+
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #999999
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #777777
+  ParticipantBackgroundColor #EDEDF5
+  ActorBorderColor #777777
+  ActorBackgroundColor #FFFFFF
+}
+
+actor Superadmin
+participant Frontend
+participant Backend
+participant Database
+
+Superadmin -> Frontend: Membuka halaman Monitoring Unit
+Frontend -> Backend: Meminta ringkasan monitoring lintas unit
+activate Backend
+Backend -> Database: Mengambil agregat unit, barang, pemasaran,\ntransaksi, dan indikator operasional
+activate Database
+Database --> Backend: Data ringkasan lintas unit
+deactivate Database
+Backend --> Frontend: Mengirim ringkasan monitoring
+Frontend --> Superadmin: Menampilkan ringkasan lintas unit
+
+Superadmin -> Frontend: Memilih periode atau unit yang ingin dipantau
+Frontend -> Backend: Meminta data perbandingan sesuai filter
+Backend -> Database: Mengambil metrik performa unit\nsesuai periode atau unit terpilih
+activate Database
+Database --> Backend: Data perbandingan unit
+deactivate Database
+Backend --> Frontend: Mengirim daftar perbandingan unit
+Frontend --> Superadmin: Menampilkan daftar perbandingan unit
+
+alt Superadmin membuka detail unit
+  Superadmin -> Frontend: Memilih Lihat Detail pada unit
+  Frontend -> Backend: Meminta detail performa unit
+  Backend -> Database: Mengambil performa unit, jumlah barang,\ndetail barang, dan detail penjualan
+  activate Database
+  Database --> Backend: Data detail performa unit
+  deactivate Database
+  Backend --> Frontend: Mengirim detail unit
+  Frontend --> Superadmin: Menampilkan detail performa unit
+else Superadmin tidak membuka detail unit
+  Frontend --> Superadmin: Tetap menampilkan daftar perbandingan unit
+end
+
+note right of Backend
+Monitoring bersifat read-only.
+Superadmin meninjau data tanpa
+melakukan aksi operasional unit.
+end note
+
+deactivate Backend
+@enduml

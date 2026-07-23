@@ -1,0 +1,158 @@
+@startuml
+
+left to right direction
+hide circle
+hide stereotype
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 0
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+title Class Diagram Aplikasi Manajemen Barang Jaminan dan Pemasaran
+
+class User {
+  - id: string
+  - name: string
+  - email: string
+  - role: string
+  - phoneNumber: string
+  - nationalId: string
+  - isActive: boolean
+  --
+  + login()
+  + updateProfile()
+  + kelolaAkunUnit()
+}
+
+class Unit {
+  - id: string
+  - code: string
+  - name: string
+  - address: string
+  - domicile: string
+  - isActive: boolean
+  --
+  + tambahUnit()
+  + ubahUnit()
+  + kelolaRekening()
+}
+
+class RekeningUnit {
+  - id: string
+  - bankName: string
+  - accountNumber: string
+  - accountHolderName: string
+  - branchName: string
+  - isActive: boolean
+  --
+  + simpanRekening()
+  + setRekeningAktif()
+}
+
+class Barang {
+  - id: string
+  - code: string
+  - name: string
+  - category: string
+  - condition: string
+  - appraisalValue: decimal
+  - ownerName: string
+  - dueDate: DateTime
+  - status: string
+  --
+  + tambahBarang()
+  + ubahBarang()
+  + perpanjangJatuhTempo()
+  + tebusBarang()
+}
+
+class RiwayatPerpanjangan {
+  - id: string
+  - oldDueDate: DateTime
+  - newDueDate: DateTime
+  - note: string
+  - createdAt: DateTime
+  --
+  + catatPerpanjangan()
+}
+
+class Pemasaran {
+  - id: string
+  - mode: string
+  - price: decimal
+  - basePrice: decimal
+  - startsAt: DateTime
+  - endsAt: DateTime
+  - finalPrice: decimal
+  - status: string
+  --
+  + pasarkanHargaTetap()
+  + pasarkanLelangTertutup()
+  + selesaikanLelang()
+}
+
+class Bid {
+  - id: string
+  - bidHash: string
+  - nominal: decimal
+  - revealedAt: DateTime
+  - createdAt: DateTime
+  --
+  + buatPenawaran()
+  + revealPenawaran()
+}
+
+class Transaksi {
+  - id: string
+  - type: string
+  - amount: decimal
+  - status: string
+  - proofUrl: string
+  - rejectionReason: string
+  - paymentDeadline: DateTime
+  - verifiedAt: DateTime
+  - handoverProofUrl: string
+  - completedAt: DateTime
+  --
+  + uploadBuktiPembayaran()
+  + verifikasiPembayaran()
+  + unggahBuktiSerahTerima()
+  + konfirmasiSelesai()
+}
+
+class PelanggaranUser {
+  - id: string
+  - note: string
+  - escalationEligible: boolean
+  - createdAt: DateTime
+  --
+  + catatPelanggaran()
+  + tentukanLevelPelanggaran()
+}
+
+class Blacklist {
+  - id: string
+  - totalViolations: integer
+  - isActive: boolean
+  - blockedAt: DateTime
+  - blockedUntil: DateTime
+  --
+  + aktifkanPembatasan()
+  + pulihkanAkses()
+}
+
+User "0..*" -right- "0..1" Unit
+Unit "1" *-right- "0..*" RekeningUnit
+User "1" -down- "0..*" Barang
+Unit "1" -down- "0..*" Barang
+Barang "1" *-down- "0..*" RiwayatPerpanjangan
+Barang "1" *-right- "0..*" Pemasaran
+Pemasaran "1" *-up- "0..*" Bid
+Pemasaran "1" -down- "0..*" Transaksi
+Transaksi "1" -up- "0..1" PelanggaranUser
+PelanggaranUser "0..*" -down- "1" Blacklist
+
+@enduml
