@@ -406,7 +406,7 @@ describe("admin pemasaran pages", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
-    const dialog = screen.getByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i });
+    const dialog = screen.getByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i });
 
     expect(within(dialog).getByText(/kewajiban nominal harga tetap/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
@@ -495,7 +495,7 @@ describe("admin pemasaran pages", () => {
 
     expect(verifyButton).toBeEnabled();
     fireEvent.click(verifyButton);
-    expect(screen.getByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i })).toBeInTheDocument();
   });
 
   it("auto-refreshes detail harga tetap while payment is still waiting on buyer or admin action", () => {
@@ -694,7 +694,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!).toHaveTextContent("Terverifikasi admin");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-utama.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("dialog", { name: /verifikasi pelunasan dana harga tetap/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i })).not.toBeInTheDocument();
 
     printSpy.mockRestore();
   });
@@ -761,7 +761,7 @@ describe("admin pemasaran pages", () => {
       const isolatedReceipt = printFrame.contentDocument?.getElementById("fixed-price-receipt-print-root-trx-fixed-paid");
       expect(isolatedReceipt).not.toBeNull();
       expect(isolatedReceipt?.textContent).toContain("Nota Pengambilan Barang");
-      expect(isolatedReceipt?.textContent).not.toContain("Verifikasi Pelunasan Dana Harga Tetap");
+    expect(isolatedReceipt?.textContent).not.toContain("Verifikasi Bukti Pembayaran Pembelian Barang Harga Tetap");
       expect(isolatedReceipt!.querySelector(".receipt-output-header-grid")).not.toBeNull();
       expect(isolatedReceipt!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     } finally {

@@ -5101,7 +5101,7 @@ function FixedPricePaymentVerificationModal({
                   ? "Review Pembayaran Ditolak"
                   : isReadOnly
                     ? "Detail Pembayaran Terverifikasi"
-                    : "Verifikasi Pelunasan Dana Harga Tetap"}
+                    : "Verifikasi Bukti Pembayaran Pembelian Barang Harga Tetap"}
               </h2>
               <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
                 {isRejectedReview
