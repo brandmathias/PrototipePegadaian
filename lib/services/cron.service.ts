@@ -17,7 +17,6 @@ import {
   users
 } from "@/lib/db/schema";
 import { isHandoverAutoCompleteDue } from "@/lib/transactions/handover-finalization";
-import { verifyBidIntegrityHash } from "@/lib/bid-integrity";
 import {
   getBlacklistBlockedUntil,
   getBlacklistDurationLabel,
@@ -35,7 +34,6 @@ import {
   notifyVickreyWinner
 } from "@/lib/services/notification-events";
 import { formatAppDateTime } from "@/lib/timezone";
-import { decryptVickreyBidPayload } from "@/lib/vickrey-escrow";
 
 type BidOutcomeInput = {
   basePrice: string | number | null;
@@ -124,22 +122,10 @@ function plusHours(base: Date, hours: number) {
 }
 
 export function canSettleVickreySession(
-  input: { endsAt: Date | null; revealEndsAt?: Date | null; hasUnrevealedBids: boolean },
+  input: { endsAt: Date | null },
   now = new Date()
 ) {
-  if (!input.endsAt || input.endsAt.getTime() > now.getTime()) {
-    return false;
-  }
-
-  if (!input.hasUnrevealedBids) {
-    return true;
-  }
-
-  if (!input.revealEndsAt) {
-    return true;
-  }
-
-  return input.revealEndsAt.getTime() <= now.getTime();
+  return Boolean(input.endsAt && input.endsAt.getTime() <= now.getTime());
 }
 
 export { getBlacklistDurationDays } from "@/lib/blacklist/restrictions";
@@ -294,64 +280,13 @@ export async function processExpiredVickreyAuctions(now = new Date()): Promise<E
           id: bids.id,
           userId: bids.userId,
           nominal: bids.nominal,
-          salt: bids.salt,
-          bidHash: bids.bidHash,
-          encryptedBidPayload: bids.encryptedBidPayload,
           createdAt: bids.createdAt
         })
         .from(bids)
         .where(eq(bids.pemasaranId, session.marketing.id))
         .orderBy(desc(bids.nominal), asc(bids.createdAt), asc(bids.id));
 
-      for (const bid of marketingBids) {
-        if (bid.nominal != null || !bid.encryptedBidPayload) {
-          continue;
-        }
-
-        try {
-          const escrow = decryptVickreyBidPayload(bid.encryptedBidPayload, {
-            pemasaranId: session.marketing.id,
-            userId: bid.userId,
-            bidHash: bid.bidHash
-          });
-          const verification = verifyBidIntegrityHash({
-            pemasaranId: session.marketing.id,
-            userId: bid.userId,
-            amount: escrow.amount,
-            salt: escrow.salt,
-            bidHash: bid.bidHash
-          });
-
-          if (!verification.isMatch || escrow.amount < toMoneyNumber(session.marketing.basePrice)) {
-            continue;
-          }
-
-          bid.nominal = formatMoney(escrow.amount);
-          bid.salt = escrow.salt;
-
-          await tx
-            .update(bids)
-            .set({
-              nominal: bid.nominal,
-              salt: bid.salt,
-              revealedAt: now
-            })
-            .where(eq(bids.id, bid.id));
-        } catch {
-          // Invalid escrow payload is treated like an unrevealed legacy bid.
-        }
-      }
-
-      if (
-        !canSettleVickreySession(
-          {
-            endsAt: session.marketing.endsAt,
-            revealEndsAt: session.marketing.revealEndsAt,
-            hasUnrevealedBids: marketingBids.some((bid) => bid.nominal == null)
-          },
-          now
-        )
-      ) {
+      if (!canSettleVickreySession({ endsAt: session.marketing.endsAt }, now)) {
         return "pending_reveal" as const;
       }
 

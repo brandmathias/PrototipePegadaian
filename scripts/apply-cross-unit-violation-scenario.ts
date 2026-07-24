@@ -509,7 +509,6 @@ async function insertScenario(client: Client, context: CrossUnitViolationSeedCon
     { key: "durationSeconds", column: "duration_seconds" },
     { key: "startsAt", column: "starts_at" },
     { key: "endsAt", column: "ends_at" },
-    { key: "revealEndsAt", column: "reveal_ends_at" },
     { key: "winnerId", column: "winner_id" },
     { key: "finalPrice", column: "final_price" },
     { key: "iteration", column: "iteration" },
@@ -523,11 +522,7 @@ async function insertScenario(client: Client, context: CrossUnitViolationSeedCon
     { key: "id", column: "id" },
     { key: "pemasaranId", column: "pemasaran_id" },
     { key: "userId", column: "user_id" },
-    { key: "bidHash", column: "bid_hash" },
-    { key: "encryptedBidPayload", column: "encrypted_bid_payload" },
     { key: "nominal", column: "nominal" },
-    { key: "salt", column: "salt" },
-    { key: "revealedAt", column: "revealed_at" },
     { key: "createdAt", column: "created_at" }
   ], rows.bids);
 

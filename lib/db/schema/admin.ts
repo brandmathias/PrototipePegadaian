@@ -93,7 +93,6 @@ export const pemasaran = pgTable(
     durationSeconds: integer("duration_seconds"),
     startsAt: timestamp("starts_at", { withTimezone: true }),
     endsAt: timestamp("ends_at", { withTimezone: true }),
-    revealEndsAt: timestamp("reveal_ends_at", { withTimezone: true }),
     winnerId: text("winner_id").references(() => users.id, { onDelete: "set null" }),
     finalPrice: numeric("final_price", { precision: 15, scale: 2 }),
     iteration: integer("iteration").notNull().default(1),
@@ -142,11 +141,7 @@ export const bids = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    bidHash: text("bid_hash").notNull(),
-    encryptedBidPayload: text("encrypted_bid_payload"),
-    nominal: numeric("nominal", { precision: 15, scale: 2 }),
-    salt: text("salt"),
-    revealedAt: timestamp("revealed_at", { withTimezone: true }),
+    nominal: numeric("nominal", { precision: 15, scale: 2 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
   },
   (table) => ({

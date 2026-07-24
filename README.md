@@ -40,10 +40,9 @@ Ruang Agunan tidak hanya berfungsi sebagai katalog aset, tetapi juga sebagai pro
 | Keunggulan | Penjelasan |
 | --- | --- |
 | Lelang Tertutup berbasis Vickrey Auction | Buyer dapat memasang penawaran terbaik tanpa melihat angka peserta lain. Pemenang ditentukan oleh sistem setelah deadline berdasarkan bid valid yang masuk. |
-| Encrypted escrow | Nominal bid tidak disimpan sebagai angka terbuka selama lelang aktif. Sistem menyimpannya dalam payload terenkripsi sampai waktu settlement. |
-| Privasi peserta dan admin | Peserta lain, Admin Unit, dan Superadmin tidak mengetahui nominal bid sebelum lelang berakhir. Ini menjadi salah satu nilai utama aplikasi. |
-| Bid integrity | Setiap bid memiliki hash integrity sehingga nominal, user, sesi pemasaran, dan salt dapat diverifikasi saat escrow dibuka. |
-| Settlement otomatis | Setelah deadline, backend membuka escrow, memvalidasi bid, menentukan pemenang, dan membuat transaksi pemenang secara otomatis. |
+| Bid privat internal | Nominal serta identitas penawar disimpan di database internal yang hanya dapat diakses operator berwenang; UI dan API menampilkannya sebagai data tersensor selama lelang aktif. |
+| Privasi peserta | Peserta lain tidak mengetahui nominal maupun identitas penawar selama lelang berlangsung. |
+| Settlement otomatis | Setelah deadline, backend menentukan pemenang dari bid internal, lalu membuat transaksi pemenang secara otomatis. |
 | Role-based workflow | Guest, Buyer, Admin Unit, dan Superadmin memiliki hak akses berbeda agar data operasional tetap terkontrol. |
 | Dashboard laporan | Admin Unit dan Superadmin dapat membaca tren nilai transaksi, volume, periode, dan rincian Harga Tetap serta Lelang Tertutup melalui chart interaktif. |
 | Audit dan pembatasan akun | Riwayat barang, transaksi, notifikasi, pelanggaran, dan blacklist membantu proses audit serta menjaga kedisiplinan pembayaran. |
@@ -153,28 +152,17 @@ Mekanisme Vickrey Auction:
 - Jika tidak ada bid valid, sesi dinyatakan gagal dan barang dapat dipasarkan ulang.
 - Buyer yang menang masuk ke alur pembayaran bayar langsung di unit.
 
-Mekanisme encrypted escrow:
+Mekanisme bid privat internal:
 
 ```text
 Buyer mengirim bid
-  -> sistem membuat salt
-  -> sistem membuat bidHash dengan SHA-256
-  -> nominal + salt dienkripsi memakai AES-256-GCM
-  -> payload escrow disimpan di database
-  -> nominal tidak dibuka selama lelang aktif
-  -> setelah deadline, backend membuka escrow
-  -> hash integrity diverifikasi ulang
+  -> nominal disimpan pada database internal
+  -> UI dan API menyensor nominal serta identitas penawar selama lelang aktif
+  -> setelah deadline, backend membaca bid internal
   -> sistem menentukan pemenang dan membuat transaksi
 ```
 
-Penjelasan komponen:
-
-- `salt` adalah nilai tambahan agar hash bid lebih unik dan tidak mudah ditebak.
-- `bidHash` adalah SHA-256 dari kombinasi sesi pemasaran, user, nominal, dan salt.
-- `encrypted_bid_payload` menyimpan nominal dan salt dalam bentuk terenkripsi.
-- AES-256-GCM menjaga isi escrow tetap rahasia sekaligus mendeteksi perubahan payload.
-- AAD mengikat escrow ke konteks `pemasaranId`, `userId`, dan `bidHash`, sehingga payload tidak bisa dipindahkan ke sesi atau user lain.
-- `VICKREY_ESCROW_SECRET` dipakai server untuk membuka escrow saat settlement.
+Keamanan konsep ini berada pada pembatasan akses database dan endpoint berbasis peran. Database dikelola sebagai area internal; bukan data publik untuk buyer.
 
 **Screenshot**
 
@@ -399,7 +387,6 @@ BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=
 NEXT_PUBLIC_APP_URL=
 CRON_SECRET=
-VICKREY_ESCROW_SECRET=
 ```
 
 ### 3. Sinkronkan database
@@ -472,10 +459,8 @@ README.md                    Dokumentasi GitHub project
 - Admin Unit hanya dapat mengakses data unitnya.
 - Nominal bid Lelang Tertutup tidak ditampilkan sebelum lelang selesai.
 - Admin Unit dan Superadmin tidak mengetahui nominal bid peserta sebelum deadline.
-- Nominal bid dan salt disimpan melalui encrypted escrow berbasis AES-256-GCM.
-- Bid integrity memakai SHA-256 dari kombinasi sesi pemasaran, user, nominal, dan salt.
-- AAD mengikat payload escrow ke konteks pemasaran, user, dan bidHash.
-- Escrow hanya dibuka oleh backend setelah deadline untuk proses settlement.
+- Nominal serta identitas penawar disimpan sebagai data internal dan tidak dikirim melalui respons publik selama lelang aktif.
+- Akses database dibatasi untuk operator berwenang, sedangkan endpoint menerapkan otorisasi peran.
 - Perubahan status penting tercatat melalui transaksi, riwayat, notifikasi, atau log terkait.
 - Endpoint cron membutuhkan secret.
 - File upload perlu dikendalikan melalui validasi tipe dan ukuran.

@@ -1,6 +1,5 @@
 import {
   CROSS_UNIT_VIOLATION_SCENARIO,
-  createScenarioBidHash,
   getExpectedFinalRestrictions,
   getScenarioDurationHours,
   validateCrossUnitViolationScenario
@@ -65,21 +64,16 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
     id: string;
     iteration: number;
     mode: string;
-    revealEndsAt: Date;
     startsAt: Date;
     status: string;
     updatedAt: Date;
     winnerId: string;
   }>;
   const bids = [] as Array<{
-    bidHash: string;
     createdAt: Date;
-    encryptedBidPayload: null;
     id: string;
     nominal: number;
     pemasaranId: string;
-    revealedAt: Date;
-    salt: string;
     userId: string;
   }>;
   const transaksi = [] as Array<Record<string, unknown>>;
@@ -141,7 +135,6 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
       durationSeconds: Math.round(getScenarioDurationHours(incident) * 60 * 60),
       startsAt: incident.auctionStartsAt,
       endsAt: incident.auctionEndsAt,
-      revealEndsAt: new Date(incident.auctionEndsAt.getTime() + 10 * 60 * 1000),
       winnerId: buyer.id,
       finalPrice: incident.finalPrice,
       iteration: 1,
@@ -154,22 +147,11 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
     incident.bids.forEach((bid, bidOffset) => {
       const bidder = requireIdentity(context.usersByEmail, bid.bidderEmail, "Bidder");
       const bidIndex = bidOffset + 1;
-      const salt = `arsip-${incidentIndex}-${bidIndex}-${bid.bidderEmail.split("@")[0]}`;
       bids.push({
         id: getBidId(incidentIndex, bidIndex),
         pemasaranId: incident.ids.pemasaran,
         userId: bidder.id,
-        bidHash: createScenarioBidHash({
-          pemasaranId: incident.ids.pemasaran,
-          userId: bidder.id,
-          amount: bid.amount,
-          salt,
-          bidderEmail: bid.bidderEmail
-        }),
-        encryptedBidPayload: null,
         nominal: bid.amount,
-        salt,
-        revealedAt: incident.auctionEndsAt,
         createdAt: bid.submittedAt
       });
     });

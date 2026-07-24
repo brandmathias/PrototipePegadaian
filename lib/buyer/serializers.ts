@@ -82,16 +82,12 @@ type BuyerBidShape = {
   imageUrl?: string | null;
   unitName: string;
   bidAmount: string | null;
-  bidHash?: string | null;
-  encryptedBidPayload?: string | null;
-  revealedAt?: Date | null;
   basePrice: string | null;
   finalPrice?: string | null;
   paymentAmount?: string | null;
   paymentDeadline?: Date | null;
   transactionStatus?: string | null;
   endsAt: Date | null;
-  revealEndsAt?: Date | null;
   marketingStatus: string;
   winnerId: string | null;
   transactionId?: string | null;
@@ -397,17 +393,11 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
 export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   let status: BuyerBidStatus = "BID_TERCATAT";
   const ended = row.endsAt ? row.endsAt.getTime() <= Date.now() : row.marketingStatus !== "aktif";
-  const revealEnded = row.revealEndsAt ? row.revealEndsAt.getTime() <= Date.now() : false;
   const transactionStatus = row.transactionStatus ? toTransactionStatus(row.transactionStatus) : undefined;
   const isWinner = row.winnerId === row.userId;
   const hasWinner = Boolean(row.winnerId);
   const finalPrice = row.finalPrice != null ? toNumber(row.finalPrice) : undefined;
   const paymentAmount = row.paymentAmount != null ? toNumber(row.paymentAmount) : undefined;
-  const isRevealed = row.bidAmount != null;
-  const isEscrowed = Boolean(row.encryptedBidPayload);
-  const canReveal = ended && !isRevealed && !isEscrowed && row.marketingStatus === "aktif" && !revealEnded;
-  const revealDeadline = row.revealEndsAt ? toDateTimeLabel(row.revealEndsAt) : undefined;
-  const revealDeadlineAt = row.revealEndsAt?.toISOString();
 
   if (transactionStatus === "GAGAL" && isWinner) {
     status = "GAGAL";
@@ -417,23 +407,17 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
     status = "MENUNGGU_HASIL";
   }
 
-  let note = "Hash bid tertutup tersimpan. Reveal nominal setelah deadline agar bid bisa ikut settlement.";
+  let note = "Bid Anda tersimpan sebagai data internal. Nominal dan identitas penawar tetap disensor sampai lelang berakhir.";
   if (status === "GAGAL") {
     note = "Pembayaran Lelang Tertutup gagal karena melewati batas waktu. Akses lelang dapat dibatasi sesuai aturan.";
   } else if (status === "MENANG") {
     note = `Anda memenangkan Lelang Tertutup. Harga akhir mengikuti mekanisme lelang: ${formatRupiah(paymentAmount ?? finalPrice ?? toNumber(row.basePrice))}.`;
   } else if (status === "TIDAK_MENANG") {
     note = "Bid tidak menjadi pemenang sesi ini.";
-  } else if (canReveal) {
-    note = `Deadline lewat. Reveal nominal sebelum ${revealDeadline ?? "batas reveal"} agar bid ikut penentuan pemenang.`;
-  } else if (isEscrowed && !ended) {
-    note = "Sesi lelang sementara berlangsung. Penawaran escrow otomatis Anda telah berhasil direkam oleh sistem. Mohon tunggu pengumuman pemenang resmi setelah batas waktu penutupan lelang berakhir.";
-  } else if (isEscrowed) {
-    note = "Deadline sudah lewat. Sistem sedang membuka escrow dan menghitung hasil Lelang Tertutup otomatis.";
-  } else if (isRevealed) {
-    note = "Bid sudah direveal dan menunggu penentuan hasil Lelang Tertutup.";
-  } else if (ended && revealEnded) {
-    note = "Periode reveal selesai. Bid belum direveal, sehingga tidak ikut penentuan pemenang.";
+  } else if (!ended) {
+    note = "Sesi lelang sedang berlangsung. Nominal dan identitas penawar disensor hingga waktu penutupan.";
+  } else {
+    note = "Deadline telah berakhir. Sistem sedang menentukan hasil Lelang Tertutup.";
   }
 
   return {
@@ -445,9 +429,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
     closing: toDateTimeLabel(row.endsAt),
     closingAt: row.endsAt?.toISOString(),
     createdAtRaw: row.createdAt ? row.createdAt.toISOString() : undefined,
-    revealDeadline,
-    revealDeadlineAt,
-    ...(isRevealed ? { bidAmount: toNumber(row.bidAmount) } : {}),
+    ...(ended ? { bidAmount: toNumber(row.bidAmount) } : {}),
     basePrice: toNumber(row.basePrice),
     finalPrice,
     paymentAmount,
@@ -456,9 +438,5 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
     paymentDeadlineAt: row.paymentDeadline?.toISOString(),
     note,
     linkedTransactionId: row.transactionId ?? undefined,
-    bidHash: row.bidHash ?? undefined,
-    isRevealed,
-    escrowed: isEscrowed,
-    canReveal
   };
 }

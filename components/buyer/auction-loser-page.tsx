@@ -204,7 +204,7 @@ export function AuctionLoserPageContent({
                 <div className="grid gap-1 border-b border-dashed border-[#dde4df] py-3 sm:grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] sm:items-center">
                   <dt className="font-semibold text-[#667085]">No. Transaksi</dt>
                   <dd className="break-words font-black tracking-[-0.015em] text-[#101828]">
-                    {bid.bidHash ? `BID-${bid.lotId.slice(0, 8).toUpperCase()}` : bid.lotId}
+                    {`BID-${bid.lotId.slice(0, 8).toUpperCase()}`}
                   </dd>
                 </div>
                 <div className="grid gap-1 border-b border-dashed border-[#dde4df] py-3 sm:grid-cols-[minmax(8rem,0.48fr)_minmax(0,1fr)] sm:items-center">

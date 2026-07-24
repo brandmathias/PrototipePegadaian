@@ -151,15 +151,11 @@ describe("cron service", () => {
     });
   });
 
-  it("waits for reveal window unless every commitment has been revealed", async () => {
+  it("settles immediately after the deadline while active bids remain private", async () => {
     const endsAt = new Date("2026-05-12T10:00:00.000Z");
-    const revealEndsAt = new Date("2026-05-12T10:10:00.000Z");
     const afterDeadline = new Date("2026-05-12T10:02:00.000Z");
-    const afterRevealWindow = new Date("2026-05-12T10:11:00.000Z");
 
-    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: true }, afterDeadline)).toBe(false);
-    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: false }, afterDeadline)).toBe(true);
-    expect(cronService.canSettleVickreySession({ endsAt, revealEndsAt, hasUnrevealedBids: true }, afterRevealWindow)).toBe(true);
+    expect(cronService.canSettleVickreySession({ endsAt }, afterDeadline)).toBe(true);
   });
 
   it("maps blacklist duration by accumulated violation count", async () => {

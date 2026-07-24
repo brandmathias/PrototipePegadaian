@@ -281,7 +281,6 @@ async function relistRejectedFixedPriceMarketing(
     durationSeconds: null,
     startsAt: relistedAt,
     endsAt: null,
-    revealEndsAt: null,
     iteration: Number(input.sourceIteration ?? 0) + 1,
     status: "aktif",
     createdByUserId: input.adminId,

@@ -496,23 +496,17 @@ Fitur:
 
 | Komponen | Fungsi |
 | --- | --- |
-| `salt` | Nilai acak dari client agar hash bid tidak mudah ditebak. |
-| `bidHash` | SHA-256 dari `pemasaranId:userId:nominal:salt` untuk mengecek integritas bid. |
-| `encrypted_bid_payload` | Payload terenkripsi yang berisi nominal dan salt. |
-| AES-256-GCM | Algoritma enkripsi untuk menjaga isi escrow tetap rahasia dan terautentikasi. |
-| AAD | Data tambahan yang mengikat escrow ke konteks pemasaran, user, dan hash. |
-| `VICKREY_ESCROW_SECRET` | Secret server untuk membuka escrow saat settlement. |
+| Database internal | Menyimpan nominal dan identitas penawar untuk kebutuhan settlement oleh operator berwenang. |
+| Sensor UI/API | Menampilkan `*****` pada nominal dan identitas penawar selama sesi masih aktif. |
+| Otorisasi peran | Membatasi pembacaan data operasional pada backend dan pengguna berwenang. |
 
 ### 5.2 Alur Submit Bid
 
 ```text
 Buyer memasukkan nominal
-  -> client membuat salt
-  -> client/backend membuat bidHash
-  -> backend memvalidasi hash
-  -> nominal + salt dienkripsi sebagai escrow
-  -> database menyimpan bidHash dan encrypted payload
-  -> nominal plaintext tidak dibuka sebelum deadline
+  -> backend memvalidasi nominal terhadap harga dasar
+  -> database internal menyimpan nominal dan identitas penawar
+  -> UI/API publik menyensor data tersebut selama lelang aktif
 ```
 
 ### 5.3 Alur Settlement
@@ -520,9 +514,7 @@ Buyer memasukkan nominal
 ```text
 Deadline lelang tercapai
   -> cron/backend mengambil sesi yang selesai
-  -> setiap escrow bid dibuka
-  -> hash integrity diverifikasi ulang
-  -> bid valid diurutkan berdasarkan nominal tertinggi
+  -> bid internal diurutkan berdasarkan nominal tertinggi
   -> jika nominal sama, bid paling awal menang
   -> sistem membuat transaksi untuk pemenang
   -> buyer dan admin menerima status hasil
@@ -531,10 +523,10 @@ Deadline lelang tercapai
 ### 5.4 Nilai Unggul Settlement Otomatis
 
 - Keputusan pemenang tidak dilakukan manual oleh admin.
-- Nominal bid baru terbuka setelah waktu yang ditetapkan.
-- Hasil dapat diaudit melalui data bid, hash, waktu submit, transaksi, dan notifikasi.
+- Nominal dan identitas penawar hanya ditampilkan setelah waktu yang ditetapkan.
+- Hasil dapat diaudit melalui data bid internal, waktu submit, transaksi, dan notifikasi.
 - Jika pemenang tidak membayar, sistem mencatat pelanggaran dan memproses blacklist bertingkat.
-- Buyer tidak perlu melakukan reveal manual pada alur escrow baru, karena backend dapat membuka escrow otomatis setelah deadline.
+- Buyer tidak memerlukan tahap reveal manual; backend langsung menentukan hasil setelah deadline.
 
 ---
 

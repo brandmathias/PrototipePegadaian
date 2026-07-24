@@ -953,7 +953,7 @@ export function TransactionsWorkspace({
           transaction,
         })),
         ...standaloneBids.map((bid) => ({
-          id: `${bid.lotId}-${bid.status}-${bid.bidHash ?? bid.closingAt ?? bid.closing}`,
+          id: `${bid.lotId}-${bid.status}-${bid.createdAtRaw ?? bid.closingAt ?? bid.closing}`,
           bid,
           kind: "bid" as const,
         })),
@@ -1029,7 +1029,7 @@ export function TransactionsWorkspace({
         ) : visibleBids.length > 0 ? (
           visibleBids.map((item) => (
             <div
-              key={`${item.lotId}-${item.status}-${item.bidHash ?? item.closingAt ?? item.closing}`}
+              key={`${item.lotId}-${item.status}-${item.createdAtRaw ?? item.closingAt ?? item.closing}`}
               ref={item.lotId === highlightedBidLotId ? highlightedBidRef : null}
             >
               <BidRow item={item} />

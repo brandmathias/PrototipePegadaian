@@ -1,5 +1,4 @@
 import {
-  createRenewedScenarioBidHash,
   getRenewedExpectedFinalRestrictions,
   getRenewedScenarioDurationHours,
   RENEWED_CROSS_UNIT_VIOLATION_SCENARIO,
@@ -62,11 +61,10 @@ export function buildRenewedCrossUnitViolationSeedRows(context: RenewedCrossUnit
     const admin = required(context.adminsByEmail, entry.unitAdminEmail, "Admin unit");
     barang.push({ id: entry.ids.barang, unitId: unit.id, code: entry.itemCode, name: entry.itemName, category: getItemCategory(entry.itemName), condition: "Baik", description: entry.description, specifications: entry.specifications, appraisalValue: entry.appraisalValue, ownerName: entry.ownerName, customerNumber: entry.customerNumber, pawnedAt: entry.itemEnteredAt, dueDate: entry.dueDate, status: "gagal", createdByUserId: admin.id, createdAt: entry.itemEnteredAt, updatedAt: entry.violationOccurredAt });
     mediaBarang.push({ id: entry.ids.media, barangId: entry.ids.barang, type: "foto", url: entry.media.publicPath, fileName: entry.media.publicPath.split("/").at(-1), sizeBytes: entry.media.sizeBytes, sortOrder: 0, createdAt: entry.itemEnteredAt });
-    pemasaran.push({ id: entry.ids.pemasaran, barangId: entry.ids.barang, mode: "vickrey", basePrice: entry.basePrice, durationDays: Math.floor(getRenewedScenarioDurationHours(entry) / 24), durationSeconds: Math.round(getRenewedScenarioDurationHours(entry) * 3600), startsAt: entry.auctionStartsAt, endsAt: entry.auctionEndsAt, revealEndsAt: new Date(entry.auctionEndsAt.getTime() + 10 * 60 * 1000), winnerId: buyer.id, finalPrice: entry.finalPrice, iteration: 1, status: "gagal", createdByUserId: admin.id, createdAt: entry.auctionStartsAt, updatedAt: entry.violationOccurredAt });
+    pemasaran.push({ id: entry.ids.pemasaran, barangId: entry.ids.barang, mode: "vickrey", basePrice: entry.basePrice, durationDays: Math.floor(getRenewedScenarioDurationHours(entry) / 24), durationSeconds: Math.round(getRenewedScenarioDurationHours(entry) * 3600), startsAt: entry.auctionStartsAt, endsAt: entry.auctionEndsAt, winnerId: buyer.id, finalPrice: entry.finalPrice, iteration: 1, status: "gagal", createdByUserId: admin.id, createdAt: entry.auctionStartsAt, updatedAt: entry.violationOccurredAt });
     entry.bids.forEach((bid, bidOffset) => {
       const bidder = required(context.usersByEmail, bid.bidderEmail, "Bidder");
-      const salt = `lintas-unit-baru-${sequence}-${bidOffset + 1}`;
-      bids.push({ id: bidId(sequence, bidOffset + 1), pemasaranId: entry.ids.pemasaran, userId: bidder.id, bidHash: createRenewedScenarioBidHash({ pemasaranId: entry.ids.pemasaran, userId: bidder.id, amount: bid.amount, salt }), encryptedBidPayload: null, nominal: bid.amount, salt, revealedAt: entry.auctionEndsAt, createdAt: bid.submittedAt });
+      bids.push({ id: bidId(sequence, bidOffset + 1), pemasaranId: entry.ids.pemasaran, userId: bidder.id, nominal: bid.amount, createdAt: bid.submittedAt });
     });
     transaksi.push({ id: entry.ids.transaksi, pemasaranId: entry.ids.pemasaran, userId: buyer.id, type: "vickrey", amount: entry.finalPrice, paymentMethod: "langsung", status: "gagal", paymentDeadline: entry.violationOccurredAt, createdAt: entry.auctionEndsAt, updatedAt: entry.violationOccurredAt });
     pelanggaranUser.push({ id: entry.ids.violation, userId: buyer.id, pemasaranId: entry.ids.pemasaran, transaksiId: entry.ids.transaksi, unitId: unit.id, note: "Pemenang lelang tidak melakukan pembayaran dalam batas waktu 24 jam.", escalationEligible: true, createdAt: entry.violationOccurredAt, updatedAt: entry.violationOccurredAt });

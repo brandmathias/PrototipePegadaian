@@ -35,7 +35,6 @@ import { AccountCopyButton } from "@/components/buyer/account-copy-button";
 import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
-import { BidRevealForm } from "@/components/buyer/bid-reveal-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
@@ -69,7 +68,6 @@ import type {
   BuyerBankAccount,
   BuyerBid,
   BuyerBidStatus,
-  BuyerBidVerification,
   BuyerTransaction,
   BuyerTransactionStatus
 } from "@/lib/contracts/buyer";
@@ -198,7 +196,7 @@ const bidStatusMeta: Record<
   MENUNGGU_HASIL: {
     label: "Menunggu Hasil",
     variant: "accent",
-    description: "Bid tertutup menunggu reveal nominal atau penentuan hasil."
+    description: "Bid tertutup sedang menunggu penentuan hasil otomatis."
   },
   MENANG: {
     label: "Menang",
@@ -2419,7 +2417,7 @@ export function BidHistoryPage({
           {bids.map((item) => (
             <div
               className="rounded-[1.5rem] border border-border/70 bg-surface-low/60 p-5"
-              key={`${item.lot}-${item.bidHash ?? item.bidAmount ?? item.closing}`}
+              key={`${item.lotId}-${item.createdAtRaw ?? item.closing}`}
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-3">
@@ -2443,34 +2441,12 @@ export function BidHistoryPage({
               <div className="mt-5">
                 <BidPaymentContext item={item} />
               </div>
-              {item.escrowed && item.status === "MENUNGGU_HASIL" && !item.isRevealed ? (
+              {item.status === "BID_TERCATAT" ? (
                 <div className="mt-5 rounded-[1.25rem] border border-primary/15 bg-primary/[0.03] p-4 text-sm leading-6 text-primary">
-                  <p className="font-semibold">Escrow otomatis aktif</p>
+                  <p className="font-semibold">Bid privat tersimpan</p>
                   <p className="mt-1">
-                    Bid Anda sudah tersimpan terenkripsi. Sistem akan membuka nominal otomatis setelah deadline dan membuat transaksi bayar langsung jika Anda menang.
+                    Nominal dan identitas penawar hanya tersedia untuk petugas internal berwenang. Hasil lelang akan diumumkan otomatis setelah deadline.
                   </p>
-                </div>
-              ) : item.canReveal || (item.revealDeadlineAt && item.status === "MENUNGGU_HASIL" && !item.isRevealed) ? (
-                <div className="mt-5 rounded-[1.25rem] border border-[#ead8b5] bg-[#fffaf0] p-4 text-sm leading-6 text-[#5d4300]">
-                  <p className="font-semibold text-[#7a5600]">
-                    {item.canReveal ? "Reveal nominal dibutuhkan" : "Periode reveal sudah dipantau sistem"}
-                  </p>
-                  <p className="mt-1">
-                    {item.canReveal
-                      ? "Buka halaman verifikasi, kirim nominal dan salt agar bid ikut penentuan pemenang."
-                      : "Jika belum reveal sampai batas waktu, bid tidak ikut settlement."}
-                  </p>
-                  {item.revealDeadlineAt ? (
-                    <p className="mt-2 font-semibold">
-                      <LiveCountdown
-                        expiredLabel={item.revealDeadline ?? "Batas reveal selesai"}
-                        fallbackLabel={item.revealDeadline}
-                        prefix="Batas reveal"
-                        serverNow={new Date().toISOString()}
-                        targetAt={item.revealDeadlineAt}
-                      />
-                    </p>
-                  ) : null}
                 </div>
               ) : null}
               <div className="mt-5 flex flex-wrap gap-3">
@@ -2482,107 +2458,9 @@ export function BidHistoryPage({
                     <Button>{getBidTransactionActionLabel(item)}</Button>
                   </Link>
                 ) : null}
-              <Link href={`/riwayat-bid/${item.lotId}/verifikasi`}>
-                  <Button variant={item.canReveal ? "default" : "secondary"}>
-                    {item.canReveal ? "Reveal Nominal" : "Verifikasi Bid"}
-                  </Button>
-                </Link>
               </div>
             </div>
           ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function IntegrityValue({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="rounded-[1.2rem] border border-border/70 bg-surface-low/60 p-4">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className="mt-2 break-all text-sm font-semibold text-foreground">{value}</p>
-    </div>
-  );
-}
-
-export function BidVerificationPage({
-  buyer,
-  verification
-}: {
-  buyer: BuyerSessionUser;
-  verification: BuyerBidVerification;
-}) {
-  const verificationBadgeLabel = verification.isRevealed
-    ? verification.isMatch
-      ? "Bid Anda tercatat dengan benar"
-      : "Hash tidak cocok"
-    : verification.canReveal
-      ? "Siap reveal nominal"
-      : "Escrow terenkripsi tersimpan";
-
-  return (
-    <div className="space-y-8 md:space-y-10">
-      <SectionHeading
-        action={
-          <Link href={getBuyerTransactionsHref({ tab: "bids", lotId: verification.lotId })}>
-            <Button variant="secondary">Kembali ke Transaksi</Button>
-          </Link>
-        }
-        description="Cocokkan nominal, salt, dan hash setelah escrow dibuka agar Anda dapat melihat bid tertutup tidak berubah."
-        eyebrow="Verifikasi Bid"
-        title="Bukti integritas penawaran"
-      />
-
-      <Card className="border border-border/70 bg-white">
-        <CardContent className="space-y-6 p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">{verification.unit}</p>
-              <h2 className="mt-2 font-headline text-3xl font-extrabold text-foreground">{verification.lot}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Tutup {verification.closing}</p>
-            </div>
-            <Badge
-              variant={
-                verification.isRevealed
-                  ? verification.isMatch
-                    ? "default"
-                    : "danger"
-                  : verification.canReveal
-                    ? "accent"
-                    : "muted"
-              }
-            >
-              {verificationBadgeLabel}
-            </Badge>
-          </div>
-
-          {!verification.canVerify ? (
-            <div className="rounded-[1.25rem] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              Nominal masih dalam escrow terenkripsi sampai deadline. Admin tidak menerima nominal terbuka
-              sebelum sistem membuka hasil.
-            </div>
-          ) : null}
-
-          {verification.canReveal ? (
-            <BidRevealForm buyerId={buyer.id} lotId={verification.lotId} />
-          ) : null}
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <IntegrityValue label="Hash tersimpan" value={verification.bidHash} />
-            <IntegrityValue label="Algoritma" value={verification.algorithm} />
-            <IntegrityValue label="Formula" value={verification.formula} />
-            <IntegrityValue
-              label="Status reveal"
-              value={verification.isRevealed ? "Nominal sudah dibuka setelah deadline" : "Nominal masih terenkripsi"}
-            />
-            {verification.isRevealed && typeof verification.bidAmount === "number" ? (
-              <IntegrityValue label="Nominal bid Anda" value={currency.format(verification.bidAmount)} />
-            ) : null}
-            {verification.salt ? <IntegrityValue label="Salt" value={verification.salt} /> : null}
-            {verification.computedHash ? (
-              <IntegrityValue label="Hash hasil hitung ulang" value={verification.computedHash} />
-            ) : null}
-          </div>
         </CardContent>
       </Card>
     </div>

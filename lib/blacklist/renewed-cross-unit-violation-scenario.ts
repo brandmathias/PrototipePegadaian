@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 import { getBlacklistBlockedUntil } from "./restrictions";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -206,10 +204,6 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
 
 function assert(value: unknown, message: string): asserts value {
   if (!value) throw new Error(message);
-}
-
-export function createRenewedScenarioBidHash(input: { amount: number; pemasaranId: string; salt: string; userId: string }) {
-  return createHash("sha256").update(`${input.pemasaranId}:${input.userId}:${input.amount}:${input.salt}`).digest("hex");
 }
 
 export function validateRenewedCrossUnitViolationScenario() {

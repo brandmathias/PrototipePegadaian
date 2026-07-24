@@ -10,8 +10,7 @@ type BarangRow = InferSelectModel<typeof barang>;
 type PemasaranRow = InferSelectModel<typeof pemasaran>;
 type TransaksiRow = InferSelectModel<typeof transaksi>;
 type AdminBidRow = InferSelectModel<typeof bids>;
-type AdminSafeBidRow = Pick<AdminBidRow, "id" | "userId" | "createdAt" | "revealedAt"> &
-  Partial<Pick<AdminBidRow, "pemasaranId" | "bidHash" | "nominal" | "salt">>;
+type AdminSafeBidRow = Pick<AdminBidRow, "id" | "userId" | "createdAt" | "nominal">;
 
 type AdminPemasaranMedia = {
   id: string;
@@ -192,7 +191,6 @@ export function serializeAdminPemasaran(
   });
   const primaryMedia = media[0] ?? null;
   const ended = row.endsAt ? row.endsAt.getTime() <= Date.now() : true;
-  const revealEnded = row.revealEndsAt ? row.revealEndsAt.getTime() <= Date.now() : ended;
   const hasSettledResult = row.status !== "aktif" || Boolean(row.winnerId) || Boolean(extra.transaction?.id);
   const visibility = (() => {
     if (!isVickrey) {
@@ -200,9 +198,6 @@ export function serializeAdminPemasaran(
     }
     if (!ended) {
       return "TERKUNCI";
-    }
-    if (!hasSettledResult && !revealEnded) {
-      return "MENUNGGU_REVEAL";
     }
     return "HASIL_DIBUKA";
   })();
@@ -216,8 +211,6 @@ export function serializeAdminPemasaran(
 
     return left.bid.createdAt.getTime() - right.bid.createdAt.getTime();
   });
-  const revealedBidCount = sortedBids.filter((entry) => Boolean(entry.bid.revealedAt)).length;
-  const pendingRevealCount = Math.max((extra.bidCount ?? sortedBids.length) - revealedBidCount, 0);
   const lotSpecifications =
     extra.lotSpecifications && typeof extra.lotSpecifications === "object" && !Array.isArray(extra.lotSpecifications)
       ? (extra.lotSpecifications as Record<string, string>)
@@ -234,7 +227,6 @@ export function serializeAdminPemasaran(
             bidderImage: entry.bidderImage ?? null,
             submittedAt: entry.bid.createdAt.toISOString(),
             submittedAtLabel: toDateTimeLabel(entry.bid.createdAt),
-            isRevealed: Boolean(entry.bid.revealedAt),
             rank,
             isWinner: Boolean(isWinner),
             determinesFinalPrice: visibility === "HASIL_DIBUKA" && Boolean(row.winnerId) && rank === 2,
@@ -263,9 +255,6 @@ export function serializeAdminPemasaran(
 
     if (visibility === "TERKUNCI") {
       return "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati.";
-    }
-    if (visibility === "MENUNGGU_REVEAL") {
-      return "Deadline sudah lewat. Sistem menunggu buyer reveal nominal sebelum pemenang dihitung.";
     }
     if (transactionStatus === "MENUNGGU_PEMBAYARAN") {
       return "Pemenang sudah ditentukan dan sedang berada dalam batas pembayaran 24 jam.";
@@ -306,11 +295,7 @@ export function serializeAdminPemasaran(
     updatedAt: row.updatedAt.toISOString(),
     ending: toDateLabel(row.endsAt),
     endingAt: row.endsAt?.toISOString(),
-    revealDeadline: row.revealEndsAt ? toDateTimeLabel(row.revealEndsAt) : null,
-    revealDeadlineAt: row.revealEndsAt?.toISOString() ?? null,
     participants: extra.bidCount ?? 0,
-    revealedBidCount,
-    pendingRevealCount,
     mode: row.mode === "fixed_price" ? "FIXED_PRICE" : "VICKREY_AUCTION",
     price: row.mode === "fixed_price" ? toNumber(row.price) : null,
     transactionId: extra.transaction?.id ?? null,

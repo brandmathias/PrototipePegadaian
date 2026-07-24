@@ -70,24 +70,6 @@ const VIOLATION_LEVELS = [
   }
 ];
 
-function createClientSalt() {
-  const browserCrypto = globalThis.crypto;
-
-  if (browserCrypto.randomUUID) {
-    return browserCrypto.randomUUID();
-  }
-
-  const bytes = new Uint8Array(16);
-  browserCrypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-async function sha256Hex(value: string) {
-  const data = new TextEncoder().encode(value);
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
 export function VickreyBidForm({
   lot,
   buyerId,
@@ -236,15 +218,13 @@ export function VickreyBidForm({
         return;
       }
 
-      const salt = createClientSalt();
       const normalizedAmount = String(Number(numericBid));
-      const bidHash = await sha256Hex(`${lot.id}:${buyerId}:${normalizedAmount}:${salt}`);
       const response = await fetch(`/api/user/bid/${lot.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ amount: Number(normalizedAmount), bidHash, salt })
+        body: JSON.stringify({ amount: Number(normalizedAmount) })
       });
 
       const payload = await response.json().catch(() => ({}));
@@ -263,18 +243,6 @@ export function VickreyBidForm({
         });
         return;
       }
-
-      localStorage.setItem(
-        `pegadaian:vickrey-reveal:${buyerId}:${lot.id}`,
-        JSON.stringify({
-          amount: numericBid,
-          bidHash,
-          lotId: lot.id,
-          lotName: lot.name,
-          salt,
-          storedAt: new Date().toISOString()
-        })
-      );
 
       toast({
         title: "Penawaran berhasil dikirimkan",

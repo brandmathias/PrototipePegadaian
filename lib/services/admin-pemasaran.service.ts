@@ -9,7 +9,6 @@ import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, u
 import { processExpiredVickreyAuctions } from "@/lib/services/cron.service";
 import { EMPTY_LOT_INSIGHTS, getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
 
-const VICKREY_REVEAL_WINDOW_SECONDS = 600;
 const transactionHandoverUploader = alias(users, "marketing_transaction_handover_uploader");
 const transactionPaymentVerifier = alias(users, "marketing_transaction_payment_verifier");
 
@@ -24,9 +23,8 @@ type AdminMarketingBidRow = {
   bid: {
     id: string;
     userId: string;
-    nominal: string | null;
+    nominal: string;
     createdAt: Date;
-    revealedAt: Date | null;
   };
   bidderName: string | null;
   bidderImage?: string | null;
@@ -375,8 +373,7 @@ async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
         id: bids.id,
         userId: bids.userId,
         nominal: bids.nominal,
-        createdAt: bids.createdAt,
-        revealedAt: bids.revealedAt
+        createdAt: bids.createdAt
       },
       bidderName: users.name,
       bidderImage: users.image
@@ -427,13 +424,11 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
   let derivedDurationDays: number | null = null;
   let derivedDurationSeconds: number | null = null;
   let endsAt: Date | null = null;
-  let revealEndsAt: Date | null = null;
 
   if (payload.mode === "vickrey") {
     derivedDurationDays = Math.floor(payload.totalSeconds / 86_400);
     derivedDurationSeconds = payload.totalSeconds;
     endsAt = new Date(now.getTime() + payload.totalSeconds * 1000);
-    revealEndsAt = new Date(endsAt.getTime() + VICKREY_REVEAL_WINDOW_SECONDS * 1000);
   }
 
   const [{ nextIteration }] = await db
@@ -465,7 +460,6 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
         durationSeconds: derivedDurationSeconds,
         startsAt: now,
         endsAt,
-        revealEndsAt,
         iteration: Number(nextIteration ?? 1),
         status: "aktif",
         createdByUserId: userId,

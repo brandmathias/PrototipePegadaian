@@ -1,6 +1,4 @@
-import { BidVerificationPage } from "@/components/pages/user-pages";
-import { getBuyerSessionUser } from "@/lib/auth/session";
-import { getBuyerBidVerification } from "@/lib/services/buyer.service";
+import { redirect } from "next/navigation";
 
 export default async function Page({
   params
@@ -8,8 +6,5 @@ export default async function Page({
   params: Promise<{ pemasaranId: string }>;
 }) {
   const { pemasaranId } = await params;
-  const buyer = await getBuyerSessionUser(`/riwayat-bid/${pemasaranId}/verifikasi`);
-  const verification = await getBuyerBidVerification(buyer.id, pemasaranId);
-
-  return <BidVerificationPage buyer={buyer} verification={verification} />;
+  redirect(`/riwayat-bid?lotId=${encodeURIComponent(pemasaranId)}`);
 }

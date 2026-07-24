@@ -84,8 +84,6 @@ export type BuyerBid = {
   closing: string;
   closingAt?: string;
   createdAtRaw?: string;
-  revealDeadline?: string;
-  revealDeadlineAt?: string;
   bidAmount?: number;
   basePrice: number;
   finalPrice?: number;
@@ -95,25 +93,4 @@ export type BuyerBid = {
   paymentDeadlineAt?: string;
   note: string;
   linkedTransactionId?: string;
-  bidHash?: string;
-  isRevealed?: boolean;
-  escrowed?: boolean;
-  canReveal?: boolean;
-};
-
-export type BuyerBidVerification = {
-  lotId: string;
-  lot: string;
-  unit: string;
-  closing: string;
-  bidAmount?: number;
-  bidHash: string;
-  computedHash?: string;
-  salt?: string;
-  algorithm: "SHA-256";
-  formula: string;
-  isMatch: boolean;
-  canVerify: boolean;
-  canReveal: boolean;
-  isRevealed: boolean;
 };
