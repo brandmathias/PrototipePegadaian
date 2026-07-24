@@ -10,6 +10,8 @@ function publicLotSelection() {
   return {
     marketingId: pemasaran.id,
     marketingMode: pemasaran.mode,
+    marketingCreatedAt: pemasaran.createdAt,
+    marketingIteration: pemasaran.iteration,
     marketingPrice: pemasaran.price,
     marketingBasePrice: pemasaran.basePrice,
     startsAt: pemasaran.startsAt,
@@ -27,6 +29,24 @@ function publicLotSelection() {
     unitDomicile: units.domicile,
     account: unitAccounts
   };
+}
+
+export function sortPublicCatalogRowsByLatestListing<
+  T extends { marketingCreatedAt: Date; marketingId: string; marketingIteration?: number | null }
+>(rows: T[]) {
+  return [...rows].sort((left, right) => {
+    const publishedTimeDifference = right.marketingCreatedAt.getTime() - left.marketingCreatedAt.getTime();
+    if (publishedTimeDifference !== 0) {
+      return publishedTimeDifference;
+    }
+
+    const iterationDifference = Number(right.marketingIteration ?? 0) - Number(left.marketingIteration ?? 0);
+    if (iterationDifference !== 0) {
+      return iterationDifference;
+    }
+
+    return right.marketingId.localeCompare(left.marketingId);
+  });
 }
 
 function fixedPriceCatalogAvailabilityPredicate() {
@@ -148,21 +168,20 @@ export async function listPublicLotsWithLimit(limit?: number) {
       )
     )
     .orderBy(
-      sql`(
-        select min("catalog_history"."created_at")
-        from "pemasaran" "catalog_history"
-        where "catalog_history"."barang_id" = ${barang.id}
-      ) desc`
+      desc(pemasaran.createdAt),
+      desc(pemasaran.iteration),
+      desc(pemasaran.id)
     );
 
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
+  const sortedRows = sortPublicCatalogRowsByLatestListing(limitedRows);
 
   const [mediaByBarangId, statsByMarketingId] = await Promise.all([
-    getMediaByBarangId(limitedRows.map((row) => row.itemId), { maxItemsPerBarang: 1 }),
-    getLotStatsByIds(limitedRows.map((row) => row.marketingId))
+    getMediaByBarangId(sortedRows.map((row) => row.itemId), { maxItemsPerBarang: 1 }),
+    getLotStatsByIds(sortedRows.map((row) => row.marketingId))
   ]);
 
-  return limitedRows.map((row) =>
+  return sortedRows.map((row) =>
     serializePublicLot({
       ...row,
       insights: statsByMarketingId.get(row.marketingId),

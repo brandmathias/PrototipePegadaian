@@ -777,10 +777,11 @@ export function AdminInventoryCreateForm() {
             <FieldLabel htmlFor="appraisalValue">Nilai taksiran</FieldLabel>
             <MoneyInput id="appraisalValue" min={1} name="appraisalValue" placeholder="Masukkan nilai taksiran" required />
           </div>
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="space-y-1.5">
             <input name="dueAt" readOnly type="hidden" value={dueAt} />
             <AdminDatePicker
-              label="Tanggal dan waktu jatuh tempo"
+              id="dueDate"
+              label="Tanggal jatuh tempo"
               minDate={pawnedAt}
               onChange={setDueDate}
               onTimeChange={setDueTime}
@@ -788,7 +789,6 @@ export function AdminInventoryCreateForm() {
               time={dueTime}
               value={dueDate}
             />
-            <p className="pl-1 text-xs font-medium text-slate-500">Pilih tanggal pada kalender, lalu atur jam, menit, dan detik.</p>
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="customerNumber">Nomor nasabah</FieldLabel>

@@ -117,12 +117,16 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
   });
 
-  it("restores the due-date calendar with precise time controls", () => {
+  it("keeps the prior due-date field layout while retaining precise time controls", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 
-    fireEvent.click(screen.getByRole("button", { name: /tanggal dan waktu jatuh tempo/i }));
+    const dueDateTrigger = screen.getByRole("button", { name: /tanggal jatuh tempo/i });
+    expect(dueDateTrigger.parentElement?.parentElement).not.toHaveClass("md:col-span-2");
+    expect(screen.queryByText(/pilih tanggal pada kalender/i)).not.toBeInTheDocument();
 
-    expect(screen.getByRole("dialog", { name: /kalender tanggal dan waktu jatuh tempo/i })).toBeInTheDocument();
+    fireEvent.click(dueDateTrigger);
+
+    expect(screen.getByRole("dialog", { name: /kalender tanggal jatuh tempo/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Jam jatuh tempo")).toHaveAttribute("type", "number");
     expect(screen.getByLabelText("Menit jatuh tempo")).toHaveAttribute("type", "number");
     fireEvent.change(screen.getByLabelText("Detik jatuh tempo"), { target: { value: "5" } });

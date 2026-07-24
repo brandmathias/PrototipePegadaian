@@ -19,13 +19,13 @@ describe("fixed price catalog visibility", () => {
     expect(isFixedPriceBuyerCatalogHiddenStatus("BUKTI_DIUNGGAH")).toBe(true);
   });
 
-  it("keeps a relisted item in its original catalog position", async () => {
+  it("puts a relisted item at the top using its active catalog session time", async () => {
     const service = await readFile(
       path.join(process.cwd(), "lib/services/public-catalog.service.ts"),
       "utf8"
     );
 
-    expect(service).toContain('min("catalog_history"."created_at")');
-    expect(service).not.toContain(".orderBy(desc(pemasaran.createdAt));");
+    expect(service).not.toContain('min("catalog_history"."created_at")');
+    expect(service).toContain("desc(pemasaran.createdAt),");
   });
 });
