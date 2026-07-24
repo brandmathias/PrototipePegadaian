@@ -117,14 +117,16 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
   });
 
-  it("renders precise duration controls for the due deadline", () => {
+  it("restores the due-date calendar with precise time controls", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 
-    expect(screen.getByText("Durasi jatuh tempo")).toBeInTheDocument();
-    expect(screen.getByLabelText("Hari")).toHaveValue(30);
-    expect(screen.getByLabelText("Jam")).toHaveValue(0);
-    expect(screen.getByLabelText("Menit")).toHaveValue(0);
-    expect(screen.getByLabelText("Detik")).toHaveValue(0);
+    fireEvent.click(screen.getByRole("button", { name: /tanggal dan waktu jatuh tempo/i }));
+
+    expect(screen.getByRole("dialog", { name: /kalender tanggal dan waktu jatuh tempo/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Jam jatuh tempo")).toHaveAttribute("type", "number");
+    expect(screen.getByLabelText("Menit jatuh tempo")).toHaveAttribute("type", "number");
+    fireEvent.change(screen.getByLabelText("Detik jatuh tempo"), { target: { value: "5" } });
+    expect(screen.getByLabelText("Detik jatuh tempo")).toHaveValue(5);
   });
 
   it("updates checklist readiness from form fields, dates, specifications, and media", async () => {
@@ -218,6 +220,7 @@ describe("AdminInventoryCreateForm", () => {
     const [, request] = vi.mocked(fetch).mock.calls[0];
     const body = (request as RequestInit).body as FormData;
     expect(body.get("appraisalValue")).toBe("18500000");
+    expect(body.get("dueAt")).toMatch(/T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     expect(body.has("loanValue")).toBe(false);
   });
 });

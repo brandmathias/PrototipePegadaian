@@ -76,10 +76,7 @@ export function validateAdminBarangPayload(input: {
   condition?: unknown;
   appraisalValue?: unknown;
   pawnedAt?: unknown;
-  durationDays?: unknown;
-  durationHours?: unknown;
-  durationMinutes?: unknown;
-  durationSeconds?: unknown;
+  dueAt?: unknown;
   ownerName?: unknown;
   customerNumber?: unknown;
   description?: unknown;
@@ -90,7 +87,7 @@ export function validateAdminBarangPayload(input: {
   const condition = requiredText(input.condition, "Kondisi barang wajib diisi.").toLowerCase();
   const appraisalValue = normalizeMoney(input.appraisalValue, "Nilai taksiran harus lebih dari 0.");
   const pawnedAt = normalizeDate(input.pawnedAt, "Tanggal gadai belum valid.");
-  const duration = validateBarangDuration(input);
+  const dueAt = normalizeDueAt(input.dueAt);
   const ownerName = normalizeOwnerName(input.ownerName);
 
   if (!ALLOWED_CATEGORIES.has(category)) {
@@ -107,7 +104,7 @@ export function validateAdminBarangPayload(input: {
     condition,
     appraisalValue,
     pawnedAt,
-    ...duration,
+    dueAt,
     ownerName,
     customerNumber: normalizeCustomerNumber(String(input.customerNumber ?? "")),
     description: String(input.description ?? "").trim(),
@@ -216,40 +213,24 @@ function normalizeWholeNumber(value: unknown, fallback: number, message: string)
   return Number(normalized);
 }
 
-function validateBarangDuration(input: {
-  durationDays?: unknown;
-  durationHours?: unknown;
-  durationMinutes?: unknown;
-  durationSeconds?: unknown;
-}) {
-  const durationDays = normalizeWholeNumber(input.durationDays, 0, "Durasi jatuh tempo maksimal 365 hari.");
-  const durationHours = normalizeWholeNumber(input.durationHours, 0, "Jam jatuh tempo harus 0 sampai 23.");
-  const durationMinutes = normalizeWholeNumber(input.durationMinutes, 0, "Menit jatuh tempo harus 0 sampai 59.");
-  const durationSeconds = normalizeWholeNumber(input.durationSeconds, 0, "Detik jatuh tempo harus 0 sampai 59.");
-
-  if (durationHours > 23) {
-    throw new Error("Jam jatuh tempo harus 0 sampai 23.");
+function normalizeDueAt(value: unknown) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new Error("Tanggal dan waktu jatuh tempo belum valid.");
   }
 
-  if (durationMinutes > 59) {
-    throw new Error("Menit jatuh tempo harus 0 sampai 59.");
+  const dueAt = new Date(value);
+  const remaining = dueAt.getTime() - Date.now();
+  if (Number.isNaN(dueAt.getTime())) {
+    throw new Error("Tanggal dan waktu jatuh tempo belum valid.");
+  }
+  if (remaining <= 0) {
+    throw new Error("Tanggal dan waktu jatuh tempo harus setelah waktu saat ini.");
+  }
+  if (remaining > 365 * 86_400_000) {
+    throw new Error("Jatuh tempo maksimal 365 hari dari saat ini.");
   }
 
-  if (durationSeconds > 59) {
-    throw new Error("Detik jatuh tempo harus 0 sampai 59.");
-  }
-
-  const totalDurationSeconds = durationDays * 86_400 + durationHours * 3_600 + durationMinutes * 60 + durationSeconds;
-
-  if (totalDurationSeconds <= 0) {
-    throw new Error("Durasi jatuh tempo harus lebih dari 0 detik.");
-  }
-
-  if (totalDurationSeconds > 365 * 86_400) {
-    throw new Error("Durasi jatuh tempo maksimal 365 hari.");
-  }
-
-  return { durationDays, durationHours, durationMinutes, durationSeconds, totalDurationSeconds };
+  return dueAt.toISOString();
 }
 
 export function validatePemasaranPayload(input: {

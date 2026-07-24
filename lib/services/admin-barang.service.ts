@@ -946,8 +946,7 @@ export async function createAdminBarang(
 ) {
   const payload = validateAdminBarangPayload(input);
   const media = validateAdminBarangMediaList(input.media);
-  const now = new Date();
-  const dueDate = new Date(now.getTime() + payload.totalDurationSeconds * 1000);
+  const dueDate = new Date(payload.dueAt);
 
   const created = await db.transaction(async (tx) => {
     const [unit] = await tx
@@ -998,7 +997,7 @@ export async function createAdminBarang(
       oldStatus: null,
       newStatus: "jaminan",
       changedByUserId: userId,
-        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit dengan durasi jatuh tempo ${payload.durationDays} hari ${payload.durationHours} jam ${payload.durationMinutes} menit ${payload.durationSeconds} detik.`
+        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit dengan jatuh tempo ${dueDate.toISOString()}.`
     });
 
     if (media.length > 0) {

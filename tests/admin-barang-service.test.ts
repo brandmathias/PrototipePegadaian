@@ -41,10 +41,7 @@ const editPayload = {
   condition: "baik",
   customerNumber: "0812345678901",
   description: "Detail diperbarui",
-  durationDays: "30",
-  durationHours: "0",
-  durationMinutes: "0",
-  durationSeconds: "0",
+  dueAt: new Date(Date.now() + 30 * 86_400_000).toISOString(),
   name: "Cincin Harga Tetap",
   ownerName: "Nasabah Demo",
   pawnedAt: "2026-05-01",
@@ -96,6 +93,7 @@ describe("createAdminBarang", () => {
         code: "SBG-1178725010004741",
         name: "Cincin Emas",
         appraisalValue: "12000000",
+        dueDate: new Date(editPayload.dueAt),
       }),
     );
     expect(insertedValues).not.toHaveBeenCalledWith(expect.objectContaining({ loanValue: expect.anything() }));

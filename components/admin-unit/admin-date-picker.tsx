@@ -30,6 +30,12 @@ type CalendarPosition = {
   top: number;
 };
 
+type TimeValue = {
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
+
 function toIsoDate(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -72,8 +78,10 @@ export function AdminDatePicker({
   minDate,
   name,
   onChange,
+  onTimeChange,
   placeholder,
   required,
+  time,
   variant = "default",
   value
 }: {
@@ -83,8 +91,10 @@ export function AdminDatePicker({
   minDate?: string;
   name?: string;
   onChange: (value: string) => void;
+  onTimeChange?: (value: TimeValue) => void;
   placeholder?: string;
   required?: boolean;
+  time?: TimeValue;
   variant?: "default" | "compact";
   value: string;
 }) {
@@ -94,6 +104,7 @@ export function AdminDatePicker({
   const [pickerMode, setPickerMode] = useState<"day" | "monthYear">("day");
   const [calendarPosition, setCalendarPosition] = useState<CalendarPosition | null>(null);
   const isCompact = variant === "compact";
+  const supportsTime = Boolean(time && onTimeChange);
   const selectedDate = parseIsoDate(value);
   const [visibleMonth, setVisibleMonth] = useState(
     new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
@@ -173,7 +184,7 @@ export function AdminDatePicker({
 
       const rect = wrapperRef.current.getBoundingClientRect();
       const width = Math.min(isCompact ? 296 : 352, window.innerWidth - viewportPadding * 2);
-      const estimatedHeight = pickerMode === "monthYear" ? (isCompact ? 320 : 360) : (isCompact ? 390 : 430);
+      const estimatedHeight = (pickerMode === "monthYear" ? (isCompact ? 320 : 360) : (isCompact ? 390 : 430)) + (supportsTime ? 88 : 0);
       const sideGap = isCompact ? 72 : 16;
       const canOpenRight = window.innerWidth >= 768 && rect.right + sideGap + width <= window.innerWidth - viewportPadding;
 
@@ -208,7 +219,7 @@ export function AdminDatePicker({
       window.removeEventListener("resize", updateCalendarPosition);
       window.removeEventListener("scroll", updateCalendarPosition, true);
     };
-  }, [isCompact, isOpen, pickerMode]);
+  }, [isCompact, isOpen, pickerMode, supportsTime]);
 
   function moveMonth(delta: number) {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + delta, 1));
@@ -311,7 +322,7 @@ export function AdminDatePicker({
         >
           <div className="flex items-center justify-between gap-4">
             <h3 className={cn("font-black tracking-[-0.01em] text-[#17251f]", isCompact ? "text-[1rem]" : "text-base")}>
-              Tanggal
+              {supportsTime ? "Tanggal & waktu" : "Tanggal"}
             </h3>
             <button
               aria-label="Tutup kalender tanggal"
@@ -465,6 +476,33 @@ export function AdminDatePicker({
               </div>
             </>
           )}
+
+          {supportsTime && time && onTimeChange ? (
+            <div className="mt-5 border-t border-[#e8f0ea] pt-4">
+              <p className="text-[0.62rem] font-black uppercase tracking-[0.15em] text-[#527060]">Waktu jatuh tempo</p>
+              <div className="mt-2.5 grid grid-cols-3 gap-2">
+                {([
+                  ["hours", "Jam", 23],
+                  ["minutes", "Menit", 59],
+                  ["seconds", "Detik", 59]
+                ] as const).map(([key, label, max]) => (
+                  <label className="block" key={key}>
+                    <span className="mb-1 block text-[0.62rem] font-bold text-slate-500">{label}</span>
+                    <input
+                      aria-label={`${label} jatuh tempo`}
+                      className="h-10 w-full rounded-xl border border-[#dcebe3] bg-[#f9fcfa] px-2 text-center text-sm font-bold tabular-nums text-[#164a37] outline-none transition-[border-color,box-shadow] duration-200 ease-out focus:border-[#006747] focus:ring-4 focus:ring-[#006747]/10"
+                      inputMode="numeric"
+                      max={max}
+                      min={0}
+                      onChange={(event) => onTimeChange({ ...time, [key]: event.target.value })}
+                      type="number"
+                      value={time[key]}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {isCompact ? null : (
             <button

@@ -20,6 +20,7 @@ import {
   X
 } from "lucide-react";
 
+import { AdminDatePicker } from "@/components/admin-unit/admin-date-picker";
 import { CustomerNumberInput } from "@/components/admin-unit/customer-number-input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput, getCurrencyInputDigits } from "@/components/ui/currency-input";
@@ -42,6 +43,24 @@ type ChecklistState = {
   hasValidDuration: boolean;
   hasSpecifications: boolean;
 };
+
+type DueTime = {
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
+
+function toLocalDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function toDueTimestamp(dateValue: string, time: DueTime) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  return new Date(year, month - 1, day, Number(time.hours), Number(time.minutes), Number(time.seconds)).toISOString();
+}
 
 function FieldLabel({
   children,
@@ -465,7 +484,18 @@ export function AdminInventoryCreateForm() {
 
   const defaultPawnedAt = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const pawnedAt = defaultPawnedAt;
-  const [duration, setDuration] = useState({ days: "30", hours: "0", minutes: "0", seconds: "0" });
+  const defaultDueAt = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date;
+  }, []);
+  const [dueDate, setDueDate] = useState(() => toLocalDateValue(defaultDueAt));
+  const [dueTime, setDueTime] = useState<DueTime>(() => ({
+    hours: String(defaultDueAt.getHours()),
+    minutes: String(defaultDueAt.getMinutes()),
+    seconds: String(defaultDueAt.getSeconds())
+  }));
+  const dueAt = useMemo(() => toDueTimestamp(dueDate, dueTime), [dueDate, dueTime]);
   const specificationFields = useMemo(() => getBarangSpecificationFields(category), [category]);
   const activeMedia = media[activeMediaIndex] ?? media[0] ?? null;
   const checklistItems = useMemo(
@@ -480,7 +510,7 @@ export function AdminInventoryCreateForm() {
       },
       {
         done: checklist.hasValidDuration,
-        text: "Durasi jatuh tempo sudah lebih dari 0 detik."
+        text: "Tanggal dan waktu jatuh tempo sudah berada di masa depan."
       },
       {
         done: checklist.hasSpecifications,
@@ -500,17 +530,8 @@ export function AdminInventoryCreateForm() {
 
     const formData = new FormData(form);
     const getValue = (name: string) => String(formData.get(name) ?? "").trim();
-    const durationDays = Number(getValue("durationDays"));
-    const durationHours = Number(getValue("durationHours"));
-    const durationMinutes = Number(getValue("durationMinutes"));
-    const durationSeconds = Number(getValue("durationSeconds"));
-    const hasValidDuration =
-      [durationDays, durationHours, durationMinutes, durationSeconds].every(Number.isInteger) &&
-      durationDays >= 0 &&
-      durationHours >= 0 && durationHours <= 23 &&
-      durationMinutes >= 0 && durationMinutes <= 59 &&
-      durationSeconds >= 0 && durationSeconds <= 59 &&
-      durationDays * 86_400 + durationHours * 3_600 + durationMinutes * 60 + durationSeconds > 0;
+    const deadline = new Date(getValue("dueAt")).getTime();
+    const hasValidDuration = Number.isFinite(deadline) && deadline > Date.now() && deadline - Date.now() <= 365 * 86_400_000;
     const hasSpecifications = specificationFields
       .filter((field) => field.required !== false)
       .every((field) => getValue(`specifications.${field.key}`).length > 0);
@@ -538,7 +559,7 @@ export function AdminInventoryCreateForm() {
 
   useEffect(() => {
     refreshChecklist();
-  }, [duration, pawnedAt]);
+  }, [dueAt, pawnedAt]);
 
   useEffect(() => {
     if (!isMediaPreviewOpen) {
@@ -756,34 +777,18 @@ export function AdminInventoryCreateForm() {
             <FieldLabel htmlFor="appraisalValue">Nilai taksiran</FieldLabel>
             <MoneyInput id="appraisalValue" min={1} name="appraisalValue" placeholder="Masukkan nilai taksiran" required />
           </div>
-          <div className="rounded-2xl border border-emerald-100 bg-[linear-gradient(145deg,#f5fbf7_0%,#ffffff_72%)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] md:col-span-2">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-              <FieldLabel>Durasi jatuh tempo</FieldLabel>
-              <p className="text-xs font-medium text-slate-500">Pemasaran tersedia setelah durasi berakhir.</p>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {([
-                ["days", "durationDays", "Hari", undefined],
-                ["hours", "durationHours", "Jam", 23],
-                ["minutes", "durationMinutes", "Menit", 59],
-                ["seconds", "durationSeconds", "Detik", 59]
-              ] as const).map(([key, name, label, max]) => (
-                <div className="space-y-1.5" key={key}>
-                  <FieldLabel htmlFor={name}>{label}</FieldLabel>
-                  <Input
-                    className="h-11 rounded-xl border-emerald-100 bg-white text-sm font-bold tabular-nums text-slate-800 shadow-[0_10px_24px_-22px_rgba(0,103,71,0.7)] transition-[border-color,box-shadow,transform] duration-200 ease-out focus:border-[#006747]/45 focus:ring-[#bde8d0]/55"
-                    id={name}
-                    inputMode="numeric"
-                    max={max}
-                    min={0}
-                    name={name}
-                    onChange={(event) => setDuration((current) => ({ ...current, [key]: event.target.value }))}
-                    type="number"
-                    value={duration[key]}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <input name="dueAt" readOnly type="hidden" value={dueAt} />
+            <AdminDatePicker
+              label="Tanggal dan waktu jatuh tempo"
+              minDate={pawnedAt}
+              onChange={setDueDate}
+              onTimeChange={setDueTime}
+              required
+              time={dueTime}
+              value={dueDate}
+            />
+            <p className="pl-1 text-xs font-medium text-slate-500">Pilih tanggal pada kalender, lalu atur jam, menit, dan detik.</p>
           </div>
           <div className="space-y-1.5">
             <FieldLabel htmlFor="customerNumber">Nomor nasabah</FieldLabel>
