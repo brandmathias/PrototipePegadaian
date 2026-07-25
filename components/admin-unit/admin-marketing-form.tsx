@@ -458,14 +458,14 @@ export function AdminMarketingForm({
                   <ModeCard
                     active={mode === "fixed_price"}
                     description="Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
-                    icon={<Tag className="size-4.5" strokeWidth={2.2} />}
+                    icon={<Tag className="size-7" strokeWidth={2.2} />}
                     onClick={() => setMode("fixed_price")}
                     title="Harga Tetap"
                   />
                   <ModeCard
                     active={mode === "vickrey"}
                     description="Lelang tertutup (sealed-bid) di mana pemenang membayar harga penawaran tertinggi kedua."
-                    icon={<Gavel className="size-4.5" strokeWidth={2.2} />}
+                    icon={<Gavel className="size-7" strokeWidth={2.2} />}
                     onClick={() => setMode("vickrey")}
                     title="Lelang Tertutup"
                   />
@@ -559,13 +559,16 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div
-                  className={cn("space-y-2.5", mode === "vickrey" && "mt-auto")}
-                  data-testid="marketing-summary-footer"
-                >
-                  <div className="relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
+                <div className={cn("space-y-2.5", mode === "fixed_price" ? "mt-4" : "mt-auto")} data-testid="marketing-summary-footer">
+                  <div
+                    className={cn(
+                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]",
+                      mode === "fixed_price" && "flex min-h-[7.5rem] items-center"
+                    )}
+                    data-testid="marketing-summary-total"
+                  >
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/12" />
-                    <div className="relative grid gap-3 sm:grid-cols-2">
+                    <div className="relative grid w-full gap-3 sm:grid-cols-2">
                       <div className="space-y-1 pr-2 sm:pr-4">
                         <p className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-emerald-100">
                           {mode === "fixed_price" ? "Total Harga Jual" : "Total Nilai Dasar"}
@@ -585,7 +588,13 @@ export function AdminMarketingForm({
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.1rem] text-[#40564a]">
+                  <div
+                    className={cn(
+                      "flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.1rem] text-[#40564a]",
+                      mode === "fixed_price" && "min-h-[6.1rem] items-center"
+                    )}
+                    data-testid="marketing-summary-terms"
+                  >
                     <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.

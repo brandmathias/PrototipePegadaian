@@ -224,7 +224,9 @@ describe("AdminMarketingForm", () => {
 
     expect(screen.getByText("Ringkasan Penjualan")).toBeInTheDocument();
     expect(screen.getByTestId("marketing-summary-column")).toHaveClass("justify-start");
-    expect(screen.getByTestId("marketing-summary-footer")).not.toHaveClass("mt-auto");
+    expect(screen.getByTestId("marketing-summary-footer")).toHaveClass("mt-4");
+    expect(screen.getByTestId("marketing-summary-total")).toHaveClass("min-h-[7.5rem]", "items-center");
+    expect(screen.getByTestId("marketing-summary-terms")).toHaveClass("min-h-[6.1rem]", "items-center");
     expect(
       screen.getByText(
         "Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
@@ -258,6 +260,8 @@ describe("AdminMarketingForm", () => {
     expect(document.body.querySelector(".lucide-banknote")).toBeTruthy();
     expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveClass("min-h-[10.5rem]", "gap-5", "px-6", "py-8");
     expect(screen.getByRole("button", { name: /lelang tertutup/i })).toHaveClass("min-h-[11.5rem]", "gap-5", "px-6", "pt-11");
+    expect(screen.getByRole("button", { name: /harga tetap/i }).querySelector(".lucide-tag")).toHaveClass("size-7");
+    expect(screen.getByRole("button", { name: /lelang tertutup/i }).querySelector(".lucide-gavel")).toHaveClass("size-7");
     expect(screen.getByRole("button", { name: /harga tetap/i }).querySelector('[data-testid="marketing-mode-indicator"]')).toHaveClass("size-8", "border");
     expect(screen.getByTestId("marketing-method-column")).toHaveClass("h-full");
     expect(screen.getByTestId("marketing-summary-column")).toHaveClass("h-full", "justify-between");
