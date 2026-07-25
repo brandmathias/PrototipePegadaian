@@ -559,11 +559,10 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div className={cn("space-y-2.5", mode === "fixed_price" ? "mt-4" : "mt-auto")} data-testid="marketing-summary-footer">
+                <div className={cn("space-y-2.5", mode === "vickrey" ? "mt-auto" : "mt-3")} data-testid="marketing-summary-footer">
                   <div
                     className={cn(
-                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]",
-                      mode === "fixed_price" && "flex min-h-[7.5rem] items-center"
+                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]"
                     )}
                     data-testid="marketing-summary-total"
                   >
@@ -589,13 +588,10 @@ export function AdminMarketingForm({
                     </div>
                   </div>
                   <div
-                    className={cn(
-                      "flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.1rem] text-[#40564a]",
-                      mode === "fixed_price" && "min-h-[6.1rem] items-center"
-                    )}
+                    className="flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.6] text-[#40564a]"
                     data-testid="marketing-summary-terms"
                   >
-                    <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
+                    <Info className="mt-0.5 size-3.5 shrink-0 text-[#006747]" strokeWidth={2.3} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
                     </p>
