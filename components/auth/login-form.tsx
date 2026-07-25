@@ -143,7 +143,7 @@ export function LoginForm() {
               if (error) setError(null);
             }}
             onFocus={() => setFocusedField("email")}
-            placeholder="nama@email.com"
+            placeholder="Contoh: budi@email.com"
             type="email"
             value={email}
           />
@@ -174,7 +174,7 @@ export function LoginForm() {
               if (error) setError(null);
             }}
             onFocus={() => setFocusedField("password")}
-            placeholder="Masukkan kata sandi"
+            placeholder="Minimal 8 karakter"
             type={showPassword ? "text" : "password"}
             value={password}
           />

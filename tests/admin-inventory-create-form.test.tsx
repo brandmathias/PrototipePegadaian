@@ -117,6 +117,13 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.queryByLabelText("Jenis Emas")).not.toBeInTheDocument();
   });
 
+  it("places the Rupiah prefix before the appraisal value input", () => {
+    renderWithToast(<AdminInventoryCreateForm />);
+
+    const appraisalInput = screen.getByLabelText("Nilai taksiran");
+    expect(appraisalInput.parentElement?.firstElementChild).toHaveTextContent("Rp");
+  });
+
   it("keeps the prior due-date field layout while retaining precise time controls", () => {
     renderWithToast(<AdminInventoryCreateForm />);
 

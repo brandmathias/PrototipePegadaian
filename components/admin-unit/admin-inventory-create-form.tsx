@@ -132,13 +132,13 @@ function FormInput({
 function MoneyInput(props: React.ComponentProps<typeof CurrencyInput>) {
   return (
     <div className="flex overflow-hidden rounded-xl border border-transparent bg-slate-50 transition focus-within:border-[#006747] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#006747]/10">
+      <span className="flex items-center border-r border-slate-200/60 bg-slate-100/50 px-3.5 text-[0.64rem] font-black uppercase tracking-[0.08em] text-slate-400">
+        Rp
+      </span>
       <CurrencyInput
         {...props}
         className="h-11 flex-1 border-0 bg-transparent px-3 text-xs font-bold text-slate-800 shadow-none focus-visible:ring-0"
       />
-      <span className="flex items-center border-l border-slate-200/60 bg-slate-100/50 px-3.5 text-[0.64rem] font-black uppercase tracking-[0.08em] text-slate-400">
-        Rp
-      </span>
     </div>
   );
 }
