@@ -208,6 +208,33 @@ describe("AdminMarketingForm", () => {
     expect(secondsInput.value).toBe("59");
   });
 
+  it("presents a two-column marketing summary with justified method descriptions", () => {
+    renderWithToast(
+      <AdminMarketingForm
+        barangId="barang-1"
+        defaultPrice={200000}
+        endpoint="/api/admin/pemasaran"
+        redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
+        submitLabel="Publikasikan"
+        successDescription="Berhasil"
+        successTitle="Sukses"
+      />
+    );
+
+    expect(screen.getByText("Ringkasan Penawaran")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
+      )
+    ).toHaveClass("text-justify");
+    expect(
+      screen.getByText(
+        "Lelang tertutup (sealed-bid) di mana pemenang membayar harga penawaran tertinggi kedua."
+      )
+    ).toHaveClass("text-justify");
+  });
+
   it("keeps success toast above the marketing modal and closes the modal after publish succeeds", async () => {
     const { container } = renderWithToast(
       <AdminMarketingForm

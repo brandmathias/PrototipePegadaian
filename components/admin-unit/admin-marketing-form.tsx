@@ -84,21 +84,26 @@ function ModeCard({
       aria-pressed={active}
       disabled={disabled}
       className={cn(
-        "relative flex min-h-[6.6rem] items-start gap-3 rounded-[1rem] border px-4 py-3 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "relative flex min-h-[9.5rem] items-center gap-4 overflow-hidden rounded-[1rem] border px-5 py-5 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.99]",
         disabled && "cursor-not-allowed",
         active
-          ? "border-[#005c3b] bg-[#f7fbf8] shadow-[0_12px_28px_-22px_rgba(0,103,71,0.45)]"
+          ? "border-[#006747] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] shadow-[0_18px_34px_-24px_rgba(0,74,35,0.72)]"
           : disabled
             ? "border-[#e5e8e6] bg-[#f7f8f8] text-slate-400"
-            : "border-[#d9e3dc] bg-white text-slate-500 hover:-translate-y-0.5 hover:border-[#c4d5cb] hover:bg-[#fcfdfc]"
+            : "border-[#d9e3dc] bg-white text-slate-500 shadow-[0_12px_24px_-28px_rgba(8,69,50,0.35)] hover:-translate-y-0.5 hover:border-[#a6cdb7] hover:bg-[#fcfdfc]"
       )}
       onClick={onClick}
       type="button"
     >
       {active ? (
-        <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full bg-[#006747] text-white shadow-[0_12px_22px_-16px_rgba(0,103,71,0.6)]">
+        <>
+          <span className="absolute left-5 top-3 rounded-full bg-white px-3 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#006747] shadow-[0_8px_18px_-14px_rgba(0,0,0,0.5)]">
+            Dipilih
+          </span>
+          <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full bg-white text-[#006747] shadow-[0_12px_22px_-16px_rgba(0,0,0,0.46)]">
           <CheckCircle2 className="size-4" strokeWidth={2.6} />
-        </span>
+          </span>
+        </>
       ) : disabled ? (
         <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full border border-[#d9dfdb] bg-white text-slate-300">
           <Lock className="size-3.5" strokeWidth={2.3} />
@@ -107,9 +112,9 @@ function ModeCard({
 
       <span
         className={cn(
-          "mt-0.5 grid size-8 shrink-0 place-items-center rounded-[0.85rem] border",
+          "grid size-14 shrink-0 place-items-center rounded-full border",
           active
-            ? "border-emerald-200 bg-emerald-50 text-[#006747]"
+            ? "border-white/50 bg-white/15 text-white"
             : disabled
               ? "border-slate-200 bg-slate-100 text-slate-300"
               : "border-slate-200 bg-slate-50 text-slate-400"
@@ -118,19 +123,19 @@ function ModeCard({
         {icon}
       </span>
 
-      <span className="min-w-0 flex-1 pr-10">
+      <span className={cn("min-w-0 flex-1 pr-10", active && "pt-5")}>
         <span
           className={cn(
-            "block text-[0.96rem] font-black tracking-tight sm:text-[1rem]",
-            active ? "text-[#101a16]" : disabled ? "text-slate-400" : "text-slate-600"
+            "block text-[1.05rem] font-black tracking-tight sm:text-[1.14rem]",
+            active ? "text-white" : disabled ? "text-slate-400" : "text-slate-700"
           )}
         >
           {title}
         </span>
         <span
           className={cn(
-            "mt-1 block text-[0.8rem] leading-[1.35rem]",
-            active ? "text-[#b9c6bf]" : disabled ? "text-slate-300" : "text-slate-500"
+            "mt-1.5 block text-justify text-[0.84rem] leading-6",
+            active ? "text-emerald-50" : disabled ? "text-slate-300" : "text-slate-500"
           )}
         >
           {description}
@@ -254,7 +259,6 @@ export function AdminMarketingForm({
     normalizedDurationMinutes * 60 +
     normalizedDurationSeconds;
   const baseNowMs = useMemo(() => new Date(serverNow).getTime(), [serverNow]);
-  const selectedModeLabel = mode === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup";
   const priceLabel = mode === "fixed_price" ? "Harga Jual Instan" : "Harga Dasar Lelang";
   const estimatedEnd = useMemo(() => {
     if (
@@ -417,7 +421,7 @@ export function AdminMarketingForm({
           </div>
         </div>
 
-        <div className="p-5 pt-10 sm:p-7 sm:pt-11 lg:p-7 lg:pt-11">
+        <div className="p-5 pt-10 sm:p-8 sm:pt-11 lg:p-9 lg:pt-12">
           <div className="flex justify-end">
             <button
               aria-label="Tutup popup pasarkan barang"
@@ -429,9 +433,9 @@ export function AdminMarketingForm({
             </button>
           </div>
 
-          <form className="space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2 text-center">
-              <h3 className="font-headline text-[1.55rem] font-black tracking-tight text-[#15231d] sm:text-[1.72rem]">
+              <h3 className="font-headline text-[1.75rem] font-black tracking-tight text-[#15231d] sm:text-[2rem]">
                 Pasarkan Barang
               </h3>
               <p className="mx-auto max-w-md text-[0.9rem] leading-7 text-slate-500">
@@ -439,10 +443,10 @@ export function AdminMarketingForm({
               </p>
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-[1.12fr_0.88fr] lg:items-start">
-              <div className="space-y-1.5">
+            <div className="grid gap-7 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
+              <div className="space-y-3">
                 <FieldLabel>Metode Penjualan</FieldLabel>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <ModeCard
                     active={mode === "fixed_price"}
                     description="Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
@@ -460,29 +464,30 @@ export function AdminMarketingForm({
                 </div>
               </div>
 
-              <div className="space-y-1.5 lg:pl-1">
-                <div className="space-y-1.5">
-                  <FieldLabel>Mode yang Dipilih</FieldLabel>
-                  <div className="rounded-[0.85rem] border border-[#dfe5e1] bg-[#f3f5f4] px-4 py-2 text-[0.92rem] font-medium tracking-tight text-[#bcc5bf] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
-                    {selectedModeLabel}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <FieldLabel htmlFor="marketing-price">{priceLabel}</FieldLabel>
-                  <div className="flex overflow-hidden rounded-[1rem] border-2 border-[#cfe5da] bg-white shadow-[0_12px_24px_-24px_rgba(0,103,71,0.18)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/10">
-                    <span className="flex items-center px-5 text-[1.1rem] font-black text-[#006747]">
-                      Rp
+              <div className="space-y-3 border-[#dfe8e2] lg:border-l lg:pl-7">
+                <FieldLabel>Ringkasan Penawaran</FieldLabel>
+                <div className="rounded-[1rem] border border-[#dfe8e2] bg-white p-4 shadow-[0_16px_32px_-30px_rgba(8,69,50,0.45)]">
+                  <div className="flex items-center gap-3">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#eff8f2] text-[#006747]">
+                      <Tag className="size-5" strokeWidth={2.1} />
                     </span>
-                    <input
-                      className="h-[3rem] w-full bg-transparent pr-5 text-[0.92rem] font-black tracking-[0.02em] text-[#0d4e34] outline-none placeholder:text-slate-300"
-                      id="marketing-price"
-                      inputMode="numeric"
-                      onChange={(event) => setPrice(getCurrencyInputDigits(event.target.value))}
-                      placeholder="0"
-                      type="text"
-                      value={formatCurrencyInput(price)}
-                    />
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <FieldLabel htmlFor="marketing-price">{priceLabel}</FieldLabel>
+                      <div className="flex overflow-hidden rounded-[0.8rem] border-2 border-[#b9ddc8] bg-white transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-within:border-[#006747] focus-within:ring-4 focus-within:ring-[#006747]/10">
+                        <span className="flex items-center px-3 text-[1rem] font-black text-[#006747]">
+                          Rp
+                        </span>
+                        <input
+                          className="h-[3rem] w-full bg-transparent pr-4 text-[0.92rem] font-black tracking-[0.02em] text-[#0d4e34] outline-none placeholder:text-slate-300"
+                          id="marketing-price"
+                          inputMode="numeric"
+                          onChange={(event) => setPrice(getCurrencyInputDigits(event.target.value))}
+                          placeholder="Masukkan nominal harga"
+                          type="text"
+                          value={formatCurrencyInput(price)}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -540,8 +545,8 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div className="space-y-2">
-                  <div className="relative overflow-hidden rounded-[1rem] bg-[#005f2e] px-4 py-2 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
+                <div className="space-y-3">
+                  <div className="relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-5 py-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/12" />
                     <div className="relative grid gap-3 sm:grid-cols-2">
                       <div className="space-y-1 pr-2 sm:pr-4">
@@ -563,18 +568,21 @@ export function AdminMarketingForm({
                       </div>
                     </div>
                   </div>
-                  <p className="text-[0.68rem] italic leading-[1.15rem] text-slate-500">
-                    *Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
-                  </p>
+                  <div className="flex gap-3 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-4 py-3 text-[0.76rem] leading-5 text-[#40564a]">
+                    <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
+                    <p>
+                      Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="h-px bg-slate-100" />
+            <div className="h-px bg-[#e8eeea]" />
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
               <Button
-                className="h-10 min-w-[6rem] rounded-xl px-0 text-left text-[0.96rem] font-bold tracking-tight text-slate-500 shadow-none hover:bg-transparent hover:text-slate-800"
+                className="h-11 min-w-[7.25rem] rounded-xl border border-[#d7e1db] bg-white px-5 text-[0.96rem] font-bold tracking-tight text-[#33443b] shadow-none hover:bg-[#f7faf8] hover:text-[#13211c] active:scale-[0.98]"
                 onClick={handleCancel}
                 type="button"
                 variant="ghost"
