@@ -261,7 +261,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("nationalId", event.target.value.replace(/\s/g, ""))}
               onFocus={() => setFocusedField("nationalId")}
-              placeholder="7371122301990001"
+              placeholder="16 digit NIK"
               value={form.nationalId}
             />
           </div>
@@ -288,7 +288,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("password", event.target.value)}
               onFocus={() => setFocusedField("password")}
-              placeholder="Minimal 8 karakter"
+              placeholder="Masukkan kata sandi"
               type={showPassword ? "text" : "password"}
               value={form.password}
             />

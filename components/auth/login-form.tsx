@@ -174,7 +174,7 @@ export function LoginForm() {
               if (error) setError(null);
             }}
             onFocus={() => setFocusedField("password")}
-            placeholder="Minimal 8 karakter"
+            placeholder="Masukkan kata sandi"
             type={showPassword ? "text" : "password"}
             value={password}
           />

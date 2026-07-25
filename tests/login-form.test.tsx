@@ -247,8 +247,8 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText(/nama lengkap/i)).toHaveAttribute("placeholder", "Budi Santoso");
     expect(screen.getByLabelText(/^email$/i)).toHaveAttribute("placeholder", "budi@email.com");
     expect(screen.getByLabelText(/nomor telepon/i)).toHaveAttribute("placeholder", "081234567890");
-    expect(screen.getByLabelText(/nomor ktp/i)).toHaveAttribute("placeholder", "7371122301990001");
-    expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Minimal 8 karakter");
+    expect(screen.getByLabelText(/nomor ktp/i)).toHaveAttribute("placeholder", "16 digit NIK");
+    expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Masukkan kata sandi");
 
     const phoneInput = screen.getByLabelText(/nomor telepon/i) as HTMLInputElement;
     const nationalIdInput = screen.getByLabelText(/nomor ktp/i) as HTMLInputElement;
@@ -262,7 +262,7 @@ describe("LoginForm", () => {
     renderWithToast(<LoginForm />);
 
     expect(screen.getByLabelText(/email akun/i)).toHaveAttribute("placeholder", "budi@email.com");
-    expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Minimal 8 karakter");
+    expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Masukkan kata sandi");
   });
 
   it("uses a dedicated logout transition instead of the regular activity toast", async () => {
