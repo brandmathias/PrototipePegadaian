@@ -179,7 +179,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("name", event.target.value)}
               onFocus={() => setFocusedField("name")}
-              placeholder="Contoh: Budi Santoso"
+              placeholder="Budi Santoso"
               value={form.name}
             />
           </div>
@@ -206,7 +206,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("email", event.target.value)}
               onFocus={() => setFocusedField("email")}
-              placeholder="Contoh: budi@email.com"
+              placeholder="budi@email.com"
               type="email"
               value={form.email}
             />
@@ -234,7 +234,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("phoneNumber", event.target.value.replace(/\s/g, ""))}
               onFocus={() => setFocusedField("phoneNumber")}
-              placeholder="081234567890 tanpa spasi"
+              placeholder="081234567890"
               value={form.phoneNumber}
             />
           </div>
@@ -261,7 +261,7 @@ export function RegisterForm() {
               onBlur={() => setFocusedField(null)}
               onChange={(event) => updateField("nationalId", event.target.value.replace(/\s/g, ""))}
               onFocus={() => setFocusedField("nationalId")}
-              placeholder="16 digit NIK tanpa spasi"
+              placeholder="7371122301990001"
               value={form.nationalId}
             />
           </div>

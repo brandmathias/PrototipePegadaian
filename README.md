@@ -1,369 +1,140 @@
-<p align="center">
-  <img src="public/brand/ruang-agunan-icon.png" alt="Logo Ruang Agunan" width="92" />
-</p>
+# Ruang Agunan
 
-<h1 align="center">Ruang Agunan</h1>
+> Prototype sistem informasi pengelolaan barang agunan, pemasaran Harga Tetap, dan Lelang Tertutup Vickrey untuk kebutuhan tugas akhir.
 
-<p align="center">
-  <strong>Prototype Sistem Informasi Pengelolaan Aset Agunan, Harga Tetap, dan Lelang Tertutup</strong>
-</p>
+Ruang Agunan menghubungkan proses pencatatan barang agunan, masa jatuh tempo, pemasaran, transaksi, pembayaran, serah-terima, notifikasi, pelanggaran, dan monitoring lintas unit dalam satu aplikasi web.
 
-<p align="center">
-  Project ini dikembangkan sebagai <strong>tugas akhir</strong> dan berfungsi sebagai prototype akademik, bukan platform komersial atau sistem resmi lembaga apa pun.
-</p>
+> **Disclaimer:** ini adalah project akademik. Bukan aplikasi Pegadaian resmi, bukan layanan transaksi finansial, dan seluruh data yang dipakai bersifat simulasi.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Drizzle_ORM-Data_Layer-C5F74F?style=for-the-badge&logo=drizzle&logoColor=111827" alt="Drizzle ORM" />
-</p>
+## Ringkasan Kondisi Implementasi
 
----
-
-## 📌 Deskripsi Project
-
-Ruang Agunan adalah aplikasi web full-stack yang mensimulasikan proses pengelolaan aset agunan secara digital. Aplikasi ini menyediakan alur untuk pengunjung, buyer, Admin Unit, dan Superadmin dalam satu sistem yang saling terhubung.
-
-Melalui Ruang Agunan, pengguna dapat melihat katalog aset, menyimpan wishlist, membeli barang Harga Tetap, mengikuti Lelang Tertutup, memantau transaksi, menerima notifikasi, mencetak nota, dan membaca pusat bantuan. Dari sisi operasional, Admin Unit dapat mengelola barang, pemasaran, transaksi, verifikasi pembayaran, dan riwayat barang. Superadmin dapat memantau performa nasional, unit, admin, blacklist, serta kebijakan pelanggaran.
-
-Project ini menekankan alur transaksi yang jelas, privasi penawaran pada Lelang Tertutup, dashboard laporan yang mudah dibaca, dan dokumentasi yang siap dipakai untuk kebutuhan presentasi tugas akhir.
-
----
-
-## 💎 Keunggulan Aplikasi
-
-Ruang Agunan tidak hanya berfungsi sebagai katalog aset, tetapi juga sebagai prototype sistem transaksi yang menggabungkan pengalaman buyer, operasional Admin Unit, dan monitoring Superadmin dalam satu alur yang utuh.
-
-| Keunggulan | Penjelasan |
+| Area | Kondisi saat ini |
 | --- | --- |
-| Lelang Tertutup berbasis Vickrey Auction | Buyer dapat memasang penawaran terbaik tanpa melihat angka peserta lain. Pemenang ditentukan oleh sistem setelah deadline berdasarkan bid valid yang masuk. |
-| Bid privat internal | Nominal serta identitas penawar disimpan di database internal yang hanya dapat diakses operator berwenang; UI dan API menampilkannya sebagai data tersensor selama lelang aktif. |
-| Privasi peserta | Peserta lain tidak mengetahui nominal maupun identitas penawar selama lelang berlangsung. |
-| Settlement otomatis | Setelah deadline, backend menentukan pemenang dari bid internal, lalu membuat transaksi pemenang secara otomatis. |
-| Role-based workflow | Guest, Buyer, Admin Unit, dan Superadmin memiliki hak akses berbeda agar data operasional tetap terkontrol. |
-| Dashboard laporan | Admin Unit dan Superadmin dapat membaca tren nilai transaksi, volume, periode, dan rincian Harga Tetap serta Lelang Tertutup melalui chart interaktif. |
-| Audit dan pembatasan akun | Riwayat barang, transaksi, notifikasi, pelanggaran, dan blacklist membantu proses audit serta menjaga kedisiplinan pembayaran. |
-| Dokumentasi akademik | PRD dan README disusun agar fitur, mekanisme teknis, dan batasan tugas akhir dapat dijelaskan secara profesional. |
+| Barang | Admin Unit memasukkan barang, spesifikasi kategori, media, nilai taksiran, data penggadai, dan jatuh tempo. |
+| Jatuh tempo | Dipilih melalui kalender dengan jam, menit, dan detik agar dapat disimulasikan cepat. |
+| Pemasaran | Barang baru bisa dipasarkan setelah jatuh tempo lewat; UI menonaktifkan tombol dan backend memvalidasi aturan yang sama. |
+| Harga Tetap | Buyer transfer, mengunggah bukti, lalu Admin Unit memverifikasi atau menolak dengan alasan. |
+| Lelang Tertutup | Menggunakan aturan Vickrey: bid tertinggi menang, harga akhir memakai bid tertinggi kedua. |
+| Privasi bid | Bid disimpan sebagai data privat internal; UI/API menyensor nama dan nominal selama lelang aktif. Tidak menggunakan encrypted escrow pada branch utama. |
+| Pembayaran lelang | Pemenang membayar langsung di unit maksimal 24 jam, kemudian dikonfirmasi Admin Unit. |
+| Pelanggaran | Gagal membayar lelang dapat menghasilkan pelanggaran dan pembatasan akun bertingkat. |
+| Katalog | Sesi pemasaran baru—termasuk hasil pemasaran ulang—diurutkan berdasarkan waktu publikasi baru dan tampil paling atas. |
 
----
+## Peran Pengguna
 
-## Aturan Level Pelanggaran
+### Guest
 
-| Level | Dampak | Durasi |
-| --- | --- | --- |
-| Level 1 | Buyer tidak bisa menawar pada Lelang Tertutup, tetapi masih bisa membeli barang Harga Tetap. | 7 hari |
-| Level 2 | Buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap. | 30 hari |
-| Level 3 | Akun buyer ditangguhkan sehingga tidak bisa login masuk ke dalam sistem. | 365 hari |
+- Melihat beranda, katalog, detail barang, dan pusat bantuan.
+- Tidak dapat membeli, membuat wishlist, mengirim bid, atau mengakses transaksi.
 
----
+### Buyer
 
-## 👨‍🎓 Identitas Pengembang
+- Register dan login.
+- Melihat katalog, detail, media, statistik lot, dan wishlist.
+- Membeli barang Harga Tetap dan mengunggah bukti pembayaran.
+- Mengirim satu bid per sesi Lelang Tertutup.
+- Melihat transaksi, hasil lelang, nota, notifikasi, profil, dan pelanggaran pribadi.
 
-| Informasi | Detail |
-| --- | --- |
-| Nama | Brando Mathias Zusriadi |
-| NIM | 220211060351 |
-| Program Studi | Teknik Informatika |
-| Universitas | Universitas Sam Ratulangi |
-| Konteks | Project Tugas Akhir |
+### Admin Unit
 
----
+- Mengelola barang dan media untuk unit sendiri.
+- Mengatur tanggal serta waktu jatuh tempo sampai detik.
+- Memasarkan barang setelah jatuh tempo.
+- Mengelola Harga Tetap dan Lelang Tertutup.
+- Memverifikasi bukti pembayaran, mengonfirmasi pembayaran langsung, dan mengunggah bukti serah-terima.
+- Melihat riwayat barang, transaksi, pemasaran, dan pelanggaran pada scope unit.
 
-## ✨ Fitur Utama
+### Superadmin
 
-### 🏠 Beranda dan Katalog Publik
+- Mengelola unit, rekening unit, Admin Unit, dan akun Superadmin.
+- Memantau dashboard nasional, transaksi lintas unit, blacklist, dan kebijakan pelanggaran.
 
-Beranda dan katalog menjadi pintu masuk pengguna untuk melihat aset yang sedang tersedia. Pengguna dapat membuka detail barang, melihat media, membaca informasi unit, dan memahami status pemasaran.
-
-Fitur:
-
-- Katalog aset dengan filter dan sortir.
-- Detail barang dengan galeri foto/video.
-- Statistik ringkas seperti jumlah dilihat, disukai, dan peserta.
-- Mode pemasaran Harga Tetap dan Lelang Tertutup.
-
-**Screenshot**
+## Alur Utama
 
 ```text
-docs/readme-screenshots/01-beranda.png
-docs/readme-screenshots/02-katalog.png
-docs/readme-screenshots/03-detail-barang.png
-```
-
-<img src="docs/readme-screenshots/01-beranda.png" alt="Beranda Ruang Agunan" width="100%" />
-
----
-
-### 🛒 Buyer Area
-
-Buyer Area menyediakan pengalaman pengguna untuk mengikuti transaksi dari awal sampai selesai. Buyer dapat menyimpan barang, membeli barang Harga Tetap, mengikuti Lelang Tertutup, melihat transaksi, dan membaca notifikasi.
-
-Fitur:
-
-- Dashboard buyer.
-- Wishlist barang.
-- Pembelian Harga Tetap melalui transfer.
-- Bid Lelang Tertutup.
-- Riwayat transaksi.
-- Riwayat bid.
-- Halaman menang dan bukan pemenang.
-- Nota transaksi.
-- Pusat Bantuan.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/04-dashboard-buyer.png
-docs/readme-screenshots/05-wishlist.png
-docs/readme-screenshots/06-transaksi-buyer.png
-docs/readme-screenshots/07-pusat-bantuan.png
-```
-
-<img src="docs/readme-screenshots/04-dashboard-buyer.png" alt="Dashboard Buyer Ruang Agunan" width="100%" />
-
----
-
-### 🔒 Lelang Tertutup
-
-Lelang Tertutup dirancang dengan pendekatan Vickrey Auction. Pada mekanisme ini, buyer mengirim penawaran secara tertutup, lalu sistem menentukan hasil setelah deadline. Keunggulan utamanya adalah buyer dapat memasang nilai terbaik sejak awal tanpa harus melihat atau menebak strategi peserta lain.
-
-Selama lelang berlangsung, nominal bid tetap privat. Peserta lain, Admin Unit, dan Superadmin tidak mengetahui nominal bid sebelum lelang berakhir. Angka bid baru diproses oleh backend ketika periode lelang selesai.
-
-Fitur:
-
-- Form bid dengan validasi harga dasar.
-- Persetujuan konsekuensi pembayaran sebelum bid dikirim.
-- Nominal bid disimpan tertutup sampai deadline.
-- Hasil menang/kalah setelah lelang selesai.
-- Transaksi otomatis untuk pemenang.
-- Pembatasan akun jika pemenang tidak menyelesaikan pembayaran.
-
-Mekanisme Vickrey Auction:
-
-- Semua peserta mengirim bid secara tertutup.
-- Sistem menentukan pemenang dari bid valid tertinggi setelah deadline.
-- Jika ada lebih dari satu bid valid, harga akhir mengacu pada bid valid tertinggi kedua.
-- Jika hanya ada satu bid valid, harga akhir memakai harga dasar.
-- Jika ada nominal tertinggi yang sama, bid yang masuk lebih awal menjadi prioritas.
-- Pada nominal tertinggi yang sama, harga akhir mengikuti nilai bid yang sama tersebut karena bid runner-up setara.
-- Jika tidak ada bid valid, sesi dinyatakan gagal dan barang dapat dipasarkan ulang.
-- Buyer yang menang masuk ke alur pembayaran bayar langsung di unit.
-
-Mekanisme bid privat internal:
-
-```text
-Buyer mengirim bid
-  -> nominal disimpan pada database internal
-  -> UI dan API menyensor nominal serta identitas penawar selama lelang aktif
-  -> setelah deadline, backend membaca bid internal
-  -> sistem menentukan pemenang dan membuat transaksi
-```
-
-Keamanan konsep ini berada pada pembatasan akses database dan endpoint berbasis peran. Database dikelola sebagai area internal; bukan data publik untuk buyer.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/08-form-bid.png
-docs/readme-screenshots/09-hasil-pemenang.png
-docs/readme-screenshots/10-bukan-pemenang.png
-```
-
-<img src="docs/readme-screenshots/08-form-bid.png" alt="Form Bid Lelang Tertutup" width="100%" />
-
----
-
-### 🧾 Transaksi, Pembayaran, dan Nota
-
-Modul transaksi membantu buyer dan Admin Unit mengikuti status pembayaran dengan jelas. Bukti pembayaran dapat diverifikasi, transaksi dapat diselesaikan, dan nota dapat dicetak setelah pembayaran valid.
-
-Fitur:
-
-- Upload bukti transfer.
-- Verifikasi pembayaran oleh Admin Unit.
-- Konfirmasi bayar langsung khusus transaksi pemenang Lelang Tertutup.
-- Bukti serah terima.
-- Riwayat transaksi.
-- Nota transaksi print-friendly.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/11-detail-transaksi.png
-docs/readme-screenshots/12-verifikasi-pembayaran.png
-docs/readme-screenshots/13-nota-transaksi.png
-```
-
-<img src="docs/readme-screenshots/11-detail-transaksi.png" alt="Detail Transaksi Ruang Agunan" width="100%" />
-
----
-
-### 🧑‍💼 Admin Unit
-
-Admin Unit memiliki workspace untuk mengelola data operasional unit. Area ini dibuat agar operator dapat membaca status barang, pemasaran, transaksi, dan pelanggaran secara cepat.
-
-Fitur:
-
-- Dashboard unit.
-- Kelola barang.
-- Tambah dan edit barang.
-- Upload media barang.
-- Riwayat barang.
-- Pemasaran Harga Tetap.
-- Pemasaran Lelang Tertutup.
-- Verifikasi pembayaran.
-- Blacklist unit.
-- Profil Admin Unit.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/14-dashboard-admin-unit.png
-docs/readme-screenshots/15-kelola-barang.png
-docs/readme-screenshots/16-pemasaran-admin-unit.png
-docs/readme-screenshots/17-riwayat-barang.png
-```
-
-<img src="docs/readme-screenshots/14-dashboard-admin-unit.png" alt="Dashboard Admin Unit Ruang Agunan" width="100%" />
-
----
-
-### 📊 Dashboard Laporan
-
-Dashboard laporan membantu Admin Unit dan Superadmin membaca performa transaksi. Chart dirancang rapi, tidak menampilkan semua label tanggal, dan mendukung tooltip detail saat disorot.
-
-Fitur:
-
-- Tren nilai transaksi.
-- Seri Harga Tetap dan Lelang Tertutup.
-- Tooltip tanggal, nilai, dan volume transaksi.
-- Filter periode dan rentang kustom.
-- Sumbu chart yang bersih dan mudah dipindai.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/18-chart-admin-unit.png
-docs/readme-screenshots/19-chart-superadmin.png
-```
-
-<img src="docs/readme-screenshots/18-chart-admin-unit.png" alt="Chart Laporan Ruang Agunan" width="100%" />
-
----
-
-### 🛡️ Superadmin
-
-Superadmin mengelola data lintas unit dan memiliki akses monitoring nasional. Area ini berfungsi untuk melihat performa, mengelola unit, admin, akun superadmin, blacklist, dan kebijakan pelanggaran.
-
-Fitur:
-
-- Dashboard nasional.
-- Kelola unit.
-- Kelola rekening unit.
-- Kelola Admin Unit.
-- Kelola akun Superadmin.
-- Monitoring nasional dan per unit.
-- Blacklist global.
-- Kebijakan pelanggaran.
-- Profil Superadmin.
-
-**Screenshot**
-
-```text
-docs/readme-screenshots/20-dashboard-superadmin.png
-docs/readme-screenshots/21-manajemen-unit.png
-docs/readme-screenshots/22-blacklist-global.png
-docs/readme-screenshots/23-kebijakan-pelanggaran.png
-```
-
-<img src="docs/readme-screenshots/20-dashboard-superadmin.png" alt="Dashboard Superadmin Ruang Agunan" width="100%" />
-
----
-
-## 🔄 Mekanisme End-to-End Aplikasi
-
-Alur Ruang Agunan dirancang agar setiap role memiliki bagian kerja yang jelas dan saling terhubung.
-
-```text
-Admin Unit mencatat barang
-  -> barang diberi media dan detail aset
+Admin Unit input barang + waktu jatuh tempo
+  -> masa gadai berjalan
+  -> jatuh tempo lewat
   -> barang dipasarkan sebagai Harga Tetap atau Lelang Tertutup
-  -> Guest/Buyer melihat katalog dan detail barang
-  -> Buyer membeli Harga Tetap atau mengirim bid Lelang Tertutup
-  -> sistem membuat transaksi atau menunggu settlement lelang
-  -> Admin Unit memverifikasi pembayaran dan serah terima
-  -> Buyer menerima notifikasi dan nota
-  -> Superadmin memantau unit, transaksi, blacklist, dan laporan nasional
+  -> Buyer memilih beli atau mengirim bid
+  -> transaksi/verifikasi/settlement diproses
+  -> bukti serah-terima dan nota tersedia sesuai status
+  -> Superadmin memantau data lintas unit
 ```
 
-Nilai yang ditekankan:
+## Harga Tetap
 
-- Buyer mendapat pengalaman transaksi yang jelas dari katalog sampai nota.
-- Admin Unit memiliki workspace operasional untuk mengelola barang, pemasaran, pembayaran, dan riwayat.
-- Superadmin memiliki pandangan nasional untuk monitoring, kebijakan, dan pengawasan blacklist.
-- Sistem menjaga privasi bid sebelum deadline, tetapi tetap menyediakan hasil yang dapat diaudit setelah settlement.
-- Dashboard laporan membantu membaca performa Harga Tetap dan Lelang Tertutup secara terpisah.
+1. Buyer memilih barang Harga Tetap.
+2. Sistem membuat transaksi transfer dengan nominal dan rekening unit.
+3. Buyer mengunggah bukti pembayaran JPG, PNG, atau PDF (maksimum 5 MB).
+4. Admin Unit melakukan **Verifikasi Bukti Pembayaran Pembelian Barang Harga Tetap**.
+5. Bukti dapat disetujui atau ditolak dengan alasan yang tercatat.
+6. Setelah pembayaran terverifikasi, Admin Unit mengunggah bukti serah-terima.
+7. Buyer dapat menyelesaikan transaksi dan membuka nota setelah syaratnya terpenuhi.
 
----
+Jika bukti Harga Tetap ditolak, barang dapat dipasarkan kembali melalui sesi pemasaran baru. Riwayat sesi lama tetap tersimpan, sedangkan sesi baru menjadi listing terbaru di katalog.
 
-## 🗂️ Format Screenshot README
+## Lelang Tertutup Vickrey
 
-Letakkan gambar screenshot di folder berikut:
+### Aturan hasil lelang
 
-```text
-docs/readme-screenshots/
-```
+- Buyer mengirim nominal minimal sebesar harga dasar.
+- Hanya satu bid per Buyer pada satu sesi.
+- Bid tertinggi yang valid menang.
+- Harga akhir memakai bid tertinggi kedua.
+- Bila hanya satu bid valid, harga akhir memakai harga dasar.
+- Jika nominal tertinggi sama, bid yang masuk lebih awal menang.
+- Tanpa bid valid, sesi gagal dan barang dapat dipasarkan ulang.
 
-Gunakan format penamaan berikut agar README langsung terbaca rapi:
+### Privasi bid saat ini
 
-| No | Nama File | Isi Screenshot |
-| --- | --- | --- |
-| 01 | `01-beranda.png` | Halaman beranda |
-| 02 | `02-katalog.png` | Katalog publik |
-| 03 | `03-detail-barang.png` | Detail barang |
-| 04 | `04-dashboard-buyer.png` | Dashboard buyer |
-| 05 | `05-wishlist.png` | Wishlist buyer |
-| 06 | `06-transaksi-buyer.png` | Transaksi buyer |
-| 07 | `07-pusat-bantuan.png` | Pusat Bantuan |
-| 08 | `08-form-bid.png` | Form bid Lelang Tertutup |
-| 09 | `09-hasil-pemenang.png` | Halaman pemenang |
-| 10 | `10-bukan-pemenang.png` | Halaman bukan pemenang |
-| 11 | `11-detail-transaksi.png` | Detail transaksi |
-| 12 | `12-verifikasi-pembayaran.png` | Verifikasi pembayaran |
-| 13 | `13-nota-transaksi.png` | Nota transaksi |
-| 14 | `14-dashboard-admin-unit.png` | Dashboard Admin Unit |
-| 15 | `15-kelola-barang.png` | Kelola barang |
-| 16 | `16-pemasaran-admin-unit.png` | Pemasaran Admin Unit |
-| 17 | `17-riwayat-barang.png` | Riwayat barang |
-| 18 | `18-chart-admin-unit.png` | Chart Admin Unit |
-| 19 | `19-chart-superadmin.png` | Chart Superadmin |
-| 20 | `20-dashboard-superadmin.png` | Dashboard Superadmin |
-| 21 | `21-manajemen-unit.png` | Manajemen unit |
-| 22 | `22-blacklist-global.png` | Blacklist global |
-| 23 | `23-kebijakan-pelanggaran.png` | Kebijakan pelanggaran |
+Branch utama menggunakan **bid privat di database**, bukan encrypted escrow:
 
----
+- Tabel bid menyimpan nominal dan identitas bidder untuk kebutuhan internal settlement.
+- Selama lelang aktif, serializer/API/UI tidak mengungkap nama penawar atau nominal ke katalog, Buyer lain, Admin Unit, maupun Superadmin.
+- Setelah deadline, sistem settlement menghitung hasil dan area yang berwenang dapat melihat hasil/ranking sesuai status lelang.
 
-## 🧱 Tech Stack
+Model ini melindungi alur pengguna aplikasi, tetapi **bukan enkripsi terhadap akses database langsung**. Database harus diperlakukan sebagai area internal dan hanya boleh diakses administrator infrastruktur yang berwenang. Bila kebutuhan keamanan meningkat, model escrow terenkripsi perlu dikembangkan kembali pada branch terpisah.
+
+### Setelah lelang selesai
+
+Cron memproses sesi yang melewati `endsAt`, menentukan pemenang serta harga akhir, dan membuat transaksi pemenang dengan batas pembayaran 24 jam. Jika pemenang tidak membayar sampai batas waktu, transaksi ditandai gagal dan sistem mencatat pelanggaran sesuai kebijakan blacklist.
+
+## Status Penting
+
+| Domain | Status/contoh |
+| --- | --- |
+| Barang | `gadai`, `jaminan`, `dipasarkan`, `menunggu_pembayaran`, `gagal`, `ditebus`, `selesai` |
+| Pemasaran | `aktif`, `selesai`, `gagal`; setiap pemasaran memiliki `iteration` |
+| Transaksi | `menunggu_pembayaran`, `bukti_diunggah`, `ditolak_bukti`, `menunggu_konfirmasi_langsung`, `lunas`, `selesai`, `gagal` |
+| Bid | Tersimpan privat saat aktif; hasil dibuka setelah deadline/settlement |
+
+## Fitur Tambahan
+
+- Katalog dengan pencarian, filter, sortir, galeri media, dan statistik lot.
+- Wishlist Buyer.
+- Dashboard Admin Unit dan Superadmin dengan tren Harga Tetap/Lelang Tertutup.
+- Notifikasi in-app dan badge belum dibaca.
+- Riwayat status barang dan perpanjangan masa gadai.
+- Bukti serah-terima dan nota transaksi.
+- Pembatasan akun serta riwayat pelanggaran.
+- Placeholder register/login memakai contoh nilai yang ringkas; spasi pada nomor telepon dan NIK dihapus saat input.
+
+## Tech Stack
 
 | Kategori | Teknologi |
 | --- | --- |
-| Framework | Next.js App Router |
-| UI | React, Tailwind CSS, lucide-react |
+| Framework | Next.js 15 App Router |
+| UI | React 19, Tailwind CSS, lucide-react |
 | Bahasa | TypeScript |
 | Database | PostgreSQL |
-| ORM | Drizzle ORM |
-| Authentication | Better Auth |
+| ORM | Drizzle ORM + `pg` |
+| Autentikasi | Better Auth |
 | Testing | Vitest, Testing Library |
-| PDF/Print | Browser print, jsPDF, html2canvas |
+| Cetak nota | Browser print, jsPDF, html2canvas |
 | Deployment | Docker, Next.js standalone output |
 
----
-
-## 🚀 Cara Menjalankan Project
+## Menjalankan Project Lokal
 
 ### 1. Install dependency
 
@@ -373,110 +144,114 @@ npm install
 
 ### 2. Siapkan environment
 
-Gunakan `.env.example` sebagai acuan lalu isi environment lokal yang diperlukan.
+Salin `.env.example` menjadi `.env.local`, lalu isi nilainya.
 
 ```bash
 cp .env.example .env.local
 ```
 
-Environment penting:
+Environment utama:
 
 ```env
-DATABASE_URL=
-BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
-NEXT_PUBLIC_APP_URL=
-CRON_SECRET=
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian
+BETTER_AUTH_SECRET=buat-secret-random-minimum-32-karakter
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+CRON_SECRET=buat-secret-khusus-cron
+
+# Kosongkan lokal; isi path volume persisten pada production.
+UPLOADS_DIR=
+
+# Gunakan hours hanya untuk simulasi lokal; production memakai days.
+BLACKLIST_DURATION_UNIT=days
 ```
 
-### 3. Sinkronkan database
+Jangan commit `.env.local` atau membagikan nilai secret. `DATABASE_URL`, `BETTER_AUTH_SECRET`, dan `CRON_SECRET` adalah data sensitif.
+
+### 3. Siapkan database
 
 ```bash
 npm run db:push
 ```
 
-### 4. Jalankan development server
+### 4. Jalankan server development
 
 ```bash
 npm run dev
 ```
 
-Aplikasi dapat dibuka di:
+Buka [http://localhost:3000](http://localhost:3000).
 
-```text
-http://localhost:3000
-```
-
----
-
-## 🧪 Testing dan Build
-
-Menjalankan test:
+## Testing dan Build
 
 ```bash
+# Semua test
 npm test
-```
 
-Validasi TypeScript:
+# Test terarah (mengabaikan worktree lokal bila ada)
+npx vitest run tests/login-form.test.tsx tests/admin-inventory-create-form.test.tsx --exclude .worktrees/**
 
-```bash
+# Pemeriksaan TypeScript
 npx tsc --noEmit --pretty false
-```
 
-Build production:
-
-```bash
+# Build production
 npm run build
 ```
 
-Menjalankan production server:
+## Cron Produksi
 
-```bash
-npm run start
-```
-
----
-
-## 📁 Struktur Folder
+Endpoint cron berada di `/api/cron/proses-lelang` dan memerlukan header berikut:
 
 ```text
-app/                         Route, page, layout, dan API handler Next.js
-components/                  Komponen UI dan halaman
-lib/                         Service layer, database, auth, util, kontrak data
-public/                      Brand asset, upload demo, dan aset statis
-scripts/                     Script migrasi dan utilitas operasional
-tests/                       Test Vitest
-docs/readme-screenshots/     Tempat screenshot untuk README
-PRD.md                       Product Requirements Document
-README.md                    Dokumentasi GitHub project
+Authorization: Bearer <CRON_SECRET>
 ```
 
----
+Jadwalkan endpoint ini secara teratur pada platform deployment. Cron menangani settlement lelang yang berakhir, peringatan deadline pembayaran, pembayaran pemenang yang lewat batas waktu, masa blacklist yang berakhir, serta penyelesaian serah-terima yang memenuhi syarat.
 
-## 🔐 Catatan Keamanan
+## Deployment dan Upload Media
 
-- Role buyer, Admin Unit, dan Superadmin dibatasi melalui session.
-- Admin Unit hanya dapat mengakses data unitnya.
-- Nominal bid Lelang Tertutup tidak ditampilkan sebelum lelang selesai.
-- Admin Unit dan Superadmin tidak mengetahui nominal bid peserta sebelum deadline.
-- Nominal serta identitas penawar disimpan sebagai data internal dan tidak dikirim melalui respons publik selama lelang aktif.
-- Akses database dibatasi untuk operator berwenang, sedangkan endpoint menerapkan otorisasi peran.
-- Perubahan status penting tercatat melalui transaksi, riwayat, notifikasi, atau log terkait.
-- Endpoint cron membutuhkan secret.
-- File upload perlu dikendalikan melalui validasi tipe dan ukuran.
+Build Docker menggunakan output standalone. Pada production, set `UPLOADS_DIR` ke volume persisten agar media barang, bukti pembayaran, dan bukti serah-terima tidak hilang setelah container dibuat ulang atau redeploy.
 
----
+Folder upload publik dapat diberi cache panjang. Jika memakai CDN, purging cache mungkin diperlukan setelah pemulihan atau penggantian media.
 
-## ⚠️ Disclaimer
+## Keamanan yang Diterapkan
 
-Project ini dibuat hanya untuk kebutuhan tugas akhir dan demonstrasi akademik.
+- Session Better Auth dan guard role pada server/API.
+- Isolasi Admin Unit berdasarkan unit dan data Buyer berdasarkan user aktif.
+- Validasi format input, nominal, dan upload bukti pembayaran.
+- Sensor nominal/nama penawar pada UI/API selama Lelang Tertutup aktif.
+- Endpoint cron memakai secret bearer.
+- Header keamanan browser: CSP, HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, serta `Permissions-Policy`.
+- Penyimpanan upload mendukung volume persisten pada production.
 
-Ruang Agunan bukan aplikasi produksi, bukan layanan transaksi resmi, dan tidak mewakili sistem internal lembaga apa pun. Seluruh data, aset, akun, dan transaksi yang digunakan dalam project ini bersifat simulasi.
+### Batas keamanan yang perlu diketahui
+
+- Sistem tidak memiliki payment gateway atau verifikasi mutasi bank otomatis.
+- Bid privat bukan enkripsi database: operator yang memiliki akses langsung ke database masih dapat membaca data internal sesuai haknya.
+- CSP saat ini masih mengizinkan inline script/style untuk kompatibilitas runtime; evaluasi penguatan CSP diperlukan jika aplikasi dikembangkan sebagai produk produksi.
+
+## Struktur Folder
+
+```text
+app/                         Route, page, layout, dan route handler Next.js
+components/                  Komponen UI per area aplikasi
+lib/                         Auth, database, service, serializer, validasi, utilitas
+public/                      Asset brand dan upload lokal
+scripts/                     Migrasi dan utilitas operasional
+tests/                       Test Vitest
+docs/readme-screenshots/     Referensi lokasi screenshot README
+PRD.md                       Spesifikasi produk hidup
+README.md                    Dokumentasi project
+```
+
+## Screenshot
+
+Simpan screenshot dokumentasi pada `docs/readme-screenshots/`. Disarankan merekam beranda, katalog, detail barang, register/login, dashboard Buyer, transaksi, input barang dengan kalender waktu, pemasaran, verifikasi bukti pembayaran, dashboard Admin Unit, dan dashboard Superadmin.
 
 ---
 
 <p align="center">
   <strong>Ruang Agunan</strong><br />
   Prototype Sistem Informasi Pengelolaan Aset Agunan<br />
-  Program Studi Teknik Informatika - Universitas Sam Ratulangi
+  Program Studi Teknik Informatika — Universitas Sam Ratulangi
 </p>

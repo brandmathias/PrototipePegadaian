@@ -244,10 +244,10 @@ describe("LoginForm", () => {
   it("uses informative matching placeholders and removes spaces from phone and NIK input", () => {
     const registerView = renderWithToast(<RegisterForm />);
 
-    expect(screen.getByLabelText(/nama lengkap/i)).toHaveAttribute("placeholder", "Contoh: Budi Santoso");
-    expect(screen.getByLabelText(/^email$/i)).toHaveAttribute("placeholder", "Contoh: budi@email.com");
-    expect(screen.getByLabelText(/nomor telepon/i)).toHaveAttribute("placeholder", "081234567890 tanpa spasi");
-    expect(screen.getByLabelText(/nomor ktp/i)).toHaveAttribute("placeholder", "16 digit NIK tanpa spasi");
+    expect(screen.getByLabelText(/nama lengkap/i)).toHaveAttribute("placeholder", "Budi Santoso");
+    expect(screen.getByLabelText(/^email$/i)).toHaveAttribute("placeholder", "budi@email.com");
+    expect(screen.getByLabelText(/nomor telepon/i)).toHaveAttribute("placeholder", "081234567890");
+    expect(screen.getByLabelText(/nomor ktp/i)).toHaveAttribute("placeholder", "7371122301990001");
     expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Minimal 8 karakter");
 
     const phoneInput = screen.getByLabelText(/nomor telepon/i) as HTMLInputElement;
@@ -261,7 +261,7 @@ describe("LoginForm", () => {
     registerView.unmount();
     renderWithToast(<LoginForm />);
 
-    expect(screen.getByLabelText(/email akun/i)).toHaveAttribute("placeholder", "Contoh: budi@email.com");
+    expect(screen.getByLabelText(/email akun/i)).toHaveAttribute("placeholder", "budi@email.com");
     expect(screen.getByLabelText(/kata sandi/i, { selector: "input" })).toHaveAttribute("placeholder", "Minimal 8 karakter");
   });
 

@@ -143,7 +143,7 @@ export function LoginForm() {
               if (error) setError(null);
             }}
             onFocus={() => setFocusedField("email")}
-            placeholder="Contoh: budi@email.com"
+            placeholder="budi@email.com"
             type="email"
             value={email}
           />
