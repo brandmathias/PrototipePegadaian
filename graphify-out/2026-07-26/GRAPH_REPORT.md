@@ -1,16 +1,16 @@
-# Graph Report - PrototipePegadaian2  (2026-07-25)
+# Graph Report - PrototipePegadaian2  (2026-07-26)
 
 ## Corpus Check
-- 653 files · ~4,237,212 words
+- 653 files · ~4,237,232 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4245 nodes · 8994 edges · 263 communities (237 shown, 26 thin omitted)
+- 4245 nodes · 8994 edges · 264 communities (238 shown, 26 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.67)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `fcc7cc37`
+- Built from commit: `72319084`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -247,6 +247,7 @@
 - 10. UI/UX Requirements
 - 6. State Machine
 - 7. Route Utama
+- revalidateTransactionViews
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 237 edges
@@ -275,7 +276,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (263 total, 26 thin omitted)
+## Communities (264 total, 26 thin omitted)
 
 ### Community 0 - "admin-pages.lazy.tsx"
 Cohesion: 0.06
@@ -446,8 +447,8 @@ Cohesion: 0.18
 Nodes (15): GET(), Page(), Page(), SuperAdminBlacklistPage(), hasCountedBlacklistViolations(), serializeBlacklistHistoryEntry(), SerializeBlacklistHistoryEntryInput, toActionLabel() (+7 more)
 
 ### Community 42 - "buyer.service.ts"
-Cohesion: 0.13
-Nodes (26): Context, POST(), BuyerReadOptions, BuyerShellSummary, createFixedPricePurchase(), ensureActiveMarketing(), ensureCanSettleBuyerTransaction(), getActiveBlacklist() (+18 more)
+Cohesion: 0.14
+Nodes (24): Context, POST(), BuyerReadOptions, BuyerShellSummary, createFixedPricePurchase(), ensureActiveMarketing(), ensureCanSettleBuyerTransaction(), getActiveBlacklist() (+16 more)
 
 ### Community 43 - "MarketingFeedRow"
 Cohesion: 0.13
@@ -522,8 +523,8 @@ Cohesion: 0.21
 Nodes (21): normalizeCustomerNumber(), AdminBarangMediaInput, ALLOWED_CATEGORIES, ALLOWED_CONDITIONS, ALLOWED_MEDIA_TYPES, normalizeDate(), normalizeDueAt(), normalizeMoney() (+13 more)
 
 ### Community 61 - "buyer-top-nav.tsx"
-Cohesion: 0.33
-Nodes (6): getCachedBuyerShellSummary, isBuyerReceiptRoute(), UserLayout(), BuyerShell(), BuyerShellProps, navigationMock
+Cohesion: 0.14
+Nodes (15): Page(), Page(), getCachedSuperAdminMonitoring, Page(), Page(), getCachedBuyerShellSummary, isBuyerReceiptRoute(), UserLayout() (+7 more)
 
 ### Community 62 - "getCountdownState"
 Cohesion: 0.17
@@ -542,8 +543,8 @@ Cohesion: 0.11
 Nodes (26): Context, GET(), GET(), serializePublicLot(), db, globalForDatabase, barang, transaksi (+18 more)
 
 ### Community 66 - "dashboard-shell.tsx"
-Cohesion: 0.10
-Nodes (23): isSuperAdminReceiptRoute(), SuperAdminLayout(), Page(), Page(), getCachedSuperAdminMonitoring, Page(), Page(), clearGlobalThemeSideEffects() (+15 more)
+Cohesion: 0.16
+Nodes (14): isSuperAdminReceiptRoute(), SuperAdminLayout(), clearGlobalThemeSideEffects(), DashboardShell(), DashboardShellProps, NavIconName, NavItem, SidebarMetric (+6 more)
 
 ### Community 67 - "catalog.ts"
 Cohesion: 0.16
@@ -586,8 +587,8 @@ Cohesion: 0.22
 Nodes (12): AdminLayout(), getCachedAdminLayoutMetrics, getCachedAdminLayoutUnit, isAdminReceiptRoute(), getDeviceLabel(), Page(), getDeviceLabel(), Page() (+4 more)
 
 ### Community 77 - "public-shell.tsx"
-Cohesion: 0.22
-Nodes (10): Context, POST(), readPurchasePayload(), PUT(), GET(), Context, POST(), requireBuyerApiSession() (+2 more)
+Cohesion: 0.19
+Nodes (11): Context, POST(), readPurchasePayload(), PUT(), GET(), Context, GET(), Page() (+3 more)
 
 ### Community 78 - "admin-dashboard-checklist-card.tsx"
 Cohesion: 0.20
@@ -618,8 +619,8 @@ Cohesion: 0.06
 Nodes (35): Admin Unit, Antrean Keputusan, Chart, Context, Daftar Unit, Dashboard Nasional, Data Flow, Definisi Metric (+27 more)
 
 ### Community 85 - "buyer-violation-page.tsx"
-Cohesion: 0.15
-Nodes (15): Page(), BuyerViolationPage(), BuyerViolationPageProps, FeatureRow(), formatCurrency(), getCountdownParts(), numberFormatter, TimelineItem() (+7 more)
+Cohesion: 0.17
+Nodes (13): Page(), BuyerViolationPage(), BuyerViolationPageProps, FeatureRow(), formatCurrency(), getCountdownParts(), numberFormatter, TimelineItem() (+5 more)
 
 ### Community 86 - "humanize"
 Cohesion: 0.12
@@ -754,8 +755,8 @@ Cohesion: 0.10
 Nodes (20): 1. Spec coverage, 2. Placeholder scan, 3. Type consistency, Existing files to modify, File Structure, New API route files, New database/schema files, New frontend data hooks/helpers (+12 more)
 
 ### Community 120 - "katalog/[id]/page.tsx"
-Cohesion: 0.15
-Nodes (16): Context, GET(), Page(), Page(), Page(), Page(), Page(), Page() (+8 more)
+Cohesion: 0.17
+Nodes (14): Page(), Page(), Page(), Page(), Page(), Page(), Page(), getBuyerSessionUser() (+6 more)
 
 ### Community 121 - "admin-barang-detail-media-viewer.tsx"
 Cohesion: 0.11
@@ -1101,6 +1102,10 @@ Nodes (4): 6.1 Status Barang, 6.2 Status Transaksi, 6.3 Level Pembatasan, 6. Sta
 Cohesion: 0.50
 Nodes (4): 7.1 Public dan Buyer, 7.2 Admin Unit, 7.3 Superadmin, 7. Route Utama
 
+### Community 263 - "revalidateTransactionViews"
+Cohesion: 0.33
+Nodes (5): Context, POST(), completeBuyerTransaction(), revalidateTransactionViews(), TRANSACTION_VIEW_TAGS
+
 ## Knowledge Gaps
 - **1446 isolated node(s):** `metadata`, `metadata`, `Context`, `Context`, `Context` (+1441 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -1113,7 +1118,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.129) - this node is a cross-community bridge._
 - **Why does `client` connect `apply-renewed-cross-unit-violation-scenario.ts` to `apply-handover-proof-migration.ts`, `apply-canonical-codes-migration.ts`, `apply-customer-data-standard-migration.ts`, `fixed-price-rejected-relist-repair.ts`, `apply-handover-auto-completion-migration.ts`, `start-production.mjs`, `unit-admin-audit-repair.ts`, `apply-cross-unit-violation-scenario.ts`, `obsolete-database-cleanup.ts`?**
   _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `formatAppDateTime()` connect `formatAppDateTime` to `admin-barang.service.ts`, `superadmin-pages.tsx`, `mock-data.ts`, `wishlist.service.ts`, `notification.service.ts`, `admin-marketing-pages.tsx`, `cron.service.ts`, `wishlist-page.tsx`, `catalog-page.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `formatSuperAdminDateTime`, `admin-blacklist.service.ts`, `buyer.service.ts`, `session.ts`, `effective-state.ts`, `requireBuyerApiSession`, `admin-unit/serializers.ts`, `buyer/serializers.ts`, `dateLabel`, `auction-loser-page.tsx`, `buyer-violation-page.tsx`, `humanize`?**
+- **Why does `formatAppDateTime()` connect `formatAppDateTime` to `admin-barang.service.ts`, `superadmin-pages.tsx`, `mock-data.ts`, `wishlist.service.ts`, `notification.service.ts`, `admin-marketing-pages.tsx`, `cron.service.ts`, `wishlist-page.tsx`, `catalog-page.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `formatSuperAdminDateTime`, `admin-blacklist.service.ts`, `buyer.service.ts`, `session.ts`, `effective-state.ts`, `requireBuyerApiSession`, `admin-unit/serializers.ts`, `buyer/serializers.ts`, `dateLabel`, `auction-loser-page.tsx`, `humanize`, `katalog/[id]/page.tsx`?**
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **What connects `metadata`, `metadata`, `Context` to the rest of the system?**
   _1446 weakly-connected nodes found - possible documentation gaps or missing edges._

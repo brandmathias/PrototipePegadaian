@@ -1,7 +1,7 @@
 # Graph Report - PrototipePegadaian2  (2026-07-26)
 
 ## Corpus Check
-- 653 files · ~4,237,232 words
+- 653 files · ~4,237,262 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `72319084`
+- Built from commit: `e1ff2e1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -428,7 +428,7 @@ Nodes (17): barangSbgNumberSequence, bids, mediaBarang, pelanggaranUser, pemasar
 
 ### Community 37 - "devDependencies"
 Cohesion: 0.06
-Nodes (31): autoprefixer, eslint, eslint-config-next, devDependencies, autoprefixer, eslint, eslint-config-next, postcss (+23 more)
+Nodes (31): autoprefixer, drizzle-kit, eslint, eslint-config-next, devDependencies, autoprefixer, drizzle-kit, eslint (+23 more)
 
 ### Community 38 - "button.tsx"
 Cohesion: 0.13

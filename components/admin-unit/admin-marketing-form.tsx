@@ -267,6 +267,7 @@ export function AdminMarketingForm({
     normalizedDurationSeconds;
   const baseNowMs = useMemo(() => new Date(serverNow).getTime(), [serverNow]);
   const priceLabel = mode === "fixed_price" ? "Masukkan Nominal Harga" : "Masukkan Harga Dasar Lelang";
+  const summaryLabel = mode === "fixed_price" ? "Ringkasan Penjualan" : "Ringkasan Penawaran";
   const estimatedEnd = useMemo(() => {
     if (
       mode !== "vickrey" ||
@@ -472,10 +473,13 @@ export function AdminMarketingForm({
               </div>
 
               <div
-                className="flex h-full min-w-0 flex-col justify-between gap-2.5 border-[#dfe8e2] lg:border-l lg:pl-5"
+                className={cn(
+                  "flex h-full min-w-0 flex-col gap-2.5 border-[#dfe8e2] lg:border-l lg:pl-5",
+                  mode === "fixed_price" ? "justify-start" : "justify-between"
+                )}
                 data-testid="marketing-summary-column"
               >
-                <FieldLabel>Ringkasan Penawaran</FieldLabel>
+                <FieldLabel>{summaryLabel}</FieldLabel>
                 <div className="rounded-[1rem] border border-[#dfe8e2] bg-white p-3 shadow-[0_16px_32px_-30px_rgba(8,69,50,0.45)]">
                   <div className="flex items-center gap-3">
                     <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#eaf6ef] text-[#006747]">
@@ -555,7 +559,10 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div className="mt-auto space-y-2.5">
+                <div
+                  className={cn("space-y-2.5", mode === "vickrey" && "mt-auto")}
+                  data-testid="marketing-summary-footer"
+                >
                   <div className="relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/12" />
                     <div className="relative grid gap-3 sm:grid-cols-2">

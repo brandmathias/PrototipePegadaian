@@ -261,5 +261,6 @@
   "259": "@types/react-dom",
   "260": "10. UI/UX Requirements",
   "261": "6. State Machine",
-  "262": "7. Route Utama"
+  "262": "7. Route Utama",
+  "263": "revalidateTransactionViews"
 }

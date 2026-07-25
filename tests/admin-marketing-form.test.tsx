@@ -222,7 +222,9 @@ describe("AdminMarketingForm", () => {
       />
     );
 
-    expect(screen.getByText("Ringkasan Penawaran")).toBeInTheDocument();
+    expect(screen.getByText("Ringkasan Penjualan")).toBeInTheDocument();
+    expect(screen.getByTestId("marketing-summary-column")).toHaveClass("justify-start");
+    expect(screen.getByTestId("marketing-summary-footer")).not.toHaveClass("mt-auto");
     expect(
       screen.getByText(
         "Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
@@ -251,6 +253,7 @@ describe("AdminMarketingForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
 
+    expect(screen.getByText("Ringkasan Penawaran")).toBeInTheDocument();
     expect(screen.getByLabelText("Hari")).toBeVisible();
     expect(document.body.querySelector(".lucide-banknote")).toBeTruthy();
     expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveClass("min-h-[10.5rem]", "gap-5", "px-6", "py-8");
@@ -258,6 +261,7 @@ describe("AdminMarketingForm", () => {
     expect(screen.getByRole("button", { name: /harga tetap/i }).querySelector('[data-testid="marketing-mode-indicator"]')).toHaveClass("size-8", "border");
     expect(screen.getByTestId("marketing-method-column")).toHaveClass("h-full");
     expect(screen.getByTestId("marketing-summary-column")).toHaveClass("h-full", "justify-between");
+    expect(screen.getByTestId("marketing-summary-footer")).toHaveClass("mt-auto");
   });
 
   it("keeps success toast above the marketing modal and closes the modal after publish succeeds", async () => {
