@@ -590,12 +590,12 @@ export function AdminMarketingForm({
                   </div>
                   <div
                     className={cn(
-                      "flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.72rem] font-semibold leading-[1.35] text-[#40564a]",
+                      "flex gap-3 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-4 py-3 text-[0.82rem] font-semibold leading-[1.45] text-[#384e43]",
                       mode === "fixed_price" && "min-h-[6.1rem] items-center"
                     )}
                     data-testid="marketing-summary-terms"
                   >
-                    <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
+                    <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" strokeWidth={2.2} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
                     </p>
