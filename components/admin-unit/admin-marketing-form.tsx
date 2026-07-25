@@ -559,49 +559,43 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div
-                  className={cn(
-                    mode === "fixed_price"
-                      ? "mt-3 flex flex-1 flex-col gap-2.5"
-                      : "mt-auto space-y-2.5"
-                  )}
-                  data-testid="marketing-summary-footer"
-                >
+                <div className={cn("space-y-2.5", mode === "fixed_price" ? "mt-4" : "mt-auto")} data-testid="marketing-summary-footer">
                   <div
                     className={cn(
-                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]",
-                      mode === "fixed_price"
-                        ? "flex flex-1 items-center py-4"
-                        : "py-4"
+                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]",
+                      mode === "fixed_price" && "flex min-h-[7.5rem] items-center"
                     )}
                     data-testid="marketing-summary-total"
                   >
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/12" />
                     <div className="relative grid w-full gap-3 sm:grid-cols-2">
-                      <div className="space-y-1 pr-2 sm:pr-4">
-                        <p className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-emerald-100">
+                      <div className="space-y-1.5 pr-2 sm:pr-4">
+                        <p className="text-[0.7rem] font-extrabold uppercase tracking-[0.1em] text-emerald-100">
                           {mode === "fixed_price" ? "Total Harga Jual" : "Total Nilai Dasar"}
                         </p>
-                        <p className="font-headline text-[0.9rem] font-black tracking-tight text-white sm:text-[1rem]">
+                        <p className="font-headline text-[1.12rem] font-black tracking-tight text-white sm:text-[1.25rem]">
                           {Number.isFinite(normalizedPrice) && normalizedPrice > 0 ? currency.format(normalizedPrice) : "Rp 0"}
                         </p>
                       </div>
-                      <div className="space-y-1 pl-0 sm:pl-4">
-                        <div className="flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.14em] text-emerald-100">
-                          <Info className="size-3.5 opacity-90" strokeWidth={2.2} />
+                      <div className="space-y-1.5 pl-0 sm:pl-4">
+                        <div className="flex items-center gap-2 text-[0.7rem] font-extrabold uppercase tracking-[0.1em] text-emerald-100">
+                          <Info className="size-4 opacity-90" strokeWidth={2.2} />
                           <span>{mode === "fixed_price" ? "Status Listing" : "Selesai Pada"}</span>
                         </div>
-                        <p className="text-[0.74rem] font-semibold text-emerald-50 sm:text-[0.78rem]">
+                        <p className="text-[0.82rem] font-semibold text-emerald-50 sm:text-[0.86rem] leading-snug">
                           {mode === "fixed_price" ? "Listing aktif di katalog publik" : estimatedEnd}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div
-                    className="flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.6] text-[#40564a]"
+                    className={cn(
+                      "flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.72rem] font-semibold leading-[1.35] text-[#40564a]",
+                      mode === "fixed_price" && "min-h-[6.1rem] items-center"
+                    )}
                     data-testid="marketing-summary-terms"
                   >
-                    <Info className="mt-0.5 size-3.5 shrink-0 text-[#006747]" strokeWidth={2.3} />
+                    <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
                     </p>
