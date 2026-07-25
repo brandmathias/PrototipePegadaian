@@ -595,7 +595,7 @@ export function AdminMarketingForm({
                     )}
                     data-testid="marketing-summary-terms"
                   >
-                    <Info className="mt-0.5 size-5 shrink-0 text-[#006747]" strokeWidth={2.2} />
+                    <Info className="mt-0.5 size-6 shrink-0 text-[#006747]" strokeWidth={2.2} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.
                     </p>
