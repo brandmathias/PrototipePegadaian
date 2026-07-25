@@ -235,7 +235,7 @@ describe("AdminMarketingForm", () => {
     ).toHaveClass("text-justify");
   });
 
-  it("keeps compact method cards aligned with the auction summary", () => {
+  it("keeps reference-proportioned method cards aligned with the auction summary", () => {
     renderWithToast(
       <AdminMarketingForm
         barangId="barang-1"
@@ -253,8 +253,9 @@ describe("AdminMarketingForm", () => {
 
     expect(screen.getByLabelText("Hari")).toBeVisible();
     expect(document.body.querySelector(".lucide-banknote")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveClass("min-h-[6.5rem]", "gap-3", "px-4", "py-3");
-    expect(screen.getByRole("button", { name: /lelang tertutup/i })).toHaveClass("min-h-[6.5rem]", "gap-3", "px-4", "py-3");
+    expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveClass("min-h-[10.5rem]", "gap-5", "px-6", "py-8");
+    expect(screen.getByRole("button", { name: /lelang tertutup/i })).toHaveClass("min-h-[11.5rem]", "gap-5", "px-6", "pt-11");
+    expect(screen.getByRole("button", { name: /harga tetap/i }).querySelector('[data-testid="marketing-mode-indicator"]')).toHaveClass("size-8", "border");
     expect(screen.getByTestId("marketing-method-column")).toHaveClass("h-full");
     expect(screen.getByTestId("marketing-summary-column")).toHaveClass("h-full", "justify-between");
   });
