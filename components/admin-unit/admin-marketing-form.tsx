@@ -559,10 +559,20 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div className={cn("space-y-2.5", mode === "vickrey" ? "mt-auto" : "mt-3")} data-testid="marketing-summary-footer">
+                <div
+                  className={cn(
+                    mode === "fixed_price"
+                      ? "mt-3 flex flex-1 flex-col gap-2.5"
+                      : "mt-auto space-y-2.5"
+                  )}
+                  data-testid="marketing-summary-footer"
+                >
                   <div
                     className={cn(
-                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]"
+                      "relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]",
+                      mode === "fixed_price"
+                        ? "flex flex-1 items-center py-4"
+                        : "py-4"
                     )}
                     data-testid="marketing-summary-total"
                   >
