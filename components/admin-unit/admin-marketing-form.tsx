@@ -453,7 +453,7 @@ export function AdminMarketingForm({
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
               <div className="flex h-full min-w-0 flex-col gap-2.5" data-testid="marketing-method-column">
-                <FieldLabel>Metode Penjualan</FieldLabel>
+                <FieldLabel>Mode Penjualan</FieldLabel>
                 <div className="flex flex-col gap-4">
                   <ModeCard
                     active={mode === "fixed_price"}
