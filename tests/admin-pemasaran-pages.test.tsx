@@ -2093,6 +2093,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("link", { name: /jadwalkan pasarkan ulang/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i }));
     expect(screen.getByRole("heading", { name: /pasarkan barang/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /tayangkan ke katalog/i })).toBeInTheDocument();
   });
 
   it("keeps failed vickrey archive prices on one line without ellipsis for large nominal values", () => {

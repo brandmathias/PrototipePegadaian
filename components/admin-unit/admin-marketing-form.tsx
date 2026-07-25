@@ -85,7 +85,7 @@ function ModeCard({
       aria-pressed={active}
       disabled={disabled}
       className={cn(
-        "relative flex h-full min-h-[8.75rem] w-full items-center gap-4 overflow-hidden rounded-[1rem] border px-5 py-4 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.99]",
+        "relative flex h-full min-h-[6.5rem] w-full items-center gap-3 overflow-hidden rounded-[0.85rem] border px-4 py-3 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.99]",
         disabled && "cursor-not-allowed",
         active
           ? "border-[#006747] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] shadow-[0_18px_34px_-24px_rgba(0,74,35,0.72)]"
@@ -98,22 +98,22 @@ function ModeCard({
     >
       {active ? (
         <>
-          <span className="absolute left-5 top-3 rounded-full bg-white px-3 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#006747] shadow-[0_8px_18px_-14px_rgba(0,0,0,0.5)]">
+          <span className="absolute left-4 top-2.5 rounded-full bg-white px-2.5 py-0.5 text-[0.5rem] font-black uppercase tracking-[0.12em] text-[#006747] shadow-[0_8px_18px_-14px_rgba(0,0,0,0.5)]">
             Dipilih
           </span>
-          <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full bg-white text-[#006747] shadow-[0_12px_22px_-16px_rgba(0,0,0,0.46)]">
-            <CheckCircle2 className="size-4" strokeWidth={2.6} />
+          <span className="absolute right-3 top-3 grid size-6 place-items-center rounded-full bg-white text-[#006747] shadow-[0_12px_22px_-16px_rgba(0,0,0,0.46)]">
+            <CheckCircle2 className="size-3.5" strokeWidth={2.6} />
           </span>
         </>
       ) : disabled ? (
-        <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full border border-[#d9dfdb] bg-white text-slate-300">
+        <span className="absolute right-3 top-3 grid size-6 place-items-center rounded-full border border-[#d9dfdb] bg-white text-slate-300">
           <Lock className="size-3.5" strokeWidth={2.3} />
         </span>
       ) : null}
 
       <span
         className={cn(
-          "grid size-12 shrink-0 place-items-center rounded-full border",
+          "grid size-10 shrink-0 place-items-center rounded-full border",
           active
             ? "border-white/70 bg-[#e8f6ee] text-[#006747]"
             : disabled
@@ -124,10 +124,10 @@ function ModeCard({
         {icon}
       </span>
 
-      <span className={cn("min-w-0 flex-1 pr-8", active && "pt-5")}>
+      <span className={cn("min-w-0 flex-1 pr-7", active && "pt-4")}>
         <span
           className={cn(
-            "block text-[1rem] font-black tracking-[-0.02em] sm:text-[1.08rem]",
+            "block text-[0.86rem] font-black tracking-[-0.02em] sm:text-[0.92rem]",
             active ? "text-white" : disabled ? "text-slate-400" : "text-slate-700"
           )}
         >
@@ -135,7 +135,7 @@ function ModeCard({
         </span>
         <span
           className={cn(
-            "mt-1 block text-justify text-[0.78rem] font-semibold leading-[1.25rem] [hyphens:auto] [text-justify:inter-word] sm:text-[0.8rem]",
+            "mt-0.5 block text-justify text-[0.67rem] font-semibold leading-4 [hyphens:auto] [text-justify:inter-word] sm:text-[0.7rem]",
             active ? "text-emerald-50" : disabled ? "text-slate-300" : "text-slate-500"
           )}
         >

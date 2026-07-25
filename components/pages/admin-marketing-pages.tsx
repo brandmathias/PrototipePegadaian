@@ -3142,7 +3142,7 @@ export function AdminFixedPriceDetailPage({
           redirectTo="/admin/pemasaran"
           serverNow={serverNow}
           submitIcon={<RefreshCcw className="size-4" />}
-          submitLabel="Pasarkan ulang"
+          submitLabel="Tayangkan ke katalog"
           successDescription="Sesi harga tetap lama ditutup dan barang dipublikasikan ulang."
           successTitle="Barang dipasarkan ulang"
         />
@@ -6443,7 +6443,7 @@ function VickreyFailedArchiveWorkspace({
           redirectTo="/admin/pemasaran"
           serverNow={serverNow}
           submitIcon={<RefreshCcw className="size-4" />}
-          submitLabel="Lelang lagi"
+          submitLabel="Tayangkan ke katalog"
           successDescription="Barang sudah aktif kembali sebagai sesi lelang baru."
           successTitle="Barang dilelang ulang"
         />
