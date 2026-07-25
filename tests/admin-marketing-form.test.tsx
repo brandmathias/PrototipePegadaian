@@ -235,6 +235,28 @@ describe("AdminMarketingForm", () => {
     ).toHaveClass("text-justify");
   });
 
+  it("keeps the auction controls in a compact summary column aligned with the method cards", () => {
+    renderWithToast(
+      <AdminMarketingForm
+        barangId="barang-1"
+        defaultPrice={200000}
+        endpoint="/api/admin/pemasaran"
+        redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
+        submitLabel="Publikasikan"
+        successDescription="Berhasil"
+        successTitle="Sukses"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /lelang tertutup/i }));
+
+    expect(screen.getByLabelText("Hari")).toBeVisible();
+    expect(document.body.querySelector(".lucide-banknote")).toBeTruthy();
+    expect(screen.getByTestId("marketing-method-column")).toHaveClass("h-full");
+    expect(screen.getByTestId("marketing-summary-column")).toHaveClass("h-full", "justify-between");
+  });
+
   it("keeps success toast above the marketing modal and closes the modal after publish succeeds", async () => {
     const { container } = renderWithToast(
       <AdminMarketingForm

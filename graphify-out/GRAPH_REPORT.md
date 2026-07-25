@@ -1,16 +1,16 @@
 # Graph Report - PrototipePegadaian2  (2026-07-25)
 
 ## Corpus Check
-- 653 files · ~4,234,069 words
+- 653 files · ~4,234,142 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4229 nodes · 8978 edges · 260 communities (235 shown, 25 thin omitted)
+- 4229 nodes · 8978 edges · 258 communities (233 shown, 25 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.67)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4a98f5ed`
+- Built from commit: `05d6a0e1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -66,7 +66,6 @@
 - lib/auth.ts
 - dependencies
 - admin-blacklist-detail-workspace.tsx
-- refreshBuyerAuctionSettlementState
 - categories.ts
 - renewed-cross-unit-violation-scenario.ts
 - notification-events.ts
@@ -111,7 +110,6 @@
 - SuperAdminVickreyReceiptInlinePrint
 - user-dashboard-page.tsx
 - Blacklist Review Governance Design
-- AdminFixedPriceDetailPage
 - account-profile.service.ts
 - uploadAdminTransactionHandoverProof
 - app/layout.tsx
@@ -272,7 +270,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (260 total, 25 thin omitted)
+## Communities (258 total, 25 thin omitted)
 
 ### Community 0 - "admin-pages.lazy.tsx"
 Cohesion: 0.07
@@ -444,11 +442,11 @@ Nodes (33): GET(), Context, GET(), GET(), Page(), Page(), SuperAdminBlacklistPag
 
 ### Community 42 - "buyer.service.ts"
 Cohesion: 0.06
-Nodes (44): Context, POST(), Context, POST(), readProofPayload(), FIXED_PRICE_BUYER_CATALOG_HIDDEN_STATUSES, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES, isFixedPriceBuyerCatalogHiddenStatus() (+36 more)
+Nodes (48): Context, POST(), Context, POST(), readProofPayload(), Page(), FIXED_PRICE_BUYER_CATALOG_HIDDEN_STATUSES, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES (+40 more)
 
 ### Community 43 - "MarketingFeedRow"
-Cohesion: 0.17
-Nodes (23): AdminMarketingUnifiedPage(), FixedPriceCard(), getAuctionFailureReason(), getFixedPriceOperationalNote(), getFixedPriceVisibleBuyerName(), getFixedPriceWorkflowStatus(), getMarketingAction(), getMarketingDateYear() (+15 more)
+Cohesion: 0.13
+Nodes (29): AdminMarketingUnifiedPage(), FixedPriceCard(), FixedPriceProgressPanel(), getAuctionFailureReason(), getFixedPriceCatalogStatusMeta(), getFixedPriceOperationalNote(), getFixedPriceVisibleBuyerName(), getFixedPriceWorkflowStatus() (+21 more)
 
 ### Community 44 - "superadmin-unit-barang-detail-page.tsx"
 Cohesion: 0.10
@@ -477,10 +475,6 @@ Nodes (25): better-auth, @better-auth/drizzle-adapter, class-variance-authority,
 ### Community 50 - "admin-blacklist-detail-workspace.tsx"
 Cohesion: 0.07
 Nodes (45): AdminBlacklistDetailWorkspace(), AdminBlacklistItem, AuctionDetailPanel(), clampLevel(), formatDisplayDate(), formatDisplayDateTime(), formatMoney(), getCurrentLevel() (+37 more)
-
-### Community 51 - "refreshBuyerAuctionSettlementState"
-Cohesion: 0.09
-Nodes (24): GET(), GET(), Page(), Page(), getCachedBuyerShellSummary, isBuyerReceiptRoute(), UserLayout(), Page() (+16 more)
 
 ### Community 52 - "categories.ts"
 Cohesion: 0.12
@@ -563,8 +557,8 @@ Cohesion: 0.10
 Nodes (21): scripts, build, db:backfill:blacklist, db:cleanup:obsolete, db:generate, db:migrate:canonical-codes, db:migrate:customer-data-standard, db:migrate:handover-auto-completion (+13 more)
 
 ### Community 72 - "requireBuyerApiSession"
-Cohesion: 0.14
-Nodes (16): Context, POST(), readPurchasePayload(), POST(), PUT(), Context, POST(), DELETE() (+8 more)
+Cohesion: 0.08
+Nodes (27): Context, POST(), readPurchasePayload(), POST(), PUT(), GET(), Context, POST() (+19 more)
 
 ### Community 73 - "alert-center.tsx"
 Cohesion: 0.05
@@ -619,8 +613,8 @@ Cohesion: 0.21
 Nodes (11): BuyerViolationPage(), BuyerViolationPageProps, FeatureRow(), formatCurrency(), getCountdownParts(), numberFormatter, TimelineItem(), ViolationCountdown() (+3 more)
 
 ### Community 86 - "humanize"
-Cohesion: 0.17
-Nodes (16): buildMarketingPaymentReference(), FixedPricePaymentVerificationModal(), FixedPriceReceiptInlinePrint(), getFixedPriceReceiptPrintRootId(), getFixedPriceReceiptTerms(), getMarketingCategoryIcon(), getMarketingCompletionLabel(), getMarketingPaymentMethodLabel() (+8 more)
+Cohesion: 0.12
+Nodes (23): AdminFixedPriceDetailPage(), buildMarketingPaymentReference(), FixedPricePaymentVerificationButton(), FixedPricePaymentVerificationModal(), FixedPriceReceiptInlinePrint(), getFixedPriceAmountClass(), getFixedPriceReceiptPrintRootId(), getFixedPriceReceiptTerms() (+15 more)
 
 ### Community 87 - "storage.ts"
 Cohesion: 0.15
@@ -657,10 +651,6 @@ Nodes (15): BuyerDashboardViolation, BuyerSummary, getDashboardActionLabel(), ge
 ### Community 95 - "Blacklist Review Governance Design"
 Cohesion: 0.06
 Nodes (33): Admin Unit, Admin Unit Flow, Audit Trail, Authenticated Buyer Flow, Backend Rules, Blacklist, Blacklist Review Governance Design, Buyer (+25 more)
-
-### Community 96 - "AdminFixedPriceDetailPage"
-Cohesion: 0.18
-Nodes (13): AdminFixedPriceDetailPage(), FixedPricePaymentVerificationButton(), FixedPriceProgressPanel(), getFixedPriceAmountClass(), getFixedPriceCatalogStatusMeta(), getFixedPriceSpecificationTiles(), getFixedPriceVerificationAction(), getMarketingVerifiedDetail() (+5 more)
 
 ### Community 97 - "account-profile.service.ts"
 Cohesion: 0.29
@@ -751,8 +741,8 @@ Cohesion: 0.10
 Nodes (20): 1. Spec coverage, 2. Placeholder scan, 3. Type consistency, Existing files to modify, File Structure, New API route files, New database/schema files, New frontend data hooks/helpers (+12 more)
 
 ### Community 120 - "katalog/[id]/page.tsx"
-Cohesion: 0.19
-Nodes (11): Context, GET(), Page(), Page(), Page(), Page(), getBuyerBidState(), getBuyerProfileStatus() (+3 more)
+Cohesion: 0.12
+Nodes (20): Context, GET(), Page(), Page(), Page(), getCachedBuyerShellSummary, isBuyerReceiptRoute(), UserLayout() (+12 more)
 
 ### Community 121 - "admin-barang-detail-media-viewer.tsx"
 Cohesion: 0.11
@@ -1098,11 +1088,11 @@ Nodes (3): Global Constraints, Level Guide Visual Refinement Implementation Plan
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `cn` to `admin-inventory-workspace.tsx`, `superadmin-pages.tsx`, `user-pages.tsx`, `unit-form.tsx`, `compact-transaction-progress.tsx`, `toast.tsx`, `admin-pages.tsx`, `admin-transaction-pages.tsx`, `buyer-alert-center.test.tsx`, `admin-marketing-pages.tsx`, `superadmin-account-workspace.tsx`, `admin-barang-edit-form.tsx`, `wishlist-page.tsx`, `catalog-page.tsx`, `superadmin-blacklist-detail-workspace.tsx`, `public-pages.tsx`, `profile-settings-form.tsx`, `transactions-workspace.tsx`, `button.tsx`, `MarketingFeedRow`, `superadmin-unit-barang-detail-page.tsx`, `admin-redeem-form.tsx`, `admin-blacklist-detail-workspace.tsx`, `categories.ts`, `role-notifications-panel.tsx`, `buyer-top-nav.tsx`, `getCountdownState`, `dashboard-shell.tsx`, `SuperAdminUnitInventorySection`, `WishlistPage`, `public-shell.tsx`, `admin-dashboard-checklist-card.tsx`, `superadmin-pages.test.tsx`, `bank-logo.tsx`, `buyer-violation-page.tsx`, `humanize`, `vickrey-ranking-table.tsx`, `SuperAdminVickreyReceiptInlinePrint`, `user-dashboard-page.tsx`, `AdminFixedPriceDetailPage`, `lot-realtime-stats.tsx`, `report-range-dropdown.tsx`, `transaction-receipt-inline-print.tsx`, `buyer-vickrey-pages.test.tsx`, `lot-media-gallery.tsx`, `catalog-page.test.tsx`, `marketing-performance-panel.tsx`, `fixed-price-visibility.ts`?**
+- **Why does `cn()` connect `cn` to `admin-inventory-workspace.tsx`, `superadmin-pages.tsx`, `user-pages.tsx`, `unit-form.tsx`, `compact-transaction-progress.tsx`, `toast.tsx`, `admin-pages.tsx`, `admin-transaction-pages.tsx`, `buyer-alert-center.test.tsx`, `admin-marketing-pages.tsx`, `superadmin-account-workspace.tsx`, `admin-barang-edit-form.tsx`, `wishlist-page.tsx`, `catalog-page.tsx`, `superadmin-blacklist-detail-workspace.tsx`, `public-pages.tsx`, `profile-settings-form.tsx`, `transactions-workspace.tsx`, `button.tsx`, `MarketingFeedRow`, `superadmin-unit-barang-detail-page.tsx`, `admin-redeem-form.tsx`, `admin-blacklist-detail-workspace.tsx`, `categories.ts`, `role-notifications-panel.tsx`, `buyer-top-nav.tsx`, `getCountdownState`, `dashboard-shell.tsx`, `SuperAdminUnitInventorySection`, `WishlistPage`, `public-shell.tsx`, `admin-dashboard-checklist-card.tsx`, `superadmin-pages.test.tsx`, `bank-logo.tsx`, `buyer-violation-page.tsx`, `humanize`, `vickrey-ranking-table.tsx`, `SuperAdminVickreyReceiptInlinePrint`, `user-dashboard-page.tsx`, `lot-realtime-stats.tsx`, `report-range-dropdown.tsx`, `transaction-receipt-inline-print.tsx`, `buyer-vickrey-pages.test.tsx`, `lot-media-gallery.tsx`, `catalog-page.test.tsx`, `marketing-performance-panel.tsx`, `fixed-price-visibility.ts`?**
   _High betweenness centrality (0.129) - this node is a cross-community bridge._
 - **Why does `client` connect `apply-renewed-cross-unit-violation-scenario.ts` to `apply-handover-proof-migration.ts`, `remove-handover-complaint.ts`, `apply-canonical-codes-migration.ts`, `apply-customer-data-standard-migration.ts`, `fixed-price-rejected-relist-repair.ts`, `apply-handover-auto-completion-migration.ts`, `start-production.mjs`, `unit-admin-audit-repair.ts`, `apply-cross-unit-violation-scenario.ts`, `obsolete-database-cleanup.ts`?**
   _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `formatAppDateTime()` connect `formatAppDateTime` to `admin-barang.service.ts`, `superadmin-pages.tsx`, `mock-data.ts`, `wishlist.service.ts`, `notification.service.ts`, `admin-marketing-pages.tsx`, `cron.service.ts`, `wishlist-page.tsx`, `catalog-page.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `formatSuperAdminDateTime`, `admin-blacklist.service.ts`, `buyer.service.ts`, `refreshBuyerAuctionSettlementState`, `notification-events.ts`, `admin-unit/serializers.ts`, `buyer/serializers.ts`, `WishlistPage`, `dateLabel`, `auction-loser-page.tsx`, `login-suspension.ts`, `humanize`?**
+- **Why does `formatAppDateTime()` connect `formatAppDateTime` to `admin-barang.service.ts`, `superadmin-pages.tsx`, `mock-data.ts`, `wishlist.service.ts`, `notification.service.ts`, `admin-marketing-pages.tsx`, `cron.service.ts`, `wishlist-page.tsx`, `catalog-page.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `formatSuperAdminDateTime`, `admin-blacklist.service.ts`, `buyer.service.ts`, `notification-events.ts`, `requireBuyerApiSession`, `admin-unit/serializers.ts`, `buyer/serializers.ts`, `WishlistPage`, `dateLabel`, `auction-loser-page.tsx`, `login-suspension.ts`, `humanize`?**
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
 - **What connects `metadata`, `metadata`, `Context` to the rest of the system?**
   _1428 weakly-connected nodes found - possible documentation gaps or missing edges._

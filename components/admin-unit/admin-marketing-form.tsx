@@ -3,6 +3,7 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  Banknote,
   CheckCircle2,
   Gavel,
   Info,
@@ -29,7 +30,7 @@ function normalizeDigits(value: string) {
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
     <label
-      className="text-[0.72rem] font-bold uppercase tracking-[0.14em] text-[#57655f]"
+      className="text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#0d5f40]"
       htmlFor={htmlFor}
     >
       {children}
@@ -84,7 +85,7 @@ function ModeCard({
       aria-pressed={active}
       disabled={disabled}
       className={cn(
-        "relative flex min-h-[9.5rem] items-center gap-4 overflow-hidden rounded-[1rem] border px-5 py-5 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.99]",
+        "relative flex h-full min-h-[8.75rem] w-full items-center gap-4 overflow-hidden rounded-[1rem] border px-5 py-4 text-left transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.99]",
         disabled && "cursor-not-allowed",
         active
           ? "border-[#006747] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] shadow-[0_18px_34px_-24px_rgba(0,74,35,0.72)]"
@@ -101,7 +102,7 @@ function ModeCard({
             Dipilih
           </span>
           <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full bg-white text-[#006747] shadow-[0_12px_22px_-16px_rgba(0,0,0,0.46)]">
-          <CheckCircle2 className="size-4" strokeWidth={2.6} />
+            <CheckCircle2 className="size-4" strokeWidth={2.6} />
           </span>
         </>
       ) : disabled ? (
@@ -112,9 +113,9 @@ function ModeCard({
 
       <span
         className={cn(
-          "grid size-14 shrink-0 place-items-center rounded-full border",
+          "grid size-12 shrink-0 place-items-center rounded-full border",
           active
-            ? "border-white/50 bg-white/15 text-white"
+            ? "border-white/70 bg-[#e8f6ee] text-[#006747]"
             : disabled
               ? "border-slate-200 bg-slate-100 text-slate-300"
               : "border-slate-200 bg-slate-50 text-slate-400"
@@ -123,10 +124,10 @@ function ModeCard({
         {icon}
       </span>
 
-      <span className={cn("min-w-0 flex-1 pr-10", active && "pt-5")}>
+      <span className={cn("min-w-0 flex-1 pr-8", active && "pt-5")}>
         <span
           className={cn(
-            "block text-[1.05rem] font-black tracking-tight sm:text-[1.14rem]",
+            "block text-[1rem] font-black tracking-[-0.02em] sm:text-[1.08rem]",
             active ? "text-white" : disabled ? "text-slate-400" : "text-slate-700"
           )}
         >
@@ -134,7 +135,7 @@ function ModeCard({
         </span>
         <span
           className={cn(
-            "mt-1.5 block text-justify text-[0.84rem] leading-6",
+            "mt-1 block text-justify text-[0.78rem] font-semibold leading-[1.25rem] [hyphens:auto] [text-justify:inter-word] sm:text-[0.8rem]",
             active ? "text-emerald-50" : disabled ? "text-slate-300" : "text-slate-500"
           )}
         >
@@ -177,7 +178,7 @@ function DurationField({
       <input
         aria-label={label}
         className={cn(
-          "h-[3.55rem] w-full rounded-[0.85rem] border text-center text-[0.9rem] font-black tracking-tight transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#006747]/10",
+          "h-[2.7rem] w-full rounded-[0.75rem] border text-center text-[0.86rem] font-black tracking-tight transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#006747]/10",
           disabled
             ? "border-slate-200/80 bg-slate-100 text-slate-400"
             : "border-slate-200 bg-[#f6f7f8] text-[#161f1b] hover:border-[#bfd3c7] focus-visible:border-[#006747]"
@@ -259,7 +260,7 @@ export function AdminMarketingForm({
     normalizedDurationMinutes * 60 +
     normalizedDurationSeconds;
   const baseNowMs = useMemo(() => new Date(serverNow).getTime(), [serverNow]);
-  const priceLabel = mode === "fixed_price" ? "Harga Jual Instan" : "Harga Dasar Lelang";
+  const priceLabel = mode === "fixed_price" ? "Masukkan Nominal Harga" : "Masukkan Harga Dasar Lelang";
   const estimatedEnd = useMemo(() => {
     if (
       mode !== "vickrey" ||
@@ -421,7 +422,7 @@ export function AdminMarketingForm({
           </div>
         </div>
 
-        <div className="p-5 pt-10 sm:p-8 sm:pt-11 lg:p-9 lg:pt-12">
+        <div className="p-5 pt-9 sm:p-7 sm:pt-10 lg:p-7 lg:pt-10">
           <div className="flex justify-end">
             <button
               aria-label="Tutup popup pasarkan barang"
@@ -433,20 +434,20 @@ export function AdminMarketingForm({
             </button>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="space-y-2 text-center">
-              <h3 className="font-headline text-[1.75rem] font-black tracking-tight text-[#15231d] sm:text-[2rem]">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1 text-center">
+              <h3 className="font-headline text-[1.75rem] font-black tracking-[-0.035em] text-[#111a16] sm:text-[2rem]">
                 Pasarkan Barang
               </h3>
-              <p className="mx-auto max-w-md text-[0.9rem] leading-7 text-slate-500">
+              <p className="mx-auto max-w-md text-[0.86rem] font-semibold leading-6 text-slate-500">
                 Konfigurasi akhir sebelum unit ditayangkan ke katalog publik.
               </p>
             </div>
 
-            <div className="grid gap-7 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
-              <div className="space-y-3">
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
+              <div className="flex h-full min-w-0 flex-col gap-2.5" data-testid="marketing-method-column">
                 <FieldLabel>Metode Penjualan</FieldLabel>
-                <div className="space-y-3">
+                <div className="grid flex-1 grid-rows-2 gap-3">
                   <ModeCard
                     active={mode === "fixed_price"}
                     description="Penjualan instan dengan harga tetap yang ditentukan. Pembeli dapat langsung melakukan transaksi tanpa proses lelang."
@@ -464,12 +465,15 @@ export function AdminMarketingForm({
                 </div>
               </div>
 
-              <div className="space-y-3 border-[#dfe8e2] lg:border-l lg:pl-7">
+              <div
+                className="flex h-full min-w-0 flex-col justify-between gap-2.5 border-[#dfe8e2] lg:border-l lg:pl-5"
+                data-testid="marketing-summary-column"
+              >
                 <FieldLabel>Ringkasan Penawaran</FieldLabel>
-                <div className="rounded-[1rem] border border-[#dfe8e2] bg-white p-4 shadow-[0_16px_32px_-30px_rgba(8,69,50,0.45)]">
+                <div className="rounded-[1rem] border border-[#dfe8e2] bg-white p-3 shadow-[0_16px_32px_-30px_rgba(8,69,50,0.45)]">
                   <div className="flex items-center gap-3">
-                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#eff8f2] text-[#006747]">
-                      <Tag className="size-5" strokeWidth={2.1} />
+                    <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#eaf6ef] text-[#006747]">
+                      <Banknote className="size-5" strokeWidth={2.2} />
                     </span>
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <FieldLabel htmlFor="marketing-price">{priceLabel}</FieldLabel>
@@ -478,7 +482,7 @@ export function AdminMarketingForm({
                           Rp
                         </span>
                         <input
-                          className="h-[3rem] w-full bg-transparent pr-4 text-[0.92rem] font-black tracking-[0.02em] text-[#0d4e34] outline-none placeholder:text-slate-300"
+                          className="h-[2.75rem] w-full bg-transparent pr-4 text-[0.88rem] font-black tracking-[0.01em] text-[#0d4e34] outline-none placeholder:font-semibold placeholder:text-slate-300"
                           id="marketing-price"
                           inputMode="numeric"
                           onChange={(event) => setPrice(getCurrencyInputDigits(event.target.value))}
@@ -494,7 +498,7 @@ export function AdminMarketingForm({
                 {mode === "vickrey" ? (
                   <div className="space-y-1">
                     <FieldLabel>Durasi Lelang</FieldLabel>
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-4 gap-1.5 rounded-[0.85rem] border border-[#e2ebe6] bg-[#f8faf9] p-2">
                       <DurationField
                         disabled={false}
                         id="marketing-duration-days"
@@ -545,8 +549,8 @@ export function AdminMarketingForm({
                   </div>
                 ) : null}
 
-                <div className="space-y-3">
-                  <div className="relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-5 py-4 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
+                <div className="mt-auto space-y-2.5">
+                  <div className="relative overflow-hidden rounded-[1rem] bg-[linear-gradient(135deg,#006747_0%,#005238_100%)] px-4 py-3 text-white shadow-[0_22px_44px_-30px_rgba(0,74,35,0.9)]">
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/12" />
                     <div className="relative grid gap-3 sm:grid-cols-2">
                       <div className="space-y-1 pr-2 sm:pr-4">
@@ -568,7 +572,7 @@ export function AdminMarketingForm({
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-3 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-4 py-3 text-[0.76rem] leading-5 text-[#40564a]">
+                  <div className="flex gap-2.5 rounded-[0.9rem] border border-[#d9ebe0] bg-[#f4faf6] px-3.5 py-2.5 text-[0.7rem] font-semibold leading-[1.1rem] text-[#40564a]">
                     <Info className="mt-0.5 size-4 shrink-0 text-[#006747]" strokeWidth={2.3} />
                     <p>
                       Dengan menekan tombol di bawah, Anda menyetujui syarat dan ketentuan penempatan unit di katalog publik Ruang Agunan.

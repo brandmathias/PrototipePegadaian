@@ -745,9 +745,9 @@
     "semantic_hash": "46c8fe8dce093022afafeade8c6bb664"
   },
   "components/admin-unit/admin-marketing-form.tsx": {
-    "mtime": 1783567897.8856661,
-    "ast_hash": "0a1252c268154c6d28cf0005f54b2d02",
-    "semantic_hash": "0a1252c268154c6d28cf0005f54b2d02"
+    "mtime": 1784986764.3159943,
+    "ast_hash": "ebff6d5d1d7df772f51238f91fd1322e",
+    "semantic_hash": ""
   },
   "components/admin-unit/admin-option-grid.tsx": {
     "mtime": 1778609152.4953308,
@@ -2260,9 +2260,9 @@
     "semantic_hash": "389b9e71eff3ff5f46a78e9a3566b627"
   },
   "tests/admin-marketing-form.test.tsx": {
-    "mtime": 1783568079.5605881,
-    "ast_hash": "fff51be03126bc1e3d635e4a5957f0bc",
-    "semantic_hash": "fff51be03126bc1e3d635e4a5957f0bc"
+    "mtime": 1784986411.4744515,
+    "ast_hash": "dcde5839f3bb61620e92676474269a58",
+    "semantic_hash": ""
   },
   "tests/admin-operational-metrics.test.ts": {
     "mtime": 1783117935.5681148,
@@ -2903,5 +2903,1040 @@
     "mtime": 1780427215.3516328,
     "ast_hash": "c4acab5c0a251d6fb00ef13bdcac7888",
     "semantic_hash": "c4acab5c0a251d6fb00ef13bdcac7888"
+  },
+  ".agents/AGENTS.md": {
+    "mtime": 1782493744.7819026,
+    "ast_hash": "72461d021582577757134323f14523ce",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/SKILL.md": {
+    "mtime": 1784984928.235777,
+    "ast_hash": "9127de0dec724028abc460ddb4db1bb3",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/add-watch.md": {
+    "mtime": 1784984889.4068413,
+    "ast_hash": "d59d027fe449f06aa03905a01184e779",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/exports.md": {
+    "mtime": 1784984889.4078524,
+    "ast_hash": "9da2a2152e60a22f07f05fed5158f287",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/extraction-spec.md": {
+    "mtime": 1784984889.4078524,
+    "ast_hash": "bf895ec4d4e40f5f66f7d31c2a9bd4a7",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/github-and-merge.md": {
+    "mtime": 1784984889.409947,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/hooks.md": {
+    "mtime": 1784984889.4109323,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/query.md": {
+    "mtime": 1784984889.4119143,
+    "ast_hash": "3c46f8ad006874260614ed8657d02307",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/transcribe.md": {
+    "mtime": 1784984889.412854,
+    "ast_hash": "67b6a5fa6c0974e18f60db9f8932fbd8",
+    "semantic_hash": ""
+  },
+  ".codex/skills/graphify/references/update.md": {
+    "mtime": 1784984889.4158597,
+    "ast_hash": "9378bd03d56baaf78bd738ab3848f142",
+    "semantic_hash": ""
+  },
+  ".github/workflows/dokploy-redeploy.yml": {
+    "mtime": 1781625498.3360758,
+    "ast_hash": "781d54ae0167084adbeb087ed1abe9bb",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1784984928.269245,
+    "ast_hash": "19241338e020ca8ae12795728b3e5d04",
+    "semantic_hash": ""
+  },
+  "PRD.md": {
+    "mtime": 1784983557.07054,
+    "ast_hash": "a4d4d89605ba9c7ec0a2ce67afb68107",
+    "semantic_hash": ""
+  },
+  "PRODUCT.md": {
+    "mtime": 1781865362.9474163,
+    "ast_hash": "5d876fe91827bb1c41b774444146c5c3",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1784983557.072538,
+    "ast_hash": "bb7678ecfd629e2c887d18fed8aa9a5e",
+    "semantic_hash": ""
+  },
+  "docs/cross-unit-violation-media-attribution.md": {
+    "mtime": 1784154606.0343978,
+    "ast_hash": "f98bfe933c94cc2841023ebfee981ae4",
+    "semantic_hash": ""
+  },
+  "docs/prd-traceability-checklist.md": {
+    "mtime": 1780101373.7781274,
+    "ast_hash": "de9b7297a81df60f25a54aaf5a133f55",
+    "semantic_hash": ""
+  },
+  "docs/readme-screenshots/README.md": {
+    "mtime": 1782336456.5090404,
+    "ast_hash": "22d8e778f4cc438d3cc96a38b7f0c4e1",
+    "semantic_hash": ""
+  },
+  "docs/runbooks/vickrey-private-bid-rollback.md": {
+    "mtime": 1784881254.6716833,
+    "ast_hash": "d701f7e709ce60491ec602c7910d7cee",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-21-adaptive-admin-shell.md": {
+    "mtime": 1776763203.0351448,
+    "ast_hash": "a846688805e24ce783613a07213fb8ee",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-22-public-auth-experience.md": {
+    "mtime": 1776871439.523947,
+    "ast_hash": "a246c712398f1aaa0c0a34ef9f07cf26",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-23-buyer-auth-backend.md": {
+    "mtime": 1776874399.9269712,
+    "ast_hash": "4d177bcd17b394ee2336accd2c643a3c",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-23-buyer-session-guard.md": {
+    "mtime": 1776889088.5266054,
+    "ast_hash": "42979f5c5f1d2d2b8a8cf37a8d1a6e22",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-23-superadmin-backend-implementation.md": {
+    "mtime": 1776902279.5973175,
+    "ast_hash": "04cfb932412b20f9a6ef29238021d68c",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-04-24-admin-unit-backend-implementation.md": {
+    "mtime": 1777027637.729739,
+    "ast_hash": "32185a5ccd71136ac0aaa42af239b20f",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-04-admin-pemasaran-redesign.md": {
+    "mtime": 1777895398.1074433,
+    "ast_hash": "9229785a61535e55a5593b43f11ddc39",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-12-vickrey-auction-precise-duration.md": {
+    "mtime": 1778592018.8398635,
+    "ast_hash": "a0714db996657bc9f332533fad67b080",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-22-in-app-notifications.md": {
+    "mtime": 1779402676.6023557,
+    "ast_hash": "aeba1a1c14f0eb90ed0fe04c9d8d0654",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-28-buyer-responsive-performance.md": {
+    "mtime": 1779979535.4968734,
+    "ast_hash": "5ebd0b801e9786115c8a5965a03f4a0e",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-29-blacklist-review-governance.md": {
+    "mtime": 1780009517.291554,
+    "ast_hash": "b5e4830360f2823807769ce687b4fc09",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-05-30-blacklist-review-governance-implementation.md": {
+    "mtime": 1780102103.6265812,
+    "ast_hash": "0047c0b44c4587190396da1d07a6831e",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-09-manajemen-superadmin.md": {
+    "mtime": 1780982297.6640458,
+    "ast_hash": "a77b607707dcccaf1836b06992268b9d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-17-single-active-vickrey-bid-lock.md": {
+    "mtime": 1781630254.8086152,
+    "ast_hash": "0f632885dca33cfc85f67c25fa82f270",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-19-cross-role-transaction-integration.md": {
+    "mtime": 1781883051.3068721,
+    "ast_hash": "a81e81f2a18d34b86a12030dbc6ea477",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-19-handover-proof.md": {
+    "mtime": 1781866616.3983593,
+    "ast_hash": "67434170c6cf63ddae8becddfe79d85d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-20-superadmin-compliance-account-modal-consistency.md": {
+    "mtime": 1781951406.4345887,
+    "ast_hash": "8ed709edcaed77cb37f414da9c474915",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-06-28-buyer-mobile-performance.md": {
+    "mtime": 1782665908.9447114,
+    "ast_hash": "c01801471477640220b14c4738a70856",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-02-retire-manual-blacklist.md": {
+    "mtime": 1782988004.304423,
+    "ast_hash": "2a2a845581aa9f393c313bdda0803cf2",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-03-admin-customer-correction.md": {
+    "mtime": 1783033311.2346206,
+    "ast_hash": "df92d293214894c8d9c595c0e8dd119d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-03-remove-handover-complaint.md": {
+    "mtime": 1783023106.3781025,
+    "ast_hash": "e5d63900cba44add92f44ebd4351fb61",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-03-unit-and-sbg-code.md": {
+    "mtime": 1783027383.7101068,
+    "ast_hash": "cd3f2c4b9e538447eaed89dbdb7cb61b",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-05-catalog-performance.md": {
+    "mtime": 1783240871.3930316,
+    "ast_hash": "48be24734825204a78148ddf731148c1",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-13-erd-class-diagram-skripsi.md": {
+    "mtime": 1783946195.9000256,
+    "ast_hash": "bc2752da86ea5b0d3d1029974cfdd2bf",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-13-fixed-price-pickup-notification.md": {
+    "mtime": 1783905494.6281066,
+    "ast_hash": "a29c69210b79595479b426e5f49606ee",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-15-cross-unit-blacklist-history.md": {
+    "mtime": 1784086097.5249972,
+    "ast_hash": "1b25293e43445a9a48f141128feb729c",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-15-shared-bidder-ranking-and-violation-media.md": {
+    "mtime": 1784091710.3681564,
+    "ast_hash": "b303e2b0a29d87471b3e9be4c960ca58",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-15-violation-detail-layout.md": {
+    "mtime": 1784118232.566015,
+    "ast_hash": "2b956aa91c697352078e1f96346fc029",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-16-level-guide-visual-refinement.md": {
+    "mtime": 1784163317.351297,
+    "ast_hash": "1a94fc90e7f12a22d15731222bfd73de",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-21-adaptive-admin-shell-design.md": {
+    "mtime": 1776762714.705321,
+    "ast_hash": "5978041991d1e8b6a0e9ce41264d33b5",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-22-public-auth-experience-design.md": {
+    "mtime": 1776871310.5268812,
+    "ast_hash": "c14188af9feaa3fe7d80ed10f60ef260",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-23-buyer-auth-backend-design.md": {
+    "mtime": 1776874163.375286,
+    "ast_hash": "d914340f588220ee17ed73cda43d59ee",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-23-buyer-session-guard-design.md": {
+    "mtime": 1776888744.197389,
+    "ast_hash": "31015b92063fee328504450a95b73799",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-23-superadmin-backend-design.md": {
+    "mtime": 1776901574.9431474,
+    "ast_hash": "6a97cb0571e97b24919636b9104b1ade",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-04-24-admin-unit-backend-design.md": {
+    "mtime": 1777027637.7251532,
+    "ast_hash": "44a548a305c23fd99678b30385a0fb24",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-05-04-admin-pemasaran-redesign-design.md": {
+    "mtime": 1777895160.4059658,
+    "ast_hash": "a3dfac976dce04380900569adf063b4d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-05-12-vickrey-auction-precise-duration-design.md": {
+    "mtime": 1778591527.2917812,
+    "ast_hash": "05b7d89a7a0e9aa6fadddfd2e44393bb",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-05-22-in-app-notifications-design.md": {
+    "mtime": 1779401417.9053965,
+    "ast_hash": "c3219dfee99c33668c72508555a58b0b",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-05-30-blacklist-review-governance-design.md": {
+    "mtime": 1780099590.875836,
+    "ast_hash": "5e00d37740e4b8ad172a93e02c05ffa1",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-04-superadmin-governance-compact-design.md": {
+    "mtime": 1780552033.0369022,
+    "ast_hash": "e5bc9b5b122f4cec88bd8353fe596274",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-09-manajemen-superadmin-design.md": {
+    "mtime": 1780982297.661045,
+    "ast_hash": "1120879fd7529d9f55e2e4943bf4c575",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-17-single-active-vickrey-bid-lock-design.md": {
+    "mtime": 1781630254.8076057,
+    "ast_hash": "cca85bc9afe457ee145ab2c68396d15f",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-19-cross-role-transaction-integration-design.md": {
+    "mtime": 1781883143.307582,
+    "ast_hash": "4baa11f99a881cc7f7bafeb39a24be6c",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-19-handover-proof-design.md": {
+    "mtime": 1781865362.952924,
+    "ast_hash": "bea63b0e61016d3a1f854d74536106a0",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-20-handover-proof-upload-design.md": {
+    "mtime": 1781902570.772921,
+    "ast_hash": "34ced499ab628fe55193a0c80b53d77d",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-20-superadmin-compliance-account-modal-consistency-design.md": {
+    "mtime": 1781951406.4315588,
+    "ast_hash": "a53986b1431a2cb47155d905fe3b0c3e",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-06-28-buyer-mobile-performance-design.md": {
+    "mtime": 1782665908.9452913,
+    "ast_hash": "0b1c0c70ef986c5189a2a413f8e40c27",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-02-retire-manual-blacklist-design.md": {
+    "mtime": 1782987944.9453282,
+    "ast_hash": "76983808db63837802acf7f963c9310b",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-03-admin-customer-correction-design.md": {
+    "mtime": 1783032883.8995488,
+    "ast_hash": "574176c8cee11425b33d786248369efa",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-03-remove-handover-complaint-design.md": {
+    "mtime": 1783023106.3688943,
+    "ast_hash": "e6d3d6cbd7f5e3f54a98c7e6b815a549",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-03-unit-and-sbg-code-design.md": {
+    "mtime": 1783027132.580693,
+    "ast_hash": "78c41b2ed9ea2a78ae157dd51d107637",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-13-erd-class-diagram-skripsi-design.md": {
+    "mtime": 1783945989.7111847,
+    "ast_hash": "5128d91f6700b7a273582c4eaa6f3ee4",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-13-fixed-price-pickup-notification-design.md": {
+    "mtime": 1783905494.6245952,
+    "ast_hash": "f68ac5a261c66d48b7f84d217ac7df71",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-15-cross-unit-blacklist-history-design.md": {
+    "mtime": 1784085761.3085017,
+    "ast_hash": "4ce965c9181301ab2556903f70219566",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-15-shared-bidder-ranking-and-violation-media-design.md": {
+    "mtime": 1784092271.7468317,
+    "ast_hash": "f8a6dd91367f3d10c5c6f9b64bdb775a",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-15-violation-detail-layout-design.md": {
+    "mtime": 1784118232.546477,
+    "ast_hash": "2d147a49844e4e44a94b35d8c01bc3fa",
+    "semantic_hash": ""
+  },
+  "public/uploads/Desain Halaman Pemasaran Admin Unit/Design Halaman Pemasaran Admin Unit.md": {
+    "mtime": 1780039891.3283477,
+    "ast_hash": "0741775ce0834071d447d0f527c5409b",
+    "semantic_hash": ""
+  },
+  "public/uploads/Desain Halaman Pemasaran Admin Unit/Design Halaman Pemasaran Admin Unit.txt": {
+    "mtime": 1780039907.1634245,
+    "ast_hash": "18594eacd561627bf6e4ad7df674a0db",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Bukan Pemenang Lelang/Design Halaman Bukan Pemenang Lelang.md": {
+    "mtime": 1779950448.5510077,
+    "ast_hash": "db21c7c7e3faac1cbb1da34990e23356",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Bukan Pemenang Lelang/Design Halaman Bukan Pemenang Lelang.txt": {
+    "mtime": 1779951119.3911414,
+    "ast_hash": "57e465b183edbd2ddad6d48737382845",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Dashboard Admin Unit/Design Halaman Dashboard Admin Unit.md": {
+    "mtime": 1780022507.9212706,
+    "ast_hash": "423e229d9e461a0e11f32dfe893b71b1",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Dashboard Admin Unit/Design Halaman Dashboard Admin Unit.txt": {
+    "mtime": 1780022511.7790415,
+    "ast_hash": "bf069abedf6a6dea1a3d8f81384bce89",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Detail Barang Pada Kelola Barang Admin Unit/Design Halaman Detail Barang Pada Kelola Barang Admin Unit.md": {
+    "mtime": 1780140668.9080114,
+    "ast_hash": "cc83b1d95d3f9db0a4f82f17a80f805e",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Detail Barang Pada Kelola Barang Admin Unit/Design Halaman Detail Barang Pada Kelola Barang Admin Unit.txt": {
+    "mtime": 1780140666.36909,
+    "ast_hash": "e5bc687ef03582be9bf74a2362d2d6ee",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Tambah Barang Admin Unit/Design Halaman Tambah Barang Admin Unit.md": {
+    "mtime": 1780124302.6164832,
+    "ast_hash": "6c21feaf233509b31d627926faa248c4",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Tambah Barang Admin Unit/Design Halaman Tambah Barang Admin Unit.txt": {
+    "mtime": 1780124309.312209,
+    "ast_hash": "3140312da83b0071ded4ce6ef435ba5b",
+    "semantic_hash": ""
+  },
+  ".codex-artifacts/superadmin-detail-footer.png": {
+    "mtime": 1780827481.113914,
+    "ast_hash": "43788c569000ab393d9ab8ac4c93b146",
+    "semantic_hash": ""
+  },
+  ".tmp-auction-winner-burst.png": {
+    "mtime": 1779944044.7331977,
+    "ast_hash": "4031c637b14b34f80dfd9523ccce6d52",
+    "semantic_hash": ""
+  },
+  ".tmp-auction-winner-desktop.png": {
+    "mtime": 1779944042.1303911,
+    "ast_hash": "0b67f4547097d8c5059ad2307719d313",
+    "semantic_hash": ""
+  },
+  ".tmp-auction-winner-mobile.png": {
+    "mtime": 1779944041.0696094,
+    "ast_hash": "ac323f9eb23b095cd4300f91e00dfb94",
+    "semantic_hash": ""
+  },
+  "app/apple-icon.png": {
+    "mtime": 1781549596.62,
+    "ast_hash": "853b131854ab700b72c80d579f714135",
+    "semantic_hash": ""
+  },
+  "app/icon.png": {
+    "mtime": 1781549596.516,
+    "ast_hash": "a69d3f9ea7b4f46fa4103bff54996fac",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/class-diagram-ruang-agunan-manual.png": {
+    "mtime": 1784774129.611,
+    "ast_hash": "a4b152cc2472d95e95f9d3daec18b161",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/class-diagram-ruang-agunan-manual.svg": {
+    "mtime": 1784774029.955812,
+    "ast_hash": "58968afc892b96267fc3f39553673335",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/class-diagram-ruang-agunan.png": {
+    "mtime": 1784772799.1522517,
+    "ast_hash": "37ef49fc94843d160fa5487debc93e9d",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/erd-ruang-agunan.png": {
+    "mtime": 1784713759.5724769,
+    "ast_hash": "480968a39cf248aaba16eee744f0e435",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-login.png": {
+    "mtime": 1784709386.0733888,
+    "ast_hash": "4991514ff8659236163887038f17c203",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-manajemen-unit-admin.png": {
+    "mtime": 1784709731.711121,
+    "ast_hash": "3374361bc5d7e870040c1dc67ebe8f22",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-monitoring-unit.png": {
+    "mtime": 1784712047.0710235,
+    "ast_hash": "e94c97aa24cae24a589b81060e783e54",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pelanggaran.png": {
+    "mtime": 1784732275.4778998,
+    "ast_hash": "44a8bda75222480ff7a49bd200fa467e",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pembelian-harga-tetap.png": {
+    "mtime": 1784730926.132832,
+    "ast_hash": "bcea5afd166b1f25445ebea778b67be0",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pembelian-lelang-tertutup - Copy (2).png": {
+    "mtime": 1784731956.0705707,
+    "ast_hash": "0f78111745cc3ad4226e6a17a0a5f1be",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pembelian-lelang-tertutup - Copy.png": {
+    "mtime": 1784731956.0705707,
+    "ast_hash": "0f78111745cc3ad4226e6a17a0a5f1be",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pembelian-lelang-tertutup.png": {
+    "mtime": 1784731956.0705707,
+    "ast_hash": "0f78111745cc3ad4226e6a17a0a5f1be",
+    "semantic_hash": ""
+  },
+  "docs/diagrams/sequence-diagram-pengelolaan-barang.png": {
+    "mtime": 1784709901.2949116,
+    "ast_hash": "9e19504bb6d635c20aa0d6cbe1dacb49",
+    "semantic_hash": ""
+  },
+  "nota-output-check.png": {
+    "mtime": 1777924044.4477246,
+    "ast_hash": "52a10decaf9d033b2939a5417f68a75c",
+    "semantic_hash": ""
+  },
+  "public/assets/catalog-hero-buyer.png": {
+    "mtime": 1779756870.0758734,
+    "ast_hash": "56ecfdf6677db28767ccab307c1e1e4e",
+    "semantic_hash": ""
+  },
+  "public/assets/catalog-hero-buyer.webp": {
+    "mtime": 1782963236.471,
+    "ast_hash": "9930b296a03674b9b7acf921875610eb",
+    "semantic_hash": ""
+  },
+  "public/assets/hero-admin-unit-illustration.png": {
+    "mtime": 1782599181.1760783,
+    "ast_hash": "505de7ce19dd6e76eb5ff29177bf15b2",
+    "semantic_hash": ""
+  },
+  "public/assets/hero-illustration-placeholder.svg": {
+    "mtime": 1782593017.3036585,
+    "ast_hash": "af70e0c5b328c381e582e7b0bb47b373",
+    "semantic_hash": ""
+  },
+  "public/assets/login-wallpaper-lcp.webp": {
+    "mtime": 1782829235.771,
+    "ast_hash": "f57e24f8e3e8bd162a369f3c925e287c",
+    "semantic_hash": ""
+  },
+  "public/assets/reference-dashboard-admin-unit.png": {
+    "mtime": 1782593017.3322353,
+    "ast_hash": "82048c2210c4e4ec3bb70bdd80bd570d",
+    "semantic_hash": ""
+  },
+  "public/assets/ruang-agunan-logo.svg": {
+    "mtime": 1782593017.2934942,
+    "ast_hash": "a7379d0169e5ec7fbd1550e309d15c6f",
+    "semantic_hash": ""
+  },
+  "public/brand/buyer-help-headset.png": {
+    "mtime": 1781682441.8653214,
+    "ast_hash": "4efe8dc5549be4c3914926d0e91a461e",
+    "semantic_hash": ""
+  },
+  "public/brand/ruang-agunan-icon.png": {
+    "mtime": 1781549596.334,
+    "ast_hash": "2e16fd3c7f4e43afe78775767835e91c",
+    "semantic_hash": ""
+  },
+  "public/brand/ruang-agunan-name.png": {
+    "mtime": 1781549596.678,
+    "ast_hash": "92abbcabcfaec7b4dc3a67cbf28f2cde",
+    "semantic_hash": ""
+  },
+  "public/brand/ruang-agunan-share.png": {
+    "mtime": 1781549596.397,
+    "ast_hash": "a69d3f9ea7b4f46fa4103bff54996fac",
+    "semantic_hash": ""
+  },
+  "public/icons/cart.svg": {
+    "mtime": 1782593017.376105,
+    "ast_hash": "04417066ba8ae9281f2dc6f09b811626",
+    "semantic_hash": ""
+  },
+  "public/icons/megaphone.svg": {
+    "mtime": 1782593017.3520558,
+    "ast_hash": "ae62813b3aaa0e5517c970e8657e862c",
+    "semantic_hash": ""
+  },
+  "public/icons/package.svg": {
+    "mtime": 1782593017.3439767,
+    "ast_hash": "60dfc2274aab167f955cef381e557cfd",
+    "semantic_hash": ""
+  },
+  "public/icons/receipt.svg": {
+    "mtime": 1782593017.3609166,
+    "ast_hash": "f6406bb3336c156891662b4f1856bc3d",
+    "semantic_hash": ""
+  },
+  "public/icons/tag.svg": {
+    "mtime": 1782593017.3842714,
+    "ast_hash": "e9d8e6d873112d36e32af446207d9a8b",
+    "semantic_hash": ""
+  },
+  "public/icons/user-circle.svg": {
+    "mtime": 1782593017.3675117,
+    "ast_hash": "b5c27915435206c20fc33577e6602b50",
+    "semantic_hash": ""
+  },
+  "public/media/ranking/peringkat-1.webp": {
+    "mtime": 1784092281.7725682,
+    "ast_hash": "51d3ad3163cba8478c332068a3a8f8a4",
+    "semantic_hash": ""
+  },
+  "public/media/ranking/peringkat-2.webp": {
+    "mtime": 1784092281.8679821,
+    "ast_hash": "7bbb88972c8f30cceea1f1e8657b454b",
+    "semantic_hash": ""
+  },
+  "public/media/ranking/peringkat-3.webp": {
+    "mtime": 1784092281.9738002,
+    "ast_hash": "9db1d176c045ab9949891ef1fbfbfce5",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/anting-emas-hoop-pilin-22k.webp": {
+    "mtime": 1784138195.576,
+    "ast_hash": "a1732d4282c0f7b7ae23c3394efc8fbd",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/cincin-emas-berlian-solitaire-18k.webp": {
+    "mtime": 1784138197.506,
+    "ast_hash": "9529f8e6f16aa2173fbe73a628673d07",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/cincin-emas-solitaire-22k.webp": {
+    "mtime": 1784092282.4331937,
+    "ast_hash": "d327a898c0802e91347fa9b1b2f9752e",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/emas-batangan-10-gram-bersertifikat.webp": {
+    "mtime": 1784138199.236,
+    "ast_hash": "7582c0654719d32180e0cbf440ad3ad1",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/gelang-emas-bangle-polos-22k.webp": {
+    "mtime": 1784092282.704075,
+    "ast_hash": "eff1c6a52a194fff01ef2536e7b4defc",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/gelang-emas-bangle-zircon-22k.webp": {
+    "mtime": 1784154096.886,
+    "ast_hash": "6eb63eb8ae7ceda9f9572b90d97c155d",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/gelang-emas-rantai-figaro-18k.webp": {
+    "mtime": 1784138194.408,
+    "ast_hash": "ea0449d5f760a88d2fd5b5e3e8882811",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/kalung-emas-rantai-cuban-22k.webp": {
+    "mtime": 1784138202.419,
+    "ast_hash": "c10373af922c210a912a4fa2f03ab30d",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/kalung-emas-rantai-singapura-22k.webp": {
+    "mtime": 1784092282.1564097,
+    "ast_hash": "ff05cb73b39ddf1beaa9dd2ac740ad40",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/laptop-14-inci-core-i5.webp": {
+    "mtime": 1784154096.884,
+    "ast_hash": "42173685034e1a14de745259e469a11c",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/macbook-air-m2-2022-midnight.webp": {
+    "mtime": 1784138200.506,
+    "ast_hash": "eb474149190f31711129690e1859fd93",
+    "semantic_hash": ""
+  },
+  "public/media/violation-items/seiko-5-automatic-6309-5320.webp": {
+    "mtime": 1784138201.235,
+    "ast_hash": "38312b0610f4be59870d0d063f042442",
+    "semantic_hash": ""
+  },
+  "public/uploads/Assets Hero Section Dashboard Admin Unit/Asset Backgorund Hero Section Admin Unit.png": {
+    "mtime": 1780056858.5772197,
+    "ast_hash": "8ad4633fb27d01be58340043f28fbd13",
+    "semantic_hash": ""
+  },
+  "public/uploads/Assets Hero Section Dashboard Admin Unit/Asset Gambar Hero Section Admin Unit.png": {
+    "mtime": 1780056605.8845904,
+    "ast_hash": "6c71e8b29fa90530af3c8270eab5a1c3",
+    "semantic_hash": ""
+  },
+  "public/uploads/Assets Pengumuman Pemenang Lelang/Piala Pemenang Lelang.png": {
+    "mtime": 1779948918.9820852,
+    "ast_hash": "55b815644db2df18c2f5a4666138302b",
+    "semantic_hash": ""
+  },
+  "public/uploads/Assets Pengumuman Pemenang Lelang/Tanda Centang Pemenang Lelang Hero Section.png": {
+    "mtime": 1779940348.0053225,
+    "ast_hash": "5a0403e57091e60e1f1b6be8eb5eddfd",
+    "semantic_hash": ""
+  },
+  "public/uploads/Background Hero Section Halaman Notifikasi Buyer.png": {
+    "mtime": 1783907494.6714633,
+    "ast_hash": "e2be8f1b9cc229d0cdf6673ee8c44014",
+    "semantic_hash": ""
+  },
+  "public/uploads/Desain Halaman Pemasaran Admin Unit/Design Halaman Pemasaran Admin Unit.png": {
+    "mtime": 1780039868.1111994,
+    "ast_hash": "bc755a9ea76638821523da640579a67c",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Bukan Pemenang Lelang/Design Halaman Bukan Pemenang Lelang.png": {
+    "mtime": 1779951218.5180192,
+    "ast_hash": "84bdeb1a9eb182cf3eaa45dca87a90b0",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Bukan Pemenang Lelang/Gambar Palu Hero Section Bukan Pemenang Lelang.png": {
+    "mtime": 1779948675.1976488,
+    "ast_hash": "3b6360760cc3447af51a9fe5c6365771",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Bukan Pemenang Lelang/Tanda X Bukan Pemenang Lelang Hero Section.png": {
+    "mtime": 1779973644.6221304,
+    "ast_hash": "73d038126707b34f85b97511f2907e6f",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Dashboard Admin Unit/Gambar Design Halaman Dashboard Admin Unit.png": {
+    "mtime": 1780022711.6772933,
+    "ast_hash": "7863012fb635a0e3264d2ea69c3f3be6",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Detail Barang Pada Kelola Barang Admin Unit/Design Halaman Detail Barang Pada Kelola Barang Admin Unit.png": {
+    "mtime": 1780140767.2341847,
+    "ast_hash": "2318ba1f59c2f0fb483c517b7564ec10",
+    "semantic_hash": ""
+  },
+  "public/uploads/Design Halaman Tambah Barang Admin Unit/Design Halaman Tambah Barang Admin Unit.png": {
+    "mtime": 1780124091.6837027,
+    "ast_hash": "eb415595fbdbd4ad7b5f8c0325b54d89",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Background Catatan Penting.png": {
+    "mtime": 1779562610.630754,
+    "ast_hash": "a5c983f4eef2ff26f8c5290d5bce57be",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Background Halaman Profil Admin Unit.png": {
+    "mtime": 1779697091.4009273,
+    "ast_hash": "d8659f2508db86f3b2c9003e856a3d56",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Background Halaman Profil.png": {
+    "mtime": 1779566471.82381,
+    "ast_hash": "a07c7ab560d2e269b50fed8e73e24504",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Background Katalog.png": {
+    "mtime": 1779538745.8114073,
+    "ast_hash": "56ecfdf6677db28767ccab307c1e1e4e",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Hero Section Beranda Pembeli.png": {
+    "mtime": 1779551126.6964025,
+    "ast_hash": "78a7f2075c91de87c61da012259206d4",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Wallpaper Login.png": {
+    "mtime": 1779418111.0733767,
+    "ast_hash": "38adf1a84b0289f51c27f6ea8cd11841",
+    "semantic_hash": ""
+  },
+  "public/uploads/Gambar Wallpaper Register.png": {
+    "mtime": 1779418969.7003098,
+    "ast_hash": "9f249ead828034c0b44dd0c8e0009430",
+    "semantic_hash": ""
+  },
+  "public/uploads/Hero Section Katalog Buyer.png": {
+    "mtime": 1779756870.0758734,
+    "ast_hash": "56ecfdf6677db28767ccab307c1e1e4e",
+    "semantic_hash": ""
+  },
+  "public/uploads/Hero Section Katalog Buyer.webp": {
+    "mtime": 1782963236.471,
+    "ast_hash": "9930b296a03674b9b7acf921875610eb",
+    "semantic_hash": ""
+  },
+  "public/uploads/Sidebar Kantor.svg": {
+    "mtime": 1779755445.7521057,
+    "ast_hash": "07bdde4ea2f8867ab7a5e9ed060188fd",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/bca.png": {
+    "mtime": 1782874114.7828438,
+    "ast_hash": "f8eaf076339fb3e3ec81172981395126",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/bni.png": {
+    "mtime": 1782874114.435325,
+    "ast_hash": "ee595ddb79c250bba53d1c160b58ee5e",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/bri.png": {
+    "mtime": 1782874114.6543355,
+    "ast_hash": "9718656e20964c3d686e9ce5e88b8758",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/bsi.png": {
+    "mtime": 1782874114.7358458,
+    "ast_hash": "79e8a23ddb42be1c468c7b5280d6f8f7",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/btn.png": {
+    "mtime": 1782874114.465935,
+    "ast_hash": "8bfc6d68beba3d2d974bbc3c72daa0df",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/cimb-niaga.png": {
+    "mtime": 1782874114.8058472,
+    "ast_hash": "720ee6eb1e12e041af4199c7ed4559d4",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/danamon.png": {
+    "mtime": 1782874114.8441553,
+    "ast_hash": "07e2e463ec47880509da8b440ed9cef9",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/mandiri.png": {
+    "mtime": 1782874114.5032637,
+    "ast_hash": "4141659ef95a62fbcac4419a400fa491",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/maybank.png": {
+    "mtime": 1782874114.9288347,
+    "ast_hash": "6ed411fdc54ca5134c4c45c65302589b",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/mega.png": {
+    "mtime": 1782874114.5692637,
+    "ast_hash": "69a285ddefeb79d8cf0083b64707b149",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/muamalat.png": {
+    "mtime": 1782874114.6112738,
+    "ast_hash": "a13672de124739ab1c7f9b002d808831",
+    "semantic_hash": ""
+  },
+  "public/uploads/bank-logos/permata.png": {
+    "mtime": 1782874114.9650116,
+    "ast_hash": "0255521370d8ac1dc25ee9cb3c65e394",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777558796877-1a71157e-017e-4884-9cff-f36f4fdc4b8a-pexels-shop-shivi-2126126804-29371789.jpg": {
+    "mtime": 1777558796.9006834,
+    "ast_hash": "23120176c536a4b74a00f91f48ae88c5",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777563848738-66430239-554b-4717-a6aa-e7d55a32eb2f-chatgpt-image-30-apr-2026-03-37-33.png": {
+    "mtime": 1777563848.748154,
+    "ast_hash": "de236f3ee5d1ce6f806e1e2907597744",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777632807611-63a932d1-fab0-4b9e-8c9a-718502b11b54-pexels-shop-shivi-2126126804-29371789.jpg": {
+    "mtime": 1777632807.6545496,
+    "ast_hash": "23120176c536a4b74a00f91f48ae88c5",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777632807627-c471ab1b-7e97-4ea7-9a6d-113f866963f0-chatgpt-image-30-apr-2026-03-37-33.png": {
+    "mtime": 1777632807.6585763,
+    "ast_hash": "de236f3ee5d1ce6f806e1e2907597744",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777649584512-2ab74656-b968-4f9d-817a-5e9f6007c4ab-pexels-the-glorious-studio-3584518-10976653.jpg": {
+    "mtime": 1777649584.6380212,
+    "ast_hash": "1bfc1a7b9a398e58c6bdadfd6f8d58a4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777649584528-fd7fcb89-d1c0-484d-882f-9d2b2c17b451-pexels-the-glorious-studio-3584518-31605854.jpg": {
+    "mtime": 1777649584.6481578,
+    "ast_hash": "f2fadd040d62e31008487177b29e93e4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777649584530-c45e0c41-c36e-46d8-ae12-db682704423a-pexels-kaderdygnn-15871491.jpg": {
+    "mtime": 1777649584.6237693,
+    "ast_hash": "9eb6cd52ac3603d000a0f74b08c790d4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1777649584531-53957be7-36e8-4dd6-9485-3803b6bdd2ed-pexels-nazmin-shaikh-2155613801-33822780.jpg": {
+    "mtime": 1777649584.640028,
+    "ast_hash": "86614c669410969dfec3333aa716f035",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1778134460826-b1d87547-ad3c-4bdd-b66e-40a9c0c71d63-pexels-kelly-17291161.jpg": {
+    "mtime": 1778134460.8331802,
+    "ast_hash": "fb59168cad5fca3a0b188935d8580f38",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1778623065018-6cad2f9f-45d0-48c9-a664-65f9a0d93cb5-pexels-mikebirdy-18379620.jpg": {
+    "mtime": 1778623065.1008692,
+    "ast_hash": "d45e72339ed457f1ff5cac1fb164047a",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779127472184-c7e06e24-3c26-4628-9922-508523b58d8e-pexels-pexels-user-505446927-16129631.jpg": {
+    "mtime": 1779127472.1913235,
+    "ast_hash": "72400d07dce764117e858fff072b4625",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779144262645-21baa819-108a-4ef2-abb4-d1af745c272b-pexels-emir-anik-45418356-13983123.jpg": {
+    "mtime": 1779144262.660764,
+    "ast_hash": "e5b458d49e725b7677aeb11c552593e4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779755178868-444b4773-1168-489a-90ba-4c0e3fb9b0aa-pexels-coppertist-wu-313365563-15967401.jpg": {
+    "mtime": 1779755178.8756993,
+    "ast_hash": "376fbede538b1b666fefa48f8d4d21c9",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779755291313-bf0ae1c7-47da-46ec-b0a9-37740995d0e9-pexels-sejio402-34372588.jpg": {
+    "mtime": 1779755291.3235943,
+    "ast_hash": "d9dd47b4508f39cf61ffa274366190db",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779755415413-4ff50f34-ebbd-4a2b-939b-7fa46250b89b-pexels-arjunadinata-32266896.jpg": {
+    "mtime": 1779755415.4170253,
+    "ast_hash": "2bee9fe15e9b8b75a472d4e510d7ffdf",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779755474432-e339d8f0-55cf-4a6b-924a-3a032e630e68-pexels-natalie-bond-320378-28573577.jpg": {
+    "mtime": 1779755474.4395814,
+    "ast_hash": "fbcc65c732cf99621100077fcc91119d",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779802393082-6a1c43c8-38fa-4494-80dc-0e472127f076-pexels-kenzero14-21928764.jpg": {
+    "mtime": 1779802393.119833,
+    "ast_hash": "0ed45715054cb6ce320432a2c4cfa216",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779802393085-3c5f13ca-a6a5-432e-9ac7-83b4428e69a6-pexels-arjunadinata-32266896.jpg": {
+    "mtime": 1779802393.1128905,
+    "ast_hash": "2bee9fe15e9b8b75a472d4e510d7ffdf",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779802393086-f1a2ff19-e972-40c4-81a6-4a1063fdd3f9-pexels-hatice-genc-3580692-32797483.jpg": {
+    "mtime": 1779802393.11431,
+    "ast_hash": "926f1e1d28a7fd5bc6ca8efd5db61f9a",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779802393087-f2cea732-5bb3-4dbe-9d1b-3a5eb1827248-pexels-panditwiguna-28217811.jpg": {
+    "mtime": 1779802393.1168382,
+    "ast_hash": "0fe05fa7bb58ab15ff3bdd5b85e91078",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1779934145916-8413a4c6-00b2-41d2-81a0-c7b8dc822787-pexels-tessacharles-13886741.jpg": {
+    "mtime": 1779934145.923932,
+    "ast_hash": "8bb23c1208080c987be8c0a6e7afd71e",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780142969418-130aae34-6c29-4d48-8da7-8cbe0c39d41f-pexels-jibarofoto-13570160.jpg": {
+    "mtime": 1780142969.6961975,
+    "ast_hash": "3d7927c247dbcaf44a7fea993dc2f7f1",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780142969420-cbf4696a-cd8d-4034-8cd7-50195cff7734-pexels-alphaen-28461044.jpg": {
+    "mtime": 1780142969.6928687,
+    "ast_hash": "340df627f572cc4da08f19d7aaea11a1",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780142969424-80d2601f-b20d-4e7f-a2c2-01f487b7012b-pexels-ekaterina-bolovtsova-6373027.jpg": {
+    "mtime": 1780142969.6916084,
+    "ast_hash": "3a235e30b0575ec69c6e6932d730c50e",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780142969426-4d4203c6-a7a9-4e81-b22f-45a6fbcdff9c-pexels-jibarofoto-13570165.jpg": {
+    "mtime": 1780142969.6972017,
+    "ast_hash": "11aeb0cda9357ae3727a66aa81991da4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780227863067-c1b12a90-83af-41cf-a2e6-1fca71eebef5-pexels-jibarofoto-13570160.jpg": {
+    "mtime": 1780227863.104127,
+    "ast_hash": "3d7927c247dbcaf44a7fea993dc2f7f1",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780227863068-bc92f3e3-d729-4ce4-9427-1b619fdee050-pexels-alphaen-28461044.jpg": {
+    "mtime": 1780227863.1031616,
+    "ast_hash": "340df627f572cc4da08f19d7aaea11a1",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780227863069-cf9efb05-8fe9-4437-b128-96ab8bbcc229-pexels-ekaterina-bolovtsova-6373027.jpg": {
+    "mtime": 1780227863.1031616,
+    "ast_hash": "3a235e30b0575ec69c6e6932d730c50e",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780227863070-fc62898f-cb0e-45bc-a97c-6aec6b897cc8-pexels-jibarofoto-13570165.jpg": {
+    "mtime": 1780227863.107129,
+    "ast_hash": "11aeb0cda9357ae3727a66aa81991da4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780427181345-b7a40a25-9953-45b7-a2be-a490eb5136e2-pexels-the-glorious-studio-3584518-31605854.jpg": {
+    "mtime": 1780427181.4021125,
+    "ast_hash": "f2fadd040d62e31008487177b29e93e4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780427181349-8d688abe-e840-4108-a25a-1dc3c95ae0fa-pexels-kaderdygnn-15871491.jpg": {
+    "mtime": 1780427181.367887,
+    "ast_hash": "9eb6cd52ac3603d000a0f74b08c790d4",
+    "semantic_hash": ""
+  },
+  "public/uploads/barang/1780427181351-346b525c-911a-4ce6-b1ff-70c3ab605992-pexels-nazmin-shaikh-2155613801-33822780.jpg": {
+    "mtime": 1780427181.3995354,
+    "ast_hash": "86614c669410969dfec3333aa716f035",
+    "semantic_hash": ""
+  },
+  "public/uploads/blacklist-review/1780522392679-ChatGPT-Image-29-Mei-2026--20.03.27-Photoroom.png": {
+    "mtime": 1780522392.6904085,
+    "ast_hash": "6c71e8b29fa90530af3c8270eab5a1c3",
+    "semantic_hash": ""
+  },
+  "public/uploads/bukti/1777903706448-pexels-the-glorious-studio-3584518-10976653.jpg": {
+    "mtime": 1777903706.4612744,
+    "ast_hash": "1bfc1a7b9a398e58c6bdadfd6f8d58a4",
+    "semantic_hash": ""
+  },
+  "public/uploads/bukti/1780445291679-pexels-ekaterina-bolovtsova-6373027.jpg": {
+    "mtime": 1780445291.6972952,
+    "ast_hash": "3a235e30b0575ec69c6e6932d730c50e",
+    "semantic_hash": ""
+  },
+  "public/uploads/superadmin-dashboard/hero.png": {
+    "mtime": 1780575054.1154833,
+    "ast_hash": "dd49773593db170fc0c800014f5d3caa",
+    "semantic_hash": ""
   }
 }
