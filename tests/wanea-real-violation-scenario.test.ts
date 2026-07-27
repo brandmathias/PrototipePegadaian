@@ -92,13 +92,13 @@ describe("UPC Wanea real buyer violation scenario", () => {
         buyerEmail: "anindita@gmail.com",
         level: 1,
         unitName: "UPC Wanea",
-        blockedUntil: new Date("2026-07-28T15:00:00+07:00")
+        blockedUntil: new Date("2026-07-28T15:00:00+08:00")
       },
       {
         buyerEmail: "rendra@gmail.com",
         level: 2,
         unitName: "UPC Wanea",
-        blockedUntil: new Date("2026-08-18T11:00:00+07:00")
+        blockedUntil: new Date("2026-08-18T11:00:00+08:00")
       }
     ]);
   });
