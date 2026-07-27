@@ -21,6 +21,7 @@
     "db:repair:unit-admin-audit": "tsx scripts/repair-unit-admin-audit.ts",
     "db:scenario:cross-unit-violations": "tsx scripts/apply-cross-unit-violation-scenario.ts",
     "db:scenario:renewed-cross-unit-violations": "tsx scripts/apply-renewed-cross-unit-violation-scenario.ts",
+    "db:scenario:wanea-real-violations": "tsx scripts/apply-wanea-real-violation-scenario.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
