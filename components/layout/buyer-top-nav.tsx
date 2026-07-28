@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Grid2X2, Headphones, Heart, Home, LogOut, ReceiptText, ShieldAlert } from "lucide-react";
+import { Bell, Grid2X2, Headphones, Heart, Home, LogOut, ReceiptText, ShieldAlert } from "lucide-react";
 
 import { BuyerProfileMenu } from "@/components/layout/buyer-profile-menu";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -49,6 +49,16 @@ const buyerNav = [
     icon: Headphones,
     label: "Pusat Bantuan"
   }
+];
+
+const mobileBuyerNav = [
+  ...buyerNav.slice(0, 3),
+  {
+    href: "/notifikasi",
+    icon: Bell,
+    label: "Notifikasi"
+  },
+  ...buyerNav.slice(3)
 ];
 
 function isBuyerNavigationActive(
@@ -314,7 +324,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
           />
           
           <nav className="flex flex-col gap-1.5">
-            {buyerNav.map((item, index) => {
+            {mobileBuyerNav.map((item) => {
               const active = isBuyerNavigationActive(pathname, item);
               const Icon = item.icon;
 
@@ -324,7 +334,7 @@ export function BuyerTopNav({ currentPath = "", image, name, variant = "light", 
                   aria-current={active ? "page" : undefined}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    "flex min-h-11 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.98]",
                     isLuxury
                       ? active
                         ? "bg-[#9b6f22]/10 text-[#9b6f22]"

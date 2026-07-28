@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -341,7 +340,6 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             ) : null}
           </div>
           </div>
-          <Image alt="Logo Ruang Agunan" className="mt-0.5 size-7 shrink-0 object-contain opacity-90" height={28} src="/brand/ruang-agunan-icon.png" width={28} />
         </>
       );
     },

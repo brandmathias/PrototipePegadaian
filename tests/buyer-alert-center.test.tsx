@@ -131,7 +131,7 @@ describe("buyer alert center", () => {
     expect(screen.getByText(/anda memenangkan lelang motor racing/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan bayar langsung/i)).toBeInTheDocument();
     expect(screen.getByText(/silakan bayar langsung/i)).toHaveClass("text-justify");
-    expect(screen.getByRole("img", { name: "Logo Ruang Agunan" })).toHaveAttribute("src", expect.stringContaining("ruang-agunan-icon.png"));
+    expect(screen.queryByRole("img", { name: "Logo Ruang Agunan" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /aktifkan notifikasi perangkat/i })).toBeInTheDocument();
     const viewAll = screen.getByRole("link", { name: /lihat semua/i });
     const markAll = screen.getByRole("button", { name: /tandai dibaca/i });

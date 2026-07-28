@@ -60,6 +60,7 @@ describe("BuyerShell", () => {
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Katalog" })).toHaveAttribute("href", "/katalog");
     expect(screen.getByRole("link", { name: "Transaksi" })).toHaveAttribute("href", "/transaksi");
+    expect(screen.getByRole("link", { name: "Buka Notifikasi" })).toHaveAttribute("href", "/notifikasi");
     expect(screen.getByRole("link", { name: "Pelanggaran" })).toHaveAttribute("href", "/pelanggaran");
     expect(screen.getByRole("link", { name: "Pusat Bantuan" })).toHaveAttribute("href", "/bantuan");
     expect(screen.getByRole("link", { name: "Buka Beranda" })).toHaveAttribute("href", "/dashboard");
