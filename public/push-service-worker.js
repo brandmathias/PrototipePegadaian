@@ -12,7 +12,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(self.registration.showNotification(payload.title || "Ruang Agunan", {
     actions: [{ action: "open_detail", title: "Lihat detail" }],
     body: payload.body || "Ada informasi penting untuk Anda.",
-    badge: "/brand/ruang-agunan-badge.png",
+    badge: "/brand/ruang-agunan-badge-v2.png",
     icon: "/brand/push-icon-transparent.png",
     data: { href }
   }));

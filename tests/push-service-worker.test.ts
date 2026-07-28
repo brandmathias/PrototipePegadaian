@@ -37,7 +37,7 @@ async function receivePush(type: string) {
 
 describe("push service worker", () => {
   it("uses a transparent compact badge mask instead of an opaque square", async () => {
-    const { data, info } = await sharp("public/brand/ruang-agunan-badge.png")
+    const { data, info } = await sharp("public/brand/ruang-agunan-badge-v2.png")
       .ensureAlpha()
       .raw()
       .toBuffer({ resolveWithObject: true });
@@ -62,7 +62,7 @@ describe("push service worker", () => {
       "Notifikasi",
       expect.objectContaining({
         actions: [{ action: "open_detail", title: "Lihat detail" }],
-        badge: "/brand/ruang-agunan-badge.png",
+        badge: "/brand/ruang-agunan-badge-v2.png",
         icon: "/brand/push-icon-transparent.png"
       })
     );
