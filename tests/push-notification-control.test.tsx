@@ -44,7 +44,8 @@ describe("PushNotificationControl", () => {
   it("registers the current device after the browser grants notification permission", async () => {
     const subscription = { endpoint: "https://fcm.googleapis.com/fcm/send/device-1", toJSON: () => ({ endpoint: "https://fcm.googleapis.com/fcm/send/device-1" }) };
     const pushManager = { getSubscription: vi.fn().mockResolvedValue(null), subscribe: vi.fn().mockResolvedValue(subscription) };
-    const register = vi.fn().mockResolvedValue({ pushManager });
+    const update = vi.fn().mockResolvedValue(undefined);
+    const register = vi.fn().mockResolvedValue({ pushManager, update });
     const requestPermission = vi.fn().mockResolvedValue("granted");
     const fetchMock = vi.fn((_: RequestInfo | URL, init?: RequestInit) =>
       Promise.resolve(
@@ -67,11 +68,27 @@ describe("PushNotificationControl", () => {
 
     expect(await screen.findByText(/notifikasi perangkat aktif di perangkat ini/i)).toBeInTheDocument();
     expect(requestPermission).toHaveBeenCalledOnce();
-    expect(register).toHaveBeenCalledWith("/push-service-worker.js");
+    expect(register).toHaveBeenCalledWith("/push-service-worker.js?v=2", { updateViaCache: "none" });
     expect(pushManager.subscribe).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/push/subscription",
       expect.objectContaining({ method: "POST" })
     );
+  });
+
+  it("updates the worker for an already subscribed device when the control mounts", async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const register = vi.fn().mockResolvedValue({ update });
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response(JSON.stringify({ data: { ...pushState, enabled: true } }), { status: 200 }))));
+    vi.stubGlobal("Notification", { permission: "granted", requestPermission: vi.fn() });
+    vi.stubGlobal("PushManager", class PushManager {});
+    Object.defineProperty(navigator, "serviceWorker", { configurable: true, value: { register, getRegistration: vi.fn() } });
+
+    render(<PushNotificationControl />);
+
+    await waitFor(() => {
+      expect(register).toHaveBeenCalledWith("/push-service-worker.js?v=2", { updateViaCache: "none" });
+      expect(update).toHaveBeenCalledOnce();
+    });
   });
 });

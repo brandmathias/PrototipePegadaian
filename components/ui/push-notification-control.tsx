@@ -12,6 +12,7 @@ type PushNotificationControlProps = {
 
 const BLOCKED_PERMISSION_MESSAGE = "Notifikasi diblokir di browser ini. Buka setelan situs pada browser, izinkan Notifikasi, lalu kembali ke halaman ini.";
 const UNDECIDED_PERMISSION_MESSAGE = "Izin belum disetujui. Pilih Izinkan pada prompt browser, atau buka setelan situs untuk mengaktifkannya.";
+const PUSH_SERVICE_WORKER_URL = "/push-service-worker.js?v=2";
 
 function toUint8Array(value: string) {
   const padded = value.padEnd(Math.ceil(value.length / 4) * 4, "=").replace(/-/g, "+").replace(/_/g, "/");
@@ -26,6 +27,12 @@ function supportsPush() {
   return typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
 }
 
+async function registerPushServiceWorker() {
+  const registration = await navigator.serviceWorker.register(PUSH_SERVICE_WORKER_URL, { updateViaCache: "none" });
+  await registration.update();
+  return registration;
+}
+
 export function PushNotificationControl({ variant = "compact" }: PushNotificationControlProps) {
   const [state, setState] = React.useState<PushState | null>(null);
   const [permission, setPermission] = React.useState<NotificationPermission | "unsupported">("unsupported");
@@ -35,6 +42,9 @@ export function PushNotificationControl({ variant = "compact" }: PushNotificatio
 
   React.useEffect(() => {
     setPermission(getPermission());
+    if (supportsPush()) {
+      void registerPushServiceWorker().catch(() => undefined);
+    }
     void fetch("/api/push/subscription")
       .then(async (response) => (response.ok ? ((await response.json()).data as PushState) : null))
       .then((nextState) => {
@@ -77,7 +87,7 @@ export function PushNotificationControl({ variant = "compact" }: PushNotificatio
         return;
       }
 
-      const registration = await navigator.serviceWorker.register("/push-service-worker.js");
+      const registration = await registerPushServiceWorker();
       const subscription =
         (await registration.pushManager.getSubscription()) ??
         (await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toUint8Array(state.publicKey) }));

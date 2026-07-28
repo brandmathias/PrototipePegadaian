@@ -1,9 +1,9 @@
-const PUSH_ICON_ROOT = "/brand/push-icons";
-const PUSH_ICON_BY_TYPE = {
+const PUSH_BADGE_ROOT = "/brand/push-badges";
+const PUSH_BADGE_BY_TYPE = {
   payment_rejected: "alert.png",
-  blacklist_active: "alert.png",
+  blacklist_active: "blacklist.png",
   superadmin_policy_alert: "alert.png",
-  payment_verified: "success.png",
+  payment_verified: "verified.png",
   vickrey_win: "winner.png",
   handover_proof_uploaded: "success.png",
   transaction_created: "success.png",
@@ -16,18 +16,27 @@ const PUSH_ICON_BY_TYPE = {
   admin_payment_overdue: "alert.png"
 };
 
-function getPushIcon(type) {
-  const filename = PUSH_ICON_BY_TYPE[typeof type === "string" ? type : ""] || "info.png";
-  return `${PUSH_ICON_ROOT}/${filename}`;
+function getPushBadge(type) {
+  const filename = PUSH_BADGE_BY_TYPE[typeof type === "string" ? type : ""] || "info.png";
+  return `${PUSH_BADGE_ROOT}/${filename}`;
 }
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
 
 self.addEventListener("push", (event) => {
   const payload = event.data ? event.data.json() : {};
   const href = typeof payload.href === "string" && payload.href.startsWith("/") ? payload.href : "/notifikasi";
   event.waitUntil(self.registration.showNotification(payload.title || "Ruang Agunan", {
+    actions: [{ action: "open_detail", title: "Lihat detail" }],
     body: payload.body || "Ada informasi penting untuk Anda.",
-    icon: getPushIcon(payload.type),
-    badge: "/brand/ruang-agunan-icon.png",
+    icon: "/brand/ruang-agunan-icon.png",
+    badge: getPushBadge(payload.type),
     data: { href }
   }));
 });
