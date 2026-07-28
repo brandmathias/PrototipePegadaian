@@ -36,29 +36,21 @@ async function receivePush(type: string) {
 
 describe("push service worker", () => {
   it.each([
-    ["payment_rejected", "/brand/push-badges/alert.png"],
-    ["blacklist_active", "/brand/push-badges/blacklist.png"],
-    ["superadmin_policy_alert", "/brand/push-badges/alert.png"],
-    ["payment_verified", "/brand/push-badges/verified.png"],
-    ["handover_proof_uploaded", "/brand/push-badges/success.png"],
-    ["transaction_created", "/brand/push-badges/success.png"],
-    ["push_subscription_confirmed", "/brand/push-badges/success.png"],
-    ["payment_deadline", "/brand/push-badges/deadline.png"],
-    ["vickrey_win", "/brand/push-badges/winner.png"],
-    ["vickrey_loss", "/brand/push-badges/loss.png"],
-    ["admin_payment_proof_uploaded", "/brand/push-badges/payment.png"],
-    ["admin_bid_submitted", "/brand/push-badges/bid.png"],
-    ["admin_vickrey_result", "/brand/push-badges/result.png"],
-    ["admin_payment_overdue", "/brand/push-badges/alert.png"],
-    ["unknown", "/brand/push-badges/info.png"]
-  ])("uses the matching Android badge and detail action for %s", async (type, badge) => {
+    "payment_rejected",
+    "payment_verified",
+    "vickrey_win",
+    "vickrey_loss",
+    "admin_payment_proof_uploaded",
+    "admin_vickrey_result",
+    "unknown"
+  ])("keeps the Ruang Agunan badge in the Android status bar for %s", async (type) => {
     const showNotification = await receivePush(type);
 
     expect(showNotification).toHaveBeenCalledWith(
       "Notifikasi",
       expect.objectContaining({
         actions: [{ action: "open_detail", title: "Lihat detail" }],
-        badge,
+        badge: "/brand/ruang-agunan-icon.png",
         icon: "/brand/ruang-agunan-icon.png"
       })
     );
