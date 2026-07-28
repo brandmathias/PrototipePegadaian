@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   onConflictDoUpdate: vi.fn(),
   values: vi.fn(),
-  insert: vi.fn()
+  insert: vi.fn(),
+  setVapidDetails: vi.fn(),
+  sendNotification: vi.fn()
 }));
 
 vi.mock("@/lib/db/client", () => ({
@@ -12,12 +14,20 @@ vi.mock("@/lib/db/client", () => ({
   }
 }));
 
+vi.mock("web-push", () => ({
+  default: {
+    setVapidDetails: mocks.setVapidDetails,
+    sendNotification: mocks.sendNotification
+  }
+}));
+
 import {
   buildPushPayload,
   getPushConfiguration,
   normalizePushSubscription,
   processPendingPushDeliveries,
-  queuePushDelivery
+  queuePushDelivery,
+  sendPushNotification
 } from "@/lib/services/push-notification.service";
 
 const environment = { ...process.env };
@@ -122,5 +132,37 @@ describe("push notification service", () => {
       skipped: 0,
       removedSubscriptions: 0
     });
+  });
+
+  it("sends a confirmation push to the newly subscribed device", async () => {
+    process.env.VAPID_SUBJECT = "mailto:admin@example.test";
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "public-key";
+    process.env.VAPID_PRIVATE_KEY = "private-key";
+    mocks.sendNotification.mockResolvedValue(undefined);
+
+    await sendPushNotification(
+      { endpoint: "https://fcm.googleapis.com/fcm/send/subscription-1", p256dh: "browser-public-key", auth: "browser-auth-key" },
+      {
+        title: "Notifikasi perangkat aktif",
+        message: "Perangkat ini siap menerima informasi penting.",
+        type: "push_subscription_confirmed",
+        actionHref: "/notifikasi"
+      }
+    );
+
+    expect(mocks.setVapidDetails).toHaveBeenCalledWith("mailto:admin@example.test", "public-key", "private-key");
+    expect(mocks.sendNotification).toHaveBeenCalledWith(
+      {
+        endpoint: "https://fcm.googleapis.com/fcm/send/subscription-1",
+        keys: { p256dh: "browser-public-key", auth: "browser-auth-key" }
+      },
+      JSON.stringify({
+        title: "Notifikasi perangkat aktif",
+        body: "Perangkat ini siap menerima informasi penting.",
+        type: "push_subscription_confirmed",
+        href: "/notifikasi"
+      }),
+      { TTL: 60 * 60 }
+    );
   });
 });

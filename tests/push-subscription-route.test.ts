@@ -6,7 +6,8 @@ const mocks = vi.hoisted(() => ({
   hasPushSubscription: vi.fn(),
   normalizePushSubscription: vi.fn(),
   removePushSubscription: vi.fn(),
-  savePushSubscription: vi.fn()
+  savePushSubscription: vi.fn(),
+  sendPushNotification: vi.fn()
 }));
 
 vi.mock("@/lib/auth/session", () => ({
@@ -18,7 +19,8 @@ vi.mock("@/lib/services/push-notification.service", () => ({
   hasPushSubscription: mocks.hasPushSubscription,
   normalizePushSubscription: mocks.normalizePushSubscription,
   removePushSubscription: mocks.removePushSubscription,
-  savePushSubscription: mocks.savePushSubscription
+  savePushSubscription: mocks.savePushSubscription,
+  sendPushNotification: mocks.sendPushNotification
 }));
 
 function jsonRequest(body: unknown, method = "POST") {
@@ -35,6 +37,7 @@ describe("push subscription route", () => {
     mocks.requireAuthenticatedApiSession.mockResolvedValue({ ok: true, userId: "buyer-1" });
     mocks.getPushConfiguration.mockReturnValue({ publicKey: "public-vapid-key" });
     mocks.hasPushSubscription.mockResolvedValue(false);
+    mocks.sendPushNotification.mockResolvedValue(undefined);
     mocks.normalizePushSubscription.mockImplementation((input) => {
       if (input.endpoint?.startsWith("http://")) throw new Error("Endpoint push harus menggunakan HTTPS.");
       return {
@@ -63,6 +66,19 @@ describe("push subscription route", () => {
       auth: "browser-auth-key",
       userAgent: null
     });
+    expect(mocks.sendPushNotification).toHaveBeenCalledWith(
+      {
+        endpoint: "https://fcm.googleapis.com/fcm/send/subscription-1",
+        p256dh: "browser-public-key",
+        auth: "browser-auth-key"
+      },
+      {
+        title: "Notifikasi perangkat aktif",
+        message: "Perangkat ini siap menerima informasi penting dari Ruang Agunan.",
+        type: "push_subscription_confirmed",
+        actionHref: "/notifikasi"
+      }
+    );
   });
 
   it("rejects malformed subscriptions before storing them", async () => {

@@ -85,6 +85,23 @@ export function getPushConfiguration() {
   };
 }
 
+export async function sendPushNotification(
+  subscription: ReturnType<typeof normalizePushSubscription>,
+  payload: PushPayloadInput
+) {
+  const config = getPushConfiguration();
+  if (!config) {
+    throw new Error("Konfigurasi VAPID belum lengkap.");
+  }
+
+  webpush.setVapidDetails(config.subject, config.publicKey, config.privateKey);
+  await webpush.sendNotification(
+    { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
+    JSON.stringify(buildPushPayload(payload)),
+    { TTL: 60 * 60 }
+  );
+}
+
 export async function queuePushDelivery(notification: PushDeliveryNotification) {
   const now = new Date();
 
@@ -175,7 +192,6 @@ export async function processPendingPushDeliveries(limit = 20): Promise<PushDeli
 
   if (!config) return summary;
 
-  webpush.setVapidDetails(config.subject, config.publicKey, config.privateKey);
   const boundedLimit = Math.min(Math.max(Math.trunc(limit), 1), 20);
   const pending = await db
     .select({ delivery: pushDeliveries, notification: notifications })
@@ -202,11 +218,7 @@ export async function processPendingPushDeliveries(limit = 20): Promise<PushDeli
     let lastError: string | null = null;
     for (const subscription of subscriptions) {
       try {
-        await webpush.sendNotification(
-          { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
-          JSON.stringify(buildPushPayload(item.notification)),
-          { TTL: 60 * 60 }
-        );
+        await sendPushNotification(subscription, item.notification);
         delivered = true;
       } catch (error) {
         const status = pushErrorStatus(error);

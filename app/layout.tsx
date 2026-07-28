@@ -18,10 +18,7 @@ const metadataBase = new URL(siteUrl);
 
 export const metadata: Metadata = {
   metadataBase,
-  title: {
-    default: `${BRAND_NAME} | Prototipe Katalog Barang Agunan`,
-    template: `%s | ${BRAND_NAME}`
-  },
+  title: BRAND_NAME,
   applicationName: BRAND_NAME,
   description:
     "Ruang Agunan adalah prototipe tugas akhir untuk katalog barang agunan, pembelian harga tetap, wishlist, penawaran tertutup, dan simulasi transaksi digital.",
