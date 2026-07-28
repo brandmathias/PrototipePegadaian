@@ -7,11 +7,15 @@ const mocks = vi.hoisted(() => {
     update: vi.fn()
   };
 
-  return { db };
+  return { db, queuePushDelivery: vi.fn() };
 });
 
 vi.mock("@/lib/db/client", () => ({
   db: mocks.db
+}));
+
+vi.mock("@/lib/services/push-notification.service", () => ({
+  queuePushDelivery: mocks.queuePushDelivery
 }));
 
 import {
@@ -87,6 +91,9 @@ describe("notification service", () => {
         actionHref: "/transaksi/trx-1",
         isRead: false
       })
+    );
+    expect(mocks.queuePushDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "notif-1", userId: "buyer-1", type: "vickrey_win" })
     );
   });
 

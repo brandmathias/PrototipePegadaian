@@ -15,6 +15,7 @@
     "db:remove:handover-complaint": "tsx scripts/remove-handover-complaint.ts",
     "db:migrate:canonical-codes": "tsx scripts/apply-canonical-codes-migration.ts",
     "db:migrate:customer-data-standard": "tsx scripts/apply-customer-data-standard-migration.ts",
+    "db:migrate:web-push-notifications": "tsx scripts/apply-web-push-notifications-migration.ts",
     "db:cleanup:obsolete": "tsx scripts/cleanup-obsolete-database.ts",
     "db:backfill:blacklist": "tsx scripts/backfill-blacklist-violation-totals.ts",
     "db:repair:fixed-price-relist": "tsx scripts/repair-fixed-price-rejected-relist.ts",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.6.7",
+    "@types/web-push": "^3.6.4",
     "better-auth": "^1.6.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -39,7 +41,8 @@
     "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

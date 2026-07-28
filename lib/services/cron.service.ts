@@ -34,6 +34,7 @@ import {
   notifyVickreyWinner
 } from "@/lib/services/notification-events";
 import { formatAppDateTime } from "@/lib/timezone";
+import { processPendingPushDeliveries } from "@/lib/services/push-notification.service";
 
 type BidOutcomeInput = {
   basePrice: string | number | null;
@@ -838,12 +839,13 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
 }
 
 export async function runAuctionSettlementCron(now = new Date()) {
-  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists, handoverAutoCompletions] = await Promise.all([
+  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists, handoverAutoCompletions, pushDeliveries] = await Promise.all([
     processExpiredVickreyAuctions(now),
     processPaymentDeadlineNotifications(now),
     processOverdueVickreyPayments(now),
     processExpiredBlacklistRestrictions(now),
-    processHandoverAutoCompletions(now)
+    processHandoverAutoCompletions(now),
+    processPendingPushDeliveries()
   ]);
 
   return {
@@ -851,6 +853,7 @@ export async function runAuctionSettlementCron(now = new Date()) {
     paymentDeadlineWarnings,
     overduePayments,
     expiredBlacklists,
-    handoverAutoCompletions
+    handoverAutoCompletions,
+    pushDeliveries
   };
 }

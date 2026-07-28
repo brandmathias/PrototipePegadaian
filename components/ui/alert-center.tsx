@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { GavelIcon } from "@/components/buyer/auction-loser-icons";
+import { PushNotificationControl } from "@/components/ui/push-notification-control";
 import { APP_TIME_ZONE, APP_TIME_ZONE_LABEL } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 import {
@@ -325,7 +327,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             ) : null}
           </div>
           {notification.description ? (
-            <p className={cn("mt-0.5 text-[0.74rem] leading-relaxed text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
+            <p className={cn("mt-0.5 text-justify text-[0.74rem] leading-relaxed text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
               {notification.description}
             </p>
           ) : null}
@@ -338,7 +340,8 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
               <span className={cn("font-semibold text-[#0a6a49] dark:text-emerald-200", isLoserNotification ? "text-[#c43d48] dark:text-rose-200" : "")}>Buka detail</span>
             ) : null}
           </div>
-        </div>
+          </div>
+          <Image alt="Logo Ruang Agunan" className="mt-0.5 size-7 shrink-0 object-contain opacity-90" height={28} src="/brand/ruang-agunan-icon.png" width={28} />
         </>
       );
     },
@@ -405,6 +408,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             <h3 className="mt-2 font-headline text-[1.12rem] font-black leading-tight text-[#085a41] dark:text-emerald-100">
               {copy.title}
             </h3>
+            <PushNotificationControl />
           </div>
 
           <div className="max-h-[calc(100dvh-env(safe-area-inset-top)-7rem)] overflow-y-auto overscroll-contain px-2.5 py-2.5 sm:max-h-[min(26rem,calc(100dvh-12rem))]">

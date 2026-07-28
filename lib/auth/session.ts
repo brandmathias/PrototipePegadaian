@@ -23,6 +23,16 @@ export const getServerSession = cache(async () => {
   });
 });
 
+export async function requireAuthenticatedApiSession() {
+  const session = await getServerSession();
+
+  if (!session?.user || ("isActive" in session.user && session.user.isActive === false)) {
+    return { ok: false as const, status: 401, message: "Silakan masuk terlebih dahulu." };
+  }
+
+  return { ok: true as const, userId: session.user.id, session };
+}
+
 export async function getAppPathFromRequestHeaders() {
   const requestHeaders = await headers();
   const currentPath = requestHeaders.get("x-app-path");
