@@ -1,20 +1,23 @@
 const PUSH_ICON_ROOT = "/brand/push-icons";
 const PUSH_ICON_BY_TYPE = {
-  payment_rejected: "alert.svg",
-  blacklist_active: "alert.svg",
-  superadmin_policy_alert: "alert.svg",
-  payment_verified: "success.svg",
-  vickrey_win: "success.svg",
-  push_subscription_confirmed: "success.svg",
-  payment_deadline: "deadline.svg",
-  vickrey_loss: "auction.svg",
-  admin_payment_proof_uploaded: "payment.svg",
-  admin_bid_submitted: "bid.svg",
-  admin_vickrey_result: "result.svg"
+  payment_rejected: "alert.png",
+  blacklist_active: "alert.png",
+  superadmin_policy_alert: "alert.png",
+  payment_verified: "success.png",
+  vickrey_win: "winner.png",
+  handover_proof_uploaded: "success.png",
+  transaction_created: "success.png",
+  push_subscription_confirmed: "success.png",
+  payment_deadline: "deadline.png",
+  vickrey_loss: "loss.png",
+  admin_payment_proof_uploaded: "payment.png",
+  admin_bid_submitted: "bid.png",
+  admin_vickrey_result: "result.png",
+  admin_payment_overdue: "alert.png"
 };
 
 function getPushIcon(type) {
-  const filename = PUSH_ICON_BY_TYPE[typeof type === "string" ? type : ""] || "info.svg";
+  const filename = PUSH_ICON_BY_TYPE[typeof type === "string" ? type : ""] || "info.png";
   return `${PUSH_ICON_ROOT}/${filename}`;
 }
 

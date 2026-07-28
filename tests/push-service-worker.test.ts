@@ -36,14 +36,21 @@ async function receivePush(type: string) {
 
 describe("push service worker", () => {
   it.each([
-    ["payment_rejected", "/brand/push-icons/alert.svg"],
-    ["payment_verified", "/brand/push-icons/success.svg"],
-    ["payment_deadline", "/brand/push-icons/deadline.svg"],
-    ["vickrey_loss", "/brand/push-icons/auction.svg"],
-    ["admin_payment_proof_uploaded", "/brand/push-icons/payment.svg"],
-    ["admin_bid_submitted", "/brand/push-icons/bid.svg"],
-    ["admin_vickrey_result", "/brand/push-icons/result.svg"],
-    ["unknown", "/brand/push-icons/info.svg"]
+    ["payment_rejected", "/brand/push-icons/alert.png"],
+    ["blacklist_active", "/brand/push-icons/alert.png"],
+    ["superadmin_policy_alert", "/brand/push-icons/alert.png"],
+    ["payment_verified", "/brand/push-icons/success.png"],
+    ["handover_proof_uploaded", "/brand/push-icons/success.png"],
+    ["transaction_created", "/brand/push-icons/success.png"],
+    ["push_subscription_confirmed", "/brand/push-icons/success.png"],
+    ["payment_deadline", "/brand/push-icons/deadline.png"],
+    ["vickrey_win", "/brand/push-icons/winner.png"],
+    ["vickrey_loss", "/brand/push-icons/loss.png"],
+    ["admin_payment_proof_uploaded", "/brand/push-icons/payment.png"],
+    ["admin_bid_submitted", "/brand/push-icons/bid.png"],
+    ["admin_vickrey_result", "/brand/push-icons/result.png"],
+    ["admin_payment_overdue", "/brand/push-icons/alert.png"],
+    ["unknown", "/brand/push-icons/info.png"]
   ])("uses the matching device icon for %s", async (type, icon) => {
     const showNotification = await receivePush(type);
 
