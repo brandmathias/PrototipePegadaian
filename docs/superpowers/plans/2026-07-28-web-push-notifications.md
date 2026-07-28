@@ -18,6 +18,8 @@
 - Reuse `public/brand/ruang-agunan-icon.png`; do not add a duplicate image asset.
 - Notification message text uses `text-justify`; titles, metadata, and CTA stay left-aligned.
 - Run focused Vitest with `--exclude ".worktrees/**"`, then TypeScript checking and `graphify update .`.
+- Android Web Push must use `public/brand/ruang-agunan-badge.png` for `badge` and omit the separate `icon` option.
+- Server delivery uses Web Push urgency `high` because these persisted notifications are user-visible payment, auction, and account events.
 
 ---
 
@@ -273,3 +275,32 @@ Expected: graph data may be dirty but source, migration, test, and document chan
 Run: `git add <feature files> && git commit -m "feat: add opt-in web push notifications"`; then fast-forward the clean source state into `master` and `git push origin master`.
 
 Expected: `master` push succeeds. Do not claim production push delivery works until the VAPID variables are present in Dokploy and a real browser has opted in.
+
+### Task 5: Refine the Android Ruang Agunan badge
+
+**Files:**
+- Create: `public/brand/ruang-agunan-badge.png`
+- Modify: `public/push-service-worker.js`
+- Modify: `tests/push-service-worker.test.ts`
+
+**Interfaces:**
+- Consumes: the existing Ruang Agunan pictogram and Web Notifications `badge` option.
+- Produces: one high-contrast 96x96 Android badge mask without a separate trailing notification image.
+
+- [ ] **Step 1: Change the service-worker test first**
+
+Assert that `showNotification()` receives `badge: "/brand/ruang-agunan-badge.png"` and that the options object has no `icon` property.
+
+- [ ] **Step 2: Run the focused test and observe the expected failure**
+
+Run: `npm test -- --run tests/push-service-worker.test.ts --exclude ".worktrees/**"`
+
+Expected: FAIL because the worker still sends `icon` and the old full-color image as `badge`.
+
+- [ ] **Step 3: Add the badge mask and minimal worker change**
+
+Generate a transparent 96x96 mask from `public/brand/ruang-agunan-icon.png`, strengthening the alpha silhouette for Android masking. Change only the worker options to use the new badge and omit `icon`.
+
+- [ ] **Step 4: Verify and commit**
+
+Run the focused push tests, TypeScript checking, production build, `graphify update .`, and `git diff --check`. Commit only the badge, worker, tests, and relevant documentation.

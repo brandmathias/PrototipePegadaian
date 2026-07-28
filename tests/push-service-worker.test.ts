@@ -50,10 +50,10 @@ describe("push service worker", () => {
       "Notifikasi",
       expect.objectContaining({
         actions: [{ action: "open_detail", title: "Lihat detail" }],
-        badge: "/brand/ruang-agunan-icon.png",
-        icon: "/brand/ruang-agunan-icon.png"
+        badge: "/brand/ruang-agunan-badge.png"
       })
     );
+    expect(showNotification.mock.calls[0]?.[1]).not.toHaveProperty("icon");
   });
 
   it("activates a newly deployed worker without waiting for old pages to close", async () => {

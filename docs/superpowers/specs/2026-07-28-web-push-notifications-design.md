@@ -15,7 +15,8 @@ The operating-system notification layout is controlled by the browser and device
 - Deliver an existing notification as Web Push only after the signed-in user explicitly enables it.
 - Use the same recipient and authorization model as the current in-app notification center for buyer, Admin Unit, and Superadmin.
 - Keep notification creation fast by recording a durable outbox item and delivering it later from the existing protected cron flow.
-- Use the existing compact Ruang Agunan icon in the notification-card trailing position and as the browser notification icon.
+- Use one dedicated Ruang Agunan badge mask for the Android status bar and compact leading notification mark.
+- Do not send a separate notification `icon`, so Android does not render a duplicate Ruang Agunan logo on the trailing side.
 - Align the descriptive information in each in-app card with `text-justify`, while retaining left-aligned titles and timestamps for scanability.
 - Remove expired browser subscriptions automatically when a push provider responds with HTTP 404 or 410.
 
@@ -64,11 +65,13 @@ The outbox is intentionally one row per in-app notification. A material refresh 
 
 ## UX and Performance
 
-- `AlertCenter` preserves its existing visual language. Each row stays a compact card: semantic event icon left, content in the center, existing Ruang Agunan icon right.
+- `AlertCenter` preserves its existing in-app visual language; this refinement only changes the operating-system Web Push notification.
+- The Web Push worker supplies a dedicated transparent 96x96 Ruang Agunan badge mask and omits `icon`. Android controls the final monochrome tint, so the badge is optimized for a strong silhouette rather than unsupported full-color rendering.
+- Time-sensitive account, payment, and auction pushes use Web Push urgency `high` so Android push services can wake a device in Doze mode instead of waiting for the browser to return to the foreground.
 - The message paragraph uses `text-justify`; title, CTA, and timestamp remain left-aligned.
 - The enable/disable control is lazy and is mounted only in the existing notification dropdown. Browser permission is requested only as a direct click result.
 - No push library is shipped to the browser. The service worker is a small static file and the server dependency is loaded only on server execution.
-- The existing `public/brand/ruang-agunan-icon.png` is reused rather than uploading a larger duplicate asset.
+- The existing `public/brand/ruang-agunan-icon.png` remains the source artwork. A compact `public/brand/ruang-agunan-badge.png` derivative is used because Android automatically masks Web Push badges.
 
 ## Configuration
 

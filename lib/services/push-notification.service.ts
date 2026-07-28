@@ -98,7 +98,7 @@ export async function sendPushNotification(
   await webpush.sendNotification(
     { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
     JSON.stringify(buildPushPayload(payload)),
-    { TTL: 60 * 60 }
+    { TTL: 60 * 60, urgency: "high" }
   );
 }
 

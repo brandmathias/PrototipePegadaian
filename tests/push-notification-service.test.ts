@@ -162,7 +162,7 @@ describe("push notification service", () => {
         type: "push_subscription_confirmed",
         href: "/notifikasi"
       }),
-      { TTL: 60 * 60 }
+      { TTL: 60 * 60, urgency: "high" }
     );
   });
 });
