@@ -279,18 +279,22 @@ describe("admin transaction service", () => {
     const updateItemSetSpy = vi.fn().mockReturnValue({
       where: vi.fn().mockResolvedValue(undefined)
     });
-    const createMarketingValuesSpy = vi.fn().mockResolvedValue(undefined);
+    const moveWishlistSetSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    const moveViewsSetSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    const createMarketingValuesSpy = vi.fn().mockReturnValue({
+      returning: vi.fn().mockResolvedValue([{ id: "pm-fixed-iteration-6" }])
+    });
     const statusHistoryValuesSpy = mockInsertValues();
     const relistHistoryValuesSpy = mockInsertValues();
 
     mocks.db.update
       .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
       .mockImplementationOnce(() => ({ set: archiveMarketingSetSpy }))
-      .mockImplementationOnce(() => ({ set: updateItemSetSpy }));
+      .mockImplementationOnce(() => ({ set: updateItemSetSpy }))
+      .mockImplementationOnce(() => ({ set: moveWishlistSetSpy }))
+      .mockImplementationOnce(() => ({ set: moveViewsSetSpy }));
     mocks.db.insert
-      .mockImplementationOnce(() => ({
-        values: createMarketingValuesSpy
-      }))
+      .mockImplementationOnce(() => ({ values: createMarketingValuesSpy }))
       .mockImplementationOnce(() => ({
         values: statusHistoryValuesSpy
       }))
@@ -339,9 +343,10 @@ describe("admin transaction service", () => {
     expectTransactionViewsRevalidated();
   });
 
-  it("archives a rejected harga tetap iteration and relists the item on the next iteration", async () => {
+  it("reuses fixed-price engagement data when a rejected payment creates the next iteration", async () => {
     const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
     const relistedAt = new Date(rejectedAt.getTime() + 1);
+    const originalPublishedAt = makeTransactionJoin("bukti_diunggah", "fixed_price").marketing.createdAt;
     vi.useFakeTimers();
     vi.setSystemTime(rejectedAt);
 
@@ -379,13 +384,17 @@ describe("admin transaction service", () => {
     const createMarketingValuesSpy = vi.fn().mockReturnValue({
       returning: vi.fn().mockResolvedValue([{ id: "pm-fixed-iteration-6" }])
     });
+    const moveWishlistSetSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    const moveViewsSetSpy = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
     const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
     const relistHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
 
     mocks.db.update
       .mockImplementationOnce(() => ({ set: transactionSetSpy }))
       .mockImplementationOnce(() => ({ set: archiveMarketingSetSpy }))
-      .mockImplementationOnce(() => ({ set: updateItemSetSpy }));
+      .mockImplementationOnce(() => ({ set: updateItemSetSpy }))
+      .mockImplementationOnce(() => ({ set: moveWishlistSetSpy }))
+      .mockImplementationOnce(() => ({ set: moveViewsSetSpy }));
     mocks.db.insert
       .mockImplementationOnce(() => ({ values: createMarketingValuesSpy }))
       .mockImplementationOnce(() => ({ values: statusHistoryValuesSpy }))
@@ -404,22 +413,19 @@ describe("admin transaction service", () => {
     );
     expect(createMarketingValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
+        id: expect.any(String),
         barangId: "barang-1",
         mode: "fixed_price",
         price: "10000000",
-        basePrice: null,
-        durationDays: null,
-        durationSeconds: null,
-        startsAt: relistedAt,
-        endsAt: null,
-        revealEndsAt: null,
+        startsAt: originalPublishedAt,
         iteration: 6,
         status: "aktif",
-        createdByUserId: "admin-1",
-        createdAt: relistedAt,
-        updatedAt: relistedAt
+        createdAt: originalPublishedAt
       })
     );
+    const relistedMarketingId = createMarketingValuesSpy.mock.calls[0]?.[0]?.id;
+    expect(moveWishlistSetSpy).toHaveBeenCalledWith({ pemasaranId: relistedMarketingId });
+    expect(moveViewsSetSpy).toHaveBeenCalledWith({ pemasaranId: relistedMarketingId });
     expect(updateItemSetSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         status: "dipasarkan",

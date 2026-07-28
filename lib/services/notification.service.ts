@@ -4,7 +4,7 @@ import { and, desc, eq, isNull, ne, not, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import { notifications } from "@/lib/db/schema";
-import { queuePushDelivery } from "@/lib/services/push-notification.service";
+import { deliverPendingPushDelivery, queuePushDelivery } from "@/lib/services/push-notification.service";
 
 export type NotificationType =
   | "vickrey_win"
@@ -122,6 +122,7 @@ export async function createNotification(input: NotificationInput) {
 
   const notification = serializeNotification(created);
   await queuePushDelivery(notification);
+  await deliverPendingPushDelivery(notification.id);
 
   return notification;
 }

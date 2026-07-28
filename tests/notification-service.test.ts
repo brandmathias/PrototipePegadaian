@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => {
     update: vi.fn()
   };
 
-  return { db, queuePushDelivery: vi.fn() };
+  return { db, queuePushDelivery: vi.fn(), deliverPendingPushDelivery: vi.fn() };
 });
 
 vi.mock("@/lib/db/client", () => ({
@@ -15,7 +15,8 @@ vi.mock("@/lib/db/client", () => ({
 }));
 
 vi.mock("@/lib/services/push-notification.service", () => ({
-  queuePushDelivery: mocks.queuePushDelivery
+  queuePushDelivery: mocks.queuePushDelivery,
+  deliverPendingPushDelivery: mocks.deliverPendingPushDelivery
 }));
 
 import {
@@ -95,6 +96,7 @@ describe("notification service", () => {
     expect(mocks.queuePushDelivery).toHaveBeenCalledWith(
       expect.objectContaining({ id: "notif-1", userId: "buyer-1", type: "vickrey_win" })
     );
+    expect(mocks.deliverPendingPushDelivery).toHaveBeenCalledWith("notif-1");
   });
 
   it("does not duplicate event notifications for the same user, type, and entity", async () => {

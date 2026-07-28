@@ -12,9 +12,11 @@ import {
 import { db } from "@/lib/db/client";
 import {
   barang,
+  buyerWishlist,
   buyerProfiles,
   mediaBarang,
   pemasaran,
+  pemasaranViews,
   riwayatStatusBarang,
   transaksi,
   unitAccounts,
@@ -254,6 +256,7 @@ async function relistRejectedFixedPriceMarketing(
     itemStatus: string;
     marketingId: string;
     now: Date;
+    originalPublishedAt: Date;
     price: string;
     reason: string;
     sourceIteration?: number | null;
@@ -270,25 +273,28 @@ async function relistRejectedFixedPriceMarketing(
   }
 
   const relistedAt = new Date(input.now.getTime() + 1);
+  const relistedMarketingId = randomUUID();
 
   await tx.insert(pemasaran).values({
-    id: randomUUID(),
+    id: relistedMarketingId,
     barangId: input.barangId,
     mode: "fixed_price",
     price: input.price,
     basePrice: null,
     durationDays: null,
     durationSeconds: null,
-    startsAt: relistedAt,
+    startsAt: input.originalPublishedAt,
     endsAt: null,
     iteration: Number(input.sourceIteration ?? 0) + 1,
     status: "aktif",
     createdByUserId: input.adminId,
-    createdAt: relistedAt,
+    createdAt: input.originalPublishedAt,
     updatedAt: relistedAt
   });
 
   await tx.update(barang).set({ status: "dipasarkan", updatedAt: relistedAt }).where(eq(barang.id, input.barangId));
+  await tx.update(buyerWishlist).set({ pemasaranId: relistedMarketingId }).where(eq(buyerWishlist.pemasaranId, input.marketingId));
+  await tx.update(pemasaranViews).set({ pemasaranId: relistedMarketingId }).where(eq(pemasaranViews.pemasaranId, input.marketingId));
   await tx.insert(riwayatStatusBarang).values({
     id: randomUUID(),
     barangId: input.barangId,
@@ -406,6 +412,7 @@ export async function rejectAdminTransactionProof(
         itemStatus: row.item.status,
         marketingId: row.transaction.pemasaranId,
         now,
+        originalPublishedAt: row.marketing.createdAt,
         price: String(row.marketing.price ?? row.transaction.amount),
         reason: payload.reason,
         sourceIteration: row.marketing.iteration

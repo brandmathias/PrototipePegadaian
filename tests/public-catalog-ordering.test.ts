@@ -5,7 +5,7 @@ vi.mock("@/lib/db/client", () => ({ db: {} }));
 import { sortPublicCatalogRowsByLatestListing } from "@/lib/services/public-catalog.service";
 
 describe("public catalog listing order", () => {
-  it("places relisted fixed-price and newly published vickrey sessions above older catalog sessions", () => {
+  it("keeps a rejected fixed-price relist in its original catalog position", () => {
     const rows = sortPublicCatalogRowsByLatestListing([
       {
         marketingCreatedAt: new Date("2026-07-01T08:00:00.000Z"),
@@ -20,7 +20,7 @@ describe("public catalog listing order", () => {
         marketingMode: "vickrey"
       },
       {
-        marketingCreatedAt: new Date("2026-07-24T08:05:00.000Z"),
+        marketingCreatedAt: new Date("2026-07-01T08:00:00.000Z"),
         marketingId: "fixed-relisted-after-rejected-payment",
         marketingIteration: 2,
         marketingMode: "fixed_price"
@@ -28,8 +28,8 @@ describe("public catalog listing order", () => {
     ]);
 
     expect(rows.map((row) => row.marketingId)).toEqual([
-      "fixed-relisted-after-rejected-payment",
       "vickrey-new",
+      "fixed-relisted-after-rejected-payment",
       "fixed-legacy"
     ]);
   });

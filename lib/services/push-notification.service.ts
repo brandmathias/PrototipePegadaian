@@ -180,13 +180,17 @@ export type PushDeliverySummary = {
   removedSubscriptions: number;
 };
 
+export async function deliverPendingPushDelivery(notificationId: string) {
+  return processPendingPushDeliveries(1, notificationId);
+}
+
 function pushErrorStatus(error: unknown) {
   return typeof error === "object" && error !== null && "statusCode" in error && typeof error.statusCode === "number"
     ? error.statusCode
     : null;
 }
 
-export async function processPendingPushDeliveries(limit = 20): Promise<PushDeliverySummary> {
+export async function processPendingPushDeliveries(limit = 20, notificationId?: string): Promise<PushDeliverySummary> {
   const summary: PushDeliverySummary = { processed: 0, sent: 0, failed: 0, skipped: 0, removedSubscriptions: 0 };
   const config = getPushConfiguration();
 
@@ -197,7 +201,7 @@ export async function processPendingPushDeliveries(limit = 20): Promise<PushDeli
     .select({ delivery: pushDeliveries, notification: notifications })
     .from(pushDeliveries)
     .innerJoin(notifications, eq(pushDeliveries.notificationId, notifications.id))
-    .where(eq(pushDeliveries.status, "pending"))
+    .where(and(eq(pushDeliveries.status, "pending"), notificationId ? eq(pushDeliveries.notificationId, notificationId) : undefined))
     .orderBy(asc(pushDeliveries.createdAt))
     .limit(boundedLimit);
 
