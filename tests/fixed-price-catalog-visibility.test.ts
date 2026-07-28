@@ -19,7 +19,7 @@ describe("fixed price catalog visibility", () => {
     expect(isFixedPriceBuyerCatalogHiddenStatus("BUKTI_DIUNGGAH")).toBe(true);
   });
 
-  it("puts a relisted item at the top using its active catalog session time", async () => {
+  it("orders active catalog rows by the publication time inherited by a relisted session", async () => {
     const service = await readFile(
       path.join(process.cwd(), "lib/services/public-catalog.service.ts"),
       "utf8"

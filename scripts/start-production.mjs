@@ -229,10 +229,12 @@ try {
   `);
 
   const fixedPriceRepairSyncedRelists = await client.query(`
-    with rejected_relist as (
+    with recursive rejected_edges as (
       select distinct on (next_p."id")
+        previous_p."id" as previous_marketing_id,
         next_p."id" as next_marketing_id,
         next_p."barang_id",
+        previous_p."created_at" as original_published_at,
         coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
       from "pemasaran" previous_p
       inner join "transaksi" t
@@ -245,15 +247,40 @@ try {
        and next_p."iteration" = previous_p."iteration" + 1
       where previous_p."mode" = 'fixed_price'
       order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+    ), rejected_relist as (
+      select
+        edge.previous_marketing_id,
+        edge.next_marketing_id,
+        edge.barang_id,
+        edge.original_published_at,
+        edge.rejected_at
+      from rejected_edges edge
+      where not exists (
+        select 1
+        from rejected_edges parent_edge
+        where parent_edge.next_marketing_id = edge.previous_marketing_id
+      )
+
+      union all
+
+      select
+        child_edge.previous_marketing_id,
+        child_edge.next_marketing_id,
+        child_edge.barang_id,
+        parent_edge.original_published_at,
+        child_edge.rejected_at
+      from rejected_relist parent_edge
+      inner join rejected_edges child_edge
+        on child_edge.previous_marketing_id = parent_edge.next_marketing_id
     )
     update "pemasaran" relisted
-    set "starts_at" = rejected_relist.rejected_at,
-        "created_at" = rejected_relist.rejected_at
+    set "starts_at" = rejected_relist.original_published_at,
+        "created_at" = rejected_relist.original_published_at
     from rejected_relist
     where relisted."id" = rejected_relist.next_marketing_id
       and (
-        relisted."starts_at" is distinct from rejected_relist.rejected_at
-        or relisted."created_at" is distinct from rejected_relist.rejected_at
+        relisted."starts_at" is distinct from rejected_relist.original_published_at
+        or relisted."created_at" is distinct from rejected_relist.original_published_at
       )
   `);
 

@@ -8,6 +8,7 @@ export type FixedPriceRejectedRelistCandidate = {
   iteration: number;
   marketing_id: string;
   max_iteration: number;
+  original_published_at?: Date | string | null;
   price: string | null;
   rejected_at?: Date | string | null;
   rejection_reason: string | null;
@@ -43,9 +44,10 @@ with latest_rejected_transaction as (
 select
   p."id" as marketing_id,
   p."barang_id",
-  coalesce(p."price", lt."amount")::text as price,
-  lt."amount"::text as amount,
+  coalesce(p."price", rejected."amount")::text as price,
+  rejected."amount"::text as amount,
   p."iteration",
+  p."created_at" as original_published_at,
   (
     select coalesce(max(all_p."iteration"), p."iteration")
     from "pemasaran" all_p
@@ -126,7 +128,7 @@ insert into "pemasaran" (
   'aktif',
   $5,
   $6,
-  $6
+  $7
 )
 `.trim();
 
@@ -164,10 +166,12 @@ where "new_status" = 'gagal'
 `.trim();
 
 export const SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL = `
-with rejected_relist as (
+with recursive rejected_edges as (
   select distinct on (next_p."id")
+    previous_p."id" as previous_marketing_id,
     next_p."id" as next_marketing_id,
     next_p."barang_id",
+    previous_p."created_at" as original_published_at,
     coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at
   from "pemasaran" previous_p
   inner join "transaksi" t
@@ -180,15 +184,40 @@ with rejected_relist as (
    and next_p."iteration" = previous_p."iteration" + 1
   where previous_p."mode" = 'fixed_price'
   order by next_p."id", t."updated_at" desc, t."created_at" desc, t."id" desc
+), rejected_relist as (
+  select
+    edge.previous_marketing_id,
+    edge.next_marketing_id,
+    edge.barang_id,
+    edge.original_published_at,
+    edge.rejected_at
+  from rejected_edges edge
+  where not exists (
+    select 1
+    from rejected_edges parent_edge
+    where parent_edge.next_marketing_id = edge.previous_marketing_id
+  )
+
+  union all
+
+  select
+    child_edge.previous_marketing_id,
+    child_edge.next_marketing_id,
+    child_edge.barang_id,
+    parent_edge.original_published_at,
+    child_edge.rejected_at
+  from rejected_relist parent_edge
+  inner join rejected_edges child_edge
+    on child_edge.previous_marketing_id = parent_edge.next_marketing_id
 )
 update "pemasaran" relisted
-set "starts_at" = rejected_relist.rejected_at,
-    "created_at" = rejected_relist.rejected_at
+set "starts_at" = rejected_relist.original_published_at,
+    "created_at" = rejected_relist.original_published_at
 from rejected_relist
 where relisted."id" = rejected_relist.next_marketing_id
   and (
-    relisted."starts_at" is distinct from rejected_relist.rejected_at
-    or relisted."created_at" is distinct from rejected_relist.rejected_at
+    relisted."starts_at" is distinct from rejected_relist.original_published_at
+    or relisted."created_at" is distinct from rejected_relist.original_published_at
   )
 `.trim();
 
@@ -244,13 +273,13 @@ set "changed_by_user_id" = null,
     "created_at" = excluded."created_at"
 `.trim();
 
-function resolveRejectedRelistTimestamp(candidate: FixedPriceRejectedRelistCandidate, fallback: Date) {
-  if (!candidate.rejected_at) {
+function resolveTimestamp(value: Date | string | null | undefined, fallback: Date) {
+  if (!value) {
     return fallback;
   }
 
-  const rejectedAt = new Date(candidate.rejected_at);
-  return Number.isNaN(rejectedAt.getTime()) ? fallback : rejectedAt;
+  const timestamp = new Date(value);
+  return Number.isNaN(timestamp.getTime()) ? fallback : timestamp;
 }
 
 export async function listFixedPriceRejectedRelistCandidates(client: RepairQueryClient) {
@@ -289,7 +318,8 @@ export async function repairFixedPriceRejectedRelists(
         continue;
       }
 
-      const now = resolveRejectedRelistTimestamp(candidate, nowFactory());
+      const now = resolveTimestamp(candidate.rejected_at, nowFactory());
+      const originalPublishedAt = resolveTimestamp(candidate.original_published_at, now);
       const actorId = candidate.verified_by_user_id ?? candidate.created_by_user_id;
       const nextIteration = Number(candidate.max_iteration ?? candidate.iteration) + 1;
       const archived = await client.query(ARCHIVE_MARKETING_SQL, [candidate.marketing_id, now]);
@@ -305,6 +335,7 @@ export async function repairFixedPriceRejectedRelists(
         price,
         nextIteration,
         actorId,
+        originalPublishedAt,
         now
       ]);
       await client.query(KEEP_ITEM_MARKETED_SQL, [candidate.barang_id, now]);

@@ -37,6 +37,7 @@ function makeClient(candidates: FixedPriceRejectedRelistCandidate[]) {
 
 describe("fixed-price rejected relist repair", () => {
   const rejectedAt = new Date("2026-07-06T07:36:00.000Z");
+  const originalPublishedAt = new Date("2026-06-22T21:00:00.000Z");
   const candidate: FixedPriceRejectedRelistCandidate = {
     marketing_id: "pm-fixed-iterasi-5",
     barang_id: "barang-emas-1",
@@ -49,7 +50,8 @@ describe("fixed-price rejected relist repair", () => {
     transaction_id: "trx-ditolak-1",
     rejection_reason: "Uang dikirim bukan ke rekening tujuan",
     verified_by_user_id: "admin-verifikator",
-    rejected_at: rejectedAt
+    rejected_at: rejectedAt,
+    original_published_at: originalPublishedAt
   } as FixedPriceRejectedRelistCandidate;
 
   it("only reports stuck sessions during dry-run", async () => {
@@ -72,6 +74,9 @@ describe("fixed-price rejected relist repair", () => {
     expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(
       `order by t."pemasaran_id", t."updated_at" desc, t."created_at" desc, t."id" desc`
     );
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`coalesce(p."price", rejected."amount")::text`);
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`p."created_at" as original_published_at`);
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).not.toContain(`lt."amount"`);
   });
 
   it("cleans legacy repair audit rows and timestamps even when no stuck session remains", async () => {
@@ -90,6 +95,13 @@ describe("fixed-price rejected relist repair", () => {
     expect(client.query).toHaveBeenCalledWith(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL);
     expect(client.query).toHaveBeenCalledWith(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL);
     expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).not.toContain(`"created_by_user_id"`);
+    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).toContain(`previous_p."created_at" as original_published_at`);
+    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).toContain(
+      `set "starts_at" = rejected_relist.original_published_at`
+    );
+    expect(SYNC_FIXED_PRICE_RELIST_TIMESTAMPS_SQL).not.toContain(
+      `set "starts_at" = rejected_relist.rejected_at`
+    );
     expect(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL).toContain(`"changed_by_user_id"`);
     expect(INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL).toContain(
       `'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'`
@@ -125,7 +137,7 @@ describe("fixed-price rejected relist repair", () => {
         "12500000",
         6,
         "admin-verifikator",
-        rejectedAt
+        originalPublishedAt
       ])
     );
     expect(client.query).not.toHaveBeenCalledWith(
@@ -147,7 +159,9 @@ describe("fixed-price rejected relist repair", () => {
     const startupScript = readFileSync(join(process.cwd(), "scripts", "start-production.mjs"), "utf8");
 
     expect(startupScript).toContain(`fixed-price-relist-history-`);
-    expect(startupScript).toContain(`"created_at" = rejected_relist.rejected_at`);
+    expect(startupScript).toContain(`previous_p."created_at" as original_published_at`);
+    expect(startupScript).toContain(`"created_at" = rejected_relist.original_published_at`);
+    expect(startupScript).not.toContain(`"created_at" = rejected_relist.rejected_at`);
     expect(startupScript).toContain(`'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'`);
     expect(startupScript).toContain(`riwayat sistem`);
   });
