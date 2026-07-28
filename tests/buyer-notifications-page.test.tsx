@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { BuyerNotificationsPage } from "@/components/buyer/notifications-page";
 import type { PersistedNotification } from "@/components/ui/use-buyer-notifications";
@@ -79,25 +79,49 @@ const notifications: PersistedNotification[] = [
 ];
 
 describe("BuyerNotificationsPage", () => {
-  it("renders the buyer notification page with the referenced hero and real notification content", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({ data: { configured: true, enabled: false, publicKey: "public-vapid-key" } }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          )
+        )
+      )
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("renders the buyer notification page with the referenced hero and real notification content", async () => {
     render(<BuyerNotificationsPage initialNotifications={notifications} />);
 
     expect(screen.getByRole("heading", { name: /pusat notifikasi ruang agunan/i })).toBeInTheDocument();
-    expect(screen.getByTestId("buyer-notifications-hero")).toHaveClass("min-h-[340px]", "md:min-h-[380px]");
+    expect(screen.getByTestId("buyer-notifications-hero")).toHaveClass("min-h-0", "md:min-h-[380px]");
     expect(screen.getByText(/temukan pembaruan terbaru, pengingat penting, status pembayaran/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Transaksi");
     expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Pembayaran");
     expect(screen.getByLabelText("Kategori notifikasi")).toHaveTextContent("Aktivitas Akun");
     expect(screen.getByRole("searchbox", { name: /cari notifikasi, status pembayaran, atau aktivitas akun/i })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /ilustrasi notifikasi pembeli/i })).toHaveAttribute(
+    const heroImage = screen.getByRole("img", { name: /ilustrasi notifikasi pembeli/i });
+    expect(heroImage).toHaveAttribute(
       "src",
       "/uploads/Background Hero Section Halaman Notifikasi Buyer.png"
     );
+    expect(heroImage).toHaveClass("hidden", "md:block");
 
     expect(screen.getByRole("button", { name: /semua 3/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /belum dibaca 2/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /aktifkan notifikasi perangkat/i })).toBeInTheDocument();
+    const mobilePushPanel = screen.getByTestId("buyer-mobile-push-panel");
+    expect(mobilePushPanel).toHaveClass("sm:hidden");
+    const mobilePushButton = await within(mobilePushPanel).findByRole("button", { name: /aktifkan notifikasi perangkat/i });
+    expect(mobilePushButton).toHaveClass("w-full", "min-h-12");
+    expect(screen.getByTestId("buyer-notifications-hero")).not.toContainElement(mobilePushPanel);
     expect(screen.getByRole("heading", { name: /semua notifikasi/i })).toBeInTheDocument();
     expect(screen.getByText("3 notifikasi")).toBeInTheDocument();
 
@@ -140,7 +164,5 @@ describe("BuyerNotificationsPage", () => {
     expect(fetch).toHaveBeenCalledWith("/api/user/notifikasi/read-all", {
       method: "POST"
     });
-
-    vi.unstubAllGlobals();
   });
 });
