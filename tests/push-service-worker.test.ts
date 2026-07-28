@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
 
-import sharp from "sharp";
 import { describe, expect, it, vi } from "vitest";
 
 type PushHandler = (event: {
@@ -36,34 +35,30 @@ async function receivePush(type: string) {
 }
 
 describe("push service worker", () => {
-  it("uses a transparent compact badge mask instead of an opaque square", async () => {
-    const { data, info } = await sharp("public/brand/ruang-agunan-badge-v2.png")
-      .ensureAlpha()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    const alphaAt = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
-
-    expect(alphaAt(0, 0)).toBe(0);
-    expect(alphaAt(Math.floor(info.width / 2), Math.floor(info.height / 2))).toBeGreaterThan(0);
-  });
-
   it.each([
-    "payment_rejected",
-    "payment_verified",
-    "vickrey_win",
-    "vickrey_loss",
-    "admin_payment_proof_uploaded",
-    "admin_vickrey_result",
-    "unknown"
-  ])("keeps the Ruang Agunan badge in the Android status bar for %s", async (type) => {
+    ["payment_rejected", "alert.png"],
+    ["blacklist_active", "blacklist.png"],
+    ["superadmin_policy_alert", "alert.png"],
+    ["payment_verified", "verified.png"],
+    ["vickrey_win", "winner.png"],
+    ["handover_proof_uploaded", "success.png"],
+    ["transaction_created", "success.png"],
+    ["payment_deadline", "deadline.png"],
+    ["vickrey_loss", "loss.png"],
+    ["admin_payment_proof_uploaded", "payment.png"],
+    ["admin_bid_submitted", "bid.png"],
+    ["admin_vickrey_result", "result.png"],
+    ["admin_payment_overdue", "alert.png"],
+    ["unknown", "info.png"]
+  ])("uses the %s badge and restores the brand icon for %s", async (type, badge) => {
     const showNotification = await receivePush(type);
 
     expect(showNotification).toHaveBeenCalledWith(
       "Notifikasi",
       expect.objectContaining({
         actions: [{ action: "open_detail", title: "Lihat detail" }],
-        badge: "/brand/ruang-agunan-badge-v2.png",
-        icon: "/brand/push-icon-transparent.png"
+        badge: `/brand/push-badges/${badge}`,
+        icon: "/brand/ruang-agunan-icon.png"
       })
     );
   });
