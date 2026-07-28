@@ -97,6 +97,7 @@ describe("BuyerNotificationsPage", () => {
     expect(screen.getByRole("button", { name: /semua 3/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /belum dibaca 2/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lihat semua/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /aktifkan notifikasi perangkat/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /semua notifikasi/i })).toBeInTheDocument();
     expect(screen.getByText("3 notifikasi")).toBeInTheDocument();
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import type { PersistedNotification } from "@/components/ui/use-buyer-notifications";
+import { PushNotificationControl } from "@/components/ui/push-notification-control";
 import { APP_TIME_ZONE, APP_TIME_ZONE_LABEL } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
@@ -281,6 +282,11 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
           <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#24365f] md:text-base md:leading-7">
             Temukan pembaruan terbaru, pengingat penting, status pembayaran, aktivitas lelang, dan informasi penting akun Anda dalam satu tempat yang terstruktur dan mudah dipantau.
           </p>
+
+          <div className="mt-5 rounded-[1.1rem] border border-[#b8d9ca] bg-white/85 px-4 py-3 shadow-[0_12px_28px_-24px_rgba(8,69,50,0.48)] sm:hidden">
+            <p className="text-sm font-black text-[#0b6b44]">Notifikasi perangkat</p>
+            <PushNotificationControl />
+          </div>
 
           <div aria-label="Kategori notifikasi" className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-[#24365f] md:gap-x-5 md:text-base">
             <span className="inline-flex items-center gap-2">
