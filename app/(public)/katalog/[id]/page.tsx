@@ -7,11 +7,14 @@ import { isBuyerWishlistItem } from "@/lib/services/wishlist.service";
 export const dynamic = "force-dynamic";
 
 export default async function Page({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ source?: string | string[] }>;
 }) {
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const source = Array.isArray(query.source) ? query.source[0] : query.source;
   const [lot, session] = await Promise.all([getPublicLotById(id), getServerSession()]);
   const isBuyer = session?.user?.role === "buyer";
   const [bidState, buyerStatus, initialFavorited] =
@@ -30,6 +33,7 @@ export default async function Page({
       bidState={bidState}
       initialFavorited={initialFavorited}
       lot={lot}
+      trackView={source !== "payment"}
       wishlistSyncEnabled={isBuyer}
     />
   );

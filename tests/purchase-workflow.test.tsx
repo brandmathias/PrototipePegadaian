@@ -113,6 +113,6 @@ describe("PurchaseWorkflow", () => {
     await user.click(screen.getByRole("button", { name: /tidak, kembali ke detail barang/i }));
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(replaceMock).toHaveBeenCalledWith("/katalog/fixed-direct-1");
+    expect(replaceMock).toHaveBeenCalledWith("/katalog/fixed-direct-1?source=payment");
   });
 });

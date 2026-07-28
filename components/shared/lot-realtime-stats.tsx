@@ -12,8 +12,6 @@ const EMPTY_STATS: LotInsights = {
   views: 0
 };
 
-let memoryViewerKey = "";
-
 type LotRealtimeStatsProps = {
   className?: string;
   fixedStatusLabel?: string;
@@ -47,34 +45,8 @@ function normalizeStats(stats?: LotInsights | null): LotInsights {
   };
 }
 
-function getBrowserViewerKey() {
-  const fallback = () => {
-    if (!memoryViewerKey) {
-      const randomPart = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-      memoryViewerKey = `anon:${randomPart}`;
-    }
-
-    return memoryViewerKey;
-  };
-
-  if (typeof window === "undefined") {
-    return fallback();
-  }
-
-  try {
-    const storageKey = "pegadaian:lot-viewer-key";
-    const existing = window.localStorage.getItem(storageKey);
-    if (existing) {
-      return existing;
-    }
-
-    const randomPart = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-    const nextKey = `anon:${randomPart}`;
-    window.localStorage.setItem(storageKey, nextKey);
-    return nextKey;
-  } catch {
-    return fallback();
-  }
+function createVisitId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
 function formatCount(value: number) {
@@ -100,6 +72,7 @@ export function LotRealtimeStats({
   watchLabel = "Suka"
 }: LotRealtimeStatsProps) {
   const [stats, setStats] = useState<LotInsights>(() => normalizeStats(initialStats));
+  const visitId = useMemo(createVisitId, [lotId]);
 
   useEffect(() => {
     setStats(normalizeStats(initialStats));
@@ -112,7 +85,7 @@ export function LotRealtimeStats({
       const request =
         method === "POST"
           ? fetch(endpoint, {
-              body: JSON.stringify({ viewerKey: getBrowserViewerKey() }),
+              body: JSON.stringify({ visitId }),
               cache: "no-store",
               headers: { "Content-Type": "application/json" },
               method
@@ -129,7 +102,7 @@ export function LotRealtimeStats({
 
       return normalizeStats(await response.json());
     },
-    [endpoint]
+    [endpoint, visitId]
   );
 
   useEffect(() => {

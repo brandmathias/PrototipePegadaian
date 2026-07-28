@@ -90,6 +90,7 @@ export function LotDetailPage({
   buyerId = null,
   bidState,
   buyerStatus = null,
+  trackView = true,
   wishlistSyncEnabled = false
 }: {
   initialFavorited?: boolean;
@@ -97,6 +98,7 @@ export function LotDetailPage({
   buyerId?: string | null;
   bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
+  trackView?: boolean;
   wishlistSyncEnabled?: boolean;
 }) {
   if (!lot) {
@@ -243,7 +245,7 @@ export function LotDetailPage({
                     pollIntervalMs={30_000}
                     separatorClassName="h-5 w-px bg-[#e8c36a]/45"
                     showSeparators
-                    trackView
+                    trackView={trackView}
                     valueClassName="text-base font-semibold text-[#183f32]"
                     watchLabel="Watchlist"
                   />

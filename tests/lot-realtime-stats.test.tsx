@@ -118,4 +118,41 @@ describe("LotRealtimeStats mobile refresh policy", () => {
       expect.objectContaining({ method: "GET" })
     );
   });
+
+  it("uses a new visit identifier for each catalog detail visit", async () => {
+    const first = render(
+      <LotRealtimeStats
+        initialStats={initialStats}
+        lotId="lot-repeat"
+        mode="fixed_price"
+        trackView
+      />
+    );
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+    const firstVisitId = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body ?? "{}").visitId;
+
+    first.unmount();
+    fetchMock.mockClear();
+
+    render(
+      <LotRealtimeStats
+        initialStats={initialStats}
+        lotId="lot-repeat"
+        mode="fixed_price"
+        trackView
+      />
+    );
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+    const secondVisitId = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body ?? "{}").visitId;
+
+    expect(firstVisitId).toEqual(expect.any(String));
+    expect(secondVisitId).toEqual(expect.any(String));
+    expect(secondVisitId).not.toBe(firstVisitId);
+  });
 });

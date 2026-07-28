@@ -105,7 +105,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
 
   function returnToLotDetail() {
     setIsBackConfirmOpen(false);
-    router.replace(`/katalog/${lot.id}`);
+    router.replace(`/katalog/${lot.id}?source=payment`);
   }
 
   const isLoading = status === "loading";

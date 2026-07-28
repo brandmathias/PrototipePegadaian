@@ -1979,7 +1979,7 @@ export function TransactionDetailPage({
           </div>
           {!isFixedPriceCatalogHidden ? (
             <div className="flex flex-wrap gap-3">
-              <Link href={`/katalog/${transaction.lotId}`}>
+              <Link href={`/katalog/${transaction.lotId}?source=payment`}>
                 <Button variant="ghost">Kembali ke Detail Barang</Button>
               </Link>
             </div>

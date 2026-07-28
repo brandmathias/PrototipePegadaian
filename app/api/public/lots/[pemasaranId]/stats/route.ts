@@ -11,13 +11,13 @@ function normalizeViewerKey(value: unknown) {
   return value.trim().slice(0, 160);
 }
 
-async function getAnonymousViewerKey(request: Request) {
+async function getVisitId(request: Request) {
   const payload = await request.json().catch(() => null);
   if (!payload || typeof payload !== "object") {
     return "";
   }
 
-  return normalizeViewerKey("viewerKey" in payload ? payload.viewerKey : "");
+  return normalizeViewerKey("visitId" in payload ? payload.visitId : "");
 }
 
 export async function GET(
@@ -36,9 +36,10 @@ export async function POST(
 ) {
   const { pemasaranId } = await params;
   const session = await getServerSession().catch(() => null);
-  const viewerKey = session?.user?.id
-    ? `user:${session.user.id}`
-    : await getAnonymousViewerKey(request);
+  const visitId = await getVisitId(request);
+  const viewerKey = visitId
+    ? `${session?.user?.id ? `user:${session.user.id}` : "anon"}:visit:${visitId}`.slice(0, 160)
+    : "";
   const stats = await recordLotView(pemasaranId, viewerKey);
 
   return NextResponse.json(stats);
