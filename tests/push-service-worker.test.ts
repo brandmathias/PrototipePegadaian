@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { runInNewContext } from "node:vm";
 
+import sharp from "sharp";
 import { describe, expect, it, vi } from "vitest";
 
 type PushHandler = (event: {
@@ -35,6 +36,17 @@ async function receivePush(type: string) {
 }
 
 describe("push service worker", () => {
+  it("uses a transparent compact badge mask instead of an opaque square", async () => {
+    const { data, info } = await sharp("public/brand/ruang-agunan-badge.png")
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const alphaAt = (x: number, y: number) => data[(y * info.width + x) * 4 + 3];
+
+    expect(alphaAt(0, 0)).toBe(0);
+    expect(alphaAt(Math.floor(info.width / 2), Math.floor(info.height / 2))).toBeGreaterThan(0);
+  });
+
   it.each([
     "payment_rejected",
     "payment_verified",
@@ -50,10 +62,10 @@ describe("push service worker", () => {
       "Notifikasi",
       expect.objectContaining({
         actions: [{ action: "open_detail", title: "Lihat detail" }],
-        badge: "/brand/ruang-agunan-badge.png"
+        badge: "/brand/ruang-agunan-badge.png",
+        icon: "/brand/push-icon-transparent.png"
       })
     );
-    expect(showNotification.mock.calls[0]?.[1]).not.toHaveProperty("icon");
   });
 
   it("activates a newly deployed worker without waiting for old pages to close", async () => {

@@ -13,6 +13,7 @@ self.addEventListener("push", (event) => {
     actions: [{ action: "open_detail", title: "Lihat detail" }],
     body: payload.body || "Ada informasi penting untuk Anda.",
     badge: "/brand/ruang-agunan-badge.png",
+    icon: "/brand/push-icon-transparent.png",
     data: { href }
   }));
 });
