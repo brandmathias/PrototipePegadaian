@@ -100,28 +100,27 @@ async function loadContext(client: Client): Promise<Context> {
   }
 
   const buyerIds = buyers.rows.map((buyer) => buyer.id);
-  const [accounts, profiles, units, admins] = await Promise.all([
-    client.query<{ user_id: string }>(
-      `select user_id from "account" where user_id = any($1::text[]) and provider_id='credential' and password is not null`,
-      [buyerIds]
-    ),
-    client.query<{ email: string; full_name: string; user_id: string }>(
-      `select user_id, lower(email) as email, full_name from buyer_profile where user_id=any($1::text[])`,
-      [buyerIds]
-    ),
-    client.query<{ id: string; is_active: boolean; name: string }>(
-      `select id,name,is_active from units where name=any($1::text[])`,
-      [["UPC Wanea", "UPC Ranotana", "UPC Sarinah"]]
-    ),
-    client.query<{ id: string; unit_name: string }>(
-      `select distinct on (un.id) u.id, un.name as unit_name
-       from units un
-       join "user" u on u.unit_id=un.id
-       where un.name=any($1::text[]) and un.is_active=true and u.role='admin_unit' and u.is_active=true
-       order by un.id, u.created_at asc`,
-      [["UPC Wanea", "UPC Ranotana", "UPC Sarinah"]]
-    )
-  ]);
+  // ponytail: one PostgreSQL client queues queries; sequential calls avoid deprecated concurrent use.
+  const accounts = await client.query<{ user_id: string }>(
+    `select user_id from "account" where user_id = any($1::text[]) and provider_id='credential' and password is not null`,
+    [buyerIds]
+  );
+  const profiles = await client.query<{ email: string; full_name: string; user_id: string }>(
+    `select user_id, lower(email) as email, full_name from buyer_profile where user_id=any($1::text[])`,
+    [buyerIds]
+  );
+  const units = await client.query<{ id: string; is_active: boolean; name: string }>(
+    `select id,name,is_active from units where name=any($1::text[])`,
+    [["UPC Wanea", "UPC Ranotana", "UPC Sarinah"]]
+  );
+  const admins = await client.query<{ id: string; unit_name: string }>(
+    `select distinct on (un.id) u.id, un.name as unit_name
+     from units un
+     join "user" u on u.unit_id=un.id
+     where un.name=any($1::text[]) and un.is_active=true and u.role='admin_unit' and u.is_active=true
+     order by un.id, u.created_at asc`,
+    [["UPC Wanea", "UPC Ranotana", "UPC Sarinah"]]
+  );
   requireCount(accounts.rows, buyerIds.length, "Akun credential buyer");
   requireCount(profiles.rows, buyerIds.length, "Profil buyer");
   requireCount(units.rows, 3, "UPC target");
@@ -148,20 +147,18 @@ async function loadContext(client: Client): Promise<Context> {
 
 async function preflight(client: Client, context: Context) {
   const userIds = context.buyers.map((buyer) => buyer.id);
-  const [foreignViolations, foreignBlacklists, openTransactions, activeBids, collisions] = await Promise.all([
-    client.query(`select id from pelanggaran_user where user_id=any($1::text[]) and not (id=any($2::text[])) limit 1`, [userIds, violationIds]),
-    client.query(`select id from blacklist where user_id=any($1::text[]) and not (id=any($2::text[])) limit 1`, [userIds, blacklistIds]),
-    client.query(`select id from transaksi where user_id=any($1::text[]) and status not in ('gagal','lunas','selesai') and not (id=any($2::text[])) limit 1`, [userIds, transactionIds]),
-    client.query(`select bid.id from bids bid join pemasaran p on p.id=bid.pemasaran_id where bid.user_id=any($1::text[]) and p.status='aktif' and not (p.id=any($2::text[])) limit 1`, [userIds, marketingIds]),
-    client.query(
-      `select id from barang where id=any($1::text[]) or code=any($2::text[])
-       union all select id from pemasaran where id=any($3::text[])
-       union all select id from transaksi where id=any($4::text[])
-       union all select id from pelanggaran_user where id=any($5::text[])
-       union all select id from blacklist where id=any($6::text[]) limit 1`,
-      [itemIds, FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO.map((entry) => entry.itemCode), marketingIds, transactionIds, violationIds, blacklistIds]
-    )
-  ]);
+  const foreignViolations = await client.query(`select id from pelanggaran_user where user_id=any($1::text[]) and not (id=any($2::text[])) limit 1`, [userIds, violationIds]);
+  const foreignBlacklists = await client.query(`select id from blacklist where user_id=any($1::text[]) and not (id=any($2::text[])) limit 1`, [userIds, blacklistIds]);
+  const openTransactions = await client.query(`select id from transaksi where user_id=any($1::text[]) and status not in ('gagal','lunas','selesai') and not (id=any($2::text[])) limit 1`, [userIds, transactionIds]);
+  const activeBids = await client.query(`select bid.id from bids bid join pemasaran p on p.id=bid.pemasaran_id where bid.user_id=any($1::text[]) and p.status='aktif' and not (p.id=any($2::text[])) limit 1`, [userIds, marketingIds]);
+  const collisions = await client.query(
+    `select id from barang where id=any($1::text[]) or code=any($2::text[])
+     union all select id from pemasaran where id=any($3::text[])
+     union all select id from transaksi where id=any($4::text[])
+     union all select id from pelanggaran_user where id=any($5::text[])
+     union all select id from blacklist where id=any($6::text[]) limit 1`,
+    [itemIds, FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO.map((entry) => entry.itemCode), marketingIds, transactionIds, violationIds, blacklistIds]
+  );
   if (foreignViolations.rows.length) throw new Error("Preflight gagal: pelanggaran asing pada buyer target.");
   if (foreignBlacklists.rows.length) throw new Error("Preflight gagal: blacklist asing pada buyer target.");
   if (openTransactions.rows.length) throw new Error("Preflight gagal: transaksi aktif pada buyer target.");
@@ -185,19 +182,17 @@ async function applyRows(client: Client, context: FourBuyerActiveViolationSeedCo
 }
 
 async function audit(client: Client) {
-  const [items, marketing, bids, violations, history, restrictions] = await Promise.all([
-    client.query<{ count: string }>(`select count(*)::text as count from barang where id=any($1::text[])`, [itemIds]),
-    client.query<{ count: string }>(`select count(*)::text as count from pemasaran where id=any($1::text[]) and iteration=1 and status='gagal'`, [marketingIds]),
-    client.query<{ count: string }>(`select count(*)::text as count from bids where pemasaran_id=any($1::text[])`, [marketingIds]),
-    client.query<{ count: string }>(`select count(*)::text as count from pelanggaran_user where id=any($1::text[]) and escalation_eligible=true`, [violationIds]),
-    client.query<{ count: string }>(`select count(*)::text as count from riwayat_status_barang where barang_id=any($1::text[])`, [itemIds]),
-    client.query<{ blocked_until: Date; email: string; is_active: boolean; total_violations: number; unit_name: string }>(
-      `select lower(u.email) as email, bl.total_violations, bl.is_active, bl.blocked_until, un.name as unit_name
-       from blacklist bl join "user" u on u.id=bl.user_id join units un on un.id=bl.unit_id
-       where bl.id=any($1::text[])`,
-      [blacklistIds]
-    )
-  ]);
+  const items = await client.query<{ count: string }>(`select count(*)::text as count from barang where id=any($1::text[])`, [itemIds]);
+  const marketing = await client.query<{ count: string }>(`select count(*)::text as count from pemasaran where id=any($1::text[]) and iteration=1 and status='gagal'`, [marketingIds]);
+  const bids = await client.query<{ count: string }>(`select count(*)::text as count from bids where pemasaran_id=any($1::text[])`, [marketingIds]);
+  const violations = await client.query<{ count: string }>(`select count(*)::text as count from pelanggaran_user where id=any($1::text[]) and escalation_eligible=true`, [violationIds]);
+  const history = await client.query<{ count: string }>(`select count(*)::text as count from riwayat_status_barang where barang_id=any($1::text[])`, [itemIds]);
+  const restrictions = await client.query<{ blocked_until: Date; email: string; is_active: boolean; total_violations: number; unit_name: string }>(
+    `select lower(u.email) as email, bl.total_violations, bl.is_active, bl.blocked_until, un.name as unit_name
+     from blacklist bl join "user" u on u.id=bl.user_id join units un on un.id=bl.unit_id
+     where bl.id=any($1::text[])`,
+    [blacklistIds]
+  );
   const counts = [
     [items, 3, "barang"], [marketing, 3, "pemasaran"], [bids, 9, "bid"],
     [violations, 3, "pelanggaran"], [history, 12, "riwayat barang"]
