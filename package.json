@@ -23,6 +23,7 @@
     "db:scenario:cross-unit-violations": "tsx scripts/apply-cross-unit-violation-scenario.ts",
     "db:scenario:renewed-cross-unit-violations": "tsx scripts/apply-renewed-cross-unit-violation-scenario.ts",
     "db:scenario:wanea-real-violations": "tsx scripts/apply-wanea-real-violation-scenario.ts",
+    "db:scenario:four-buyer-active-violations": "tsx scripts/apply-four-buyer-active-violation-scenario.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
