@@ -317,7 +317,7 @@ export function LotDetailPage({
                   className={cn(
                     "relative bg-[#fff0f2] text-[#9f1239]",
                     isCompactBlacklistNotice
-                      ? "w-fit max-w-full rounded-xl px-3.5 py-3 text-[0.82rem] font-semibold leading-5 tracking-[0.005em] xl:whitespace-nowrap"
+                      ? "w-full rounded-xl px-4 py-3 text-[0.86rem] font-semibold leading-5 tracking-[0.005em] xl:whitespace-nowrap 2xl:text-[0.96rem]"
                       : "rounded-[1.35rem] p-5 text-sm leading-relaxed"
                   )}
                 >
