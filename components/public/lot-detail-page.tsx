@@ -39,7 +39,7 @@ type BuyerPublicStatus = {
   };
 } | null;
 
-function getBlacklistLabel(status: BuyerPublicStatus) {
+function getBlacklistLabel(status: BuyerPublicStatus, isVickrey: boolean) {
   if (!status?.blacklist.active) {
     return null;
   }
@@ -48,8 +48,18 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
 
   if (restriction.level === 1) {
     return status.blacklist.until
-      ? `Bid lelang dibatasi hingga ${formatAppDate(status.blacklist.until)}.`
-      : "Bid lelang sedang dibatasi.";
+      ? `Akun Anda dibatasi hingga ${formatAppDate(status.blacklist.until)}. Pengiriman bid lelang tertutup ditangguhkan.`
+      : "Akun Anda sedang dibatasi. Pengiriman bid lelang tertutup ditangguhkan.";
+  }
+
+  if (restriction.level === 2) {
+    const actionLabel = isVickrey
+      ? "Bid lelang tertutup belum tersedia."
+      : "Pembelian harga tetap belum tersedia.";
+
+    return status.blacklist.until
+      ? `Akun Anda dibatasi hingga ${formatAppDate(status.blacklist.until)}. ${actionLabel}`
+      : `Akun Anda sedang dibatasi. ${actionLabel}`;
   }
 
   if (!status.blacklist.until) {
@@ -121,9 +131,9 @@ export function LotDetailPage({
   const isActionBlocked =
     hasActiveRestriction &&
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
-  const blacklistLabel = getBlacklistLabel(buyerStatus);
+  const blacklistLabel = getBlacklistLabel(buyerStatus, isVickrey);
   const shouldShowBlacklistNotice = Boolean(blacklistLabel) && (isVickrey || blacklistPolicy.blocksFixedPrice);
-  const isCompactBlacklistNotice = isVickrey && blacklistPolicy.level === 1;
+  const isCompactBlacklistNotice = shouldShowBlacklistNotice && blacklistPolicy.level <= 2;
   const hasOtherVickreyBidLock =
     isVickrey &&
     Boolean(buyerStatus?.vickreyBidLock?.active) &&
@@ -307,7 +317,7 @@ export function LotDetailPage({
                   className={cn(
                     "relative bg-[#fff0f2] text-[#9f1239]",
                     isCompactBlacklistNotice
-                      ? "rounded-xl px-4 py-3 text-[0.78rem] font-semibold leading-5 md:whitespace-nowrap"
+                      ? "rounded-xl px-4 py-3 text-[0.78rem] font-semibold leading-5 tracking-[0.005em] xl:whitespace-nowrap"
                       : "rounded-[1.35rem] p-5 text-sm leading-relaxed"
                   )}
                 >

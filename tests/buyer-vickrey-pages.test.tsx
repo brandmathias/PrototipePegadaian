@@ -202,6 +202,29 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByText(/akun sedang dibatasi sampai/i)).not.toBeInTheDocument();
   });
 
+  it("shows a compact Level 2 restriction notice on a fixed-price lot", () => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            totalViolations: 2,
+            until: new Date("2026-05-31T00:00:00.000Z")
+          }
+        }}
+        lot={fixedPriceLot}
+      />
+    );
+
+    const noticeElement = screen.getByText(
+      /akun anda dibatasi hingga 31 mei 2026\. pembelian harga tetap belum tersedia\./i
+    );
+    expect(noticeElement).toBeInTheDocument();
+    expect(noticeElement).toHaveClass("xl:whitespace-nowrap");
+    expect(screen.getByRole("button", { name: /pembelian sedang dibatasi/i })).toBeDisabled();
+  });
+
   it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {
     const user = userEvent.setup();
 
@@ -230,8 +253,8 @@ describe("buyer vickrey pages", () => {
   });
 
   it.each([
-    ["level 1", 1, /bid lelang dibatasi hingga 31 mei 2026/i],
-    ["level 2", 2, /anda tidak dapat mengirim bid baru/i]
+    ["level 1", 1, /akun anda dibatasi hingga 31 mei 2026\. pengiriman bid lelang tertutup ditangguhkan\./i],
+    ["level 2", 2, /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup belum tersedia\./i]
   ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations, notice) => {
     render(
       <LotDetailPage
@@ -249,9 +272,7 @@ describe("buyer vickrey pages", () => {
 
     const noticeElement = screen.getByText(notice);
     expect(noticeElement).toBeInTheDocument();
-    if (totalViolations === 1) {
-      expect(noticeElement).toHaveClass("md:whitespace-nowrap");
-    }
+    expect(noticeElement).toHaveClass("xl:whitespace-nowrap");
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });
