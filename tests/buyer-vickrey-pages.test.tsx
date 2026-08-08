@@ -252,17 +252,14 @@ describe("buyer vickrey pages", () => {
     ).toBeInTheDocument();
   });
 
-  it.each([
-    ["level 1", 1, /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup ditangguhkan\./i],
-    ["level 2", 2, /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup belum tersedia\./i]
-  ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations, notice) => {
+  it("keeps the Level 1 blacklist notice as one full-width justified line", () => {
     render(
       <LotDetailPage
         bidState={null}
         buyerStatus={{
           blacklist: {
             active: true,
-            totalViolations,
+            totalViolations: 1,
             until: new Date("2026-05-31T00:00:00.000Z")
           }
         }}
@@ -270,8 +267,36 @@ describe("buyer vickrey pages", () => {
       />
     );
 
-    const noticeElement = screen.getByText(notice);
-    expect(noticeElement).toBeInTheDocument();
+    const noticeElement = screen.getByText(
+      /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup ditangguhkan\./i
+    );
+    expect(noticeElement).toHaveClass(
+      "w-full",
+      "whitespace-nowrap",
+      "text-justify",
+      "[text-align-last:justify]"
+    );
+    expect(noticeElement.querySelector("span")).toBeNull();
+    expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
+  });
+
+  it("blocks the lot detail auction CTA for active blacklist level 2", () => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            totalViolations: 2,
+            until: new Date("2026-05-31T00:00:00.000Z")
+          }
+        }}
+        lot={vickreyLot}
+      />
+    );
+
+    const noticeElement = screen.getByText(/akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup belum tersedia\./i);
     expect(noticeElement).toHaveClass("w-full", "overflow-hidden", "text-ellipsis", "whitespace-nowrap");
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
