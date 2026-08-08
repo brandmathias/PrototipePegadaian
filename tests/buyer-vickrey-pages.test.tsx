@@ -221,7 +221,7 @@ describe("buyer vickrey pages", () => {
       /akun anda dibatasi hingga 31 mei 2026\. pembelian harga tetap belum tersedia\./i
     );
     expect(noticeElement).toBeInTheDocument();
-    expect(noticeElement).toHaveClass("w-full", "xl:whitespace-nowrap");
+    expect(noticeElement).toHaveClass("w-full", "overflow-hidden", "text-ellipsis", "whitespace-nowrap");
     expect(screen.getByRole("button", { name: /pembelian sedang dibatasi/i })).toBeDisabled();
   });
 
@@ -253,7 +253,7 @@ describe("buyer vickrey pages", () => {
   });
 
   it.each([
-    ["level 1", 1, /akun anda dibatasi hingga 31 mei 2026\. pengiriman bid lelang tertutup ditangguhkan\./i],
+    ["level 1", 1, /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup ditangguhkan\./i],
     ["level 2", 2, /akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup belum tersedia\./i]
   ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations, notice) => {
     render(
@@ -272,7 +272,7 @@ describe("buyer vickrey pages", () => {
 
     const noticeElement = screen.getByText(notice);
     expect(noticeElement).toBeInTheDocument();
-    expect(noticeElement).toHaveClass("w-full", "xl:whitespace-nowrap");
+    expect(noticeElement).toHaveClass("w-full", "overflow-hidden", "text-ellipsis", "whitespace-nowrap");
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });

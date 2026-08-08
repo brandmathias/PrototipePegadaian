@@ -1120,8 +1120,8 @@
     "semantic_hash": "446622d7200458ab95a14062369b94c4"
   },
   "components/public/lot-detail-page.tsx": {
-    "mtime": 1786177307.3536577,
-    "ast_hash": "b0bed39b3d19b75b356ac3d9dcd14832",
+    "mtime": 1786190129.737784,
+    "ast_hash": "27388b0796b1972f15d84b560f034005",
     "semantic_hash": ""
   },
   "components/shared/bank-logo.tsx": {
@@ -2440,8 +2440,8 @@
     "semantic_hash": "d00abeec4029be7318ce1eeb2ab6268a"
   },
   "tests/buyer-vickrey-pages.test.tsx": {
-    "mtime": 1786177238.8716118,
-    "ast_hash": "9ff9f443a3d2a1bed23bdc6e58fe2a81",
+    "mtime": 1786190097.4415622,
+    "ast_hash": "5edf47c2d7e3b37acc60abc0be8f3a17",
     "semantic_hash": ""
   },
   "tests/buyer-violation-history.test.ts": {

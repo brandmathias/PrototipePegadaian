@@ -48,8 +48,8 @@ function getBlacklistLabel(status: BuyerPublicStatus, isVickrey: boolean) {
 
   if (restriction.level === 1) {
     return status.blacklist.until
-      ? `Akun Anda dibatasi hingga ${formatAppDate(status.blacklist.until)}. Pengiriman bid lelang tertutup ditangguhkan.`
-      : "Akun Anda sedang dibatasi. Pengiriman bid lelang tertutup ditangguhkan.";
+      ? `Akun Anda dibatasi hingga ${formatAppDate(status.blacklist.until)}. Bid Lelang Tertutup ditangguhkan.`
+      : "Akun Anda sedang dibatasi. Bid Lelang Tertutup ditangguhkan.";
   }
 
   if (restriction.level === 2) {
@@ -317,7 +317,7 @@ export function LotDetailPage({
                   className={cn(
                     "relative bg-[#fff0f2] text-[#9f1239]",
                     isCompactBlacklistNotice
-                      ? "w-full rounded-xl px-4 py-3 text-[0.86rem] font-semibold leading-5 tracking-[0.005em] xl:whitespace-nowrap 2xl:text-[0.96rem]"
+                      ? "w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-xl px-4 py-3 text-[clamp(0.68rem,0.8vw,0.8rem)] font-semibold leading-5 tracking-tight"
                       : "rounded-[1.35rem] p-5 text-sm leading-relaxed"
                   )}
                 >
