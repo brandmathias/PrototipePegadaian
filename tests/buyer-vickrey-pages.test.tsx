@@ -221,7 +221,7 @@ describe("buyer vickrey pages", () => {
       /akun anda dibatasi hingga 31 mei 2026\. pembelian harga tetap belum tersedia\./i
     );
     expect(noticeElement).toBeInTheDocument();
-    expect(noticeElement).toHaveClass("xl:whitespace-nowrap");
+    expect(noticeElement).toHaveClass("w-fit", "max-w-full", "xl:whitespace-nowrap");
     expect(screen.getByRole("button", { name: /pembelian sedang dibatasi/i })).toBeDisabled();
   });
 
@@ -272,7 +272,7 @@ describe("buyer vickrey pages", () => {
 
     const noticeElement = screen.getByText(notice);
     expect(noticeElement).toBeInTheDocument();
-    expect(noticeElement).toHaveClass("xl:whitespace-nowrap");
+    expect(noticeElement).toHaveClass("w-fit", "max-w-full", "xl:whitespace-nowrap");
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });
