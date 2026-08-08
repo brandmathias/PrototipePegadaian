@@ -39,6 +39,7 @@ export type BuyerTransaction = {
   specs?: Array<{ label: string; value: string }>;
   amount: number;
   status: BuyerTransactionStatus;
+  violationLevel?: number;
   method: BuyerPaymentMethod;
   unit: string;
   unitAddress: string;

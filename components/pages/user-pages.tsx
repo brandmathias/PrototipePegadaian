@@ -1490,7 +1490,9 @@ function VickreyPaymentFailedDetail({
   const sessionDate = transaction.createdAt.split(",")[0]?.trim() || transaction.createdAt;
   const failureReference = `TRX-FAIL-${transaction.applicationNumber || transaction.id}`;
   const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
-  const violationAudit = getFailedPaymentViolationAudit(buyerStatus?.blacklist.totalViolations);
+  const violationAudit = getFailedPaymentViolationAudit(
+    transaction.violationLevel ?? buyerStatus?.blacklist.totalViolations
+  );
 
   return (
     <div className="flex flex-col gap-4 bg-white md:gap-5">

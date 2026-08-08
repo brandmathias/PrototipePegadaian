@@ -290,6 +290,7 @@ async function listBuyerViolationEscalationFacts(userId: string) {
       escalationEligible: pelanggaranUser.escalationEligible,
       id: pelanggaranUser.id,
       paymentDeadline: transaksi.paymentDeadline,
+      transactionId: pelanggaranUser.transaksiId,
     })
     .from(pelanggaranUser)
     .leftJoin(transaksi, eq(transaksi.id, pelanggaranUser.transaksiId))
@@ -300,6 +301,7 @@ async function listBuyerViolationEscalationFacts(userId: string) {
     createdAt: row.paymentDeadline ?? row.createdAt,
     escalationEligible: row.escalationEligible,
     id: row.id,
+    transactionId: row.transactionId,
     occurredAt: (row.paymentDeadline ?? row.createdAt).toISOString(),
   }));
 }
@@ -410,6 +412,15 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
   return filterCountedBuyerViolationHistory(history);
 }
 
+async function getBuyerViolationLevelForTransaction(userId: string, transactionId: string) {
+  const traces = await listBuyerViolationEscalationFacts(userId);
+  const countedViolations = filterCountedBuyerViolationHistory(
+    traces.map((trace) => ({ ...trace, violationLevel: 0 }))
+  );
+
+  return countedViolations.find((row) => row.transactionId === transactionId)?.violationLevel;
+}
+
 async function getActiveVickreyBidLock(userId: string, currentPemasaranId?: string | null) {
   const rows = await db
     .select({
@@ -510,9 +521,14 @@ export async function getBuyerTransactionById(userId: string, transactionId: str
     throw new Error("Transaksi tidak ditemukan.");
   }
 
-  const accounts = await listUnitTransferAccounts(row.unitId);
+  const [accounts, violationLevel] = await Promise.all([
+    listUnitTransferAccounts(row.unitId),
+    row.type === "vickrey" && row.status === "gagal"
+      ? getBuyerViolationLevelForTransaction(userId, row.id)
+      : Promise.resolve(undefined)
+  ]);
 
-  return serializeBuyerTransaction({ ...row, accounts });
+  return serializeBuyerTransaction({ ...row, accounts, violationLevel });
 }
 
 export async function listBuyerBids(userId: string, options?: BuyerReadOptions) {

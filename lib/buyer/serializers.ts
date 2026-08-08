@@ -51,6 +51,7 @@ type BuyerTransactionShape = {
   amount: string;
   paymentMethod: string | null;
   status: string;
+  violationLevel?: number | null;
   proofUrl: string | null;
   rejectionReason?: string | null;
   referenceNumber: string | null;
@@ -353,6 +354,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
       : [],
     amount: toNumber(row.amount),
     status,
+    violationLevel: row.violationLevel ?? undefined,
     method,
     unit: row.unitName,
     unitAddress: row.unitAddress,

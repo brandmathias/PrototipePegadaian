@@ -547,10 +547,16 @@ export type SuperAdminBlacklistItem = {
 };
 
 type SuperAdminRestrictionLevelFilter =
-  "Semua" | "Level 1" | "Level 2" | "Level 3" | "Berakhir";
+  | "Semua"
+  | "Aktif"
+  | "Level 1"
+  | "Level 2"
+  | "Level 3"
+  | "Berakhir";
 
 const restrictionLevelFilters: SuperAdminRestrictionLevelFilter[] = [
   "Semua",
+  "Aktif",
   "Level 1",
   "Level 2",
   "Level 3",
@@ -8194,38 +8200,31 @@ export function SuperAdminBlacklistPage({
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] =
     useState<SuperAdminRestrictionLevelFilter>("Semua");
-  const activeEntries = entries.filter((entry) => entry.status === "Aktif");
   const isExpiredHistory = levelFilter === "Berakhir";
-  const ledgerEntries = isExpiredHistory
-    ? entries.filter((entry) => entry.status !== "Aktif")
-    : activeEntries;
-  const filteredEntries = ledgerEntries.filter((entry) => {
+  const filteredEntries = entries.filter((entry) => {
     const level = getSuperadminRestrictionLevel(entry);
     const matchesLevel =
       levelFilter === "Semua" ||
-      levelFilter === "Berakhir" ||
+      (levelFilter === "Aktif" && entry.status === "Aktif") ||
       (levelFilter === "Level 1" && level === 1) ||
       (levelFilter === "Level 2" && level === 2) ||
-      (levelFilter === "Level 3" && level >= 3);
+      (levelFilter === "Level 3" && level >= 3) ||
+      (levelFilter === "Berakhir" && entry.status !== "Aktif");
 
     return matchesLevel && matchesSuperadminRestrictionQuery(entry, query);
   });
   const filterCounts = restrictionLevelFilters.reduce(
     (accumulator, filter) => {
-      const entriesForFilter =
-        filter === "Berakhir"
-          ? entries.filter((entry) => entry.status !== "Aktif")
-          : activeEntries;
-
-      accumulator[filter] = entriesForFilter.filter((entry) => {
+      accumulator[filter] = entries.filter((entry) => {
         const level = getSuperadminRestrictionLevel(entry);
 
         return (
-          filter === "Berakhir" ||
           filter === "Semua" ||
+          (filter === "Aktif" && entry.status === "Aktif") ||
           (filter === "Level 1" && level === 1) ||
           (filter === "Level 2" && level === 2) ||
-          (filter === "Level 3" && level >= 3)
+          (filter === "Level 3" && level >= 3) ||
+          (filter === "Berakhir" && entry.status !== "Aktif")
         );
       }).length;
 
@@ -8243,31 +8242,11 @@ export function SuperAdminBlacklistPage({
         title="Pelanggaran Pengguna"
       />
 
-      <div className="grid gap-3 rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_18px_48px_-42px_rgba(8,69,50,0.38)] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
-          <Input
-            className="h-12 rounded-[1.05rem] border-[#dbe7df] bg-[#fbfcfb] pl-12 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0a6a49]/15"
-            placeholder="Cari nama, email, unit, atau status..."
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2 text-[0.72rem] font-black uppercase tracking-[0.12em] text-muted-foreground">
-          <span className="rounded-lg bg-[#f6f8f6] px-3 py-2 ring-1 ring-[#e3ebe5]">
-            {ledgerEntries.length} akun{" "}
-            {isExpiredHistory ? "berakhir" : "aktif"}
-          </span>
-        </div>
-      </div>
-
       <section className="overflow-hidden rounded-[1.35rem] border border-[#d8e4de] bg-white shadow-[0_26px_76px_-62px_rgba(8,69,50,0.44)]">
         <div className="border-b border-[#edf2ee] p-4 sm:p-5">
           <div>
             <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#13211c]">
-              {isExpiredHistory
-                ? "Riwayat Pembatasan Berakhir"
-                : "Pembatasan Aktif"}
+              Pembatasan Aktif
             </h2>
             <p className="mt-1 text-xs font-semibold text-muted-foreground">
               Ledger blacklist buyer berdasarkan level pelanggaran real dari
@@ -8275,43 +8254,55 @@ export function SuperAdminBlacklistPage({
             </p>
           </div>
 
-          <div className="admin-choice-shell mt-4 flex flex-wrap gap-2 rounded-[1.15rem] p-1">
-            {restrictionLevelFilters.map((filter) => {
-              const active = levelFilter === filter;
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#0a6a49]/42" />
+              <Input
+                className="h-12 rounded-[1.05rem] border-[#dbe7df] bg-[#fbfcfb] pl-12 text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#0a6a49]/15"
+                placeholder="Cari nama, email, level, atau alasan..."
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+            </div>
 
-              return (
-                <button
-                  aria-pressed={active}
-                  className="admin-choice-button inline-flex items-center gap-2 rounded-[0.92rem] px-3 py-2 text-[0.72rem] font-black uppercase tracking-[0.12em]"
-                  data-active={active}
-                  key={filter}
-                  type="button"
-                  onClick={() => setLevelFilter(filter)}
-                >
-                  {filter}
-                  <span className="admin-choice-count">
-                    {filterCounts[filter]}
-                  </span>
-                </button>
-              );
-            })}
+            <div className="admin-choice-shell flex flex-wrap gap-2 rounded-[1.15rem] p-1">
+              {restrictionLevelFilters.map((filter) => {
+                const active = levelFilter === filter;
+
+                return (
+                  <button
+                    aria-pressed={active}
+                    className="admin-choice-button inline-flex items-center gap-2 rounded-[0.92rem] px-3 py-2 text-[0.72rem] font-black uppercase tracking-[0.12em]"
+                    data-active={active}
+                    key={filter}
+                    type="button"
+                    onClick={() => setLevelFilter(filter)}
+                  >
+                    {filter}
+                    <span className="admin-choice-count">
+                      {filterCounts[filter]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {ledgerEntries.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="p-4 sm:p-5">
             <EmptyState
               className="p-6"
               description={
                 isExpiredHistory
                   ? "Belum ada riwayat pembatasan yang berakhir."
-                  : "Saat ini belum ada akun dengan blacklist aktif. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
+                  : "Belum ada catatan pembatasan akun. Daftar ini akan terisi otomatis jika ada pelanggaran lintas unit."
               }
               icon={ShieldBan}
               title={
                 isExpiredHistory
                   ? "Belum ada riwayat berakhir"
-                  : "Belum ada blacklist aktif"
+                  : "Belum ada catatan pembatasan"
               }
             />
           </div>

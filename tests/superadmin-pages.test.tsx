@@ -2396,10 +2396,21 @@ describe("superadmin pages", () => {
         content.includes("Sisa waktu 1 menit 5 detik"),
       ),
     ).toHaveLength(1);
+    expect(
+      screen.getByPlaceholderText("Cari nama, email, level, atau alasan..."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /aktif\s+1/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Dian")).toBeInTheDocument();
+    expect(screen.queryByText(/1 akun aktif/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^1 aktif$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/level 3:/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/berakhir terdekat/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })).toHaveLength(
+      2,
+    );
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveClass(
       "hover:bg-[#006747]",
       "hover:text-white",
     );
@@ -2413,6 +2424,11 @@ describe("superadmin pages", () => {
         content.includes("Sisa waktu 1 menit 4 detik"),
       ),
     ).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: /aktif\s+1/i }));
+
+    expect(screen.getByText("Raras")).toBeInTheDocument();
+    expect(screen.queryByText("Dian")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /berakhir/i }));
 

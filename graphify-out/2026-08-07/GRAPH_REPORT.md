@@ -1,16 +1,16 @@
-# Graph Report - PrototipePegadaian2  (2026-08-08)
+# Graph Report - PrototipePegadaian2  (2026-07-29)
 
 ## Corpus Check
-- 681 files · ~4,257,827 words
+- 677 files · ~4,254,462 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4438 nodes · 9331 edges · 267 communities (239 shown, 28 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 53 edges (avg confidence: 0.61)
+- 4394 nodes · 9238 edges · 276 communities (248 shown, 28 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 57 edges (avg confidence: 0.63)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cd5a594c`
+- Built from commit: `8674b641`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -151,11 +151,13 @@
 - AdminTransactionReceiptPage
 - bank-logo.tsx
 - buyer-alert-center.test.tsx
+- admin-barang-detail-media-viewer.tsx
 - next.config.mjs
 - apply-handover-auto-completion-migration.ts
 - notification-routes.test.ts
-- help-center-page.tsx
+- listAdminTransactions
 - middleware.ts
+- remove-handover-complaint.ts
 - superadmin-account-routes.test.ts
 - vercel.json
 - admin-transaction.service.ts
@@ -177,6 +179,7 @@
 - apply-handover-auto-completion-migration.ts
 - Blacklist Review Governance Implementation Plan
 - Cross-Role Transaction Integration Design
+- apply-canonical-codes-migration.ts
 - Buyer Auth Backend Implementation Plan
 - Cross-Role Transaction Integration Implementation Plan
 - Dokumentasi Sistem Desain & Kode Frontend: Pemasaran Barang[cite: 1]
@@ -245,14 +248,20 @@
 - 6. State Machine
 - 7. Route Utama
 - Fixed-Price Catalog Position Implementation Plan
+- @types/react-dom
+- admin-barang-detail-media-viewer.tsx
 - Global Constraints
 - SuperAdminBlacklistPage
+- lot-media-gallery.tsx
 - push-subscription-route.test.ts
+- marketing-performance-panel.tsx
 - push-service-worker.js
-- backfill-blacklist-violation-totals.ts
+- fixed-price-visibility.ts
+- (user)/layout.tsx
+- apply-customer-data-standard-migration.ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `cn()` - 238 edges
+1. `cn()` - 237 edges
 2. `useToast()` - 50 edges
 3. `formatAppDateTime()` - 50 edges
 4. `requireAdminApiSession()` - 47 edges
@@ -260,33 +269,33 @@
 6. `getAdminUnitPageContext()` - 37 edges
 7. `Button` - 34 edges
 8. `requireBuyerApiSession()` - 30 edges
-9. `getBlacklistRestrictionPolicy()` - 29 edges
-10. `db` - 29 edges
+9. `db` - 29 edges
+10. `getBuyerSessionUser()` - 28 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Page()` --calls--> `getSuperadminBlacklistByUserId()`  [EXTRACTED]
-  app/superadmin/blacklist/detail/[id]/page.tsx → lib/services/blacklist.service.ts
-- `Page()` --calls--> `listBlacklists()`  [EXTRACTED]
-  app/superadmin/blacklist/page.tsx → lib/services/blacklist.service.ts
-- `FormInput()` --calls--> `cn()`  [EXTRACTED]
-  components/admin-unit/admin-inventory-create-form.tsx → lib/utils.ts
-- `CategorySegments()` --calls--> `cn()`  [EXTRACTED]
-  components/admin-unit/admin-inventory-create-form.tsx → lib/utils.ts
-- `ConditionSegments()` --calls--> `cn()`  [EXTRACTED]
-  components/admin-unit/admin-inventory-create-form.tsx → lib/utils.ts
+- `ModeCard()` --calls--> `cn()`  [EXTRACTED]
+  components/admin-unit/admin-marketing-form.tsx → lib/utils.ts
+- `AdminInventoryWorkspace()` --indirect_call--> `category()`  [INFERRED]
+  components/admin/admin-inventory-workspace.tsx → lib/blacklist/wanea-real-violation-seed.ts
+- `AdminInventoryHistoryWorkspace()` --indirect_call--> `category()`  [INFERRED]
+  components/admin/admin-inventory-workspace.tsx → lib/blacklist/wanea-real-violation-seed.ts
+- `ProfileCard()` --calls--> `cn()`  [EXTRACTED]
+  components/admin/admin-profile-workspace.tsx → lib/utils.ts
+- `DetailRow()` --calls--> `cn()`  [EXTRACTED]
+  components/admin/admin-profile-workspace.tsx → lib/utils.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (267 total, 28 thin omitted)
+## Communities (276 total, 28 thin omitted)
 
 ### Community 0 - "admin-pages.lazy.tsx"
-Cohesion: 0.08
-Nodes (28): Page(), Page(), Page(), Context, POST(), readMediaPayload(), AdminInventoryConvertPage(), AdminInventoryCreatePage() (+20 more)
+Cohesion: 0.07
+Nodes (39): Page(), Page(), Page(), Page(), Page(), Page(), Page(), Page() (+31 more)
 
 ### Community 1 - "admin-barang.service.ts"
-Cohesion: 0.12
-Nodes (31): riwayatPerpanjangan, AdminBarangHistoryEntry, AdminBarangMarketingTimelineRow, AdminBarangMediaChangesInput, AdminBarangTimelineSourceRow, AdminBarangTransactionTimelineRow, AdminBarangUpdateInput, alignStaleInitialHistoryDates() (+23 more)
+Cohesion: 0.11
+Nodes (33): Page(), AdminInventoryDetailPage(), riwayatPerpanjangan, AdminBarangHistoryEntry, AdminBarangMarketingTimelineRow, AdminBarangMediaChangesInput, AdminBarangTimelineSourceRow, AdminBarangTransactionTimelineRow (+25 more)
 
 ### Community 2 - "admin-inventory-workspace.tsx"
 Cohesion: 0.05
@@ -294,71 +303,71 @@ Nodes (71): AdminBlacklistItem, AdminBlacklistList(), BlacklistFilter, formatSho
 
 ### Community 3 - "superadmin-pages.tsx"
 Cohesion: 0.04
-Nodes (38): dashboardAmountTickValues, dashboardChartFrame, dashboardMonthLabels, dashboardNumberFormatter, dashboardTrendRangeOptions, getRestrictionDurationDays(), getRestrictionLevelMeta(), getRestrictionProgress() (+30 more)
+Nodes (55): addEventToDashboardPoint(), buildChartTicks(), buildCustomDashboardTrendRange(), clampChartValue(), createDashboardTrendPoint(), dashboardAmountTickValues, dashboardChartFrame, dashboardMonthLabels (+47 more)
 
 ### Community 4 - "cn"
-Cohesion: 0.06
-Nodes (33): AuthLayout(), LoginForm(), LoginSuccessTransition(), LogoutSuccessTransition(), LogoutButton(), LogoutButtonProps, RegisterForm(), AdminProfileMenu() (+25 more)
+Cohesion: 0.09
+Nodes (27): LoginSuccessTransition(), LogoutSuccessTransition(), LogoutButton(), LogoutButtonProps, AdminProfileMenu(), AdminProfileMenuProps, getInitials(), BuyerProfileMenu() (+19 more)
 
 ### Community 5 - "admin-pemasaran.service.ts"
-Cohesion: 0.16
-Nodes (19): AdminLayout(), getCachedAdminLayoutMetrics, getCachedAdminLayoutUnit, isAdminReceiptRoute(), getDeviceLabel(), Page(), getDeviceLabel(), Page() (+11 more)
+Cohesion: 0.05
+Nodes (53): Page(), Page(), Page(), Page(), Page(), Page(), Context, POST() (+45 more)
 
 ### Community 6 - "user-pages.tsx"
 Cohesion: 0.06
-Nodes (43): BidHistoryPage(), BidPaymentContext(), bidStatusMeta, BuyerDashboardViolation, BuyerProfileStatus, BuyerSummary, BuyerTransactionInlineReceiptPrint(), getBidAmountLabel() (+35 more)
+Nodes (43): LoginHistoryDialog(), LoginHistoryDialogProps, BidHistoryPage(), BidPaymentContext(), bidStatusMeta, BuyerDashboardViolation, BuyerProfileStatus, BuyerSummary (+35 more)
 
 ### Community 7 - "unit-form.tsx"
 Cohesion: 0.05
-Nodes (50): AdminSelect(), AdminSelectOption, AdminMarketingAvailabilityAction(), hasDeadlineElapsed(), AdminUnitActionButtonProps, CompletePurchaseButton(), FixedPriceBuyButton(), PurchaseStatus (+42 more)
+Nodes (47): AdminBarangMedia, AdminBarangMediaDraftChange, AdminBarangMediaManager(), DraftMedia, revokePreviewUrl(), AdminUnitActionButtonProps, CompletePurchaseButton(), FixedPriceBuyButton() (+39 more)
 
 ### Community 8 - "admin-transaction-pages.tsx"
 Cohesion: 0.11
-Nodes (18): AdminUnitActionButton(), AdminTransactionDetailWorkspacePage(), AdminTransactionHistoryPage(), AdminTransactionHubPage(), AdminTransactionItem, AdminTransactionVerificationPage(), getFilteredVerificationTransactions(), getFixedPriceTransactions() (+10 more)
+Nodes (19): AdminUnitActionButton(), AdminTransactionDetailWorkspacePage(), AdminTransactionHistoryPage(), AdminTransactionHubPage(), AdminTransactionItem, AdminTransactionVerificationPage(), getFilteredVerificationTransactions(), getFixedPriceTransactions() (+11 more)
 
 ### Community 9 - "toast.tsx"
 Cohesion: 0.05
-Nodes (51): AdminStatusBadge(), AdminOptionGrid(), AdminOptionGridProps, AccountCopyButton(), DirectPaymentDisclaimer(), DirectPaymentDisclaimerProps, BuyerProfileSettingsForm(), BuyerProfileSettingsFormProps (+43 more)
+Nodes (41): AdminInventoryCreateForm(), AdminMediaUploadGallery(), categoryOptions, CategorySegments(), ChecklistItem(), ChecklistState, conditionOptions, ConditionSegments() (+33 more)
 
 ### Community 10 - "admin-pages.tsx"
 Cohesion: 0.05
-Nodes (24): AdminAuctionDetailPage(), AdminAuctionItem, AdminBarangHistoryActionKey, AdminBarangMedia, AdminBlacklistDetailPage(), AdminBlacklistItem, AdminBlacklistPage(), AdminHeroPill() (+16 more)
+Nodes (26): AdminMarketingAvailabilityAction(), hasDeadlineElapsed(), AdminAuctionDetailPage(), AdminAuctionItem, AdminBarangHistoryActionKey, AdminBarangMedia, AdminBlacklistDetailPage(), AdminBlacklistItem (+18 more)
 
 ### Community 11 - "mock-data.ts"
 Cohesion: 0.05
 Nodes (35): AdminAuctionStatus, AdminBlacklistStatus, AdminInventoryStatus, AdminStatusMeta, AdminTransactionStatus, AppRole, statusMeta, adminAuctions (+27 more)
 
 ### Community 12 - "monitoring.service.ts"
-Cohesion: 0.07
-Nodes (42): GET(), Page(), Page(), getCachedSuperAdminMonitoring, Page(), SuperAdminDashboardPage(), SuperAdminMonitoringPage(), addDays() (+34 more)
+Cohesion: 0.11
+Nodes (29): GET(), Page(), Page(), SuperAdminMonitoringPage(), addDays(), addRowToTrendPoint(), buildSuperAdminUnitRowsQuery(), buildValidatedTrend() (+21 more)
 
 ### Community 13 - "auction-winner-hero-stage.tsx"
 Cohesion: 0.06
 Nodes (34): AuctionWinnerCountdown(), AuctionWinnerCountdownProps, CountdownParts, getTargetParts(), AuctionWinnerHeroStage(), AuctionWinnerHeroStageProps, BURST_COLORS, BURST_CONFETTI_PIECES (+26 more)
 
 ### Community 14 - "wishlist.service.ts"
-Cohesion: 0.10
-Nodes (26): Context, POST(), riwayatStatusBarang, ADMIN_MARKETING_TRANSACTION_PRIORITY, AdminMarketingBidRow, AdminMarketingTransactionSummary, getAdminMarketingTransactionPriority(), getAdminMarketingTransactionTime() (+18 more)
+Cohesion: 0.17
+Nodes (16): DELETE(), POST(), Page(), mediaBarang, buyerWishlist, getBuyerWishlistCount(), getMediaByBarangId(), getUnavailableReason() (+8 more)
 
 ### Community 15 - "admin-unit.service.ts"
-Cohesion: 0.12
-Nodes (22): Context, POST(), Context, DELETE(), Context, POST(), Context, errorResponse() (+14 more)
+Cohesion: 0.08
+Nodes (30): Context, POST(), Context, POST(), Context, errorResponse(), GET(), PUT() (+22 more)
 
 ### Community 16 - "notification.service.ts"
-Cohesion: 0.06
-Nodes (56): AdminNotificationsRoute(), PATCH(), POST(), GET(), DELETE(), denied(), GET(), POST() (+48 more)
+Cohesion: 0.11
+Nodes (26): PATCH(), GET(), Context, PATCH(), GET(), Context, PATCH(), canonicalBlacklistEntityId() (+18 more)
 
 ### Community 17 - "unit.service.ts"
-Cohesion: 0.09
-Nodes (33): DELETE(), GET(), PUT(), toErrorResponse(), GET(), POST(), toErrorResponse(), GET() (+25 more)
+Cohesion: 0.10
+Nodes (30): DELETE(), GET(), PUT(), toErrorResponse(), GET(), POST(), toErrorResponse(), Page() (+22 more)
 
 ### Community 18 - "admin-marketing-pages.tsx"
 Cohesion: 0.06
-Nodes (35): buildLatestMarketingFeedItems(), compactCountdownValue(), compareMarketingRecency(), fixedPriceRejectionReasonOptions, fixedPriceRejectionReasons, formatCountdownUnit(), getBidDisplayRows(), getCountdownParts() (+27 more)
+Nodes (37): buildLatestMarketingFeedItems(), compactCountdownValue(), compareMarketingRecency(), FixedPriceAuditGallery(), fixedPriceMediaLabel(), fixedPriceRejectionReasonOptions, fixedPriceRejectionReasons, formatCountdownUnit() (+29 more)
 
 ### Community 19 - "cron.service.ts"
-Cohesion: 0.17
-Nodes (19): Context, GET(), GET(), Page(), PurchasePage(), serializePublicLot(), fixedPriceCatalogAvailabilityPredicate(), getMediaByBarangId() (+11 more)
+Cohesion: 0.20
+Nodes (16): Context, GET(), GET(), Page(), PurchasePage(), serializePublicLot(), fixedPriceCatalogAvailabilityPredicate(), getMediaByBarangId() (+8 more)
 
 ### Community 20 - "admin-dashboard.service.ts"
 Cohesion: 0.05
@@ -366,19 +375,19 @@ Nodes (42): Admin Unit, Admin Unit, Alasan Pemilihan, Arsitektur, Auth dan Role 
 
 ### Community 21 - "superadmin-pages.lazy.tsx"
 Cohesion: 0.06
-Nodes (30): Page(), ComponentObjectProps, LazySuperAdminAdminsPage, LazySuperAdminBlacklistPage, LazySuperAdminCreateUnitPage, LazySuperAdminDashboardPage, LazySuperAdminManagementAdminDetailPage, LazySuperAdminManagementPage (+22 more)
+Nodes (28): ComponentObjectProps, LazySuperAdminAdminsPage, LazySuperAdminBlacklistPage, LazySuperAdminCreateUnitPage, LazySuperAdminDashboardPage, LazySuperAdminManagementAdminDetailPage, LazySuperAdminManagementPage, LazySuperAdminManagementUnitDetailPage (+20 more)
 
 ### Community 22 - "superadmin-account-workspace.tsx"
 Cohesion: 0.07
-Nodes (34): actionLabel(), AuditAccountPanel(), auditActionCatalog, AuditActionFilter, auditActionFilterOptions, AuditTimelineFilter, auditTimelineLabel(), auditTimelineOptions (+26 more)
+Nodes (36): actionLabel(), AuditAccountPanel(), auditActionCatalog, AuditActionFilter, auditActionFilterOptions, AuditTimelineFilter, auditTimelineLabel(), auditTimelineOptions (+28 more)
 
 ### Community 23 - "admin-barang-edit-form.tsx"
-Cohesion: 0.14
-Nodes (21): AdminBlacklistDetailWorkspace(), AdminBlacklistItem, AuctionDetailPanel(), clampLevel(), formatDisplayDate(), formatDisplayDateTime(), formatMoney(), getCurrentLevel() (+13 more)
+Cohesion: 0.15
+Nodes (20): AdminLayout(), getCachedAdminLayoutMetrics, getCachedAdminLayoutUnit, isAdminReceiptRoute(), getDeviceLabel(), Page(), getDeviceLabel(), Page() (+12 more)
 
 ### Community 24 - "wishlist-page.tsx"
 Cohesion: 0.08
-Nodes (32): CheckFilterButton(), clamp(), FilterSection(), formatPriceInput(), getCategoryIcon(), getCountLabel(), getPaginationItems(), getSubtype() (+24 more)
+Nodes (33): CheckFilterButton(), clamp(), FilterSection(), formatPriceInput(), getCategoryIcon(), getCountLabel(), getPaginationItems(), getSubtype() (+25 more)
 
 ### Community 25 - "catalog-page.tsx"
 Cohesion: 0.10
@@ -389,112 +398,112 @@ Cohesion: 0.06
 Nodes (33): dom, dom.iterable, esnext, next-env.d.ts, .next/types/**/*.ts, node, node_modules, @testing-library/jest-dom (+25 more)
 
 ### Community 27 - "admin-transaction.service.ts"
-Cohesion: 0.08
-Nodes (54): GET(), handleCron(), POST(), GET(), GET(), Page(), getBuyerLoserAnnouncementHref(), appendItemStatusHistory() (+46 more)
+Cohesion: 0.09
+Nodes (49): GET(), handleCron(), POST(), getBuyerLoserAnnouncementHref(), appendItemStatusHistory(), BidOutcomeInput, BlacklistExpirySummary, BlacklistNotificationPayload (+41 more)
 
 ### Community 28 - "superadmin-account.service.ts"
-Cohesion: 0.16
-Nodes (27): Page(), Page(), superadminAccountAuditLogs, activeOwnerWhere(), ActorRow, assertEmailAvailable(), assertOwnerGuardrail(), assertPhoneAvailable() (+19 more)
+Cohesion: 0.09
+Nodes (41): Context, POST(), toErrorResponse(), Context, PATCH(), toErrorResponse(), GET(), POST() (+33 more)
 
 ### Community 29 - "superadmin-blacklist-detail-workspace.tsx"
-Cohesion: 0.12
-Nodes (29): Page(), BlacklistDetailScope, clampLevel(), CountdownPanel(), formatDisplayDate(), formatDisplayDateTime(), formatMoney(), getCurrentViolationItem() (+21 more)
+Cohesion: 0.13
+Nodes (28): BlacklistDetailScope, clampLevel(), CountdownPanel(), formatDisplayDate(), formatDisplayDateTime(), formatMoney(), getCurrentViolationItem(), getDeadline() (+20 more)
 
 ### Community 30 - "public-pages.tsx"
 Cohesion: 0.08
-Nodes (35): metadata, VICKREY_TERMS, VickreyBidForm(), VickreyBidFormProps, VIOLATION_LEVELS, BidPage(), BuyerPublicStatus, DetailInfoItem (+27 more)
+Nodes (36): metadata, AuctionLoserRecommendationCountdown(), PurchaseStatus, PurchaseWorkflow(), PurchaseWorkflowProps, VICKREY_TERMS, VickreyBidForm(), VickreyBidFormProps (+28 more)
 
 ### Community 31 - "admin-dashboard-trend-chart.tsx"
 Cohesion: 0.12
 Nodes (29): addEventToTrendPoint(), AdminDashboardTrendChart(), buildChartModel(), buildStripMetrics(), chartAxisTextStyle, chartAxisTickValues, createTrendPoint(), DashboardStripMetric (+21 more)
 
 ### Community 32 - "profile-settings-form.tsx"
-Cohesion: 0.12
-Nodes (15): describeTarget(), dryRun, main(), migrationUrl, describeTarget(), dryRun, main(), migrationUrl (+7 more)
+Cohesion: 0.10
+Nodes (27): WANEA_REAL_BUYER_EMAILS, WaneaRealBuyerEmail, insertRows(), apply, applyRows(), audit(), blacklistIds, createMissingBuyers() (+19 more)
 
 ### Community 33 - "transactions-workspace.tsx"
 Cohesion: 0.10
 Nodes (28): BidFilter, BidRow(), FilterChip(), FilterTone, formatCompactCountdownLabel(), getBidFilterStatus(), getBidStatusPill(), getFilterToneMeta() (+20 more)
 
 ### Community 34 - "formatSuperAdminDateTime"
-Cohesion: 0.10
-Nodes (36): FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES, formatFullCurrency(), formatSuperAdminDateTime(), formatSuperAdminOptionalCurrency(), getSuperAdminCompactCurrencyTextClass(), getSuperAdminCurrencyDigitCount(), getSuperAdminHighestBidAmount(), getSuperAdminMarketingDateLabel() (+28 more)
+Cohesion: 0.08
+Nodes (41): FAILED_SUPERADMIN_VICKREY_TRANSACTION_STATUSES, formatSuperAdminDateTime(), formatSuperAdminOptionalCurrency(), getSuperAdminCompactCurrencyTextClass(), getSuperAdminCompletionLabel(), getSuperAdminCurrencyDigitCount(), getSuperAdminHighestBidAmount(), getSuperAdminMarketingReceiptImageUrl() (+33 more)
 
 ### Community 35 - "cross-unit-violation-scenario.ts"
 Cohesion: 0.07
 Nodes (47): assert(), CROSS_UNIT_SCENARIO_EMAILS, CROSS_UNIT_SCENARIO_IDENTITIES, CROSS_UNIT_VIOLATION_SCENARIO, CrossUnitScenarioEmail, CrossUnitViolationIncident, defineIncident(), getExpectedFinalRestrictions() (+39 more)
 
 ### Community 36 - "getServerSession"
-Cohesion: 0.27
-Nodes (9): globalBlacklistRow(), globalFacts, installDatabaseScenario(), L1_OCCURRED_AT, L2_OCCURRED_AT, L3_OCCURRED_AT, localTraceRow(), mocks (+1 more)
+Cohesion: 0.10
+Nodes (32): GET(), GET(), Page(), Page(), SuperAdminBlacklistPage(), hasCountedBlacklistViolations(), serializeBlacklistHistoryEntry(), SerializeBlacklistHistoryEntryInput (+24 more)
 
 ### Community 37 - "devDependencies"
 Cohesion: 0.06
 Nodes (33): autoprefixer, drizzle-kit, eslint, eslint-config-next, jsdom, devDependencies, autoprefixer, drizzle-kit (+25 more)
 
 ### Community 38 - "button.tsx"
-Cohesion: 0.09
-Nodes (38): assert(), getWaneaRealExpectedRestrictions(), getWaneaRealScenarioDurationHours(), incident(), ScenarioBid, ScenarioMedia, validateWaneaRealViolationScenario(), WANEA_REAL_BUYER_EMAILS (+30 more)
+Cohesion: 0.15
+Nodes (19): assert(), getWaneaRealExpectedRestrictions(), getWaneaRealScenarioDurationHours(), incident(), ScenarioBid, ScenarioMedia, validateWaneaRealViolationScenario(), WANEA_REAL_BUYER_IDENTITIES (+11 more)
 
 ### Community 39 - "admin-dashboard-page.tsx"
-Cohesion: 0.10
-Nodes (27): ACTIONABLE_TRANSACTION_STATUSES, AdminDashboardData, AdminDashboardHero(), AdminDashboardMetrics, AdminDashboardPage(), buildDashboardCards(), buildDashboardTasks(), cx() (+19 more)
+Cohesion: 0.09
+Nodes (29): ACTIONABLE_TRANSACTION_STATUSES, AdminDashboardData, AdminDashboardHero(), AdminDashboardMetrics, AdminDashboardPage(), buildDashboardCards(), buildDashboardTasks(), cx() (+21 more)
 
 ### Community 40 - "superadmin/validation.ts"
-Cohesion: 0.16
-Nodes (22): formatSbgCode(), isCanonicalSbgCode(), extractUnitNumber(), formatUnitCode(), getProvinceRegionCode(), IndonesiaProvince, normalizeIndonesiaProvince(), normalizeProvinceName() (+14 more)
+Cohesion: 0.14
+Nodes (24): UnitEditForm(), formatSbgCode(), isCanonicalSbgCode(), extractUnitNumber(), formatUnitCode(), getProvinceRegionCode(), INDONESIA_PROVINCES, IndonesiaProvince (+16 more)
 
 ### Community 41 - "admin-blacklist.service.ts"
-Cohesion: 0.08
-Nodes (41): GET(), Context, GET(), GET(), hasCountedBlacklistViolations(), serializeBlacklistHistoryEntry(), SerializeBlacklistHistoryEntryInput, toActionLabel() (+33 more)
+Cohesion: 0.13
+Nodes (19): barang, barangSbgNumberSequence, bids, pemasaran, pemasaranViews, riwayatStatusBarang, transaksi, user (+11 more)
 
 ### Community 42 - "buyer.service.ts"
-Cohesion: 0.04
-Nodes (77): Context, POST(), readPurchasePayload(), Context, POST(), POST(), PUT(), GET() (+69 more)
+Cohesion: 0.06
+Nodes (56): Context, POST(), PUT(), GET(), Context, POST(), GET(), Page() (+48 more)
 
 ### Community 43 - "MarketingFeedRow"
-Cohesion: 0.19
-Nodes (19): AdminMarketingUnifiedPage(), getAuctionFailureReason(), getFixedPriceWorkflowStatus(), getMarketingAction(), getMarketingDateYear(), getMarketingDetailHref(), getMarketingIterationDateLabel(), getMarketingIterationSummary() (+11 more)
+Cohesion: 0.17
+Nodes (22): AdminMarketingUnifiedPage(), FixedPriceCard(), getAuctionFailureReason(), getFixedPriceOperationalNote(), getFixedPriceVisibleBuyerName(), getFixedPriceWorkflowStatus(), getMarketingAction(), getMarketingDateYear() (+14 more)
 
 ### Community 44 - "superadmin-unit-barang-detail-page.tsx"
-Cohesion: 0.13
-Nodes (32): errorResponse(), POST(), readBarangPayload(), normalizeCustomerNumber(), BarangSpecificationField, BarangSpecificationRecord, getBarangSpecificationFields(), normalizeBarangSpecifications() (+24 more)
+Cohesion: 0.19
+Nodes (29): GET(), label(), ACTIONABLE_TRANSACTION_STATUSES, addRowToBucket(), buildAllTimeTrend(), buildDayTrend(), buildMonthTrend(), buildRecentMonthsTrend() (+21 more)
 
 ### Community 45 - "admin-redeem-form.tsx"
-Cohesion: 0.13
-Nodes (18): addDays(), AdminDatePicker(), CalendarPosition, dayNames, formatDisplayDate(), getDateAfter(), monthNames, parseIsoDate() (+10 more)
+Cohesion: 0.25
+Nodes (12): addDays(), AdminDatePicker(), CalendarPosition, dayNames, formatDisplayDate(), getDateAfter(), monthNames, parseIsoDate() (+4 more)
 
 ### Community 46 - "buyer.ts"
-Cohesion: 0.08
-Nodes (24): TransactionsPage(), createReceiptPdf(), TransactionReceiptAutoPrint(), waitForReceiptAssets(), jspdf, BuyerSessionUser, BuyerBankAccount, BuyerBidStatus (+16 more)
+Cohesion: 0.11
+Nodes (19): createReceiptPdf(), TransactionReceiptAutoPrint(), waitForReceiptAssets(), jspdf, BuyerBankAccount, BuyerBidStatus, BuyerHandoverProof, BuyerPaymentMethod (+11 more)
 
 ### Community 47 - "session.ts"
-Cohesion: 0.08
-Nodes (27): AdminBarangEditForm(), AdminBarangEditSubmitPayload, AdminBarangEditValue, categories, conditions, getSpecificationSuffix(), normalizeDigits(), normalizeEditableCategory() (+19 more)
+Cohesion: 0.11
+Nodes (17): AuthMeResponse, BuyerTopNav, getViewerLabel(), guestNav, isPublicBuyerSurface(), PublicShell(), PublicShellProps, PublicViewer (+9 more)
 
 ### Community 48 - "lib/auth.ts"
-Cohesion: 0.20
-Nodes (14): { GET, POST, PUT, PATCH, DELETE }, auth, BuyerLoginPayload, BuyerRegisterPayload, normalizeBuyerEmail(), normalizeBuyerNationalId(), normalizeBuyerPhoneNumber(), validateBuyerEmail() (+6 more)
+Cohesion: 0.19
+Nodes (16): { GET, POST, PUT, PATCH, DELETE }, auth, BuyerLoginPayload, BuyerRegisterPayload, normalizeBuyerEmail(), normalizeBuyerNationalId(), normalizeBuyerPhoneNumber(), validateBuyerEmail() (+8 more)
 
 ### Community 49 - "dependencies"
 Cohesion: 0.07
 Nodes (29): better-auth, @better-auth/drizzle-adapter, class-variance-authority, clsx, dotenv, drizzle-orm, html2canvas, lucide-react (+21 more)
 
 ### Community 50 - "admin-blacklist-detail-workspace.tsx"
-Cohesion: 0.09
-Nodes (31): POST(), toErrorResponse(), Page(), getCachedSuperAdminUnitBarangDetail, Page(), getCachedUnitById, Page(), Page() (+23 more)
+Cohesion: 0.10
+Nodes (30): Page(), getCachedUnitById, Page(), Page(), SuperAdminManagementUnitDetailPage(), SuperAdminUnitAccountsPage(), SuperAdminUnitDetailPage(), account (+22 more)
 
 ### Community 51 - "profile-settings-form.tsx"
-Cohesion: 0.33
-Nodes (5): AdminFixedPriceListPage(), AdminVickreyAuctionDetailPage(), FAILED_VICKREY_TRANSACTION_STATUSES, isVickreyFailureArchive(), router
+Cohesion: 0.24
+Nodes (8): ActivePanel, AdminProfileData, AdminProfileWorkspace(), DetailRow(), getInitials(), ProfileCard(), profile, router
 
 ### Community 52 - "categories.ts"
-Cohesion: 0.15
-Nodes (17): ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, ADMIN_UNIT_CATEGORY_OPTIONS, AdminUnitCategory, AdminUnitCategoryIconKey, buildCategoryHaystack(), CATEGORY_LABEL_BY_VALUE, CategoryResolutionInput, ELEKTRONIK_KEYWORDS (+9 more)
+Cohesion: 0.12
+Nodes (21): categoryMap, LotFigure(), LotFigureProps, ADMIN_UNIT_CATEGORY_FILTER_OPTIONS, ADMIN_UNIT_CATEGORY_OPTIONS, AdminUnitCategory, AdminUnitCategoryIconKey, buildCategoryHaystack() (+13 more)
 
 ### Community 53 - "renewed-cross-unit-violation-scenario.ts"
-Cohesion: 0.08
-Nodes (41): assert(), date(), getRenewedExpectedFinalRestrictions(), getRenewedScenarioDurationHours(), ids(), incident(), RENEWED_CROSS_UNIT_EMAILS, RENEWED_CROSS_UNIT_IDENTITIES (+33 more)
+Cohesion: 0.09
+Nodes (40): assert(), date(), getRenewedExpectedFinalRestrictions(), getRenewedScenarioDurationHours(), ids(), incident(), RENEWED_CROSS_UNIT_EMAILS, RENEWED_CROSS_UNIT_IDENTITIES (+32 more)
 
 ### Community 54 - "notification-events.ts"
 Cohesion: 0.12
@@ -505,168 +514,168 @@ Cohesion: 0.14
 Nodes (20): getUnitAdminAuditRepairContext(), listUnitAdminAuditRepairCandidates(), QueryResult, repairUnitAdminAuditTrail(), UNIT_ADMIN_AUDIT_REPAIR_CANDIDATES_SQL, UNIT_ADMIN_AUDIT_REPAIR_CONTEXT_SQL, UnitAdminAuditRepairCandidate, UnitAdminAuditRepairClient (+12 more)
 
 ### Community 56 - "apply-cross-unit-violation-scenario.ts"
-Cohesion: 0.19
-Nodes (11): clearGlobalThemeSideEffects(), DashboardShell(), DashboardShellProps, NavIconName, NavItem, SidebarMetric, adminNavigation, superadminNavigation (+3 more)
+Cohesion: 0.16
+Nodes (23): DELETE(), denied(), GET(), POST(), requireAuthenticatedApiSession(), pushDeliveries, pushSubscriptions, buildPushPayload() (+15 more)
 
 ### Community 57 - "rekening-unit.service.ts"
-Cohesion: 0.06
-Nodes (41): Page(), Page(), Page(), Page(), Page(), Page(), getCachedAdminDashboardData, Page() (+33 more)
+Cohesion: 0.19
+Nodes (17): DELETE(), PUT(), toErrorResponse(), GET(), POST(), toErrorResponse(), isBlacklistRestrictionActive(), createUnitAccount() (+9 more)
 
 ### Community 58 - "role-notifications-panel.tsx"
-Cohesion: 0.14
-Nodes (17): AdminUnitNotificationsPage(), AdminUnitNotificationsPageProps, AdminPageHero(), AdminPageHeroProps, formatNotificationDateTime(), getMetadataTimestamp(), getNotificationDisplayTimestamp(), getNotificationTone() (+9 more)
+Cohesion: 0.12
+Nodes (20): AdminNotificationsRoute(), SuperAdminNotificationsRoute(), AdminUnitNotificationsPage(), AdminUnitNotificationsPageProps, AdminPageHero(), AdminPageHeroProps, formatNotificationDateTime(), getMetadataTimestamp() (+12 more)
 
 ### Community 59 - "build_kuesioner_uat.py"
 Cohesion: 0.30
 Nodes (22): add_callout(), add_footer(), add_heading(), add_label_value_table(), add_question_table(), add_response_lines(), add_scale_table(), add_scenario_table() (+14 more)
 
 ### Community 60 - "admin-unit/validation.ts"
-Cohesion: 0.08
-Nodes (31): GET(), getVisitId(), normalizeViewerKey(), POST(), DELETE(), POST(), Page(), Page() (+23 more)
+Cohesion: 0.20
+Nodes (22): normalizeCustomerNumber(), normalizeBarangSpecifications(), AdminBarangMediaInput, ALLOWED_CATEGORIES, ALLOWED_CONDITIONS, ALLOWED_MEDIA_TYPES, normalizeDate(), normalizeDueAt() (+14 more)
 
 ### Community 61 - "buyer-top-nav.tsx"
-Cohesion: 0.10
-Nodes (24): addEventToDashboardPoint(), buildChartTicks(), buildCustomDashboardTrendRange(), clampChartValue(), createDashboardTrendPoint(), extractLeadingNumber(), findMetric(), findSnapshot() (+16 more)
+Cohesion: 0.16
+Nodes (11): Page(), getBuyerPhone(), ProfileDetailCard(), ProfileDetailRow(), ProfilePage(), BuyerSessionUser, BuyerProfileSummary, bids (+3 more)
 
 ### Community 62 - "getCountdownState"
 Cohesion: 0.18
-Nodes (15): AuctionCountdownTiles(), AuctionCountdownTilesProps, parseCountdownSegments(), AuctionLoserRecommendationCountdown(), AuctionLoserRecommendationCountdownProps, LiveCountdown(), LiveCountdownProps, parseCountdownSegments() (+7 more)
+Nodes (14): AuctionCountdownTiles(), AuctionCountdownTilesProps, parseCountdownSegments(), AuctionLoserRecommendationCountdownProps, LiveCountdown(), LiveCountdownProps, parseCountdownSegments(), RestrictionCountdownTiles() (+6 more)
 
 ### Community 63 - "auction-loser-hero-stage.tsx"
 Cohesion: 0.11
 Nodes (20): AuctionLoserHeroStage(), AuctionLoserHeroStageProps, BURST_COLORS, BURST_EMITTERS, BURST_PIECES, BurstPiece, BurstVariant, formatFixed() (+12 more)
 
 ### Community 64 - "effective-state.ts"
-Cohesion: 0.24
-Nodes (25): label(), ACTIONABLE_TRANSACTION_STATUSES, addRowToBucket(), buildAllTimeTrend(), buildDayTrend(), buildMonthTrend(), buildRecentMonthsTrend(), buildRollingDayTrend() (+17 more)
+Cohesion: 0.19
+Nodes (14): GET(), getVisitId(), normalizeViewerKey(), POST(), createStatsMap(), EMPTY_LOT_INSIGHTS, getLotStats(), getLotStatsByIds() (+6 more)
 
 ### Community 65 - "public-catalog.service.ts"
-Cohesion: 0.31
-Nodes (7): HandoverProofUploadForm(), HandoverProofUploadFormProps, displayValue(), getAudienceSubtitle(), HandoverProofCard(), HandoverProofCardProps, HandoverProofViewModel
+Cohesion: 0.15
+Nodes (21): GavelIcon(), AlertCenter(), AlertCenterProps, formatNotificationDateTime(), getMetadataTimestamp(), getNotificationCenterHref(), getNotificationDisplayTimestamp(), getNotificationIcon() (+13 more)
 
 ### Community 66 - "dashboard-shell.tsx"
-Cohesion: 0.23
-Nodes (13): buildTransactionReference(), getLedgerStatusSignal(), getTransactionReceiptLockMessage(), hasTransactionHandoverProof(), humanize(), isPaymentVerified(), LedgerStatusSignal(), paymentChannelLabel() (+5 more)
+Cohesion: 0.18
+Nodes (13): isSuperAdminReceiptRoute(), SuperAdminLayout(), clearGlobalThemeSideEffects(), DashboardShell(), DashboardShellProps, NavIconName, NavItem, SidebarMetric (+5 more)
 
 ### Community 67 - "catalog.ts"
-Cohesion: 0.19
-Nodes (3): PageLoadingSkeleton(), PageLoadingSkeletonProps, Skeleton()
+Cohesion: 0.20
+Nodes (8): AuthLayout(), LoginForm(), RegisterForm(), authClient, getSafeBuyerNextPath(), getSafeRoleNextPath(), authMocks, navigationMocks
 
 ### Community 68 - "SuperAdminUnitInventorySection"
-Cohesion: 0.16
-Nodes (21): formatDashboardCount(), formatSuperAdminDisplayLabel(), formatUnitDetailCategory(), getSuperAdminIterationHistory(), getSuperAdminMarketingModeLabel(), getSuperAdminMarketingPaymentMethodLabel(), getSuperAdminMarketingPriceLabel(), getSuperAdminMarketingPriceValue() (+13 more)
+Cohesion: 0.14
+Nodes (24): formatDashboardCount(), formatFullCurrency(), formatSuperAdminDisplayLabel(), formatUnitDetailCategory(), getSuperAdminIterationHistory(), getSuperAdminMarketingDateLabel(), getSuperAdminMarketingModeLabel(), getSuperAdminMarketingPaymentMethodLabel() (+16 more)
 
 ### Community 69 - "apply-renewed-cross-unit-violation-scenario.ts"
-Cohesion: 0.13
-Nodes (13): HomePage(), HomePageStat, LotCard(), LotCardProps, categoryMap, LotFigure(), LotFigureProps, getInitialIndex() (+5 more)
+Cohesion: 0.23
+Nodes (6): CatalogResults(), getCachedPublicLots, CatalogHero(), HeroInfoCard(), getBuyerWishlistIds(), router
 
 ### Community 70 - "fixed-price-rejected-relist-repair.ts"
-Cohesion: 0.09
-Nodes (29): ARCHIVE_MARKETING_SQL, CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL, DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL, FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL, FixedPriceRejectedRelistCandidate, INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL, INSERT_NEXT_MARKETING_SQL, KEEP_ITEM_MARKETED_SQL (+21 more)
+Cohesion: 0.16
+Nodes (17): ARCHIVE_MARKETING_SQL, CLEAN_FIXED_PRICE_REJECTION_HISTORY_SQL, DELETE_FIXED_PRICE_RELIST_REPAIR_HISTORY_SQL, FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL, FixedPriceRejectedRelistCandidate, INSERT_FIXED_PRICE_RELIST_SYSTEM_HISTORY_SQL, INSERT_NEXT_MARKETING_SQL, KEEP_ITEM_MARKETED_SQL (+9 more)
 
 ### Community 71 - "scripts"
-Cohesion: 0.08
-Nodes (24): scripts, build, db:backfill:blacklist, db:cleanup:obsolete, db:generate, db:migrate:canonical-codes, db:migrate:customer-data-standard, db:migrate:handover-auto-completion (+16 more)
+Cohesion: 0.09
+Nodes (23): scripts, build, db:backfill:blacklist, db:cleanup:obsolete, db:generate, db:migrate:canonical-codes, db:migrate:customer-data-standard, db:migrate:handover-auto-completion (+15 more)
 
 ### Community 72 - "requireBuyerApiSession"
-Cohesion: 0.17
-Nodes (16): AdminFixedPriceDetailPage(), FixedPriceCard(), FixedPricePaymentVerificationButton(), FixedPriceProgressPanel(), getFixedPriceAmountClass(), getFixedPriceCatalogStatusMeta(), getFixedPriceOperationalNote(), getFixedPriceSpecificationTiles() (+8 more)
+Cohesion: 0.33
+Nodes (5): AdminFixedPriceListPage(), AdminVickreyAuctionDetailPage(), FAILED_VICKREY_TRANSACTION_STATUSES, isVickreyFailureArchive(), router
 
 ### Community 73 - "alert-center.tsx"
 Cohesion: 0.40
 Nodes (5): 12. Acceptance Criteria, Admin Unit, Buyer, Dokumentasi, Superadmin
 
 ### Community 74 - "admin-unit/serializers.ts"
-Cohesion: 0.09
-Nodes (35): FOUR_BUYER_ACTIVE_EMAILS, FOUR_BUYER_ACTIVE_IDENTITIES, FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO, FourBuyerActiveEmail, FourBuyerActiveViolationIncident, getFourBuyerActiveRestrictions(), incident(), IncidentInput (+27 more)
+Cohesion: 0.15
+Nodes (8): AdminSelect(), AdminSelectOption, AdminRedeemForm(), buildRedemptionReference(), normalizeToken(), PAYMENT_METHOD_OPTIONS, todayIsoDate(), router
 
 ### Community 75 - "buyer/serializers.ts"
-Cohesion: 0.17
-Nodes (19): getSpecValue(), getBarangSpecificationRows(), AccountShape, BuyerBidShape, BuyerTransactionShape, formatRupiah(), getBuyerBankAccounts(), getPaymentNotes() (+11 more)
+Cohesion: 0.18
+Nodes (20): AdminBidRow, AdminPemasaranMedia, AdminPemasaranTransaction, AdminSafeBidRow, BarangRow, formatPaymentMethod(), getBarangNextAction(), PemasaranRow (+12 more)
 
 ### Community 76 - "formatAppDateTime"
-Cohesion: 0.16
-Nodes (20): AlertCenter(), AlertCenterProps, formatNotificationDateTime(), getMetadataTimestamp(), getNotificationCenterHref(), getNotificationDisplayTimestamp(), getNotificationIcon(), getPersistedVariant() (+12 more)
+Cohesion: 0.14
+Nodes (21): AdminBlacklistDetailWorkspace(), AdminBlacklistItem, AuctionDetailPanel(), clampLevel(), formatDisplayDate(), formatDisplayDateTime(), formatMoney(), getCurrentLevel() (+13 more)
 
 ### Community 77 - "public-shell.tsx"
-Cohesion: 0.09
-Nodes (35): BuyerViolationPage(), BuyerViolationPageProps, FeatureRow(), formatCurrency(), getCountdownParts(), numberFormatter, TimelineItem(), ViolationCountdown() (+27 more)
+Cohesion: 0.10
+Nodes (31): buildLevelThreeLoginSuspensionMessage(), deriveLoginSuspensionState(), getLevelThreeLoginSuspensionMessage(), isLevelThreeLoginSuspensionMessage(), LoginSuspensionBlacklist, LoginSuspensionState, deriveEffectiveBlacklistState(), EffectiveBlacklistState (+23 more)
 
 ### Community 78 - "admin-dashboard-checklist-card.tsx"
 Cohesion: 0.20
 Nodes (18): AdminDashboardChecklistCard(), checklistDateFormatter, checklistDateKeyFormatter, checklistTimeFormatter, createStoredChecklist(), DashboardChecklistCardProps, DashboardChecklistTask, formatChecklistDate() (+10 more)
 
 ### Community 79 - "dateLabel"
-Cohesion: 0.16
-Nodes (19): dateLabel(), FixedPriceHandoverProofSection(), formatOptionalCurrency(), getCompactCurrencyTextClass(), getCurrencyDigitCount(), getHighestBidAmount(), getMechanismBadgeTextClass(), getMechanismDateTextClass() (+11 more)
+Cohesion: 0.13
+Nodes (22): dateLabel(), FixedPriceHandoverProofSection(), FixedPriceProgressPanel(), formatOptionalCurrency(), getCompactCurrencyTextClass(), getCurrencyDigitCount(), getHighestBidAmount(), getMarketingProgressCompletionLabel() (+14 more)
 
 ### Community 80 - "auction-loser-page.tsx"
-Cohesion: 0.26
-Nodes (13): getInitials(), getMarketingReceiptLockMessage(), getWinnerBid(), isVickreyPaymentFulfilled(), isVickreyPaymentVerified(), VickreyFailureProfilePanel(), VickreyPaymentProgressPanel(), VickreyPaymentTotalPanel() (+5 more)
+Cohesion: 0.16
+Nodes (21): getInitials(), getMarketingReceiptLockMessage(), getWinnerBid(), isVickreyPaymentFulfilled(), isVickreyPaymentVerified(), VickreyFailureProfilePanel(), VickreyPaymentTotalPanel(), VickreySettlementDeadlineBanner() (+13 more)
 
 ### Community 81 - "superadmin-pages.test.tsx"
 Cohesion: 0.11
 Nodes (14): formatCompactCurrency(), getCompactUnitName(), getMonitoringChartAxisTicks(), getUnitTypeLabel(), SuperAdminCreateUnitPage(), SuperAdminManagementAdminDetailPage(), SuperAdminManagementPage(), SuperAdminManagementUnitDetailPage() (+6 more)
 
 ### Community 83 - "SuperAdminDashboardPage"
-Cohesion: 0.22
-Nodes (7): Page(), GET(), AdminInventoryPage(), isLikelyImageMedia(), listAdminBarang(), editPayload, mocks
+Cohesion: 0.16
+Nodes (13): Context, GET(), Page(), Page(), Page(), Page(), Page(), Page() (+5 more)
 
 ### Community 84 - "createFixedPricePurchase"
 Cohesion: 0.06
 Nodes (35): Admin Unit, Antrean Keputusan, Chart, Context, Daftar Unit, Dashboard Nasional, Data Flow, Definisi Metric (+27 more)
 
 ### Community 85 - "buyer-violation-page.tsx"
-Cohesion: 0.21
-Nodes (18): AdminBidRow, AdminPemasaranMedia, AdminPemasaranTransaction, AdminSafeBidRow, BarangRow, formatPaymentMethod(), getBarangNextAction(), PemasaranRow (+10 more)
+Cohesion: 0.24
+Nodes (9): getPermission(), PushFeedbackTone, PushNotificationControl(), PushNotificationControlProps, PushState, registerPushServiceWorker(), supportsPush(), toUint8Array() (+1 more)
 
 ### Community 86 - "humanize"
 Cohesion: 0.17
-Nodes (16): buildMarketingPaymentReference(), FixedPricePaymentVerificationModal(), FixedPriceReceiptInlinePrint(), getFixedPriceReceiptPrintRootId(), getFixedPriceReceiptTerms(), getMarketingCategoryIcon(), getMarketingCompletionLabel(), getMarketingPaymentMethodLabel() (+8 more)
+Nodes (15): buildMarketingPaymentReference(), FixedPriceReceiptInlinePrint(), getFixedPriceReceiptPrintRootId(), getFixedPriceReceiptTerms(), getMarketingCategoryIcon(), getMarketingCompletionLabel(), getMarketingPaymentMethodLabel(), getMarketingReceiptImageUrl() (+7 more)
 
 ### Community 87 - "storage.ts"
-Cohesion: 0.15
-Nodes (24): Context, POST(), readHandoverProofPayload(), Context, GET(), getUploadResponse(), HEAD(), parseByteRange() (+16 more)
+Cohesion: 0.11
+Nodes (30): Context, POST(), readHandoverProofPayload(), Context, POST(), readPurchasePayload(), Context, POST() (+22 more)
 
 ### Community 88 - "components.json"
 Cohesion: 0.13
 Nodes (14): aliases, components, lib, ui, utils, rsc, $schema, style (+6 more)
 
 ### Community 89 - "specifications.ts"
-Cohesion: 0.13
-Nodes (15): ActivePanel, AdminProfileData, AdminProfileWorkspace(), DetailRow(), getInitials(), ProfileCard(), LoginHistoryDialog(), LoginHistoryDialogProps (+7 more)
+Cohesion: 0.14
+Nodes (16): AdminBarangEditForm(), AdminBarangEditSubmitPayload, AdminBarangEditValue, categories, conditions, getSpecificationSuffix(), normalizeDigits(), normalizeEditableCategory() (+8 more)
 
 ### Community 90 - "vickrey-ranking-table.tsx"
 Cohesion: 0.16
 Nodes (12): getInitials(), PODIUM_AVATAR_TONES, PODIUM_MEDALS, PODIUM_ROW_TONES, RankingAvatar(), RankingRow(), STATUS_STYLES, VickreyRankingRow (+4 more)
 
 ### Community 91 - "obsolete-database-cleanup.ts"
-Cohesion: 0.23
-Nodes (6): CatalogResults(), getCachedPublicLots, CatalogHero(), HeroInfoCard(), getBuyerWishlistIds(), router
+Cohesion: 0.20
+Nodes (12): LEGACY_REAL_ACCOUNT_ID_REPAIRS, LegacyRealAccountIdRepair, legacyRealAccountRepairValues, OBSOLETE_DATABASE_TABLES, OBSOLETE_DEMO_USER_IDS, obsoleteDemoUserValues, sqlLiteral(), sqlNullable() (+4 more)
 
 ### Community 92 - "isVickreyPaymentFulfilled"
-Cohesion: 0.18
-Nodes (13): ArrowRightIcon(), CalendarIcon(), ChevronLeftIcon(), ChevronRightIcon(), ClockIcon(), FrownIcon(), GavelIcon(), HeartIcon() (+5 more)
+Cohesion: 0.19
+Nodes (12): ArrowRightIcon(), CalendarIcon(), ChevronLeftIcon(), ChevronRightIcon(), ClockIcon(), FrownIcon(), HeartIcon(), InfoIcon() (+4 more)
 
 ### Community 93 - "transaction-receipt-inline-print.tsx"
-Cohesion: 0.17
-Nodes (16): Context, POST(), toErrorResponse(), Context, PATCH(), toErrorResponse(), GET(), POST() (+8 more)
+Cohesion: 0.14
+Nodes (14): AdminStatusBadge(), BuyerProfileSettingsForm(), BuyerProfileSettingsFormProps, getProfileInitials(), ProfilePanel, shouldSkipImageOptimization(), LotCard(), LotCardProps (+6 more)
 
 ### Community 94 - "user-dashboard-page.tsx"
 Cohesion: 0.12
-Nodes (25): Page(), BuyerDashboardViolation, BuyerSummary, getDashboardActionLabel(), getUrgentDashboardCopy(), getUrgentTransactionRank(), isDashboardActiveBid(), isDashboardActiveTransaction() (+17 more)
+Nodes (23): Page(), Page(), BuyerDashboardViolation, BuyerSummary, getDashboardActionLabel(), getUrgentDashboardCopy(), getUrgentTransactionRank(), isDashboardActiveBid() (+15 more)
 
 ### Community 95 - "Blacklist Review Governance Design"
 Cohesion: 0.06
 Nodes (33): Admin Unit, Admin Unit Flow, Audit Trail, Authenticated Buyer Flow, Backend Rules, Blacklist, Blacklist Review Governance Design, Buyer (+25 more)
 
 ### Community 96 - "uploadBuyerPaymentProof"
-Cohesion: 0.19
-Nodes (17): DELETE(), PUT(), toErrorResponse(), GET(), POST(), toErrorResponse(), isBlacklistRestrictionActive(), createUnitAccount() (+9 more)
+Cohesion: 0.29
+Nodes (11): DELETE(), GET(), PUT(), toErrorResponse(), GET(), POST(), toErrorResponse(), requireSuperAdminApiSession() (+3 more)
 
 ### Community 97 - "account-profile.service.ts"
-Cohesion: 0.26
-Nodes (10): BuyerNotificationsPage(), BuyerNotificationsPageProps, formatNotificationDateTime(), getMetadataTimestamp(), getNotificationDisplayTimestamp(), getNotificationTone(), NotificationFilter, NotificationTone (+2 more)
+Cohesion: 0.14
+Nodes (21): getSpecValue(), BarangSpecificationField, BarangSpecificationRecord, getBarangSpecificationRows(), normalizeSpecificationCategory(), specificationAliases, specificationFields, AccountShape (+13 more)
 
 ### Community 98 - "uploadAdminTransactionHandoverProof"
 Cohesion: 0.08
@@ -677,8 +686,8 @@ Cohesion: 0.27
 Nodes (6): metadata, metadataBase, siteUrl, UiProviders(), LOCAL_HOSTNAMES, resolvePublicSiteUrl()
 
 ### Community 100 - "AdminVickreyAuctionListPage"
-Cohesion: 0.24
-Nodes (9): getPermission(), PushFeedbackTone, PushNotificationControl(), PushNotificationControlProps, PushState, registerPushServiceWorker(), supportsPush(), toUint8Array() (+1 more)
+Cohesion: 0.21
+Nodes (11): BuyerViolationPage(), BuyerViolationPageProps, FeatureRow(), formatCurrency(), getCountdownParts(), numberFormatter, TimelineItem(), ViolationCountdown() (+3 more)
 
 ### Community 101 - "BuyerSessionUser"
 Cohesion: 0.08
@@ -689,8 +698,8 @@ Cohesion: 0.08
 Nodes (24): Alasan Pemilihan, Arsitektur, Aturan Data, Backend Auth Pembeli dengan Better Auth, Drizzle, dan PostgreSQL, Better Auth Native Session, Catatan Register, Error Handling, Integrasi ke Frontend yang Sudah Ada (+16 more)
 
 ### Community 103 - "notifications-page.tsx"
-Cohesion: 0.54
-Nodes (6): updateUnit(), escaped(), rewriteSbgUnitNumber(), syncAdminUnitDisplayName(), syncUnitReferenceText(), unitShortName()
+Cohesion: 0.26
+Nodes (10): BuyerNotificationsPage(), BuyerNotificationsPageProps, formatNotificationDateTime(), getMetadataTimestamp(), getNotificationDisplayTimestamp(), getNotificationTone(), NotificationFilter, NotificationTone (+2 more)
 
 ### Community 104 - "transaction-links.ts"
 Cohesion: 0.29
@@ -721,24 +730,28 @@ Cohesion: 0.09
 Nodes (22): 1. Ringkasan Desain, 2. Tujuan UX, 3. Struktur Halaman, 4. Design Tokens, 5. Animation dan Interaksi, 6. Responsiveness, 7. Catatan Implementasi, A. Header / Navbar (+14 more)
 
 ### Community 111 - "transaction-receipt-page.test.tsx"
-Cohesion: 0.13
-Nodes (16): AdminBarangDetailMediaViewer(), DetailMedia, getInitialIndex(), getMediaName(), isVideoMedia(), SuperAdminUnitBarangDetail, SuperAdminUnitBarangItem, AssetTimeline() (+8 more)
+Cohesion: 0.11
+Nodes (18): getCachedSuperAdminUnitBarangDetail, Page(), DeferredSuperAdminMarketingAudit(), MarketingAuditPanel, SuperAdminMarketingReceiptContext, SuperAdminUnitBarangDetail, SuperAdminUnitBarangItem, SuperAdminUnitBarangMarketingSession (+10 more)
 
 ### Community 112 - "transaction-receipt-inline-print.tsx"
-Cohesion: 0.40
-Nodes (9): disableReceiptPrintMode(), enableReceiptPrintMode(), isJsdomRuntime(), printReceiptElementInIsolatedFrame(), shouldUseIsolatedReceiptPrintFrame(), syncReceiptPrintFrameHead(), TransactionReceiptInlinePrint(), TransactionReceiptInlinePrintProps (+1 more)
+Cohesion: 0.25
+Nodes (9): createVisitId(), EMPTY_STATS, formatCount(), LotRealtimeStats(), LotRealtimeStatsProps, normalizeStats(), StatItem, AuctionMode (+1 more)
+
+### Community 113 - "admin-blacklist-service.test.ts"
+Cohesion: 0.27
+Nodes (9): globalBlacklistRow(), globalFacts, installDatabaseScenario(), L1_OCCURRED_AT, L2_OCCURRED_AT, L3_OCCURRED_AT, localTraceRow(), mocks (+1 more)
 
 ### Community 114 - "[...path]/route.ts"
-Cohesion: 0.25
-Nodes (8): getSuperAdminCompletionLabel(), getSuperAdminMarketingReceiptImageUrl(), getSuperAdminVerifiedDetail(), getSuperAdminVickreyReceiptPrintRootId(), getSuperAdminVickreyReceiptTerms(), isSuperAdminAutoCompleted(), SuperAdminFixedPriceWorkspace(), SuperAdminVickreyReceiptInlinePrint()
+Cohesion: 0.42
+Nodes (6): GET(), GET(), Page(), ensureVickreyLossNotifications(), syncBuyerRestrictionNotifications(), getUnreadNotificationCount()
 
 ### Community 115 - "detail-favorite-toggle.tsx"
 Cohesion: 0.09
 Nodes (21): 1. Beranda Publik Lebih Relevan, 2. Halaman Auth Berdiri Sendiri, Alasan Pemilihan, Auth, Buyer, Data Flow dan Navigasi, Error Handling, Komponen yang Perlu Disentuh (+13 more)
 
 ### Community 116 - "guards.ts"
-Cohesion: 0.11
-Nodes (34): GET(), metadata, Page(), PublicLayout(), GET(), isSuperAdminReceiptRoute(), SuperAdminLayout(), getCachedBuyerShellSummary (+26 more)
+Cohesion: 0.15
+Nodes (23): GET(), metadata, Page(), PublicLayout(), GET(), AppSessionUser, AuthRole, getAuthenticatedLoginRedirectPath() (+15 more)
 
 ### Community 117 - "backfill-blacklist-violation-totals.ts"
 Cohesion: 0.22
@@ -746,31 +759,31 @@ Nodes (8): 11. Non-Functional Requirements, 13. Out of Scope, 14. Glosarium, 4. 
 
 ### Community 118 - "listUnits"
 Cohesion: 0.31
-Nodes (9): AdminPurchaseTimeline(), AdminTransactionInlineReceiptPrint(), AdminTransactionReceiptPage(), getAdminTransactionCompletionLabel(), getAdminTransactionVerifiedDetail(), getAdminWorkspaceStatusText(), getReceiptTerms(), getTransactionReceiptPrintRootId() (+1 more)
+Nodes (9): AdminVickreyAuctionListPage(), getMarketingVerifiedDetail(), getVickreyStage(), getVickreySummary(), getVickreyWinnerWorkspaceHref(), isPaymentQueue(), toBuyerMedia(), VICKREY_PAYMENT_STATUSES (+1 more)
 
 ### Community 119 - "help-center-page.tsx"
 Cohesion: 0.10
 Nodes (20): 1. Spec coverage, 2. Placeholder scan, 3. Type consistency, Existing files to modify, File Structure, New API route files, New database/schema files, New frontend data hooks/helpers (+12 more)
 
 ### Community 120 - "katalog/[id]/page.tsx"
-Cohesion: 0.15
-Nodes (14): createVisitId(), EMPTY_STATS, formatCount(), LotRealtimeStats(), LotRealtimeStatsProps, normalizeStats(), StatItem, EMPTY_INSIGHTS (+6 more)
+Cohesion: 0.23
+Nodes (13): buildTransactionReference(), getLedgerStatusSignal(), getTransactionReceiptLockMessage(), hasTransactionHandoverProof(), humanize(), isPaymentVerified(), LedgerStatusSignal(), paymentChannelLabel() (+5 more)
 
 ### Community 121 - "admin-barang-detail-media-viewer.tsx"
 Cohesion: 0.11
 Nodes (17): Admin Unit, Blacklist Review Governance Implementation Plan, Buyer, Product Decisions Locked In, Role Matrix, Superadmin, System, Task 10: Verification, PRD Alignment, And Rollout Notes (+9 more)
 
 ### Community 122 - "buyer-vickrey-pages.test.tsx"
-Cohesion: 0.62
-Nodes (5): normalizeViolationItemName(), resolveViolationItemImageUrl(), resolveViolationItemMedia(), VIOLATION_ITEM_IMAGE_BY_NAME, ViolationItemMedia
-
-### Community 123 - "lot-media-gallery.tsx"
-Cohesion: 0.50
-Nodes (4): GET(), getAdminDashboardData(), summarizeAdminDashboardTransactions(), listAdminTransactions()
-
-### Community 124 - "catalog-page.test.tsx"
 Cohesion: 0.36
 Nodes (7): SuperAdminUnitDetailAccountLedger(), DestinationAccountRow(), BANK_LOGO_ASSETS, BankLogoAsset, BankLogoMark(), getBankDisplayName(), getBankLogoAsset()
+
+### Community 123 - "lot-media-gallery.tsx"
+Cohesion: 0.24
+Nodes (10): buildGovernanceSnapshot(), classifyGovernanceFollowUp(), compactNumberFormatter, formatCompactRupiah(), GovernanceCaseClassification, GovernanceCaseInput, GovernanceSnapshotInput, GovernanceSnapshotItem (+2 more)
+
+### Community 124 - "catalog-page.test.tsx"
+Cohesion: 0.31
+Nodes (7): HandoverProofUploadForm(), HandoverProofUploadFormProps, displayValue(), getAudienceSubtitle(), HandoverProofCard(), HandoverProofCardProps, HandoverProofViewModel
 
 ### Community 125 - "marketing-performance-panel.tsx"
 Cohesion: 0.19
@@ -797,28 +810,32 @@ Cohesion: 0.60
 Nodes (3): canEditMarketedBarang(), MarketingEditContext, normalize()
 
 ### Community 133 - "AdminTransactionReceiptPage"
-Cohesion: 0.40
-Nodes (4): PaymentWorkflowRail(), PaymentWorkflowRailProps, PaymentWorkflowStep, WorkflowNode()
-
-### Community 134 - "bank-logo.tsx"
-Cohesion: 0.40
-Nodes (4): DeferredSuperAdminMarketingAudit(), MarketingAuditPanel, SuperAdminMarketingReceiptContext, SuperAdminUnitBarangMarketingSession
+Cohesion: 0.32
+Nodes (5): DetailFavoriteToggle(), DetailFavoriteToggleProps, FavoriteToggleButton(), FavoriteToggleButtonProps, router
 
 ### Community 135 - "buyer-alert-center.test.tsx"
-Cohesion: 0.06
-Nodes (25): AdminBarangMedia, AdminBarangMediaDraftChange, AdminBarangMediaManager(), DraftMedia, revokePreviewUrl(), BuyerPaymentProofForm(), BuyerPaymentProofFormProps, getProofDisplayName() (+17 more)
+Cohesion: 0.08
+Nodes (19): BuyerPaymentProofForm(), BuyerPaymentProofFormProps, getProofDisplayName(), isPreviewableProofUrl(), proofUrlMatchesExtension(), AdminInventoryCreatePage(), getToastClasses(), getToastIcon() (+11 more)
+
+### Community 136 - "admin-barang-detail-media-viewer.tsx"
+Cohesion: 0.31
+Nodes (9): AdminPurchaseTimeline(), AdminTransactionInlineReceiptPrint(), AdminTransactionReceiptPage(), getAdminTransactionCompletionLabel(), getAdminTransactionVerifiedDetail(), getAdminWorkspaceStatusText(), getReceiptTerms(), getTransactionReceiptPrintRootId() (+1 more)
 
 ### Community 138 - "apply-handover-auto-completion-migration.ts"
-Cohesion: 0.60
-Nodes (4): FIXED_PRICE_BUYER_CATALOG_HIDDEN_STATUSES, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES, isFixedPriceBuyerCatalogHiddenStatus(), isFixedPriceTransactionCatalogHiddenStatus()
+Cohesion: 0.50
+Nodes (3): describeTarget(), dryRun, main()
 
 ### Community 139 - "notification-routes.test.ts"
 Cohesion: 0.50
 Nodes (3): adminAccess, buyerAccess, mocks
 
+### Community 140 - "listAdminTransactions"
+Cohesion: 0.17
+Nodes (12): Context, DELETE(), Context, POST(), readMediaPayload(), addAdminBarangMedia(), addAdminBarangMediaBatch(), assertBarangForUnit() (+4 more)
+
 ### Community 157 - "admin-transaction.service.ts"
-Cohesion: 0.10
-Nodes (27): Context, GET(), Context, POST(), Context, POST(), Page(), ensureTransactionMutable() (+19 more)
+Cohesion: 0.13
+Nodes (22): Page(), ensureTransactionMutable(), getAdminTransactionById(), getSuperAdminTransactionById(), getTransactionForSuperAdmin(), getTransactionForUnit(), getTransactionJoin(), handoverUploader (+14 more)
 
 ### Community 159 - "tailwindcss"
 Cohesion: 0.13
@@ -833,8 +850,8 @@ Cohesion: 0.14
 Nodes (13): 1. Route privat buyer, 2. Redirect guest, 3. Redirect setelah login, 4. Session-backed buyer shell, Behavior, Buyer Session Guard Design, Data Flow, Error Handling (+5 more)
 
 ### Community 188 - "AdminFixedPriceDetailPage"
-Cohesion: 0.24
-Nodes (11): AdminVickreyAuctionListPage(), FixedPriceAuditGallery(), fixedPriceMediaLabel(), getMarketingVerifiedDetail(), getVickreyStage(), getVickreySummary(), getVickreyWinnerWorkspaceHref(), isPaymentQueue() (+3 more)
+Cohesion: 0.21
+Nodes (12): AdminFixedPriceDetailPage(), FixedPricePaymentVerificationButton(), FixedPricePaymentVerificationModal(), getFixedPriceAmountClass(), getFixedPriceCatalogStatusMeta(), getFixedPriceSpecificationTiles(), getFixedPriceVerificationAction(), hasFixedPricePaymentProof() (+4 more)
 
 ### Community 189 - "Desain Penyelarasan Upload Bukti Penyerahan"
 Cohesion: 0.15
@@ -849,8 +866,8 @@ Cohesion: 0.15
 Nodes (12): Admin-unit detail and authorization, Admin-unit list behavior, Confirmed root cause, Cross-Unit Blacklist History Design, Data model, Domain contract, Error handling, Goal (+4 more)
 
 ### Community 192 - "apply-handover-auto-completion-migration.ts"
-Cohesion: 0.20
-Nodes (6): describeTarget(), dryRun, main(), describeTarget(), dryRun, main()
+Cohesion: 0.40
+Nodes (3): describeTarget(), dryRun, main()
 
 ### Community 193 - "Blacklist Review Governance Implementation Plan"
 Cohesion: 0.17
@@ -859,6 +876,10 @@ Nodes (11): Blacklist Review Governance Implementation Plan, Execution Note, Fil
 ### Community 194 - "Cross-Role Transaction Integration Design"
 Cohesion: 0.17
 Nodes (11): Admin Handover Documentation, Auction Presentation, Cross-Role Transaction Integration Design, Daily Checklist, Goal, Navigation State, Shared Transaction Progress, Source of Truth (+3 more)
+
+### Community 195 - "apply-canonical-codes-migration.ts"
+Cohesion: 0.50
+Nodes (4): describeTarget(), dryRun, main(), migrationUrl
 
 ### Community 196 - "Buyer Auth Backend Implementation Plan"
 Cohesion: 0.18
@@ -1081,8 +1102,8 @@ Cohesion: 0.22
 Nodes (8): File Structure, Global Constraints, Task 1: Durable outbox and server delivery service, Task 2: Session-bound subscription API and safe service worker, Task 3: Notification center control and refined card layout, Task 4: Integration, documentation, and verification, Task 5: Refine the Android Ruang Agunan badge, Web Push Notifications Implementation Plan
 
 ### Community 259 - "compact-transaction-progress.tsx"
-Cohesion: 0.40
-Nodes (3): BuyerWishlist, BuyerWishlistItem, router
+Cohesion: 0.43
+Nodes (4): POST(), POST(), POST(), markAllNotificationsRead()
 
 ### Community 260 - "10. UI/UX Requirements"
 Cohesion: 0.50
@@ -1100,33 +1121,57 @@ Nodes (4): 7.1 Public dan Buyer, 7.2 Admin Unit, 7.3 Superadmin, 7. Route Utama
 Cohesion: 0.50
 Nodes (3): Fixed-Price Catalog Position Implementation Plan, Global Constraints, Task 1: Protect the catalog-position invariant
 
+### Community 265 - "admin-barang-detail-media-viewer.tsx"
+Cohesion: 0.52
+Nodes (5): AdminBarangDetailMediaViewer(), DetailMedia, getInitialIndex(), getMediaName(), isVideoMedia()
+
 ### Community 266 - "Global Constraints"
 Cohesion: 0.29
 Nodes (6): Global Constraints, Mobile Notifications Navigation Implementation Plan, Task 1: Add regression coverage for notification discovery and card content, Task 2: Expose the existing notification page from mobile navigation, Task 3: Remove redundant notification-card branding, Task 4: Verify, commit, and push
 
-### Community 281 - "backfill-blacklist-violation-totals.ts"
-Cohesion: 0.32
-Nodes (7): applyChanges, BackfillRow, BlacklistRow, formatRow(), main(), sameInstant(), ViolationRow
+### Community 267 - "SuperAdminBlacklistPage"
+Cohesion: 0.29
+Nodes (7): getRestrictionDurationDays(), getRestrictionLevelMeta(), getRestrictionProgress(), getSuperadminInitials(), getSuperadminRestrictionLevel(), matchesSuperadminRestrictionQuery(), SuperAdminBlacklistPage()
+
+### Community 268 - "lot-media-gallery.tsx"
+Cohesion: 0.43
+Nodes (4): getInitialIndex(), LotMediaGallery(), LotMediaItem, mediaLabel()
+
+### Community 270 - "marketing-performance-panel.tsx"
+Cohesion: 0.38
+Nodes (5): EMPTY_INSIGHTS, MarketingPerformanceMetricCard(), MarketingPerformancePanel(), normalizeInsights(), LotInsights
+
+### Community 273 - "fixed-price-visibility.ts"
+Cohesion: 0.60
+Nodes (4): FIXED_PRICE_BUYER_CATALOG_HIDDEN_STATUSES, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES, isFixedPriceBuyerCatalogHiddenStatus(), isFixedPriceTransactionCatalogHiddenStatus()
+
+### Community 274 - "(user)/layout.tsx"
+Cohesion: 0.70
+Nodes (4): getCachedBuyerShellSummary, isBuyerReceiptRoute(), UserLayout(), requireBuyerSession()
+
+### Community 278 - "apply-customer-data-standard-migration.ts"
+Cohesion: 0.50
+Nodes (4): describeTarget(), dryRun, main(), migrationUrl
 
 ## Knowledge Gaps
-- **1520 isolated node(s):** `metadata`, `metadata`, `Context`, `Context`, `Context` (+1515 more)
+- **1505 isolated node(s):** `metadata`, `metadata`, `Context`, `Context`, `Context` (+1500 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `toast.tsx` to `admin-inventory-workspace.tsx`, `superadmin-pages.tsx`, `cn`, `AdminTransactionReceiptPage`, `user-pages.tsx`, `unit-form.tsx`, `buyer-alert-center.test.tsx`, `admin-pages.tsx`, `SuperAdminBlacklistPage`, `help-center-page.tsx`, `admin-marketing-pages.tsx`, `superadmin-account-workspace.tsx`, `admin-barang-edit-form.tsx`, `wishlist-page.tsx`, `catalog-page.tsx`, `superadmin-blacklist-detail-workspace.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `MarketingFeedRow`, `admin-redeem-form.tsx`, `session.ts`, `apply-cross-unit-violation-scenario.ts`, `role-notifications-panel.tsx`, `getCountdownState`, `public-catalog.service.ts`, `catalog.ts`, `SuperAdminUnitInventorySection`, `apply-renewed-cross-unit-violation-scenario.ts`, `requireBuyerApiSession`, `formatAppDateTime`, `public-shell.tsx`, `admin-dashboard-checklist-card.tsx`, `superadmin-pages.test.tsx`, `humanize`, `specifications.ts`, `vickrey-ranking-table.tsx`, `obsolete-database-cleanup.ts`, `user-dashboard-page.tsx`, `account-profile.service.ts`, `report-range-dropdown.tsx`, `transaction-receipt-page.test.tsx`, `transaction-receipt-inline-print.tsx`, `[...path]/route.ts`, `katalog/[id]/page.tsx`, `catalog-page.test.tsx`, `marketing-performance-panel.tsx`?**
-  _High betweenness centrality (0.124) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`, `formatAppDateTime`, `buyer.ts`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
-- **Why does `react` connect `formatAppDateTime` to `account-profile.service.ts`, `AdminVickreyAuctionListPage`, `buyer-alert-center.test.tsx`, `unit-form.tsx`, `dependencies`, `role-notifications-panel.tsx`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `cn()` connect `toast.tsx` to `admin-inventory-workspace.tsx`, `superadmin-pages.tsx`, `cn`, `AdminTransactionReceiptPage`, `user-pages.tsx`, `unit-form.tsx`, `buyer-alert-center.test.tsx`, `admin-barang-detail-media-viewer.tsx`, `admin-pages.tsx`, `SuperAdminBlacklistPage`, `lot-media-gallery.tsx`, `remove-handover-complaint.ts`, `marketing-performance-panel.tsx`, `admin-marketing-pages.tsx`, `superadmin-account-workspace.tsx`, `wishlist-page.tsx`, `catalog-page.tsx`, `superadmin-blacklist-detail-workspace.tsx`, `public-pages.tsx`, `transactions-workspace.tsx`, `formatSuperAdminDateTime`, `MarketingFeedRow`, `admin-redeem-form.tsx`, `session.ts`, `profile-settings-form.tsx`, `categories.ts`, `role-notifications-panel.tsx`, `AdminFixedPriceDetailPage`, `buyer-top-nav.tsx`, `getCountdownState`, `public-catalog.service.ts`, `dashboard-shell.tsx`, `SuperAdminUnitInventorySection`, `apply-renewed-cross-unit-violation-scenario.ts`, `admin-unit/serializers.ts`, `formatAppDateTime`, `admin-dashboard-checklist-card.tsx`, `auction-loser-page.tsx`, `superadmin-pages.test.tsx`, `humanize`, `specifications.ts`, `vickrey-ranking-table.tsx`, `transaction-receipt-inline-print.tsx`, `user-dashboard-page.tsx`, `AdminVickreyAuctionListPage`, `notifications-page.tsx`, `report-range-dropdown.tsx`, `transaction-receipt-page.test.tsx`, `transaction-receipt-inline-print.tsx`, `buyer-vickrey-pages.test.tsx`, `catalog-page.test.tsx`, `marketing-performance-panel.tsx`?**
+  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+- **Why does `client` connect `profile-settings-form.tsx` to `apply-handover-auto-completion-migration.ts`, `apply-handover-proof-migration.ts`, `cross-unit-violation-scenario.ts`, `apply-canonical-codes-migration.ts`, `fixed-price-rejected-relist-repair.ts`, `apply-handover-auto-completion-migration.ts`, `renewed-cross-unit-violation-scenario.ts`, `apply-customer-data-standard-migration.ts`, `unit-admin-audit-repair.ts`, `obsolete-database-cleanup.ts`?**
+  _High betweenness centrality (0.052) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `public-catalog.service.ts`, `package.json`, `buyer.ts`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **What connects `metadata`, `metadata`, `Context` to the rest of the system?**
-  _1520 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1505 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `admin-pages.lazy.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.07507507507507508 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06734006734006734 - nodes in this community are weakly interconnected._
 - **Should `admin-barang.service.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11693548387096774 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10588235294117647 - nodes in this community are weakly interconnected._
 - **Should `admin-inventory-workspace.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.051582278481012656 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05154320987654321 - nodes in this community are weakly interconnected._

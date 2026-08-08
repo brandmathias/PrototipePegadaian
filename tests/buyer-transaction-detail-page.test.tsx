@@ -172,7 +172,7 @@ describe("buyer transaction detail page", () => {
           blacklist: {
             active: true,
             until: new Date("2026-06-04T00:00:00.000Z"),
-            totalViolations: 1
+            totalViolations: 2
           }
         }}
         transaction={{
@@ -193,7 +193,8 @@ describe("buyer transaction detail page", () => {
           applicationNumber: "PGJ-VIC-FAILED",
           paymentLabel: "Bayar langsung di unit",
           paymentNotes: [],
-          imageUrl: "/uploads/barang/kalung-lelang.jpg"
+          imageUrl: "/uploads/barang/kalung-lelang.jpg",
+          violationLevel: 1
         }}
         transactionId="trx-vickrey-failed"
       />
@@ -246,7 +247,7 @@ describe("buyer transaction detail page", () => {
           blacklist: {
             active: true,
             until: new Date("2026-06-27T00:00:00.000Z"),
-            totalViolations: 2
+            totalViolations: 1
           }
         }}
         transaction={{
@@ -255,7 +256,8 @@ describe("buyer transaction detail page", () => {
           lotId: "pm-vickrey-failed-level-2",
           kind: "VICKREY_WIN",
           status: "GAGAL",
-          applicationNumber: "PGJ-VIC-FAILED-L2"
+          applicationNumber: "PGJ-VIC-FAILED-L2",
+          violationLevel: 2
         }}
         transactionId="trx-vickrey-failed-level-2"
       />
