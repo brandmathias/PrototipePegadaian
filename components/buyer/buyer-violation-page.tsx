@@ -11,7 +11,6 @@ import {
   Coins,
   ImageIcon,
   LockKeyhole,
-  ReceiptText,
   ShieldAlert,
   ShoppingCart,
   XCircle
@@ -576,36 +575,6 @@ export function BuyerViolationPage({ data, serverNow }: BuyerViolationPageProps)
           )}
         </section>
 
-        <section
-          className="grid gap-4 rounded-[1.6rem] border border-black/5 bg-white p-5 shadow-[0_18px_56px_-48px_rgba(10,31,25,0.4)] lg:grid-cols-[1fr_1fr]"
-          id="bantuan-pembatasan"
-        >
-          <div className="flex gap-4">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
-              <ReceiptText className="size-5" />
-            </span>
-            <div>
-              <h2 className="font-headline text-xl font-black text-[#101923]">Bantuan Pembatasan</h2>
-              <p className="mt-2 text-sm leading-6 text-[#506079]">
-                Jika data pembayaran sudah benar tetapi status belum berubah, siapkan bukti transaksi lama
-                dan hubungi admin unit terkait untuk pengecekan manual.
-              </p>
-            </div>
-          </div>
-          <div className="rounded-[1.2rem] border border-black/10 bg-white px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase text-[#6b7586]">Ketentuan Sistem</p>
-                <p className="mt-1 text-sm leading-6 text-[#34435a]">
-                  Level pembatasan mengikuti milestone pelanggaran pembayaran 1x24 jam. Pelanggaran
-                  tambahan dalam masa pembatasan yang sama tetap tercatat sistem, tetapi tidak menaikkan
-                  level sanksi.
-                </p>
-              </div>
-              <ChevronDown className="size-5 shrink-0 text-[#6b7586]" />
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   );

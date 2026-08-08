@@ -110,6 +110,8 @@ describe("BuyerViolationPage", () => {
     expect(restrictedFeaturesSection).toHaveClass("min-h-[20rem]");
     expect(violationHistorySection).toHaveClass("min-h-[20rem]");
     expect(screen.getByRole("heading", { name: /riwayat pelanggaran/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /bantuan pembatasan/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/ketentuan sistem/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/kalung emas 2/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/level 2 pembatasan \(30 hari\)/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/kasus dihitung/i)).not.toBeInTheDocument();
