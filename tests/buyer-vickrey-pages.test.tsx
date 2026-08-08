@@ -221,7 +221,14 @@ describe("buyer vickrey pages", () => {
       /akun anda dibatasi hingga 31 mei 2026\. pembelian harga tetap belum tersedia\./i
     );
     expect(noticeElement).toBeInTheDocument();
-    expect(noticeElement).toHaveClass("w-full", "overflow-hidden", "text-ellipsis", "whitespace-nowrap");
+    expect(noticeElement).toHaveClass(
+      "w-full",
+      "overflow-hidden",
+      "text-ellipsis",
+      "whitespace-nowrap",
+      "text-justify",
+      "[text-align-last:justify]"
+    );
     expect(screen.getByRole("button", { name: /pembelian sedang dibatasi/i })).toBeDisabled();
   });
 
@@ -297,7 +304,14 @@ describe("buyer vickrey pages", () => {
     );
 
     const noticeElement = screen.getByText(/akun anda dibatasi hingga 31 mei 2026\. bid lelang tertutup belum tersedia\./i);
-    expect(noticeElement).toHaveClass("w-full", "overflow-hidden", "text-ellipsis", "whitespace-nowrap");
+    expect(noticeElement).toHaveClass(
+      "w-full",
+      "overflow-hidden",
+      "text-ellipsis",
+      "whitespace-nowrap",
+      "text-justify",
+      "[text-align-last:justify]"
+    );
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });

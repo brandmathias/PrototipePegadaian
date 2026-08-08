@@ -134,7 +134,6 @@ export function LotDetailPage({
   const blacklistLabel = getBlacklistLabel(buyerStatus, isVickrey);
   const shouldShowBlacklistNotice = Boolean(blacklistLabel) && (isVickrey || blacklistPolicy.blocksFixedPrice);
   const isCompactBlacklistNotice = shouldShowBlacklistNotice && blacklistPolicy.level <= 2;
-  const isLevelOneCompactBlacklistNotice = isCompactBlacklistNotice && blacklistPolicy.level === 1;
   const hasOtherVickreyBidLock =
     isVickrey &&
     Boolean(buyerStatus?.vickreyBidLock?.active) &&
@@ -318,10 +317,7 @@ export function LotDetailPage({
                   className={cn(
                     "relative bg-[#fff0f2] text-[#9f1239]",
                     isCompactBlacklistNotice
-                      ? cn(
-                          "w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-xl px-4 py-3 text-[clamp(0.74rem,1vw,0.9rem)] font-semibold leading-5 tracking-tight",
-                          isLevelOneCompactBlacklistNotice && "text-justify [text-align-last:justify]"
-                        )
+                      ? "w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-xl px-4 py-3 text-[clamp(0.74rem,1vw,0.9rem)] font-semibold leading-5 tracking-tight text-justify [text-align-last:justify]"
                       : "rounded-[1.35rem] p-5 text-sm leading-relaxed"
                   )}
                 >
