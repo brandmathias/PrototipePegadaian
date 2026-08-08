@@ -113,6 +113,8 @@ export function LotDetailPage({
   const isActionBlocked =
     hasActiveRestriction &&
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
+  const blacklistLabel = getBlacklistLabel(buyerStatus);
+  const shouldShowBlacklistNotice = Boolean(blacklistLabel) && (isVickrey || blacklistPolicy.blocksFixedPrice);
   const hasOtherVickreyBidLock =
     isVickrey &&
     Boolean(buyerStatus?.vickreyBidLock?.active) &&
@@ -291,9 +293,9 @@ export function LotDetailPage({
                 </div>
               ) : null}
 
-              {getBlacklistLabel(buyerStatus) ? (
+              {shouldShowBlacklistNotice ? (
                 <div className="relative rounded-[1.35rem] bg-[#fff0f2] p-5 text-sm leading-relaxed text-[#9f1239]">
-                  {getBlacklistLabel(buyerStatus)}
+                  {blacklistLabel}
                 </div>
               ) : null}
 

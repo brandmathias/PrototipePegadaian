@@ -1500,7 +1500,7 @@ function VickreyPaymentFailedDetail({
           <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)] lg:items-center lg:p-8">
             <div className="min-w-0">
               <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
-                Batas Waktu Pelunasan Habis (SLA Timeout)
+                Batas Waktu Pelunasan Habis
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
                 Transaksi ini dinyatakan gagal secara otomatis oleh sistem karena pemenang tidak menyelesaikan

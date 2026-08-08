@@ -184,6 +184,24 @@ describe("buyer vickrey pages", () => {
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
   });
 
+  it("hides the blacklist notice on a fixed-price lot when Level 1 still permits purchasing", () => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            totalViolations: 1,
+            until: new Date("2026-05-31T00:00:00.000Z")
+          }
+        }}
+        lot={fixedPriceLot}
+      />
+    );
+
+    expect(screen.queryByText(/akun sedang dibatasi sampai/i)).not.toBeInTheDocument();
+  });
+
   it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {
     const user = userEvent.setup();
 
