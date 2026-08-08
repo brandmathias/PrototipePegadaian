@@ -1461,7 +1461,7 @@ function getFailedPaymentViolationAudit(totalViolations: number | null | undefin
   if (policy.level === 1) {
     return {
       title: "Level 1 — Pelanggaran Pembayaran",
-      description: `Pembayaran tidak diselesaikan dalam 24 jam. Akun dibatasi ${duration} untuk mengikuti Lelang Tertutup; Harga Tetap tetap tersedia.`
+      description: `Pembayaran tidak diselesaikan dalam 24 jam. Selama ${duration}, Anda tidak dapat mengikuti Lelang Tertutup. Anda tetap dapat membeli barang Harga Tetap seperti biasa.`
     };
   }
 

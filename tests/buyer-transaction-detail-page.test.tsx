@@ -229,7 +229,10 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/^status pelanggaran$/i)).toBeInTheDocument();
     expect(screen.getByText(/level 1 — pelanggaran pembayaran/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/pembayaran tidak diselesaikan dalam 24 jam\. akun dibatasi 7 hari untuk mengikuti lelang tertutup; harga tetap tetap tersedia/i)
+      screen.getByText(/selama 7 hari, anda tidak dapat mengikuti lelang tertutup/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/anda tetap dapat membeli barang harga tetap seperti biasa/i)
     ).toBeInTheDocument();
     expect(screen.queryByText(/status restriksi aktif|bidding suspension/i)).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang kalung emas 2/i })).toBeInTheDocument();
