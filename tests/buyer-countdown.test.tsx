@@ -2,6 +2,7 @@ import React from "react";
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { getCountdownState } from "@/lib/countdown";
 
@@ -149,5 +150,33 @@ describe("LiveCountdown", () => {
     });
 
     expect(onExpired).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AuctionLoserRecommendationCountdown", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-29T10:00:00+08:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("updates the other-auction countdown every second without refreshing the loser page", () => {
+    render(
+      <AuctionLoserRecommendationCountdown
+        fallbackLabel="1 menit 5 detik"
+        targetAt={new Date("2026-04-29T10:01:05+08:00").toISOString()}
+      />,
+    );
+
+    expect(screen.getByText("1 m 5 d")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByText("1 m 4 d")).toBeInTheDocument();
   });
 });
