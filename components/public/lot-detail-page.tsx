@@ -44,6 +44,14 @@ function getBlacklistLabel(status: BuyerPublicStatus) {
     return null;
   }
 
+  const restriction = getBlacklistRestrictionPolicy(status.blacklist.totalViolations);
+
+  if (restriction.level === 1) {
+    return status.blacklist.until
+      ? `Bid lelang dibatasi hingga ${formatAppDate(status.blacklist.until)}.`
+      : "Bid lelang sedang dibatasi.";
+  }
+
   if (!status.blacklist.until) {
     return "Akun sedang dibatasi untuk mengikuti Lelang Tertutup.";
   }
@@ -115,6 +123,7 @@ export function LotDetailPage({
     ((isVickrey && blacklistPolicy.blocksVickrey) || (!isVickrey && blacklistPolicy.blocksFixedPrice));
   const blacklistLabel = getBlacklistLabel(buyerStatus);
   const shouldShowBlacklistNotice = Boolean(blacklistLabel) && (isVickrey || blacklistPolicy.blocksFixedPrice);
+  const isCompactBlacklistNotice = isVickrey && blacklistPolicy.level === 1;
   const hasOtherVickreyBidLock =
     isVickrey &&
     Boolean(buyerStatus?.vickreyBidLock?.active) &&
@@ -294,7 +303,14 @@ export function LotDetailPage({
               ) : null}
 
               {shouldShowBlacklistNotice ? (
-                <div className="relative rounded-[1.35rem] bg-[#fff0f2] p-5 text-sm leading-relaxed text-[#9f1239]">
+                <div
+                  className={cn(
+                    "relative bg-[#fff0f2] text-[#9f1239]",
+                    isCompactBlacklistNotice
+                      ? "rounded-xl px-4 py-3 text-[0.78rem] font-semibold leading-5 md:whitespace-nowrap"
+                      : "rounded-[1.35rem] p-5 text-sm leading-relaxed"
+                  )}
+                >
                   {blacklistLabel}
                 </div>
               ) : null}

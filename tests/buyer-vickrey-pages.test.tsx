@@ -230,9 +230,9 @@ describe("buyer vickrey pages", () => {
   });
 
   it.each([
-    ["level 1", 1],
-    ["level 2", 2]
-  ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations) => {
+    ["level 1", 1, /bid lelang dibatasi hingga 31 mei 2026/i],
+    ["level 2", 2, /anda tidak dapat mengirim bid baru/i]
+  ])("blocks the lot detail auction CTA for active blacklist %s", (_label, totalViolations, notice) => {
     render(
       <LotDetailPage
         bidState={null}
@@ -247,7 +247,11 @@ describe("buyer vickrey pages", () => {
       />
     );
 
-    expect(screen.getByText(/anda tidak dapat mengirim bid baru/i)).toBeInTheDocument();
+    const noticeElement = screen.getByText(notice);
+    expect(noticeElement).toBeInTheDocument();
+    if (totalViolations === 1) {
+      expect(noticeElement).toHaveClass("md:whitespace-nowrap");
+    }
     expect(screen.queryByRole("link", { name: /ikut lelang sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /lelang sedang dibatasi/i })).toBeDisabled();
   });
