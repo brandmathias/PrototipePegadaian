@@ -1454,16 +1454,43 @@ export function AuctionLoserPage({
   return <AuctionLoserPageContent bid={bid} recommendations={recommendations} />;
 }
 
+function getFailedPaymentViolationAudit(totalViolations: number | null | undefined) {
+  const policy = getBlacklistRestrictionPolicy(Math.max(1, Number(totalViolations ?? 1)));
+  const duration = `${policy.durationDays} hari`;
+
+  if (policy.level === 1) {
+    return {
+      title: "Level 1 — Pelanggaran Pembayaran",
+      description: `Pembayaran tidak diselesaikan dalam 24 jam. Akun dibatasi ${duration} untuk mengikuti Lelang Tertutup; Harga Tetap tetap tersedia.`
+    };
+  }
+
+  if (policy.level === 2) {
+    return {
+      title: "Level 2 — Pelanggaran Pembayaran",
+      description: `Akun dibatasi ${duration} untuk mengikuti Lelang Tertutup dan membeli barang Harga Tetap.`
+    };
+  }
+
+  return {
+    title: "Level 3 — Pelanggaran Pembayaran",
+    description: `Akumulasi pelanggaran pembayaran mencapai Level 3. Akun dibatasi ${duration} dan akses masuk ditangguhkan.`
+  };
+}
+
 function VickreyPaymentFailedDetail({
   buyer,
+  buyerStatus,
   transaction
 }: {
   buyer: BuyerSessionUser;
+  buyerStatus?: BuyerProfileStatus;
   transaction: BuyerTransaction;
 }) {
   const sessionDate = transaction.createdAt.split(",")[0]?.trim() || transaction.createdAt;
   const failureReference = `TRX-FAIL-${transaction.applicationNumber || transaction.id}`;
   const paymentMethodLabel = transaction.method === "TRANSFER_BANK" ? "Transfer Bank" : "Bayar Langsung di Unit";
+  const violationAudit = getFailedPaymentViolationAudit(buyerStatus?.blacklist.totalViolations);
 
   return (
     <div className="flex flex-col gap-4 bg-white md:gap-5">
@@ -1572,11 +1599,11 @@ function VickreyPaymentFailedDetail({
                 }
               />
               <AuctionPaymentAuditRow
-                label="Status Restriksi Aktif"
+                label="Status Pelanggaran"
                 value={
                   <span className="block rounded-lg border border-red-200 bg-red-50/80 px-4 py-3 text-[#9f1d24]">
-                    <span className="block font-bold">Tier 1 Bidding Suspension</span>
-                    <span className="mt-1 block text-sm font-medium">Aktif selama 7 hari</span>
+                    <span className="block font-bold">{violationAudit.title}</span>
+                    <span className="mt-1 block text-sm font-medium leading-5">{violationAudit.description}</span>
                   </span>
                 }
               />
@@ -1936,7 +1963,7 @@ export function TransactionDetailPage({
     ) : null;
 
   if (isFailedVickreyPayment) {
-    return <VickreyPaymentFailedDetail buyer={buyer} transaction={transaction} />;
+    return <VickreyPaymentFailedDetail buyer={buyer} buyerStatus={buyerStatus} transaction={transaction} />;
   }
 
   if (isSuccessfulVickreyPayment) {

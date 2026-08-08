@@ -168,6 +168,13 @@ describe("buyer transaction detail page", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            until: new Date("2026-06-04T00:00:00.000Z"),
+            totalViolations: 1
+          }
+        }}
         transaction={{
           ...transaction,
           id: "trx-vickrey-failed",
@@ -218,13 +225,48 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/dibuat pada/i)).toBeInTheDocument();
     expect(screen.getByText(/system \(auto\)/i)).toBeInTheDocument();
     expect(screen.getByText(/trx-fail-pgj-vic-failed/i)).toBeInTheDocument();
-    expect(screen.getByText(/tier 1 bidding suspension/i)).toBeInTheDocument();
-    expect(screen.getByText(/aktif selama 7 hari/i)).toBeInTheDocument();
+    expect(screen.getByText(/^status pelanggaran$/i)).toBeInTheDocument();
+    expect(screen.getByText(/level 1 — pelanggaran pembayaran/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/pembayaran tidak diselesaikan dalam 24 jam\. akun dibatasi 7 hari untuk mengikuti lelang tertutup; harga tetap tetap tersedia/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/status restriksi aktif|bidding suspension/i)).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang kalung emas 2/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /kembali ke transaksi/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /detail pembayaran/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /status konfirmasi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
+  });
+
+  it("explains a level 2 violation in the failed-payment audit log", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        buyerStatus={{
+          blacklist: {
+            active: true,
+            until: new Date("2026-06-27T00:00:00.000Z"),
+            totalViolations: 2
+          }
+        }}
+        transaction={{
+          ...transaction,
+          id: "trx-vickrey-failed-level-2",
+          lotId: "pm-vickrey-failed-level-2",
+          kind: "VICKREY_WIN",
+          status: "GAGAL",
+          applicationNumber: "PGJ-VIC-FAILED-L2"
+        }}
+        transactionId="trx-vickrey-failed-level-2"
+      />
+    );
+
+    expect(screen.getByText(/^status pelanggaran$/i)).toBeInTheDocument();
+    expect(screen.getByText(/level 2 — pelanggaran pembayaran/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/akun dibatasi 30 hari untuk mengikuti lelang tertutup dan membeli barang harga tetap/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/status restriksi aktif|bidding suspension/i)).not.toBeInTheDocument();
   });
 
   it("asks buyer to finish the purchase and keeps the receipt locked before completion", () => {
