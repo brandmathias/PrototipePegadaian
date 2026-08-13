@@ -659,7 +659,7 @@ describe("publishAdminBarang", () => {
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("closes an active fixed price session without transactions before remarketing", async () => {
+  it("closes an active fixed price session with only waiting-payment checkouts before remarketing", async () => {
     const now = new Date("2026-05-12T08:30:45.000+08:00");
     const item = {
       id: "barang-fixed-active",
@@ -668,7 +668,7 @@ describe("publishAdminBarang", () => {
       code: "BRG-FIX-ACTIVE",
       category: "perhiasan",
       condition: "Cukup",
-      description: "Sesi harga tetap aktif belum memiliki transaksi buyer.",
+      description: "Sesi harga tetap aktif hanya memiliki checkout yang belum mengunggah bukti.",
       appraisalValue: 15000000,
       specifications: {},
       status: "dipasarkan",
@@ -695,6 +695,7 @@ describe("publishAdminBarang", () => {
     const insertValuesSpy = vi.fn().mockReturnValue({
       returning: vi.fn().mockResolvedValue([createdRow])
     });
+    const remarketingLockWhereSpy = vi.fn().mockResolvedValue([{ count: 0 }]);
     const updateBarangWhereSpy = vi.fn().mockResolvedValue(undefined);
     const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
 
@@ -723,7 +724,7 @@ describe("publishAdminBarang", () => {
       }))
       .mockImplementationOnce(() => ({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ count: 0 }])
+          where: remarketingLockWhereSpy
         })
       }))
       .mockImplementationOnce(() => ({
@@ -774,5 +775,31 @@ describe("publishAdminBarang", () => {
         note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
       })
     );
+    const remarketingLockValues = getSqlParameterValues(
+      remarketingLockWhereSpy.mock.calls[0]?.[0]
+    );
+    expect(remarketingLockValues).toContain("bukti_diunggah");
+    expect(remarketingLockValues).not.toContain("menunggu_pembayaran");
   });
 });
+
+function getSqlParameterValues(value: unknown): unknown[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(getSqlParameterValues);
+  }
+
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  const candidate = value as {
+    queryChunks?: unknown[];
+    value?: unknown;
+  };
+
+  if (candidate.queryChunks) {
+    return candidate.queryChunks.flatMap(getSqlParameterValues);
+  }
+
+  return "value" in candidate ? [candidate.value] : [];
+}

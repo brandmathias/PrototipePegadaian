@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminPemasaran } from "@/lib/admin-unit/serializers";
 import { validatePemasaranPayload } from "@/lib/admin-unit/validation";
+import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import type { LotInsights } from "@/lib/contracts/catalog";
 import { db } from "@/lib/db/client";
 import { barang, bids, mediaBarang, pemasaran, riwayatStatusBarang, transaksi, units, users } from "@/lib/db/schema";
@@ -197,13 +198,18 @@ async function getLatestMarketingForBarang(barangId: string) {
   return row ?? null;
 }
 
-async function getTransactionCountForMarketing(pemasaranId: string) {
+async function getFixedPriceRemarketingLockCount(pemasaranId: string) {
   const [row] = await db
     .select({
       count: sql<number>`count(*)`
     })
     .from(transaksi)
-    .where(eq(transaksi.pemasaranId, pemasaranId));
+    .where(
+      and(
+        eq(transaksi.pemasaranId, pemasaranId),
+        inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+      )
+    );
 
   return Number(row?.count ?? 0);
 }
@@ -404,7 +410,7 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     item.status === "dipasarkan" &&
     latestMarketing?.status === "aktif" &&
     latestMarketing.mode === "fixed_price" &&
-    (await getTransactionCountForMarketing(latestMarketing.id)) === 0;
+    (await getFixedPriceRemarketingLockCount(latestMarketing.id)) === 0;
 
   if (
     item.status !== "jaminan" &&
@@ -413,7 +419,7 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     !canRepublishFailedMarketing &&
     !canRepublishActiveFixedPrice
   ) {
-    throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi harga tetap aktif tanpa transaksi.");
+    throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi Harga Tetap aktif tanpa pembayaran yang mengunci katalog.");
   }
 
   if ((item.status === "jaminan" || item.status === "gadai") && item.dueDate.getTime() > now.getTime()) {

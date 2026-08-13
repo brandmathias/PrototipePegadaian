@@ -69,6 +69,7 @@ import { AdminStatusBadge } from "@/components/admin/admin-status-badge";
 import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form";
 import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-upload-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
+import { isFixedPriceBuyerCatalogHiddenStatus } from "@/lib/buyer/fixed-price-visibility";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
@@ -1988,7 +1989,7 @@ function getMarketingIterationSummary(auction: MarketingSession) {
     return auction.note || "Hasil lelang sudah dibuka";
   }
 
-  return auction.buyerName || getFixedPriceOperationalNote(auction);
+  return getFixedPriceVisibleBuyerName(auction) || getFixedPriceOperationalNote(auction);
 }
 
 function isLatestMarketingIteration(auction: MarketingSession) {
@@ -2877,7 +2878,8 @@ export function AdminFixedPriceDetailPage({
   const fixedPriceAmount = currency.format(auction.price ?? 0);
   const fixedPriceAmountClass = getFixedPriceAmountClass(auction.price);
   const canShowRemarketingAction =
-    auction.status === "AKTIF" && !auction.transactionId;
+    auction.status === "AKTIF" &&
+    !isFixedPriceBuyerCatalogHiddenStatus(auction.transactionStatus ?? "");
   const canScheduleRemarketing =
     canShowRemarketingAction && isLatestMarketingIteration(auction);
   const shouldAutoRefresh =

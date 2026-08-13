@@ -842,6 +842,35 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /harga tetap/i })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("allows remarketing and hides the buyer name while fixed-price checkout is still waiting for payment", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-waiting-payment",
+          lotId: "barang-fixed-waiting-payment",
+          lot: "Cincin Emas Menunggu Pembayaran",
+          code: "BRG-FIX-WAITING",
+          category: "perhiasan",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          startsAt: "2026-05-26T12:49:00.000Z",
+          price: 15_000_000,
+          transactionId: "trx-fixed-waiting-payment",
+          transactionStatus: "MENUNGGU_PEMBAYARAN",
+          buyerName: "Cristiano Ronaldo",
+          unitName: "UPC Wanea",
+          unitAddress: "Wanea",
+          insights: { views: 0, likes: 0, participants: 0 }
+        }}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeEnabled();
+    expect(screen.queryByText("Cristiano Ronaldo")).not.toBeInTheDocument();
+    expect(screen.getByText(/belum ada pembeli dengan bukti pembayaran masuk/i)).toBeInTheDocument();
+  });
+
   it("keeps fixed-price video media inside the same gallery preview frame", () => {
     render(
       <AdminFixedPriceDetailPage
