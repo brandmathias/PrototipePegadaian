@@ -37,7 +37,11 @@ import {
   notifyAdminUnitBidSubmitted,
   notifyAdminUnitPaymentProofUploaded
 } from "@/lib/services/notification-events";
-import { processExpiredVickreyAuctions, processOverdueVickreyPayments } from "@/lib/services/cron.service";
+import {
+  processExpiredVickreyAuctions,
+  processHandoverAutoCompletions,
+  processOverdueVickreyPayments
+} from "@/lib/services/cron.service";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
@@ -181,6 +185,7 @@ async function refreshBuyerAuctionSettlementState(options?: BuyerReadOptions) {
 
   await processExpiredVickreyAuctions();
   await processOverdueVickreyPayments();
+  await processHandoverAutoCompletions();
 }
 
 function transactionSelection() {

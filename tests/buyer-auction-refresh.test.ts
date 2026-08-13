@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => {
   };
   const serializeBuyerTransaction = vi.fn((row) => row);
   const processExpiredVickreyAuctions = vi.fn();
+  const processHandoverAutoCompletions = vi.fn();
   const processOverdueVickreyPayments = vi.fn();
   const getBuyerWishlistCount = vi.fn();
 
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => {
     db,
     getBuyerWishlistCount,
     processExpiredVickreyAuctions,
+    processHandoverAutoCompletions,
     processOverdueVickreyPayments,
     serializeBuyerTransaction
   };
@@ -29,6 +31,7 @@ vi.mock("@/lib/buyer/serializers", () => ({
 
 vi.mock("@/lib/services/cron.service", () => ({
   processExpiredVickreyAuctions: mocks.processExpiredVickreyAuctions,
+  processHandoverAutoCompletions: mocks.processHandoverAutoCompletions,
   processOverdueVickreyPayments: mocks.processOverdueVickreyPayments
 }));
 
@@ -132,6 +135,10 @@ describe("buyer auction state refresh", () => {
       pendingReveal: 0,
       processed: 0
     });
+    mocks.processHandoverAutoCompletions.mockResolvedValue({
+      completed: 0,
+      processed: 0
+    });
     mocks.processOverdueVickreyPayments.mockResolvedValue({
       blacklisted: 0,
       processed: 0
@@ -165,6 +172,25 @@ describe("buyer auction state refresh", () => {
         status: "gagal"
       })
     ]);
+  });
+
+  it("auto-completes overdue handovers before listing buyer transactions", async () => {
+    mocks.db.select.mockImplementationOnce(() =>
+      mockBuyerTransactionRows([
+        {
+          id: "trx-overdue-handover",
+          status: "selesai",
+          type: "vickrey"
+        }
+      ])
+    );
+
+    await listBuyerTransactions("buyer-1");
+
+    expect(mocks.processHandoverAutoCompletions).toHaveBeenCalledTimes(1);
+    expect(mocks.db.select.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mocks.processHandoverAutoCompletions.mock.invocationCallOrder[0]
+    );
   });
 
   it("keeps harga tetap waiting-payment rows visible so buyers can upload proof from transaction detail", async () => {
