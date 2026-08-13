@@ -17,12 +17,18 @@ export function getHandoverAutoCompleteDeadline(uploadedAt?: Date | string | nul
 
 export function isHandoverAutoCompleteDue(
   input: {
+    completedAt?: Date | string | null;
+    completionSource?: string | null;
     handoverProofUploadedAt?: Date | string | null;
     status?: string | null;
   },
   now = new Date(),
 ) {
-  if (input.status !== "lunas") {
+  const isPendingCompletion = input.status === "lunas";
+  const isLegacyCompletionWithoutMetadata =
+    input.status === "selesai" && !input.completedAt && !input.completionSource;
+
+  if (!isPendingCompletion && !isLegacyCompletionWithoutMetadata) {
     return false;
   }
 

@@ -12,11 +12,22 @@ describe("handover auto-finalization", () => {
     );
   });
 
-  it("only auto-completes verified transactions after the grace period", () => {
+  it("auto-completes verified transactions after the grace period and repairs incomplete legacy completions", () => {
     const uploadedAt = "2026-06-24T02:15:00.000Z";
 
     expect(isHandoverAutoCompleteDue({ status: "lunas", handoverProofUploadedAt: uploadedAt }, new Date("2026-06-27T02:15:00.000Z"))).toBe(true);
     expect(isHandoverAutoCompleteDue({ status: "lunas", handoverProofUploadedAt: uploadedAt }, new Date("2026-06-27T02:14:59.999Z"))).toBe(false);
-    expect(isHandoverAutoCompleteDue({ status: "selesai", handoverProofUploadedAt: uploadedAt }, new Date("2026-06-28T00:00:00.000Z"))).toBe(false);
+    expect(isHandoverAutoCompleteDue({ status: "selesai", handoverProofUploadedAt: uploadedAt }, new Date("2026-06-28T00:00:00.000Z"))).toBe(true);
+    expect(
+      isHandoverAutoCompleteDue(
+        {
+          status: "selesai",
+          completedAt: new Date("2026-06-27T02:15:00.000Z"),
+          completionSource: "auto_handover_grace",
+          handoverProofUploadedAt: uploadedAt
+        },
+        new Date("2026-06-28T00:00:00.000Z")
+      )
+    ).toBe(false);
   });
 });

@@ -400,4 +400,47 @@ describe("handover auto-completion settlement", () => {
       ])
     );
   });
+
+  it("backfills an overdue completed handover missing its automatic completion metadata", async () => {
+    const updatePayloads: Array<Record<string, unknown>> = [];
+    const now = new Date("2026-08-13T01:00:00.000Z");
+    const autoCompletedAt = new Date("2026-06-27T20:31:00.000Z");
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockHandoverRows([
+        {
+          item: {
+            id: "barang-legacy",
+            status: "terjual"
+          },
+          transaction: {
+            id: "trx-legacy",
+            pemasaranId: "pemasaran-legacy",
+            status: "selesai",
+            type: "vickrey",
+            completedAt: null,
+            completionSource: null,
+            handoverProofUploadedAt: new Date("2026-06-24T20:31:00.000Z")
+          }
+        }
+      ])
+    );
+    mocks.tx.update.mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)));
+
+    const { processHandoverAutoCompletions } = await import("@/lib/services/cron.service");
+    const summary = await processHandoverAutoCompletions(now);
+
+    expect(summary).toEqual({
+      processed: 1,
+      completed: 1
+    });
+    expect(updatePayloads).toEqual([
+      expect.objectContaining({
+        status: "selesai",
+        completedAt: autoCompletedAt,
+        completionSource: "auto_handover_grace"
+      })
+    ]);
+    expect(mocks.tx.insert).not.toHaveBeenCalled();
+  });
 });

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, asc, desc, eq, gt, inArray, isNotNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
 
 import { db } from "@/lib/db/client";
 import {
@@ -16,7 +16,7 @@ import {
   units,
   users
 } from "@/lib/db/schema";
-import { isHandoverAutoCompleteDue } from "@/lib/transactions/handover-finalization";
+import { getHandoverAutoCompleteDeadline, isHandoverAutoCompleteDue } from "@/lib/transactions/handover-finalization";
 import {
   getBlacklistBlockedUntil,
   getBlacklistDurationLabel,
@@ -783,9 +783,16 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .where(
       and(
-        eq(transaksi.status, "lunas"),
         isNotNull(transaksi.handoverProofUrl),
         isNotNull(transaksi.handoverProofUploadedAt),
+        or(
+          eq(transaksi.status, "lunas"),
+          and(
+            eq(transaksi.status, "selesai"),
+            isNull(transaksi.completedAt),
+            isNull(transaksi.completionSource),
+          ),
+        ),
       ),
     );
   const dueRows = rows.filter((row) => isHandoverAutoCompleteDue(row.transaction, now));
@@ -794,25 +801,36 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
 
   for (const row of dueRows) {
     await db.transaction(async (tx) => {
+      const isLegacyCompletionBackfill = row.transaction.status === "selesai";
+      const completedAt = isLegacyCompletionBackfill
+        ? getHandoverAutoCompleteDeadline(row.transaction.handoverProofUploadedAt) ?? now
+        : now;
       const [updatedTransaction] = await tx
         .update(transaksi)
         .set({
           status: "selesai",
-          completedAt: now,
+          completedAt,
           completionSource: "auto_handover_grace",
           updatedAt: now,
         })
         .where(
           and(
             eq(transaksi.id, row.transaction.id),
-            eq(transaksi.status, "lunas"),
             isNotNull(transaksi.handoverProofUrl),
             isNotNull(transaksi.handoverProofUploadedAt),
+            isNull(transaksi.completedAt),
+            isNull(transaksi.completionSource),
+            or(eq(transaksi.status, "lunas"), eq(transaksi.status, "selesai")),
           ),
         )
         .returning({ id: transaksi.id });
 
       if (!updatedTransaction) {
+        return;
+      }
+
+      if (isLegacyCompletionBackfill) {
+        completed += 1;
         return;
       }
 
