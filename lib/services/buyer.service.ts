@@ -51,6 +51,7 @@ const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung"
 ];
+const FIXED_PRICE_CLAIM_CONFLICT_MESSAGE = "Barang sedang dalam proses pembelian oleh pembeli lain.";
 
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
   "Akun Anda sedang dalam masa pembatasan. Transaksi yang sedang berjalan belum dapat diselesaikan sampai masa blacklist berakhir.";
@@ -276,6 +277,23 @@ function ensureActiveMarketing(row: Awaited<ReturnType<typeof getMarketingForBuy
   if (row.marketing.status !== "aktif" || row.item.status !== "dipasarkan") {
     throw new Error("Barang belum tersedia untuk transaksi baru.");
   }
+}
+
+function isFixedPriceClaimConflict(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const databaseError = error as { code?: unknown; constraint?: unknown };
+  return databaseError.code === "23505" && databaseError.constraint === "transaksi_fixed_price_claim_unique";
+}
+
+function throwFixedPriceClaimConflict(error: unknown): never {
+  if (isFixedPriceClaimConflict(error)) {
+    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+  }
+
+  throw error;
 }
 
 async function getActiveBlacklist(userId: string) {
@@ -856,7 +874,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   );
 
   if (lockedByOtherBuyer) {
-    throw new Error("Barang sedang dalam proses pembelian oleh pembeli lain.");
+    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
   }
 
   if (existingBuyerTransaction) {
@@ -899,7 +917,8 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
       referenceNumber: payload.reference ?? null,
       paymentDeadline: null
     })
-    .returning();
+    .returning()
+    .catch(throwFixedPriceClaimConflict);
 
   if (hasProof) {
     const [adminUserIds, superAdminUserIds] = await Promise.all([
@@ -1048,7 +1067,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     .limit(1);
 
   if (lockedByOtherBuyer) {
-    throw new Error("Barang sedang dalam proses pembelian oleh pembeli lain.");
+    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
   }
 
   const [updated] = await db
@@ -1061,7 +1080,8 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
       updatedAt: new Date()
     })
     .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
-    .returning();
+    .returning()
+    .catch(throwFixedPriceClaimConflict);
 
   const [adminUserIds, superAdminUserIds] = await Promise.all([
     listActiveAdminUnitNotificationRecipientIds(row.unitId),

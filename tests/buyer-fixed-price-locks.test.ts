@@ -28,7 +28,8 @@ vi.mock("@/lib/buyer/serializers", () => ({
 
 vi.mock("@/lib/services/cron.service", () => ({
   processExpiredVickreyAuctions: vi.fn(),
-  processOverdueVickreyPayments: vi.fn()
+  processOverdueVickreyPayments: vi.fn(),
+  processHandoverAutoCompletions: vi.fn()
 }));
 
 vi.mock("@/lib/services/notification-events", () => ({
@@ -289,6 +290,42 @@ describe("createFixedPricePurchase locking rules", () => {
     expect(mocks.db.insert).not.toHaveBeenCalled();
   });
 
+  it("reports a clear business conflict when a first-screen proof loses the fixed-price claim race", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
+      .mockImplementationOnce(() => mockTransactionListQuery([]))
+      .mockImplementationOnce(() => mockBlacklistQuery());
+
+    mocks.db.insert.mockImplementationOnce(() => ({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue(
+          Object.assign(new Error("duplicate key value violates unique constraint"), {
+            code: "23505",
+            constraint: "transaksi_fixed_price_claim_unique"
+          })
+        )
+      })
+    }));
+
+    await expect(
+      createFixedPricePurchase("buyer-baru", "pemasaran-1", {
+        paymentMethod: "transfer",
+        fileName: "/uploads/bukti/transfer-race.jpg"
+      })
+    ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
+
+    expect(mocks.notifyAdminUnitPaymentProofUploaded).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
+  });
+
   it("uploads buyer payment proof and revalidates synced transaction views", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockBlacklistQuery())
@@ -359,6 +396,49 @@ describe("createFixedPricePurchase locking rules", () => {
       })
     );
     expectTransactionViewsRevalidated();
+  });
+
+  it("reports a clear business conflict when another buyer claims the same fixed-price session first", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionDetailQuery({
+          id: "trx-proof-race",
+          pemasaranId: "pemasaran-1",
+          userId: "buyer-1",
+          status: "menunggu_pembayaran",
+          paymentMethod: "transfer",
+          referenceNumber: "BRI-2026-001",
+          proofUrl: null,
+          unitId: "unit-1",
+          lotId: "barang-1",
+          lotName: "Cincin Emas"
+        })
+      )
+      .mockImplementationOnce(() => mockTransactionLockQuery([]));
+
+    mocks.db.update.mockImplementationOnce(() => ({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockRejectedValue(
+            Object.assign(new Error("duplicate key value violates unique constraint"), {
+              code: "23505",
+              constraint: "transaksi_fixed_price_claim_unique"
+            })
+          )
+        })
+      })
+    }));
+
+    await expect(
+      uploadBuyerPaymentProof("buyer-1", "trx-proof-race", {
+        fileName: "/uploads/bukti/transfer-race.jpg",
+        reference: "BRI-2026-002"
+      })
+    ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
+
+    expect(mocks.notifyAdminUnitPaymentProofUploaded).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
   it("blocks proof upload while the current proof is already waiting for admin review", async () => {

@@ -180,7 +180,12 @@ export const transaksi = pgTable(
   (table) => ({
     pemasaranIdx: index("transaksi_pemasaran_id_idx").on(table.pemasaranId),
     userIdx: index("transaksi_user_id_idx").on(table.userId),
-    statusIdx: index("transaksi_status_idx").on(table.status)
+    statusIdx: index("transaksi_status_idx").on(table.status),
+    fixedPriceClaimIdx: uniqueIndex("transaksi_fixed_price_claim_unique")
+      .on(table.pemasaranId)
+      .where(
+        sql`${table.type} = 'fixed_price' and ${table.status} in ('bukti_diunggah', 'lunas', 'selesai')`
+      )
   })
 );
 

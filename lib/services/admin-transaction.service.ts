@@ -320,7 +320,11 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
   await ensureTransactionMutable(row.transaction.status);
   const payload = validateTransactionVerificationPayload(input);
 
-  if (!["bukti_diunggah", "menunggu_konfirmasi_langsung", "menunggu_pembayaran"].includes(row.transaction.status)) {
+  if (row.transaction.type === "fixed_price" && (row.transaction.status !== "bukti_diunggah" || !row.transaction.proofUrl)) {
+    throw new Error("Bukti pembayaran belum diunggah oleh buyer.");
+  }
+
+  if (row.transaction.type !== "fixed_price" && row.transaction.status !== "menunggu_konfirmasi_langsung") {
     throw new Error("Status transaksi belum siap diverifikasi.");
   }
 

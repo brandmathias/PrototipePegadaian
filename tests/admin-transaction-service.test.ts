@@ -249,6 +249,28 @@ describe("admin transaction service", () => {
 
   });
 
+  it("rejects harga tetap verification before a payment proof is uploaded", async () => {
+    const waitingPayment = makeTransactionJoin("menunggu_pembayaran", "fixed_price");
+    mocks.query.limit.mockResolvedValue([
+      {
+        ...waitingPayment,
+        transaction: {
+          ...waitingPayment.transaction,
+          proofUrl: null
+        }
+      }
+    ]);
+
+    await expect(
+      verifyAdminTransaction("unit-1", "admin-1", "trx-fixed-rejected", {
+        reference: "BRI-2026-001"
+      })
+    ).rejects.toThrow("Bukti pembayaran belum diunggah oleh buyer.");
+
+    expect(mocks.db.update).not.toHaveBeenCalled();
+    expect(mocks.notifyPaymentVerified).not.toHaveBeenCalled();
+  });
+
   it("records failed item history when admin rejects a harga tetap proof", async () => {
     const rejectedAt = new Date("2026-06-03T10:00:00.000Z");
     const relistedAt = new Date(rejectedAt.getTime() + 1);
