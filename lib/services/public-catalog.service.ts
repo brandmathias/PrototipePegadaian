@@ -66,6 +66,14 @@ function fixedPriceCatalogAvailabilityPredicate() {
   );
 }
 
+function vickreyCatalogAvailabilityPredicate(now: Date) {
+  return or(ne(pemasaran.mode, "vickrey"), gt(pemasaran.endsAt, now));
+}
+
+function isVickreyCatalogAvailableAt(mode: string, endsAt: Date | null, now: Date) {
+  return mode !== "vickrey" || Boolean(endsAt && endsAt.getTime() > now.getTime());
+}
+
 export type PublicCatalogUnitMetrics = {
   total: number;
   fixedPrice: number;
@@ -75,10 +83,12 @@ export type PublicCatalogUnitMetrics = {
 export async function getPublicCatalogUnitMetrics(
   unitId: string
 ): Promise<PublicCatalogUnitMetrics> {
+  const now = new Date();
   const visibleMarketing = await db
     .select({
       id: pemasaran.id,
-      mode: pemasaran.mode
+      mode: pemasaran.mode,
+      endsAt: pemasaran.endsAt
     })
     .from(pemasaran)
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
@@ -89,11 +99,12 @@ export async function getPublicCatalogUnitMetrics(
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate()
+        fixedPriceCatalogAvailabilityPredicate(),
+        vickreyCatalogAvailabilityPredicate(now)
       )
     );
 
-  return visibleMarketing.reduce<PublicCatalogUnitMetrics>(
+  return visibleMarketing.filter((marketing) => isVickreyCatalogAvailableAt(marketing.mode, marketing.endsAt, now)).reduce<PublicCatalogUnitMetrics>(
     (metrics, marketing) => {
       metrics.total += 1;
       if (marketing.mode === "fixed_price") {
@@ -153,6 +164,7 @@ export async function listPublicLots() {
 }
 
 export async function listPublicLotsWithLimit(limit?: number) {
+  const now = new Date();
   const baseQuery = db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -164,7 +176,8 @@ export async function listPublicLotsWithLimit(limit?: number) {
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate()
+        fixedPriceCatalogAvailabilityPredicate(),
+        vickreyCatalogAvailabilityPredicate(now)
       )
     )
     .orderBy(
@@ -174,7 +187,9 @@ export async function listPublicLotsWithLimit(limit?: number) {
     );
 
   const limitedRows = await (typeof limit === "number" ? baseQuery.limit(limit) : baseQuery);
-  const sortedRows = sortPublicCatalogRowsByLatestListing(limitedRows);
+  const sortedRows = sortPublicCatalogRowsByLatestListing(
+    limitedRows.filter((row) => isVickreyCatalogAvailableAt(row.marketingMode, row.endsAt, now))
+  );
 
   const [mediaByBarangId, statsByMarketingId] = await Promise.all([
     getMediaByBarangId(sortedRows.map((row) => row.itemId), { maxItemsPerBarang: 1 }),
@@ -227,6 +242,7 @@ export async function listOngoingVickreyLotsWithLimit(limit?: number) {
 }
 
 export async function getPublicLotById(pemasaranId: string) {
+  const now = new Date();
   const [row] = await db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -239,12 +255,13 @@ export async function getPublicLotById(pemasaranId: string) {
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate()
+        fixedPriceCatalogAvailabilityPredicate(),
+        vickreyCatalogAvailabilityPredicate(now)
       )
     )
     .limit(1);
 
-  if (!row) {
+  if (!row || !isVickreyCatalogAvailableAt(row.marketingMode, row.endsAt, now)) {
     return null;
   }
 
