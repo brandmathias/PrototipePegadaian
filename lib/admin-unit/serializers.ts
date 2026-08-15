@@ -53,6 +53,10 @@ function toDateTimeLabel(value: Date | null | undefined) {
   return formatAppDateTime(value);
 }
 
+function toBidDateTimeLabel(value: Date | null | undefined) {
+  return formatAppDateTime(value, { showSeconds: true });
+}
+
 function toNumber(value: string | number | null | undefined) {
   return Number(value ?? 0);
 }
@@ -226,7 +230,7 @@ export function serializeAdminPemasaran(
             bidderName: entry.bidderName ?? "Peserta",
             bidderImage: entry.bidderImage ?? null,
             submittedAt: entry.bid.createdAt.toISOString(),
-            submittedAtLabel: toDateTimeLabel(entry.bid.createdAt),
+            submittedAtLabel: toBidDateTimeLabel(entry.bid.createdAt),
             rank,
             isWinner: Boolean(isWinner),
             determinesFinalPrice: visibility === "HASIL_DIBUKA" && Boolean(row.winnerId) && rank === 2,

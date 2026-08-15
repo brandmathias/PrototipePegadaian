@@ -33,7 +33,10 @@ export function formatAppLongDate(value: Date | string | null | undefined) {
   }).format(date);
 }
 
-export function formatAppDateTime(value: Date | string | null | undefined) {
+export function formatAppDateTime(
+  value: Date | string | null | undefined,
+  options: { showSeconds?: boolean } = {},
+) {
   if (!value) {
     return "-";
   }
@@ -45,7 +48,7 @@ export function formatAppDateTime(value: Date | string | null | undefined) {
 
   const label = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "medium",
-    timeStyle: "short",
+    timeStyle: options.showSeconds ? "medium" : "short",
     timeZone: APP_TIME_ZONE
   }).format(date);
 

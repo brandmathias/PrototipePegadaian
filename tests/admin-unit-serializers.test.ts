@@ -302,7 +302,7 @@ describe("admin unit serializers", () => {
               nominal: "15000000",
               salt: "salt-1",
               revealedAt: new Date("2026-04-08T00:05:00Z"),
-              createdAt: new Date("2026-04-05T00:00:00Z")
+              createdAt: new Date("2026-04-05T00:00:12Z")
             },
             bidderName: "Raras"
           },
@@ -330,7 +330,8 @@ describe("admin unit serializers", () => {
       bidderName: "Raras",
       isWinner: true,
       determinesFinalPrice: false,
-      amount: 15000000
+      amount: 15000000,
+      submittedAtLabel: "5 Apr 2026, 07.00.12 WIB"
     });
     expect(auction.bids![0]).not.toHaveProperty("nominal");
     expect(auction.bids![0]).not.toHaveProperty("salt");
