@@ -168,7 +168,7 @@ export function MarketingPerformancePanel({
         <MarketingPerformanceMetricCard
           detail="Disimpan oleh pengguna unik"
           icon={Heart}
-          label="Watchlist Nasabah"
+          label="Wishlist Pembeli"
           tone="rose"
           value={`${stats.likes.toLocaleString("id-ID")} Akun`}
         />

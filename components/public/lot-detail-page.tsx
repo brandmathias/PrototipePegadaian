@@ -268,7 +268,7 @@ export function LotDetailPage({
                     showSeparators
                     trackView={trackView}
                     valueClassName="text-base font-semibold text-[#183f32]"
-                    watchLabel="Watchlist"
+                    watchLabel="Wishlist"
                   />
                   {showAuctionCountdown ? (
                     <div className="grid gap-3 rounded-[1.35rem] border border-[#f4d9df] bg-[linear-gradient(180deg,#fff9fa,#fff3f5)] px-4 py-4 shadow-[0_24px_56px_-42px_rgba(215,43,67,0.42)] md:px-5 md:py-5">

@@ -819,7 +819,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Harga Barang")).toBeInTheDocument();
     expect(screen.getByText("Total Tayangan")).toBeInTheDocument();
     expect(screen.getByText("17x")).toBeInTheDocument();
-    expect(screen.getByText("Watchlist Nasabah")).toBeInTheDocument();
+    expect(screen.getByText("Wishlist Pembeli")).toBeInTheDocument();
     expect(screen.getByText("1 Akun")).toBeInTheDocument();
     expect(screen.getByText("Cincin Wanita / Eternity Ring")).toBeInTheDocument();
     expect(screen.getByText("18 Karat atau 75%")).toBeInTheDocument();
