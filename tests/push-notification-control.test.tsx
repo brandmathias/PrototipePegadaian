@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { UiProviders } from "@/components/providers/ui-providers";
 import { PushNotificationControl } from "@/components/ui/push-notification-control";
 
 const pushState = { configured: true, enabled: false, publicKey: "BElp_2hBqqkSGGkRrnZbJ1Qj7pQfPAAqR4mJjK2Y0aY" };
@@ -85,6 +86,21 @@ describe("PushNotificationControl", () => {
     Object.defineProperty(navigator, "serviceWorker", { configurable: true, value: { register, getRegistration: vi.fn() } });
 
     render(<PushNotificationControl />);
+
+    await waitFor(() => {
+      expect(register).toHaveBeenCalledWith("/push-service-worker.js?v=2", { updateViaCache: "none" });
+      expect(update).toHaveBeenCalledOnce();
+    });
+  });
+
+  it("updates the worker when the global app provider mounts", async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const register = vi.fn().mockResolvedValue({ update });
+    vi.stubGlobal("Notification", { permission: "granted", requestPermission: vi.fn() });
+    vi.stubGlobal("PushManager", class PushManager {});
+    Object.defineProperty(navigator, "serviceWorker", { configurable: true, value: { register } });
+
+    render(<UiProviders><div>Beranda</div></UiProviders>);
 
     await waitFor(() => {
       expect(register).toHaveBeenCalledWith("/push-service-worker.js?v=2", { updateViaCache: "none" });

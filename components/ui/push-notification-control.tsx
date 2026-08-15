@@ -33,6 +33,16 @@ async function registerPushServiceWorker() {
   return registration;
 }
 
+export function PushServiceWorkerUpdater() {
+  React.useEffect(() => {
+    if (supportsPush()) {
+      void registerPushServiceWorker().catch(() => undefined);
+    }
+  }, []);
+
+  return null;
+}
+
 export function PushNotificationControl({ variant = "compact" }: PushNotificationControlProps) {
   const [state, setState] = React.useState<PushState | null>(null);
   const [permission, setPermission] = React.useState<NotificationPermission | "unsupported">("unsupported");
