@@ -488,12 +488,12 @@ function VickreyAssetNotice({ auction }: { auction: MarketingSession }) {
         </div>
         <div className="rounded-2xl border border-[#dce8e2] bg-white/72 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] lg:border-l lg:border-y-0 lg:border-r-0 lg:bg-transparent lg:pl-5 lg:shadow-none">
           <p className="text-[0.72rem] font-semibold text-[#64756e]">
-            Nilai Taksiran
+            Harga Dasar
           </p>
           <p
-            className={`mt-2 max-w-full whitespace-nowrap font-black tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.appraisalValue ?? auction.basePrice ?? 0)}`}
+            className={`mt-2 max-w-full whitespace-nowrap font-black tracking-[-0.03em] text-[#006747] [font-variant-numeric:tabular-nums] ${getCompactCurrencyTextClass(auction.basePrice ?? 0)}`}
           >
-            {currency.format(auction.appraisalValue ?? auction.basePrice ?? 0)}
+            {currency.format(auction.basePrice ?? 0)}
           </p>
         </div>
         <div className="hidden size-16 place-items-center rounded-[1.2rem] border border-[#d7eadf] bg-white/78 text-[#0b1f18] shadow-[0_16px_34px_-28px_rgba(0,103,71,0.55),inset_0_1px_0_rgba(255,255,255,0.9)] lg:grid">

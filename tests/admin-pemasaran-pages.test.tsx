@@ -1095,6 +1095,31 @@ describe("admin pemasaran pages", () => {
     expect(bidLogTable?.parentElement).not.toHaveClass("overflow-x-auto");
   });
 
+  it("shows the auction base price beside the asset code", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-base-price",
+          lotId: "barang-base-price",
+          lot: "Kalung Emas",
+          code: "SBG-1178700000000057",
+          status: "AKTIF",
+          mode: "VICKREY_AUCTION",
+          endingAt: "2099-05-06T12:00:00.000Z",
+          basePrice: 10000000,
+          appraisalValue: 14100000,
+          visibility: "TERKUNCI",
+          bids: []
+        }}
+      />
+    );
+
+    const assetNotice = screen.getByText(/informasi jaminan utama/i).closest("section");
+    expect(within(assetNotice as HTMLElement).getByText("Harga Dasar").parentElement).toHaveTextContent(
+      "Rp 10.000.000"
+    );
+  });
+
   it("shows iteration history links on marketing detail pages", () => {
     const firstIteration = {
       id: "pm-ipad-iteration-1",
