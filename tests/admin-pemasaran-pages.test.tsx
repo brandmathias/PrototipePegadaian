@@ -1993,6 +1993,8 @@ describe("admin pemasaran pages", () => {
     expect(adminProgressActor.className).not.toContain("truncate");
     expect(screen.getByText(/nota dokumen final/i)).toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
+    expect(screen.getByLabelText(/file bukti serah-terima barang/i)).toBeDisabled();
+    expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "true");
     const finalNoteTitle = screen.getByText(/nota dokumen final/i);
     const finalNotePanel = finalNoteTitle.closest("section");
     expect(finalNotePanel).not.toBeNull();

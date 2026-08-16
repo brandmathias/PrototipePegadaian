@@ -2867,10 +2867,7 @@ function FixedPriceHandoverProofSection({
       className="w-full"
     >
       <HandoverProofUploadForm
-        canUpload={
-          auction.transactionStatus === "LUNAS" ||
-          auction.transactionStatus === "SELESAI"
-        }
+        canUpload={auction.transactionStatus === "LUNAS"}
         itemTitle={auction.lot}
         location={auction.unitName ?? auction.unitAddress ?? undefined}
         proof={{
@@ -6603,7 +6600,7 @@ function VickreyWinnerSettlementWorkspace({
             className="w-full"
           >
             <HandoverProofUploadForm
-              canUpload={isVickreyPaymentVerified(auction)}
+              canUpload={auction.transactionStatus === "LUNAS"}
               itemTitle={auction.lot}
               location={auction.unitName ?? auction.unitAddress ?? undefined}
               proof={{

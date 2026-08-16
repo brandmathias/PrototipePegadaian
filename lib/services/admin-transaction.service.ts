@@ -182,7 +182,11 @@ export async function uploadAdminTransactionHandoverProof(
   const row = await getTransactionForUnit(unitId, transactionId);
   const payload = validateTransactionHandoverProofPayload(input);
 
-  if (!["lunas", "selesai"].includes(row.transaction.status)) {
+  if (row.transaction.status === "selesai") {
+    throw new Error("Bukti serah-terima tidak dapat diubah setelah transaksi selesai.");
+  }
+
+  if (row.transaction.status !== "lunas") {
     throw new Error("Bukti serah-terima baru dapat diunggah setelah pembayaran diverifikasi.");
   }
 

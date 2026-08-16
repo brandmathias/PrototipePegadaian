@@ -226,6 +226,19 @@ describe("admin transaction pages", () => {
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
   });
 
+  it("locks handover proof upload controls after a transaction is completed", () => {
+    render(
+      <AdminTransactionDetailWorkspacePage
+        backHref="/admin/transaksi/riwayat"
+        backLabel="Kembali ke riwayat"
+        transaction={transactions[2]}
+      />
+    );
+
+    expect(screen.getByLabelText(/file bukti serah-terima barang/i)).toBeDisabled();
+    expect(screen.getByText(/^pilih file$/i).closest("label")).toHaveAttribute("aria-disabled", "true");
+  });
+
   it("prints the harga tetap receipt inline without opening a dedicated receipt tab", async () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
     const printableTransaction = {

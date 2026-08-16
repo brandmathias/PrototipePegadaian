@@ -847,7 +847,7 @@ export function VerificationWorkspace({
 
         <WorkspacePanel icon={<FileCheck2 className="size-4" />} label="Bukti Serah Terima">
           <HandoverProofUploadForm
-            canUpload={transaction.status === "LUNAS" || transaction.status === "SELESAI"}
+            canUpload={transaction.status === "LUNAS"}
             itemTitle={transaction.lot}
             location={transaction.unit}
             proof={{

@@ -527,4 +527,18 @@ describe("admin transaction service", () => {
     });
     expectTransactionViewsRevalidated();
   });
+
+  it("rejects handover proof uploads after the buyer has completed the transaction", async () => {
+    const completedTransaction = makeTransactionJoin("selesai", "fixed_price").transaction;
+    mocks.query.limit.mockResolvedValue([makeTransactionJoin("selesai", "fixed_price")]);
+    mocks.db.update.mockReturnValueOnce(mockUpdateReturning(completedTransaction));
+
+    await expect(
+      uploadAdminTransactionHandoverProof("unit-1", "admin-1", "trx-fixed-rejected", {
+        fileName: "/uploads/serah-terima/trx-fixed-completed.jpg"
+      })
+    ).rejects.toThrow("Bukti serah-terima tidak dapat diubah setelah transaksi selesai.");
+
+    expect(mocks.db.update).not.toHaveBeenCalled();
+  });
 });
