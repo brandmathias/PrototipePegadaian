@@ -182,7 +182,7 @@ describe("admin pemasaran pages", () => {
     expect(activeItemCode.className).toContain("xl:text-[0.82rem]");
     expect(activeItemCode.className).toContain("whitespace-nowrap");
     expect(screen.getByText("Sesi Berakhir")).toBeInTheDocument();
-    expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
+    expect(screen.getAllByText("Menunggu Serah-Terima").length).toBeGreaterThan(0);
     expect(screen.queryByText("Gelang Pernah Gagal")).not.toBeInTheDocument();
     expect(screen.getByText("Iphone Gagal Bayar")).toBeInTheDocument();
     expect(screen.getByText("Jam Tangan Tanpa Peserta")).toBeInTheDocument();
@@ -201,7 +201,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByText("Iphone Gagal Bayar")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("combobox", { name: "Filter status pemasaran" }), {
-      target: { value: "Menunggu Buyer" },
+      target: { value: "Menunggu Serah-Terima" },
     });
 
     expect(screen.getByText("Gelang Sudah Terjual")).toBeInTheDocument();
@@ -1613,6 +1613,56 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.queryByRole("button", { name: /cetak ringkasan lelang/i })).not.toBeInTheDocument();
     printSpy.mockRestore();
+  });
+
+  it("shows handover documentation as the next admin action after vickrey payment verification", () => {
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-verified-no-handover",
+          lotId: "barang-verified-no-handover",
+          lot: "Kalung Emas Rantai Cuban 22K",
+          code: "SBG-1178700000000057",
+          category: "emas",
+          condition: "baik",
+          unitName: "UPC Wanea",
+          unitAddress: "Jl. Sudirman",
+          status: "SELESAI",
+          mode: "VICKREY_AUCTION",
+          ending: "15 Agu 2026",
+          endingAt: "2026-08-15T02:56:00.000Z",
+          participants: 3,
+          basePrice: 15000000,
+          appraisalValue: 16000000,
+          finalPrice: 16000000,
+          winner: "Brando Mathias",
+          visibility: "HASIL_DIBUKA",
+          transactionId: "trx-vickrey-verified-no-handover",
+          transactionStatus: "LUNAS",
+          buyerName: "Brando Mathias",
+          buyerEmail: "brando@example.com",
+          buyerPhone: "082217460191",
+          paymentMethod: "BAYAR_LANGSUNG",
+          reference: "PGJ-VIC-0CE8A125",
+          proofUrl: null,
+          verifiedBy: "Hendra Wijaya",
+          handoverProofUrl: null,
+          handoverProofUploadedAt: null,
+          handoverProofUploadedBy: null,
+          soldAt: "2026-08-15T02:56:00.000Z",
+          paymentDeadline: "2026-08-16T02:56:00.000Z",
+          specifications: { kadarEmas: "22 Karat", berat: "6,7 gram" },
+          media: [],
+          primaryMedia: null,
+          bids: []
+        }}
+      />
+    );
+
+    expect(screen.getByText(/pembayaran terverifikasi .* menunggu serah-terima barang/i)).toBeInTheDocument();
+    expect(screen.getByText(/admin unit perlu mengunggah dokumentasi serah-terima barang fisik/i)).toBeInTheDocument();
+    expect(screen.getByText(/nota belum tersedia, arsip final belum ditutup/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/menunggu serah-terima/i).length).toBeGreaterThan(0);
   });
 
   it("renders the verified vickrey winner page as waiting for buyer completion", async () => {

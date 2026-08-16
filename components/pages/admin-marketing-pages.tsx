@@ -1248,6 +1248,7 @@ const MARKETING_STATUS_FILTERS = [
   "Semua",
   "Aktif",
   "Menunggu Bayar",
+  "Menunggu Serah-Terima",
   "Menunggu Buyer",
   "Selesai",
   "Gagal",
@@ -1260,6 +1261,20 @@ function isAutoCompletedMarketing(
   auction: Pick<MarketingSession, "completionSource">,
 ) {
   return auction.completionSource === "auto_handover_grace";
+}
+
+function isAwaitingHandoverDocumentation(
+  auction: Pick<MarketingSession, "transactionStatus" | "handoverProofUrl">,
+) {
+  return auction.transactionStatus === "LUNAS" && !auction.handoverProofUrl;
+}
+
+function getPostVerificationStatus(
+  auction: Pick<MarketingSession, "transactionStatus" | "handoverProofUrl">,
+) {
+  return isAwaitingHandoverDocumentation(auction)
+    ? "Menunggu Serah-Terima"
+    : "Menunggu Buyer";
 }
 
 function getMarketingCompletionLabel(
@@ -1277,8 +1292,12 @@ function getMarketingProgressCompletionLabel(
 }
 
 function getMarketingVerifiedDetail(
-  auction: Pick<MarketingSession, "handoverAutoCompleteAt">,
+  auction: Pick<MarketingSession, "handoverAutoCompleteAt" | "handoverProofUrl" | "transactionStatus">,
 ) {
+  if (isAwaitingHandoverDocumentation(auction)) {
+    return "Pembayaran sudah diverifikasi. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik.";
+  }
+
   if (auction.handoverAutoCompleteAt) {
     return `Menunggu buyer menekan Pembelian Selesai. Auto-selesai pada ${dateLabel(auction.handoverAutoCompleteAt)}.`;
   }
@@ -1338,7 +1357,7 @@ function getFixedPriceWorkflowStatus(auction: MarketingSession) {
   }
 
   if (auction.transactionStatus === "LUNAS") {
-    return "Menunggu Buyer";
+    return getPostVerificationStatus(auction);
   }
 
   if (auction.status === "GAGAL" || auction.transactionStatus === "GAGAL") {
@@ -1358,7 +1377,9 @@ function getFixedPriceOperationalNote(auction: MarketingSession) {
   }
 
   if (auction.transactionStatus === "LUNAS") {
-    return "Menunggu buyer menyelesaikan pembelian";
+    return isAwaitingHandoverDocumentation(auction)
+      ? "Menunggu dokumentasi serah-terima barang dari admin unit"
+      : "Menunggu buyer menyelesaikan pembelian";
   }
 
   if (hasFixedPricePaymentSubmission(auction)) {
@@ -1406,7 +1427,7 @@ function getMarketingWorkflowStatus(auction: MarketingSession) {
     return "Gagal";
   }
   if (auction.transactionStatus === "LUNAS") {
-    return "Menunggu Buyer";
+    return getPostVerificationStatus(auction);
   }
   if (isMarketingSold(auction)) {
     return "Selesai";
@@ -2049,7 +2070,9 @@ function MarketingIterationHistoryPanel({
   const selectedStatus = getMarketingWorkflowStatus(selectedIteration);
   const selectedFailed = selectedStatus === "Gagal";
   const selectedSettled =
-    selectedStatus === "Selesai" || selectedStatus === "Menunggu Buyer";
+    selectedStatus === "Selesai" ||
+    selectedStatus === "Menunggu Serah-Terima" ||
+    selectedStatus === "Menunggu Buyer";
   const selectedActive =
     selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
   const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
@@ -2809,9 +2832,15 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       status: fulfilled
         ? getMarketingProgressCompletionLabel(auction)
         : verified
-          ? "Menunggu buyer"
+          ? getPostVerificationStatus(auction)
           : "Belum terjadi",
-      actor: fulfilled ? completionActor : verified ? buyerActor : null,
+      actor: fulfilled
+        ? completionActor
+        : verified
+          ? isAwaitingHandoverDocumentation(auction)
+            ? adminActor
+            : buyerActor
+          : null,
       occurredAt: fulfilled ? dateLabel(auction.completedAt) : null,
       icon: CheckCircle2,
       tone: fulfilled
@@ -3811,6 +3840,8 @@ function VickreySettlementDeadlineBanner({
 }: {
   auction: MarketingSession;
 }) {
+  const awaitingHandover = isAwaitingHandoverDocumentation(auction);
+
   if (isVickreyPaymentFulfilled(auction)) {
     return (
       <section className="rounded-[1.1rem] border border-[#86d9ad] bg-[#f0fdf4] px-4 py-4 shadow-[0_18px_42px_-36px_rgba(0,103,71,0.34)] print:shadow-none">
@@ -3856,11 +3887,14 @@ function VickreySettlementDeadlineBanner({
             </span>
             <div className="min-w-0">
               <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#075b3f] sm:text-[1.12rem]">
-                Pembayaran Terverifikasi - Menunggu Buyer Selesai
+                {awaitingHandover
+                  ? "Pembayaran Terverifikasi - Menunggu Serah-Terima Barang"
+                  : "Pembayaran Terverifikasi - Menunggu Buyer Selesai"}
               </h2>
               <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
-                Admin sudah memverifikasi pembayaran. Tahap final baru tercapai
-                setelah buyer menekan Pembelian Selesai.
+                {awaitingHandover
+                  ? "Admin unit perlu mengunggah dokumentasi serah-terima barang fisik sebelum buyer dapat menyelesaikan pembelian."
+                  : "Dokumentasi serah-terima sudah tersimpan. Tahap final tercapai setelah buyer menekan Pembelian Selesai."}
               </p>
             </div>
           </div>
@@ -3870,10 +3904,14 @@ function VickreySettlementDeadlineBanner({
               Status Transaksi
             </span>
             <p className="mt-2 font-headline text-[0.92rem] font-black uppercase tracking-[0.01em] text-[#075b3f]">
-              Nota tersedia, arsip final belum ditutup
+              {awaitingHandover
+                ? "Nota belum tersedia, arsip final belum ditutup"
+                : "Nota tersedia, arsip final belum ditutup"}
             </p>
             <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#2f6a52]">
-              Buyer perlu mengonfirmasi dari halaman transaksi.
+              {awaitingHandover
+                ? "Unggah dokumentasi serah-terima terlebih dahulu."
+                : "Buyer perlu mengonfirmasi dari halaman transaksi."}
             </p>
           </div>
         </div>
@@ -3917,6 +3955,7 @@ function VickreyWinnerProfilePanel({ auction }: { auction: MarketingSession }) {
     winnerBid?.bidderId || auction.buyerNationalId || auction.reference || "-";
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const awaitingHandover = isAwaitingHandoverDocumentation(auction);
 
   return (
     <section className="relative overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
@@ -3978,7 +4017,11 @@ function VickreyWinnerProfilePanel({ auction }: { auction: MarketingSession }) {
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#2463eb] px-3 py-1.5 text-[0.62rem] font-black uppercase tracking-[0.06em] text-white">
             <ShieldCheck className="size-3.5" />
-            {fulfilled ? "Barang Sudah Diambil" : "Menunggu Buyer Selesai"}
+            {fulfilled
+              ? "Barang Sudah Diambil"
+              : awaitingHandover
+                ? "Menunggu Serah-Terima"
+                : "Menunggu Buyer Selesai"}
           </span>
         </div>
       ) : null}
@@ -4237,6 +4280,7 @@ function VickreyPaymentProgressPanel({
 }) {
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const awaitingHandover = isAwaitingHandoverDocumentation(auction);
   const buyerActor =
     auction.buyerName || auction.winner
       ? `Buyer: ${auction.buyerName || auction.winner}`
@@ -4291,8 +4335,8 @@ function VickreyPaymentProgressPanel({
           },
           {
             label: "Selesai",
-            status: "Menunggu buyer",
-            actor: buyerActor,
+            status: awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu buyer",
+            actor: awaitingHandover ? adminActor : buyerActor,
             icon: CheckCircle2,
             tone: "current" as const,
           },
@@ -4342,6 +4386,7 @@ function VickreyPaymentTotalPanel({
     : "Menunggu pembayaran";
   const fulfilled = isVickreyPaymentFulfilled(auction);
   const verified = isVickreyPaymentVerified(auction);
+  const awaitingHandover = isAwaitingHandoverDocumentation(auction);
   const receiptLockMessage = getMarketingReceiptLockMessage(auction);
   const canPrintReceipt = Boolean(
     auction.transactionId && onPrintReceipt && !receiptLockMessage,
@@ -4465,7 +4510,7 @@ function VickreyPaymentTotalPanel({
               variant="secondary"
             >
               <Clock3 className="size-4" />
-              Menunggu Buyer Selesai
+              {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Buyer Selesai"}
             </Button>
           </div>
         </div>
@@ -5840,6 +5885,7 @@ function VickreyWinnerActionFooter({
 }) {
   const receiptLockMessage = getMarketingReceiptLockMessage(auction);
   const canPrintReceipt = Boolean(auction.transactionId && !receiptLockMessage);
+  const awaitingHandover = isAwaitingHandoverDocumentation(auction);
 
   if (isVickreyPaymentFulfilled(auction)) {
     return (
@@ -5898,7 +5944,7 @@ function VickreyWinnerActionFooter({
           variant="secondary"
         >
           <CheckCircle2 className="size-4" />
-          Menunggu Buyer Selesai
+          {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Buyer Selesai"}
         </Button>
       </div>
     );
