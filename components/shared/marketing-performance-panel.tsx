@@ -166,7 +166,7 @@ export function MarketingPerformancePanel({
           value={`${stats.views.toLocaleString("id-ID")}x`}
         />
         <MarketingPerformanceMetricCard
-          detail="Disimpan oleh pengguna unik"
+          detail="Jumlah akun pembeli yang menyimpan barang ini"
           icon={Heart}
           label="Wishlist Pembeli"
           tone="rose"

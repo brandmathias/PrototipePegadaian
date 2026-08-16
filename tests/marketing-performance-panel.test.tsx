@@ -32,6 +32,7 @@ describe("MarketingPerformancePanel", () => {
     await waitFor(() => {
       expect(screen.getByText("11x")).toBeInTheDocument();
       expect(screen.getByText("5 Akun")).toBeInTheDocument();
+      expect(screen.getByText("Jumlah akun pembeli yang menyimpan barang ini")).toBeInTheDocument();
     });
 
     expect(fetchMock).toHaveBeenCalledWith("/api/public/lots/pm-fixed-1/stats", {
