@@ -60,7 +60,7 @@ describe("superadmin governance rules", () => {
       "Sedang Dipasarkan",
       "Terjual",
       "Perlu Tindak Lanjut",
-      "Nilai Transaksi Tervalidasi"
+      "Nilai Penjualan Final"
     ]);
     expect(snapshot[3]).toMatchObject({ value: "2" });
     expect(snapshot[4].value).toBe("Rp 72,5 jt");

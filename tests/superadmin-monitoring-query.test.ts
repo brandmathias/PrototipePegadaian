@@ -43,7 +43,8 @@ describe("superadmin monitoring query", () => {
     process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
 
     const { buildSuperAdminUnitRowsQuery } = await import("@/lib/services/monitoring.service");
-    const rendered = (buildSuperAdminUnitRowsQuery() as any).toSQL().sql as string;
+    const query = (buildSuperAdminUnitRowsQuery() as any).toSQL();
+    const rendered = query.sql as string;
 
     expect(rendered).toContain('"monitoring_units"."id"');
     expect(rendered).not.toContain('= "id"');
@@ -52,5 +53,6 @@ describe("superadmin monitoring query", () => {
     expect(rendered).toContain("coalesce(sum(t.amount), 0)");
     expect(rendered).toContain("t.status in ($");
     expect(rendered).not.toContain("b.status = 'terjual' or");
+    expect(query.params).toEqual(["selesai", "selesai"]);
   }, 15000);
 });

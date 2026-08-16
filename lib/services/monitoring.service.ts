@@ -41,7 +41,7 @@ const HELD_TRANSACTION_STATUSES = [
   "menunggu_konfirmasi_langsung",
 ];
 
-const VALIDATED_TRANSACTION_STATUSES = ["lunas", "selesai"];
+const COMPLETED_TRANSACTION_STATUSES = ["selesai"];
 
 const MONTH_LABELS = [
   "Jan",
@@ -164,9 +164,14 @@ type ValidatedTransactionTrendRow = {
   transactionType: string | null;
   marketingMode: string | null;
   verifiedAt: Date | null;
+  completedAt: Date | null;
   updatedAt: Date;
   createdAt: Date;
 };
+
+function getCompletedTransactionEventAt(row: ValidatedTransactionTrendRow) {
+  return row.completedAt ?? row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+}
 
 type ValidatedTrendPoint = {
   label: string;
@@ -276,6 +281,7 @@ function buildValidatedTrend(
     transactionType: string | null;
     marketingMode: string | null;
     verifiedAt: Date | null;
+    completedAt: Date | null;
     updatedAt: Date;
     createdAt: Date;
   }>,
@@ -287,7 +293,7 @@ function buildValidatedTrend(
   );
 
   for (const row of rows) {
-    const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+    const eventAt = getCompletedTransactionEventAt(row);
     if (eventAt.getFullYear() !== currentYear) {
       continue;
     }
@@ -320,7 +326,7 @@ function buildValidatedTrendRanges(
     const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
 
     for (const row of rows) {
-      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const eventAt = getCompletedTransactionEventAt(row);
       const point = pointByKey.get(makeDayKey(eventAt));
       if (point) {
         addRowToTrendPoint(point, row);
@@ -346,7 +352,7 @@ function buildValidatedTrendRanges(
     const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
 
     for (const row of rows) {
-      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const eventAt = getCompletedTransactionEventAt(row);
       const point = pointByKey.get(makeMonthKey(eventAt));
       if (point) {
         addRowToTrendPoint(point, row);
@@ -368,7 +374,7 @@ function buildValidatedTrendRanges(
     const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
 
     for (const row of rows) {
-      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const eventAt = getCompletedTransactionEventAt(row);
       if (eventAt.getFullYear() !== currentYear) {
         continue;
       }
@@ -391,7 +397,7 @@ function buildValidatedTrendRanges(
       return buildRecentMonths(12, "Semua Waktu");
     }
 
-    const eventTimes = rows.map((row) => (row.verifiedAt ?? row.updatedAt ?? row.createdAt).getTime());
+    const eventTimes = rows.map((row) => getCompletedTransactionEventAt(row).getTime());
     const first = new Date(Math.min(...eventTimes));
     const last = new Date(Math.max(...eventTimes, now.getTime()));
     const totalMonths =
@@ -406,7 +412,7 @@ function buildValidatedTrendRanges(
     const pointByKey = new Map(points.map((entry) => [entry.key, entry.point]));
 
     for (const row of rows) {
-      const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+      const eventAt = getCompletedTransactionEventAt(row);
       const point = pointByKey.get(makeMonthKey(eventAt));
       if (point) {
         addRowToTrendPoint(point, row);
@@ -444,7 +450,7 @@ function buildValidatedTrendRanges(
   };
 
   for (const row of rows) {
-    const eventAt = row.verifiedAt ?? row.updatedAt ?? row.createdAt;
+    const eventAt = getCompletedTransactionEventAt(row);
 
     if (eventAt >= weekStart && eventAt < weekEnd) {
       const dayIndex = Math.floor(
@@ -536,7 +542,7 @@ export function buildSuperAdminUnitRowsQuery() {
         inner join barang b on b.id = p.barang_id
         where b.unit_id = ${outerUnitId}
           and t.status in (${sql.join(
-            VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+            COMPLETED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
             sql`, `,
           )})
       )`,
@@ -547,7 +553,7 @@ export function buildSuperAdminUnitRowsQuery() {
         inner join barang b on b.id = p.barang_id
         where b.unit_id = ${outerUnitId}
           and t.status in (${sql.join(
-            VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+            COMPLETED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
             sql`, `,
           )})
       )`,
@@ -695,7 +701,7 @@ export async function getSuperAdminMonitoring() {
         sql`, `,
       )}) and ${transaksi.paymentDeadline} is not null and ${transaksi.paymentDeadline} <= ${now})`,
       validatedTransactionValue: sql<number>`coalesce(sum(${transaksi.amount}) filter (where ${transaksi.status} in (${sql.join(
-        VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+        COMPLETED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
         sql`, `,
       )})), 0)`,
     })
@@ -726,7 +732,7 @@ export async function getSuperAdminMonitoring() {
         inner join pemasaran p on p.id = t.pemasaran_id
         inner join barang b on b.id = p.barang_id
         where t.status in (${sql.join(
-          VALIDATED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
+          COMPLETED_TRANSACTION_STATUSES.map((status) => sql`${status}`),
           sql`, `,
         )})
       )`,
@@ -775,13 +781,14 @@ export async function getSuperAdminMonitoring() {
       transactionType: transaksi.type,
       marketingMode: pemasaran.mode,
       verifiedAt: transaksi.verifiedAt,
+      completedAt: transaksi.completedAt,
       updatedAt: transaksi.updatedAt,
       createdAt: transaksi.createdAt,
     })
     .from(transaksi)
     .innerJoin(pemasaran, eq(transaksi.pemasaranId, pemasaran.id))
-    .where(inArray(transaksi.status, VALIDATED_TRANSACTION_STATUSES))
-    .orderBy(asc(transaksi.verifiedAt), asc(transaksi.updatedAt));
+    .where(inArray(transaksi.status, COMPLETED_TRANSACTION_STATUSES))
+    .orderBy(asc(transaksi.completedAt), asc(transaksi.updatedAt));
 
   const unitsNeedAttention = await db
     .select({
@@ -1120,7 +1127,7 @@ export async function getSuperAdminMonitoring() {
       validatedTrend: buildValidatedTrend(validatedTransactionRows, now),
       validatedTrendEvents: validatedTransactionRows.map((row) => ({
         amount: Number(row.amount ?? 0),
-        occurredAt: (row.verifiedAt ?? row.updatedAt ?? row.createdAt).toISOString(),
+        occurredAt: getCompletedTransactionEventAt(row).toISOString(),
         marketingMode: row.marketingMode,
         transactionType: row.transactionType,
       })),

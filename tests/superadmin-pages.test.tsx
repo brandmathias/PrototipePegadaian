@@ -182,9 +182,9 @@ describe("superadmin pages", () => {
               detail: "Bukan pelanggaran aktif otomatis",
             },
             {
-              label: "Nilai Transaksi Tervalidasi",
+              label: "Nilai Penjualan Final",
               value: "Rp 72,5 jt",
-              detail: "Lunas atau selesai",
+              detail: "Pembelian selesai",
             },
           ],
           validatedTrend: [
@@ -266,10 +266,10 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Unit Aktif Nasional")).toBeInTheDocument();
     expect(screen.getByText("Pelanggaran Aktif")).toBeInTheDocument();
     expect(screen.getByText("Barang Terjual")).toBeInTheDocument();
-    expect(screen.getByText("Total Tervalidasi")).toBeInTheDocument();
+    expect(screen.getByText("Total Penjualan Final")).toBeInTheDocument();
     expect(screen.getByText("Performa Bulan Berlangsung")).toBeInTheDocument();
     expect(
-      screen.getByText("Tren Nilai Transaksi Tervalidasi"),
+      screen.getByText("Tren Nilai Penjualan Final"),
     ).toBeInTheDocument();
     expect(screen.getByText("Status Kepatuhan Ekosistem")).toBeInTheDocument();
     expect(screen.getByText("Leaderboard Kinerja Unit")).toBeInTheDocument();
@@ -458,9 +458,9 @@ describe("superadmin pages", () => {
           lifecycle: [],
           snapshot: [
             {
-              label: "Nilai Transaksi Tervalidasi",
+              label: "Nilai Penjualan Final",
               value: "Rp 130 jt",
-              detail: "Lunas atau selesai",
+              detail: "Pembelian selesai",
             },
           ],
           validatedTrend: yearlyTrend,
@@ -488,7 +488,7 @@ describe("superadmin pages", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /filter tren transaksi tervalidasi: bulan berlangsung/i,
+        name: /filter tren penjualan final: bulan berlangsung/i,
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Rp 48.000.000")).toBeInTheDocument();
@@ -524,20 +524,20 @@ describe("superadmin pages", () => {
 
     fireEvent.click(
       screen.getByRole("button", {
-        name: /filter tren transaksi tervalidasi: bulan berlangsung/i,
+        name: /filter tren penjualan final: bulan berlangsung/i,
       }),
     );
     fireEvent.click(
       within(
         screen.getByRole("dialog", {
-          name: /filter tren transaksi tervalidasi/i,
+          name: /filter tren penjualan final/i,
         }),
       ).getByRole("button", { name: /30 hari terakhir/i }),
     );
 
     expect(
       screen.getByRole("button", {
-        name: /filter tren transaksi tervalidasi: 30 hari terakhir/i,
+        name: /filter tren penjualan final: 30 hari terakhir/i,
       }),
     ).toBeInTheDocument();
     expect(screen.getByText("Performa 30 Hari Terakhir")).toBeInTheDocument();

@@ -104,7 +104,7 @@ const ACTIONABLE_TRANSACTION_STATUSES = new Set([
   "MENUNGGU_PEMBAYARAN",
   "DITOLAK_BUKTI"
 ]);
-const VERIFIED_TRANSACTION_STATUSES = new Set(["LUNAS", "SELESAI"]);
+const COMPLETED_TRANSACTION_STATUSES = new Set(["SELESAI"]);
 const numberFormatter = new Intl.NumberFormat("id-ID");
 
 function formatCount(value: number) {
@@ -182,7 +182,7 @@ function getDashboardMetrics(data: AdminDashboardData): AdminDashboardMetrics {
   }
 
   const verifiedTransactions = data.transactions.filter((transaction) =>
-    VERIFIED_TRANSACTION_STATUSES.has(getStatus(transaction.status))
+    COMPLETED_TRANSACTION_STATUSES.has(getStatus(transaction.status))
   );
   const actionableTransactions = data.transactions.filter((transaction) =>
     ACTIONABLE_TRANSACTION_STATUSES.has(getStatus(transaction.status))
@@ -362,7 +362,7 @@ function buildDashboardCards(metrics: AdminDashboardMetrics): DashboardMetricCar
     {
       title: "Barang Terjual",
       value: formatCount(metrics.soldItems),
-      subtext: `${formatCurrencyCompact(metrics.totalRevenue)} dari transaksi terverifikasi`,
+      subtext: `${formatCurrencyCompact(metrics.totalRevenue)} dari transaksi selesai`,
       icon: ShoppingCart,
       tone: "green"
     },

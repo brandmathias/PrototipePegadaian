@@ -303,9 +303,9 @@ function buildStripMetrics(range: DashboardTrendRange, timeframe: DashboardSales
       icon: PuncakIcon
     },
     {
-      title: "Transaksi Lunas",
+      title: "Transaksi Selesai",
       value: formatCount(range.summary.verifiedTransactions),
-      subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi tervalidasi`,
+      subtext: `${formatCurrencyCompact(averageTransaction)} rata-rata per transaksi selesai`,
       icon: TransaksiLunasIcon
     }
   ];
@@ -319,7 +319,7 @@ const timeframeOptions: Array<ReportRangeOption<DashboardSalesTimeframeKey>> = [
   { value: "last12Months", label: "12 Bulan Terakhir", helper: "Satu tahun ke belakang" },
   { value: "month", label: "Bulan Berlangsung", helper: "Default laporan" },
   { value: "yearToDate", label: "Tahun Berjalan", helper: "Januari hingga bulan ini" },
-  { value: "allTime", label: "Semua Waktu", helper: "Seluruh transaksi tervalidasi" }
+  { value: "allTime", label: "Semua Waktu", helper: "Seluruh transaksi selesai" }
 ];
 
 function toDateKey(date: Date) {

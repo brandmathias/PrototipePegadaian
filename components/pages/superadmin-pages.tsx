@@ -999,7 +999,7 @@ const dashboardTrendRangeOptions: Array<
   {
     value: "allTime",
     label: "Semua Waktu",
-    helper: "Seluruh transaksi tervalidasi",
+    helper: "Seluruh transaksi selesai",
   },
 ];
 
@@ -1395,7 +1395,7 @@ export function SuperAdminDashboardPage({
   const soldSnapshot = findSnapshot(snapshotItems, "Terjual");
   const validatedSnapshot = findSnapshot(
     snapshotItems,
-    "Nilai Transaksi Tervalidasi",
+    "Nilai Penjualan Final",
   );
   const amountAxisMax = dashboardAmountAxisMax;
   const amountTicks = buildChartTicks({
@@ -1452,7 +1452,7 @@ export function SuperAdminDashboardPage({
       tone: "green",
     },
     {
-      label: "Total Tervalidasi",
+      label: "Total Penjualan Final",
       value:
         governance?.validatedTransactionValueLabel ??
         validatedSnapshot?.value ??
@@ -1565,7 +1565,7 @@ export function SuperAdminDashboardPage({
       <section className="relative rounded-[1.05rem] border border-[#dce6e1] bg-white px-4 py-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.24)] sm:px-5 sm:py-5">
         <div className="grid gap-3 xl:grid-cols-[0.27fr_0.33fr_0.4fr] xl:items-center">
           <h2 className="font-headline text-[1.05rem] font-black leading-tight text-[#17221d] sm:text-[1.18rem]">
-            Tren Nilai Transaksi Tervalidasi
+            Tren Nilai Penjualan Final
           </h2>
 
           <div className="flex flex-wrap items-center gap-5 text-[0.7rem] font-black text-[#3f4f48] xl:justify-center">
@@ -1605,7 +1605,7 @@ export function SuperAdminDashboardPage({
 
           <div className="flex xl:justify-end">
             <ReportRangeDropdown
-              ariaLabel="Filter tren transaksi tervalidasi"
+              ariaLabel="Filter tren penjualan final"
               customRange={customTrendRange}
               onApplyCustomRange={(nextRange) => {
                 setCustomTrendRange(nextRange);
@@ -1673,14 +1673,14 @@ export function SuperAdminDashboardPage({
           {trendPoints.length === 0 ? (
             <EmptyState
               className="p-6"
-              description="Transaksi lunas atau selesai akan membentuk tren nasional di area ini."
+              description="Pembelian selesai akan membentuk tren nasional di area ini."
               icon={TrendingUp}
-              title="Belum ada tren tervalidasi"
+              title="Belum ada penjualan final"
             />
           ) : (
             <div className="relative min-h-[15rem]">
               <svg
-                aria-label="Grafik tren nilai transaksi tervalidasi"
+                aria-label="Grafik tren nilai penjualan final"
                 className="h-[15rem] w-full"
                 preserveAspectRatio="none"
                 role="img"
@@ -2001,7 +2001,7 @@ export function SuperAdminDashboardPage({
             {unitRows.length === 0 ? (
               <EmptyState
                 className="p-5"
-                description="Unit akan tampil setelah transaksi tervalidasi tercatat dari cabang terkait."
+                description="Unit akan tampil setelah pembelian selesai tercatat dari cabang terkait."
                 icon={Building2}
                 title="Belum ada kinerja unit yang tercatat"
               />
@@ -7618,13 +7618,13 @@ export function SuperAdminMonitoringPage({
     {
       label: "Terjual",
       value: unitRows.reduce((sum, row) => sum + Number(row.soldItems ?? 0), 0),
-      detail: "Selesai dari transaksi terverifikasi",
+      detail: "Pembelian yang sudah selesai",
       icon: BadgeCheck,
       iconClass: "bg-[#e8f3ec] text-[#007a4d] ring-[#cfe8d8]",
       valueClass: "text-[#13211c]",
       tooltipRows: [
         {
-          label: "Nilai tervalidasi",
+          label: "Nilai penjualan final",
           value: formatCompactCurrency(
             unitRows.reduce(
               (sum, row) => sum + Number(row.validatedTransactionValue ?? 0),
@@ -7634,7 +7634,7 @@ export function SuperAdminMonitoringPage({
         },
         {
           label: "Basis data",
-          value: "Transaksi lunas / selesai",
+          value: "Transaksi selesai",
         },
       ],
     },

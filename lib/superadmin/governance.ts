@@ -99,7 +99,7 @@ export function buildGovernanceSnapshot(input: GovernanceSnapshotInput): Governa
     {
       label: "Terjual",
       value: compactNumberFormatter.format(input.soldItems),
-      detail: "Barang dengan transaksi sah atau status terjual"
+      detail: "Barang dengan pembelian selesai"
     },
     {
       label: "Perlu Tindak Lanjut",
@@ -107,9 +107,9 @@ export function buildGovernanceSnapshot(input: GovernanceSnapshotInput): Governa
       detail: "Gagal, tertahan, atau perlu evaluasi tanpa otomatis menjadi pelanggaran"
     },
     {
-      label: "Nilai Transaksi Tervalidasi",
+      label: "Nilai Penjualan Final",
       value: formatCompactRupiah(input.validatedTransactionValue),
-      detail: "Total transaksi berstatus lunas atau selesai"
+      detail: "Total transaksi dengan pembelian selesai"
     }
   ];
 }

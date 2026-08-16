@@ -13,7 +13,7 @@ const ACTIONABLE_TRANSACTION_STATUSES = new Set([
   "menunggu_pembayaran",
   "ditolak_bukti"
 ]);
-const VERIFIED_TRANSACTION_STATUSES = new Set(["lunas", "selesai"]);
+const COMPLETED_TRANSACTION_STATUSES = new Set(["selesai"]);
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 const SALES_TIMEFRAME_KEYS = [
   "day",
@@ -59,10 +59,11 @@ type TransactionMetricRow = {
   marketingMode: string | null;
   createdAt: Date;
   verifiedAt: Date | null;
+  completedAt: Date | null;
 };
 
 export function summarizeAdminDashboardTransactions(rows: TransactionMetricRow[]) {
-  const verifiedTransactions = rows.filter((row) => VERIFIED_TRANSACTION_STATUSES.has(row.status));
+  const verifiedTransactions = rows.filter((row) => COMPLETED_TRANSACTION_STATUSES.has(row.status));
 
   return {
     soldItems: new Set(verifiedTransactions.map((row) => row.itemId)).size,
@@ -88,7 +89,7 @@ function makeMonthLabel(value: Date) {
 }
 
 function makeSalesEventAt(row: TransactionMetricRow) {
-  return row.verifiedAt ?? row.createdAt;
+  return row.completedAt ?? row.verifiedAt ?? row.createdAt;
 }
 
 function makeBucketPoint(label: string): DashboardTrendPoint {
@@ -337,7 +338,7 @@ function buildAllTimeTrend(rows: TransactionMetricRow[], now = new Date()) {
 }
 
 function buildSalesTrendRanges(rows: TransactionMetricRow[], now = new Date()) {
-  const verifiedRows = rows.filter((row) => VERIFIED_TRANSACTION_STATUSES.has(row.status));
+  const verifiedRows = rows.filter((row) => COMPLETED_TRANSACTION_STATUSES.has(row.status));
 
   return {
     defaultRange: "month" as const,
@@ -400,7 +401,8 @@ export async function getAdminDashboardData(unitId: string) {
         marketingMode: pemasaran.mode,
         status: transaksi.status,
         createdAt: transaksi.createdAt,
-        verifiedAt: transaksi.verifiedAt
+        verifiedAt: transaksi.verifiedAt,
+        completedAt: transaksi.completedAt
       })
       .from(transaksi)
       .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))

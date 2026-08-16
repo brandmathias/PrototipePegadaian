@@ -128,7 +128,7 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText(/^Puncak Penjualan$/i)).toBeInTheDocument();
     expect(screen.getByText(/total nilai penjualan pada periode ini/i)).toBeInTheDocument();
     expect(screen.getByText(/total periode/i)).toBeInTheDocument();
-    expect(screen.getByText(/^Transaksi Lunas$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Transaksi Selesai$/i)).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
         name: /filter laporan tren penjualan: bulan berlangsung/i,
@@ -165,7 +165,7 @@ describe("AdminDashboardPage", () => {
     );
   });
 
-  it("uses verified transactions instead of raw sold inventory status for fallback sales count", () => {
+  it("uses completed purchases instead of payment verification for fallback sales count", () => {
     const fallbackData = {
       ...baseDashboardData,
       metrics: undefined,
@@ -176,8 +176,8 @@ describe("AdminDashboardPage", () => {
       ],
       transactions: [
         { id: "trx-1", itemId: "barang-1", status: "LUNAS", total: 7_500_000, buyer: "Buyer A" },
-        { id: "trx-2", itemId: "barang-1", status: "SELESAI", total: 1_000_000, buyer: "Buyer A" },
-        { id: "trx-3", itemId: "barang-2", status: "MENUNGGU_PEMBAYARAN", total: 6_500_000, buyer: "Buyer B" },
+        { id: "trx-2", itemId: "barang-2", status: "SELESAI", total: 1_000_000, buyer: "Buyer A" },
+        { id: "trx-3", itemId: "barang-3", status: "MENUNGGU_PEMBAYARAN", total: 6_500_000, buyer: "Buyer B" },
       ],
     } as any;
 
@@ -188,6 +188,7 @@ describe("AdminDashboardPage", () => {
     expect(soldMetric).not.toBeNull();
     expect(within(soldMetric as HTMLElement).getByText("1")).toBeInTheDocument();
     expect(within(soldMetric as HTMLElement).queryByText("2")).not.toBeInTheDocument();
+    expect(within(soldMetric as HTMLElement).getByText(/Rp 1 jt dari transaksi selesai/i)).toBeInTheDocument();
   });
 
   it("renders the daily checklist without a separate attention card", () => {
@@ -307,7 +308,7 @@ describe("AdminDashboardPage", () => {
       ).getByRole("button", { name: /hari ini/i }),
     );
     expect(screen.getByText(/rata-rata slot/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rp 5 jt rata-rata per transaksi tervalidasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rp 5 jt rata-rata per transaksi selesai/i)).toBeInTheDocument();
     expect(screen.getByText("Rp 10 jt")).toBeInTheDocument();
 
     fireEvent.click(
@@ -321,7 +322,7 @@ describe("AdminDashboardPage", () => {
       ).getByRole("button", { name: /bulan berlangsung/i }),
     );
     expect(screen.getByText(/rata-rata harian/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rp 2,86 jt rata-rata per transaksi tervalidasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rp 2,86 jt rata-rata per transaksi selesai/i)).toBeInTheDocument();
     expect(screen.getByText(/nilai penjualan tertinggi terjadi pada 22 Mei/i)).toBeInTheDocument();
   });
 
@@ -388,10 +389,10 @@ describe("AdminDashboardPage", () => {
       />
     );
 
-    expect(screen.getByText(/Rp 7,5/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Rp 7,5/i)).not.toBeInTheDocument();
     const soldMetric = screen.getByRole("heading", { name: /barang terjual/i }).closest("article");
     expect(soldMetric).not.toBeNull();
-    expect(within(soldMetric as HTMLElement).getByText("1")).toBeInTheDocument();
+    expect(within(soldMetric as HTMLElement).getByText("0")).toBeInTheDocument();
     expect(screen.getByText(/1 barang siap dipasarkan di unit/i)).toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 describe("admin dashboard transaction metrics", () => {
-  it("counts sold items uniquely while preserving validated transaction totals", async () => {
+  it("counts only completed purchases as sales, not merely verified payments", async () => {
     process.env.DATABASE_URL ??= "postgresql://postgres:postgres@localhost:5432/prototipe_pegadaian";
 
     const service = await import("@/lib/services/admin-dashboard.service");
@@ -49,7 +49,7 @@ describe("admin dashboard transaction metrics", () => {
     ]);
 
     expect(result.soldItems).toBe(1);
-    expect(result.verifiedTransactions).toHaveLength(2);
-    expect(result.totalRevenue).toBe(20_000_000);
+    expect(result.verifiedTransactions).toHaveLength(1);
+    expect(result.totalRevenue).toBe(7_500_000);
   });
 });
