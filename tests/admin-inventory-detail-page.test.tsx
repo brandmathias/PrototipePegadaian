@@ -21,7 +21,7 @@ const baseItem = {
 
 describe("AdminInventoryDetailPage", () => {
   it("keeps operational actions available before publishing without edit access", () => {
-    render(<AdminInventoryDetailPage item={baseItem} />);
+    render(<AdminInventoryDetailPage item={{ ...baseItem, dueAt: "2099-05-01T00:05:00.000Z" }} />);
 
     expect(
       screen.queryByRole("link", { name: /edit data barang/i }),
@@ -32,10 +32,27 @@ describe("AdminInventoryDetailPage", () => {
     expect(
       screen.getByRole("link", { name: /penebusan barang/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /pasarkan barang/i }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /pasarkan barang/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pasarkan barang/i })).toBeDisabled();
     expect(screen.getByText(/riwayat kronologi aset/i)).toBeInTheDocument();
+  });
+
+  it("disables extension and redemption after the precise due deadline while keeping marketing available", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={{
+          ...baseItem,
+          dueAt: "2020-05-01T10:57:00.000Z",
+          dueDateTime: "1 Mei 2020, 18.57 WIB",
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole("link", { name: /perpanjang gadai/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /perpanjang gadai/i })).toBeDisabled();
+    expect(screen.queryByRole("link", { name: /penebusan barang/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /penebusan barang/i })).toBeDisabled();
+    expect(screen.getByRole("link", { name: /pasarkan barang/i })).toBeInTheDocument();
   });
 
   it("shows the marketing action as a disabled button until the precise due deadline has elapsed", () => {

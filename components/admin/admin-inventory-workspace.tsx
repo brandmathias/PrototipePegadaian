@@ -80,35 +80,55 @@ const ADMIN_HISTORY_CATEGORY_LABELS = new Map(
   ADMIN_UNIT_CATEGORY_FILTER_OPTIONS.map((option) => [String(option.value), option.label])
 );
 
-function getInventoryDaysUntil(dateLabel: string | null | undefined) {
-  if (!dateLabel || dateLabel === "-") return null;
-
-  const date = new Date(`${dateLabel}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) return null;
-
-  const today = new Date();
-  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  const targetUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-
-  return Math.ceil((targetUtc - todayUtc) / 86_400_000);
-}
-
 function parseInventoryDueDate(value: unknown) {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
   if (typeof value !== "string" || !value.trim() || value === "-") {
     return null;
   }
 
-  const parsed = new Date(`${value}T00:00:00.000Z`);
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T00:00:00.000Z`)
+    : new Date(value);
 
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function getInventoryDueCopy(dateLabel: string | null | undefined) {
-  const days = getInventoryDaysUntil(dateLabel);
+function getInventoryDaysUntil(value: unknown) {
+  const date = parseInventoryDueDate(value);
+  if (!date) return null;
 
-  if (days === null) return "-";
-  if (days < 0) return `Lewat ${Math.abs(days)} hari`;
-  if (days === 0) return "Jatuh tempo hari ini";
+  return Math.ceil((date.getTime() - Date.now()) / 86_400_000);
+}
+
+function isInventoryDeadlineElapsed(value: unknown) {
+  const date = parseInventoryDueDate(value);
+
+  return Boolean(date && date.getTime() <= Date.now());
+}
+
+function getInventoryDueCopy(value: unknown) {
+  const date = parseInventoryDueDate(value);
+  if (!date) return "-";
+
+  const now = new Date();
+  const remaining = date.getTime() - now.getTime();
+  if (remaining <= 0) {
+    const overdueDays = Math.floor(Math.abs(remaining) / 86_400_000);
+    return overdueDays > 0 ? `Lewat ${overdueDays} hari` : "Lewat jatuh tempo";
+  }
+
+  if (
+    date.getUTCFullYear() === now.getUTCFullYear() &&
+    date.getUTCMonth() === now.getUTCMonth() &&
+    date.getUTCDate() === now.getUTCDate()
+  ) {
+    return "Jatuh tempo hari ini";
+  }
+
+  const days = Math.ceil(remaining / 86_400_000);
   return `${days} hari lagi`;
 }
 
@@ -868,11 +888,11 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
                     <p
                       className={cn(
                         "mt-0.5 text-[0.72rem] font-bold leading-4",
-                        (getInventoryDaysUntil(item.dueDate) ?? 99) <= 7 ? "text-amber-700" : "text-black/42",
-                        (getInventoryDaysUntil(item.dueDate) ?? 1) < 0 && "text-rose-700"
+                        (getInventoryDaysUntil(item.dueAt ?? item.dueDate) ?? 99) <= 7 ? "text-amber-700" : "text-black/42",
+                        isInventoryDeadlineElapsed(item.dueAt ?? item.dueDate) && "text-rose-700"
                       )}
                     >
-                      {getInventoryDueCopy(item.dueDate)}
+                      {getInventoryDueCopy(item.dueAt ?? item.dueDate)}
                     </p>
                   </td>
                   <td className="px-3 py-3.5 text-right align-middle">

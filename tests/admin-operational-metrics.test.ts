@@ -1,5 +1,6 @@
 import {
   getAdminInventoryMetrics,
+  isAdminInventoryDueSoon,
   isAdminInventoryReadyForMarketing,
   isAdminMarketingActionable,
   isAdminTransactionActionable
@@ -23,8 +24,17 @@ describe("admin operational metrics", () => {
 
     expect(metrics.total).toBe(4);
     expect(metrics.readyForMarketing).toBe(2);
-    expect(metrics.dueSoon).toBe(2);
+    expect(metrics.dueSoon).toBe(3);
     expect(isAdminInventoryReadyForMarketing({ dueDate: "2026-06-17", status: "GAGAL" }, now)).toBe(false);
+  });
+
+  it("keeps a precisely expired collateral item in both ready-for-marketing and due-soon views", () => {
+    const deadline = new Date("2026-05-25T10:57:00.000Z");
+    const currentTime = new Date("2026-05-25T11:57:00.000Z");
+    const item = { dueAt: deadline.toISOString(), dueDate: "2026-05-25", status: "JAMINAN" };
+
+    expect(isAdminInventoryReadyForMarketing(item, currentTime)).toBe(true);
+    expect(isAdminInventoryDueSoon(item, currentTime)).toBe(true);
   });
 
   it("raises marketing action for ended and failed vickrey sessions", () => {

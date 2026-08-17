@@ -245,6 +245,15 @@ function isGenericCatalogPublishNote(note: string | null | undefined) {
 
 function normalizeHistoryNote(note: string | null | undefined) {
   const value = String(note ?? "").trim();
+  const legacyCollateralDeadline = /^Barang hasil input gadai dicatat sebagai barang jaminan unit dengan jatuh tempo (.+?)\.?$/iu.exec(value);
+
+  if (legacyCollateralDeadline) {
+    const deadline = new Date(legacyCollateralDeadline[1]);
+
+    if (!Number.isNaN(deadline.getTime())) {
+      return `Barang hasil input gadai dicatat sebagai barang jaminan unit. Jatuh tempo pada ${formatAppDateTime(deadline)}.`;
+    }
+  }
   const repairRelistNote = parseRepairRelistHistoryNote(value);
 
   if (repairRelistNote) {
@@ -997,7 +1006,7 @@ export async function createAdminBarang(
       oldStatus: null,
       newStatus: "jaminan",
       changedByUserId: userId,
-        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit dengan jatuh tempo ${dueDate.toISOString()}.`
+        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit. Jatuh tempo pada ${formatAppDateTime(dueDate)}.`
     });
 
     if (media.length > 0) {
@@ -1035,6 +1044,9 @@ export async function extendAdminBarang(unitId: string, userId: string, barangId
   if (current.status !== "gadai" && current.status !== "jaminan") {
     throw new Error("Perpanjangan hanya bisa dilakukan sebelum barang dipasarkan.");
   }
+  if (current.dueDate.getTime() <= Date.now()) {
+    throw new Error("Perpanjangan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
+  }
 
   const payload = validatePerpanjanganPayload(input, current.dueDate.toISOString().slice(0, 10));
   const newDueDate = toUtcDate(payload.newDueDate);
@@ -1069,6 +1081,9 @@ export async function redeemAdminBarang(unitId: string, userId: string, barangId
   const current = await assertBarangForUnit(barangId, unitId);
   if (current.status !== "gadai" && current.status !== "jaminan") {
     throw new Error("Penebusan hanya bisa dicatat sebelum barang dipasarkan.");
+  }
+  if (current.dueDate.getTime() <= Date.now()) {
+    throw new Error("Penebusan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
   }
 
   const payload = validateTebusPayload(input);

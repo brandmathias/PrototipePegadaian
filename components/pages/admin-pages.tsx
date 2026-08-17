@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -578,23 +578,41 @@ function DetailActionButton({
   href,
   icon: Icon,
   variant = "secondary",
+  disabled = false,
 }: {
   title: string;
   href: string;
   icon: ComponentType<{ className?: string }>;
   variant?: "default" | "secondary";
+  disabled?: boolean;
 }) {
   const isPrimary = variant === "default";
+  const className = cn(
+    "h-[3.35rem] min-w-[10.75rem] rounded-[1.05rem] px-4 text-[0.92rem] font-semibold shadow-none sm:min-w-[11.5rem]",
+    isPrimary
+      ? "bg-[#006747] text-white hover:bg-[#005238]"
+      : "border border-[#0a9f62] bg-white text-[#0a7d51] hover:bg-[#f7fbf8]",
+  );
+
+  if (disabled) {
+    return (
+      <Button
+        className={cn(className, "border-[#d7ded5] bg-[#eef3ed] text-[#718077] hover:bg-[#eef3ed] disabled:cursor-not-allowed disabled:opacity-100")}
+        disabled
+        title="Aksi tidak tersedia setelah jatuh tempo"
+        type="button"
+        variant="default"
+      >
+        <Icon className="size-4.5" />
+        {title}
+      </Button>
+    );
+  }
 
   return (
     <Link href={href}>
       <Button
-        className={cn(
-          "h-[3.35rem] min-w-[10.75rem] rounded-[1.05rem] px-4 text-[0.92rem] font-semibold shadow-none sm:min-w-[11.5rem]",
-          isPrimary
-            ? "bg-[#006747] text-white hover:bg-[#005238]"
-            : "border border-[#0a9f62] bg-white text-[#0a7d51] hover:bg-[#f7fbf8]",
-        )}
+        className={className}
         variant={isPrimary ? "default" : "ghost"}
       >
         <Icon className="size-4.5" />
@@ -801,6 +819,33 @@ export function AdminInventoryDetailPage({
     createdAtLabel: string;
   }>;
 }) {
+  const dueAt = String(item.dueAt ?? item.dueDate ?? "");
+  const [isDueDeadlineElapsed, setIsDueDeadlineElapsed] = useState(() => {
+    const deadline = new Date(dueAt).getTime();
+    return Number.isFinite(deadline) && deadline <= Date.now();
+  });
+
+  useEffect(() => {
+    const deadline = new Date(dueAt).getTime();
+    if (!Number.isFinite(deadline)) {
+      setIsDueDeadlineElapsed(false);
+      return;
+    }
+
+    let timer: number | undefined;
+    const refreshDeadlineStatus = () => {
+      const remaining = deadline - Date.now();
+      setIsDueDeadlineElapsed(remaining <= 0);
+
+      if (remaining > 0) {
+        timer = window.setTimeout(refreshDeadlineStatus, Math.min(remaining, 2_147_483_647));
+      }
+    };
+    refreshDeadlineStatus();
+
+    return () => window.clearTimeout(timer);
+  }, [dueAt]);
+
   const jaminanActions = [
     {
       title: "Perpanjang Gadai",
@@ -809,6 +854,7 @@ export function AdminInventoryDetailPage({
       href: `/admin/barang/${item.id}/perpanjang`,
       icon: CalendarClock,
       variant: "secondary" as const,
+      disabled: isDueDeadlineElapsed,
     },
     {
       title: "Penebusan Barang",
@@ -817,6 +863,7 @@ export function AdminInventoryDetailPage({
       href: `/admin/barang/${item.id}/tebus`,
       icon: ReceiptText,
       variant: "secondary" as const,
+      disabled: isDueDeadlineElapsed,
     },
   ];
 
@@ -944,6 +991,7 @@ export function AdminInventoryDetailPage({
               icon={action.icon}
               key={action.title}
               title={action.title}
+              disabled={"disabled" in action && action.disabled}
               variant={
                 "variant" in action && action.variant === "secondary"
                   ? "secondary"

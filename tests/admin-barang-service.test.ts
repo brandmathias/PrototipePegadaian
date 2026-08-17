@@ -29,9 +29,11 @@ vi.mock("@/lib/admin-unit/serializers", () => ({
 
 import {
   createAdminBarang,
+  extendAdminBarang,
   getAdminBarangById,
   listAdminBarang,
   listAdminBarangHistory,
+  redeemAdminBarang,
   updateAdminBarang
 } from "@/lib/services/admin-barang.service";
 
@@ -97,6 +99,55 @@ describe("createAdminBarang", () => {
       }),
     );
     expect(insertedValues).not.toHaveBeenCalledWith(expect.objectContaining({ loanValue: expect.anything() }));
+  });
+
+  it("records a readable due-date explanation when an item enters collateral", async () => {
+    const created = { id: "barang-created", code: "SBG-1178725010004741", name: "Cincin Emas", status: "jaminan" };
+    const insertedValues = vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([created]) });
+    const historyValues = vi.fn().mockResolvedValue(undefined);
+    const tx = {
+      execute: vi.fn().mockResolvedValue({ rows: [{ value: "25010004741" }] }),
+      insert: vi
+        .fn()
+        .mockImplementationOnce(() => ({ values: insertedValues }))
+        .mockImplementationOnce(() => ({ values: historyValues })),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ code: "CP-MND-11787" }]) }),
+        }),
+      }),
+    };
+    mocks.db.transaction.mockImplementationOnce(async (callback) => callback(tx));
+
+    await createAdminBarang("unit-wanea", "admin-1", { ...editPayload, name: "Cincin Emas" });
+
+    expect(historyValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        note: expect.stringMatching(/^Barang hasil input gadai dicatat sebagai barang jaminan unit\. Jatuh tempo pada .+ WIB\.$/),
+      }),
+    );
+  });
+
+  it("rejects extension and redemption once the precise due deadline has passed", async () => {
+    const expiredItem = {
+      id: "barang-expired",
+      unitId: "unit-1",
+      status: "jaminan",
+      dueDate: new Date("2020-05-01T10:57:00.000Z"),
+    };
+    const query = () => ({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([expiredItem]) }),
+      }),
+    });
+    mocks.db.select.mockImplementation(query);
+
+    await expect(
+      extendAdminBarang("unit-1", "admin-1", "barang-expired", { newDueDate: "2026-06-01" }),
+    ).rejects.toThrow("Perpanjangan tidak dapat dilakukan setelah jatuh tempo.");
+    await expect(
+      redeemAdminBarang("unit-1", "admin-1", "barang-expired", { reference: "TRX-1" }),
+    ).rejects.toThrow("Penebusan tidak dapat dilakukan setelah jatuh tempo.");
   });
 });
 
@@ -410,6 +461,38 @@ describe("listAdminBarangHistory", () => {
         actionTone: "default"
       })
     ]);
+  });
+
+  it("rewrites legacy raw ISO due-date notes into readable barang masuk chronology", async () => {
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            barangId: "barang-legacy-due-date",
+            barangCode: "BRG-LEGACY",
+            barangName: "Cincin Emas",
+            category: "emas",
+            condition: "baik",
+            description: "Barang jaminan.",
+            specifications: {},
+            ownerName: "Nasabah Demo",
+            customerNumber: "NSB-003",
+            id: "hist-legacy-due-date",
+            oldStatus: null,
+            newStatus: "jaminan",
+            note: "Barang hasil input gadai dicatat sebagai barang jaminan unit dengan jatuh tempo 2026-08-17T03:57:10.000Z.",
+            actorName: "Admin Unit",
+            actorRole: "admin_unit",
+            createdAt: new Date("2026-08-17T02:44:00.000Z"),
+          },
+        ]),
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]));
+
+    const [entry] = await listAdminBarangHistory("unit-1");
+
+    expect(entry.note).toMatch(/^Barang hasil input gadai dicatat sebagai barang jaminan unit\. Jatuh tempo pada .+ WIB\.$/);
+    expect(entry.note).not.toContain("T03:57:10.000Z");
   });
 
   it("anchors a stale barang masuk timestamp ten days before its first marketing event", async () => {

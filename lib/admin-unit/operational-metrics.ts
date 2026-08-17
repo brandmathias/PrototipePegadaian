@@ -50,9 +50,19 @@ export function isAdminInventoryDueSoon(item: InventoryMetricItem, now = new Dat
     return false;
   }
 
-  const days = getDaysUntilDateLabel(item.dueDate, now);
+  const dueAt = item.dueAt ?? item.dueDate;
+  const deadline =
+    dueAt instanceof Date
+      ? dueAt
+      : /^\d{4}-\d{2}-\d{2}$/.test(String(dueAt ?? ""))
+        ? new Date(`${String(dueAt)}T00:00:00.000Z`)
+        : new Date(String(dueAt ?? ""));
 
-  return days !== null && days >= 0 && days <= 7;
+  if (Number.isNaN(deadline.getTime())) {
+    return false;
+  }
+
+  return deadline.getTime() <= now.getTime() || deadline.getTime() - now.getTime() <= 7 * 86_400_000;
 }
 
 export function isAdminInventoryListItem(item: InventoryMetricItem) {

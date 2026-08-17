@@ -102,6 +102,36 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.getByText("BRG-004")).toBeInTheDocument();
   });
 
+  it("shows precisely expired collateral as overdue and keeps it in the due-soon filter", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-01T11:57:00.000Z"));
+
+    try {
+      render(
+        <AdminInventoryWorkspace
+          items={[
+            {
+              ...makeItem(1),
+              code: "BRG-EXPIRED",
+              dueDate: "2026-05-01",
+              dueAt: "2026-05-01T10:57:00.000Z",
+            },
+            { ...makeItem(2), code: "BRG-FUTURE", dueDate: "2099-05-01", dueAt: "2099-05-01T10:57:00.000Z" },
+          ]}
+        />,
+      );
+
+      expect(screen.getByText("Lewat jatuh tempo")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /jatuh tempo dekat/i }));
+
+      expect(screen.getByText("BRG-EXPIRED")).toBeInTheDocument();
+      expect(screen.queryByText("BRG-FUTURE")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("wraps item names and aligns inventory table headers with their cells", () => {
     render(
       <AdminInventoryWorkspace
