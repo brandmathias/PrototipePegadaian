@@ -37,7 +37,6 @@ import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
-import { PaymentSummaryPrintButton } from "@/components/buyer/payment-summary-print-button";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
@@ -1712,43 +1711,35 @@ function VickreyPendingPaymentDetail({
 
       <section
         aria-label="Status segera bayar"
-        className="grid overflow-hidden rounded-[1rem] border border-[#edb316] bg-white shadow-[0_20px_52px_-38px_rgba(132,89,0,0.46)] lg:grid-cols-[220px_minmax(0,1fr)]"
+        className="grid overflow-hidden rounded-[1rem] border border-[#edb316] bg-white shadow-[0_20px_52px_-38px_rgba(132,89,0,0.46)] lg:grid-cols-[200px_minmax(0,1fr)]"
       >
-        <div className="relative flex min-h-[190px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f4a900_0%,#ffc20b_60%,#f0a400_100%)] px-6 py-7 text-center text-white">
+        <div className="relative flex min-h-[132px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f4a900_0%,#ffc20b_60%,#f0a400_100%)] px-4 py-4 text-center text-white">
           <span aria-hidden="true" className="absolute -bottom-10 -right-8 size-36 rotate-12 rounded-[2.2rem] border border-white/15" />
-          <span className="relative grid size-[5.4rem] place-items-center rounded-full border-[5px] border-white bg-white/20 shadow-[0_0_0_5px_rgba(255,255,255,0.46)]">
-            <span className="grid size-[4rem] place-items-center rounded-full bg-white text-[#b77a00] shadow-[0_12px_28px_-18px_rgba(93,57,0,0.65)]">
-              <Hourglass className="size-8" strokeWidth={2.25} />
+          <span className="relative grid size-[4.5rem] place-items-center rounded-full border-4 border-white bg-white/20 shadow-[0_0_0_4px_rgba(255,255,255,0.46)]">
+            <span className="grid size-[3.35rem] place-items-center rounded-full bg-white text-[#b77a00] shadow-[0_12px_28px_-18px_rgba(93,57,0,0.65)]">
+              <Hourglass className="size-7" strokeWidth={2.25} />
             </span>
           </span>
-          <p className="relative mt-5 font-headline text-lg font-black uppercase tracking-[0.035em]">Segera Bayar</p>
+          <p className="relative mt-3 font-headline text-sm font-black uppercase tracking-[0.035em]">Segera Bayar</p>
         </div>
 
-        <div className="flex min-w-0 flex-col justify-center px-5 py-6 sm:px-7 lg:px-8">
-          <h2 className="font-headline text-xl font-black tracking-tight text-slate-950 md:text-2xl">
+        <div className="flex min-w-0 flex-col justify-center px-5 py-4 sm:px-6">
+          <h2 className="font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
             Segera lakukan pembayaran dalam batas waktu 24 jam
           </h2>
-          <p className="mt-2 text-sm font-medium leading-6 text-[#667085]">
+          <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[#667085]">
             Anda adalah pemenang lelang tertutup. Lakukan pembayaran secara langsung di unit terkait sesuai nominal yang tertera.
           </p>
-          <p className="mt-2 text-sm font-medium leading-6 text-[#667085]">
-            {transaction.winnerContext ??
-              "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."} Jumlah pembayaran ini bukan nominal bid tertinggi Anda.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Badge variant="accent">Batas pembayaran 24 jam</Badge>
-            <Badge variant="muted">Bayar langsung di unit terkait</Badge>
-          </div>
-          <dl className="mt-6 grid gap-4 border-t border-[#edf0eb] pt-5 sm:grid-cols-3 sm:gap-0">
+          <dl className="mt-3 grid gap-4 border-t border-[#edf0eb] pt-3 sm:grid-cols-3 sm:gap-0">
             <div className="min-w-0 sm:pr-5">
               <dt className="text-xs font-semibold text-[#667085]">Nominal Lelang</dt>
-              <dd className="mt-1 break-words font-headline text-xl font-black tracking-tight text-slate-950">
+              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
                 {currency.format(transaction.amount)}
               </dd>
             </div>
             <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:px-5">
               <dt className="text-xs font-semibold text-[#667085]">Unit Pelaksana</dt>
-              <dd className="mt-1 break-words font-headline text-xl font-black tracking-tight text-slate-950">
+              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
                 {transaction.unit}
               </dd>
             </div>
@@ -1824,7 +1815,14 @@ function VickreyPendingPaymentDetail({
             />
           </dl>
           <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
-            <PaymentSummaryPrintButton />
+            <Button
+              className="min-h-11 rounded-xl border border-[#c8d7cf] bg-[#dce8e1] text-[#71867b] shadow-none disabled:bg-[#dce8e1] disabled:text-[#71867b] disabled:opacity-100 disabled:shadow-none disabled:saturate-[0.72]"
+              disabled
+              type="button"
+            >
+              <CheckCircle2 className="size-4" />
+              Pembelian Selesai
+            </Button>
             <Button
               className="min-h-11 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 shadow-none disabled:opacity-100"
               disabled

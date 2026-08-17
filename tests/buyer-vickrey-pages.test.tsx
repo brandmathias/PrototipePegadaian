@@ -460,7 +460,7 @@ describe("buyer vickrey pages", () => {
     expect(screen.getAllByText(/864c8c7761ec3f2dc6c9f9fb35f7161915406597a38871d4b2b78cf231b87f6d/i)).toHaveLength(2);
   });
 
-  it("explains vickrey final price in the buyer payment detail", () => {
+  it("renders the compact pending vickrey payment card and guarded completion action", () => {
     const transaction: BuyerTransaction = {
       id: "trx-vickrey-1",
       lotId: "pm-vickrey-1",
@@ -483,11 +483,14 @@ describe("buyer vickrey pages", () => {
 
     render(<TransactionDetailPage buyer={buyer} transaction={transaction} transactionId={transaction.id} />);
 
-    expect(screen.getByText(/harga akhir mengikuti mekanisme lelang/i)).toBeInTheDocument();
-    expect(screen.getByText(/bukan nominal bid tertinggi anda/i)).toBeInTheDocument();
-    expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
+    const urgentPaymentCard = screen.getByRole("region", { name: /status segera bayar/i });
+    expect(urgentPaymentCard).toHaveClass("lg:grid-cols-[200px_minmax(0,1fr)]");
+    expect(urgentPaymentCard).not.toHaveTextContent(/harga akhir mengikuti mekanisme lelang/i);
+    expect(urgentPaymentCard).not.toHaveTextContent(/batas pembayaran 24 jam/i);
     expect(screen.getByText(/bayar langsung di unit/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /status konfirmasi/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /cetak ringkasan/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status konfirmasi/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 

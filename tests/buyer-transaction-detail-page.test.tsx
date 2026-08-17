@@ -99,8 +99,6 @@ describe("buyer transaction detail page", () => {
   it("renders the pending Vickrey winner payment layout with truthful audit data and handover documentation", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-17T13:54:00+08:00"));
-    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
-
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -131,9 +129,10 @@ describe("buyer transaction detail page", () => {
       screen.getByRole("heading", { name: /segera lakukan pembayaran dalam batas waktu 24 jam/i })
     ).toBeInTheDocument();
     expect(screen.getByText(/^rp 31\.000\.000$/i)).toBeInTheDocument();
-    expect(screen.getByText(/harga akhir mengikuti mekanisme lelang/i)).toBeInTheDocument();
-    expect(screen.getByText(/bukan nominal bid tertinggi anda/i)).toBeInTheDocument();
-    expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
+    const urgentPaymentCard = screen.getByRole("region", { name: /status segera bayar/i });
+    expect(urgentPaymentCard).toHaveClass("lg:grid-cols-[200px_minmax(0,1fr)]");
+    expect(urgentPaymentCard).not.toHaveTextContent(/harga akhir mengikuti mekanisme lelang/i);
+    expect(urgentPaymentCard).not.toHaveTextContent(/batas pembayaran 24 jam/i);
     expect(screen.getAllByText(/^upc wanea$/i).length).toBeGreaterThan(0);
     expect(screen.getByLabelText(/sisa waktu pembayaran/i)).toHaveTextContent("23:59:12");
     expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i })).toBeInTheDocument();
@@ -149,9 +148,8 @@ describe("buyer transaction detail page", () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByText(/bawa nomor|loket unit/i)).not.toBeInTheDocument();
 
-    const printSummaryButton = screen.getByRole("button", { name: /cetak ringkasan/i });
-    fireEvent.click(printSummaryButton);
-    expect(printSpy).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: /cetak ringkasan/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
     expect(screen.getByRole("button", { name: /cetak nota/i })).toBeDisabled();
 
     expect(
