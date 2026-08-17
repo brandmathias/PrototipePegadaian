@@ -243,7 +243,26 @@ export function AdminDatePicker({
     setVisibleMonth((current) => new Date(year, current.getMonth(), 1));
   }
 
+  function setQuickDeadline() {
+    if (!onTimeChange) {
+      return;
+    }
+
+    const deadline = new Date(Date.now() + 15 * 60_000);
+    onChange(toIsoDate(deadline));
+    onTimeChange({
+      hours: String(deadline.getHours()),
+      minutes: String(deadline.getMinutes()),
+      seconds: String(deadline.getSeconds())
+    });
+  }
+
   function selectDate(date: Date) {
+    if (supportsTime && toIsoDate(date) === todayIso) {
+      setQuickDeadline();
+      return;
+    }
+
     onChange(toIsoDate(date));
     if (isCompact) {
       setIsOpen(false);
@@ -504,15 +523,7 @@ export function AdminDatePicker({
               <button
                 aria-label="Atur 15 menit dari sekarang"
                 className="mt-3 text-xs font-bold text-[#006747] underline decoration-[#006747]/30 underline-offset-4 transition hover:decoration-[#006747]"
-                onClick={() => {
-                  const deadline = new Date(Date.now() + 15 * 60_000);
-                  onChange(toIsoDate(deadline));
-                  onTimeChange({
-                    hours: String(deadline.getHours()),
-                    minutes: String(deadline.getMinutes()),
-                    seconds: String(deadline.getSeconds())
-                  });
-                }}
+                onClick={setQuickDeadline}
                 type="button"
               >
                 Atur 15 menit dari sekarang

@@ -154,6 +154,20 @@ describe("AdminInventoryCreateForm", () => {
     );
   });
 
+  it("sets today to fifteen minutes ahead when an admin selects it", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 17, 10, 32, 0));
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: /tanggal jatuh tempo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Bulan sebelumnya" }));
+    fireEvent.click(screen.getByRole("button", { name: "17" }));
+
+    expect(container.querySelector('input[name="dueAt"]')).toHaveValue(
+      new Date(2026, 7, 17, 10, 47, 0).toISOString()
+    );
+  });
+
   it("updates checklist readiness from form fields, dates, specifications, and media", async () => {
     const { container } = renderWithToast(<AdminInventoryCreateForm />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
