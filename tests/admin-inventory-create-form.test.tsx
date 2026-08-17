@@ -43,6 +43,7 @@ describe("AdminInventoryCreateForm", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -138,6 +139,19 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByLabelText("Menit jatuh tempo")).toHaveAttribute("type", "number");
     fireEvent.change(screen.getByLabelText("Detik jatuh tempo"), { target: { value: "5" } });
     expect(screen.getByLabelText("Detik jatuh tempo")).toHaveValue(5);
+  });
+
+  it("sets a same-day deadline fifteen minutes from now for a fast marketing test", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 17, 10, 32, 0));
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+
+    fireEvent.click(screen.getByRole("button", { name: /tanggal jatuh tempo/i }));
+    fireEvent.click(screen.getByRole("button", { name: /atur 15 menit dari sekarang/i }));
+
+    expect(container.querySelector('input[name="dueAt"]')).toHaveValue(
+      new Date(2026, 7, 17, 10, 47, 0).toISOString()
+    );
   });
 
   it("updates checklist readiness from form fields, dates, specifications, and media", async () => {
