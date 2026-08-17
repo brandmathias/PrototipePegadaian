@@ -293,6 +293,23 @@ describe("TransactionsPage", () => {
     expect(screen.getAllByText(/riwayat lelang tersimpan/i).length).toBeGreaterThan(0);
   });
 
+  it("keeps a verified payment pending buyer confirmation in the transaction list", () => {
+    render(
+      <TransactionsPage
+        buyer={buyer}
+        data={{ summary, transactions, bids }}
+      />
+    );
+
+    const verifiedPaymentCard = screen.getByText("Ipad").closest("article") as HTMLElement;
+
+    expect(within(verifiedPaymentCard).getByText("Menunggu Konfirmasi Buyer")).toBeInTheDocument();
+    expect(within(verifiedPaymentCard).getByText("Pembayaran terverifikasi")).toBeInTheDocument();
+    expect(within(verifiedPaymentCard).getByText("Pembayaran diverifikasi pada")).toBeInTheDocument();
+    expect(within(verifiedPaymentCard).queryByText("Selesai")).not.toBeInTheDocument();
+    expect(within(verifiedPaymentCard).queryByText("Transaksi selesai")).not.toBeInTheDocument();
+  });
+
   it("places rejected harga tetap proof transactions in Dibatalkan instead of Perlu Tindakan", async () => {
     const user = userEvent.setup();
 

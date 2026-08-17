@@ -78,6 +78,11 @@ function getTransactionStatusMeta(status: BuyerTransactionStatus) {
         matchesFilter: "verifying" as TransactionFilter,
       };
     case "LUNAS":
+      return {
+        label: "Menunggu Konfirmasi Buyer",
+        className: "bg-amber-50/80 text-amber-700",
+        matchesFilter: "action" as TransactionFilter,
+      };
     case "SELESAI":
       return {
         label: "Selesai",
@@ -114,6 +119,7 @@ function getTransactionDescription(transaction: BuyerTransaction) {
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return "Pembayaran langsung sedang menunggu konfirmasi dari admin unit terkait.";
     case "LUNAS":
+      return "Pembayaran sudah diverifikasi. Menunggu serah-terima barang dan konfirmasi pembelian dari Anda.";
     case "SELESAI":
       return "Transaksi telah selesai. Barang telah diterima oleh Anda.";
     case "GAGAL":
@@ -141,6 +147,11 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
         momentValue: fallbackMoment,
       };
     case "LUNAS":
+      return {
+        amountLabel: transaction.kind === "VICKREY_WIN" ? "Harga akhir lelang" : "Total pembayaran",
+        momentLabel: "Pembayaran diverifikasi pada",
+        momentValue: fallbackMoment,
+      };
     case "SELESAI":
       return {
         amountLabel: transaction.kind === "VICKREY_WIN" ? "Harga akhir lelang" : "Total pembayaran",
@@ -223,6 +234,12 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
         icon: <Hourglass className="size-5" strokeWidth={1.85} />,
       };
     case "LUNAS":
+      return {
+        title: "Pembayaran terverifikasi",
+        description: "Menunggu bukti serah-terima barang dan konfirmasi pembelian dari Anda.",
+        className: "bg-[#fff8ea] text-[#c88812]",
+        icon: <Hourglass className="size-5" strokeWidth={1.85} />,
+      };
     case "SELESAI":
       return {
         title: "Transaksi selesai",
