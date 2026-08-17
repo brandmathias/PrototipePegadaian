@@ -206,11 +206,9 @@ export function serializeAdminPemasaran(
     return "HASIL_DIBUKA";
   })();
   const sortedBids = [...(extra.bids ?? [])].sort((left, right) => {
-    if (visibility === "HASIL_DIBUKA") {
-      const amountDiff = toNumber(right.bid.nominal) - toNumber(left.bid.nominal);
-      if (amountDiff !== 0) {
-        return amountDiff;
-      }
+    const amountDiff = toNumber(right.bid.nominal) - toNumber(left.bid.nominal);
+    if (amountDiff !== 0) {
+      return amountDiff;
     }
 
     return left.bid.createdAt.getTime() - right.bid.createdAt.getTime();
@@ -220,15 +218,15 @@ export function serializeAdminPemasaran(
       ? (extra.lotSpecifications as Record<string, string>)
       : {};
   const bidEntries =
-    visibility !== "TERKUNCI"
+    isVickrey
       ? sortedBids.map((entry, index) => {
           const rank = index + 1;
           const isWinner = row.winnerId && entry.bid.userId === row.winnerId;
           return {
             id: entry.bid.id,
             bidderId: entry.bid.userId,
-            bidderName: entry.bidderName ?? "Peserta",
-            bidderImage: entry.bidderImage ?? null,
+            bidderName: visibility === "TERKUNCI" ? "Peserta" : entry.bidderName ?? "Peserta",
+            bidderImage: visibility === "TERKUNCI" ? null : entry.bidderImage ?? null,
             submittedAt: entry.bid.createdAt.toISOString(),
             submittedAtLabel: toBidDateTimeLabel(entry.bid.createdAt),
             rank,

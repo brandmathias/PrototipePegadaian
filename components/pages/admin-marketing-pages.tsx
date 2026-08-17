@@ -511,8 +511,9 @@ function getMaskedBidderLabel() {
 function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
   const bids = Array.isArray(auction.bids) ? auction.bids : [];
   const maskBidderNames = auction.visibility !== "HASIL_DIBUKA";
+  const shouldUseBidRows = showBidRows || auction.visibility === "TERKUNCI";
 
-  if (showBidRows && bids.length) {
+  if (shouldUseBidRows && bids.length) {
     return bids.map((bid, index) => ({
       id: bid.id,
       rank: bid.rank || index + 1,
@@ -521,7 +522,11 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
         : bid.bidderName?.trim() || `Peserta ${index + 1}`,
       time: bid.submittedAtLabel || "-",
       status:
-        auction.visibility === "MENUNGGU_REVEAL"
+        auction.visibility === "TERKUNCI"
+          ? bid.rank === 1
+            ? "Tertinggi"
+            : "-"
+          : auction.visibility === "MENUNGGU_REVEAL"
           ? bid.isRevealed
             ? "Sudah reveal"
             : "Belum reveal"
@@ -529,7 +534,11 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
             ? "Pemenang (B1)"
             : "Peserta",
       tone:
-        auction.visibility === "MENUNGGU_REVEAL"
+        auction.visibility === "TERKUNCI"
+          ? bid.rank === 1
+            ? "green"
+            : "neutral"
+          : auction.visibility === "MENUNGGU_REVEAL"
           ? bid.isRevealed
             ? "green"
             : "amber"
@@ -6650,6 +6659,7 @@ export function AdminVickreyAuctionDetailPage({
   const revealed = auction.visibility === "HASIL_DIBUKA";
   const waitingReveal = auction.visibility === "MENUNGGU_REVEAL";
   const showBidRows = revealed || waitingReveal;
+  const shouldAutoRefresh = auction.status === "AKTIF" && auction.visibility === "TERKUNCI";
   const showFailureArchive = isVickreyFailureArchive(auction);
   const showWinnerSettlement =
     revealed &&
@@ -6660,6 +6670,7 @@ export function AdminVickreyAuctionDetailPage({
 
   return (
     <div className="space-y-4 print:space-y-0">
+      <StatusSyncRefresh enabled={shouldAutoRefresh} intervalMs={5000} />
       <section className="rounded-[1.35rem] border border-[#edf2ee] bg-white px-4 py-3 shadow-[0_14px_36px_-34px_rgba(8,69,50,0.22)] print:hidden">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-3 text-[0.82rem] font-semibold text-[#566861]">

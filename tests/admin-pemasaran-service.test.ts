@@ -218,6 +218,70 @@ describe("getAdminPemasaranById", () => {
     expect(detailExtras.transaction?.proofUrl).toBe("/uploads/bukti-transfer.jpg");
   });
 
+  it("loads active vickrey bids so the locked bid log can rank the current highest offer", async () => {
+    const marketing = {
+      id: "marketing-vickrey-active",
+      barangId: "barang-vickrey-active",
+      mode: "vickrey",
+      price: null,
+      basePrice: "10000000",
+      durationDays: 1,
+      durationSeconds: 3600,
+      startsAt: new Date("2026-06-23T05:00:00.000Z"),
+      endsAt: new Date("2099-06-23T06:00:00.000Z"),
+      revealEndsAt: null,
+      winnerId: null,
+      finalPrice: null,
+      iteration: 1,
+      status: "aktif",
+      createdByUserId: "admin-1",
+      createdAt: new Date("2026-06-23T05:00:00.000Z"),
+      updatedAt: new Date("2026-06-23T05:00:00.000Z")
+    };
+    const item = {
+      id: "barang-vickrey-active",
+      unitId: "unit-1",
+      name: "Kalung Emas",
+      code: "SBG-117870000000999",
+      category: "emas",
+      condition: "baik",
+      description: "Kalung emas aktif.",
+      appraisalValue: "12000000",
+      specifications: {}
+    };
+    const activeBid = {
+      pemasaranId: "marketing-vickrey-active",
+      bid: {
+        id: "bid-active-high",
+        userId: "buyer-2",
+        nominal: "14500000",
+        createdAt: new Date("2026-06-23T05:10:00.000Z")
+      },
+      bidderName: "Buyer Dua"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockQueryChain(["from", "innerJoin", "innerJoin", "leftJoin", "leftJoin", "where", "groupBy", "limit"], [
+          { marketing, item, unitName: "UPC Wanea", unitAddress: "Manado", bidCount: 1, winnerName: null }
+        ])
+      )
+      .mockImplementationOnce(() => mockQueryChain(["from", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "leftJoin", "leftJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "leftJoin", "leftJoin", "where", "groupBy", "orderBy"], []))
+      .mockImplementationOnce(() => mockQueryChain(["from", "innerJoin", "where", "orderBy"], [activeBid]));
+
+    await getAdminPemasaranById("unit-1", "marketing-vickrey-active");
+
+    const detailExtras = mocks.serializeAdminPemasaran.mock.calls.at(-1)?.[1] as {
+      bids?: Array<{ bid?: { id?: string } }>;
+    };
+    expect(detailExtras.bids).toEqual([
+      expect.objectContaining({ bid: expect.objectContaining({ id: "bid-active-high" }) })
+    ]);
+  });
+
   it("keeps a rejected fixed-price proof visible instead of falling back to a newer unpaid checkout", async () => {
     const marketing = {
       id: "marketing-fixed",

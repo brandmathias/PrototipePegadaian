@@ -1050,7 +1050,26 @@ describe("admin pemasaran pages", () => {
           note: "Nominal bid belum dapat dibuka sebelum waktu penutupan terlewati.",
           media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
           primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
-          bids: []
+          bids: [
+            {
+              id: "bid-higher",
+              bidderId: "buyer-2",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.11 WIB",
+              rank: 1,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-lower",
+              bidderId: "buyer-1",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.06 WIB",
+              rank: 2,
+              isWinner: false,
+              determinesFinalPrice: false
+            }
+          ]
         }}
       />
     );
@@ -1088,11 +1107,47 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("11 Jun 2026, 10.06 WIB")).toBeInTheDocument();
     expect(screen.getByText("11 Jun 2026, 10.11 WIB")).toBeInTheDocument();
     expect(screen.getByText("Tertinggi")).toHaveClass("whitespace-nowrap");
+    const highestBidRow = screen.getByText("11 Jun 2026, 10.11 WIB").closest("tr") as HTMLElement;
+    const lowerBidRow = screen.getByText("11 Jun 2026, 10.06 WIB").closest("tr") as HTMLElement;
+    expect(within(highestBidRow).getByText("Tertinggi")).toBeInTheDocument();
+    expect(within(lowerBidRow).queryByText("Tertinggi")).not.toBeInTheDocument();
     const bidLogTable = container.querySelector("table");
     expect(bidLogTable).toHaveClass("table-fixed");
     expect(bidLogTable).not.toHaveClass("min-w-[46rem]");
     expect(bidLogTable?.parentElement).toHaveClass("overflow-hidden");
     expect(bidLogTable?.parentElement).not.toHaveClass("overflow-x-auto");
+  });
+
+  it("auto-refreshes a locked vickrey detail every five seconds", () => {
+    vi.useFakeTimers();
+
+    render(
+      <AdminVickreyAuctionDetailPage
+        auction={{
+          id: "pm-vickrey-refresh",
+          lotId: "barang-vickrey-refresh",
+          lot: "Kalung Emas",
+          code: "BRG-VICKREY-REFRESH",
+          category: "emas",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "VICKREY_AUCTION",
+          endingAt: "2099-05-06T12:00:00.000Z",
+          participants: 1,
+          basePrice: 10000000,
+          finalPrice: null,
+          winner: null,
+          visibility: "TERKUNCI",
+          bids: []
+        }}
+      />
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
   it("shows the auction base price beside the asset code", () => {

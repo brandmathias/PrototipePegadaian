@@ -176,6 +176,19 @@ describe("admin unit serializers", () => {
               createdAt: new Date("2026-04-05T00:00:00Z")
             },
             bidderName: "Raras"
+          },
+          {
+            bid: {
+              id: "bid-2",
+              pemasaranId: "pm-1",
+              userId: "buyer-2",
+              bidHash: "hash-2",
+              nominal: "14000000",
+              salt: "salt-2",
+              revealedAt: null,
+              createdAt: new Date("2026-04-05T01:00:00Z")
+            },
+            bidderName: "Alya"
           }
         ]
       }
@@ -190,7 +203,21 @@ describe("admin unit serializers", () => {
       berat: "3,20 gram"
     });
     expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
-    expect(auction.bids).toEqual([]);
+    expect(auction.bids).toEqual([
+      expect.objectContaining({
+        id: "bid-2",
+        rank: 1,
+        bidderName: "Peserta",
+        submittedAtLabel: "5 Apr 2026, 08.00.00 WIB"
+      }),
+      expect.objectContaining({
+        id: "bid-1",
+        rank: 2,
+        bidderName: "Peserta",
+        submittedAtLabel: "5 Apr 2026, 07.00.00 WIB"
+      })
+    ]);
+    expect(auction.bids?.[0]).not.toHaveProperty("amount");
     expect(auction.participantPreviews?.[0]).toMatchObject({
       bidderName: "Raras",
       submittedAtLabel: "5 Apr 2026, 07.00 WIB"

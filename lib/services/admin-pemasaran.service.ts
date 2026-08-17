@@ -608,17 +608,13 @@ export async function getAdminPemasaranById(unitId: string, pemasaranId: string)
     ...historyRows.map((history) => history.marketing)
   ];
   const uniqueMarketingIds = Array.from(new Set(marketingInsightRows.map((marketing) => marketing.id).filter(Boolean)));
-  const revealedVickreyIds = marketingInsightRows
-    .filter(
-      (marketing) =>
-        marketing.mode === "vickrey" &&
-        (!marketing.endsAt || marketing.endsAt.getTime() <= Date.now())
-    )
+  const vickreyMarketingIds = marketingInsightRows
+    .filter((marketing) => marketing.mode === "vickrey")
     .map((marketing) => marketing.id);
   const [historyTransactionByPemasaranId, statsByPemasaranId, bidRowsByPemasaranId] = await Promise.all([
     getLatestTransactionsByPemasaranIds(historyRows.map((history) => history.marketing.id)),
     getLotStatsByIds(uniqueMarketingIds),
-    getBidRowsByPemasaranIds(revealedVickreyIds)
+    getBidRowsByPemasaranIds(vickreyMarketingIds)
   ]);
   const insightsByPemasaranId = resolveMarketingPerformanceInsights(marketingInsightRows, statsByPemasaranId);
 
