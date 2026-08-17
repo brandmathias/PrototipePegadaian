@@ -365,6 +365,11 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByText(/menunggu konfirmasi selesai dari buyer/i)).toBeInTheDocument();
+    const workflow = screen.getByText("Alur Pembayaran").closest("section");
+    expect(workflow).not.toBeNull();
+    expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /bukti serah-terima barang kalung emas 18k/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
@@ -624,7 +629,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /detail transaksi lelang berhasil/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /cetak nota/i })).toBeInTheDocument();
     expect(screen.getByText(/^alur pembayaran$/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pembayaran selesai/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pelunasan berhasil dalam batas waktu 24 jam/i })).toBeInTheDocument();
     expect(screen.getByText(/transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan/i)).toBeInTheDocument();
     expect(screen.getByText(/nominal lelang/i)).toBeInTheDocument();
@@ -670,7 +675,7 @@ describe("buyer transaction detail page", () => {
     printSpy.mockRestore();
   });
 
-  it("marks the payment workflow finished while buyer completion remains pending", () => {
+  it("keeps the Vickrey payment workflow pending until buyer completes the purchase", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -698,9 +703,10 @@ describe("buyer transaction detail page", () => {
 
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByText(/alur selesai/i)).toBeInTheDocument();
-    expect(within(workflow!).getByRole("heading", { name: /pembayaran selesai/i })).toBeInTheDocument();
-    expect(within(workflow!).queryByText(/^berjalan$/i)).not.toBeInTheDocument();
+    expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
+    expect(within(workflow!).getByText(/^berjalan$/i)).toBeInTheDocument();
     expect(within(workflow!).getAllByText(/pembayaran sudah diverifikasi.*menunggu serah-terima/i)).toHaveLength(2);
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });

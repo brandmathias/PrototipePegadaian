@@ -651,9 +651,9 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const hasFailedWorkflow = transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment;
   const completed = transaction.status === "SELESAI";
-  const paymentFlowCompleted = transaction.status === "LUNAS" || completed;
+  const paymentVerified = transaction.status === "LUNAS";
   const currentStep =
-    transaction.status === "SELESAI" || transaction.status === "LUNAS"
+    completed || paymentVerified
       ? 2
       : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow
         ? 1
@@ -683,7 +683,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const finishDetail =
     completed
       ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
-      : paymentFlowCompleted
+      : paymentVerified
         ? "Pembayaran sudah diverifikasi. Pembelian menunggu serah-terima dan konfirmasi buyer."
         : "Tahap ini aktif setelah admin memverifikasi pembayaran.";
   const steps: PaymentWorkflowStep[] = [
@@ -723,7 +723,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
     {
       id: "finished",
       label: "Selesai",
-      headline: completed ? "Pembelian Selesai" : paymentFlowCompleted ? "Pembayaran Selesai" : "Konfirmasi Selesai",
+      headline: completed ? "Pembelian Selesai" : paymentVerified ? "Menunggu Konfirmasi Buyer" : "Konfirmasi Selesai",
       detail: finishDetail,
       meta: "Aksi akhir buyer",
       actor: completed
@@ -731,14 +731,14 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Sistem"
           : `Buyer: ${buyer.name}`
         : undefined,
-      occurredAt: completed ? transaction.completedAt : paymentFlowCompleted ? transaction.verifiedAt : undefined,
+      occurredAt: completed ? transaction.completedAt : undefined,
       icon: CheckCircle2
     }
   ];
 
   return (
     <PaymentWorkflowRail
-      completed={paymentFlowCompleted}
+      completed={completed}
       currentStep={currentStep}
       description={
         isVickreyWin
