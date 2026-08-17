@@ -205,19 +205,19 @@ describe("admin unit serializers", () => {
     expect(auction.endingAt).toBe("2099-04-08T00:00:00.000Z");
     expect(auction.bids).toEqual([
       expect.objectContaining({
-        id: "bid-2",
-        rank: 1,
-        bidderName: "Peserta",
-        submittedAtLabel: "5 Apr 2026, 08.00.00 WIB"
-      }),
-      expect.objectContaining({
         id: "bid-1",
         rank: 2,
         bidderName: "Peserta",
         submittedAtLabel: "5 Apr 2026, 07.00.00 WIB"
+      }),
+      expect.objectContaining({
+        id: "bid-2",
+        rank: 1,
+        bidderName: "Peserta",
+        submittedAtLabel: "5 Apr 2026, 08.00.00 WIB"
       })
     ]);
-    expect(auction.bids?.[0]).not.toHaveProperty("amount");
+    expect(auction.bids?.[1]).not.toHaveProperty("amount");
     expect(auction.participantPreviews?.[0]).toMatchObject({
       bidderName: "Raras",
       submittedAtLabel: "5 Apr 2026, 07.00 WIB"

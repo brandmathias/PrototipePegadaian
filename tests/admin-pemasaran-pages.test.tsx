@@ -1052,20 +1052,20 @@ describe("admin pemasaran pages", () => {
           primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
           bids: [
             {
-              id: "bid-higher",
-              bidderId: "buyer-2",
-              bidderName: "Peserta",
-              submittedAtLabel: "11 Jun 2026, 10.11 WIB",
-              rank: 1,
-              isWinner: false,
-              determinesFinalPrice: false
-            },
-            {
               id: "bid-lower",
               bidderId: "buyer-1",
               bidderName: "Peserta",
               submittedAtLabel: "11 Jun 2026, 10.06 WIB",
               rank: 2,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-higher",
+              bidderId: "buyer-2",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.11 WIB",
+              rank: 1,
               isWinner: false,
               determinesFinalPrice: false
             }
@@ -1111,6 +1111,9 @@ describe("admin pemasaran pages", () => {
     const lowerBidRow = screen.getByText("11 Jun 2026, 10.06 WIB").closest("tr") as HTMLElement;
     expect(within(highestBidRow).getByText("Tertinggi")).toBeInTheDocument();
     expect(within(lowerBidRow).queryByText("Tertinggi")).not.toBeInTheDocument();
+    expect(
+      lowerBidRow.compareDocumentPosition(highestBidRow) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     const bidLogTable = container.querySelector("table");
     expect(bidLogTable).toHaveClass("table-fixed");
     expect(bidLogTable).not.toHaveClass("min-w-[46rem]");

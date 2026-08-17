@@ -205,7 +205,7 @@ export function serializeAdminPemasaran(
     }
     return "HASIL_DIBUKA";
   })();
-  const sortedBids = [...(extra.bids ?? [])].sort((left, right) => {
+  const rankedBids = [...(extra.bids ?? [])].sort((left, right) => {
     const amountDiff = toNumber(right.bid.nominal) - toNumber(left.bid.nominal);
     if (amountDiff !== 0) {
       return amountDiff;
@@ -213,6 +213,11 @@ export function serializeAdminPemasaran(
 
     return left.bid.createdAt.getTime() - right.bid.createdAt.getTime();
   });
+  const rankedBidIndexes = new Map(rankedBids.map((entry, index) => [entry.bid.id, index + 1]));
+  const sortedBids =
+    visibility === "TERKUNCI"
+      ? [...rankedBids].sort((left, right) => left.bid.createdAt.getTime() - right.bid.createdAt.getTime())
+      : rankedBids;
   const lotSpecifications =
     extra.lotSpecifications && typeof extra.lotSpecifications === "object" && !Array.isArray(extra.lotSpecifications)
       ? (extra.lotSpecifications as Record<string, string>)
@@ -220,7 +225,7 @@ export function serializeAdminPemasaran(
   const bidEntries =
     isVickrey
       ? sortedBids.map((entry, index) => {
-          const rank = index + 1;
+          const rank = rankedBidIndexes.get(entry.bid.id) ?? index + 1;
           const isWinner = row.winnerId && entry.bid.userId === row.winnerId;
           return {
             id: entry.bid.id,
