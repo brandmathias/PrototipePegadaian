@@ -649,6 +649,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const hasFailedWorkflow = transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment;
   const completed = transaction.status === "SELESAI";
+  const paymentFlowCompleted = transaction.status === "LUNAS" || completed;
   const currentStep =
     transaction.status === "SELESAI" || transaction.status === "LUNAS"
       ? 2
@@ -674,10 +675,10 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         : "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
       : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
   const finishDetail =
-    transaction.status === "LUNAS"
-      ? "Pembayaran sudah diverifikasi. Tekan Pembelian Selesai setelah nota dan pengambilan barang siap."
-      : completed
-        ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
+    completed
+      ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
+      : paymentFlowCompleted
+        ? "Pembayaran sudah diverifikasi. Pembelian menunggu serah-terima dan konfirmasi buyer."
         : "Tahap ini aktif setelah admin memverifikasi pembayaran.";
   const steps: PaymentWorkflowStep[] = [
     {
@@ -716,7 +717,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
     {
       id: "finished",
       label: "Selesai",
-      headline: completed ? "Pembelian Selesai" : "Konfirmasi Selesai",
+      headline: completed ? "Pembelian Selesai" : paymentFlowCompleted ? "Pembayaran Selesai" : "Konfirmasi Selesai",
       detail: finishDetail,
       meta: "Aksi akhir buyer",
       actor: completed
@@ -724,14 +725,14 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Sistem"
           : `Buyer: ${buyer.name}`
         : undefined,
-      occurredAt: transaction.completedAt,
+      occurredAt: completed ? transaction.completedAt : paymentFlowCompleted ? transaction.verifiedAt : undefined,
       icon: CheckCircle2
     }
   ];
 
   return (
     <PaymentWorkflowRail
-      completed={completed}
+      completed={paymentFlowCompleted}
       currentStep={currentStep}
       description={
         isVickreyWin

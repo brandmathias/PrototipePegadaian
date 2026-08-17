@@ -558,7 +558,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /detail transaksi lelang berhasil/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /cetak nota/i })).toBeInTheDocument();
     expect(screen.getByText(/^alur pembayaran$/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /konfirmasi selesai/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pembayaran selesai/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pelunasan berhasil dalam batas waktu 24 jam/i })).toBeInTheDocument();
     expect(screen.getByText(/transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan/i)).toBeInTheDocument();
     expect(screen.getByText(/nominal lelang/i)).toBeInTheDocument();
@@ -602,6 +602,41 @@ describe("buyer transaction detail page", () => {
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/barang/cincin-lelang.jpg"]')).not.toBeNull();
 
     printSpy.mockRestore();
+  });
+
+  it("marks the payment workflow finished while buyer completion remains pending", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-vickrey-verified",
+          lotId: "pm-vickrey-verified",
+          kind: "VICKREY_WIN",
+          title: "Cincin Emas Terverifikasi",
+          amount: 16000000,
+          status: "LUNAS",
+          method: "BAYAR_LANGSUNG",
+          unit: "UPC Wanea",
+          unitAddress: "Jl. Sam Ratulangi, Manado",
+          reference: "CASH-VERIFIED",
+          applicationNumber: "PGJ-VIC-VERIFIED",
+          paymentLabel: "Bayar langsung di unit",
+          paymentNotes: ["Pembayaran hasil lelang sudah diverifikasi admin unit."],
+          imageUrl: "/uploads/barang/cincin-terverifikasi.jpg",
+          verifiedAt: "16 Agu 2026, 09.53 WIB"
+        }}
+        transactionId="trx-vickrey-verified"
+      />
+    );
+
+    const workflow = screen.getByText("Alur Pembayaran").closest("section");
+    expect(workflow).not.toBeNull();
+    expect(within(workflow!).getByText(/alur selesai/i)).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /pembayaran selesai/i })).toBeInTheDocument();
+    expect(within(workflow!).queryByText(/^berjalan$/i)).not.toBeInTheDocument();
+    expect(within(workflow!).getAllByText(/pembayaran sudah diverifikasi.*menunggu serah-terima/i)).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
   it("prints the paid auction winner receipt in place on mobile without opening the receipt route", async () => {
