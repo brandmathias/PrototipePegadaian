@@ -1578,7 +1578,6 @@ function VickreyPaymentFailedDetail({
                   {transaction.title}
                 </h2>
                 <div className="mt-4 space-y-4">
-                  <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
                   <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
                   <AuctionPaymentInfoRow label="Email" value={buyer.email} />
                   <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />
@@ -1781,7 +1780,6 @@ function VickreyPendingPaymentDetail({
                 {transaction.title}
               </h3>
               <dl className="mt-5 space-y-3">
-                <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
                 <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
                 <AuctionPaymentInfoRow label="Email" value={buyer.email} />
                 <AuctionPaymentInfoRow label="Metode Bayar" value="Bayar Langsung di Unit Terkait" />
@@ -1941,7 +1939,6 @@ function VickreyPaymentSuccessDetail({
                 {transaction.title}
               </h3>
               <dl className="mt-5 space-y-3">
-                <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
                 <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
                 <AuctionPaymentInfoRow label="Email" value={buyer.email} />
                 <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />

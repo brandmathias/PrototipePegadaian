@@ -136,7 +136,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getAllByText(/^upc wanea$/i).length).toBeGreaterThan(0);
     expect(screen.getByLabelText(/sisa waktu pembayaran/i)).toHaveTextContent("23:59:12");
     expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i })).toBeInTheDocument();
-    expect(screen.getByText(/^pgj-vic-ea96f2f7$/i)).toBeInTheDocument();
+    expect(screen.queryByText(/id pengajuan/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^pgj-vic-ea96f2f7$/i)).not.toBeInTheDocument();
     expect(screen.getByText(/^budi santoso$/i)).toBeInTheDocument();
     expect(screen.getByText(/^budi@example\.com$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/bayar langsung di unit terkait/i).length).toBeGreaterThan(0);
@@ -282,8 +283,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/unit pelaksana/i)).toBeInTheDocument();
     expect(screen.getByText(/tanggal sesi/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i })).toBeInTheDocument();
-    expect(screen.getByText(/id pengajuan/i)).toBeInTheDocument();
-    expect(screen.getByText(/^pgj-vic-failed$/i)).toBeInTheDocument();
+    expect(screen.queryByText(/id pengajuan/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^pgj-vic-failed$/i)).not.toBeInTheDocument();
     expect(screen.getByText(/nama pembeli/i)).toBeInTheDocument();
     expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/budi@example\.com/i)).toBeInTheDocument();
@@ -646,8 +647,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/unit pelaksana/i)).toBeInTheDocument();
     expect(screen.getByText(/tanggal verifikasi/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i })).toBeInTheDocument();
-    expect(screen.getByText(/id pengajuan/i)).toBeInTheDocument();
-    expect(screen.getByText(/^pgj-vic-trxvick$/i)).toBeInTheDocument();
+    expect(screen.queryByText(/id pengajuan/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^pgj-vic-trxvick$/i)).not.toBeInTheDocument();
     expect(screen.getByText(/nama pembeli/i)).toBeInTheDocument();
     expect(screen.getAllByText(/budi santoso/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/budi@example\.com/i)).toBeInTheDocument();
