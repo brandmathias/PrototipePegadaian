@@ -141,11 +141,11 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/^budi@example\.com$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/bayar langsung di unit terkait/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /log audit sistem/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i }).closest("section")).toHaveClass("h-full");
+    expect(screen.getByRole("heading", { name: /log audit sistem/i }).closest("section")).toHaveClass("h-full");
     expect(screen.getByText(/^system \(auto\)$/i)).toBeInTheDocument();
     expect(screen.getByText(/^ea96f2f7-b131-413a-ac4a-6fa3c67d65ac$/i)).toBeInTheDocument();
-    expect(
-      screen.getAllByText(/datang ke upc wanea untuk melakukan pembayaran secara langsung/i).length
-    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/^menunggu pembayaran$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/bawa nomor|loket unit/i)).not.toBeInTheDocument();
 
     expect(screen.queryByRole("button", { name: /cetak ringkasan/i })).not.toBeInTheDocument();
@@ -656,8 +656,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/dibuat pada/i)).toBeInTheDocument();
     expect(screen.getByText(/system \(auto\)/i)).toBeInTheDocument();
     expect(screen.getByText(/trx-suk-pgj-vic-trxvick/i)).toBeInTheDocument();
-    expect(screen.getByText(/^pembayaran diverifikasi$/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/^pembayaran telah diverifikasi oleh admin unit\.$/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/^pembayaran diverifikasi$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tidak memiliki kendala verifikasi/i)).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeInTheDocument();

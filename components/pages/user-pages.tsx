@@ -1755,7 +1755,7 @@ function VickreyPendingPaymentDetail({
       </section>
 
       <div className="grid items-stretch gap-5 lg:grid-cols-2">
-        <section className="rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+        <section className="h-full rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
           <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
             <ClipboardCheck className="size-5 text-primary" />
             Informasi Barang &amp; Pemenang
@@ -1790,7 +1790,7 @@ function VickreyPendingPaymentDetail({
           </div>
         </section>
 
-        <section className="flex flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+        <section className="flex h-full flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
           <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
             <FileCheck2 className="size-5 text-primary" />
             Log Audit Sistem
@@ -1799,20 +1799,6 @@ function VickreyPendingPaymentDetail({
             <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
             <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
             <AuctionPaymentAuditRow label="Referensi Transaksi" value={transaction.id} />
-            <AuctionPaymentAuditRow
-              label="Status Pembayaran"
-              value={
-                <div className="rounded-xl border border-[#efc452] bg-[#fff9e9] px-4 py-3 text-[#6f5108]">
-                  <p className="flex items-center gap-2 font-black">
-                    <Hourglass className="size-4" />
-                    Menunggu Pembayaran
-                  </p>
-                  <p className="mt-1 text-sm leading-6">
-                    Datang ke {transaction.unit} untuk melakukan pembayaran secara langsung.
-                  </p>
-                </div>
-              }
-            />
           </dl>
           <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
             <Button
@@ -1928,8 +1914,8 @@ function VickreyPaymentSuccessDetail({
         </div>
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
-        <section className="rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+      <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
+        <section className="h-full rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
           <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
             <ClipboardCheck className="size-5 text-primary" />
             Informasi Barang &amp; Pemenang
@@ -1964,7 +1950,7 @@ function VickreyPaymentSuccessDetail({
           </div>
         </section>
 
-        <section className="flex flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+        <section className="flex h-full flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
           <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
             <FileCheck2 className="size-5 text-primary" />
             Log Audit Sistem
@@ -1973,20 +1959,6 @@ function VickreyPaymentSuccessDetail({
             <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
             <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
             <AuctionPaymentAuditRow label="Referensi Transaksi" value={successReference} />
-            <AuctionPaymentAuditRow
-              label="Status Pembayaran"
-              value={
-                <span className="flex items-start gap-3 rounded-xl border border-[#81d6a2] bg-[#f0faf4] px-4 py-3 text-[#0a6a49]">
-                  <ShieldCheck className="mt-0.5 size-5 shrink-0" />
-                  <span>
-                    <span className="block font-black">Pembayaran Diverifikasi</span>
-                    <span className="mt-1 block text-sm font-medium leading-5">
-                      Pembayaran telah diverifikasi oleh admin unit.
-                    </span>
-                  </span>
-                </span>
-              }
-            />
           </dl>
 
           <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
