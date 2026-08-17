@@ -102,7 +102,7 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.getByText("BRG-004")).toBeInTheDocument();
   });
 
-  it("shows precisely expired collateral as overdue and keeps it in the due-soon filter", () => {
+  it("shows precisely expired collateral as overdue but excludes it from the due-soon filter", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-01T11:57:00.000Z"));
 
@@ -125,7 +125,7 @@ describe("AdminInventoryWorkspace", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /jatuh tempo dekat/i }));
 
-      expect(screen.getByText("BRG-EXPIRED")).toBeInTheDocument();
+      expect(screen.queryByText("BRG-EXPIRED")).not.toBeInTheDocument();
       expect(screen.queryByText("BRG-FUTURE")).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();

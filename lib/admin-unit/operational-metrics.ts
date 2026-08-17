@@ -62,7 +62,9 @@ export function isAdminInventoryDueSoon(item: InventoryMetricItem, now = new Dat
     return false;
   }
 
-  return deadline.getTime() <= now.getTime() || deadline.getTime() - now.getTime() <= 7 * 86_400_000;
+  const remaining = deadline.getTime() - now.getTime();
+
+  return remaining > 0 && remaining <= 7 * 86_400_000;
 }
 
 export function isAdminInventoryListItem(item: InventoryMetricItem) {
