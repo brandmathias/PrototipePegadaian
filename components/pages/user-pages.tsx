@@ -1857,10 +1857,7 @@ function VickreyPaymentSuccessDetail({
   transaction: BuyerTransaction;
 }) {
   const isCompleted = isTransactionCompletionFinalized(transaction);
-  const settlementDate =
-    (transaction.verifiedAt ?? transaction.createdAt).split(",")[0]?.trim() ||
-    transaction.verifiedAt ||
-    transaction.createdAt;
+  const verificationTimestamp = transaction.verifiedAt ?? transaction.createdAt;
   const successReference = `TRX-SUK-${
     transaction.applicationNumber || transaction.receiptNumber || transaction.reference || transaction.id
   }`;
@@ -1887,140 +1884,137 @@ function VickreyPaymentSuccessDetail({
 
       <PaymentProgressRail buyer={buyer} transaction={transaction} />
 
-      <Card className="overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
-        <CardContent className="grid p-0 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <div className="flex min-h-[150px] flex-col items-center justify-center bg-primary p-6 text-center text-white md:min-h-[166px]">
-            <span className="grid size-16 place-items-center rounded-full border-[3px] border-white">
-              <CheckCircle2 className="size-10" strokeWidth={2.4} />
+      <section
+        aria-label="Status pembayaran terverifikasi"
+        className="grid overflow-hidden rounded-[1rem] border border-[#2dbb70] bg-white shadow-[0_20px_52px_-38px_rgba(8,69,50,0.42)] lg:grid-cols-[200px_minmax(0,1fr)]"
+      >
+        <div className="relative flex min-h-[132px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#46cc7e_0%,#24b96a_60%,#0c9556_100%)] px-4 py-4 text-center text-white">
+          <span aria-hidden="true" className="absolute -bottom-10 -right-8 size-36 rotate-12 rounded-[2.2rem] border border-white/15" />
+          <span className="relative grid size-[4.5rem] place-items-center rounded-full border-4 border-white bg-white/20 shadow-[0_0_0_4px_rgba(255,255,255,0.38)]">
+            <span className="grid size-[3.35rem] place-items-center rounded-full bg-white text-primary shadow-[0_12px_28px_-18px_rgba(3,66,38,0.62)]">
+              <ShieldCheck className="size-7" strokeWidth={2.25} />
             </span>
-            <p className="mt-5 font-headline text-2xl font-black uppercase tracking-wide">Berhasil</p>
-          </div>
+          </span>
+          <p className="relative mt-3 font-headline text-sm font-black uppercase tracking-[0.035em]">Terverifikasi</p>
+        </div>
 
-          <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)] lg:items-center lg:p-8">
-            <div className="min-w-0">
-              <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
-                Pelunasan Berhasil dalam Batas Waktu 24 Jam
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-                Transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan sebelum batas waktu 24 jam
-                berakhir.
-              </p>
+        <div className="flex min-w-0 flex-col justify-center px-5 py-4 sm:px-6">
+          <h2 className="font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+            Pembayaran telah Diverifikasi Admin Unit
+          </h2>
+          <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[#667085]">
+            Pembayaran Anda telah diverifikasi oleh admin unit. Silakan selesaikan tahap akhir untuk membuka nota lelang.
+          </p>
+          <dl className="mt-3 grid gap-4 border-t border-[#edf0eb] pt-3 sm:grid-cols-3 sm:gap-0">
+            <div className="min-w-0 sm:pr-5">
+              <dt className="text-xs font-semibold text-[#667085]">Nominal Lelang</dt>
+              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+                {currency.format(transaction.amount)}
+              </dd>
             </div>
-
-            <div className="grid rounded-xl border border-border/70 bg-white sm:grid-cols-3 sm:divide-x sm:divide-border/70 lg:border-0">
-              <AuctionPaymentMetric label="Nominal Lelang" value={currency.format(transaction.amount)} />
-              <AuctionPaymentMetric label="Unit Pelaksana" value={transaction.unit} />
-              <AuctionPaymentMetric label="Tanggal Pelunasan" value={settlementDate} />
+            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:px-5">
+              <dt className="text-xs font-semibold text-[#667085]">Unit Pelaksana</dt>
+              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+                {transaction.unit}
+              </dd>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:pl-5">
+              <dt className="text-xs font-semibold text-[#667085]">Tanggal Verifikasi</dt>
+              <dd className="mt-1 break-words font-headline text-base font-black tracking-tight text-slate-950 md:text-lg">
+                {verificationTimestamp}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
-        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
-          <CardContent className="p-6 md:p-7">
-            <CardTitle className="text-xl">Informasi Barang & Pemenang</CardTitle>
-            <div className="mt-4 grid gap-5 md:grid-cols-[220px_minmax(0,1fr)] md:items-start">
-              {transaction.imageUrl ? (
-                <Image
-                  alt={`Foto barang ${transaction.title}`}
-                  className="h-48 w-full rounded-lg bg-[#eef0ed] object-cover md:h-52"
-                  height={260}
-                  loading="eager"
-                  sizes="(max-width: 768px) 100vw, 220px"
-                  src={transaction.imageUrl}
-                  width={320}
-                />
-              ) : (
-                <div className="grid h-48 w-full place-items-center rounded-lg bg-[#eef0ed] text-primary md:h-52">
-                  <ShoppingBag className="size-10" />
-                </div>
-              )}
-
-              <div className="min-w-0">
-                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
-                  {transaction.title}
-                </h2>
-                <div className="mt-4 space-y-4">
-                  <AuctionPaymentInfoRow label="ID Penagihan" value={transaction.applicationNumber} />
-                  <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
-                  <AuctionPaymentInfoRow label="Email" value={buyer.email} />
-                  <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.05)]">
-          <CardContent className="p-6 md:p-7">
-            <div className="flex items-center gap-3">
-              <FileCheck2 className="size-5 text-foreground" />
-              <CardTitle className="text-xl">Log Audit Sistem</CardTitle>
-            </div>
-            <div className="my-5 h-px bg-border" />
-
-            <div className="space-y-4">
-              <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
-              <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
-              <AuctionPaymentAuditRow
-                label="Referensi Transaksi"
-                value={
-                  <span className="block rounded-md border border-border bg-surface-low/40 px-3 py-2 font-medium text-foreground">
-                    {successReference}
-                  </span>
-                }
+        <section className="rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
+            <ClipboardCheck className="size-5 text-primary" />
+            Informasi Barang &amp; Pemenang
+          </h2>
+          <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
+            {transaction.imageUrl ? (
+              <Image
+                alt={`Foto barang ${transaction.title}`}
+                className="h-[220px] w-full rounded-xl bg-[#f2f4f2] object-cover sm:h-full sm:min-h-[220px]"
+                height={440}
+                loading="eager"
+                sizes="(max-width: 640px) 100vw, 180px"
+                src={transaction.imageUrl}
+                width={360}
               />
-              <AuctionPaymentAuditRow
-                label="Status Pembayaran"
-                value={
-                  <span
-                    className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/[0.05] px-4 py-3 text-primary"
-                  >
-                    <CheckCircle2 className="mt-0.5 size-5 shrink-0" />
-                    <span>
-                      <span className="block font-bold">Pembayaran Terverifikasi</span>
-                      <span className="mt-1 block text-sm font-medium">
-                        {settlementLockMessage
-                          ? "Pembayaran sudah sah. Pembatasan akun tidak menghalangi finalisasi transaksi yang sudah diserahterimakan."
-                          : "Pembayaran sah dan tidak memiliki kendala verifikasi."}
-                      </span>
+            ) : (
+              <div className="grid min-h-[220px] place-items-center rounded-xl bg-[#f2f4f2] text-primary">
+                <ShoppingBag className="size-9" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h3 className="font-headline text-xl font-black leading-snug tracking-tight text-slate-950">
+                {transaction.title}
+              </h3>
+              <dl className="mt-5 space-y-3">
+                <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
+                <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
+                <AuctionPaymentInfoRow label="Email" value={buyer.email} />
+                <AuctionPaymentInfoRow label="Metode Bayar" value={paymentMethodLabel} />
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
+            <FileCheck2 className="size-5 text-primary" />
+            Log Audit Sistem
+          </h2>
+          <dl className="mt-5 space-y-3">
+            <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
+            <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
+            <AuctionPaymentAuditRow label="Referensi Transaksi" value={successReference} />
+            <AuctionPaymentAuditRow
+              label="Status Pembayaran"
+              value={
+                <span className="flex items-start gap-3 rounded-xl border border-[#81d6a2] bg-[#f0faf4] px-4 py-3 text-[#0a6a49]">
+                  <ShieldCheck className="mt-0.5 size-5 shrink-0" />
+                  <span>
+                    <span className="block font-black">Pembayaran Diverifikasi</span>
+                    <span className="mt-1 block text-sm font-medium leading-5">
+                      Pembayaran telah diverifikasi oleh admin unit.
                     </span>
                   </span>
-                }
-              />
-            </div>
+                </span>
+              }
+            />
+          </dl>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {!isCompleted ? (
-                <CompletePurchaseButton
-                  disabledReason={handoverLockMessage}
-                  transactionId={transaction.id}
-                />
-              ) : (
-                <Button
-                  className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-primary/10 disabled:bg-primary/45 disabled:text-white/95 disabled:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:saturate-[0.88]"
-                  disabled
-                  type="button"
-                >
-                  <CheckCircle2 className="size-[1.05rem]" />
-                  Pembelian Selesai
-                </Button>
-              )}
-              <BuyerTransactionInlineReceiptPrint
-                buyer={buyer}
-                buttonClassName="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[1rem] border border-primary bg-white px-5 text-center text-[0.98rem] font-bold tracking-[0.01em] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
-                label="Cetak Nota"
-                rootSuffix="status"
-                transaction={transaction}
-              />
-            </div>
-            <div className="mt-3 space-y-3">
-              {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
-              <HandoverAutoCompleteNotice transaction={transaction} />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
+            {!isCompleted ? (
+              <CompletePurchaseButton disabledReason={handoverLockMessage} transactionId={transaction.id} />
+            ) : (
+              <Button
+                className="min-h-14 w-full rounded-[1rem] px-5 text-[0.98rem] font-bold tracking-[0.01em] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] disabled:border disabled:border-primary/10 disabled:bg-primary/45 disabled:text-white/95 disabled:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:saturate-[0.88]"
+                disabled
+                type="button"
+              >
+                <CheckCircle2 className="size-[1.05rem]" />
+                Pembelian Selesai
+              </Button>
+            )}
+            <BuyerTransactionInlineReceiptPrint
+              buyer={buyer}
+              buttonClassName="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-[1rem] border border-primary bg-white px-5 text-center text-[0.98rem] font-bold tracking-[0.01em] text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_14px_28px_-22px_rgba(8,69,50,0.26)] transition-[transform,background-color,border-color,color,opacity,box-shadow,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-primary/5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_18px_32px_-24px_rgba(8,69,50,0.32)] active:scale-[0.99]"
+              label="Cetak Nota"
+              rootSuffix="status"
+              transaction={transaction}
+            />
+          </div>
+          <div className="mt-3 space-y-3">
+            {settlementLockMessage ? <BuyerSettlementLockNotice message={settlementLockMessage} /> : null}
+            <HandoverAutoCompleteNotice transaction={transaction} />
+          </div>
+        </section>
       </div>
 
       <HandoverProofCard
