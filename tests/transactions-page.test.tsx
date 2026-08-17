@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -205,6 +205,7 @@ const bids: BuyerBid[] = [
     closingAt: "2026-05-19T05:20:00.000Z",
     bidAmount: 14800000,
     basePrice: 13500000,
+    finalPrice: 16250000,
     note: "Bid tidak menjadi pemenang sesi ini.",
   },
   {
@@ -278,6 +279,10 @@ describe("TransactionsPage", () => {
 
     expect(screen.getByText("Gelang Emas 24K - 10 Gram")).toBeInTheDocument();
     expect(screen.getByText("Kamera Mirrorless Full Frame")).toBeInTheDocument();
+    const losingBidCard = screen.getByText("Kamera Mirrorless Full Frame").closest("article") as HTMLElement;
+    expect(within(losingBidCard).getByText("Nominal bid")).toBeInTheDocument();
+    expect(within(losingBidCard).getByText("Rp 14.800.000")).toBeInTheDocument();
+    expect(within(losingBidCard).queryByText("Rp 16.250.000")).not.toBeInTheDocument();
     expect(screen.getByTestId("buyer-bid-filter-won-icon")).toHaveClass("lucide-trophy");
     expect(screen.getByTestId("buyer-bid-filter-lost-icon")).toHaveClass("lucide-circle-x");
     expect(

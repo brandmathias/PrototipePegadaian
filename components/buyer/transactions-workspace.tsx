@@ -689,7 +689,10 @@ function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
 
 function BidRow({ item }: { item: BuyerBid }) {
   const statusMeta = getBidStatusPill(item.status);
-  const amount = item.paymentAmount ?? item.finalPrice ?? item.bidAmount ?? item.basePrice;
+  const amount =
+    item.status === "MENANG"
+      ? item.paymentAmount ?? item.finalPrice ?? item.bidAmount ?? item.basePrice
+      : item.bidAmount ?? item.basePrice;
   const transactionHref = getBuyerBidTransactionHref(item);
   const actionHref =
     item.status === "TIDAK_MENANG"
