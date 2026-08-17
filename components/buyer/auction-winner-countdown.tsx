@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 type AuctionWinnerCountdownProps = {
   targetAt?: string | null;
   serverNow?: string;
+  variant?: "inline" | "tiles";
 };
 
 type CountdownParts = {
@@ -53,6 +54,7 @@ function getTargetParts(targetAt?: string | null, now = Date.now()): CountdownPa
 export function AuctionWinnerCountdown({
   serverNow,
   targetAt,
+  variant = "tiles",
 }: AuctionWinnerCountdownProps) {
   const syncedClock = useMemo(() => {
     const serverNowMs = serverNow ? new Date(serverNow).getTime() : Number.NaN;
@@ -93,6 +95,17 @@ export function AuctionWinnerCountdown({
     { label: "Menit", value: parts.minutes },
     { label: "Detik", value: parts.seconds },
   ];
+
+  if (variant === "inline") {
+    return (
+      <span
+        aria-label="Sisa waktu pembayaran"
+        className="font-headline text-lg font-black tracking-[-0.025em] text-[#dc2626] [font-variant-numeric:tabular-nums]"
+      >
+        {parts.hours}:{parts.minutes}:{parts.seconds}
+      </span>
+    );
+  }
 
   if (parts.expired) {
     return (

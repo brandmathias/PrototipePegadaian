@@ -96,6 +96,74 @@ const transactionWithSpecifications = {
 };
 
 describe("buyer transaction detail page", () => {
+  it("renders the pending Vickrey winner payment layout with truthful audit data and handover documentation", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-17T13:54:00+08:00"));
+    const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
+
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transactionWithSpecifications,
+          id: "ea96f2f7-b131-413a-ac4a-6fa3c67d65ac",
+          lotId: "pm-vickrey-pending",
+          kind: "VICKREY_WIN",
+          title: "Kalung Emas Rantai Cuban 22K 6,7 Gram",
+          amount: 31000000,
+          status: "MENUNGGU_KONFIRMASI_LANGSUNG",
+          method: "BAYAR_LANGSUNG",
+          unit: "UPC Wanea",
+          unitAddress: "Jl. Sam Ratulangi No.54, Tanjung Batu, Wanea",
+          createdAt: "17 Agu 2026, 13.54 WIB",
+          deadline: "18 Agu 2026, 13.54 WIB",
+          deadlineAt: "2026-08-18T05:53:12.000Z",
+          applicationNumber: "PGJ-VIC-EA96F2F7",
+          imageUrl: "/uploads/barang/kalung-cuban.jpg"
+        }}
+        transactionId="ea96f2f7-b131-413a-ac4a-6fa3c67d65ac"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
+    expect(screen.getByText(/^segera bayar$/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /segera lakukan pembayaran dalam batas waktu 24 jam/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/^rp 31\.000\.000$/i)).toBeInTheDocument();
+    expect(screen.getByText(/harga akhir mengikuti mekanisme lelang/i)).toBeInTheDocument();
+    expect(screen.getByText(/bukan nominal bid tertinggi anda/i)).toBeInTheDocument();
+    expect(screen.getByText(/batas pembayaran 24 jam/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^upc wanea$/i).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/sisa waktu pembayaran/i)).toHaveTextContent("23:59:12");
+    expect(screen.getByRole("heading", { name: /informasi barang & pemenang/i })).toBeInTheDocument();
+    expect(screen.getByText(/^pgj-vic-ea96f2f7$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^budi santoso$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^budi@example\.com$/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/bayar langsung di unit terkait/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /log audit sistem/i })).toBeInTheDocument();
+    expect(screen.getByText(/^system \(auto\)$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^ea96f2f7-b131-413a-ac4a-6fa3c67d65ac$/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/datang ke upc wanea untuk melakukan pembayaran secara langsung/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText(/bawa nomor|loket unit/i)).not.toBeInTheDocument();
+
+    const printSummaryButton = screen.getByRole("button", { name: /cetak ringkasan/i });
+    fireEvent.click(printSummaryButton);
+    expect(printSpy).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: /cetak nota/i })).toBeDisabled();
+
+    expect(
+      screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/belum ada bukti serah-terima/i)).toBeInTheDocument();
+    expect(screen.getByText(/^lokasi unit terkait$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^belum diunggah$/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /rincian transaksi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status konfirmasi/i })).not.toBeInTheDocument();
+  });
+
   it("renders the harga tetap payment flow as transaction details, destination account, and proof upload", () => {
     render(
       <TransactionDetailPage

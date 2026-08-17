@@ -13,6 +13,7 @@ import {
   ExternalLink,
   FileCheck2,
   Gavel,
+  Hourglass,
   IdCard,
   ImageIcon,
   Landmark,
@@ -34,7 +35,9 @@ import {
 import { AccountCopyButton } from "@/components/buyer/account-copy-button";
 import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
+import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
+import { PaymentSummaryPrintButton } from "@/components/buyer/payment-summary-print-button";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
 import { StatusSyncRefresh } from "@/components/shared/status-sync-refresh";
@@ -666,14 +669,18 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         : isVickreyWin
           ? "Transfer sesuai nominal, lalu unggah bukti pembayaran sebelum batas waktu habis."
           : "Transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini."
-      : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
+      : isVickreyWin
+        ? `Datang ke ${transaction.unit} untuk melakukan pembayaran secara langsung.`
+        : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
   const verificationDetail = isFailedVickreyPayment
     ? "Pembayaran gagal karena pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam. Riwayat bid tetap tersimpan dan transaksi tidak lagi berada dalam antrean pembayaran aktif."
     : isTransfer
       ? transaction.status === "DITOLAK_BUKTI"
         ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}. Transaksi dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
         : "Admin unit memeriksa nominal, rekening tujuan, referensi, dan kejelasan bukti transfer."
-      : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
+      : isVickreyWin
+        ? "Admin unit mengonfirmasi pembayaran setelah dana diterima di unit terkait."
+        : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
   const finishDetail =
     completed
       ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
@@ -686,7 +693,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       label: "Melakukan Pembayaran",
       headline: isTransfer ? "Transfer Sesuai Nominal" : isVickreyWin ? "Bayar Lelang Tertutup di Unit" : "Bayar di Loket Unit",
       detail: paymentDetail,
-      meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Lelang Tertutup bayar di loket" : "Bayar di loket",
+      meta: isTransfer ? "Transfer + upload bukti" : isVickreyWin ? "Lelang Tertutup bayar di unit terkait" : "Bayar di loket",
       actor: `Buyer: ${buyer.name}`,
       occurredAt: transaction.createdAt,
       icon: Landmark
@@ -738,7 +745,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         isVickreyWin
           ? isFailedVickreyPayment
             ? "Pembayaran Lelang Tertutup wajib selesai maksimal 24 jam. Karena tenggat terlewati, transaksi gagal dan tidak lagi berada dalam antrean pembayaran aktif."
-            : "Lelang Tertutup hanya memakai jalur loket unit. Tidak ada unggah bukti pembayaran online."
+            : "Lelang Tertutup hanya memakai pembayaran langsung di unit terkait. Tidak ada unggah bukti pembayaran online."
           : isTransfer
             ? transaction.status === "DITOLAK_BUKTI"
               ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
@@ -1663,6 +1670,185 @@ function AuctionPaymentAuditRow({
   );
 }
 
+function VickreyPendingPaymentDetail({
+  buyer,
+  transaction
+}: {
+  buyer: BuyerSessionUser;
+  transaction: BuyerTransaction;
+}) {
+  return (
+    <div className="space-y-7 bg-white md:space-y-8">
+      <StatusSyncRefresh enabled />
+
+      <section className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Link className="hover:text-primary" href="/dashboard">
+                Dashboard
+              </Link>
+              <span aria-hidden="true">›</span>
+              <Link className="hover:text-primary" href="/transaksi">
+                Transaksi
+              </Link>
+              <span aria-hidden="true">›</span>
+              <span className="font-bold uppercase tracking-[0.16em] text-foreground">Detail</span>
+            </div>
+            <h1 className="font-headline text-4xl font-black tracking-tight text-primary md:text-6xl">
+              Detail Pembayaran
+            </h1>
+            <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+              Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai.
+            </p>
+          </div>
+          <Link className="font-bold text-primary hover:text-primary/80" href={`/katalog/${transaction.lotId}?source=payment`}>
+            Kembali ke Detail Barang
+          </Link>
+        </div>
+
+        <PaymentProgressRail buyer={buyer} transaction={transaction} />
+      </section>
+
+      <section
+        aria-label="Status segera bayar"
+        className="grid overflow-hidden rounded-[1rem] border border-[#edb316] bg-white shadow-[0_20px_52px_-38px_rgba(132,89,0,0.46)] lg:grid-cols-[220px_minmax(0,1fr)]"
+      >
+        <div className="relative flex min-h-[190px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f4a900_0%,#ffc20b_60%,#f0a400_100%)] px-6 py-7 text-center text-white">
+          <span aria-hidden="true" className="absolute -bottom-10 -right-8 size-36 rotate-12 rounded-[2.2rem] border border-white/15" />
+          <span className="relative grid size-[5.4rem] place-items-center rounded-full border-[5px] border-white bg-white/20 shadow-[0_0_0_5px_rgba(255,255,255,0.46)]">
+            <span className="grid size-[4rem] place-items-center rounded-full bg-white text-[#b77a00] shadow-[0_12px_28px_-18px_rgba(93,57,0,0.65)]">
+              <Hourglass className="size-8" strokeWidth={2.25} />
+            </span>
+          </span>
+          <p className="relative mt-5 font-headline text-lg font-black uppercase tracking-[0.035em]">Segera Bayar</p>
+        </div>
+
+        <div className="flex min-w-0 flex-col justify-center px-5 py-6 sm:px-7 lg:px-8">
+          <h2 className="font-headline text-xl font-black tracking-tight text-slate-950 md:text-2xl">
+            Segera lakukan pembayaran dalam batas waktu 24 jam
+          </h2>
+          <p className="mt-2 text-sm font-medium leading-6 text-[#667085]">
+            Anda adalah pemenang lelang tertutup. Lakukan pembayaran secara langsung di unit terkait sesuai nominal yang tertera.
+          </p>
+          <p className="mt-2 text-sm font-medium leading-6 text-[#667085]">
+            {transaction.winnerContext ??
+              "Harga akhir mengikuti mekanisme lelang dan dihitung otomatis oleh sistem."} Jumlah pembayaran ini bukan nominal bid tertinggi Anda.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge variant="accent">Batas pembayaran 24 jam</Badge>
+            <Badge variant="muted">Bayar langsung di unit terkait</Badge>
+          </div>
+          <dl className="mt-6 grid gap-4 border-t border-[#edf0eb] pt-5 sm:grid-cols-3 sm:gap-0">
+            <div className="min-w-0 sm:pr-5">
+              <dt className="text-xs font-semibold text-[#667085]">Nominal Lelang</dt>
+              <dd className="mt-1 break-words font-headline text-xl font-black tracking-tight text-slate-950">
+                {currency.format(transaction.amount)}
+              </dd>
+            </div>
+            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:px-5">
+              <dt className="text-xs font-semibold text-[#667085]">Unit Pelaksana</dt>
+              <dd className="mt-1 break-words font-headline text-xl font-black tracking-tight text-slate-950">
+                {transaction.unit}
+              </dd>
+            </div>
+            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:pl-5">
+              <dt className="text-xs font-semibold text-[#667085]">Sisa Waktu</dt>
+              <dd className="mt-1 flex items-center gap-2">
+                <Clock3 className="size-4 shrink-0 text-[#dc2626]" />
+                <AuctionWinnerCountdown targetAt={transaction.deadlineAt} variant="inline" />
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <div className="grid items-stretch gap-5 lg:grid-cols-2">
+        <section className="rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
+            <ClipboardCheck className="size-5 text-primary" />
+            Informasi Barang &amp; Pemenang
+          </h2>
+          <div className="mt-5 grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)]">
+            {transaction.imageUrl ? (
+              <Image
+                alt={`Foto barang ${transaction.title}`}
+                className="h-[220px] w-full rounded-xl bg-[#f2f4f2] object-cover sm:h-full sm:min-h-[220px]"
+                height={440}
+                loading="eager"
+                sizes="(max-width: 640px) 100vw, 180px"
+                src={transaction.imageUrl}
+                width={360}
+              />
+            ) : (
+              <div className="grid min-h-[220px] place-items-center rounded-xl bg-[#f2f4f2] text-primary">
+                <ShoppingBag className="size-9" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h3 className="font-headline text-xl font-black leading-snug tracking-tight text-slate-950">
+                {transaction.title}
+              </h3>
+              <dl className="mt-5 space-y-3">
+                <AuctionPaymentInfoRow label="ID Pengajuan" value={transaction.applicationNumber} />
+                <AuctionPaymentInfoRow label="Nama Pembeli" value={buyer.name} />
+                <AuctionPaymentInfoRow label="Email" value={buyer.email} />
+                <AuctionPaymentInfoRow label="Metode Bayar" value="Bayar Langsung di Unit Terkait" />
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex flex-col rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-headline text-xl font-black tracking-tight text-slate-950">
+            <FileCheck2 className="size-5 text-primary" />
+            Log Audit Sistem
+          </h2>
+          <dl className="mt-5 space-y-3">
+            <AuctionPaymentAuditRow label="Dibuat Pada" value={transaction.createdAt} />
+            <AuctionPaymentAuditRow label="Dibuat Oleh" value="System (Auto)" />
+            <AuctionPaymentAuditRow label="Referensi Transaksi" value={transaction.id} />
+            <AuctionPaymentAuditRow
+              label="Status Pembayaran"
+              value={
+                <div className="rounded-xl border border-[#efc452] bg-[#fff9e9] px-4 py-3 text-[#6f5108]">
+                  <p className="flex items-center gap-2 font-black">
+                    <Hourglass className="size-4" />
+                    Menunggu Pembayaran
+                  </p>
+                  <p className="mt-1 text-sm leading-6">
+                    Datang ke {transaction.unit} untuk melakukan pembayaran secara langsung.
+                  </p>
+                </div>
+              }
+            />
+          </dl>
+          <div className="mt-auto grid gap-3 pt-5 sm:grid-cols-2">
+            <PaymentSummaryPrintButton />
+            <Button
+              className="min-h-11 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 shadow-none disabled:opacity-100"
+              disabled
+              type="button"
+            >
+              <Printer className="size-4" />
+              Cetak Nota
+            </Button>
+          </div>
+          <p className="mt-2 text-xs font-medium leading-5 text-[#7a8492]">
+            Nota tersedia setelah admin unit mengonfirmasi pembayaran Anda.
+          </p>
+        </section>
+      </div>
+
+      <HandoverProofCard
+        audience="buyer"
+        itemTitle={transaction.title}
+        proof={transaction.handoverProof ?? { location: transaction.unit }}
+      />
+    </div>
+  );
+}
+
 function VickreyPaymentSuccessDetail({
   buyer,
   settlementLockMessage,
@@ -1880,6 +2066,10 @@ export function TransactionDetailPage({
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
+  const isPendingVickreyPayment =
+    isVickreyWin &&
+    (transaction.status === "MENUNGGU_PEMBAYARAN" ||
+      transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG");
   const isFixedPriceCatalogHidden =
     isFixedPrice &&
     isFixedPriceBuyerCatalogHiddenStatus(transaction.status);
@@ -1977,6 +2167,10 @@ export function TransactionDetailPage({
         transaction={transaction}
       />
     );
+  }
+
+  if (isPendingVickreyPayment) {
+    return <VickreyPendingPaymentDetail buyer={buyer} transaction={transaction} />;
   }
 
   return (

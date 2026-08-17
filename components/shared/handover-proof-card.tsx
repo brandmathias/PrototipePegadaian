@@ -58,16 +58,16 @@ export function HandoverProofCard({
   const storedFileUrl = proof?.fileUrl || null;
   const fileUrl = previewUrl ?? storedFileUrl;
   const isLocalPreview = Boolean(fileUrl?.startsWith("blob:"));
-  const location = displayValue(proof?.location, "Loket unit");
+  const location = displayValue(proof?.location, "Unit terkait");
   const uploadedAt = displayValue(proof?.uploadedAt, "Menunggu dokumentasi");
-  const uploadedBy = displayValue(proof?.uploadedBy, "Admin Unit");
+  const uploadedBy = displayValue(proof?.uploadedBy, "Belum diunggah");
   const imageAlt = `Preview bukti serah-terima barang ${itemTitle ?? "transaksi"}`;
   const footerCopy = fileUrl
     ? "Foto ini tersimpan sebagai bukti serah-terima fisik barang."
     : emptyFooterCopy ?? "Menunggu admin unit mengunggah bukti serah-terima barang.";
   const metaRows = [
     { icon: CalendarDays, label: "Waktu Penyerahan", value: uploadedAt },
-    { icon: MapPin, label: "Lokasi Loket Unit", value: location },
+    { icon: MapPin, label: "Lokasi Unit Terkait", value: location },
     { icon: ShieldCheck, label: "Diunggah Oleh", value: uploadedBy },
   ];
 

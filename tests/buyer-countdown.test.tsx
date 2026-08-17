@@ -3,6 +3,7 @@ import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuctionLoserRecommendationCountdown } from "@/components/buyer/auction-loser-recommendation-countdown";
+import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { getCountdownState } from "@/lib/countdown";
 
@@ -150,6 +151,34 @@ describe("LiveCountdown", () => {
     });
 
     expect(onExpired).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AuctionWinnerCountdown", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-17T13:54:00+08:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("renders the compact payment deadline and keeps ticking each second", () => {
+    render(
+      <AuctionWinnerCountdown
+        targetAt={new Date("2026-08-18T13:53:12+08:00").toISOString()}
+        variant="inline"
+      />
+    );
+
+    expect(screen.getByLabelText(/sisa waktu pembayaran/i)).toHaveTextContent("23:59:12");
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByLabelText(/sisa waktu pembayaran/i)).toHaveTextContent("23:59:11");
   });
 });
 
