@@ -652,12 +652,10 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const hasFailedWorkflow = transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment;
   const completed = transaction.status === "SELESAI";
   const paymentVerified = transaction.status === "LUNAS";
-  const currentStep =
-    completed || paymentVerified
-      ? 2
-      : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow
-        ? 1
-        : 0;
+  const handoverProofUploaded = Boolean(transaction.handoverProof);
+  const awaitingHandoverProof = paymentVerified && !handoverProofUploaded;
+  const awaitingBuyerConfirmation = paymentVerified && handoverProofUploaded;
+  const currentStep = paymentVerified || completed ? 2 : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow ? 1 : 0;
   const rejectionReason =
     transaction.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.";
   const paymentDetail = isFailedVickreyPayment
@@ -680,11 +678,13 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       : isVickreyWin
         ? "Admin unit mengonfirmasi pembayaran setelah dana diterima di unit terkait."
         : "Admin unit mengonfirmasi pembayaran langsung setelah dana diterima di loket.";
-  const finishDetail =
+  const completionDetail =
     completed
       ? "Pembelian sudah ditutup buyer. Nota tersimpan sebagai bukti transaksi."
-      : paymentVerified
-        ? "Pembayaran sudah diverifikasi. Pembelian menunggu serah-terima dan konfirmasi buyer."
+      : awaitingHandoverProof
+        ? "Pembayaran sudah diverifikasi. Admin unit perlu mengunggah bukti serah-terima barang."
+      : awaitingBuyerConfirmation
+        ? "Bukti serah-terima barang sudah tersedia. Konfirmasikan pembelian setelah barang diterima."
         : "Tahap ini aktif setelah admin memverifikasi pembayaran.";
   const steps: PaymentWorkflowStep[] = [
     {
@@ -721,17 +721,27 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
-      id: "finished",
-      label: "Selesai",
-      headline: completed ? "Pembelian Selesai" : paymentVerified ? "Menunggu Konfirmasi Buyer" : "Konfirmasi Selesai",
-      detail: finishDetail,
-      meta: "Aksi akhir buyer",
-      actor: completed
-        ? transaction.completionSource === "AUTO_HANDOVER_GRACE"
-          ? "Sistem"
-          : `Buyer: ${buyer.name}`
-        : undefined,
-      occurredAt: completed ? transaction.completedAt : undefined,
+      id: "completion",
+      label: "Serah-Terima & Konfirmasi Buyer",
+      headline: completed
+        ? "Pembelian Selesai"
+        : awaitingHandoverProof
+          ? "Menunggu Bukti Serah-Terima dari Admin Unit"
+          : awaitingBuyerConfirmation
+            ? "Menunggu Konfirmasi Buyer"
+            : "Serah-Terima & Konfirmasi Buyer",
+      detail: completionDetail,
+      meta: awaitingHandoverProof ? "Aksi admin unit" : "Aksi akhir buyer",
+      actor: transaction.handoverProof
+        ? completed
+          ? transaction.completionSource === "AUTO_HANDOVER_GRACE"
+            ? "Sistem"
+            : `Buyer: ${buyer.name}`
+          : `Admin: ${transaction.handoverProof.uploadedBy}`
+        : awaitingHandoverProof
+          ? "Admin Unit"
+          : undefined,
+      occurredAt: completed ? transaction.completedAt : transaction.handoverProof?.uploadedAt,
       icon: CheckCircle2
     }
   ];

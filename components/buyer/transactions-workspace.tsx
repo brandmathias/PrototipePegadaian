@@ -61,8 +61,8 @@ function getTransactionModeMeta(kind: BuyerTransaction["kind"]) {
       };
 }
 
-function getTransactionStatusMeta(status: BuyerTransactionStatus) {
-  switch (status) {
+function getTransactionStatusMeta(transaction: BuyerTransaction) {
+  switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
@@ -79,7 +79,7 @@ function getTransactionStatusMeta(status: BuyerTransactionStatus) {
       };
     case "LUNAS":
       return {
-        label: "Menunggu Konfirmasi Buyer",
+        label: transaction.handoverProof ? "Menunggu Konfirmasi Buyer" : "Menunggu Bukti Serah-Terima",
         className: "bg-amber-50/80 text-amber-700",
         matchesFilter: "action" as TransactionFilter,
       };
@@ -119,7 +119,9 @@ function getTransactionDescription(transaction: BuyerTransaction) {
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return "Pembayaran langsung sedang menunggu konfirmasi dari admin unit terkait.";
     case "LUNAS":
-      return "Pembayaran sudah diverifikasi. Menunggu serah-terima barang dan konfirmasi pembelian dari Anda.";
+      return transaction.handoverProof
+        ? "Bukti serah-terima sudah tersedia. Konfirmasikan pembelian setelah barang diterima."
+        : "Pembayaran sudah diverifikasi. Menunggu admin unit mengunggah bukti serah-terima barang.";
     case "SELESAI":
       return "Transaksi telah selesai. Barang telah diterima oleh Anda.";
     case "GAGAL":
@@ -235,8 +237,10 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
       };
     case "LUNAS":
       return {
-        title: "Pembayaran terverifikasi",
-        description: "Menunggu bukti serah-terima barang dan konfirmasi pembelian dari Anda.",
+        title: transaction.handoverProof ? "Menunggu Konfirmasi Buyer" : "Bukti serah-terima belum tersedia",
+        description: transaction.handoverProof
+          ? "Bukti serah-terima barang sudah tersedia. Konfirmasikan pembelian setelah barang diterima."
+          : "Menunggu admin unit mengunggah bukti serah-terima barang.",
         className: "bg-[#fff8ea] text-[#c88812]",
         icon: <Hourglass className="size-5" strokeWidth={1.85} />,
       };
@@ -614,7 +618,7 @@ function TransactionNotice({
 
 function TransactionRow({ transaction }: { transaction: BuyerTransaction }) {
   const modeMeta = getTransactionModeMeta(transaction.kind);
-  const statusMeta = getTransactionStatusMeta(transaction.status);
+  const statusMeta = getTransactionStatusMeta(transaction);
   const amountMeta = getTransactionAmountMeta(transaction);
   const actionMeta = getTransactionActionMeta(transaction);
   const noticeMeta = getTransactionNoticeMeta(transaction);
@@ -935,7 +939,7 @@ export function TransactionsWorkspace({
     }
 
     return recordedTransactions.filter(
-      (item) => getTransactionStatusMeta(item.status).matchesFilter === transactionFilter
+      (item) => getTransactionStatusMeta(item).matchesFilter === transactionFilter
     );
   }, [transactionFilter, transactions]);
 

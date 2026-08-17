@@ -341,7 +341,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/status restriksi aktif|bidding suspension/i)).not.toBeInTheDocument();
   });
 
-  it("asks buyer to finish the purchase and keeps the receipt locked before completion", () => {
+  it("asks buyer to finish the purchase after handover proof is available and keeps the receipt locked before completion", () => {
     const printSpy = vi.spyOn(window, "print").mockImplementation(() => undefined);
 
     render(
@@ -369,7 +369,7 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
     expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
-    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
     expect(within(workflow!).getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /bukti serah-terima barang kalung emas 18k/i })).toBeInTheDocument();
@@ -394,6 +394,31 @@ describe("buyer transaction detail page", () => {
     expect(printSpy).not.toHaveBeenCalled();
 
     printSpy.mockRestore();
+  });
+
+  it("waits for the admin unit to upload handover proof before asking the buyer to finish", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          status: "LUNAS",
+          paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+          verifiedAt: "4 Mei 2026 22.11 WIB",
+          receiptNumber: "INV/TRXFIXED"
+        }}
+        transactionId={transaction.id}
+      />
+    );
+
+    const workflow = screen.getByText("Alur Pembayaran").closest("section");
+
+    expect(workflow).not.toBeNull();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
+    expect(
+      within(workflow!).getByRole("heading", { name: /menunggu bukti serah-terima dari admin unit/i })
+    ).toBeInTheDocument();
+    expect(within(workflow!).queryByText(/menunggu konfirmasi buyer/i)).not.toBeInTheDocument();
   });
 
   it("prints the receipt inline after buyer completes the fixed-price purchase", async () => {
@@ -714,10 +739,14 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
     expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
-    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
-    expect(within(workflow!).getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /menunggu bukti serah-terima dari admin unit/i })).toBeInTheDocument();
     expect(within(workflow!).getByText(/^berjalan$/i)).toBeInTheDocument();
-    expect(within(workflow!).getAllByText(/pembayaran sudah diverifikasi.*menunggu serah-terima/i)).toHaveLength(2);
+    expect(
+      within(workflow!).getAllByText(
+        /pembayaran sudah diverifikasi\. admin unit perlu mengunggah bukti serah-terima barang\./i
+      )
+    ).toHaveLength(2);
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
