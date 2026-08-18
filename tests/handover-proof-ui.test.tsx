@@ -98,6 +98,27 @@ describe("handover proof UI", () => {
     expect(revokeObjectUrlMock).toHaveBeenCalledWith("blob:handover-preview");
   });
 
+  it("announces buyer confirmation only after the handover proof upload succeeds", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+      }),
+    );
+    renderUploadForm();
+
+    fireEvent.change(screen.getByLabelText(/file bukti serah-terima barang/i), {
+      target: {
+        files: [new File(["proof"], "serah-terima.png", { type: "image/png" })],
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /unggah bukti serah-terima/i }));
+
+    expect(await screen.findAllByText("Upload bukti serah-terima berhasil")).toHaveLength(2);
+    expect(screen.getAllByText("Tahap selesai menunggu konfirmasi buyer.")).toHaveLength(2);
+  });
+
   it("folds the waiting-for-payment copy into the handover card footer", () => {
     renderUploadForm(false);
 

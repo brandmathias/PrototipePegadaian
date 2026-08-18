@@ -93,13 +93,13 @@ export function HandoverProofUploadForm({
 
       setFile(null);
       setFeedback({
-        title: "Bukti serah-terima tersimpan",
-        description: "Buyer kini dapat melihat dokumentasi dan mengonfirmasi Pembelian Selesai.",
+        title: "Upload bukti serah-terima berhasil",
+        description: "Tahap selesai menunggu konfirmasi buyer.",
         variant: "success"
       });
       toast({
-        title: "Bukti serah-terima tersimpan",
-        description: "Dokumentasi barang sudah masuk ke arsip transaksi.",
+        title: "Upload bukti serah-terima berhasil",
+        description: "Tahap selesai menunggu konfirmasi buyer.",
         variant: "success",
         scope: "admin-unit"
       });

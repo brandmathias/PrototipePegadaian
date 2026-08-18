@@ -4636,7 +4636,7 @@ function getVickreyVerificationAction(auction: MarketingSession) {
         "Status pembayaran langsung sedang ditandai terverifikasi.",
       successTitle: "Pembayaran langsung terverifikasi",
       successDescription:
-        "Pembayaran langsung sudah dikonfirmasi. Tahap selesai menunggu konfirmasi buyer.",
+        "Pembayaran langsung sudah dikonfirmasi. Segera unggah bukti serah-terima barang agar buyer dapat mengonfirmasi Pembelian Selesai.",
       note: "Gunakan tindakan ini hanya jika dana tunai atau pembayaran loket sudah benar-benar diterima unit.",
       icon: WalletCards,
     };

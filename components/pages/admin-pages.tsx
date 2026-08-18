@@ -2147,7 +2147,7 @@ export function AdminTransactionDetailPage({
                             : transaction.reference,
                       }}
                       refresh
-                      successDescription="Pembayaran langsung sudah dikonfirmasi oleh unit."
+                      successDescription="Pembayaran langsung sudah dikonfirmasi. Segera unggah bukti serah-terima barang agar buyer dapat mengonfirmasi Pembelian Selesai."
                       successTitle="Pembayaran langsung selesai"
                       variant="secondary"
                     >

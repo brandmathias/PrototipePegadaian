@@ -981,7 +981,7 @@ function TransactionActionPanel({
           pendingDescription="Status pembayaran langsung sedang ditandai terverifikasi."
           pendingTitle="Mengonfirmasi pembayaran"
           refresh
-          successDescription="Pembayaran langsung sudah dikonfirmasi. Tahap selesai menunggu konfirmasi buyer."
+          successDescription="Pembayaran langsung sudah dikonfirmasi. Segera unggah bukti serah-terima barang agar buyer dapat mengonfirmasi Pembelian Selesai."
           successTitle="Pembayaran langsung terverifikasi"
           variant="secondary"
         >

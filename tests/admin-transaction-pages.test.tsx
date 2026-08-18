@@ -4,7 +4,17 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/components/admin-unit/admin-unit-action-button", () => ({
-  AdminUnitActionButton: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>
+  AdminUnitActionButton: ({
+    children,
+    successDescription,
+  }: {
+    children: React.ReactNode;
+    successDescription?: string;
+  }) => (
+    <button data-success-description={successDescription} type="button">
+      {children}
+    </button>
+  )
 }));
 
 vi.mock("next/navigation", () => ({
@@ -224,6 +234,21 @@ describe("admin transaction pages", () => {
     expect(screen.getByText(/menunggu admin unit mengunggah bukti serah-terima barang/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/file bukti serah-terima barang/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /unggah bukti serah-terima/i })).toBeDisabled();
+  });
+
+  it("directs direct-payment verification to upload handover proof before buyer confirmation", () => {
+    render(
+      <AdminTransactionDetailWorkspacePage
+        backHref="/admin/transaksi"
+        backLabel="Kembali ke transaksi"
+        transaction={transactions[3]}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /konfirmasi pembayaran langsung/i })).toHaveAttribute(
+      "data-success-description",
+      "Pembayaran langsung sudah dikonfirmasi. Segera unggah bukti serah-terima barang agar buyer dapat mengonfirmasi Pembelian Selesai."
+    );
   });
 
   it("locks handover proof upload controls after a transaction is completed", () => {
