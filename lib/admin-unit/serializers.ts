@@ -337,8 +337,8 @@ export function serializeAdminPemasaran(
     visibility: row.mode === "fixed_price" ? undefined : visibility,
     participantPreviews: extra.participantPreviews?.map((entry) => ({
       bidderId: entry.bidderId,
-      bidderName: entry.bidderName ?? "Peserta",
-      bidderImage: entry.bidderImage ?? null,
+      bidderName: visibility === "TERKUNCI" ? "Peserta" : entry.bidderName ?? "Peserta",
+      bidderImage: visibility === "TERKUNCI" ? null : entry.bidderImage ?? null,
       submittedAtLabel: entry.submittedAtLabel ?? (entry.submittedAt ? toDateTimeLabel(entry.submittedAt) : null)
     })),
     bids: row.mode === "fixed_price" ? undefined : bidEntries,

@@ -70,6 +70,18 @@ describe("admin pemasaran pages", () => {
             finalPrice: null,
             winner: null,
             visibility: "TERKUNCI",
+            participantPreviews: [
+              {
+                bidderId: "buyer-1",
+                bidderName: "Raras",
+                bidderImage: "/uploads/raras.jpg"
+              },
+              {
+                bidderId: "buyer-2",
+                bidderName: "Alya",
+                bidderImage: "/uploads/alya.jpg"
+              }
+            ],
             media: [{ id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" }],
             primaryMedia: { id: "m2", type: "foto", url: "/uploads/cincin.jpg", fileName: "cincin.jpg" },
             bids: []
@@ -129,6 +141,13 @@ describe("admin pemasaran pages", () => {
             finalPrice: 20000000,
             winner: "Buyer Demo 13 B",
             visibility: "HASIL_DIBUKA",
+            participantPreviews: [
+              {
+                bidderId: "buyer-3",
+                bidderName: "Bima",
+                bidderImage: "/uploads/bima.jpg"
+              }
+            ],
             transactionId: "trx-failed",
             transactionStatus: "GAGAL",
             paymentDeadline: "2026-05-29T02:29:44.886Z",
@@ -174,7 +193,12 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
-    expect(screen.getByText("+2")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/12 peserta terlindungi\. identitas peserta dibuka setelah lelang berakhir\./i)
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Raras" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Alya" })).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Bima" })).toBeInTheDocument();
     expect(screen.getAllByText("Kode Barang").length).toBeGreaterThan(0);
     const activeItemCode = screen.getByText("BRG-001");
     expect(activeItemCode.className).toContain("text-[0.78rem]");

@@ -219,11 +219,13 @@ describe("admin unit serializers", () => {
     ]);
     expect(auction.bids?.[1]).not.toHaveProperty("amount");
     expect(auction.participantPreviews?.[0]).toMatchObject({
-      bidderName: "Raras",
+      bidderName: "Peserta",
+      bidderImage: null,
       submittedAtLabel: "5 Apr 2026, 07.00 WIB"
     });
     expect(auction.participantPreviews?.[1]).toMatchObject({
-      bidderName: "Alya",
+      bidderName: "Peserta",
+      bidderImage: null,
       submittedAtLabel: "5 Apr 2026, 08.00 WIB"
     });
   });

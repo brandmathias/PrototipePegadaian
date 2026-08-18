@@ -1610,6 +1610,24 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
     return null;
   }
 
+  if (auction.visibility === "TERKUNCI") {
+    const privacyLabel = `${participantCount} peserta terlindungi. Identitas peserta dibuka setelah lelang berakhir.`;
+
+    return (
+      <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[0.76rem] font-bold text-[#31413b] dark:text-slate-300">
+        <span className="shrink-0">Peserta</span>
+        <span
+          aria-label={privacyLabel}
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#e5f6ec] px-3 text-[0.72rem] font-black text-[#0a6a49] ring-1 ring-[#c9ebd6] dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-emerald-300/16"
+          title="Identitas peserta dibuka setelah lelang berakhir."
+        >
+          <LockKeyhole aria-hidden="true" className="size-3.5" />
+          {participantCount} peserta terlindungi
+        </span>
+      </div>
+    );
+  }
+
   const previews = getMarketingParticipantPreviews(auction);
   const names = getMarketingParticipantNames(auction);
   const visibleCount = Math.min(participantCount, 10);
