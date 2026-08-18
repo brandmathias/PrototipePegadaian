@@ -193,9 +193,11 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Kalung Emas Aktif")).toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
-    expect(
-      screen.getByLabelText(/12 peserta terlindungi\. identitas peserta dibuka setelah lelang berakhir\./i)
-    ).toBeInTheDocument();
+    const protectedParticipants = screen.getByLabelText(
+      /12 peserta terlindungi\. identitas peserta dibuka setelah lelang berakhir\./i,
+    );
+    expect(protectedParticipants).toHaveClass("rounded-xl", "border");
+    expect(screen.getByText("Privasi Peserta")).toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Raras" })).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Alya" })).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Bima" })).toBeInTheDocument();

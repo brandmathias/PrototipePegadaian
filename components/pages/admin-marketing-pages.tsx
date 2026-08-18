@@ -1619,11 +1619,20 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
         <span className="shrink-0">Peserta</span>
         <span
           aria-label={privacyLabel}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#e5f6ec] px-3 text-[0.72rem] font-black text-[#0a6a49] ring-1 ring-[#c9ebd6] dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-emerald-300/16"
+          className="inline-flex max-w-full items-center gap-2 rounded-xl border border-[#c9ebd6] bg-white/88 px-2 py-1.5 text-[#0a6a49] shadow-[0_12px_24px_-22px_rgba(0,103,71,0.72)] dark:border-emerald-300/16 dark:bg-emerald-300/[0.06] dark:text-emerald-200"
           title="Identitas peserta dibuka setelah lelang berakhir."
         >
-          <LockKeyhole aria-hidden="true" className="size-3.5" />
-          {participantCount} peserta terlindungi
+          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#e5f6ec] text-[#007a53] ring-1 ring-[#c9ebd6] dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-emerald-300/16">
+            <LockKeyhole aria-hidden="true" className="size-3.5" />
+          </span>
+          <span className="flex min-w-0 flex-col leading-none">
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#5c816f] dark:text-emerald-200/70">
+              Privasi Peserta
+            </span>
+            <span className="mt-1 whitespace-nowrap text-[0.74rem] font-black">
+              {participantCount} peserta terlindungi
+            </span>
+          </span>
         </span>
       </div>
     );
