@@ -101,7 +101,7 @@ describe("createAdminBarang", () => {
     expect(insertedValues).not.toHaveBeenCalledWith(expect.objectContaining({ loanValue: expect.anything() }));
   });
 
-  it("records a readable due-date explanation when an item enters collateral", async () => {
+  it("records the standard barang masuk description when an item enters collateral", async () => {
     const created = { id: "barang-created", code: "SBG-1178725010004741", name: "Cincin Emas", status: "jaminan" };
     const insertedValues = vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([created]) });
     const historyValues = vi.fn().mockResolvedValue(undefined);
@@ -123,7 +123,7 @@ describe("createAdminBarang", () => {
 
     expect(historyValues).toHaveBeenCalledWith(
       expect.objectContaining({
-        note: expect.stringMatching(/^Barang hasil input gadai dicatat sebagai barang jaminan unit\. Jatuh tempo pada .+ WIB\.$/),
+        note: "Barang hasil input gadai dicatat sebagai barang jaminan unit.",
       }),
     );
   });
@@ -463,7 +463,7 @@ describe("listAdminBarangHistory", () => {
     ]);
   });
 
-  it("rewrites legacy raw ISO due-date notes into readable barang masuk chronology", async () => {
+  it("standardizes legacy due-date notes into the barang masuk chronology description", async () => {
     mocks.db.select
       .mockImplementationOnce(() =>
         mockHistoryQuery([
@@ -491,8 +491,8 @@ describe("listAdminBarangHistory", () => {
 
     const [entry] = await listAdminBarangHistory("unit-1");
 
-    expect(entry.note).toMatch(/^Barang hasil input gadai dicatat sebagai barang jaminan unit\. Jatuh tempo pada .+ WIB\.$/);
-    expect(entry.note).not.toContain("T03:57:10.000Z");
+    expect(entry.note).toBe("Barang hasil input gadai dicatat sebagai barang jaminan unit.");
+    expect(entry.note).not.toContain("jatuh tempo");
   });
 
   it("anchors a stale barang masuk timestamp ten days before its first marketing event", async () => {

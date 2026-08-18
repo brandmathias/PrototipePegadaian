@@ -243,16 +243,14 @@ function isGenericCatalogPublishNote(note: string | null | undefined) {
   return /^Barang dipublikasikan ke katalog\.?$/iu.test(String(note ?? "").trim());
 }
 
+const collateralEntryHistoryNote = "Barang hasil input gadai dicatat sebagai barang jaminan unit.";
+const collateralEntryHistoryNoteWithDeadline = /^Barang hasil input gadai dicatat sebagai barang jaminan unit(?:\.?\s+(?:Jatuh tempo pada|dengan jatuh tempo)\s+.+?)?\.?$/iu;
+
 function normalizeHistoryNote(note: string | null | undefined) {
   const value = String(note ?? "").trim();
-  const legacyCollateralDeadline = /^Barang hasil input gadai dicatat sebagai barang jaminan unit dengan jatuh tempo (.+?)\.?$/iu.exec(value);
 
-  if (legacyCollateralDeadline) {
-    const deadline = new Date(legacyCollateralDeadline[1]);
-
-    if (!Number.isNaN(deadline.getTime())) {
-      return `Barang hasil input gadai dicatat sebagai barang jaminan unit. Jatuh tempo pada ${formatAppDateTime(deadline)}.`;
-    }
+  if (collateralEntryHistoryNoteWithDeadline.test(value)) {
+    return collateralEntryHistoryNote;
   }
   const repairRelistNote = parseRepairRelistHistoryNote(value);
 
@@ -1006,7 +1004,7 @@ export async function createAdminBarang(
       oldStatus: null,
       newStatus: "jaminan",
       changedByUserId: userId,
-        note: `Barang hasil input gadai dicatat sebagai barang jaminan unit. Jatuh tempo pada ${formatAppDateTime(dueDate)}.`
+        note: collateralEntryHistoryNote
     });
 
     if (media.length > 0) {
