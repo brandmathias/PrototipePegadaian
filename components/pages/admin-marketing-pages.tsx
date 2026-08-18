@@ -177,6 +177,7 @@ export type MarketingSession = {
     submittedAtLabel: string;
     amount?: number | null;
     isRevealed?: boolean;
+    isHighest?: boolean;
     rank: number;
     isWinner: boolean;
     determinesFinalPrice: boolean;
@@ -523,7 +524,7 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
       time: bid.submittedAtLabel || "-",
       status:
         auction.visibility === "TERKUNCI"
-          ? bid.rank === 1
+          ? bid.isHighest
             ? "Tertinggi"
             : "-"
           : auction.visibility === "MENUNGGU_REVEAL"
@@ -535,7 +536,7 @@ function getBidDisplayRows(auction: MarketingSession, showBidRows: boolean) {
             : "Peserta",
       tone:
         auction.visibility === "TERKUNCI"
-          ? bid.rank === 1
+          ? bid.isHighest
             ? "green"
             : "neutral"
           : auction.visibility === "MENUNGGU_REVEAL"

@@ -1080,7 +1080,8 @@ describe("admin pemasaran pages", () => {
               bidderId: "buyer-1",
               bidderName: "Peserta",
               submittedAtLabel: "11 Jun 2026, 10.06 WIB",
-              rank: 2,
+              rank: 1,
+              isHighest: false,
               isWinner: false,
               determinesFinalPrice: false
             },
@@ -1089,7 +1090,8 @@ describe("admin pemasaran pages", () => {
               bidderId: "buyer-2",
               bidderName: "Peserta",
               submittedAtLabel: "11 Jun 2026, 10.11 WIB",
-              rank: 1,
+              rank: 2,
+              isHighest: true,
               isWinner: false,
               determinesFinalPrice: false
             }

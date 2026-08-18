@@ -235,6 +235,7 @@ export function serializeAdminPemasaran(
             submittedAt: entry.bid.createdAt.toISOString(),
             submittedAtLabel: toBidDateTimeLabel(entry.bid.createdAt),
             rank,
+            isHighest: rankedBidIndexes.get(entry.bid.id) === 1,
             isWinner: Boolean(isWinner),
             determinesFinalPrice: visibility === "HASIL_DIBUKA" && Boolean(row.winnerId) && rank === 2,
             ...(visibility === "HASIL_DIBUKA"

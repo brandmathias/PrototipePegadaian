@@ -207,12 +207,14 @@ describe("admin unit serializers", () => {
       expect.objectContaining({
         id: "bid-1",
         rank: 1,
+        isHighest: false,
         bidderName: "Peserta",
         submittedAtLabel: "5 Apr 2026, 07.00.00 WIB"
       }),
       expect.objectContaining({
         id: "bid-2",
         rank: 2,
+        isHighest: true,
         bidderName: "Peserta",
         submittedAtLabel: "5 Apr 2026, 08.00.00 WIB"
       })
