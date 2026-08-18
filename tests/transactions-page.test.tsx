@@ -223,7 +223,93 @@ const bids: BuyerBid[] = [
   },
 ];
 
+const bidFilterFixtures: BuyerBid[] = [
+  {
+    lotId: "bid-active",
+    lot: "Bid Aktif Tercatat",
+    unit: "UPC Wanea",
+    status: "BID_TERCATAT",
+    closing: "18 Agu 2026, 13.11 WIB",
+    closingAt: "2026-08-18T05:11:00.000Z",
+    basePrice: 26000000,
+    note: "Sesi lelang sedang berlangsung. Nominal dan identitas penawar disensor hingga waktu penutupan."
+  },
+  {
+    lotId: "bid-awaiting",
+    lot: "Hasil Lelang Sedang Diproses",
+    unit: "UPC Wanea",
+    status: "MENUNGGU_HASIL",
+    closing: "18 Agu 2026, 10.52 WIB",
+    closingAt: "2026-08-18T02:52:00.000Z",
+    basePrice: 26000000,
+    note: "Deadline telah berakhir. Sistem sedang menentukan hasil Lelang Tertutup."
+  },
+  {
+    lotId: "bid-won",
+    lot: "Bid Pemenang",
+    unit: "UPC Wanea",
+    status: "MENANG",
+    closing: "17 Agu 2026, 13.34 WIB",
+    closingAt: "2026-08-17T05:34:00.000Z",
+    basePrice: 26000000,
+    paymentAmount: 31000000,
+    note: "Anda memenangkan Lelang Tertutup."
+  },
+  {
+    lotId: "bid-lost",
+    lot: "Bid Tidak Menang",
+    unit: "UPC Wanea",
+    status: "TIDAK_MENANG",
+    closing: "17 Agu 2026, 13.34 WIB",
+    closingAt: "2026-08-17T05:34:00.000Z",
+    basePrice: 26000000,
+    bidAmount: 29000000,
+    note: "Bid tidak menjadi pemenang sesi ini."
+  },
+  {
+    lotId: "bid-failed",
+    lot: "Bid Gagal",
+    unit: "UPC Wanea",
+    status: "GAGAL",
+    closing: "17 Agu 2026, 13.34 WIB",
+    closingAt: "2026-08-17T05:34:00.000Z",
+    basePrice: 26000000,
+    paymentAmount: 31000000,
+    note: "Pembayaran Lelang Tertutup gagal karena melewati batas waktu."
+  }
+];
+
 describe("TransactionsPage", () => {
+  it("groups active and closed unresolved bids in Menunggu Hasil while keeping the other bid filters exact", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <TransactionsPage
+        buyer={buyer}
+        data={{ summary, transactions: [], bids: bidFilterFixtures }}
+        initialTab="bids"
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Menunggu Hasil" }));
+
+    expect(screen.getByText("Bid Aktif Tercatat")).toBeInTheDocument();
+    expect(screen.getByText("Hasil Lelang Sedang Diproses")).toBeInTheDocument();
+    expect(screen.queryByText("Bid Pemenang")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Menang" }));
+    expect(screen.getByText("Bid Pemenang")).toBeInTheDocument();
+    expect(screen.queryByText("Bid Aktif Tercatat")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Tidak Menang" }));
+    expect(screen.getByText("Bid Tidak Menang")).toBeInTheDocument();
+    expect(screen.queryByText("Bid Pemenang")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Gagal" }));
+    expect(screen.getByText("Bid Gagal")).toBeInTheDocument();
+    expect(screen.queryByText("Bid Tidak Menang")).not.toBeInTheDocument();
+  });
+
   it("renders the redesigned buyer transaction workspace with tabs, filters, and CTA states", async () => {
     const user = userEvent.setup();
 

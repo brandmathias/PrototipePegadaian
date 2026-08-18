@@ -395,6 +395,7 @@ function TransactionDeadlineCard({
 
 function getBidFilterStatus(status: BuyerBidStatus): BidFilter {
   switch (status) {
+    case "BID_TERCATAT":
     case "MENUNGGU_HASIL":
       return "awaiting";
     case "MENANG":
@@ -403,7 +404,6 @@ function getBidFilterStatus(status: BuyerBidStatus): BidFilter {
       return "lost";
     case "GAGAL":
       return "failed";
-    case "BID_TERCATAT":
     default:
       return "all";
   }
