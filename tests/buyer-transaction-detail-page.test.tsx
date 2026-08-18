@@ -750,6 +750,40 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /pembelian selesai/i })).toBeDisabled();
   });
 
+  it("uses the completed auction summary instead of the verified-payment summary for a finished Vickrey winner", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-vickrey-completed",
+          lotId: "pm-vickrey-completed",
+          kind: "VICKREY_WIN",
+          title: "Cincin Emas Berlian Selesai",
+          amount: 10000000,
+          status: "SELESAI",
+          method: "BAYAR_LANGSUNG",
+          unit: "UPC Ranotana",
+          applicationNumber: "PGJ-VIC-COMPLETED",
+          handoverProof: {
+            fileUrl: "/uploads/serah-terima/trx-vickrey-completed.jpg",
+            uploadedAt: "3 Jun 2026, 08.15 WIB",
+            uploadedBy: "Hendra Wijaya",
+            location: "UPC Ranotana"
+          },
+          verifiedAt: "3 Jun 2026, 07.39 WIB"
+        }}
+        transactionId="trx-vickrey-completed"
+      />
+    );
+
+    const completedSummary = screen.getByRole("region", { name: /status transaksi selesai/i });
+    expect(within(completedSummary).getByRole("heading", { name: /pelunasan berhasil dalam batas waktu 24 jam/i })).toBeInTheDocument();
+    expect(within(completedSummary).getByText(/tanggal pelunasan/i)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /status pembayaran terverifikasi/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /pembayaran telah diverifikasi admin unit/i })).not.toBeInTheDocument();
+  });
+
   it("prints the paid auction winner receipt in place on mobile without opening the receipt route", async () => {
     const originalUserAgent = window.navigator.userAgent;
     const openSpy = vi.spyOn(window, "open").mockReturnValue({ focus: vi.fn() } as unknown as Window);

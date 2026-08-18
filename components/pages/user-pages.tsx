@@ -1850,8 +1850,12 @@ function VickreyPaymentSuccessDetail({
   settlementLockMessage: string | null;
   transaction: BuyerTransaction;
 }) {
-  const isCompleted = isTransactionCompletionFinalized(transaction);
+  const isCompleted = transaction.status === "SELESAI";
   const verificationTimestamp = transaction.verifiedAt ?? transaction.createdAt;
+  const settlementDate =
+    (transaction.verifiedAt ?? transaction.createdAt).split(",")[0]?.trim() ||
+    transaction.verifiedAt ||
+    transaction.createdAt;
   const successReference = `TRX-SUK-${
     transaction.applicationNumber || transaction.receiptNumber || transaction.reference || transaction.id
   }`;
@@ -1878,49 +1882,83 @@ function VickreyPaymentSuccessDetail({
 
       <PaymentProgressRail buyer={buyer} transaction={transaction} />
 
-      <section
-        aria-label="Status pembayaran terverifikasi"
-        className="grid overflow-hidden rounded-[1rem] border border-[#2dbb70] bg-white shadow-[0_20px_52px_-38px_rgba(8,69,50,0.42)] lg:grid-cols-[200px_minmax(0,1fr)]"
-      >
-        <div className="relative flex min-h-[132px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#46cc7e_0%,#24b96a_60%,#0c9556_100%)] px-4 py-4 text-center text-white">
-          <span aria-hidden="true" className="absolute -bottom-10 -right-8 size-36 rotate-12 rounded-[2.2rem] border border-white/15" />
-          <span className="relative grid size-[4.5rem] place-items-center rounded-full border-4 border-white bg-white/20 shadow-[0_0_0_4px_rgba(255,255,255,0.38)]">
-            <span className="grid size-[3.35rem] place-items-center rounded-full bg-white text-primary shadow-[0_12px_28px_-18px_rgba(3,66,38,0.62)]">
-              <ShieldCheck className="size-7" strokeWidth={2.25} />
-            </span>
-          </span>
-          <p className="relative mt-3 font-headline text-sm font-black uppercase tracking-[0.035em]">Terverifikasi</p>
-        </div>
+      {isCompleted ? (
+        <Card
+          aria-label="Status transaksi selesai"
+          className="overflow-hidden rounded-[1rem] border border-border/80 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]"
+          role="region"
+        >
+          <CardContent className="grid p-0 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <div className="flex min-h-[150px] flex-col items-center justify-center bg-primary p-6 text-center text-white md:min-h-[166px]">
+              <span className="grid size-16 place-items-center rounded-full border-[3px] border-white">
+                <CheckCircle2 className="size-10" strokeWidth={2.4} />
+              </span>
+              <p className="mt-5 font-headline text-2xl font-black uppercase tracking-wide">Berhasil</p>
+            </div>
 
-        <div className="flex min-w-0 flex-col justify-center px-5 py-4 sm:px-6">
-          <h2 className="font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
-            Pembayaran telah Diverifikasi Admin Unit
-          </h2>
-          <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[#667085]">
-            Pembayaran Anda telah diverifikasi oleh admin unit. Silakan selesaikan tahap akhir untuk membuka nota lelang.
-          </p>
-          <dl className="mt-3 grid gap-4 border-t border-[#edf0eb] pt-3 sm:grid-cols-3 sm:gap-0">
-            <div className="min-w-0 sm:pr-5">
-              <dt className="text-xs font-semibold text-[#667085]">Nominal Lelang</dt>
-              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
-                {currency.format(transaction.amount)}
-              </dd>
+            <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)] lg:items-center lg:p-8">
+              <div className="min-w-0">
+                <h2 className="font-headline text-2xl font-black tracking-tight text-foreground">
+                  Pelunasan Berhasil dalam Batas Waktu 24 Jam
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+                  Transaksi ini berhasil diproses karena pemenang menyelesaikan pelunasan sebelum batas waktu 24 jam berakhir.
+                </p>
+              </div>
+
+              <div className="grid rounded-xl border border-border/70 bg-white sm:grid-cols-3 sm:divide-x sm:divide-border/70 lg:border-0">
+                <AuctionPaymentMetric label="Nominal Lelang" value={currency.format(transaction.amount)} />
+                <AuctionPaymentMetric label="Unit Pelaksana" value={transaction.unit} />
+                <AuctionPaymentMetric label="Tanggal Pelunasan" value={settlementDate} />
+              </div>
             </div>
-            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:px-5">
-              <dt className="text-xs font-semibold text-[#667085]">Unit Pelaksana</dt>
-              <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
-                {transaction.unit}
-              </dd>
-            </div>
-            <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:pl-5">
-              <dt className="text-xs font-semibold text-[#667085]">Tanggal Verifikasi</dt>
-              <dd className="mt-1 break-words font-headline text-base font-black tracking-tight text-slate-950 md:text-lg">
-                {verificationTimestamp}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
+          </CardContent>
+        </Card>
+      ) : (
+        <section
+          aria-label="Status pembayaran terverifikasi"
+          className="grid overflow-hidden rounded-[1rem] border border-[#2dbb70] bg-white shadow-[0_20px_52px_-38px_rgba(8,69,50,0.42)] lg:grid-cols-[200px_minmax(0,1fr)]"
+        >
+          <div className="relative flex min-h-[132px] flex-col items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#46cc7e_0%,#24b96a_60%,#0c9556_100%)] px-4 py-4 text-center text-white">
+            <span aria-hidden="true" className="absolute -bottom-10 -right-8 size-36 rotate-12 rounded-[2.2rem] border border-white/15" />
+            <span className="relative grid size-[4.5rem] place-items-center rounded-full border-4 border-white bg-white/20 shadow-[0_0_0_4px_rgba(255,255,255,0.38)]">
+              <span className="grid size-[3.35rem] place-items-center rounded-full bg-white text-primary shadow-[0_12px_28px_-18px_rgba(3,66,38,0.62)]">
+                <ShieldCheck className="size-7" strokeWidth={2.25} />
+              </span>
+            </span>
+            <p className="relative mt-3 font-headline text-sm font-black uppercase tracking-[0.035em]">Terverifikasi</p>
+          </div>
+
+          <div className="flex min-w-0 flex-col justify-center px-5 py-4 sm:px-6">
+            <h2 className="font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+              Pembayaran telah Diverifikasi Admin Unit
+            </h2>
+            <p className="mt-1 text-[0.82rem] font-medium leading-5 text-[#667085]">
+              Pembayaran Anda telah diverifikasi oleh admin unit. Silakan selesaikan tahap akhir untuk membuka nota lelang.
+            </p>
+            <dl className="mt-3 grid gap-4 border-t border-[#edf0eb] pt-3 sm:grid-cols-3 sm:gap-0">
+              <div className="min-w-0 sm:pr-5">
+                <dt className="text-xs font-semibold text-[#667085]">Nominal Lelang</dt>
+                <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+                  {currency.format(transaction.amount)}
+                </dd>
+              </div>
+              <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:px-5">
+                <dt className="text-xs font-semibold text-[#667085]">Unit Pelaksana</dt>
+                <dd className="mt-1 break-words font-headline text-lg font-black tracking-tight text-slate-950 md:text-xl">
+                  {transaction.unit}
+                </dd>
+              </div>
+              <div className="min-w-0 sm:border-l sm:border-[#e4e9e4] sm:pl-5">
+                <dt className="text-xs font-semibold text-[#667085]">Tanggal Verifikasi</dt>
+                <dd className="mt-1 break-words font-headline text-base font-black tracking-tight text-slate-950 md:text-lg">
+                  {verificationTimestamp}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+      )}
 
       <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
         <section className="h-full rounded-[1rem] border border-[#dfe6e1] bg-white p-5 shadow-[0_18px_44px_-38px_rgba(8,69,50,0.32)] sm:p-6">
