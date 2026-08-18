@@ -119,7 +119,7 @@ describe("admin unit serializers", () => {
     );
   });
 
-  it("hides bid nominal while vickrey result is locked", () => {
+  it("numbers active Vickrey bid history by submission time while values stay locked", () => {
     const auction = serializeAdminPemasaran(
       {
         id: "pm-1",
@@ -206,13 +206,13 @@ describe("admin unit serializers", () => {
     expect(auction.bids).toEqual([
       expect.objectContaining({
         id: "bid-1",
-        rank: 2,
+        rank: 1,
         bidderName: "Peserta",
         submittedAtLabel: "5 Apr 2026, 07.00.00 WIB"
       }),
       expect.objectContaining({
         id: "bid-2",
-        rank: 1,
+        rank: 2,
         bidderName: "Peserta",
         submittedAtLabel: "5 Apr 2026, 08.00.00 WIB"
       })

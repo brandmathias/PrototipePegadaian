@@ -225,7 +225,7 @@ export function serializeAdminPemasaran(
   const bidEntries =
     isVickrey
       ? sortedBids.map((entry, index) => {
-          const rank = rankedBidIndexes.get(entry.bid.id) ?? index + 1;
+          const rank = visibility === "TERKUNCI" ? index + 1 : rankedBidIndexes.get(entry.bid.id) ?? index + 1;
           const isWinner = row.winnerId && entry.bid.userId === row.winnerId;
           return {
             id: entry.bid.id,
