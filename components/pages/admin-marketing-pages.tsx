@@ -5082,7 +5082,6 @@ function FixedPricePaymentVerificationModal({
       : auction.transactionStatus === "BUKTI_DIUNGGAH"
         ? "MENUNGGU VERIFIKASI STAF"
         : statusLabel;
-  const serverNow = new Date().toISOString();
   const rejectEndpoint = auction.transactionId
     ? `/api/admin/transaksi/${auction.transactionId}/tolak-bukti`
     : undefined;
@@ -5303,30 +5302,6 @@ function FixedPricePaymentVerificationModal({
                       Bukti pembayaran belum tersedia.
                     </div>
                   )}
-
-                  {!isRejectedReview ? (
-                    <div className="mt-3 flex flex-col gap-3 rounded-[0.9rem] border border-[#dfe8e3] bg-[#fbfdfb] px-4 py-3 text-[0.82rem] font-bold text-[#26342e] sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-[0.75rem] bg-[#fff0f0] text-[#e11d48]">
-                          <Clock3 className="size-5" />
-                        </span>
-                        <span>Batas Waktu Pelunasan:</span>
-                      </div>
-                      <span className="font-headline text-[0.92rem] font-black leading-5 text-[#dc2626] [font-variant-numeric:tabular-nums]">
-                        {auction.paymentDeadline ? (
-                          <AdminLiveCountdown
-                            expiredLabel="Batas bayar terlewati"
-                            fallbackLabel={dateLabel(auction.paymentDeadline)}
-                            prefix="Sisa"
-                            serverNow={serverNow}
-                            targetAt={auction.paymentDeadline}
-                          />
-                        ) : (
-                          "-"
-                        )}
-                      </span>
-                    </div>
-                  ) : null}
                 </div>
               </div>
 

@@ -437,6 +437,7 @@ describe("admin pemasaran pages", () => {
     expect(within(dialog).getByText(/kewajiban nominal harga tetap/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
+    expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
     const fullscreenButton = within(dialog).getByRole("button", { name: /buka fullscreen bukti pembayaran/i });
     expect(fullscreenButton).toHaveClass("absolute", "right-4", "top-4", "size-10", "bg-white/94");
     expect(within(dialog).queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
