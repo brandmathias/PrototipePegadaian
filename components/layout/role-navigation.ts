@@ -49,9 +49,4 @@ export const superadminNavigation: NavItem[] = [
     label: "Pelanggaran User",
     icon: "blacklist",
   },
-  {
-    href: "/superadmin/kebijakan-pelanggaran",
-    label: "Kebijakan Pelanggaran",
-    icon: "admin",
-  },
 ];

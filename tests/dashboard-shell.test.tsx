@@ -133,7 +133,6 @@ describe("DashboardShell", () => {
     ["/superadmin/manajemen-unit/unit-1", "Manajemen Unit"],
     ["/superadmin/admin", "Manajemen Unit"],
     ["/superadmin/manajemen-superadmin/admin-1", "Manajemen Superadmin"],
-    ["/superadmin/kebijakan-pelanggaran", "Kebijakan Pelanggaran"],
   ])("marks exactly one superadmin sidebar item for route %s", (pathname, expectedLabel) => {
     navigationMock.pathname = pathname;
 
@@ -147,13 +146,10 @@ describe("DashboardShell", () => {
     expect(activeLinks[0]).toHaveAccessibleName(expectedLabel);
   });
 
-  it("places Pelanggaran User immediately before Kebijakan Pelanggaran", () => {
+  it("places Pelanggaran User as the last superadmin sidebar item", () => {
     const labels = superadminNavigation.map((item) => item.label);
 
-    expect(labels.slice(-2)).toEqual([
-      "Pelanggaran User",
-      "Kebijakan Pelanggaran",
-    ]);
+    expect(labels.at(-1)).toBe("Pelanggaran User");
   });
 
   it("uses a white admin shell background on every admin route", () => {
