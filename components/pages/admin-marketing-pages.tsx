@@ -45,6 +45,7 @@ import {
   RefreshCcw,
   Search,
   ShieldCheck,
+  ShieldUser,
   SlidersHorizontal,
   Tag,
   Target,
@@ -1612,28 +1613,33 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
   }
 
   if (auction.visibility === "TERKUNCI") {
-    const privacyLabel = `${participantCount} peserta terlindungi. Identitas peserta dibuka setelah lelang berakhir.`;
+    const privacyLabel = `${participantCount} peserta terlindungi`;
+    const tooltipId = `protected-participants-${auction.id}`;
 
     return (
       <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[0.76rem] font-bold text-[#31413b] dark:text-slate-300">
         <span className="shrink-0">Peserta</span>
-        <span
+        <button
           aria-label={privacyLabel}
-          className="inline-flex max-w-full items-center gap-2 rounded-xl border border-[#c9ebd6] bg-white/88 px-2 py-1.5 text-[#0a6a49] shadow-[0_12px_24px_-22px_rgba(0,103,71,0.72)] dark:border-emerald-300/16 dark:bg-emerald-300/[0.06] dark:text-emerald-200"
-          title="Identitas peserta dibuka setelah lelang berakhir."
+          aria-describedby={tooltipId}
+          className="group/protected-participants relative grid size-11 shrink-0 place-items-center text-[#15803d] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:text-[#166534] focus-visible:ring-2 focus-visible:ring-[#15803d]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.96] dark:text-emerald-200 dark:focus-visible:ring-emerald-300/35 dark:focus-visible:ring-offset-slate-950"
+          type="button"
         >
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-[#e5f6ec] text-[#007a53] ring-1 ring-[#c9ebd6] dark:bg-emerald-300/10 dark:text-emerald-200 dark:ring-emerald-300/16">
-            <LockKeyhole aria-hidden="true" className="size-3.5" />
+          <ShieldUser aria-hidden="true" className="size-10" strokeWidth={1.75} />
+          <span
+            aria-hidden="true"
+            className="absolute right-0 top-0 grid h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full border-2 border-white bg-[#15803d] px-1 text-[0.6rem] font-black leading-none text-white dark:border-slate-950 dark:bg-emerald-400 dark:text-[#062719]"
+          >
+            {participantCount}
           </span>
-          <span className="flex min-w-0 flex-col leading-none">
-            <span className="text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#5c816f] dark:text-emerald-200/70">
-              Privasi Peserta
-            </span>
-            <span className="mt-1 whitespace-nowrap text-[0.74rem] font-black">
-              {participantCount} peserta terlindungi
-            </span>
+          <span
+            className="pointer-events-none absolute right-0 top-[calc(100%+0.5rem)] z-20 w-max max-w-[17.5rem] translate-y-1 rounded-md border border-black/10 bg-white px-2.5 py-1 text-left text-[0.64rem] font-black leading-5 text-[#1b3027] opacity-0 shadow-[0_18px_42px_-30px_rgba(18,24,21,0.38)] transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/protected-participants:translate-y-0 group-hover/protected-participants:opacity-100 group-focus-within/protected-participants:translate-y-0 group-focus-within/protected-participants:opacity-100 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+            id={tooltipId}
+            role="tooltip"
+          >
+            {participantCount} Identitas peserta disembunyikan selama lelang berlangsung
           </span>
-        </span>
+        </button>
       </div>
     );
   }

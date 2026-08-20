@@ -194,10 +194,18 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("Cincin Emas Aktif")).toBeInTheDocument();
     expect(screen.getAllByText("Peserta").length).toBeGreaterThan(0);
     const protectedParticipants = screen.getByLabelText(
-      /12 peserta terlindungi\. identitas peserta dibuka setelah lelang berakhir\./i,
+      /12 peserta terlindungi/i,
     );
-    expect(protectedParticipants).toHaveClass("rounded-xl", "border");
-    expect(screen.getByText("Privasi Peserta")).toBeInTheDocument();
+    expect(protectedParticipants).toHaveClass("group/protected-participants", "size-11");
+    expect(protectedParticipants.querySelector(".lucide-shield-user")).toBeInTheDocument();
+    expect(within(protectedParticipants).getByText("12")).toHaveClass("rounded-full");
+    expect(
+      screen.getByRole("tooltip", {
+        name: /12 identitas peserta disembunyikan selama lelang berlangsung/i,
+      }),
+    ).toHaveClass("bg-white", "text-[#1b3027]");
+    expect(screen.queryByText("Privasi Peserta")).not.toBeInTheDocument();
+    expect(screen.queryByText("12 peserta terlindungi")).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Raras" })).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Alya" })).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Bima" })).toBeInTheDocument();
