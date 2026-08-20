@@ -44,8 +44,8 @@ import {
   PencilLine,
   RefreshCcw,
   Search,
-  Shield,
   ShieldCheck,
+  ShieldUser,
   SlidersHorizontal,
   Tag,
   Target,
@@ -1626,15 +1626,10 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
           type="button"
         >
           <span aria-hidden="true" className="relative grid size-12 place-items-center">
-            <Shield className="size-11" strokeWidth={1.75} />
-            <UsersRound
-              className="absolute left-[0.58rem] top-[0.8rem] size-[1.05rem]"
-              strokeWidth={1.75}
-            />
-            <LockKeyhole
-              className="absolute bottom-[0.62rem] right-[0.48rem] size-[0.82rem]"
-              strokeWidth={2}
-            />
+            <ShieldUser className="size-[2.9rem]" strokeWidth={1.65} />
+            <span className="absolute bottom-[0.38rem] right-[0.18rem] grid size-4 place-items-center rounded-[0.22rem] bg-white dark:bg-slate-950">
+              <LockKeyhole className="size-[0.82rem]" strokeWidth={2} />
+            </span>
           </span>
           <span
             aria-hidden="true"
@@ -1643,11 +1638,11 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
             {participantCount}
           </span>
           <span
-            className="pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-30 w-[17.5rem] max-w-[calc(100vw-2rem)] origin-left -translate-y-1/2 translate-x-1 scale-[0.98] rounded-lg bg-[#191b1f] px-3 py-2.5 text-left text-xs font-medium leading-[1.45] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-r-[7px] before:border-y-transparent before:border-r-[#191b1f] group-hover/protected-participants:translate-x-0 group-hover/protected-participants:scale-100 group-hover/protected-participants:opacity-100 group-focus-within/protected-participants:translate-x-0 group-focus-within/protected-participants:scale-100 group-focus-within/protected-participants:opacity-100"
+            className="pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-30 w-[14.5rem] max-w-[calc(100vw-2rem)] origin-left -translate-y-1/2 translate-x-1 scale-[0.98] rounded-lg bg-[#191b1f] px-3 py-2 text-left text-[0.7rem] font-semibold leading-[1.45] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-r-[7px] before:border-y-transparent before:border-r-[#191b1f] group-hover/protected-participants:translate-x-0 group-hover/protected-participants:scale-100 group-hover/protected-participants:opacity-100 group-focus-within/protected-participants:translate-x-0 group-focus-within/protected-participants:scale-100 group-focus-within/protected-participants:opacity-100"
             id={tooltipId}
             role="tooltip"
           >
-            {participantCount} Identitas peserta disembunyikan untuk selama lelang berlangsung
+            Identitas {participantCount} peserta disembunyikan selama lelang berlangsung.
           </span>
         </button>
       </div>

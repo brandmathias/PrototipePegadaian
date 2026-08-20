@@ -197,18 +197,20 @@ describe("admin pemasaran pages", () => {
       /12 peserta terlindungi/i,
     );
     expect(protectedParticipants).toHaveClass("group/protected-participants", "size-12");
-    expect(protectedParticipants.querySelector(".lucide-shield")).toBeInTheDocument();
-    expect(protectedParticipants.querySelector(".lucide-users-round")).toBeInTheDocument();
+    expect(protectedParticipants.querySelector(".lucide-shield-user")).toBeInTheDocument();
     expect(protectedParticipants.querySelector(".lucide-lock-keyhole")).toBeInTheDocument();
+    expect(protectedParticipants.querySelector(".lucide-users-round")).not.toBeInTheDocument();
     expect(within(protectedParticipants).getByText("12")).toHaveClass("rounded-full");
     expect(
       screen.getByRole("tooltip", {
-        name: /12 identitas peserta disembunyikan untuk selama lelang berlangsung/i,
+        name: /identitas 12 peserta disembunyikan selama lelang berlangsung\./i,
       }),
     ).toHaveClass(
       "left-[calc(100%+0.625rem)]",
       "top-1/2",
       "-translate-y-1/2",
+      "w-[14.5rem]",
+      "py-2",
       "bg-[#191b1f]",
       "text-white",
       "before:border-r-[#191b1f]",
