@@ -196,14 +196,23 @@ describe("admin pemasaran pages", () => {
     const protectedParticipants = screen.getByLabelText(
       /12 peserta terlindungi/i,
     );
-    expect(protectedParticipants).toHaveClass("group/protected-participants", "size-11");
-    expect(protectedParticipants.querySelector(".lucide-shield-user")).toBeInTheDocument();
+    expect(protectedParticipants).toHaveClass("group/protected-participants", "size-12");
+    expect(protectedParticipants.querySelector(".lucide-shield")).toBeInTheDocument();
+    expect(protectedParticipants.querySelector(".lucide-users-round")).toBeInTheDocument();
+    expect(protectedParticipants.querySelector(".lucide-lock-keyhole")).toBeInTheDocument();
     expect(within(protectedParticipants).getByText("12")).toHaveClass("rounded-full");
     expect(
       screen.getByRole("tooltip", {
-        name: /12 identitas peserta disembunyikan selama lelang berlangsung/i,
+        name: /12 identitas peserta disembunyikan untuk selama lelang berlangsung/i,
       }),
-    ).toHaveClass("bg-white", "text-[#1b3027]");
+    ).toHaveClass(
+      "left-[calc(100%+0.625rem)]",
+      "top-1/2",
+      "-translate-y-1/2",
+      "bg-[#191b1f]",
+      "text-white",
+      "before:border-r-[#191b1f]",
+    );
     expect(screen.queryByText("Privasi Peserta")).not.toBeInTheDocument();
     expect(screen.queryByText("12 peserta terlindungi")).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Raras" })).not.toBeInTheDocument();
