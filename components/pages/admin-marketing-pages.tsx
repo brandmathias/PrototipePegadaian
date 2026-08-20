@@ -10,6 +10,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ComponentProps,
   type ReactNode,
   type SyntheticEvent,
 } from "react";
@@ -28,6 +29,7 @@ import {
   Gavel,
   Gem,
   Hash,
+  Icon as LucideSvg,
   Info,
   Landmark,
   LockKeyhole,
@@ -45,7 +47,6 @@ import {
   RefreshCcw,
   Search,
   ShieldCheck,
-  ShieldUser,
   SlidersHorizontal,
   Tag,
   Target,
@@ -1605,6 +1606,68 @@ function getMarketingParticipantPreviews(auction: MarketingSession) {
   }));
 }
 
+const protectedParticipantIconNode: ComponentProps<
+  typeof LucideSvg
+>["iconNode"] = [
+  [
+    "path",
+    {
+      d: "M22 2.75 38.5 9v11.4c0 10.5-6.5 19.8-16.5 24.85C12 40.2 5.5 30.9 5.5 20.4V9L22 2.75Z",
+      key: "shield",
+    },
+  ],
+  ["circle", { cx: "18", cy: "18", key: "participant-head", r: "4.25" }],
+  [
+    "path",
+    {
+      d: "M10.75 31.5c.9-4.4 3.75-7 7.25-7 2.15 0 4.05.95 5.35 2.6",
+      key: "participant-shoulder",
+    },
+  ],
+  [
+    "rect",
+    {
+      height: "8.75",
+      key: "lock-body",
+      rx: "2",
+      width: "10.5",
+      x: "22.75",
+      y: "27",
+    },
+  ],
+  [
+    "path",
+    {
+      d: "M25.4 27v-2.2a2.6 2.6 0 0 1 5.2 0V27",
+      key: "lock-shackle",
+    },
+  ],
+  [
+    "circle",
+    {
+      cx: "28",
+      cy: "31.35",
+      fill: "currentColor",
+      key: "lock-keyhole",
+      r: "1",
+      stroke: "none",
+    },
+  ],
+];
+
+function ProtectedParticipantIcon({ className = "" }: { className?: string }) {
+  return (
+    <LucideSvg
+      aria-hidden="true"
+      className={className}
+      data-protected-participant-icon="true"
+      iconNode={protectedParticipantIconNode}
+      strokeWidth={2}
+      viewBox="0 0 44 48"
+    />
+  );
+}
+
 function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
   const participantCount = auction.participants ?? 0;
 
@@ -1622,27 +1685,25 @@ function MarketingParticipantStrip({ auction }: { auction: MarketingSession }) {
         <button
           aria-label={privacyLabel}
           aria-describedby={tooltipId}
-          className="group/protected-participants relative grid size-12 shrink-0 place-items-center rounded-md text-[#15803d] outline-none transition-[color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-[#166534] focus-visible:ring-2 focus-visible:ring-[#15803d]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.97] dark:text-emerald-200 dark:focus-visible:ring-emerald-300/35 dark:focus-visible:ring-offset-slate-950"
+          className="group/protected-participants relative grid h-11 w-11 shrink-0 touch-manipulation place-items-center rounded-md text-[#15803d] outline-none transition-[color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-[#166534] focus-visible:ring-2 focus-visible:ring-[#15803d]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none dark:text-emerald-200 dark:focus-visible:ring-emerald-300/35 dark:focus-visible:ring-offset-slate-950"
           type="button"
         >
-          <span aria-hidden="true" className="relative grid size-12 place-items-center">
-            <ShieldUser className="size-[2.9rem]" strokeWidth={1.65} />
-            <span className="absolute bottom-[0.38rem] right-[0.18rem] grid size-4 place-items-center rounded-[0.22rem] bg-white dark:bg-slate-950">
-              <LockKeyhole className="size-[0.82rem]" strokeWidth={2} />
-            </span>
-          </span>
+          <ProtectedParticipantIcon className="h-10 w-9" />
           <span
             aria-hidden="true"
-            className="absolute -right-0.5 -top-0.5 grid h-[1.15rem] min-w-[1.15rem] place-items-center rounded-full border-2 border-white bg-[#15803d] px-1 text-[0.625rem] font-bold leading-none text-white dark:border-slate-950 dark:bg-emerald-400 dark:text-[#062719]"
+            className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full border-2 border-white bg-[#15803d] px-1 text-[10px] font-bold leading-none text-white dark:border-slate-950 dark:bg-emerald-400 dark:text-[#062719]"
           >
             {participantCount}
           </span>
           <span
-            className="pointer-events-none absolute left-[calc(100%+0.625rem)] top-1/2 z-30 w-[14.5rem] max-w-[calc(100vw-2rem)] origin-left -translate-y-1/2 translate-x-1 scale-[0.98] rounded-lg bg-[#191b1f] px-3 py-2 text-left text-[0.7rem] font-semibold leading-[1.45] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition-[opacity,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2 before:border-y-[6px] before:border-r-[7px] before:border-y-transparent before:border-r-[#191b1f] group-hover/protected-participants:translate-x-0 group-hover/protected-participants:scale-100 group-hover/protected-participants:opacity-100 group-focus-within/protected-participants:translate-x-0 group-focus-within/protected-participants:scale-100 group-focus-within/protected-participants:opacity-100"
+            className="pointer-events-none absolute left-[-3.75rem] top-[calc(100%+0.75rem)] z-30 w-max max-w-[calc(100vw-2rem)] rounded-lg bg-[#191b1f] px-3 py-2.5 text-left text-xs font-medium leading-[1.45] text-white opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition-opacity duration-150 before:absolute before:bottom-full before:left-[4.75rem] before:border-x-[6px] before:border-b-[7px] before:border-x-transparent before:border-b-[#191b1f] before:content-[''] after:hidden after:content-[''] group-hover/protected-participants:opacity-100 group-focus-within/protected-participants:opacity-100 motion-reduce:transition-none sm:left-[calc(100%+20px)] sm:top-1/2 sm:max-w-[280px] sm:-translate-y-1/2 sm:before:hidden sm:after:absolute sm:after:right-full sm:after:top-1/2 sm:after:block sm:after:-translate-y-1/2 sm:after:border-y-[6px] sm:after:border-r-[7px] sm:after:border-y-transparent sm:after:border-r-[#191b1f]"
             id={tooltipId}
             role="tooltip"
           >
-            Identitas {participantCount} peserta disembunyikan selama lelang berlangsung.
+            <span className="block">
+              {participantCount} identitas peserta disembunyikan
+            </span>
+            <span className="block">selama lelang berlangsung.</span>
           </span>
         </button>
       </div>

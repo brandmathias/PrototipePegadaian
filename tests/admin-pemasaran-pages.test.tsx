@@ -196,24 +196,47 @@ describe("admin pemasaran pages", () => {
     const protectedParticipants = screen.getByLabelText(
       /12 peserta terlindungi/i,
     );
-    expect(protectedParticipants).toHaveClass("group/protected-participants", "size-12");
-    expect(protectedParticipants.querySelector(".lucide-shield-user")).toBeInTheDocument();
-    expect(protectedParticipants.querySelector(".lucide-lock-keyhole")).toBeInTheDocument();
-    expect(protectedParticipants.querySelector(".lucide-users-round")).not.toBeInTheDocument();
+    expect(protectedParticipants).toHaveClass(
+      "group/protected-participants",
+      "h-11",
+      "w-11",
+      "touch-manipulation",
+    );
+    const protectedParticipantIcon = protectedParticipants.querySelector(
+      '[data-protected-participant-icon="true"]',
+    );
+    expect(protectedParticipantIcon).toBeInTheDocument();
+    expect(protectedParticipantIcon).toHaveClass("lucide", "h-10", "w-9");
+    expect(protectedParticipants.querySelectorAll("svg")).toHaveLength(1);
     expect(within(protectedParticipants).getByText("12")).toHaveClass("rounded-full");
+    const protectedParticipantTooltip = screen.getByRole("tooltip");
     expect(
-      screen.getByRole("tooltip", {
-        name: /identitas 12 peserta disembunyikan selama lelang berlangsung\./i,
-      }),
-    ).toHaveClass(
-      "left-[calc(100%+0.625rem)]",
-      "top-1/2",
-      "-translate-y-1/2",
-      "w-[14.5rem]",
-      "py-2",
+      within(protectedParticipantTooltip).getByText(
+        "12 identitas peserta disembunyikan",
+      ),
+    ).toHaveClass("block");
+    expect(
+      within(protectedParticipantTooltip).getByText(
+        "selama lelang berlangsung.",
+      ),
+    ).toHaveClass("block");
+    expect(protectedParticipantTooltip).toHaveClass(
+      "left-[-3.75rem]",
+      "top-[calc(100%+0.75rem)]",
+      "w-max",
+      "max-w-[calc(100vw-2rem)]",
+      "py-2.5",
       "bg-[#191b1f]",
+      "text-xs",
+      "font-medium",
       "text-white",
-      "before:border-r-[#191b1f]",
+      "before:border-b-[#191b1f]",
+      "sm:left-[calc(100%+20px)]",
+      "sm:top-1/2",
+      "sm:max-w-[280px]",
+      "sm:-translate-y-1/2",
+      "sm:after:border-r-[#191b1f]",
+      "motion-reduce:transition-none",
     );
     expect(screen.queryByText("Privasi Peserta")).not.toBeInTheDocument();
     expect(screen.queryByText("12 peserta terlindungi")).not.toBeInTheDocument();
