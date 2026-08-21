@@ -5571,6 +5571,197 @@ function SuperAdminFixedPriceWorkspace({
   );
 }
 
+function isSuperAdminVickreyLiveSession(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  return (
+    normalizeUnitDetailOptionValue(session.status) === "aktif" &&
+    session.visibility === "TERKUNCI"
+  );
+}
+
+function SuperAdminVickreyActiveWorkspace({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const bids = [...(session.bids ?? [])].sort(
+    (left, right) => (left.rank || 0) - (right.rank || 0),
+  );
+  const participantCount = Math.max(session.participants ?? 0, bids.length);
+  const fallbackEndLabel = formatSuperAdminDateTime(session.endingAt);
+  const serverNow = new Date().toISOString();
+
+  return (
+    <div
+      className="space-y-3"
+      data-testid="superadmin-vickrey-active-layout"
+    >
+      <StatusSyncRefresh enabled />
+
+      <section
+        className="relative overflow-hidden rounded-[1.1rem] border border-[#0b7a56]/20 bg-[radial-gradient(circle_at_top_right,rgba(96,235,166,0.25),transparent_34%),linear-gradient(135deg,#073a2a_0%,#006747_54%,#043c2c_100%)] px-4 py-4 text-white shadow-[0_20px_48px_-34px_rgba(0,71,47,0.7)]"
+        data-testid="superadmin-vickrey-active-monitor"
+      >
+        <div className="pointer-events-none absolute -right-8 top-1/2 size-32 -translate-y-1/2 rounded-full border border-white/10" />
+        <div className="relative flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-2">
+            <span className="relative flex size-2.5" aria-hidden="true">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#7bf0ae]/75 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2.5 rounded-full bg-[#8df0b7]" />
+            </span>
+            <p className="text-[0.68rem] font-black uppercase tracking-[0.12em] text-white/90">
+              Aktivitas Lelang Live
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/18 bg-white/10 px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.09em] text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+            <ShieldCheck className="size-3.5" strokeWidth={2.2} />
+            Read-only Superadmin
+          </span>
+        </div>
+
+        <div className="relative mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(13rem,0.72fr)] md:items-end">
+          <div className="min-w-0">
+            <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-white/70">
+              Penawaran Tertinggi Saat Ini
+            </p>
+            <div className="mt-2 flex flex-wrap items-end gap-x-2 gap-y-1">
+              <span className="font-headline text-[1.45rem] font-black leading-none tracking-[-0.04em] text-white sm:text-[1.7rem]">
+                Rp ********
+              </span>
+              <span className="mb-0.5 inline-flex items-center gap-1 text-[0.68rem] font-semibold text-white/78">
+                <LockKeyhole className="size-3.5" strokeWidth={2} />
+                Bid tersegel selama sesi berlangsung.
+              </span>
+            </div>
+          </div>
+
+          <div className="border-t border-white/15 pt-3 md:border-l md:border-t-0 md:pl-4 md:pt-0">
+            <p className="text-[0.64rem] font-black uppercase tracking-[0.1em] text-white/70">
+              Waktu Tersisa
+            </p>
+            <div className="mt-2 flex items-center gap-2 text-[0.94rem] font-black text-white">
+              <Clock3 className="size-4 shrink-0 text-[#b7ffd1]" strokeWidth={2.2} />
+              <AdminLiveCountdown
+                className="font-headline text-[1.05rem] font-black tracking-[-0.03em] text-white"
+                expiredLabel="Sesi berakhir, menyegarkan data..."
+                fallbackLabel={fallbackEndLabel}
+                prefix="Sisa"
+                serverNow={serverNow}
+                targetAt={session.endingAt}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/15 pt-3 text-[0.68rem] font-semibold text-white/78">
+          <span className="inline-flex items-center gap-1.5">
+            <UsersRound className="size-3.5 text-[#b7ffd1]" strokeWidth={2} />
+            {participantCount} peserta terlindungi
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Gavel className="size-3.5 text-[#b7ffd1]" strokeWidth={2} />
+            Iterasi {session.iteration ?? 1} tetap berjalan
+          </span>
+        </div>
+      </section>
+
+      <div className="grid items-stretch gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15.5rem,0.58fr)]">
+        <section
+          className="overflow-hidden rounded-xl border border-[#dfe9e3] bg-white shadow-[0_18px_42px_-36px_rgba(8,69,50,0.28)]"
+          data-testid="superadmin-vickrey-active-bid-log"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e8efea] px-4 py-3">
+            <div>
+              <p className="text-[0.72rem] font-black uppercase tracking-[0.05em] text-[#13211c]">
+                Riwayat Penawaran (Bid Log)
+              </p>
+              <p className="mt-0.5 text-[0.66rem] font-semibold text-[#64756e]">
+                Identitas dan nominal tetap tersegel sampai sesi berakhir.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef9f2] px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.07em] text-[#007a53]">
+              <LockKeyhole className="size-3" strokeWidth={2.2} />
+              {participantCount} tercatat
+            </span>
+          </div>
+
+          {bids.length ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[34rem] table-fixed text-left">
+                <colgroup>
+                  <col className="w-[10%]" />
+                  <col className="w-[29%]" />
+                  <col className="w-[29%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[12%]" />
+                </colgroup>
+                <thead className="bg-[#f8faf9] text-[0.6rem] font-black uppercase tracking-[0.05em] text-[#64756e]">
+                  <tr>
+                    <th className="px-3 py-2.5">#</th>
+                    <th className="px-2.5 py-2.5">Penawar</th>
+                    <th className="px-2.5 py-2.5">Waktu</th>
+                    <th className="px-2.5 py-2.5">Nominal</th>
+                    <th className="px-2.5 py-2.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="text-[0.72rem] text-[#21332b]">
+                  {bids.map((bid, index) => (
+                    <tr
+                      className="border-t border-[#edf2ee] bg-white transition-colors duration-150 ease-out hover:bg-[#f6fbf8]"
+                      key={bid.id}
+                    >
+                      <td className="px-3 py-2.5 font-black text-[#007a53]">
+                        {bid.rank || index + 1}
+                      </td>
+                      <td className="px-2.5 py-2.5 font-bold">************</td>
+                      <td className="px-2.5 py-2.5 text-[#64756e]">
+                        {bid.submittedAtLabel || "-"}
+                      </td>
+                      <td className="px-2.5 py-2.5 font-black">Rp ********</td>
+                      <td className="px-2.5 py-2.5">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#f1f5f3] px-2 py-1 text-[0.54rem] font-black uppercase tracking-[0.05em] text-[#64756e]">
+                          <LockKeyhole className="size-2.5" strokeWidth={2.3} />
+                          Tersegel
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="px-4 py-5 text-center">
+              <p className="text-[0.78rem] font-black text-[#21332b]">
+                {participantCount
+                  ? `${participantCount} penawaran tercatat`
+                  : "Belum ada penawaran masuk"}
+              </p>
+              <p className="mt-1 text-[0.68rem] font-semibold leading-5 text-[#64756e]">
+                {participantCount
+                  ? "Detail bid tetap tersegel sampai waktu lelang berakhir."
+                  : "Panel akan memperbarui data otomatis saat buyer mengirim penawaran."}
+              </p>
+            </div>
+          )}
+        </section>
+
+        <MarketingPerformancePanel
+          className="h-full"
+          insights={session.insights}
+          lotId={session.id}
+          testId="superadmin-vickrey-active-performance-panel"
+        />
+      </div>
+
+      <SuperAdminReadOnlyAuditFooter
+        icon={ShieldCheck}
+        note="Iterasi ini masih aktif. Superadmin memantau sesi tanpa membuka identitas peserta atau nominal bid."
+      />
+    </div>
+  );
+}
+
 function SuperAdminVickreyWorkspace({
   receiptContext,
   session,
@@ -5581,6 +5772,10 @@ function SuperAdminVickreyWorkspace({
   const failureArchive = isSuperAdminVickreyFailureArchive(session);
   const verified = isSuperAdminVickreyPaymentVerified(session);
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+
+  if (isSuperAdminVickreyLiveSession(session)) {
+    return <SuperAdminVickreyActiveWorkspace session={session} />;
+  }
 
   if (failureArchive) {
     const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";

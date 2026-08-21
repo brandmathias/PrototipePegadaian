@@ -1858,6 +1858,101 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Catat Perpanjangan")).not.toBeInTheDocument();
   });
 
+  it("renders the active Vickrey iteration as a compact read-only live monitor", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-wanea",
+              code: "UPC-WANEA",
+              name: "UPC Wanea",
+              address: "Wanea",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-vickrey-aktif",
+              code: "SBG-117870000000030",
+              name: "Gelang Emas Putih 18K",
+              category: "perhiasan",
+              condition: "baik",
+              status: "dipasarkan",
+              appraisalValue: 12_000_000,
+              specifications: {},
+              media: [],
+            },
+            operationalStatus: "Dipasarkan",
+            operationalTone: "emerald",
+            marketing: {
+              id: "pemasaran-vickrey-aktif",
+              lotId: "barang-vickrey-aktif",
+              lot: "Gelang Emas Putih 18K",
+              code: "SBG-117870000000030",
+              category: "perhiasan",
+              condition: "baik",
+              status: "AKTIF",
+              mode: "VICKREY_AUCTION",
+              iteration: 2,
+              totalIterations: 2,
+              createdAt: "2026-04-29T08:00:00+08:00",
+              endingAt: "2026-04-29T12:00:00+08:00",
+              participants: 3,
+              visibility: "TERKUNCI",
+              basePrice: 10_000_000,
+              insights: { views: 19, likes: 2, participants: 3 },
+              bids: [
+                {
+                  id: "bid-terkunci-1",
+                  bidderId: "buyer-1",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 09:35 WIB",
+                  rank: 1,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+              ],
+              iterationHistory: [
+                {
+                  id: "pemasaran-vickrey-sebelumnya",
+                  lotId: "barang-vickrey-aktif",
+                  lot: "Gelang Emas Putih 18K",
+                  status: "GAGAL",
+                  mode: "VICKREY_AUCTION",
+                  iteration: 1,
+                  participants: 0,
+                  createdAt: "2026-04-28T08:00:00+08:00",
+                },
+              ],
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    const activeLayout = screen.getByTestId(
+      "superadmin-vickrey-active-layout",
+    );
+
+    expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
+    expect(screen.getByText("Aktivitas Lelang Live")).toBeInTheDocument();
+    expect(screen.getByText("Waktu Tersisa")).toBeInTheDocument();
+    expect(screen.getByText("Bid tersegel selama sesi berlangsung.")).toBeInTheDocument();
+    expect(screen.getByText("Riwayat Penawaran (Bid Log)")).toBeInTheDocument();
+    expect(screen.getAllByText("Rp ********").length).toBeGreaterThan(0);
+    expect(activeLayout).toHaveTextContent("Performa & Aktivitas Sesi Publik");
+    expect(activeLayout).toHaveTextContent("19x");
+    expect(activeLayout).toHaveTextContent("2 Akun");
+    expect(
+      within(activeLayout).getByText("Iterasi 2 tetap berjalan"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Lelang Selesai - Menunggu Pelunasan Nasabah"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Detail Pemenang Lelang")).not.toBeInTheDocument();
+    expect(screen.queryByText("Progress Pembayaran Lelang")).not.toBeInTheDocument();
+  });
+
   it("shows rejected fixed-price verification details as read-only audit data", () => {
     render(
       <SuperAdminUnitBarangDetailPage
