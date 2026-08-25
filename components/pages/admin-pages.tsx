@@ -806,6 +806,7 @@ export function AdminInventoryDetailPage({
   itemId: _itemId,
   item,
   history = [],
+  selectedHistoryId,
 }: {
   itemId?: string;
   item: AdminInventoryItem;
@@ -818,6 +819,7 @@ export function AdminInventoryDetailPage({
     actorName: string;
     createdAtLabel: string;
   }>;
+  selectedHistoryId?: string;
 }) {
   const dueAt = String(item.dueAt ?? item.dueDate ?? "");
   const [isDueDeadlineElapsed, setIsDueDeadlineElapsed] = useState(() => {
@@ -937,6 +939,21 @@ export function AdminInventoryDetailPage({
           },
         ];
   const timelineEntries = sortTimelineEntries(timelineSourceEntries);
+  const selectedHistoryEntry = timelineEntries.find((entry) => entry.id === selectedHistoryId);
+
+  useEffect(() => {
+    if (!selectedHistoryEntry) return;
+
+    const selectedRow = document.getElementById(`admin-asset-history-${selectedHistoryEntry.id}`);
+    if (!selectedRow) return;
+
+    selectedRow.focus({ preventScroll: true });
+    selectedRow.scrollIntoView?.({
+      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "center",
+    });
+  }, [selectedHistoryEntry?.id]);
+
   const topInfoRows = [
     ...specificationRows.map((row) => ({
       label: row.label,
@@ -983,31 +1000,70 @@ export function AdminInventoryDetailPage({
         title={item.name}
       />
 
-      <div className="flex flex-wrap justify-end gap-3">
-        {actions.length ? (
-          actions.map((action) => (
-            <DetailActionButton
-              href={action.href}
-              icon={action.icon}
-              key={action.title}
-              title={action.title}
-              disabled={"disabled" in action && action.disabled}
-              variant={
-                "variant" in action && action.variant === "secondary"
-                  ? "secondary"
-                  : "default"
-              }
-            />
-          ))
-        ) : (
-          <div className="rounded-2xl border border-dashed border-black/10 bg-white px-4 py-3 text-sm text-black/55">
-            Tidak ada aksi lanjutan yang perlu dijalankan dari halaman ini.
+      {selectedHistoryEntry ? (
+        <section
+          aria-label="Konteks riwayat yang dipilih"
+          className="flex flex-col gap-4 rounded-[1.35rem] border border-[#b9ddc7] bg-[#f4fbf6] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:flex-row sm:items-center sm:justify-between"
+          role="status"
+        >
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-[0.9rem] bg-white text-[#0a7d51] ring-1 ring-[#cfe8d8]">
+              <ScrollText className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#0a7d51]">
+                Detail riwayat yang dipilih
+              </p>
+              <p className="mt-1 font-semibold text-[#13211c]">
+                {selectedHistoryEntry.actionLabel} <span className="px-1 text-[#8aa397]">•</span> {selectedHistoryEntry.createdAtLabel}
+              </p>
+              <p className="mt-1 text-sm leading-5 text-[#52655d]">
+                Halaman ini membaca catatan tersebut. Aksi operasional barang disembunyikan agar tidak tertukar dengan status saat ini.
+              </p>
+            </div>
           </div>
-        )}
-        {item.status === "GADAI" || item.status === "JAMINAN" ? (
-          <AdminMarketingAvailabilityAction dueAt={item.dueAt} href={`/admin/barang/${item.id}/pasarkan`} />
-        ) : null}
-      </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Link
+              className="inline-flex min-h-10 items-center rounded-xl bg-white px-3 text-sm font-bold text-[#075f3f] ring-1 ring-[#cfe8d8] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[#e7f6eb] active:scale-[0.98]"
+              href={`/admin/barang/${item.id}`}
+            >
+              Lihat kondisi barang terkini
+            </Link>
+            <Link
+              className="inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-bold text-[#075f3f] transition-[transform,color] duration-150 ease-out hover:text-[#034a30] active:scale-[0.98]"
+              href="/admin/barang/riwayat"
+            >
+              Kembali ke riwayat
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <div className="flex flex-wrap justify-end gap-3">
+          {actions.length ? (
+            actions.map((action) => (
+              <DetailActionButton
+                href={action.href}
+                icon={action.icon}
+                key={action.title}
+                title={action.title}
+                disabled={"disabled" in action && action.disabled}
+                variant={
+                  "variant" in action && action.variant === "secondary"
+                    ? "secondary"
+                    : "default"
+                }
+              />
+            ))
+          ) : (
+            <div className="rounded-2xl border border-dashed border-black/10 bg-white px-4 py-3 text-sm text-black/55">
+              Tidak ada aksi lanjutan yang perlu dijalankan dari halaman ini.
+            </div>
+          )}
+          {item.status === "GADAI" || item.status === "JAMINAN" ? (
+            <AdminMarketingAvailabilityAction dueAt={item.dueAt} href={`/admin/barang/${item.id}/pasarkan`} />
+          ) : null}
+        </div>
+      )}
 
       <section className="space-y-5 rounded-[1.45rem] border border-[#e5ece8] bg-white p-4 shadow-[0_18px_44px_-36px_rgba(8,69,50,0.28)] lg:p-5">
         <div className="grid gap-7 lg:grid-cols-[minmax(18rem,29.5rem)_minmax(0,1fr)] lg:items-start">
@@ -1113,11 +1169,19 @@ export function AdminInventoryDetailPage({
                 const EntryIcon = iconMap[entry.actionKey];
                 const stamp = splitTimelineStamp(entry.createdAtLabel);
                 const isFailure = entry.actionKey === "gagal";
+                const isSelected = entry.id === selectedHistoryEntry?.id;
 
                 return (
                   <tr
+                    data-history-selected={isSelected ? "true" : undefined}
+                    data-testid={`admin-asset-history-${entry.id}`}
+                    id={`admin-asset-history-${entry.id}`}
                     key={entry.id}
-                    className="align-top text-[0.9rem] text-[#41506a]"
+                    tabIndex={isSelected ? -1 : undefined}
+                    className={cn(
+                      "align-top text-[0.9rem] text-[#41506a]",
+                      isSelected && "bg-[#edf9f0] shadow-[inset_4px_0_0_#0a9f62]",
+                    )}
                   >
                     <td className="px-4 py-3.5">
                       <span

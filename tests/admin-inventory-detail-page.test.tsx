@@ -159,6 +159,50 @@ describe("AdminInventoryDetailPage", () => {
     );
   });
 
+  it("focuses the selected history event without exposing current operational actions", () => {
+    render(
+      <AdminInventoryDetailPage
+        item={{ ...baseItem, status: "GAGAL" }}
+        selectedHistoryId="hist-marketing"
+        history={[
+          {
+            id: "hist-marketing",
+            barangId: "barang-demo",
+            actionLabel: "Dipasarkan",
+            actionKey: "dipasarkan",
+            note: "Barang dipublikasikan ke katalog.",
+            actorName: "Admin Pemasaran",
+            createdAtLabel: "3 Jun 2026, 10.00 WIB",
+          },
+          {
+            id: "hist-failed",
+            barangId: "barang-demo",
+            actionLabel: "Gagal",
+            actionKey: "gagal",
+            note: "Pembayaran tidak selesai.",
+            actorName: "Sistem Otomatis",
+            createdAtLabel: "4 Jun 2026, 11.00 WIB",
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Dipasarkan");
+    expect(screen.getByRole("status")).toHaveTextContent("3 Jun 2026, 10.00 WIB");
+    const selectedRow = screen.getByTestId("admin-asset-history-hist-marketing");
+
+    expect(selectedRow).toHaveAttribute(
+      "data-history-selected",
+      "true",
+    );
+    expect(document.activeElement).toBe(selectedRow);
+    expect(screen.queryByRole("link", { name: /lelang lagi/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /lihat kondisi barang terkini/i })).toHaveAttribute(
+      "href",
+      "/admin/barang/barang-demo",
+    );
+  });
+
   it("switches additional media thumbnails into the main preview", () => {
     render(
       <AdminInventoryDetailPage

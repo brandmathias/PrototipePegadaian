@@ -177,6 +177,43 @@ describe("AdminInventoryWorkspace", () => {
 });
 
 describe("AdminInventoryHistoryWorkspace", () => {
+  it("carries every selected history status into its own item detail link", () => {
+    const actionKeys = [
+      "input_baru",
+      "perpanjangan",
+      "ditebus",
+      "dipasarkan",
+      "terjual",
+      "gagal",
+    ] as const;
+
+    render(
+      <AdminInventoryHistoryWorkspace
+        history={actionKeys.map((actionKey, index) => ({
+          id: `hist-${actionKey}`,
+          barangId: `barang-${index + 1}`,
+          barangCode: `BRG-00${index + 1}`,
+          barangName: `Barang ${index + 1}`,
+          ownerName: "Rizki Pratama",
+          customerNumber: "0812000009018",
+          actionKey,
+          actionLabel: `Riwayat ${index + 1}`,
+          actionTone: actionKey === "gagal" ? "danger" : "success",
+          note: "Catatan proses barang.",
+          actorName: "Admin Unit",
+          createdAt: `2026-05-${String(20 + index).padStart(2, "0")}T00:00:00.000Z`,
+          createdAtLabel: `${20 + index} Mei 2026`,
+        }))}
+      />,
+    );
+
+    expect(screen.getAllByRole("link", { name: /lihat detail/i }).map((link) => link.getAttribute("href"))).toEqual(
+      actionKeys
+        .map((actionKey, index) => `/admin/barang/barang-${index + 1}?riwayat=hist-${actionKey}`)
+        .reverse(),
+    );
+  });
+
   it("filters history by operational process", () => {
     render(
       <AdminInventoryHistoryWorkspace

@@ -426,7 +426,7 @@ function InventoryHistoryList({
 
               <div className="flex flex-col items-start gap-1.5 lg:grid lg:place-items-center">
                 <DetailActionLink
-                  href={`/admin/barang/${entry.barangId}`}
+                  href={`/admin/barang/${entry.barangId}?riwayat=${encodeURIComponent(entry.id)}`}
                 />
               </div>
             </div>
