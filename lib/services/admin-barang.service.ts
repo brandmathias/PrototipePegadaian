@@ -424,6 +424,41 @@ function getRejectedFixedPriceTransactionTime(transaction: AdminBarangTransactio
   return transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt;
 }
 
+function getPaymentFailureHistoryTime(
+  history: {
+    barangId: string;
+    newStatus: string;
+    note: string;
+    createdAt: Date;
+  },
+  transactionRows: AdminBarangTransactionTimelineRow[],
+) {
+  if (
+    history.newStatus !== "gagal" ||
+    !/tidak menyelesaikan pembayaran|tidak melakukan pembayaran/iu.test(history.note)
+  ) {
+    return history.createdAt;
+  }
+
+  const historyTime = history.createdAt.getTime();
+  const deadlines = transactionRows
+    .filter(
+      (transaction) =>
+        transaction.barangId === history.barangId &&
+        transaction.type === "vickrey" &&
+        transaction.status === "gagal" &&
+        transaction.paymentDeadline,
+    )
+    .map((transaction) => transaction.paymentDeadline as Date)
+    .sort(
+      (left, right) =>
+        Math.abs(left.getTime() - historyTime) -
+        Math.abs(right.getTime() - historyTime),
+    );
+
+  return deadlines[0] ?? history.createdAt;
+}
+
 function getRejectedFixedPriceRelistTimelineTime(marketingCreatedAt: Date, rejectedAt: Date) {
   const marketingTime = marketingCreatedAt.getTime();
   const rejectedTime = rejectedAt.getTime();
@@ -753,6 +788,7 @@ export async function listAdminBarangHistory(
             createdAt: row.createdAt
           })
         : null;
+    const createdAt = getPaymentFailureHistoryTime(row, transactionRows);
     const entry = {
       id: row.id,
       barangId: row.barangId,
@@ -770,8 +806,8 @@ export async function listAdminBarangHistory(
       note: publishedMarketing ? formatMarketingPublishedHistoryNote(publishedMarketing) : normalizeHistoryNote(row.note),
       actorName: normalizeHistoryActorName(row.actorName),
       actorRole: row.actorRole,
-      createdAt: row.createdAt.toISOString(),
-      createdAtLabel: formatAppDateTime(row.createdAt)
+      createdAt: createdAt.toISOString(),
+      createdAtLabel: formatAppDateTime(createdAt)
     };
 
     if (!hasDuplicateHistoryEntry(normalizedStatusRows, entry)) {
@@ -883,6 +919,14 @@ export async function listAdminBarangHistory(
       continue;
     }
 
+    const failedEntryCreatedAt =
+      row.mode === "vickrey" && row.bidCount > 0
+        ? transaction?.paymentDeadline ??
+          transaction?.updatedAt ??
+          row.updatedAt ??
+          row.endsAt ??
+          row.createdAt
+        : transaction?.updatedAt ?? row.updatedAt ?? row.endsAt ?? row.createdAt;
     const failedEntry = createSyntheticHistoryEntry(row, {
       id: `marketing-failed-${row.marketingId}`,
       actionKey: "gagal",
@@ -896,7 +940,7 @@ export async function listAdminBarangHistory(
           : "Sesi Harga Tetap ditutup sebagai pemasaran gagal dan membutuhkan tindak lanjut unit.",
       actorName: transaction?.actorName,
       actorRole: transaction?.actorRole,
-      createdAt: transaction?.updatedAt ?? row.updatedAt ?? transaction?.paymentDeadline ?? row.endsAt ?? row.createdAt
+      createdAt: failedEntryCreatedAt
     });
 
     if (!hasNearbyHistoryEntry(timelineEntries, failedEntry)) {

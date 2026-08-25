@@ -3742,107 +3742,6 @@ function getSuperAdminIterationHistory(
   });
 }
 
-function getSuperAdminMarketingDateInfo(
-  session: SuperAdminUnitBarangMarketingSession,
-) {
-  if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
-    if (isSuperAdminVickreyFailureArchive(session)) {
-      return getSuperAdminVickreyFailureTimestamp(session);
-    }
-
-    if (isSuperAdminVickreyPaymentVerified(session)) {
-      return {
-        label: "Pembayaran Diverifikasi",
-        value: formatSuperAdminDateTime(
-          session.soldAt ??
-            session.verifiedAt ??
-            session.completedAt ??
-            session.endingAt ??
-            session.createdAt,
-        ),
-      };
-    }
-
-    if (session.transactionStatus === "MENUNGGU_PEMBAYARAN") {
-      return {
-        label: "Batas Bayar",
-        value: formatSuperAdminDateTime(
-          session.paymentDeadline ?? session.endingAt ?? session.createdAt,
-        ),
-      };
-    }
-
-    return {
-      label: session.visibility === "TERKUNCI" ? "Sesi Berakhir" : "Sesi Ditutup",
-      value: formatSuperAdminDateTime(session.endingAt ?? session.createdAt),
-    };
-  }
-
-  if (session.transactionStatus === "DITOLAK_BUKTI") {
-    return {
-      label: "Bukti Pembayaran Ditolak",
-      value: formatSuperAdminDateTime(
-        session.verifiedAt ?? session.updatedAt ?? session.createdAt,
-      ),
-    };
-  }
-
-  if (session.transactionStatus === "LUNAS" || session.transactionStatus === "SELESAI") {
-    return {
-      label: "Pembayaran Diverifikasi",
-      value: formatSuperAdminDateTime(
-        session.soldAt ??
-          session.verifiedAt ??
-          session.completedAt ??
-          session.updatedAt ??
-          session.createdAt,
-      ),
-    };
-  }
-
-  if (session.status === "GAGAL" || session.transactionStatus === "GAGAL") {
-    return {
-      label: "Status Gagal Diproses",
-      value: formatSuperAdminDateTime(
-        session.updatedAt ?? session.verifiedAt ?? session.createdAt,
-      ),
-    };
-  }
-
-  if (session.transactionStatus === "BUKTI_DIUNGGAH") {
-    return {
-      label: "Bukti Pembayaran Diajukan",
-      value: formatSuperAdminDateTime(
-        session.transactionCreatedAt ?? session.updatedAt ?? session.createdAt,
-      ),
-    };
-  }
-
-  if (session.transactionStatus === "MENUNGGU_KONFIRMASI_LANGSUNG") {
-    return {
-      label: "Menunggu Konfirmasi Pembayaran",
-      value: formatSuperAdminDateTime(
-        session.transactionCreatedAt ?? session.updatedAt ?? session.createdAt,
-      ),
-    };
-  }
-
-  return {
-    label: "Sesi Dimulai",
-    value: formatSuperAdminDateTime(session.createdAt),
-  };
-}
-
-function getSuperAdminMarketingDateLabel(
-  session: SuperAdminUnitBarangMarketingSession,
-) {
-  const dateInfo = getSuperAdminMarketingDateInfo(session);
-
-  return dateInfo.value !== "-"
-    ? `${dateInfo.label}: ${dateInfo.value}`
-    : session.ending || "-";
-}
-
 function getSuperAdminWinnerBid(session: SuperAdminUnitBarangMarketingSession) {
   return (session.bids ?? []).find((bid) => bid.isWinner) ?? null;
 }
@@ -6199,7 +6098,7 @@ export function SuperAdminMarketingAuditPanel({
       </div>
 
       <div className="border-t border-[#e6eee9] pt-2">
-        <div className="grid gap-2 rounded-[0.95rem] text-sm sm:grid-cols-[7.5rem_minmax(0,1fr)_10.5rem] sm:items-center">
+        <div className="grid gap-2 rounded-[0.95rem] text-sm sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:items-center">
           <span
             className={cn(
               "inline-flex h-7 w-fit items-center gap-2 rounded-[0.45rem] px-2.5 text-[0.68rem] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.74)]",
@@ -6230,13 +6129,6 @@ export function SuperAdminMarketingAuditPanel({
           </span>
           <span className="min-w-0 truncate text-[0.72rem] font-black text-[#0f172a]">
             {getSuperAdminMarketingSummary(selectedIteration)}
-          </span>
-          <span
-            className="inline-flex items-center gap-2 font-mono text-[0.62rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end"
-            data-testid="superadmin-marketing-timestamp"
-          >
-            <Clock3 className="size-4 shrink-0" />
-            {getSuperAdminMarketingDateLabel(selectedIteration)}
           </span>
         </div>
       </div>

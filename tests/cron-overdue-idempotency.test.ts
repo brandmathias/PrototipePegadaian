@@ -228,6 +228,10 @@ describe("overdue Lelang Tertutup payment settlement", () => {
       expect.arrayContaining([
         expect.objectContaining({
           createdAt: paymentDeadline,
+          newStatus: "gagal"
+        }),
+        expect.objectContaining({
+          createdAt: paymentDeadline,
           escalationEligible: true,
           transaksiId: "trx-1"
         })

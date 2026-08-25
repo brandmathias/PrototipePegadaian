@@ -975,7 +975,7 @@ describe("listAdminBarangHistory", () => {
     expect(result.map((entry) => entry.note).join(" ")).not.toMatch(/Vickrey|Repair DB/i);
   });
 
-  it("uses the actual status update time when synthesizing a failed payment chronology", async () => {
+  it("uses the payment deadline when synthesizing a failed payment chronology", async () => {
     const baseRow = {
       barangId: "barang-payment-failure",
       barangCode: "BRG-PAYMENT-FAILURE",
@@ -1036,7 +1036,89 @@ describe("listAdminBarangHistory", () => {
 
     expect(failedEntry).toEqual(
       expect.objectContaining({
-        createdAt: "2026-05-27T07:51:00.000Z"
+        createdAt: "2026-05-27T07:36:00.000Z"
+      })
+    );
+  });
+
+  it("aligns a persisted failed payment history row to the payment deadline", async () => {
+    const baseRow = {
+      barangId: "barang-persisted-payment-failure",
+      barangCode: "BRG-PERSISTED-PAYMENT-FAILURE",
+      barangName: "Laptop Terlambat Bayar",
+      category: "elektronik",
+      condition: "baik",
+      description: "Laptop.",
+      specifications: {},
+      ownerName: "Nasabah Persisted Payment Failure",
+      customerNumber: "NSB-PERSISTED-PAYMENT-FAILURE"
+    };
+    const paymentDeadline = new Date("2026-05-27T07:36:00.000Z");
+
+    mocks.db.select
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            id: "hist-persisted-failed",
+            oldStatus: "dipasarkan",
+            newStatus: "gagal",
+            note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal.",
+            actorName: null,
+            actorRole: null,
+            createdAt: new Date("2026-05-27T07:51:00.000Z")
+          }
+        ])
+      )
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-persisted-payment-failure",
+            mode: "vickrey",
+            status: "gagal",
+            iteration: 1,
+            createdAt: new Date("2026-05-26T07:36:00.000Z"),
+            updatedAt: new Date("2026-05-27T07:51:00.000Z"),
+            endsAt: new Date("2026-05-26T07:36:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 1
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-persisted-payment-failure",
+            type: "vickrey",
+            status: "gagal",
+            rejectionReason: null,
+            createdAt: new Date("2026-05-26T07:36:00.000Z"),
+            updatedAt: new Date("2026-05-27T07:51:00.000Z"),
+            verifiedAt: null,
+            completedAt: null,
+            paymentDeadline,
+            actorName: "Sistem Otomatis",
+            actorRole: "system"
+          }
+        ])
+      );
+
+    const result = await listAdminBarangHistory(
+      "unit-1",
+      undefined,
+      "barang-persisted-payment-failure"
+    );
+    const failedEntry = result.find((entry) => entry.actionKey === "gagal");
+
+    expect(failedEntry).toEqual(
+      expect.objectContaining({
+        id: "hist-persisted-failed",
+        createdAt: paymentDeadline.toISOString(),
+        createdAtLabel: "27 Mei 2026, 14.36 WIB"
       })
     );
   });

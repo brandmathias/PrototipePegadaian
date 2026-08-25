@@ -216,6 +216,7 @@ async function appendItemStatusHistory(
     oldStatus: string | null | undefined;
     newStatus: string;
     note: string;
+    createdAt?: Date;
   }
 ) {
   if (input.oldStatus === input.newStatus) {
@@ -228,7 +229,8 @@ async function appendItemStatusHistory(
     oldStatus: input.oldStatus ?? null,
     newStatus: input.newStatus,
     changedByUserId: null,
-    note: input.note
+    note: input.note,
+    ...(input.createdAt ? { createdAt: input.createdAt } : {})
   });
 }
 
@@ -574,7 +576,8 @@ export async function processOverdueVickreyPayments(now = new Date()): Promise<O
         barangId: row.item.id,
         oldStatus: row.item.status,
         newStatus: "gagal",
-        note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
+        note: "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal.",
+        createdAt: violationOccurredAt
       });
 
       const matchingBlacklists = await tx

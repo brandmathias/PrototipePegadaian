@@ -2275,10 +2275,7 @@ describe("superadmin pages", () => {
     expect(progressSection).toHaveClass("justify-between");
     expect(progressSection).toHaveTextContent("Gagal Bayar");
     expect(progressSection).toHaveTextContent("Belum tercapai");
-    const superadminTimestamp = screen.getByTestId("superadmin-marketing-timestamp");
-    expect(superadminTimestamp).toHaveTextContent(/Batas bayar berakhir/i);
-    expect(superadminTimestamp).toHaveTextContent("27 Jun 2026, 22.59 WIB");
-    expect(superadminTimestamp).not.toHaveTextContent("26 Jun 2026, 23.10 WIB");
+    expect(screen.queryByTestId("superadmin-marketing-timestamp")).toBeNull();
     const superadminFailureBanner = screen
       .getByText(/lelang gagal .* pemenang dikenakan sanksi/i)
       .closest("section");
