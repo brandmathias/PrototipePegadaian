@@ -321,7 +321,7 @@ function InventoryHistoryList({
 }) {
   const TimeSortIcon = sortDirection === "desc" ? ArrowDown : ArrowUp;
   const historyGridTemplate =
-    "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]";
+    "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)]";
 
   return (
     <div>
@@ -347,7 +347,6 @@ function InventoryHistoryList({
             <TimeSortIcon aria-hidden="true" className="size-3.5 text-[#0a6a49]" strokeWidth={2.4} />
           </button>
         </div>
-        <div className="grid place-items-center px-0 py-3.5 text-center">Aksi</div>
       </div>
       {entries.length > 0 ? (
         entries.map((entry) => {
@@ -424,11 +423,6 @@ function InventoryHistoryList({
                 <p className="mt-1 text-[0.72rem] font-semibold text-[#52655d]">{entry.note}</p>
               </div>
 
-              <div className="flex flex-col items-start gap-1.5 lg:grid lg:place-items-center">
-                <DetailActionLink
-                  href={`/admin/barang/${entry.barangId}?riwayat=${encodeURIComponent(entry.id)}`}
-                />
-              </div>
             </div>
           );
         })

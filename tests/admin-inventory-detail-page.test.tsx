@@ -71,7 +71,7 @@ describe("AdminInventoryDetailPage", () => {
     expect(screen.queryByText(/menunggu jatuh tempo/i)).not.toBeInTheDocument();
   });
 
-  it("keeps failed auction remarketing available without edit access", () => {
+  it("does not offer a relist action for a failed auction", () => {
     render(
       <AdminInventoryDetailPage
         item={{
@@ -88,9 +88,7 @@ describe("AdminInventoryDetailPage", () => {
     expect(
       screen.queryByRole("link", { name: /edit data barang/i }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /lelang lagi/i }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /lelang lagi/i })).not.toBeInTheDocument();
   });
 
   it("keeps sold item data locked from edit access", () => {
@@ -159,7 +157,7 @@ describe("AdminInventoryDetailPage", () => {
     );
   });
 
-  it("focuses the selected history event without exposing current operational actions", () => {
+  it("focuses the selected history event without rendering a separate context panel", () => {
     render(
       <AdminInventoryDetailPage
         item={{ ...baseItem, status: "GAGAL" }}
@@ -187,20 +185,16 @@ describe("AdminInventoryDetailPage", () => {
       />,
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent("Dipasarkan");
-    expect(screen.getByRole("status")).toHaveTextContent("3 Jun 2026, 10.00 WIB");
     const selectedRow = screen.getByTestId("admin-asset-history-hist-marketing");
 
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText(/detail riwayat yang dipilih/i)).not.toBeInTheDocument();
     expect(selectedRow).toHaveAttribute(
       "data-history-selected",
       "true",
     );
     expect(document.activeElement).toBe(selectedRow);
     expect(screen.queryByRole("link", { name: /lelang lagi/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /lihat kondisi barang terkini/i })).toHaveAttribute(
-      "href",
-      "/admin/barang/barang-demo",
-    );
   });
 
   it("switches additional media thumbnails into the main preview", () => {

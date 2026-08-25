@@ -177,7 +177,7 @@ describe("AdminInventoryWorkspace", () => {
 });
 
 describe("AdminInventoryHistoryWorkspace", () => {
-  it("carries every selected history status into its own item detail link", () => {
+  it("keeps the history ledger free of detail actions across every process", () => {
     const actionKeys = [
       "input_baru",
       "perpanjangan",
@@ -207,11 +207,8 @@ describe("AdminInventoryHistoryWorkspace", () => {
       />,
     );
 
-    expect(screen.getAllByRole("link", { name: /lihat detail/i }).map((link) => link.getAttribute("href"))).toEqual(
-      actionKeys
-        .map((actionKey, index) => `/admin/barang/barang-${index + 1}?riwayat=hist-${actionKey}`)
-        .reverse(),
-    );
+    expect(screen.queryByRole("link", { name: /lihat detail/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Aksi")).not.toBeInTheDocument();
   });
 
   it("filters history by operational process", () => {
@@ -262,11 +259,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(statusBadge).toHaveClass("min-w-[7.5rem]");
     expect(headerRow).toHaveClass("gap-2.5");
     expect(headerRow).toHaveClass(
-      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
+      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)]"
     );
     expect(infoHeader).toHaveClass("lg:pl-2");
     expect(historyRow).toHaveClass(
-      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)_6.7rem]"
+      "lg:grid-cols-[minmax(12.5rem,1.12fr)_9.1rem_minmax(10.8rem,0.9fr)_8.8rem_minmax(10.4rem,0.82fr)_minmax(12.8rem,1fr)]"
     );
     expect(infoCell).toHaveClass("lg:pl-2");
     expect(screen.queryByRole("link", { name: "Edit Data" })).not.toBeInTheDocument();
@@ -597,8 +594,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
       "Nasabah Pemilik",
       "Status",
       "Aktor Internal",
-      "Waktu Proses",
-      "Aksi"
+      "Waktu Proses"
     ]);
     expect(headerRow).toHaveClass("px-3.5");
     expect(headerRow?.children[0]).toHaveClass("lg:pl-2");
@@ -612,18 +608,11 @@ describe("AdminInventoryHistoryWorkspace", () => {
     expect(headerRow?.children[3]).toHaveClass("place-items-center");
     expect(headerRow?.children[4]).toHaveClass("text-center");
     expect(headerRow?.children[4]).toHaveClass("place-items-center");
-    expect(headerRow?.children[6]).toHaveClass("text-center");
-    expect(headerRow?.children[6]).toHaveClass("place-items-center");
     expect(rowCells[2].firstElementChild).toHaveClass("lg:justify-center");
     expect(rowCells[3]).toHaveClass("lg:place-items-center");
     expect(rowCells[4]).toHaveClass("lg:place-items-center");
     expect(rowCells[4]).toHaveClass("lg:text-center");
-    expect(rowCells[6]).toHaveClass("lg:place-items-center");
-
-    expect(screen.getByRole("link", { name: /lihat detail/i })).toHaveClass(
-      "hover:bg-[#006747]",
-      "hover:text-white"
-    );
+    expect(screen.queryByRole("link", { name: /lihat detail/i })).not.toBeInTheDocument();
 
     const searchInput = screen.getByPlaceholderText(
       "Cari barang, nasabah, atau staf penginput"
