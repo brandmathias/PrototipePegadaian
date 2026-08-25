@@ -1659,10 +1659,15 @@ describe("superadmin pages", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByTestId("superadmin-vickrey-settlement-primary-grid"),
-    ).toHaveClass("xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]");
+    ).toHaveClass(
+      "lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]",
+    );
     expect(
-      screen.getByTestId("superadmin-vickrey-settlement-secondary-grid"),
-    ).toHaveClass("xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]");
+      screen.getByTestId("superadmin-vickrey-settlement-asset-panel"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("superadmin-vickrey-settlement-secondary-grid"),
+    ).not.toBeInTheDocument();
     const superAdminMechanismPanel = screen.getByTestId(
       "superadmin-vickrey-mechanism-panel",
     );
@@ -1683,7 +1688,7 @@ describe("superadmin pages", () => {
     const superAdminExecutionTime = within(superAdminMechanismPanel).getByText(
       "30 Mei 2026, 09.00 WIB",
     );
-    expect(superAdminWinnerPanel).toHaveClass("h-full");
+    expect(superAdminWinnerPanel).not.toHaveClass("h-full");
     expect(superAdminWinnerPanel).toHaveTextContent("Member ID:");
     expect(superAdminMechanismPanel).toHaveTextContent("Selesai & Diarsipkan");
     expect(superAdminArchivePrice.className).toContain("whitespace-nowrap");
@@ -2185,6 +2190,130 @@ describe("superadmin pages", () => {
     expect(
       within(winnerPanel).getByText("Menunggu Buyer Selesai").parentElement,
     ).toHaveClass("text-[0.56rem]");
+    expect(
+      screen.getByTestId("superadmin-vickrey-settlement-primary-grid"),
+    ).toHaveClass(
+      "lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]",
+    );
+    expect(
+      screen.getByTestId("superadmin-vickrey-settlement-asset-panel"),
+    ).toBeInTheDocument();
+    expect(winnerPanel).not.toHaveClass("h-full");
+  });
+
+  it("keeps the waiting-payment superadmin layout aligned with the admin settlement flow", () => {
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: {
+              id: "unit-pending",
+              code: "UPC-PND",
+              name: "UPC Wanea",
+              address: "Wanea",
+              status: "Aktif",
+            },
+            item: {
+              id: "barang-pending",
+              code: "BRG-PND",
+              name: "Cincin Emas Pending",
+              category: "perhiasan",
+              condition: "baik",
+              status: "terjual",
+              media: [
+                {
+                  id: "pending-media",
+                  type: "foto",
+                  url: "/uploads/cincin.jpg",
+                  fileName: "cincin.jpg",
+                },
+              ],
+              specifications: { berat: "5 gram", kadar: "22K" },
+            },
+            operationalStatus: "Status Terjual",
+            operationalTone: "emerald",
+            marketing: {
+              id: "pemasaran-pending",
+              lotId: "barang-pending",
+              lot: "Cincin Emas Pending",
+              code: "BRG-PND",
+              category: "perhiasan",
+              condition: "baik",
+              status: "SELESAI",
+              mode: "VICKREY_AUCTION",
+              unitName: "UPC Wanea",
+              participants: 1,
+              revealedBidCount: 1,
+              pendingRevealCount: 0,
+              basePrice: 7_000_000,
+              finalPrice: 6_500_000,
+              winner: "Buyer Pending",
+              buyerName: "Buyer Pending",
+              buyerEmail: "pending@example.com",
+              buyerPhone: "081200000001",
+              transactionId: "trx-pending",
+              transactionStatus: "MENUNGGU_PEMBAYARAN",
+              paymentDeadline: "2026-08-27T12:00:00+08:00",
+              visibility: "HASIL_DIBUKA",
+              media: [
+                {
+                  id: "pending-media",
+                  type: "foto",
+                  url: "/uploads/cincin.jpg",
+                  fileName: "cincin.jpg",
+                },
+              ],
+              primaryMedia: {
+                id: "pending-media",
+                type: "foto",
+                url: "/uploads/cincin.jpg",
+                fileName: "cincin.jpg",
+              },
+              bids: [
+                {
+                  id: "pending-bid",
+                  bidderId: "buyer-pending",
+                  bidderName: "Buyer Pending",
+                  submittedAtLabel: "26 Agu 2026, 10.00 WIB",
+                  amount: 6_500_000,
+                  isRevealed: true,
+                  rank: 1,
+                  isWinner: true,
+                  determinesFinalPrice: false,
+                },
+              ],
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    const layout = screen.getByTestId("superadmin-vickrey-settlement-layout");
+    expect(layout).toContainElement(
+      screen.getByTestId("superadmin-vickrey-settlement-primary-grid"),
+    );
+    expect(
+      screen.getByTestId("superadmin-vickrey-settlement-primary-grid"),
+    ).toHaveClass(
+      "lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]",
+    );
+    expect(
+      screen.getByTestId("superadmin-vickrey-settlement-asset-panel"),
+    ).toHaveTextContent("Detail Aset Lelang");
+    expect(screen.getByTestId("superadmin-vickrey-winner-profile")).toHaveTextContent(
+      "Detail Pemenang Lelang",
+    );
+    expect(screen.getByText("Progress Pembayaran Lelang")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("superadmin-vickrey-settlement-performance-panel"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Lelang Selesai - Menunggu Pelunasan Nasabah"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Menunggu Verifikasi Pembayaran" }),
+    ).toBeDisabled();
   });
 
   it("keeps the failed vickrey progress panel compact without stretching the right rail", () => {

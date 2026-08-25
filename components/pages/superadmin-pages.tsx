@@ -4255,7 +4255,7 @@ function SuperAdminVickreyWinnerProfilePanel({
 
   return (
     <section
-      className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      className="relative flex flex-col overflow-hidden rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
       data-testid="superadmin-vickrey-winner-profile"
     >
       {verified ? (
@@ -4268,7 +4268,7 @@ function SuperAdminVickreyWinnerProfilePanel({
         {title}
       </p>
 
-      <div className="mt-4 grid flex-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
+      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.62fr)] md:items-center">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid size-14 shrink-0 place-items-center rounded-full border border-[#d9e8df] bg-[#eef3f1] font-headline text-[1.1rem] font-black text-[#006747]">
             {getSuperAdminInitials(winnerName)}
@@ -4322,6 +4322,117 @@ function SuperAdminVickreyWinnerProfilePanel({
           </span>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+function getSuperAdminVickreyAssetDetailRows(
+  session: SuperAdminUnitBarangMarketingSession,
+  fulfilled: boolean,
+) {
+  const categoryRows = getBarangSpecificationRows(
+    session.category ?? "",
+    session.specifications ?? {},
+  )
+    .filter((row) => row.value && row.value !== "-")
+    .slice(0, 3);
+
+  const rows = fulfilled
+    ? [
+        { label: "Kode Aset", value: session.code || "-" },
+        ...categoryRows,
+        {
+          label: "Kategori",
+          value: session.category
+            ? formatSuperAdminDisplayLabel(session.category)
+            : "-",
+        },
+        {
+          label: "Lokasi Barang",
+          value: session.unitName || session.unitAddress || "-",
+        },
+      ]
+    : [
+        { label: "Kode Aset", value: session.code || "-" },
+        ...categoryRows,
+        {
+          label: "Kondisi",
+          value: session.condition
+            ? formatSuperAdminDisplayLabel(session.condition)
+            : "-",
+        },
+      ];
+
+  return rows.slice(0, 5);
+}
+
+function SuperAdminVickreyWinnerAssetPanel({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  const media =
+    session.primaryMedia ??
+    session.media?.find((entry) => entry.type !== "video") ??
+    session.media?.[0] ??
+    null;
+  const isVideo = Boolean(
+    media &&
+      (media.type === "video" || /\.(mp4|mov|webm|mkv)$/i.test(media.url)),
+  );
+  const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
+  const detailRows = getSuperAdminVickreyAssetDetailRows(session, fulfilled);
+
+  return (
+    <section
+      className="flex flex-col rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)] lg:min-h-[18.75rem]"
+      data-testid="superadmin-vickrey-settlement-asset-panel"
+    >
+      <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
+        {fulfilled ? "Detail Aset Lelang (Arsip)" : "Detail Aset Lelang"}
+      </p>
+      <div className="mt-4 grid flex-1 gap-4 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,0.9fr)] sm:items-center">
+        <div className="aspect-[16/9] overflow-hidden rounded-lg border border-[#edf2ee] bg-[#f6f2eb]">
+          {media ? (
+            isVideo ? (
+              <video
+                className="size-full object-cover"
+                muted
+                playsInline
+                preload="metadata"
+                src={media.url}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={`Foto ${session.lot}`}
+                className="size-full object-cover"
+                src={media.url}
+              />
+            )
+          ) : (
+            <div className="grid size-full place-items-center text-sm font-semibold text-[#8a9891]">
+              Media barang belum tersedia
+            </div>
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-headline text-[1.1rem] font-black leading-tight text-[#111b46]">
+            {session.lot}
+          </p>
+          <div className="mt-4 divide-y divide-[#edf2ee] text-[0.76rem] font-bold text-[#111b46]">
+            {detailRows.map(({ label, value }) => (
+              <div
+                className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-2 first:pt-0"
+                key={label}
+              >
+                <span className="text-[#40558b]">{label}</span>
+                <span className="min-w-0 break-words text-right">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -4602,6 +4713,44 @@ function SuperAdminVickreyProgressPanel({
       steps={steps}
       title={verified ? "Progress Penyelesaian" : "Progress Pembayaran Lelang"}
     />
+  );
+}
+
+function SuperAdminVickreySettlementPrimaryGrid({
+  session,
+}: {
+  session: SuperAdminUnitBarangMarketingSession;
+}) {
+  return (
+    <div
+      className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]"
+      data-testid="superadmin-vickrey-settlement-primary-grid"
+    >
+      <div className="lg:col-start-1 lg:row-start-1">
+        <SuperAdminVickreyWinnerProfilePanel session={session} />
+      </div>
+
+      <div className="h-full lg:col-start-2 lg:row-span-2 lg:row-start-1 [&>section]:h-full">
+        <SuperAdminVickreyWinnerAssetPanel session={session} />
+      </div>
+
+      <div className="lg:col-start-1 lg:row-start-2">
+        <SuperAdminVickreyMechanismPanel session={session} />
+      </div>
+
+      <div className="h-full lg:col-start-1 lg:row-start-3 [&>section]:h-full">
+        <SuperAdminVickreyProgressPanel session={session} />
+      </div>
+
+      <div className="h-full lg:col-start-2 lg:row-start-3 [&>section]:h-full">
+        <MarketingPerformancePanel
+          className="h-full"
+          insights={session.insights}
+          lotId={session.id}
+          testId="superadmin-vickrey-settlement-performance-panel"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -5776,7 +5925,6 @@ function SuperAdminVickreyWorkspace({
   session: SuperAdminUnitBarangMarketingSession;
 }) {
   const failureArchive = isSuperAdminVickreyFailureArchive(session);
-  const verified = isSuperAdminVickreyPaymentVerified(session);
   const fulfilled = isSuperAdminVickreyPaymentFulfilled(session);
 
   if (isSuperAdminVickreyLiveSession(session)) {
@@ -5812,147 +5960,43 @@ function SuperAdminVickreyWorkspace({
     );
   }
 
-  if (verified || fulfilled) {
-    if (fulfilled) {
-      return (
-        <div
-          className="space-y-4"
-          data-testid="superadmin-vickrey-settlement-layout"
-        >
-          <SuperAdminVickreySettlementBanner session={session} />
-          <div
-            className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]"
-            data-testid="superadmin-vickrey-settlement-primary-grid"
-          >
-            <div className="h-full [&>section]:h-full">
-              <SuperAdminVickreyWinnerProfilePanel session={session} />
-            </div>
-            <div className="h-full [&>section]:h-full">
-              <SuperAdminVickreyMechanismPanel session={session} />
-            </div>
-          </div>
+  return (
+    <div
+      className="space-y-4"
+      data-testid="superadmin-vickrey-settlement-layout"
+    >
+      <SuperAdminVickreySettlementBanner session={session} />
+      <SuperAdminVickreySettlementPrimaryGrid session={session} />
 
-          <div
-            className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)]"
-            data-testid="superadmin-vickrey-settlement-secondary-grid"
-          >
-            <div className="h-full [&>section]:h-full">
-              <SuperAdminVickreyProgressPanel session={session} />
-            </div>
-            <MarketingPerformancePanel
-              className="h-full"
-              insights={session.insights}
-              lotId={session.id}
-              testId="superadmin-vickrey-settlement-performance-panel"
-            />
-          </div>
+      <SuperAdminVickreyRankingTable session={session} />
 
-          <SuperAdminVickreyRankingTable session={session} />
+      <SuperAdminReadOnlyAuditFooter
+        icon={ShieldCheck}
+        note="Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
+      />
 
-          <div data-testid="superadmin-vickrey-settlement-handover">
-            <SuperAdminHandoverProofAuditCard
-              itemTitle={receiptContext.itemTitle}
-              session={session}
-              unitName={receiptContext.unitName}
-            />
-          </div>
-
-          <SuperAdminVickreyFinalSummaryPanel
-            receiptContext={receiptContext}
-            session={session}
-          />
-
-          <SuperAdminReadOnlyAuditFooter
-            icon={ShieldCheck}
-            note="Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
-          />
-        </div>
-      );
-    }
-
-    return (
-      <div
-        className="space-y-4"
-        data-testid="superadmin-vickrey-settlement-layout"
-      >
-        <SuperAdminVickreySettlementBanner session={session} />
-        <div
-          className="grid gap-4 xl:grid-cols-3"
-          data-testid="superadmin-vickrey-settlement-primary-grid"
-        >
-          <SuperAdminVickreyWinnerProfilePanel session={session} />
-          <SuperAdminVickreyProgressPanel session={session} />
-          <div className="grid gap-4">
-            <SuperAdminVickreyNotePanel session={session} />
-            <SuperAdminVickreyActionFooter
-              receiptContext={receiptContext}
-              session={session}
-            />
-          </div>
-        </div>
-
-        <div
-          className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
-          data-testid="superadmin-vickrey-settlement-secondary-grid"
-        >
-          <SuperAdminVickreyMechanismPanel session={session} />
-          <MarketingPerformancePanel
-            insights={session.insights}
-            lotId={session.id}
-            testId="superadmin-vickrey-settlement-performance-panel"
-          />
-        </div>
-
-        <SuperAdminVickreyRankingTable session={session} />
-
-        <div data-testid="superadmin-vickrey-settlement-handover">
-          <SuperAdminHandoverProofAuditCard
-            itemTitle={receiptContext.itemTitle}
-            session={session}
-            unitName={receiptContext.unitName}
-          />
-        </div>
-
-        <SuperAdminReadOnlyAuditFooter
-          icon={ShieldCheck}
-          note="Seluruh data dilindungi sistem keamanan berlapis dan ditampilkan read-only untuk kebutuhan audit superadmin."
+      <div data-testid="superadmin-vickrey-settlement-handover">
+        <SuperAdminHandoverProofAuditCard
+          itemTitle={receiptContext.itemTitle}
+          session={session}
+          unitName={receiptContext.unitName}
         />
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-4">
-      <SuperAdminVickreySettlementBanner session={session} />
-      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.03fr)_minmax(24rem,0.92fr)]">
-        <div className="space-y-4">
-          <SuperAdminVickreyWinnerProfilePanel session={session} />
-          <SuperAdminVickreyMechanismPanel session={session} />
-          <SuperAdminVickreyRankingTable session={session} />
-          <SuperAdminHandoverProofAuditCard
-            itemTitle={receiptContext.itemTitle}
-            session={session}
-            unitName={receiptContext.unitName}
-          />
-        </div>
-        <div className="space-y-4 2xl:sticky 2xl:top-4">
-          <SuperAdminVickreyProgressPanel session={session} />
-          <MarketingPerformancePanel
-            insights={session.insights}
-            lotId={session.id}
-            testId="superadmin-vickrey-active-performance-panel"
-          />
+      {fulfilled ? (
+        <SuperAdminVickreyFinalSummaryPanel
+          receiptContext={receiptContext}
+          session={session}
+        />
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter
             receiptContext={receiptContext}
             session={session}
           />
         </div>
-      </div>
-      <SuperAdminReadOnlyAuditFooter
-        icon={ShieldCheck}
-        note="Ringkasan sesi, pemenang, dan ranking bid ditampilkan read-only untuk monitoring lintas unit."
-      />
+      )}
     </div>
   );
 }
