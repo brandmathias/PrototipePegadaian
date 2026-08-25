@@ -22,7 +22,7 @@ const specificationFields: Record<string, BarangSpecificationField[]> = {
     { key: "kadarEmas", label: "Kadar Emas", placeholder: "Contoh: 24K atau 99,9%" },
     { key: "berat", label: "Berat", placeholder: "Contoh: 3,20 gram" },
     { key: "bentuk", label: "Bentuk", placeholder: "Contoh: Perhiasan atau batangan" },
-    { key: "panjang", label: "Panjang", placeholder: "Contoh: 18 cm" },
+    { key: "panjang", label: "Panjang", placeholder: "Contoh: 18 cm", required: false },
     { key: "diameter", label: "Diameter", placeholder: "Contoh: 16 mm" }
   ],
   logam_mulia: [

@@ -98,7 +98,7 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByRole("radio", { name: "Perhiasan" })).toHaveAttribute("aria-checked", "true");
     expect(screen.getByLabelText("Jenis Emas")).toBeInTheDocument();
     expect(screen.getByLabelText("Kadar Emas")).toBeInTheDocument();
-    expect(screen.getByLabelText("Panjang")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Panjang \(Opsional\)/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Diameter")).toBeInTheDocument();
     expect(screen.queryByLabelText("Sertifikat")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Nilai gadai")).not.toBeInTheDocument();
@@ -183,7 +183,7 @@ describe("AdminInventoryCreateForm", () => {
     fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
     fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "3,20 gram" } });
     fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Perhiasan" } });
-    fireEvent.change(screen.getByLabelText("Panjang"), { target: { value: "18 cm" } });
+    fireEvent.change(screen.getByLabelText(/^Panjang/i), { target: { value: "18 cm" } });
     fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
 
     fireEvent.change(input, {
@@ -198,6 +198,30 @@ describe("AdminInventoryCreateForm", () => {
     expect(screen.getByAltText("Preview penuh media barang")).toBeInTheDocument();
 
     expect(screen.getAllByLabelText(/checklist selesai/i)).toHaveLength(4);
+    expect(screen.getByRole("button", { name: /simpan barang gadai/i })).toBeEnabled();
+  });
+
+  it("allows a perhiasan record without panjang", async () => {
+    const { container } = renderWithToast(<AdminInventoryCreateForm />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(screen.getByLabelText("Nama barang"), { target: { value: "Anting Emas" } });
+    fireEvent.change(screen.getByLabelText("Nilai taksiran"), { target: { value: "18500000" } });
+    fireEvent.change(screen.getByLabelText("Nomor nasabah"), { target: { value: "0812445511223" } });
+    fireEvent.change(screen.getByLabelText("Nama penggadai"), { target: { value: "Raras Maheswari" } });
+    fireEvent.change(screen.getByLabelText("Jenis Emas"), { target: { value: "Anting" } });
+    fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
+    fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "3,20 gram" } });
+    fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Anting" } });
+    fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
+    fireEvent.change(input, {
+      target: {
+        files: [new File(["foto"], "anting.jpg", { type: "image/jpeg" })]
+      }
+    });
+
+    expect(await screen.findByAltText("Preview media barang 1")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Panjang \(Opsional\)/i)).toHaveValue("");
     expect(screen.getByRole("button", { name: /simpan barang gadai/i })).toBeEnabled();
   });
 
@@ -239,7 +263,7 @@ describe("AdminInventoryCreateForm", () => {
     fireEvent.change(screen.getByLabelText("Kadar Emas"), { target: { value: "24K" } });
     fireEvent.change(screen.getByLabelText("Berat"), { target: { value: "3,20 gram" } });
     fireEvent.change(screen.getByLabelText("Bentuk"), { target: { value: "Perhiasan" } });
-    fireEvent.change(screen.getByLabelText("Panjang"), { target: { value: "18 cm" } });
+    fireEvent.change(screen.getByLabelText(/^Panjang/i), { target: { value: "18 cm" } });
     fireEvent.change(screen.getByLabelText("Diameter"), { target: { value: "16 mm" } });
     fireEvent.change(input, {
       target: {
