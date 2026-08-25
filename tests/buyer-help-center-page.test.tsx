@@ -22,7 +22,10 @@ describe("BuyerHelpCenterPage", () => {
     fireEvent.click(firstQuestion);
     expect(firstQuestion).toHaveAttribute("aria-expanded", "true");
     expect(container.querySelector('[data-help-rail="active"]')).toHaveClass("bg-primary");
-    expect(screen.getByText(/Masih butuh konfirmasi lanjutan/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Masih butuh bantuan?" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Memiliki pertanyaan lebih lanjut? Silakan datang ke unit terdekat untuk mendapatkan bantuan.")
+    ).toBeInTheDocument();
   });
 
   it("states the real level 2 fixed-price restriction from the system rules", () => {

@@ -239,9 +239,9 @@ export function BuyerHelpCenterPage() {
               <div className="hidden h-14 w-px bg-white/28 sm:block" />
             </div>
             <div>
-              <h2 className="font-headline text-xl font-black">Masih butuh konfirmasi lanjutan?</h2>
+              <h2 className="font-headline text-xl font-black">Masih butuh bantuan?</h2>
               <p className="mt-1 text-sm font-medium leading-6 text-emerald-50">
-                Siapkan bukti pembayaran, nomor transaksi, dan hubungi admin unit terkait untuk pengecekan manual.
+                Memiliki pertanyaan lebih lanjut? Silakan datang ke unit terdekat untuk mendapatkan bantuan.
               </p>
             </div>
           </div>
