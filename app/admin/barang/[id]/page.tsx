@@ -14,7 +14,7 @@ export default async function Page({
   const { unitId } = await getAdminUnitPageContext();
   const [item, history] = await Promise.all([
     getAdminBarangById(unitId, id),
-    listAdminBarangHistory(unitId, 12, id),
+    listAdminBarangHistory(unitId, undefined, id),
   ]);
 
   return <AdminInventoryDetailPage history={history} item={item} itemId={id} />;
