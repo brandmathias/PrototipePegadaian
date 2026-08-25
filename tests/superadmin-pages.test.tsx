@@ -1907,6 +1907,17 @@ describe("superadmin pages", () => {
                   bidderName: "Peserta",
                   submittedAtLabel: "29 Apr 2026, 09:35 WIB",
                   rank: 1,
+                  isHighest: true,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-terkunci-2",
+                  bidderId: "buyer-2",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 09:40 WIB",
+                  rank: 2,
+                  isHighest: false,
                   isWinner: false,
                   determinesFinalPrice: false,
                 },
@@ -1937,15 +1948,29 @@ describe("superadmin pages", () => {
     expect(screen.getByText("Riwayat Iterasi Pemasaran")).toBeInTheDocument();
     expect(screen.getByText("Aktivitas Lelang Live")).toBeInTheDocument();
     expect(screen.getByText("Waktu Tersisa")).toBeInTheDocument();
-    expect(screen.getByText("Bid tersegel selama sesi berlangsung.")).toBeInTheDocument();
+    expect(activeLayout).toHaveTextContent("Batas Akhir Lelang");
+    expect(activeLayout).toHaveTextContent("29 Apr 2026, 11.00 WIB");
+    expect(activeLayout).not.toHaveTextContent("Bid tersegel selama sesi berlangsung.");
     expect(screen.getByText("Riwayat Penawaran (Bid Log)")).toBeInTheDocument();
     expect(screen.getAllByText("Rp ********").length).toBeGreaterThan(0);
     expect(activeLayout).toHaveTextContent("Performa & Aktivitas Sesi Publik");
     expect(activeLayout).toHaveTextContent("19x");
     expect(activeLayout).toHaveTextContent("2 Akun");
-    expect(
-      within(activeLayout).getByText("Iterasi 2 tetap berjalan"),
-    ).toBeInTheDocument();
+    expect(activeLayout).not.toHaveTextContent("Iterasi 2 tetap berjalan");
+    expect(activeLayout).not.toHaveTextContent("peserta terlindungi");
+    expect(activeLayout).not.toHaveTextContent(/\d+ tercatat/);
+    const activeBidLog = screen.getByTestId("superadmin-vickrey-active-bid-log");
+    const highestBidRow = within(activeBidLog)
+      .getByText("29 Apr 2026, 09:35 WIB")
+      .closest("tr");
+    const lowerBidRow = within(activeBidLog)
+      .getByText("29 Apr 2026, 09:40 WIB")
+      .closest("tr");
+    expect(highestBidRow).not.toBeNull();
+    expect(lowerBidRow).not.toBeNull();
+    expect(within(highestBidRow as HTMLElement).getByText("Tertinggi")).toBeInTheDocument();
+    expect(within(lowerBidRow as HTMLElement).getByText("-")).toBeInTheDocument();
+    expect(within(activeBidLog).queryByText("Tersegel")).not.toBeInTheDocument();
     expect(
       screen.queryByText("Lelang Selesai - Menunggu Pelunasan Nasabah"),
     ).not.toBeInTheDocument();

@@ -299,6 +299,7 @@ export type SuperAdminUnitBarangMarketingSession = {
     submittedAtLabel: string;
     amount?: number | null;
     isRevealed?: boolean;
+    isHighest?: boolean;
     rank: number;
     isWinner: boolean;
     determinesFinalPrice: boolean;
@@ -5635,10 +5636,6 @@ function SuperAdminVickreyActiveWorkspace({
               <span className="font-headline text-[1.45rem] font-black leading-none tracking-[-0.04em] text-white sm:text-[1.7rem]">
                 Rp ********
               </span>
-              <span className="mb-0.5 inline-flex items-center gap-1 text-[0.68rem] font-semibold text-white/78">
-                <LockKeyhole className="size-3.5" strokeWidth={2} />
-                Bid tersegel selama sesi berlangsung.
-              </span>
             </div>
           </div>
 
@@ -5660,16 +5657,14 @@ function SuperAdminVickreyActiveWorkspace({
           </div>
         </div>
 
-        <div className="relative mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/15 pt-3 text-[0.68rem] font-semibold text-white/78">
-          <span className="inline-flex items-center gap-1.5">
-            <UsersRound className="size-3.5 text-[#b7ffd1]" strokeWidth={2} />
-            {participantCount} peserta terlindungi
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Gavel className="size-3.5 text-[#b7ffd1]" strokeWidth={2} />
-            Iterasi {session.iteration ?? 1} tetap berjalan
-          </span>
+        <div className="relative mt-4 border-t border-white/15 pt-3 text-[0.68rem] text-white/80">
+          <p className="inline-flex items-center gap-2">
+            <CalendarDays className="size-3.5 text-white/56" />
+            Batas Akhir Lelang:{" "}
+            <span className="font-semibold text-white">{fallbackEndLabel}</span>
+          </p>
         </div>
+
       </section>
 
       <div className="grid items-stretch gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(15.5rem,0.58fr)]">
@@ -5686,10 +5681,6 @@ function SuperAdminVickreyActiveWorkspace({
                 Identitas dan nominal tetap tersegel sampai sesi berakhir.
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef9f2] px-2.5 py-1 text-[0.6rem] font-black uppercase tracking-[0.07em] text-[#007a53]">
-              <LockKeyhole className="size-3" strokeWidth={2.2} />
-              {participantCount} tercatat
-            </span>
           </div>
 
           {bids.length ? (
@@ -5726,9 +5717,18 @@ function SuperAdminVickreyActiveWorkspace({
                       </td>
                       <td className="px-2.5 py-2.5 font-black">Rp ********</td>
                       <td className="px-2.5 py-2.5">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#f1f5f3] px-2 py-1 text-[0.54rem] font-black uppercase tracking-[0.05em] text-[#64756e]">
-                          <LockKeyhole className="size-2.5" strokeWidth={2.3} />
-                          Tersegel
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.54rem] font-black uppercase tracking-[0.05em]",
+                            bid.isHighest
+                              ? "bg-[#e9f8ef] text-[#007a53]"
+                              : "bg-slate-100 text-slate-500",
+                          )}
+                        >
+                          {bid.isHighest ? (
+                            <BadgeCheck className="size-2.5" strokeWidth={2.3} />
+                          ) : null}
+                          {bid.isHighest ? "Tertinggi" : "-"}
                         </span>
                       </td>
                     </tr>
