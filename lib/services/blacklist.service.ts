@@ -6,6 +6,10 @@ import {
 } from "@/lib/blacklist/effective-state";
 import { serializeBlacklistHistoryEntry } from "@/lib/blacklist/history";
 import {
+  primaryViolationPhotoFileName,
+  primaryViolationPhotoUrl,
+} from "@/lib/blacklist/primary-violation-photo";
+import {
   getBlacklistRestrictionPolicy,
 } from "@/lib/blacklist/restrictions";
 import { resolveViolationItemImageUrl } from "@/lib/blacklist/violation-item-media";
@@ -14,7 +18,6 @@ import {
   barang,
   blacklistActionLogs,
   blacklists,
-  mediaBarang,
   pelanggaranUser,
   pemasaran,
   transaksi,
@@ -112,7 +115,8 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
       transaction: transaksi,
       auction: pemasaran,
       item: barang,
-      media: mediaBarang,
+      imageFileName: primaryViolationPhotoFileName(),
+      imageUrl: primaryViolationPhotoUrl(),
       unit: units
     })
     .from(pelanggaranUser)
@@ -120,10 +124,6 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
     .innerJoin(pemasaran, eq(pemasaran.id, pelanggaranUser.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .leftJoin(units, eq(units.id, pelanggaranUser.unitId))
-    .leftJoin(
-      mediaBarang,
-      and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0))
-    )
     .where(eq(pelanggaranUser.userId, userId))
     .orderBy(desc(transaksi.paymentDeadline), desc(pelanggaranUser.createdAt));
 
@@ -145,10 +145,10 @@ async function listSuperadminUnpaidAuctionTraces(userId: string) {
       itemDescription: row.item.description,
       itemAppraisalValue: toNullableNumber(row.item.appraisalValue),
       imageUrl: resolveViolationItemImageUrl({
-        databaseUrl: row.media?.url,
+        databaseUrl: row.imageUrl,
         itemName: row.item.name,
       }),
-      imageFileName: row.media?.fileName ?? null,
+      imageFileName: row.imageFileName ?? null,
       auctionMode: row.auction.mode,
       basePrice: toNullableNumber(row.auction.basePrice ?? row.auction.price),
       fixedPrice: toNullableNumber(row.auction.price),

@@ -390,7 +390,7 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
       transaction: transaksi,
       auction: pemasaran,
       item: barang,
-      media: mediaBarang,
+      imageUrl: primaryBarangPhotoUrl(),
       unit: units
     })
     .from(pelanggaranUser)
@@ -398,7 +398,6 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
     .innerJoin(pemasaran, eq(pemasaran.id, pelanggaranUser.pemasaranId))
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .leftJoin(units, eq(units.id, pelanggaranUser.unitId))
-    .leftJoin(mediaBarang, and(eq(mediaBarang.barangId, barang.id), eq(mediaBarang.sortOrder, 0)))
     .where(eq(pelanggaranUser.userId, userId))
     .orderBy(desc(transaksi.paymentDeadline), desc(pelanggaranUser.createdAt));
 
@@ -411,7 +410,7 @@ async function listBuyerViolationHistory(userId: string): Promise<BuyerViolation
       auctionMode: row.auction.mode,
       escalationEligible: row.violation.escalationEligible,
       imageUrl: resolveViolationItemImageUrl({
-        databaseUrl: row.media?.url,
+        databaseUrl: row.imageUrl,
         itemName: row.item.name,
       }),
       itemCode: row.item.code,
