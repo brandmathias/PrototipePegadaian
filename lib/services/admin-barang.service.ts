@@ -896,7 +896,7 @@ export async function listAdminBarangHistory(
           : "Sesi Harga Tetap ditutup sebagai pemasaran gagal dan membutuhkan tindak lanjut unit.",
       actorName: transaction?.actorName,
       actorRole: transaction?.actorRole,
-      createdAt: transaction?.paymentDeadline ?? transaction?.updatedAt ?? row.updatedAt ?? row.endsAt ?? row.createdAt
+      createdAt: transaction?.updatedAt ?? row.updatedAt ?? transaction?.paymentDeadline ?? row.endsAt ?? row.createdAt
     });
 
     if (!hasNearbyHistoryEntry(timelineEntries, failedEntry)) {

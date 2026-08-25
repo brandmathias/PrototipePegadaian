@@ -1463,25 +1463,91 @@ function getMarketingDateYear(auction: MarketingSession) {
 }
 
 function getMarketingTimeLabel(auction: MarketingSession) {
-  if (auction.mode === "VICKREY_AUCTION") {
-    return auction.visibility === "TERKUNCI" ? "Sesi Berakhir" : "Sesi Ditutup";
-  }
-  if (isMarketingSold(auction)) {
-    return "Terjual Pada";
-  }
-  return "Sesi Dimulai";
+  return getMarketingTimeMeta(auction).label;
 }
 
 function getMarketingTimeValue(auction: MarketingSession) {
+  return getMarketingTimeMeta(auction).value;
+}
+
+function getMarketingTimeMeta(auction: MarketingSession) {
   if (auction.mode === "VICKREY_AUCTION") {
-    return auction.endingAt
-      ? dateLabel(auction.endingAt)
-      : auction.ending || "-";
+    if (isVickreyFailureArchive(auction)) {
+      return getVickreyFailureTimestamp(auction);
+    }
+
+    if (isVickreyPaymentVerified(auction)) {
+      return {
+        label: "Pembayaran Diverifikasi",
+        value: dateLabel(
+          auction.soldAt ??
+            auction.verifiedAt ??
+            auction.completedAt ??
+            auction.endingAt,
+        ),
+      };
+    }
+
+    if (isPaymentQueue(auction)) {
+      return {
+        label: "Batas Bayar",
+        value: dateLabel(auction.paymentDeadline ?? auction.endingAt),
+      };
+    }
+
+    return {
+      label: auction.visibility === "TERKUNCI" ? "Sesi Berakhir" : "Sesi Ditutup",
+      value: auction.endingAt
+        ? dateLabel(auction.endingAt)
+        : auction.ending || "-",
+    };
   }
+
+  if (isFixedPricePaymentRejected(auction)) {
+    return {
+      label: "Bukti Pembayaran Ditolak",
+      value: dateLabel(auction.verifiedAt ?? auction.updatedAt ?? auction.createdAt),
+    };
+  }
+
   if (isMarketingSold(auction)) {
-    return dateLabel(auction.soldAt);
+    return {
+      label: "Terjual Pada",
+      value: dateLabel(
+        auction.soldAt ?? auction.verifiedAt ?? auction.completedAt ?? auction.updatedAt,
+      ),
+    };
   }
-  return dateLabel(auction.startsAt);
+
+  if (auction.transactionStatus === "LUNAS") {
+    return {
+      label: "Pembayaran Diverifikasi",
+      value: dateLabel(auction.verifiedAt ?? auction.updatedAt ?? auction.createdAt),
+    };
+  }
+
+  if (auction.status === "GAGAL" || auction.transactionStatus === "GAGAL") {
+    return {
+      label: "Status Gagal Diproses",
+      value: dateLabel(auction.updatedAt ?? auction.verifiedAt ?? auction.createdAt),
+    };
+  }
+
+  if (auction.transactionStatus === "BUKTI_DIUNGGAH") {
+    return {
+      label: "Bukti Pembayaran Diajukan",
+      value: dateLabel(auction.transactionCreatedAt ?? auction.updatedAt ?? auction.createdAt),
+    };
+  }
+
+  if (auction.transactionStatus === "MENUNGGU_KONFIRMASI_LANGSUNG") {
+    return {
+      label: "Menunggu Konfirmasi Pembayaran",
+      value: dateLabel(auction.transactionCreatedAt ?? auction.updatedAt ?? auction.createdAt),
+    };
+  }
+
+  return { label: "Sesi Dimulai", value: dateLabel(auction.startsAt) };
 }
 
 function getMarketingPriceLabel(auction: MarketingSession) {
@@ -3858,6 +3924,22 @@ function getVickreyFailureKind(auction: MarketingSession) {
   return hasWinnerTrace || failedTransaction ? "unpaid" : "no_bids";
 }
 
+function getVickreyFailureTimestamp(auction: MarketingSession) {
+  const unpaid = getVickreyFailureKind(auction) === "unpaid";
+
+  if (unpaid && auction.paymentDeadline) {
+    return {
+      label: "Batas Bayar Berakhir",
+      value: dateLabel(auction.paymentDeadline),
+    };
+  }
+
+  return {
+    label: "Sesi Ditutup",
+    value: dateLabel(auction.endingAt ?? auction.createdAt),
+  };
+}
+
 function isVickreyFailureArchive(auction: MarketingSession) {
   if (
     auction.mode !== "VICKREY_AUCTION" ||
@@ -6074,7 +6156,8 @@ function VickreyFailureBanner({ auction }: { auction: MarketingSession }) {
             {unpaid ? "Batas 24 Jam Terlewati" : "Tidak Ada Bid Masuk"}
           </p>
           <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#9f1239]">
-            {dateLabel(auction.endingAt)} - {auction.code || auction.id}
+            {getVickreyFailureTimestamp(auction).label}: {" "}
+            {getVickreyFailureTimestamp(auction).value} - {auction.code || auction.id}
           </p>
         </div>
       </div>
@@ -6284,9 +6367,9 @@ function VickreyFailureMechanismPanel({
         </p>
         <p>
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
-            Tanggal Arsip
+            {getVickreyFailureTimestamp(auction).label}
           </span>
-          {getVickreyArchiveDate(auction)}
+          {getVickreyFailureTimestamp(auction).value}
         </p>
       </div>
     </section>

@@ -975,6 +975,72 @@ describe("listAdminBarangHistory", () => {
     expect(result.map((entry) => entry.note).join(" ")).not.toMatch(/Vickrey|Repair DB/i);
   });
 
+  it("uses the actual status update time when synthesizing a failed payment chronology", async () => {
+    const baseRow = {
+      barangId: "barang-payment-failure",
+      barangCode: "BRG-PAYMENT-FAILURE",
+      barangName: "Cincin Emas Terlambat Bayar",
+      category: "perhiasan",
+      condition: "baik",
+      description: "Cincin emas.",
+      specifications: {},
+      ownerName: "Nasabah Payment Failure",
+      customerNumber: "NSB-PAYMENT-FAILURE"
+    };
+
+    mocks.db.select
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() => mockHistoryQuery([]))
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-payment-failure",
+            mode: "vickrey",
+            status: "gagal",
+            iteration: 1,
+            createdAt: new Date("2026-05-26T07:36:00.000Z"),
+            updatedAt: new Date("2026-05-27T07:51:00.000Z"),
+            endsAt: new Date("2026-05-26T07:36:00.000Z"),
+            actorName: "Admin Pemasaran",
+            actorRole: "admin_unit",
+            bidCount: 2
+          }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockHistoryQuery([
+          {
+            ...baseRow,
+            marketingId: "marketing-payment-failure",
+            type: "vickrey",
+            status: "gagal",
+            rejectionReason: null,
+            createdAt: new Date("2026-05-26T07:36:00.000Z"),
+            updatedAt: new Date("2026-05-27T07:51:00.000Z"),
+            verifiedAt: null,
+            completedAt: null,
+            paymentDeadline: new Date("2026-05-27T07:36:00.000Z"),
+            actorName: "Sistem Otomatis",
+            actorRole: "system"
+          }
+        ])
+      );
+
+    const result = await listAdminBarangHistory(
+      "unit-1",
+      undefined,
+      "barang-payment-failure"
+    );
+    const failedEntry = result.find((entry) => entry.actionKey === "gagal");
+
+    expect(failedEntry).toEqual(
+      expect.objectContaining({
+        createdAt: "2026-05-27T07:51:00.000Z"
+      })
+    );
+  });
+
   it("omits database repair audit rows from the business chronology", async () => {
     const baseRow = {
       barangId: "barang-repair",

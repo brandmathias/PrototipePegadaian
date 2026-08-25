@@ -253,6 +253,7 @@ export type SuperAdminUnitBarangMarketingSession = {
   primaryMedia?: SuperAdminUnitBarangDetailMedia | null;
   startsAt?: string | null;
   createdAt?: string;
+  updatedAt?: string | null;
   ending?: string;
   endingAt?: string;
   revealDeadline?: string | null;
@@ -3741,17 +3742,105 @@ function getSuperAdminIterationHistory(
   });
 }
 
+function getSuperAdminMarketingDateInfo(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  if (getUnitDetailMarketingModeValue(session.mode) === "vickrey") {
+    if (isSuperAdminVickreyFailureArchive(session)) {
+      return getSuperAdminVickreyFailureTimestamp(session);
+    }
+
+    if (isSuperAdminVickreyPaymentVerified(session)) {
+      return {
+        label: "Pembayaran Diverifikasi",
+        value: formatSuperAdminDateTime(
+          session.soldAt ??
+            session.verifiedAt ??
+            session.completedAt ??
+            session.endingAt ??
+            session.createdAt,
+        ),
+      };
+    }
+
+    if (session.transactionStatus === "MENUNGGU_PEMBAYARAN") {
+      return {
+        label: "Batas Bayar",
+        value: formatSuperAdminDateTime(
+          session.paymentDeadline ?? session.endingAt ?? session.createdAt,
+        ),
+      };
+    }
+
+    return {
+      label: session.visibility === "TERKUNCI" ? "Sesi Berakhir" : "Sesi Ditutup",
+      value: formatSuperAdminDateTime(session.endingAt ?? session.createdAt),
+    };
+  }
+
+  if (session.transactionStatus === "DITOLAK_BUKTI") {
+    return {
+      label: "Bukti Pembayaran Ditolak",
+      value: formatSuperAdminDateTime(
+        session.verifiedAt ?? session.updatedAt ?? session.createdAt,
+      ),
+    };
+  }
+
+  if (session.transactionStatus === "LUNAS" || session.transactionStatus === "SELESAI") {
+    return {
+      label: "Pembayaran Diverifikasi",
+      value: formatSuperAdminDateTime(
+        session.soldAt ??
+          session.verifiedAt ??
+          session.completedAt ??
+          session.updatedAt ??
+          session.createdAt,
+      ),
+    };
+  }
+
+  if (session.status === "GAGAL" || session.transactionStatus === "GAGAL") {
+    return {
+      label: "Status Gagal Diproses",
+      value: formatSuperAdminDateTime(
+        session.updatedAt ?? session.verifiedAt ?? session.createdAt,
+      ),
+    };
+  }
+
+  if (session.transactionStatus === "BUKTI_DIUNGGAH") {
+    return {
+      label: "Bukti Pembayaran Diajukan",
+      value: formatSuperAdminDateTime(
+        session.transactionCreatedAt ?? session.updatedAt ?? session.createdAt,
+      ),
+    };
+  }
+
+  if (session.transactionStatus === "MENUNGGU_KONFIRMASI_LANGSUNG") {
+    return {
+      label: "Menunggu Konfirmasi Pembayaran",
+      value: formatSuperAdminDateTime(
+        session.transactionCreatedAt ?? session.updatedAt ?? session.createdAt,
+      ),
+    };
+  }
+
+  return {
+    label: "Sesi Dimulai",
+    value: formatSuperAdminDateTime(session.createdAt),
+  };
+}
+
 function getSuperAdminMarketingDateLabel(
   session: SuperAdminUnitBarangMarketingSession,
 ) {
-  const dateLabel = formatSuperAdminDateTime(
-    session.endingAt ??
-      session.soldAt ??
-      session.paymentDeadline ??
-      session.createdAt,
-  );
+  const dateInfo = getSuperAdminMarketingDateInfo(session);
 
-  return dateLabel !== "-" ? dateLabel : session.ending || "-";
+  return dateInfo.value !== "-"
+    ? `${dateInfo.label}: ${dateInfo.value}`
+    : session.ending || "-";
 }
 
 function getSuperAdminWinnerBid(session: SuperAdminUnitBarangMarketingSession) {
@@ -3919,6 +4008,24 @@ function getSuperAdminVickreyFailureKind(
   );
 
   return hasWinnerTrace || failedTransaction ? "unpaid" : "no_bids";
+}
+
+function getSuperAdminVickreyFailureTimestamp(
+  session: SuperAdminUnitBarangMarketingSession,
+) {
+  const unpaid = getSuperAdminVickreyFailureKind(session) === "unpaid";
+
+  if (unpaid && session.paymentDeadline) {
+    return {
+      label: "Batas Bayar Berakhir",
+      value: formatSuperAdminDateTime(session.paymentDeadline),
+    };
+  }
+
+  return {
+    label: "Sesi Ditutup",
+    value: formatSuperAdminDateTime(session.endingAt ?? session.createdAt),
+  };
 }
 
 function isSuperAdminVickreyFailureArchive(
@@ -4999,8 +5106,8 @@ function SuperAdminVickreyFailureBanner({
             {unpaid ? "Batas 24 Jam Terlewati" : "Tidak Ada Bid Masuk"}
           </p>
           <p className="mt-1 text-[0.72rem] font-semibold leading-5 text-[#9f1239]">
-            {formatSuperAdminDateTime(session.endingAt ?? session.createdAt)} -{" "}
-            {session.code || session.id}
+            {getSuperAdminVickreyFailureTimestamp(session).label}: {" "}
+            {getSuperAdminVickreyFailureTimestamp(session).value} - {session.code || session.id}
           </p>
         </div>
       </div>
@@ -5213,9 +5320,9 @@ function SuperAdminVickreyFailureMechanismPanel({
         </p>
         <p>
           <span className="block text-[0.62rem] font-black uppercase tracking-[0.08em] text-[#40558b]">
-            Tanggal Arsip
+            {getSuperAdminVickreyFailureTimestamp(session).label}
           </span>
-          {getSuperAdminVickreyArchiveDate(session)}
+          {getSuperAdminVickreyFailureTimestamp(session).value}
         </p>
       </div>
     </section>
@@ -6124,7 +6231,10 @@ export function SuperAdminMarketingAuditPanel({
           <span className="min-w-0 truncate text-[0.72rem] font-black text-[#0f172a]">
             {getSuperAdminMarketingSummary(selectedIteration)}
           </span>
-          <span className="inline-flex items-center gap-2 font-mono text-[0.62rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end">
+          <span
+            className="inline-flex items-center gap-2 font-mono text-[0.62rem] font-black uppercase tracking-[0.04em] text-[#40558b] sm:justify-end"
+            data-testid="superadmin-marketing-timestamp"
+          >
             <Clock3 className="size-4 shrink-0" />
             {getSuperAdminMarketingDateLabel(selectedIteration)}
           </span>

@@ -2224,6 +2224,13 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByText(/lelang gagal .* pemenang dikenakan sanksi/i)).toBeInTheDocument();
     expect(screen.getByText(/pemenang tidak melakukan pelunasan dalam batas waktu 24 jam/i)).toBeInTheDocument();
+    const unpaidFailureBanner = screen
+      .getByText(/lelang gagal .* pemenang dikenakan sanksi/i)
+      .closest("section");
+    expect(unpaidFailureBanner).not.toBeNull();
+    expect(unpaidFailureBanner).toHaveTextContent(/Batas bayar berakhir/i);
+    expect(unpaidFailureBanner).toHaveTextContent("2 Jun 2026, 20.57 WIB");
+    expect(unpaidFailureBanner).not.toHaveTextContent("1 Jun 2026, 20.57 WIB");
     expect(screen.getByText(/manifes penyerahan & pemenang/i)).toBeInTheDocument();
     expect(screen.getByText(/gagal pelunasan/i)).toBeInTheDocument();
     expect(screen.getByText(/pelanggaran dicatat/i)).toBeInTheDocument();
@@ -2308,6 +2315,12 @@ describe("admin pemasaran pages", () => {
     expect(noBidHeaderBadge).toHaveClass("bg-[#fdeeee]", "text-[#b42318]");
     expect(screen.getByText(/lelang gagal .* tidak ada peserta/i)).toBeInTheDocument();
     expect(screen.getByText(/sesi berakhir tanpa peserta yang mengirim bid/i)).toBeInTheDocument();
+    const noBidFailureBanner = screen
+      .getByText(/lelang gagal .* tidak ada peserta/i)
+      .closest("section");
+    expect(noBidFailureBanner).not.toBeNull();
+    expect(noBidFailureBanner).toHaveTextContent(/Sesi ditutup/i);
+    expect(noBidFailureBanner).toHaveTextContent("1 Jun 2026, 20.57 WIB");
     expect(screen.getByText(/manifes kegagalan sesi/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak ada pemenang/i)).toBeInTheDocument();
     expect(screen.getAllByText(/tanpa peserta/i).length).toBeGreaterThan(0);

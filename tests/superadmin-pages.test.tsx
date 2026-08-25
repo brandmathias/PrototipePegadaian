@@ -2275,7 +2275,20 @@ describe("superadmin pages", () => {
     expect(progressSection).toHaveClass("justify-between");
     expect(progressSection).toHaveTextContent("Gagal Bayar");
     expect(progressSection).toHaveTextContent("Belum tercapai");
+    const superadminTimestamp = screen.getByTestId("superadmin-marketing-timestamp");
+    expect(superadminTimestamp).toHaveTextContent(/Batas bayar berakhir/i);
+    expect(superadminTimestamp).toHaveTextContent("27 Jun 2026, 22.59 WIB");
+    expect(superadminTimestamp).not.toHaveTextContent("26 Jun 2026, 23.10 WIB");
+    const superadminFailureBanner = screen
+      .getByText(/lelang gagal .* pemenang dikenakan sanksi/i)
+      .closest("section");
+    expect(superadminFailureBanner).not.toBeNull();
+    expect(superadminFailureBanner).toHaveTextContent(/Batas bayar berakhir/i);
+    expect(superadminFailureBanner).toHaveTextContent("27 Jun 2026, 22.59 WIB");
+    expect(superadminFailureBanner).not.toHaveTextContent("26 Jun 2026, 23.10 WIB");
     expect(mechanismPanel).toHaveClass("h-full");
+    expect(mechanismPanel).toHaveTextContent("Waktu Pelaksanaan");
+    expect(mechanismPanel).toHaveTextContent("26 Jun 2026, 22.10 WIB");
     expect(performancePanel).toHaveTextContent(
       "Performa & Aktivitas Sesi Publik",
     );
