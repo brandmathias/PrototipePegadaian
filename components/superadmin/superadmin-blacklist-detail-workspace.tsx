@@ -294,9 +294,6 @@ function getTickerState(targetAt: string | null | undefined, now: number) {
     days: String(days).padStart(2, "0"),
     hours: String(hours).padStart(2, "0"),
     isExpired,
-    label: isExpired
-      ? "Masa pembatasan berakhir"
-      : `Sisa waktu ${days} hari ${hours} jam ${minutes} menit ${seconds} detik`,
     minutes: String(minutes).padStart(2, "0"),
     seconds: String(seconds).padStart(2, "0")
   };
@@ -514,7 +511,7 @@ function CountdownPanel({
   }, [serverNow]);
 
   return (
-    <section className="flex h-full flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
+    <section className="flex self-start flex-col rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
       <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
         Masa Berlaku Hukuman
       </h2>
@@ -522,7 +519,7 @@ function CountdownPanel({
         <CalendarClock className="size-4" />
         {formatDisplayDate(startDate)} - {formatDisplayDate(parseDate(deadline))}
       </p>
-      <div className="mt-5 grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-1.5">
+      <div className="mt-4 grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-center gap-1.5">
         {[
           ["Hari", ticker.days],
           ["Jam", ticker.hours],
@@ -542,9 +539,6 @@ function CountdownPanel({
           </div>
         ))}
       </div>
-      <p className={cn("mt-3 text-sm font-black xl:mt-auto xl:pt-4", tone.text)}>
-        {ticker.label}
-      </p>
     </section>
   );
 }
@@ -718,13 +712,22 @@ export function SuperadminBlacklistDetailWorkspace({
       </div>
 
       <section className="rounded-[1.35rem] border border-[#d8e4de] bg-white p-4 shadow-[0_22px_60px_-52px_rgba(8,69,50,0.42)] sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div
+          className={cn(
+            "flex items-start",
+            isAdminUnit
+              ? "flex-col gap-3 sm:flex-row sm:justify-between"
+              : "justify-start",
+          )}
+        >
           <h2 className="font-headline text-lg font-black tracking-[-0.02em] text-[#15231d]">
             Riwayat Pelanggaran (Timeline)
           </h2>
-          <div className="w-full sm:w-[24rem]">
-            <ViolationRecordSummary summary={violationRecordSummary} />
-          </div>
+          {isAdminUnit ? (
+            <div className="w-full sm:w-[24rem]">
+              <ViolationRecordSummary summary={violationRecordSummary} />
+            </div>
+          ) : null}
         </div>
         <div className="mt-5">
           {items.map((item) => (

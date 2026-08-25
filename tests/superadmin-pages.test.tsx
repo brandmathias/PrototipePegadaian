@@ -2645,9 +2645,9 @@ describe("superadmin pages", () => {
     expect(
       screen.getByText("Riwayat Pelanggaran (Timeline)"),
     ).toBeInTheDocument();
-    expect(screen.getByText("Pelanggaran Tercatat")).toBeInTheDocument();
-    expect(screen.getByText("Di Unit Terkait")).toBeInTheDocument();
-    expect(screen.getByText("Di Luar Unit")).toBeInTheDocument();
+    expect(screen.queryByText("Pelanggaran Tercatat")).not.toBeInTheDocument();
+    expect(screen.queryByText("Di Unit Terkait")).not.toBeInTheDocument();
+    expect(screen.queryByText("Di Luar Unit")).not.toBeInTheDocument();
     expect(screen.getByText("Keterangan Level Pelanggaran")).toBeInTheDocument();
     const levelOneBadge = screen
       .getAllByRole("heading", { name: "Level 1" })
@@ -2669,6 +2669,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByText(/penyelesaian transaksi/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tindak lanjut/i)).not.toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
+    expect(screen.queryByText(/Sisa waktu/i)).not.toBeInTheDocument();
     expect(screen.getByText("Dtk")).toBeInTheDocument();
     expect(screen.queryByText("Log Keputusan Sistem")).not.toBeInTheDocument();
     expect(screen.queryByText("Ketetapan Level")).not.toBeInTheDocument();

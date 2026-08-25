@@ -165,6 +165,7 @@ describe("AdminBlacklistPage", () => {
     render(
       <AdminBlacklistDetailPage
         entry={makeBlacklistEntry(2)}
+        serverNow="2026-06-16T05:15:00.000Z"
         userId="user-2"
       />,
     );
@@ -184,6 +185,7 @@ describe("AdminBlacklistPage", () => {
     expect(screen.getByText(/Selama 365 hari, akun buyer ditangguhkan/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak bisa login masuk ke sistem/i)).toBeInTheDocument();
     expect(screen.getByText("Masa Berlaku Hukuman")).toBeInTheDocument();
+    expect(screen.queryByText(/Sisa waktu/i)).not.toBeInTheDocument();
     expect(screen.queryByText("Log Keputusan Sistem")).not.toBeInTheDocument();
     expect(screen.queryByText("Ketetapan Level")).not.toBeInTheDocument();
     expect(screen.queryByText("Konteks Lintas Unit")).not.toBeInTheDocument();
