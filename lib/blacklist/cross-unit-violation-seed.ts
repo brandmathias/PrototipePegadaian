@@ -1,4 +1,5 @@
 import {
+  CROSS_UNIT_SCENARIO_EMAILS,
   CROSS_UNIT_VIOLATION_SCENARIO,
   getExpectedFinalRestrictions,
   getScenarioDurationHours,
@@ -47,6 +48,16 @@ function getActionLogId(incidentIndex: number) {
   return `62000000-0000-4000-8000-${String(incidentIndex).padStart(12, "0")}`;
 }
 
+function getHistoricalSessionId(buyerIndex: number, sessionIndex: number) {
+  return `63000000-0000-4000-8000-${String(buyerIndex * 10 + sessionIndex).padStart(12, "0")}`;
+}
+
+export function getCrossUnitViolationHistoricalSessionIds() {
+  return CROSS_UNIT_SCENARIO_EMAILS.flatMap((_, buyerOffset) =>
+    [1, 2].map((sessionIndex) => getHistoricalSessionId(buyerOffset + 1, sessionIndex)),
+  );
+}
+
 export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedContext) {
   validateCrossUnitViolationScenario();
 
@@ -88,6 +99,16 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
     oldStatus: string | null;
   }>;
   const blacklistActionLogs = [] as Array<Record<string, unknown>>;
+  const sessions = [] as Array<{
+    createdAt: Date;
+    expiresAt: Date;
+    id: string;
+    ipAddress: string;
+    token: string;
+    updatedAt: Date;
+    userAgent: string;
+    userId: string;
+  }>;
 
   CROSS_UNIT_VIOLATION_SCENARIO.forEach((incident, incidentOffset) => {
     const incidentIndex = incidentOffset + 1;
@@ -255,6 +276,35 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
     };
   });
 
+  CROSS_UNIT_SCENARIO_EMAILS.forEach((buyerEmail, buyerOffset) => {
+    const buyer = requireIdentity(context.usersByEmail, buyerEmail, "Buyer");
+    const firstBidAt = Math.min(
+      ...CROSS_UNIT_VIOLATION_SCENARIO.flatMap((incident) =>
+        incident.bids
+          .filter((bid) => bid.bidderEmail === buyerEmail)
+          .map((bid) => bid.submittedAt.getTime()),
+      ),
+    );
+
+    if (!Number.isFinite(firstBidAt)) {
+      throw new Error(`Riwayat sesi ${buyerEmail} tidak memiliki penawaran acuan.`);
+    }
+
+    [120, 20].forEach((minutesBeforeBid, sessionOffset) => {
+      const updatedAt = new Date(firstBidAt - minutesBeforeBid * 60 * 1000);
+      sessions.push({
+        id: getHistoricalSessionId(buyerOffset + 1, sessionOffset + 1),
+        token: `cross-unit-history-${buyerOffset + 1}-${sessionOffset + 1}`,
+        userId: buyer.id,
+        createdAt: updatedAt,
+        updatedAt,
+        expiresAt: new Date(updatedAt.getTime() + 8 * 60 * 60 * 1000),
+        ipAddress: `103.84.132.${buyerOffset + 11}`,
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+      });
+    });
+  });
+
   return {
     barang,
     mediaBarang,
@@ -265,6 +315,7 @@ export function buildCrossUnitViolationSeedRows(context: CrossUnitViolationSeedC
     riwayatStatusBarang,
     blacklists,
     blacklistActionLogs,
+    sessions,
     suspendedUserIds: blacklists
       .filter((blacklist) => blacklist.totalViolations >= 3)
       .map((blacklist) => blacklist.userId)

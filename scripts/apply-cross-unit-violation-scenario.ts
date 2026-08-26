@@ -13,6 +13,7 @@ import {
 } from "../lib/blacklist/cross-unit-violation-scenario";
 import {
   buildCrossUnitViolationSeedRows,
+  getCrossUnitViolationHistoricalSessionIds,
   type CrossUnitViolationSeedContext
 } from "../lib/blacklist/cross-unit-violation-seed";
 import { getBlacklistDurationUnit } from "../lib/blacklist/restrictions";
@@ -42,11 +43,6 @@ if (productionTarget && getBlacklistDurationUnit() !== "days") {
 const scenarioApplyDeadline = Math.min(
   ...getExpectedFinalRestrictions().map((restriction) => restriction.blockedUntil.getTime())
 );
-if (Date.now() >= scenarioApplyDeadline) {
-  throw new Error(
-    "Perubahan ditolak. Jendela penerapan skenario telah berakhir agar hukuman lama tidak diaktifkan kembali."
-  );
-}
 
 type SeedUserRow = {
   email: string;
@@ -80,6 +76,7 @@ const targetBarangIds = CROSS_UNIT_VIOLATION_SCENARIO.map((incident) => incident
 const targetBarangCodes = CROSS_UNIT_VIOLATION_SCENARIO.map((incident) => incident.itemCode);
 const targetPemasaranIds = CROSS_UNIT_VIOLATION_SCENARIO.map((incident) => incident.ids.pemasaran);
 const targetTransaksiIds = CROSS_UNIT_VIOLATION_SCENARIO.map((incident) => incident.ids.transaksi);
+const targetHistoricalSessionIds = getCrossUnitViolationHistoricalSessionIds();
 const targetBlacklistIds = getExpectedFinalRestrictions().map((restriction) =>
   restriction.buyerEmail === "yoga@gmail.com"
     ? "61000000-0000-4000-8000-000000000001"
@@ -344,6 +341,13 @@ async function runPreflight(client: Client, context: LoadedSeedContext) {
       [targetBarangIds, targetBlacklistIds]
     );
     assertCount(Number(partialParents.rows[0]?.count ?? 0), 0, "skenario parsial");
+    await assertExactScopedIds(client, {
+      table: "session",
+      whereSql: "id = any($1::text[])",
+      params: [targetHistoricalSessionIds],
+      expectedIds: [],
+      label: "riwayat sesi login"
+    });
   } else {
     const rowId = (row: Record<string, unknown>) => String(row.id);
     await assertExactScopedIds(client, {
@@ -430,6 +434,16 @@ async function runPreflight(client: Client, context: LoadedSeedContext) {
       expectedIds: expectedRows.blacklistActionLogs.map(rowId),
       label: "log blacklist"
     });
+    const historicalSessionCount = await client.query<{ count: string }>(
+      `select count(*)::text as count from session where id = any($1::text[])`,
+      [targetHistoricalSessionIds]
+    );
+    const existingSessionCount = Number(historicalSessionCount.rows[0]?.count ?? 0);
+    if (existingSessionCount !== 0 && existingSessionCount !== targetHistoricalSessionIds.length) {
+      throw new Error(
+        `Preflight gagal: riwayat sesi login hanya terisi ${existingSessionCount}/${targetHistoricalSessionIds.length}.`
+      );
+    }
   }
 
   const openTransactions = await client.query(
@@ -461,6 +475,25 @@ async function runPreflight(client: Client, context: LoadedSeedContext) {
   if (Date.now() < latestViolationAt) {
     throw new Error("Preflight gagal: timestamp pelanggaran terakhir masih berada di masa depan.");
   }
+
+  return scenarioCount;
+}
+
+async function syncHistoricalSessionRows(
+  client: Client,
+  rows: ReturnType<typeof buildCrossUnitViolationSeedRows>
+) {
+  await client.query(`delete from session where id = any($1::text[])`, [targetHistoricalSessionIds]);
+  await insertRows(client, "session", [
+    { key: "id", column: "id" },
+    { key: "expiresAt", column: "expires_at" },
+    { key: "token", column: "token" },
+    { key: "createdAt", column: "created_at" },
+    { key: "updatedAt", column: "updated_at" },
+    { key: "ipAddress", column: "ip_address" },
+    { key: "userAgent", column: "user_agent" },
+    { key: "userId", column: "user_id" }
+  ], rows.sessions);
 }
 
 async function insertScenario(client: Client, context: CrossUnitViolationSeedContext) {
@@ -590,6 +623,7 @@ async function insertScenario(client: Client, context: CrossUnitViolationSeedCon
     [rows.suspendedUserIds, CROSS_UNIT_VIOLATION_SCENARIO[5].violationOccurredAt]
   );
   await client.query(`delete from session where user_id = any($1::text[])`, [rows.suspendedUserIds]);
+  await syncHistoricalSessionRows(client, rows);
 
   return rows;
 }
@@ -623,6 +657,24 @@ async function auditScenario(client: Client) {
     [targetBarangIds]
   );
   assertCount(Number(historyCount.rows[0]?.count ?? 0), 28, "riwayat barang");
+
+  const historicalSessionCount = await client.query<{ count: string }>(
+    `select count(*)::text as count from session where id = any($1::text[])`,
+    [targetHistoricalSessionIds]
+  );
+  assertCount(
+    Number(historicalSessionCount.rows[0]?.count ?? 0),
+    targetHistoricalSessionIds.length,
+    "riwayat sesi login"
+  );
+  const activeHistoricalSessionCount = await client.query<{ count: string }>(
+    `select count(*)::text as count
+     from session
+     where id = any($1::text[])
+       and expires_at > now()`,
+    [targetHistoricalSessionIds]
+  );
+  assertCount(Number(activeHistoricalSessionCount.rows[0]?.count ?? 0), 0, "sesi login aktif");
 
   const chronologyErrors = await client.query<{ count: string }>(
     `select count(*)::text as count
@@ -753,13 +805,28 @@ async function main() {
     );
 
     const context = await loadSeedContext(client);
-    await runPreflight(client, context);
-    await insertScenario(client, context);
+    const scenarioCount = await runPreflight(client, context);
+    const reconcileHistoricalSessions =
+      scenarioCount === targetViolationIds.length && Date.now() >= scenarioApplyDeadline;
+    if (scenarioCount === 0 && Date.now() >= scenarioApplyDeadline) {
+      throw new Error(
+        "Perubahan ditolak. Jendela penerapan skenario telah berakhir agar hukuman lama tidak diaktifkan kembali."
+      );
+    }
+    if (reconcileHistoricalSessions) {
+      await syncHistoricalSessionRows(client, buildCrossUnitViolationSeedRows(context));
+    } else {
+      await insertScenario(client, context);
+    }
     const audit = await auditScenario(client);
 
     if (applyChanges) {
       await client.query("commit");
-      console.log("[cross-unit-scenario] production applied and audited.");
+      console.log(
+        reconcileHistoricalSessions
+          ? "[cross-unit-scenario] production login history reconciled and audited."
+          : "[cross-unit-scenario] production applied and audited."
+      );
     } else {
       await client.query("rollback");
       console.log("[cross-unit-scenario] dry-run passed; no data was written.");

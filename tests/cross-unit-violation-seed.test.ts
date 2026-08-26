@@ -35,7 +35,24 @@ describe("cross-unit violation seed rows", () => {
     expect(rows.riwayatStatusBarang).toHaveLength(28);
     expect(rows.blacklists).toHaveLength(3);
     expect(rows.blacklistActionLogs).toHaveLength(7);
+    expect(rows.sessions).toHaveLength(8);
     expect(rows.mediaBarang.every((media) => Number(media.sizeBytes) > 0)).toBe(true);
+  });
+
+  it("keeps two expired login-history sessions for every cross-unit buyer", () => {
+    const rows = buildCrossUnitViolationSeedRows(context);
+
+    for (const buyer of context.usersByEmail.values()) {
+      const buyerSessions = rows.sessions.filter((session) => session.userId === buyer.id);
+      expect(buyerSessions).toHaveLength(2);
+      expect(
+        buyerSessions.every(
+          (session) =>
+            session.createdAt.getTime() <= session.updatedAt.getTime() &&
+            session.updatedAt.getTime() < session.expiresAt.getTime(),
+        ),
+      ).toBe(true);
+    }
   });
 
   it("stores valid Vickrey ranking data with the target first and second bid as final price", () => {
