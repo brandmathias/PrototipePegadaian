@@ -1087,7 +1087,7 @@ describe("admin pemasaran pages", () => {
           mode: "VICKREY_AUCTION",
           ending: "1 hari 2 jam",
           endingAt: new Date("2026-05-06T12:00:00+08:00").toISOString(),
-          participants: 3,
+          participants: 6,
           basePrice: 10000000,
           appraisalValue: 11000000,
           description: "Cincin emas dengan kondisi appraisal baik.",
@@ -1139,6 +1139,46 @@ describe("admin pemasaran pages", () => {
               isHighest: true,
               isWinner: false,
               determinesFinalPrice: false
+            },
+            {
+              id: "bid-third",
+              bidderId: "buyer-3",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.15 WIB",
+              rank: 3,
+              isHighest: false,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-fourth",
+              bidderId: "buyer-4",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.20 WIB",
+              rank: 4,
+              isHighest: false,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-fifth",
+              bidderId: "buyer-5",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.25 WIB",
+              rank: 5,
+              isHighest: false,
+              isWinner: false,
+              determinesFinalPrice: false
+            },
+            {
+              id: "bid-sixth",
+              bidderId: "buyer-6",
+              bidderName: "Peserta",
+              submittedAtLabel: "11 Jun 2026, 10.30 WIB",
+              rank: 6,
+              isHighest: false,
+              isWinner: false,
+              determinesFinalPrice: false
             }
           ]
         }}
@@ -1185,6 +1225,17 @@ describe("admin pemasaran pages", () => {
     expect(
       lowerBidRow.compareDocumentPosition(highestBidRow) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const bidLog = screen.getByTestId("admin-vickrey-active-bid-log-slot");
+    expect(within(bidLog).getByText("Menampilkan 1 sampai 5 dari 6 penawaran")).toBeInTheDocument();
+    expect(within(bidLog).queryByText("11 Jun 2026, 10.30 WIB")).not.toBeInTheDocument();
+    fireEvent.click(
+      within(bidLog).getByRole("button", {
+        name: "Halaman penawaran berikutnya",
+      }),
+    );
+    expect(within(bidLog).getByText("Menampilkan 6 sampai 6 dari 6 penawaran")).toBeInTheDocument();
+    expect(within(bidLog).getByText("11 Jun 2026, 10.30 WIB")).toBeInTheDocument();
+    expect(within(bidLog).queryByText("11 Jun 2026, 10.06 WIB")).not.toBeInTheDocument();
     const bidLogTable = container.querySelector("table");
     expect(bidLogTable).toHaveClass("table-fixed");
     expect(bidLogTable).not.toHaveClass("min-w-[46rem]");

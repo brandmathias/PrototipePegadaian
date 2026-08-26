@@ -1902,10 +1902,10 @@ describe("superadmin pages", () => {
               totalIterations: 2,
               createdAt: "2026-04-29T08:00:00+08:00",
               endingAt: "2026-04-29T12:00:00+08:00",
-              participants: 3,
+              participants: 6,
               visibility: "TERKUNCI",
               basePrice: 10_000_000,
-              insights: { views: 19, likes: 2, participants: 3 },
+              insights: { views: 19, likes: 2, participants: 6 },
               bids: [
                 {
                   id: "bid-terkunci-1",
@@ -1923,6 +1923,46 @@ describe("superadmin pages", () => {
                   bidderName: "Peserta",
                   submittedAtLabel: "29 Apr 2026, 09:40 WIB",
                   rank: 2,
+                  isHighest: false,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-terkunci-3",
+                  bidderId: "buyer-3",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 09:45 WIB",
+                  rank: 3,
+                  isHighest: false,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-terkunci-4",
+                  bidderId: "buyer-4",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 09:50 WIB",
+                  rank: 4,
+                  isHighest: false,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-terkunci-5",
+                  bidderId: "buyer-5",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 09:55 WIB",
+                  rank: 5,
+                  isHighest: false,
+                  isWinner: false,
+                  determinesFinalPrice: false,
+                },
+                {
+                  id: "bid-terkunci-6",
+                  bidderId: "buyer-6",
+                  bidderName: "Peserta",
+                  submittedAtLabel: "29 Apr 2026, 10:00 WIB",
+                  rank: 6,
                   isHighest: false,
                   isWinner: false,
                   determinesFinalPrice: false,
@@ -1977,6 +2017,18 @@ describe("superadmin pages", () => {
     expect(within(highestBidRow as HTMLElement).getByText("Tertinggi")).toBeInTheDocument();
     expect(within(lowerBidRow as HTMLElement).getByText("-")).toBeInTheDocument();
     expect(within(activeBidLog).queryByText("Tersegel")).not.toBeInTheDocument();
+    expect(
+      within(activeBidLog).getByText("Menampilkan 1 sampai 5 dari 6 penawaran"),
+    ).toBeInTheDocument();
+    expect(within(activeBidLog).queryByText("29 Apr 2026, 10:00 WIB")).not.toBeInTheDocument();
+    fireEvent.click(
+      within(activeBidLog).getByRole("button", {
+        name: "Halaman penawaran berikutnya",
+      }),
+    );
+    expect(within(activeBidLog).getByText("Menampilkan 6 sampai 6 dari 6 penawaran")).toBeInTheDocument();
+    expect(within(activeBidLog).getByText("29 Apr 2026, 10:00 WIB")).toBeInTheDocument();
+    expect(within(activeBidLog).queryByText("29 Apr 2026, 09:35 WIB")).not.toBeInTheDocument();
     expect(
       screen.queryByText("Lelang Selesai - Menunggu Pelunasan Nasabah"),
     ).not.toBeInTheDocument();

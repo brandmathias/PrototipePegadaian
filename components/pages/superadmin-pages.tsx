@@ -97,6 +97,10 @@ import {
   type VickreyRankingRow,
 } from "@/components/shared/vickrey-ranking-table";
 import {
+  VickreyBidPaginationFooter,
+  useVickreyBidPagination,
+} from "@/components/shared/vickrey-bid-pagination";
+import {
   AdminSelect,
   type AdminSelectOption,
 } from "@/components/admin/admin-select";
@@ -5676,8 +5680,16 @@ function SuperAdminVickreyActiveWorkspace({
 }: {
   session: SuperAdminUnitBarangMarketingSession;
 }) {
-  const bids = [...(session.bids ?? [])].sort(
-    (left, right) => (left.rank || 0) - (right.rank || 0),
+  const bids = useMemo(
+    () =>
+      [...(session.bids ?? [])].sort(
+        (left, right) => (left.rank || 0) - (right.rank || 0),
+      ),
+    [session.bids],
+  );
+  const pagination = useVickreyBidPagination(
+    bids,
+    bids.map((bid) => bid.id).join("|"),
   );
   const participantCount = Math.max(session.participants ?? 0, bids.length);
   const fallbackEndLabel = formatSuperAdminDateTime(session.endingAt);
@@ -5768,58 +5780,65 @@ function SuperAdminVickreyActiveWorkspace({
           </div>
 
           {bids.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[34rem] table-fixed text-left">
-                <colgroup>
-                  <col className="w-[10%]" />
-                  <col className="w-[29%]" />
-                  <col className="w-[29%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[12%]" />
-                </colgroup>
-                <thead className="bg-[#f8faf9] text-[0.6rem] font-black uppercase tracking-[0.05em] text-[#64756e]">
-                  <tr>
-                    <th className="px-3 py-2.5">#</th>
-                    <th className="px-2.5 py-2.5">Penawar</th>
-                    <th className="px-2.5 py-2.5">Waktu</th>
-                    <th className="px-2.5 py-2.5">Nominal</th>
-                    <th className="px-2.5 py-2.5">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[0.72rem] text-[#21332b]">
-                  {bids.map((bid, index) => (
-                    <tr
-                      className="border-t border-[#edf2ee] bg-white transition-colors duration-150 ease-out hover:bg-[#f6fbf8]"
-                      key={bid.id}
-                    >
-                      <td className="px-3 py-2.5 font-black text-[#007a53]">
-                        {bid.rank || index + 1}
-                      </td>
-                      <td className="px-2.5 py-2.5 font-bold">************</td>
-                      <td className="px-2.5 py-2.5 text-[#64756e]">
-                        {bid.submittedAtLabel || "-"}
-                      </td>
-                      <td className="px-2.5 py-2.5 font-black">Rp ********</td>
-                      <td className="px-2.5 py-2.5">
-                        <span
-                          className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.54rem] font-black uppercase tracking-[0.05em]",
-                            bid.isHighest
-                              ? "bg-[#e9f8ef] text-[#007a53]"
-                              : "bg-slate-100 text-slate-500",
-                          )}
-                        >
-                          {bid.isHighest ? (
-                            <BadgeCheck className="size-2.5" strokeWidth={2.3} />
-                          ) : null}
-                          {bid.isHighest ? "Tertinggi" : "-"}
-                        </span>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[34rem] table-fixed text-left">
+                  <colgroup>
+                    <col className="w-[10%]" />
+                    <col className="w-[29%]" />
+                    <col className="w-[29%]" />
+                    <col className="w-[20%]" />
+                    <col className="w-[12%]" />
+                  </colgroup>
+                  <thead className="bg-[#f8faf9] text-[0.6rem] font-black uppercase tracking-[0.05em] text-[#64756e]">
+                    <tr>
+                      <th className="px-3 py-2.5">#</th>
+                      <th className="px-2.5 py-2.5">Penawar</th>
+                      <th className="px-2.5 py-2.5">Waktu</th>
+                      <th className="px-2.5 py-2.5">Nominal</th>
+                      <th className="px-2.5 py-2.5">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="text-[0.72rem] text-[#21332b]">
+                    {pagination.visibleItems.map((bid, index) => (
+                      <tr
+                        className="border-t border-[#edf2ee] bg-white transition-colors duration-150 ease-out hover:bg-[#f6fbf8]"
+                        key={bid.id}
+                      >
+                        <td className="px-3 py-2.5 font-black text-[#007a53]">
+                          {bid.rank || index + 1}
+                        </td>
+                        <td className="px-2.5 py-2.5 font-bold">************</td>
+                        <td className="px-2.5 py-2.5 text-[#64756e]">
+                          {bid.submittedAtLabel || "-"}
+                        </td>
+                        <td className="px-2.5 py-2.5 font-black">Rp ********</td>
+                        <td className="px-2.5 py-2.5">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.54rem] font-black uppercase tracking-[0.05em]",
+                              bid.isHighest
+                                ? "bg-[#e9f8ef] text-[#007a53]"
+                                : "bg-slate-100 text-slate-500",
+                            )}
+                          >
+                            {bid.isHighest ? (
+                              <BadgeCheck className="size-2.5" strokeWidth={2.3} />
+                            ) : null}
+                            {bid.isHighest ? "Tertinggi" : "-"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <VickreyBidPaginationFooter
+                pageIndex={pagination.pageIndex}
+                totalItems={pagination.totalItems}
+                onPageIndexChange={pagination.setPageIndex}
+              />
+            </>
           ) : (
             <div className="px-4 py-5 text-center">
               <p className="text-[0.78rem] font-black text-[#21332b]">

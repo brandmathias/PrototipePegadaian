@@ -80,6 +80,10 @@ import {
   VickreyRankingTable,
   type VickreyRankingRow,
 } from "@/components/shared/vickrey-ranking-table";
+import {
+  VickreyBidPaginationFooter,
+  useVickreyBidPagination,
+} from "@/components/shared/vickrey-bid-pagination";
 import { TransactionReceiptDocument } from "@/components/shared/transaction-receipt-document";
 import {
   printReceiptElementInIsolatedFrame,
@@ -596,6 +600,10 @@ function VickreyBidLogTable({
   showBidRows: boolean;
 }) {
   const rows = getBidDisplayRows(auction, showBidRows);
+  const pagination = useVickreyBidPagination(
+    rows,
+    rows.map((row) => row.id).join("|"),
+  );
 
   return (
     <section className="overflow-hidden rounded-[1.45rem] border border-[#dfe9e3] bg-white shadow-[0_18px_48px_-42px_rgba(8,69,50,0.38)]">
@@ -628,10 +636,10 @@ function VickreyBidLogTable({
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
+                {pagination.visibleItems.map((row, index) => (
                   <tr
                     className={`transform-gpu border-t border-[#edf2ee] text-sm opacity-100 transition duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:-translate-y-[1px] hover:shadow-[inset_3px_0_0_#007a53] ${
-                      index === 0 ? "bg-[#f1fbf5]/65" : "bg-white"
+                      row.tone === "green" ? "bg-[#f1fbf5]/65" : "bg-white"
                     }`}
                     key={row.id}
                     style={{ transitionDelay: `${Math.min(index, 4) * 45}ms` }}
@@ -658,20 +666,11 @@ function VickreyBidLogTable({
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-[#edf2ee] px-4 py-3 text-xs font-semibold text-[#64756e]">
-            <span>Total {auction.participants ?? rows.length} penawaran</span>
-            <div className="flex gap-1.5">
-              <span className="grid size-7 place-items-center rounded-full border border-[#dfe9e3] text-[#98a7a0]">
-                1
-              </span>
-              <span className="grid size-7 place-items-center rounded-full border border-[#dfe9e3] text-[#98a7a0]">
-                2
-              </span>
-              <span className="grid size-7 place-items-center rounded-full border border-[#dfe9e3] text-[#98a7a0]">
-                3
-              </span>
-            </div>
-          </div>
+          <VickreyBidPaginationFooter
+            pageIndex={pagination.pageIndex}
+            totalItems={pagination.totalItems}
+            onPageIndexChange={pagination.setPageIndex}
+          />
         </>
       ) : (
         <div className="p-4">
