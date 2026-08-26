@@ -4835,7 +4835,10 @@ function SuperAdminVickreyNotePanel({
   }
 
   return (
-    <section className="rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]">
+    <section
+      className="w-full rounded-xl border border-[#dfe7e2] bg-white px-4 py-4 shadow-[0_20px_46px_-40px_rgba(8,69,50,0.32)]"
+      data-testid="superadmin-vickrey-payment-total-panel"
+    >
       <p className="text-[0.78rem] font-black uppercase tracking-[0.04em] text-[#006747]">
         Total Pembayaran
       </p>
@@ -5988,7 +5991,7 @@ function SuperAdminVickreyWorkspace({
           receiptContext={receiptContext}
           session={session}
         />
-      ) : (
+      ) : isSuperAdminVickreyPaymentVerified(session) ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)]">
           <SuperAdminVickreyNotePanel session={session} />
           <SuperAdminVickreyActionFooter
@@ -5996,6 +5999,8 @@ function SuperAdminVickreyWorkspace({
             session={session}
           />
         </div>
+      ) : (
+        <SuperAdminVickreyNotePanel session={session} />
       )}
     </div>
   );

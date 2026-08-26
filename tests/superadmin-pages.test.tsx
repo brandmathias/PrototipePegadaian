@@ -2312,8 +2312,11 @@ describe("superadmin pages", () => {
       screen.getByText("Lelang Selesai - Menunggu Pelunasan Nasabah"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Menunggu Verifikasi Pembayaran" }),
-    ).toBeDisabled();
+      screen.queryByRole("button", { name: "Menunggu Verifikasi Pembayaran" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId("superadmin-vickrey-payment-total-panel"),
+    ).toHaveClass("w-full");
   });
 
   it("keeps the failed vickrey progress panel compact without stretching the right rail", () => {
