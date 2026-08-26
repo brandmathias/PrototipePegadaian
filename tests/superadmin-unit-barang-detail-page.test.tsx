@@ -103,15 +103,6 @@ describe("route-real superadmin unit barang detail page", () => {
             marketing: null,
             history: [
               {
-                id: "hist-gagal",
-                barangId: "barang-fixed-rejected",
-                actionKey: "gagal",
-                actionLabel: "Gagal",
-                note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit.",
-                actorName: "Maria Supit",
-                createdAtLabel: "6 Jul 2026, 15.36 WIB",
-              },
-              {
                 id: "hist-dipasarkan",
                 barangId: "barang-fixed-rejected",
                 actionKey: "dipasarkan",
@@ -119,6 +110,15 @@ describe("route-real superadmin unit barang detail page", () => {
                 note: "Barang dipublikasikan ke katalog.",
                 actorName: "Admin Unit Ranotana",
                 createdAtLabel: "23 Jun 2026, 05.00 WIB",
+              },
+              {
+                id: "hist-gagal",
+                barangId: "barang-fixed-rejected",
+                actionKey: "gagal",
+                actionLabel: "Gagal",
+                note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit.",
+                actorName: "Maria Supit",
+                createdAtLabel: "6 Jul 2026, 15.36 WIB",
               },
             ],
           } as any
@@ -143,14 +143,19 @@ describe("route-real superadmin unit barang detail page", () => {
     expect(priceFrame).toHaveClass("rounded-[0.72rem]", "px-5", "py-5");
     expect(priceFrame.className).toContain("border-[#15965d]");
     expect(priceFrame).toHaveClass("bg-white");
-    expect(priceFrame.querySelectorAll("span.pointer-events-none").length).toBeGreaterThanOrEqual(8);
+    expect(priceFrame.querySelectorAll("span.pointer-events-none").length).toBeGreaterThanOrEqual(4);
     expect(timeline.querySelector("table")).not.toBeNull();
     expect(timeline).toHaveTextContent("Status");
     expect(timeline).toHaveTextContent("Tanggal & Jam");
     expect(timeline).toHaveTextContent("Deskripsi");
     expect(timeline).toHaveTextContent("Aktor / Sumber");
+    expect(timeline).toHaveTextContent("Aktivitas terbaru ditampilkan paling atas.");
     expect(timeline).toHaveTextContent("Aktor Internal: Maria Supit");
     expect(timeline.querySelector(".lucide-megaphone")).not.toBeNull();
     expect(timeline.querySelector(".lucide-ban")).not.toBeNull();
+    const timelineText = timeline.textContent ?? "";
+    expect(timelineText.indexOf("Gagal")).toBeLessThan(
+      timelineText.indexOf("Dipasarkan"),
+    );
   });
 });

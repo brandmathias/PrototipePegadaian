@@ -101,7 +101,7 @@ describe("AdminInventoryDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows asset chronology from first action to latest with internal actors", () => {
+  it("shows the latest asset activity first with internal actors", () => {
     render(
       <AdminInventoryDetailPage
         item={baseItem}
@@ -141,6 +141,7 @@ describe("AdminInventoryDetailPage", () => {
 
     expect(timeline).not.toBeNull();
     expect(timeline).toHaveTextContent("Riwayat Kronologi Aset");
+    expect(timeline).toHaveTextContent("Aktivitas terbaru ditampilkan paling atas.");
     expect(timeline).toHaveTextContent("Aktor Internal:Admin Input");
     expect(timeline).toHaveTextContent("Aktor Internal:Admin Pemasaran");
     expect(timeline).toHaveTextContent("Aktor Internal:Admin Verifikasi");
@@ -149,11 +150,11 @@ describe("AdminInventoryDetailPage", () => {
     expect(timeline?.querySelector(".lucide-ban")).not.toBeNull();
 
     const timelineText = timeline?.textContent ?? "";
-    expect(timelineText.indexOf("Barang Masuk")).toBeLessThan(
+    expect(timelineText.indexOf("Gagal")).toBeLessThan(
       timelineText.indexOf("Dipasarkan"),
     );
     expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(
-      timelineText.indexOf("Gagal"),
+      timelineText.indexOf("Barang Masuk"),
     );
   });
 

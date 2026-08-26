@@ -93,6 +93,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminInventoryMetrics } from "@/lib/admin-unit/operational-metrics";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { sortAssetTimelineEntries } from "@/lib/asset-timeline";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -360,75 +361,6 @@ function splitTimelineStamp(label: string | null | undefined) {
   }
 
   return { date: normalized, time: "" };
-}
-
-const TIMELINE_MONTH_INDEX: Record<string, number> = {
-  januari: 0,
-  jan: 0,
-  februari: 1,
-  feb: 1,
-  maret: 2,
-  mar: 2,
-  april: 3,
-  apr: 3,
-  mei: 4,
-  juni: 5,
-  jun: 5,
-  juli: 6,
-  jul: 6,
-  agustus: 7,
-  agu: 7,
-  ags: 7,
-  september: 8,
-  sep: 8,
-  oktober: 9,
-  okt: 9,
-  november: 10,
-  nov: 10,
-  desember: 11,
-  des: 11,
-};
-
-function parseTimelineTime(label: string | null | undefined) {
-  const normalized = String(label ?? "").trim();
-  if (!normalized || normalized === "-") return Number.POSITIVE_INFINITY;
-
-  const localizedMatch = normalized.match(
-    /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:,\s*(\d{1,2})[.:](\d{2})(?::(\d{2}))?)?/,
-  );
-
-  if (localizedMatch) {
-    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] =
-      localizedMatch;
-    const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
-
-    if (typeof month === "number") {
-      return new Date(
-        Number(year),
-        month,
-        Number(day),
-        Number(hour),
-        Number(minute),
-        Number(second),
-      ).getTime();
-    }
-  }
-
-  const parsed = Date.parse(normalized);
-  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
-}
-
-function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(
-  entries: T[],
-) {
-  return entries
-    .map((entry, index) => ({
-      entry,
-      index,
-      time: parseTimelineTime(entry.createdAtLabel),
-    }))
-    .sort((left, right) => left.time - right.time || left.index - right.index)
-    .map(({ entry }) => entry);
 }
 
 function AdminAuctionDeadline({
@@ -927,7 +859,7 @@ export function AdminInventoryDetailPage({
             createdAtLabel: item.pawnedAt || item.date || "-",
           },
         ];
-  const timelineEntries = sortTimelineEntries(timelineSourceEntries);
+  const timelineEntries = sortAssetTimelineEntries(timelineSourceEntries);
   const selectedHistoryEntry = timelineEntries.find((entry) => entry.id === selectedHistoryId);
 
   useEffect(() => {
@@ -1091,9 +1023,14 @@ export function AdminInventoryDetailPage({
           <span className="grid size-10 place-items-center rounded-[0.9rem] border border-[#ddf1e6] bg-[#f7fbf8] text-[#0a9f62]">
             <ShoppingBag className="size-4.5" />
           </span>
-          <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#14213d]">
-            Riwayat Kronologi Aset
-          </h3>
+          <div>
+            <h3 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#14213d]">
+              Riwayat Kronologi Aset
+            </h3>
+            <p className="mt-0.5 text-xs text-[#6b7c72]">
+              Aktivitas terbaru ditampilkan paling atas.
+            </p>
+          </div>
         </div>
 
         <div className="responsive-scroll-x overflow-x-auto">

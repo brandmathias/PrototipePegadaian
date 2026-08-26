@@ -135,6 +135,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { sortAssetTimelineEntries } from "@/lib/asset-timeline";
 import {
   ADMIN_UNIT_CATEGORY_FILTER_OPTIONS,
   compareCategoryFilterLabels,
@@ -321,75 +322,6 @@ export type SuperAdminUnitBarangHistoryEntry = {
   actorName: string;
   createdAtLabel: string;
 };
-
-const TIMELINE_MONTH_INDEX: Record<string, number> = {
-  januari: 0,
-  jan: 0,
-  februari: 1,
-  feb: 1,
-  maret: 2,
-  mar: 2,
-  april: 3,
-  apr: 3,
-  mei: 4,
-  juni: 5,
-  jun: 5,
-  juli: 6,
-  jul: 6,
-  agustus: 7,
-  agu: 7,
-  ags: 7,
-  september: 8,
-  sep: 8,
-  oktober: 9,
-  okt: 9,
-  november: 10,
-  nov: 10,
-  desember: 11,
-  des: 11,
-};
-
-function parseTimelineTime(label: string | null | undefined) {
-  const normalized = String(label ?? "").trim();
-  if (!normalized || normalized === "-") return Number.POSITIVE_INFINITY;
-
-  const localizedMatch = normalized.match(
-    /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:,\s*(\d{1,2})[.:](\d{2})(?::(\d{2}))?)?/,
-  );
-
-  if (localizedMatch) {
-    const [, day, monthLabel, year, hour = "0", minute = "0", second = "0"] =
-      localizedMatch;
-    const month = TIMELINE_MONTH_INDEX[monthLabel.toLowerCase()];
-
-    if (typeof month === "number") {
-      return new Date(
-        Number(year),
-        month,
-        Number(day),
-        Number(hour),
-        Number(minute),
-        Number(second),
-      ).getTime();
-    }
-  }
-
-  const parsed = Date.parse(normalized);
-  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
-}
-
-function sortTimelineEntries<T extends { createdAtLabel?: string | null }>(
-  entries: T[],
-) {
-  return entries
-    .map((entry, index) => ({
-      entry,
-      index,
-      time: parseTimelineTime(entry.createdAtLabel),
-    }))
-    .sort((left, right) => left.time - right.time || left.index - right.index)
-    .map(({ entry }) => entry);
-}
 
 export type SuperAdminUnitBarangDetail = {
   unit: {
@@ -6217,7 +6149,7 @@ function SuperAdminAssetTimeline({
             createdAtLabel: String(item.pawnedAt ?? item.date ?? "-"),
           },
         ];
-  const timelineEntries = sortTimelineEntries(timelineSourceEntries);
+  const timelineEntries = sortAssetTimelineEntries(timelineSourceEntries);
   const iconMap: Record<
     SuperAdminUnitBarangHistoryEntry["actionKey"],
     LucideIcon
@@ -6238,6 +6170,9 @@ function SuperAdminAssetTimeline({
       <div className="px-4 pb-2 pt-4">
         <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
           Riwayat Kronologi Aset
+        </p>
+        <p className="mt-1 text-xs text-[#6b7c72]">
+          Aktivitas terbaru ditampilkan paling atas.
         </p>
       </div>
 

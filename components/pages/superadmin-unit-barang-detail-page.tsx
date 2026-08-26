@@ -50,6 +50,7 @@ import {
 } from "@/components/shared/item-detail-card-primitives";
 import { Card } from "@/components/ui/card";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
+import { sortAssetTimelineEntries } from "@/lib/asset-timeline";
 import { currency } from "@/lib/formatters/currency";
 import { cn } from "@/lib/utils";
 
@@ -144,12 +145,13 @@ function dotClass(tone: SuperAdminUnitBarangItem["operationalTone"]) {
 }
 
 function AssetTimeline({ detail }: { detail: SuperAdminUnitBarangDetail }) {
-  const entries =
+  const entries = sortAssetTimelineEntries(
     detail.history.length > 0
       ? detail.history
       : [
           {
             id: `${detail.item.id}-received`,
+            barangId: detail.item.id,
             actionKey: "input_baru" as const,
             actionLabel: "Barang Diterima Unit",
             note: "Barang dicatat sebagai aset jaminan unit.",
@@ -158,7 +160,8 @@ function AssetTimeline({ detail }: { detail: SuperAdminUnitBarangDetail }) {
               detail.item.pawnedAt ?? detail.item.date ?? "-",
             ),
           },
-        ];
+        ],
+  );
   const icons: Partial<Record<string, LucideIcon>> = {
     input_baru: PackagePlus,
     perpanjangan: CalendarClock,
@@ -176,6 +179,9 @@ function AssetTimeline({ detail }: { detail: SuperAdminUnitBarangDetail }) {
       <div className="px-4 pb-2 pt-4">
         <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#006747]">
           Riwayat Kronologi Aset
+        </p>
+        <p className="mt-1 text-xs text-[#6b7c72]">
+          Aktivitas terbaru ditampilkan paling atas.
         </p>
       </div>
 

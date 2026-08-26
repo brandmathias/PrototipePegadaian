@@ -1851,11 +1851,12 @@ describe("superadmin pages", () => {
     ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(timeline).not.toBeNull();
     expect(timeline).toHaveTextContent("Riwayat Kronologi Aset");
+    expect(timeline).toHaveTextContent("Aktivitas terbaru ditampilkan paling atas.");
     expect(timeline).toHaveTextContent("Aktor Internal: Admin Unit");
     expect(timeline?.querySelector(".overflow-y-auto")).not.toBeNull();
     const timelineText = timeline?.textContent ?? "";
-    expect(timelineText.indexOf("Dipasarkan")).toBeLessThan(
-      timelineText.indexOf("Terjual"),
+    expect(timelineText.indexOf("Terjual")).toBeLessThan(
+      timelineText.indexOf("Dipasarkan"),
     );
     expect(screen.queryByText("Edit Data Barang")).not.toBeInTheDocument();
     expect(screen.queryByText("Pasarkan Barang")).not.toBeInTheDocument();
