@@ -96,7 +96,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(61), buyerEmail: "bagus@gmail.com", level: 1, unitName: "UPC Sarinah", unitAdminEmail: "bagas.prakoso@pegadaian.co.id",
     itemCode: "SBG-1188800000000061", itemName: "Cincin Emas Solitaire 22K 4,85 Gram",
     description: "Cincin emas kuning 22 karat bergaya solitaire dengan batu zircon bening pada dudukan empat kuku. Lingkar cincin simetris, batu terpasang rapat, dan permukaan memiliki jejak pemakaian halus yang wajar.",
-    specifications: { "Jenis Barang": "Cincin solitaire", "Kadar Emas": "22K / 91,6%", Berat: "4,85 gram", Ukuran: "17", "Batu Utama": "Zircon bening", Kondisi: "Baik, gores mikro pemakaian" },
+    specifications: { jenisEmas: "Cincin emas", kadarEmas: "22K / 91,6%", berat: "4,85 gram", bentuk: "Solitaire dengan dudukan empat kuku dan zircon bening", diameter: "17 mm" },
     appraisalValue: 11_800_000, basePrice: 10_600_000, ownerName: "Dimas Prabowo", customerNumber: "081389415672",
     itemEnteredAt: date("2026-04-10T09:00:00+07:00"), auctionStartsAt: date("2026-04-20T09:00:00+07:00"), auctionEndsAt: date("2026-04-20T10:00:00+07:00"), violationOccurredAt: date("2026-04-21T10:00:00+07:00"), dueDate: date("2026-08-08T09:00:00+07:00"),
     bids: [
@@ -108,7 +108,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(62), buyerEmail: "kirana@gmail.com", level: 1, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000062", itemName: "Gelang Emas Bangle Polos 22K 9,80 Gram",
     description: "Gelang bangle emas kuning 22 karat berbentuk oval dengan engsel dan pengunci pengaman. Struktur gelang utuh, engsel bergerak lancar, serta terdapat gores sangat ringan akibat penggunaan normal.",
-    specifications: { "Jenis Barang": "Gelang bangle", "Kadar Emas": "22K / 91,6%", Berat: "9,80 gram", Diameter: "6,1 cm", Pengunci: "Engsel dengan pengaman", Kondisi: "Baik" },
+    specifications: { jenisEmas: "Gelang emas", kadarEmas: "22K / 91,6%", berat: "9,80 gram", bentuk: "Bangle oval dengan engsel dan pengaman", diameter: "6,1 cm" },
     appraisalValue: 23_900_000, basePrice: 21_600_000, ownerName: "Nabila Azzahra", customerNumber: "082191684350",
     itemEnteredAt: date("2026-04-21T10:00:00+07:00"), auctionStartsAt: date("2026-05-01T10:00:00+07:00"), auctionEndsAt: date("2026-05-01T11:00:00+07:00"), violationOccurredAt: date("2026-05-02T11:00:00+07:00"), dueDate: date("2026-08-19T10:00:00+07:00"),
     bids: [
@@ -120,7 +120,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(63), buyerEmail: "kirana@gmail.com", level: 2, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000063", itemName: "Kalung Emas Rantai Singapura 22K 7,20 Gram",
     description: "Kalung emas kuning 22 karat model rantai Singapura dengan putaran mata rantai rapat dan pengunci lobster. Rantai tidak putus, pengunci berfungsi baik, dan kilap emas masih merata.",
-    specifications: { "Jenis Barang": "Kalung rantai Singapura", "Kadar Emas": "22K / 91,6%", Berat: "7,20 gram", Panjang: "45 cm", Pengunci: "Lobster clasp", Kondisi: "Baik" },
+    specifications: { jenisEmas: "Kalung emas", kadarEmas: "22K / 91,6%", berat: "7,20 gram", bentuk: "Rantai Singapura dengan lobster clasp", panjang: "45 cm", diameter: "2,2 mm" },
     appraisalValue: 17_600_000, basePrice: 15_900_000, ownerName: "Rizky Ananda", customerNumber: "085318764529",
     itemEnteredAt: date("2026-05-21T11:00:00+07:00"), auctionStartsAt: date("2026-05-31T11:00:00+07:00"), auctionEndsAt: date("2026-05-31T12:00:00+07:00"), violationOccurredAt: date("2026-06-01T12:00:00+07:00"), dueDate: date("2026-09-18T11:00:00+07:00"),
     bids: [
@@ -132,7 +132,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(64), buyerEmail: "bagus@gmail.com", level: 2, unitName: "UPC Sarinah", unitAdminEmail: "bagas.prakoso@pegadaian.co.id",
     itemCode: "SBG-1188800000000064", itemName: "Laptop 14 Inci Intel Core i5 Generasi ke-11",
     description: "Laptop 14 inci dengan prosesor Intel Core i5 generasi ke-11, memori 8 GB, dan SSD 512 GB. Layar, papan ketik, kamera, port USB, Wi-Fi, serta pengisian daya telah diperiksa berfungsi normal.",
-    specifications: { Prosesor: "Intel Core i5 generasi ke-11", Memori: "8 GB DDR4", Penyimpanan: "SSD 512 GB", Layar: "14 inci Full HD", Kelengkapan: "Adaptor pengisi daya", Kondisi: "Baik, gores ringan pada penutup" },
+    specifications: { merek: "ASUS", model: "VivoBook 14", spesifikasi: "Intel Core i5 generasi ke-11, RAM 8 GB DDR4, layar 14 inci Full HD", kapasitas: "SSD 512 GB", kelengkapan: "Adaptor pengisi daya", garansi: "Tidak ada" },
     appraisalValue: 8_600_000, basePrice: 7_650_000, ownerName: "Fauzan Akbar", customerNumber: "081226857419",
     itemEnteredAt: date("2026-07-04T23:40:00+07:00"), auctionStartsAt: date("2026-07-14T23:40:00+07:00"), auctionEndsAt: date("2026-07-14T23:45:00+07:00"), violationOccurredAt: date("2026-07-15T23:45:00+07:00"), dueDate: date("2026-11-01T23:40:00+07:00"),
     bids: [
@@ -144,7 +144,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(65), buyerEmail: "kirana@gmail.com", level: 3, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000065", itemName: "Gelang Emas Bangle Zircon 22K 8,65 Gram",
     description: "Gelang bangle emas kuning 22 karat berhias susunan batu zircon kecil pada bagian muka. Pengunci rapat, engsel stabil, seluruh batu terpasang, dan permukaan memperlihatkan tanda pemakaian ringan.",
-    specifications: { "Jenis Barang": "Gelang bangle berhias zircon", "Kadar Emas": "22K / 91,6%", Berat: "8,65 gram", Diameter: "6 cm", "Batu Hias": "Zircon bening", Kondisi: "Baik, bekas pakai ringan" },
+    specifications: { jenisEmas: "Gelang emas", kadarEmas: "22K / 91,6%", berat: "8,65 gram", bentuk: "Bangle berhias zircon bening dengan engsel", diameter: "6 cm" },
     appraisalValue: 21_100_000, basePrice: 19_000_000, ownerName: "Salsabila Putri", customerNumber: "081379254618",
     itemEnteredAt: date("2026-07-05T00:01:00+07:00"), auctionStartsAt: date("2026-07-15T00:01:00+07:00"), auctionEndsAt: date("2026-07-15T00:05:00+07:00"), violationOccurredAt: date("2026-07-16T00:05:00+07:00"), dueDate: date("2026-11-02T00:01:00+07:00"),
     bids: [
@@ -156,7 +156,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(66), buyerEmail: "rangga@gmail.com", level: 1, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000066", itemName: "Emas Batangan ANTAM 5 Gram Bersertifikat",
     description: "Emas batangan ANTAM 24 karat berbobot 5 gram dalam kemasan sertifikat asli. Segel kemasan utuh, nomor seri dapat dibaca, dan fisik emas terjaga tanpa kerusakan yang mengurangi nilai jual.",
-    specifications: { "Jenis Barang": "Emas batangan", "Merek": "ANTAM", "Kadar Emas": "24K / 99,99%", Berat: "5 gram", Kemasan: "CertiCard tersegel", Kondisi: "Baik" },
+    specifications: { jenisLogam: "Emas batangan", brand: "ANTAM", kadar: "24K / 99,99%", berat: "5 gram", nomorSertifikat: "ANTAM-5G-2026-0066" },
     appraisalValue: 9_250_000, basePrice: 8_400_000, ownerName: "Yusuf Kurniawan", customerNumber: "085271943806",
     itemEnteredAt: date("2026-05-03T09:00:00+07:00"), auctionStartsAt: date("2026-05-13T09:00:00+07:00"), auctionEndsAt: date("2026-05-13T10:00:00+07:00"), violationOccurredAt: date("2026-05-14T10:00:00+07:00"), dueDate: date("2026-09-01T09:00:00+07:00"),
     bids: [
@@ -168,7 +168,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(67), buyerEmail: "rangga@gmail.com", level: 2, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000067", itemName: "Jam Tangan Seiko 5 Automatic 21 Jewels",
     description: "Jam tangan Seiko 5 Automatic dengan mesin 21 jewels, dial hitam, dan gelang stainless steel. Mesin bergerak normal, crown berfungsi, kaca bersih, serta terdapat gores pemakaian ringan pada bagian clasp.",
-    specifications: { "Merek": "Seiko", Seri: "Seiko 5 Automatic", Mesin: "Automatic 21 jewels", Diameter: "37 mm", Material: "Stainless steel", Kondisi: "Baik, bekas pakai ringan" },
+    specifications: { jenisBarang: "Jam tangan Seiko 5 Automatic", material: "Stainless steel", ukuran: "Diameter 37 mm", kelengkapan: "Unit jam, box Seiko, dan kartu garansi", catatanKhusus: "Mesin automatic 21 jewels; kaca bersih dan clasp memiliki gores pemakaian ringan" },
     appraisalValue: 3_950_000, basePrice: 3_400_000, ownerName: "Rama Prasetya", customerNumber: "081257693184",
     itemEnteredAt: date("2026-07-05T00:10:00+07:00"), auctionStartsAt: date("2026-07-15T00:10:00+07:00"), auctionEndsAt: date("2026-07-15T00:15:00+07:00"), violationOccurredAt: date("2026-07-16T00:15:00+07:00"), dueDate: date("2026-11-05T00:10:00+07:00"),
     bids: [
@@ -180,7 +180,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(68), buyerEmail: "adrian@gmail.com", level: 1, unitName: "UPC Sarinah", unitAdminEmail: "bagas.prakoso@pegadaian.co.id",
     itemCode: "SBG-1188800000000068", itemName: "Anting Emas Hoop Pilin 22K 4,15 Gram",
     description: "Sepasang anting emas kuning 22 karat model hoop dengan detail pilin halus. Pengunci bekerja rapat, bentuk lingkar tetap simetris, dan permukaan emas memiliki bekas pemakaian ringan yang wajar.",
-    specifications: { "Jenis Barang": "Anting hoop", "Kadar Emas": "22K / 91,6%", Berat: "4,15 gram", Diameter: "2,2 cm", Pengunci: "Snap closure", Kondisi: "Baik" },
+    specifications: { jenisEmas: "Anting emas", kadarEmas: "22K / 91,6%", berat: "4,15 gram", bentuk: "Hoop pilin dengan snap closure", diameter: "2,2 cm" },
     appraisalValue: 9_900_000, basePrice: 8_850_000, ownerName: "Nadya Permata", customerNumber: "081388402761",
     itemEnteredAt: date("2026-07-05T00:20:00+07:00"), auctionStartsAt: date("2026-07-15T00:20:00+07:00"), auctionEndsAt: date("2026-07-15T00:25:00+07:00"), violationOccurredAt: date("2026-07-16T00:25:00+07:00"), dueDate: date("2026-11-05T00:20:00+07:00"),
     bids: [
@@ -192,7 +192,7 @@ export const RENEWED_CROSS_UNIT_VIOLATION_SCENARIO: RenewedCrossUnitViolationInc
     ids: ids(69), buyerEmail: "viona@gmail.com", level: 1, unitName: "UPC Ranotana", unitAdminEmail: "andika.pratama@pegadaian.co.id",
     itemCode: "SBG-1179300000000069", itemName: "Gelang Emas Rantai Figaro 18K 12,40 Gram",
     description: "Gelang emas kuning 18 karat model rantai Figaro dengan susunan mata rantai padat dan pengunci lobster. Rantai utuh, pengunci masih rapat, dan kilau emas tetap merata dengan tanda pemakaian sangat ringan.",
-    specifications: { "Jenis Barang": "Gelang rantai Figaro", "Kadar Emas": "18K / 75%", Berat: "12,40 gram", Panjang: "18 cm", Pengunci: "Lobster clasp", Kondisi: "Baik" },
+    specifications: { jenisEmas: "Gelang emas", kadarEmas: "18K / 75%", berat: "12,40 gram", bentuk: "Rantai Figaro dengan lobster clasp", panjang: "18 cm", diameter: "4 mm" },
     appraisalValue: 14_150_000, basePrice: 12_650_000, ownerName: "Dewi Larasati", customerNumber: "085244918375",
     itemEnteredAt: date("2026-07-05T00:30:00+07:00"), auctionStartsAt: date("2026-07-15T00:30:00+07:00"), auctionEndsAt: date("2026-07-15T00:35:00+07:00"), violationOccurredAt: date("2026-07-16T00:35:00+07:00"), dueDate: date("2026-11-05T00:30:00+07:00"),
     bids: [

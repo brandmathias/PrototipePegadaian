@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getBarangSpecificationFields,
+  getBarangSpecificationRows
+} from "@/lib/admin-unit/specifications";
+import {
   RENEWED_CROSS_UNIT_IDENTITIES,
   RENEWED_CROSS_UNIT_VIOLATION_SCENARIO,
   getRenewedExpectedFinalRestrictions,
@@ -59,6 +63,20 @@ describe("renewed cross-unit violation production scenario", () => {
         24 * 60 * 60 * 1000
       );
       expect(incident.bidderEmails).toContain(incident.buyerEmail);
+    }
+  });
+
+  it("provides every required category specification for each seeded violation item", () => {
+    for (const incident of RENEWED_CROSS_UNIT_VIOLATION_SCENARIO) {
+      const specificationRows = getBarangSpecificationRows("", incident.specifications, incident.itemName);
+      const valuesByLabel = new Map(specificationRows.map((row) => [row.label, row.value]));
+      const requiredFields = getBarangSpecificationFields("", incident.specifications, incident.itemName).filter(
+        (field) => field.required !== false
+      );
+
+      for (const field of requiredFields) {
+        expect(valuesByLabel.get(field.label), `${incident.itemName}: ${field.label}`).toBeTruthy();
+      }
     }
   });
 
