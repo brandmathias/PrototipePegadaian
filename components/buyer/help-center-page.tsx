@@ -39,11 +39,6 @@ const faqItems = [
       "Pilih barang berlabel Harga Tetap, lanjutkan ke pembayaran, transfer sesuai nominal ke rekening unit yang tertera, lalu unggah bukti pembayaran dan nomor referensi jika tersedia. Transaksi dicatat setelah bukti terkirim dan menunggu verifikasi admin unit. Setelah admin memverifikasi pembayaran, status transaksi berubah menjadi lunas atau siap dilanjutkan ke proses serah terima sesuai arahan unit."
   },
   {
-    question: "Apakah saya tetap bisa mengambil fisik barang yang sudah saya lunasi?",
-    answer:
-      "Bisa. Pembatasan akun tidak membatalkan transaksi yang sudah lunas atau selesai. Anda tetap dapat melihat riwayat transaksi, mengunduh bukti transaksi lama, dan melanjutkan proses serah terima fisik barang sesuai arahan unit pelaksana terkait."
-  },
-  {
     question: "Akun saya dibatasi Level 2, apakah saya masih bisa membeli barang Harga Tetap?",
     answer:
       "Tidak. Pada Level 2, buyer tidak bisa menawar pada Lelang Tertutup dan tidak bisa membeli barang Harga Tetap selama 30 hari. Pada Level 1, hanya penawaran Lelang Tertutup yang dibatasi selama 7 hari, sehingga pembelian Harga Tetap masih bisa dilakukan. Pada Level 3, akun ditangguhkan 365 hari dan buyer tidak bisa login ke sistem."

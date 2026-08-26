@@ -77,6 +77,16 @@ describe("BuyerHelpCenterPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("does not show the paid physical-item pickup FAQ", () => {
+    render(<BuyerHelpCenterPage />);
+
+    expect(
+      screen.queryByRole("button", {
+        name: /apakah saya tetap bisa mengambil fisik barang yang sudah saya lunasi/i
+      })
+    ).not.toBeInTheDocument();
+  });
+
   it("filters FAQ content through the search field and shows an empty state", () => {
     render(<BuyerHelpCenterPage />);
 
