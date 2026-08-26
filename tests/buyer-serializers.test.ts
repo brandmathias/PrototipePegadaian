@@ -470,6 +470,30 @@ describe("buyer serializers", () => {
     expect(bid.note).toMatch(/reveal nominal/i);
   });
 
+  it("exposes the buyer's own bid amount while an active session is still awaiting its result", () => {
+    const bid = serializeBuyerBid({
+      pemasaranId: "pm-vickrey-active-own-bid",
+      lotName: "Gelang Emas Rantai Tambang",
+      unitName: "UPC Ranotana",
+      bidAmount: "3881250",
+      basePrice: "3500000",
+      finalPrice: null,
+      paymentAmount: null,
+      paymentDeadline: null,
+      transactionStatus: null,
+      endsAt: new Date("2099-05-04T14:07:00Z"),
+      marketingStatus: "aktif",
+      winnerId: null,
+      transactionId: null,
+      userId: "buyer-1"
+    } as any);
+
+    expect(bid.status).toBe("BID_TERCATAT");
+    expect(bid.bidAmount).toBe(3881250);
+    expect(bid.basePrice).toBe(3500000);
+    expect(bid.note).toMatch(/nominal bid anda tersimpan/i);
+  });
+
   it("marks encrypted escrow bids as automatic instead of requiring manual reveal", () => {
     const bid = serializeBuyerBid({
       pemasaranId: "pm-vickrey-escrow",

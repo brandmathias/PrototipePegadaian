@@ -232,6 +232,7 @@ const bidFilterFixtures: BuyerBid[] = [
     closing: "18 Agu 2026, 13.11 WIB",
     closingAt: "2026-08-18T05:11:00.000Z",
     basePrice: 26000000,
+    bidAmount: 3881250,
     note: "Sesi lelang sedang berlangsung. Nominal dan identitas penawar disensor hingga waktu penutupan."
   },
   {
@@ -242,6 +243,7 @@ const bidFilterFixtures: BuyerBid[] = [
     closing: "18 Agu 2026, 10.52 WIB",
     closingAt: "2026-08-18T02:52:00.000Z",
     basePrice: 26000000,
+    bidAmount: 27500000,
     note: "Deadline telah berakhir. Sistem sedang menentukan hasil Lelang Tertutup."
   },
   {
@@ -295,6 +297,12 @@ describe("TransactionsPage", () => {
 
     expect(screen.getByText("Bid Aktif Tercatat")).toBeInTheDocument();
     expect(screen.getByText("Hasil Lelang Sedang Diproses")).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Bid Aktif Tercatat").closest("article") as HTMLElement).getByText("Rp 3.881.250")
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Hasil Lelang Sedang Diproses").closest("article") as HTMLElement).getByText("Rp 27.500.000")
+    ).toBeInTheDocument();
     expect(screen.queryByText("Bid Pemenang")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Menang" }));

@@ -2678,7 +2678,7 @@ export function BidHistoryPage({
                 <div className="mt-5 rounded-[1.25rem] border border-primary/15 bg-primary/[0.03] p-4 text-sm leading-6 text-primary">
                   <p className="font-semibold">Bid privat tersimpan</p>
                   <p className="mt-1">
-                    Nominal dan identitas penawar hanya tersedia untuk petugas internal berwenang. Hasil lelang akan diumumkan otomatis setelah deadline.
+                    Nominal bid Anda tersimpan untuk akun ini. Hasil dan identitas penawar lain akan diumumkan otomatis setelah deadline.
                   </p>
                 </div>
               ) : null}

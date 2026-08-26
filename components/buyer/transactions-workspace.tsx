@@ -713,7 +713,7 @@ function BidRow({ item }: { item: BuyerBid }) {
   const amount =
     item.status === "MENANG"
       ? item.paymentAmount ?? item.finalPrice ?? item.bidAmount ?? item.basePrice
-      : item.bidAmount ?? item.basePrice;
+      : item.bidAmount;
   const transactionHref = getBuyerBidTransactionHref(item);
   const actionHref =
     item.status === "TIDAK_MENANG"
@@ -788,7 +788,7 @@ function BidRow({ item }: { item: BuyerBid }) {
                 {item.status === "MENANG" ? "Harga akhir lelang" : "Nominal bid"}
               </p>
               <p className="font-headline text-[1.28rem] font-black leading-none tracking-[-0.04em] text-[#006747] sm:text-[1.55rem] lg:text-[2rem]">
-                {currency.format(amount)}
+                {typeof amount === "number" ? currency.format(amount) : "Nominal bid belum tersedia"}
               </p>
             </div>
             <div className="space-y-1 lg:space-y-0">

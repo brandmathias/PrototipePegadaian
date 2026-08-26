@@ -417,7 +417,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
   } else if (status === "TIDAK_MENANG") {
     note = "Bid tidak menjadi pemenang sesi ini.";
   } else if (!ended) {
-    note = "Sesi lelang sedang berlangsung. Nominal dan identitas penawar disensor hingga waktu penutupan.";
+    note = "Sesi lelang sedang berlangsung. Nominal bid Anda tersimpan, sedangkan hasil dan identitas penawar lain tetap dirahasiakan sampai waktu penutupan.";
   } else {
     note = "Deadline telah berakhir. Sistem sedang menentukan hasil Lelang Tertutup.";
   }
@@ -431,7 +431,7 @@ export function serializeBuyerBid(row: BuyerBidShape): BuyerBid {
     closing: toDateTimeLabel(row.endsAt),
     closingAt: row.endsAt?.toISOString(),
     createdAtRaw: row.createdAt ? row.createdAt.toISOString() : undefined,
-    ...(ended ? { bidAmount: toNumber(row.bidAmount) } : {}),
+    ...(row.bidAmount != null ? { bidAmount: toNumber(row.bidAmount) } : {}),
     basePrice: toNumber(row.basePrice),
     finalPrice,
     paymentAmount,
