@@ -13,5 +13,11 @@ backup-*.sql
 
 .codex-admin-dev.log
 
+# Local agent configuration and generated artifacts
+/.agents/
+/.codex/
+/.codex-artifacts/
+/codex-artifacts/
+
 .DS_Store
 Thumbs.db
