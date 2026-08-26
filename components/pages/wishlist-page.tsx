@@ -561,7 +561,7 @@ function WishlistCard({
     item.lot.mode === "vickrey"
       ? [
           { icon: <Gavel className="size-3" />, label: "Penawaran tertutup" },
-          { icon: <BadgeCheck className="size-3" />, label: "Aturan transparan" },
+          { icon: <BadgeCheck className="size-3" />, label: "Aturan lelang mudah dipahami" },
         ]
       : [
           { icon: <BadgeCheck className="size-3" />, label: "Pembayaran aman" },

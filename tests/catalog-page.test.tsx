@@ -75,8 +75,9 @@ describe("CatalogPage", () => {
       </>
     );
 
-    expect(screen.getByText(/katalog premium/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pilih cara pembelian yang tepat untuk anda/i })).toBeInTheDocument();
+    expect(screen.getByText(/temukan barang impian/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /belanja barang pilihan dengan cara yang anda inginkan/i })).toBeInTheDocument();
+    expect(screen.getByText(/beli langsung dengan harga pasti, atau ajukan penawaran melalui lelang tertutup/i)).toBeInTheDocument();
     expect(screen.getByTestId("catalog-hero-image").getAttribute("style")).toContain(
       "/assets/catalog-hero-buyer.webp"
     );
@@ -319,7 +320,8 @@ describe("CatalogPage", () => {
     );
 
     expect(screen.getAllByText("Pembayaran aman").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Aturan transparan").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Aturan lelang mudah dipahami").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/transparan/i)).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("0")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Tidak terbatas")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /tampilkan 2 lainnya/i })).toBeInTheDocument();

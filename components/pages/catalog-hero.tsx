@@ -76,14 +76,14 @@ export function CatalogHero() {
       <div className="container grid gap-8 pb-20 pt-12 lg:grid-cols-[0.82fr_1fr] lg:items-center lg:pb-24 lg:pt-16">
         <div className="max-w-3xl">
           <p className="text-xs font-black uppercase tracking-[0.42em] text-[#b98200]">
-            Katalog Premium
+            Temukan Barang Impian
           </p>
           <h1 className="mt-4 max-w-4xl font-headline text-4xl font-black leading-[1.03] text-[#075f42] md:text-5xl lg:text-[2.85rem]">
-            Pilih cara pembelian yang tepat untuk Anda
+            Belanja Barang Pilihan dengan Cara yang Anda Inginkan
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-[#2f4038]">
-            Dua cara aman dan transparan untuk mendapatkan barang berkualitas melalui alur
-            prototipe yang mudah dipahami.
+            Beli langsung dengan harga pasti, atau ajukan penawaran melalui lelang tertutup.
+            Pilih proses yang paling sesuai untuk Anda.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ export function CatalogHero() {
             icon={<BriefcaseBusiness className="size-7" />}
             items={[
               "Pembayaran instan",
-              "Harga pasti & transparan",
+              "Harga pasti sejak awal",
               "Proses cepat & aman",
               "Pembayaran aman terjamin"
             ]}
@@ -103,7 +103,7 @@ export function CatalogHero() {
             items={[
               "Penawaran tertutup (sealed-bid)",
               "Pemenang dengan harga terbaik",
-              "Aturan jelas & transparan",
+              "Aturan lelang mudah dipahami",
               "Peluang menang lebih besar"
             ]}
             title="Lelang Tertutup"
