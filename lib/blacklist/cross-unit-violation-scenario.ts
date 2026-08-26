@@ -136,13 +136,12 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Gelang rantai Figaro berbahan emas kuning 18 karat dengan susunan mata rantai tiga pendek dan satu panjang. Pengunci lobster berfungsi baik, sambungan rapat, dan terdapat gores pemakaian ringan yang tidak mengurangi kelayakan pakai.",
     specifications: {
-      "Jenis Barang": "Gelang rantai Figaro",
-      "Kadar Emas": "18K / 75%",
-      Berat: "12,40 gram",
-      Panjang: "20 cm",
-      "Lebar Rantai": "5 mm",
-      Pengunci: "Lobster clasp",
-      Kondisi: "Baik, gores pemakaian ringan"
+      jenisEmas: "Gelang emas",
+      kadarEmas: "18K / 75%",
+      berat: "12,40 gram",
+      bentuk: "Rantai Figaro dengan lobster clasp",
+      panjang: "20 cm",
+      diameter: "5 mm (lebar rantai)"
     },
     appraisalValue: 17_900_000,
     basePrice: 15_900_000,
@@ -178,13 +177,11 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Sepasang anting hoop emas kuning 22 karat bermotif pilin dengan kilap merata. Kedua engsel klik mengunci sempurna, bentuk lingkaran simetris, dan permukaan hanya menunjukkan jejak pemakaian wajar.",
     specifications: {
-      "Jenis Barang": "Anting hoop pilin",
-      "Kadar Emas": "22K / 91,6%",
-      "Berat Total": "4,15 gram",
-      Diameter: "25 mm",
-      "Sistem Pengunci": "Engsel klik",
-      Jumlah: "1 pasang",
-      Kondisi: "Baik"
+      jenisEmas: "Anting emas",
+      kadarEmas: "22K / 91,6%",
+      berat: "4,15 gram (sepasang)",
+      bentuk: "Hoop pilin dengan engsel klik",
+      diameter: "25 mm"
     },
     appraisalValue: 8_750_000,
     basePrice: 7_850_000,
@@ -219,13 +216,11 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Cincin emas kuning 18 karat model solitaire dengan satu berlian utama pada dudukan enam kuku. Lingkar cincin utuh, batu terpasang kokoh, dan permukaan telah dibersihkan tanpa menghilangkan karakter pemakaian.",
     specifications: {
-      "Jenis Barang": "Cincin solitaire",
-      "Kadar Emas": "18K / 75%",
-      Berat: "5,25 gram",
-      Ukuran: "16",
-      "Batu Utama": "Berlian sekitar 0,15 ct",
-      "Warna Logam": "Emas kuning",
-      Kondisi: "Baik"
+      jenisEmas: "Cincin emas",
+      kadarEmas: "18K / 75%",
+      berat: "5,25 gram",
+      bentuk: "Solitaire dengan berlian sekitar 0,15 ct",
+      diameter: "Ukuran cincin 16"
     },
     appraisalValue: 9_400_000,
     basePrice: 8_450_000,
@@ -260,12 +255,11 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Emas batangan 10 gram berkadar 999,9 yang tersimpan dalam kemasan sertifikat. Nomor seri dan informasi kadar terbaca, segel utuh, serta kemasan menunjukkan bekas penyimpanan ringan tanpa retak.",
     specifications: {
-      "Jenis Barang": "Emas batangan bersertifikat",
-      Kadar: "999,9 / 24K",
-      Berat: "10 gram",
-      Kemasan: "Assay card tersegel",
-      Sertifikat: "Terintegrasi pada kemasan",
-      Kondisi: "Segel utuh, bekas simpan ringan"
+      jenisLogam: "Emas batangan bersertifikat",
+      brand: "Logam Mulia",
+      kadar: "999,9 / 24K",
+      berat: "10 gram",
+      nomorSertifikat: "Terintegrasi pada assay card"
     },
     appraisalValue: 24_350_000,
     basePrice: 22_500_000,
@@ -300,14 +294,12 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "MacBook Air keluaran 2022 warna Midnight dengan cip Apple M2, memori 8 GB, dan penyimpanan SSD 256 GB. Layar, papan ketik, kamera, port, serta pengisian daya berfungsi normal; terdapat gores rambut ringan pada penutup atas.",
     specifications: {
-      Model: "MacBook Air 2022",
-      Prosesor: "Apple M2 8-core",
-      Memori: "8 GB unified memory",
-      Penyimpanan: "SSD 256 GB",
-      Layar: "Liquid Retina 13,6 inci",
-      Baterai: "Kesehatan 89%, 163 cycle count",
-      Kelengkapan: "Adaptor USB-C 30 W",
-      Kondisi: "Normal, gores rambut ringan"
+      merek: "Apple",
+      model: "MacBook Air 2022 Midnight",
+      spesifikasi: "Apple M2 8-core, memori terpadu 8 GB, Liquid Retina 13,6 inci, baterai 89% (163 siklus)",
+      kapasitas: "SSD 256 GB",
+      kelengkapan: "Unit MacBook Air dan adaptor USB-C 30 W",
+      garansi: "Tidak ada"
     },
     appraisalValue: 10_800_000,
     basePrice: 9_750_000,
@@ -343,13 +335,11 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Jam tangan Seiko 5 referensi 6309-5320 dengan mesin otomatis 21 jewels, tampilan hari-tanggal, casing dan bracelet baja tahan karat. Mesin berjalan, pengaturan hari-tanggal normal, dan terdapat gores halus sesuai usia pemakaian.",
     specifications: {
-      Merek: "Seiko",
-      Referensi: "6309-5320",
-      Mesin: "Automatic 21 jewels",
-      Fitur: "Day-date",
-      "Diameter Casing": "Sekitar 36 mm",
-      Material: "Stainless steel",
-      Kondisi: "Fungsi normal, gores halus pemakaian"
+      jenisBarang: "Jam tangan Seiko 5 Automatic",
+      material: "Stainless steel",
+      ukuran: "Diameter casing sekitar 36 mm",
+      kelengkapan: "Unit jam tangan",
+      catatanKhusus: "Referensi 6309-5320, mesin automatic 21 jewels, fitur day-date, fungsi normal dengan gores halus pemakaian"
     },
     appraisalValue: 2_800_000,
     basePrice: 2_450_000,
@@ -384,13 +374,12 @@ export const CROSS_UNIT_VIOLATION_SCENARIO: CrossUnitViolationIncident[] = [
     description:
       "Kalung emas kuning 22 karat model Cuban link dengan susunan mata rantai rapat dan kilap merata. Pengunci lobster bekerja baik, tidak ditemukan bagian putus, dan permukaan memiliki gores mikro akibat pemakaian normal.",
     specifications: {
-      "Jenis Barang": "Kalung rantai Cuban",
-      "Kadar Emas": "22K / 91,6%",
-      Berat: "6,70 gram",
-      Panjang: "50 cm",
-      "Lebar Rantai": "Sekitar 4 mm",
-      Pengunci: "Lobster clasp",
-      Kondisi: "Baik, gores mikro pemakaian"
+      jenisEmas: "Kalung emas",
+      kadarEmas: "22K / 91,6%",
+      berat: "6,70 gram",
+      bentuk: "Rantai Cuban dengan lobster clasp",
+      panjang: "50 cm",
+      diameter: "4 mm (lebar rantai)"
     },
     appraisalValue: 14_100_000,
     basePrice: 12_700_000,

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getBarangSpecificationFields,
+  getBarangSpecificationRows
+} from "@/lib/admin-unit/specifications";
+import {
   CROSS_UNIT_SCENARIO_IDENTITIES,
   CROSS_UNIT_VIOLATION_SCENARIO,
   getExpectedFinalRestrictions,
@@ -131,6 +135,19 @@ describe("cross-unit violation production scenario", () => {
       expect(incident.media.sourceUrl).toMatch(/^https:\/\//);
       expect(incident.media.credit.length).toBeGreaterThan(2);
       expect(incident.media.license.length).toBeGreaterThan(2);
+    }
+  });
+
+  it("provides every required category specification on each detail page", () => {
+    const categories = ["Perhiasan", "Perhiasan", "Perhiasan", "Logam Mulia", "Elektronik", "Jam Tangan", "Perhiasan"];
+
+    for (const [index, incident] of CROSS_UNIT_VIOLATION_SCENARIO.entries()) {
+      const valuesByLabel = new Map(
+        getBarangSpecificationRows(categories[index]!, incident.specifications, incident.itemName).map((row) => [row.label, row.value])
+      );
+      for (const field of getBarangSpecificationFields(categories[index]!, incident.specifications, incident.itemName).filter((field) => field.required !== false)) {
+        expect(valuesByLabel.get(field.label), `${incident.itemName}: ${field.label}`).toBeTruthy();
+      }
     }
   });
 });

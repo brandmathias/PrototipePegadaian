@@ -7,6 +7,7 @@ import {
   validateFourBuyerActiveViolationScenario
 } from "@/lib/blacklist/four-buyer-active-violation-scenario";
 import { buildFourBuyerActiveViolationSeedRows } from "@/lib/blacklist/four-buyer-active-violation-seed";
+import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 
 describe("four buyer active cross-unit violation scenario", () => {
   it("creates the three requested Level 1 violations in their intended units", () => {
@@ -87,5 +88,17 @@ describe("four buyer active cross-unit violation scenario", () => {
     expect(rows.blacklists).toHaveLength(3);
     expect(rows.barang.every((item) => !/\b(dummy|demo|test)\b/i.test(item.name))).toBe(true);
     expect(rows.mediaBarang.every((media) => media.url.startsWith("/media/violation-items/"))).toBe(true);
+  });
+
+  it("uses the canonical category fields shown on the item detail page", () => {
+    const expectedRows = [
+      ["Jenis Logam", "Brand", "Kadar", "Berat", "Nomor Sertifikat"],
+      ["Merek", "Model", "Spesifikasi", "Kapasitas", "Kelengkapan", "Garansi"],
+      ["Jenis Emas", "Kadar Emas", "Berat", "Bentuk", "Diameter"]
+    ];
+
+    for (const [index, item] of FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO.entries()) {
+      expect(getBarangSpecificationRows(item.itemName, item.specifications, item.itemName).map((row) => row.label)).toEqual(expectedRows[index]);
+    }
   });
 });

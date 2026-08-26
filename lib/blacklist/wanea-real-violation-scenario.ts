@@ -132,13 +132,12 @@ export const WANEA_REAL_VIOLATION_SCENARIO: WaneaRealViolationIncident[] = [
     description:
       "Gelang rantai Figaro berbahan emas kuning 18 karat dengan susunan tiga mata rantai pendek dan satu panjang. Pengunci lobster bekerja baik, sambungan rapat, dan terdapat gores pemakaian ringan yang tidak mengurangi kelayakan pakai.",
     specifications: {
-      "Jenis Barang": "Gelang rantai Figaro",
-      "Kadar Emas": "18K / 75%",
-      Berat: "12,40 gram",
-      Panjang: "20 cm",
-      "Lebar Rantai": "5 mm",
-      Pengunci: "Lobster clasp",
-      Kondisi: "Baik, gores pemakaian ringan"
+      jenisEmas: "Gelang emas",
+      kadarEmas: "18K / 75%",
+      berat: "12,40 gram",
+      bentuk: "Rantai Figaro dengan lobster clasp",
+      panjang: "20 cm",
+      diameter: "5 mm (lebar rantai)"
     },
     appraisalValue: 17_900_000,
     basePrice: 15_900_000,
@@ -175,12 +174,11 @@ export const WANEA_REAL_VIOLATION_SCENARIO: WaneaRealViolationIncident[] = [
     description:
       "Emas batangan 10 gram berkadar 999,9 tersimpan dalam kemasan sertifikat. Nomor seri dan informasi kadar terbaca, segel utuh, serta kemasan menunjukkan bekas penyimpanan ringan tanpa retak.",
     specifications: {
-      "Jenis Barang": "Emas batangan bersertifikat",
-      Kadar: "999,9 / 24K",
-      Berat: "10 gram",
-      Kemasan: "Assay card tersegel",
-      Sertifikat: "Terintegrasi pada kemasan",
-      Kondisi: "Segel utuh, bekas simpan ringan"
+      jenisLogam: "Emas batangan bersertifikat",
+      brand: "Logam Mulia",
+      kadar: "999,9 / 24K",
+      berat: "10 gram",
+      nomorSertifikat: "Terintegrasi pada assay card"
     },
     appraisalValue: 24_350_000,
     basePrice: 22_500_000,
@@ -217,13 +215,12 @@ export const WANEA_REAL_VIOLATION_SCENARIO: WaneaRealViolationIncident[] = [
     description:
       "Kalung emas kuning 22 karat model Cuban link dengan susunan mata rantai rapat dan kilap merata. Pengunci lobster bekerja baik, tidak ditemukan bagian putus, dan permukaan memiliki gores mikro akibat pemakaian normal.",
     specifications: {
-      "Jenis Barang": "Kalung rantai Cuban",
-      "Kadar Emas": "22K / 91,6%",
-      Berat: "6,70 gram",
-      Panjang: "50 cm",
-      "Lebar Rantai": "4 mm",
-      Pengunci: "Lobster clasp",
-      Kondisi: "Baik, gores mikro pemakaian"
+      jenisEmas: "Kalung emas",
+      kadarEmas: "22K / 91,6%",
+      berat: "6,70 gram",
+      bentuk: "Rantai Cuban dengan lobster clasp",
+      panjang: "50 cm",
+      diameter: "4 mm (lebar rantai)"
     },
     appraisalValue: 14_100_000,
     basePrice: 12_700_000,

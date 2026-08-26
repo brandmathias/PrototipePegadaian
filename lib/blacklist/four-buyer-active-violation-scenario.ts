@@ -102,11 +102,11 @@ export const FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO: FourBuyerActiveViolationIncid
     itemName: "Logam Mulia Emas Batangan 10 Gram Bersertifikat",
     description: "Emas batangan 10 gram berkadar 999,9 dalam kemasan assay card. Nomor seri dan kadar terbaca jelas, segel kemasan utuh, serta sudut kartu hanya memperlihatkan bekas penyimpanan ringan.",
     specifications: {
-      "Jenis Barang": "Emas batangan bersertifikat",
-      Kadar: "999,9 / 24K",
-      Berat: "10 gram",
-      Kemasan: "Assay card tersegel",
-      Kondisi: "Segel utuh, bekas simpan ringan"
+      jenisLogam: "Emas batangan bersertifikat",
+      brand: "Logam Mulia",
+      kadar: "999,9 / 24K",
+      berat: "10 gram",
+      nomorSertifikat: "Terintegrasi pada assay card"
     },
     appraisalValue: 25_400_000,
     basePrice: 22_100_000,
@@ -141,12 +141,12 @@ export const FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO: FourBuyerActiveViolationIncid
     itemName: "Laptop 14 Inci Intel Core i5 Generasi 11 RAM 16GB",
     description: "Laptop kerja 14 inci dengan prosesor Intel Core i5 generasi ke-11, memori 16GB, dan SSD 512GB. Layar menampilkan warna normal, keyboard lengkap, port pengisian berfungsi, serta bodi memiliki gores pemakaian ringan.",
     specifications: {
-      Prosesor: "Intel Core i5 Generasi 11",
-      Memori: "16GB RAM",
-      Penyimpanan: "SSD 512GB",
-      Layar: "14 inci Full HD",
-      Konektivitas: "Wi-Fi, Bluetooth, USB-C, HDMI",
-      Kondisi: "Baik, gores pemakaian ringan"
+      merek: "Tidak tercantum",
+      model: "Laptop 14 Inci Intel Core i5 Generasi 11",
+      spesifikasi: "Intel Core i5 Generasi 11, RAM 16GB, layar 14 inci Full HD, Wi-Fi, Bluetooth, USB-C, dan HDMI",
+      kapasitas: "SSD 512GB",
+      kelengkapan: "Unit laptop dan charger",
+      garansi: "Tidak ada"
     },
     appraisalValue: 8_650_000,
     basePrice: 6_950_000,
@@ -180,12 +180,11 @@ export const FOUR_BUYER_ACTIVE_VIOLATION_SCENARIO: FourBuyerActiveViolationIncid
     itemName: "Gelang Emas Bangle Zircon 22K 8,60 Gram",
     description: "Gelang bangle emas kuning 22 karat dengan aksen batu zircon bening. Engsel dan pengunci bekerja baik, susunan batu lengkap, serta permukaan gelang menunjukkan jejak pemakaian halus tanpa penyok.",
     specifications: {
-      "Jenis Barang": "Gelang bangle dengan zircon",
-      "Kadar Emas": "22K / 91,6%",
-      Berat: "8,60 gram",
-      Diameter: "58 mm",
-      Pengunci: "Engsel pengait",
-      Kondisi: "Baik, jejak pemakaian halus"
+      jenisEmas: "Gelang emas",
+      kadarEmas: "22K / 91,6%",
+      berat: "8,60 gram",
+      bentuk: "Bangle berhias zircon dengan engsel pengait",
+      diameter: "58 mm"
     },
     appraisalValue: 12_800_000,
     basePrice: 10_400_000,

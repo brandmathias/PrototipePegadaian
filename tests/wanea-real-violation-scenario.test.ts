@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getBarangSpecificationFields,
+  getBarangSpecificationRows
+} from "@/lib/admin-unit/specifications";
+import {
   WANEA_REAL_BUYER_IDENTITIES,
   WANEA_REAL_VIOLATION_SCENARIO,
   getWaneaRealExpectedRestrictions,
@@ -101,5 +105,16 @@ describe("UPC Wanea real buyer violation scenario", () => {
         blockedUntil: new Date("2026-08-18T11:00:00+08:00")
       }
     ]);
+  });
+
+  it("provides every required category specification on each detail page", () => {
+    for (const incident of WANEA_REAL_VIOLATION_SCENARIO) {
+      const valuesByLabel = new Map(
+        getBarangSpecificationRows("", incident.specifications, incident.itemName).map((row) => [row.label, row.value])
+      );
+      for (const field of getBarangSpecificationFields("", incident.specifications, incident.itemName).filter((field) => field.required !== false)) {
+        expect(valuesByLabel.get(field.label), `${incident.itemName}: ${field.label}`).toBeTruthy();
+      }
+    }
   });
 });
