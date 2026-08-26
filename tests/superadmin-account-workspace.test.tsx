@@ -197,9 +197,12 @@ describe("SuperAdminAccountWorkspace", () => {
 
     const auditPanel = screen.getByTestId("superadmin-account-audit-list");
     expect(within(auditPanel).getByPlaceholderText(/cari aktivitas audit/i)).toBeInTheDocument();
-    expect(within(auditPanel).getByRole("button", { name: /linimasa: semua waktu/i })).toBeInTheDocument();
+    const timelineButton = within(auditPanel).getByRole("button", { name: /linimasa: semua waktu/i });
+    expect(timelineButton).toBeInTheDocument();
+    expect(timelineButton.querySelector(".truncate")).toBeNull();
+    expect(timelineButton.querySelector(".whitespace-normal")).toHaveTextContent(/linimasa:/i);
 
-    fireEvent.click(within(auditPanel).getByRole("button", { name: /linimasa: semua waktu/i }));
+    fireEvent.click(timelineButton);
 
     expect(within(auditPanel).getByRole("button", { name: /7 hari terakhir/i })).toBeInTheDocument();
     expect(within(auditPanel).getByRole("button", { name: /30 hari terakhir/i })).toBeInTheDocument();

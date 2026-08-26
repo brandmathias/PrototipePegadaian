@@ -752,6 +752,7 @@ export function AdminInventoryWorkspace({ items }: { items: AdminInventoryItem[]
           </div>
           <AdminSelect
             ariaLabel="Filter kategori barang"
+            allowWrap
             className="w-full"
             options={categories.map((category) => ({
               value: category,
@@ -1128,7 +1129,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
           <div className="relative" ref={popoverRef}>
             <button
               className={cn(
-                "flex h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
+                "flex h-auto min-h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
                 datePickerOpen || timelineFilter !== "all"
                   ? "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10"
                   : "border-[#dce9df] bg-white text-[#13211c]"
@@ -1136,9 +1137,11 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
               type="button"
               onClick={() => setDatePickerOpen((current) => !current)}
             >
-              <span className="flex min-w-0 items-center gap-2">
+              <span className="flex min-w-0 items-start gap-2 py-1">
                 <CalendarClock className="size-4 shrink-0 text-[#0a6a49]" />
-                <span className="whitespace-nowrap">Linimasa: {timelineLabel(timelineFilter, selectedDate)}</span>
+                <span className="min-w-0 whitespace-normal break-words leading-5">
+                  Linimasa: {timelineLabel(timelineFilter, selectedDate)}
+                </span>
               </span>
               <ChevronDown className={cn("size-4 shrink-0 transition duration-500", datePickerOpen && "rotate-180")} />
             </button>
@@ -1156,7 +1159,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
                     return (
                       <button
                         className={cn(
-                          "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                          "flex w-full items-start justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
                           active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white"
                         )}
                         key={option.value}
@@ -1167,9 +1170,9 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
                           setDatePickerOpen(false);
                         }}
                       >
-                        <span className="flex min-w-0 items-center gap-2">
+                        <span className="flex min-w-0 items-start gap-2">
                           <Icon className="size-4 shrink-0" />
-                          <span className="truncate">{option.label}</span>
+                          <span className="min-w-0 whitespace-normal break-words leading-5">{option.label}</span>
                         </span>
                         {active ? <Check className="size-4 shrink-0" /> : null}
                       </button>
@@ -1241,6 +1244,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
 
           <AdminSelect
             ariaLabel="Filter proses riwayat barang"
+            allowWrap
             className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={historyFilterOptions}
             value={actionFilter}
@@ -1248,6 +1252,7 @@ export function AdminInventoryHistoryWorkspace({ history }: { history: AdminBara
           />
           <AdminSelect
             ariaLabel="Filter kategori riwayat barang"
+            allowWrap
             className="w-full [&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-[1rem] [&_.admin-select-trigger]:px-3.5 [&_.admin-select-trigger]:text-[0.76rem]"
             options={categories.map((category) => ({
               value: category,

@@ -48,6 +48,24 @@ describe("AdminInventoryWorkspace", () => {
     expect(screen.queryByText(/pencarian langsung/i)).not.toBeInTheDocument();
   });
 
+  it("keeps a long category filter selection readable", () => {
+    const category = "kategori_barang_dengan_nama_panjang";
+
+    render(<AdminInventoryWorkspace items={[{ ...makeItem(1), category }]} />);
+
+    fireEvent.change(screen.getByLabelText("Filter kategori barang"), {
+      target: { value: category },
+    });
+
+    const categoryTrigger = screen.getByRole("button", {
+      name: "Kategori Barang Dengan Nama Panjang",
+    });
+
+    expect(categoryTrigger.querySelector(".whitespace-normal")).toHaveTextContent(
+      "Kategori Barang Dengan Nama Panjang",
+    );
+  });
+
   it("keeps failed marketed goods out of daftar barang and siap dipasarkan", () => {
     render(
       <AdminInventoryWorkspace
@@ -620,6 +638,7 @@ describe("AdminInventoryHistoryWorkspace", () => {
     const timelineButton = screen.getByRole("button", { name: /Linimasa:/i });
     expect(searchInput.parentElement?.parentElement).not.toContainElement(timelineButton);
     expect(timelineButton.querySelector(".truncate")).toBeNull();
+    expect(timelineButton.querySelector(".whitespace-normal")).toHaveTextContent(/Linimasa:/i);
 
     const resetButton = screen.getByRole("button", { name: /reset filter/i });
     expect(resetButton).not.toHaveClass("hover:-translate-y-0.5");

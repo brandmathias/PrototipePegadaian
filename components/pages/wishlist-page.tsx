@@ -1026,10 +1026,11 @@ export function WishlistPage({ activeItems, unavailableItems, serverNow }: Wishl
               />
             </div>
 
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <AdminSelect
                 ariaLabel="Urutkan wishlist"
-                className="w-56"
+                allowWrap
+                className="w-full sm:w-56"
                 options={sortOptions}
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value as SortMode)}

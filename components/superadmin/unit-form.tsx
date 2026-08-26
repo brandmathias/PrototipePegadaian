@@ -198,6 +198,7 @@ function UnitFormSelect({
       </FieldLabel>
       <AdminSelect
         ariaLabel={label}
+        allowWrap
         className="[&_.admin-select-trigger]:h-10 [&_.admin-select-trigger]:rounded-[0.9rem] [&_.admin-select-trigger]:border-[#dce6df] [&_.admin-select-trigger]:bg-[#fbfcfb] [&_.admin-select-trigger]:px-3 [&_.admin-select-trigger]:text-[0.78rem] [&_.admin-select-trigger]:font-bold [&_.admin-select-trigger]:text-[#13211c] [&_.admin-select-trigger]:shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#0a6a49]/35 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.42),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-option]:text-[0.82rem]"
         id={id}
         options={[

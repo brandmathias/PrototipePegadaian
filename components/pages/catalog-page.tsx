@@ -55,7 +55,7 @@ type CatalogPageProps = {
 };
 
 type SaleMode = "all" | "fixed_price" | "vickrey";
-type SortMode = "latest" | "popular" | "lowest" | "highest" | "ending";
+type SortMode = "latest" | "popular" | "lowest" | "highest";
 type ViewMode = "grid" | "list";
 
 const CATALOG_CARD_IMAGE_SIZES =
@@ -68,8 +68,7 @@ const sortOptions = [
   { value: "latest", label: "Terbaru" },
   { value: "popular", label: "Paling Dilihat" },
   { value: "lowest", label: "Harga Terendah" },
-  { value: "highest", label: "Harga Tertinggi" },
-  { value: "ending", label: "Lelang Berakhir Dekat" }
+  { value: "highest", label: "Harga Tertinggi" }
 ];
 
 const modeCopy: Record<Exclude<SaleMode, "all">, { label: string; icon: ReactNode; tone: string }> = {
@@ -918,14 +917,6 @@ export function CatalogPage({
       return [...filtered].sort((a, b) => b.lot.price - a.lot.price);
     }
 
-    if (sortBy === "ending") {
-      return [...filtered].sort((a, b) => {
-        const first = a.lot.endsAt ? new Date(a.lot.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
-        const second = b.lot.endsAt ? new Date(b.lot.endsAt).getTime() : Number.MAX_SAFE_INTEGER;
-        return first - second;
-      });
-    }
-
     return filtered;
   }, [
     lotsWithInsights,
@@ -1161,20 +1152,18 @@ export function CatalogPage({
                     <span className="sr-only">Cari katalog</span>
                     <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-black/48" />
                     <input
-                      className="h-14 w-full rounded-md border border-black/8 bg-white pl-12 pr-20 text-sm font-semibold text-[#14211b] outline-none transition duration-500 placeholder:text-black/42 focus:border-[#0b6a49]/24 focus:bg-white focus:ring-4 focus:ring-[#0b6a49]/8"
+                      className="h-14 w-full rounded-md border border-black/8 bg-white pl-12 pr-4 text-sm font-semibold text-[#14211b] outline-none transition duration-500 placeholder:text-black/42 focus:border-[#0b6a49]/24 focus:bg-white focus:ring-4 focus:ring-[#0b6a49]/8"
                       placeholder="Cari lot, kode barang, kategori, atau unit..."
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                     />
-                    <kbd className="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 rounded-[0.35rem] border border-black/10 bg-white px-2 py-1 text-[0.68rem] font-black text-black/44 sm:inline-flex">
-                      Ctrl K
-                    </kbd>
                   </label>
 
                   <div className="flex flex-wrap items-center gap-3">
                     <AdminSelect
                       ariaLabel="Urutkan katalog"
-                      className="w-52"
+                      allowWrap
+                      className="w-full sm:w-52"
                       options={sortOptions}
                       value={sortBy}
                       onValueChange={(value) => setSortBy(value as SortMode)}

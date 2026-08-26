@@ -2731,6 +2731,20 @@
     transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.admin-select-trigger[data-allow-wrap="true"] {
+  height: auto !important;
+  min-height: 3rem;
+}
+
+.admin-select-trigger[data-allow-wrap="true"][data-size="compact"] {
+  min-height: 2.25rem;
+}
+
+.report-range-trigger[data-allow-wrap="true"] {
+  height: auto !important;
+  min-height: 2.75rem;
+}
+
 .dark .admin-select-trigger {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),

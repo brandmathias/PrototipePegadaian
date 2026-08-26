@@ -2482,6 +2482,7 @@ export function AdminMarketingUnifiedPage({
 
           <AdminSelect
             ariaLabel="Filter metode pemasaran"
+            allowWrap
             className="w-full"
             options={MARKETING_METHOD_FILTERS.map((filter) => ({
               label: filter.value === "ALL" ? "Semua Mode" : filter.label,
@@ -2494,6 +2495,7 @@ export function AdminMarketingUnifiedPage({
           />
           <AdminSelect
             ariaLabel="Filter status pemasaran"
+            allowWrap
             className="w-full"
             options={MARKETING_STATUS_FILTERS.map((filter) => ({
               label: filter === "Semua" ? "Semua Status" : filter,

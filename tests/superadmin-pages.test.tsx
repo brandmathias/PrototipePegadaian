@@ -959,6 +959,14 @@ describe("superadmin pages", () => {
     expect(
       screen.getAllByRole("link", { name: "Lihat detail" })[0],
     ).toHaveAttribute("href", "/superadmin/unit/unit-1/barang/barang-1");
+    fireEvent.change(screen.getByRole("combobox", { name: "Status Operasional" }), {
+      target: { value: "Sedang Dipasarkan" },
+    });
+    expect(
+      screen
+        .getByRole("button", { name: "Sedang Dipasarkan" })
+        .querySelector(".whitespace-normal"),
+    ).toHaveTextContent("Sedang Dipasarkan");
   });
 
   it("renders a separate management detail page with editable unit information", () => {

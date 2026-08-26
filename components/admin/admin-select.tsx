@@ -169,7 +169,9 @@ export function AdminSelect({
           "admin-select-trigger group w-full",
           size === "compact" ? "h-9 rounded-[1.15rem] pl-3 pr-3 text-[0.72rem]" : "h-12 rounded-[1.35rem] pl-4 pr-3 text-sm"
         )}
+        data-allow-wrap={allowWrap ? "true" : undefined}
         data-active={normalizedValue !== String(options[0]?.value)}
+        data-size={size}
         onClick={() => setOpen((current) => !current)}
         ref={buttonRef}
         type="button"

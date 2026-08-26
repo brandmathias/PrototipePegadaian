@@ -34,6 +34,32 @@ describe("AdminSelect", () => {
     expect(onValueChange).toHaveBeenCalledWith("50");
   });
 
+  it("keeps wrapped selections readable in compact triggers", () => {
+    render(
+      <AdminSelect
+        allowWrap
+        ariaLabel="Filter kategori"
+        options={[
+          { value: "all", label: "Semua Kategori" },
+          { value: "long", label: "Kategori Barang Dengan Nama Panjang" },
+        ]}
+        size="compact"
+        value="long"
+        onValueChange={vi.fn()}
+      />,
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: "Kategori Barang Dengan Nama Panjang",
+    });
+
+    expect(trigger).toHaveAttribute("data-allow-wrap", "true");
+    expect(trigger).toHaveAttribute("data-size", "compact");
+    expect(trigger.querySelector(".whitespace-normal")).toHaveTextContent(
+      "Kategori Barang Dengan Nama Panjang",
+    );
+  });
+
   it("sizes the menu from the widest option so compact pagination labels stay fully visible", async () => {
     const onValueChange = vi.fn();
     const originalGetBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;

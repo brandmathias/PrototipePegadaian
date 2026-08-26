@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { CatalogHero } from "@/components/pages/catalog-hero";
@@ -286,6 +286,27 @@ describe("CatalogPage", () => {
 
     expect(screen.queryByText("Kalung Emas")).not.toBeInTheDocument();
     expect(screen.getByText(/belum ada barang sesuai filter/i)).toBeInTheDocument();
+  });
+
+  it("removes the nearby-ending sort option and keyboard shortcut badge", () => {
+    render(<CatalogPage lots={[makeLot(1)]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Terbaru" }));
+
+    expect(
+      within(screen.getByRole("listbox")).queryByRole("option", { name: "Lelang Berakhir Dekat" })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Ctrl K")).not.toBeInTheDocument();
+  });
+
+  it("keeps the selected sort label readable inside the trigger", () => {
+    render(<CatalogPage lots={[makeLot(1)]} />);
+
+    const sortTrigger = screen.getByRole("button", { name: "Terbaru" });
+    fireEvent.click(sortTrigger);
+    fireEvent.click(within(screen.getByRole("listbox")).getByRole("option", { name: "Harga Tertinggi" }));
+
+    expect(sortTrigger.querySelector(".whitespace-normal")).toHaveTextContent("Harga Tertinggi");
   });
 
   it("paginates catalog cards with twelve items per page", () => {

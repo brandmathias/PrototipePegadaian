@@ -104,6 +104,7 @@ function CategoryDropdown({
       <FieldLabel htmlFor="admin-barang-category">Kategori barang</FieldLabel>
       <AdminSelect
         ariaLabel="Kategori barang"
+        allowWrap
         className="[&_.admin-select-trigger]:h-12 [&_.admin-select-trigger]:rounded-xl [&_.admin-select-trigger]:text-sm [&_.admin-select-trigger]:font-bold"
         id="admin-barang-category"
         onValueChange={onChange}

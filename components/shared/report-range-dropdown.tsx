@@ -148,22 +148,23 @@ export function ReportRangeDropdown<TValue extends string>({
   }
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative max-w-full" ref={wrapperRef}>
       <button
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={`${ariaLabel}: ${displayLabel}`}
         className={cn(
-          "inline-flex h-11 items-center justify-between gap-2 rounded-[1rem] border border-[#dce9df] bg-white px-3.5 text-left text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#0a6a49]/30 hover:text-[#006747] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14 active:scale-[0.98]",
+          "report-range-trigger inline-flex h-auto min-h-11 w-full max-w-full min-w-0 items-center justify-between gap-2 rounded-[1rem] border border-[#dce9df] bg-white px-3.5 text-left text-[0.78rem] font-black text-[#13211c] shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-[#0a6a49]/30 hover:text-[#006747] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14 active:scale-[0.98] sm:w-auto",
           isOpen && "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10",
           buttonClassName,
         )}
+        data-allow-wrap="true"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <span className="flex min-w-0 items-center gap-2">
+        <span className="flex min-w-0 items-start gap-2 py-1">
           <CalendarDays className="size-4 shrink-0 text-[#0a6a49]" strokeWidth={1.8} />
-          <span className="truncate">{displayLabel}</span>
+          <span className="min-w-0 whitespace-normal break-words leading-5">{displayLabel}</span>
         </span>
         <ChevronDown className={cn("size-4 shrink-0 transition duration-500", isOpen && "rotate-180")} />
       </button>
@@ -197,7 +198,7 @@ export function ReportRangeDropdown<TValue extends string>({
               return (
                 <button
                   className={cn(
-                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-[0.76rem] font-bold outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14 active:scale-[0.99]",
+                    "flex w-full items-start justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-[0.76rem] font-bold outline-none transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14 active:scale-[0.99]",
                     active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white",
                   )}
                   key={option.value}
@@ -208,9 +209,9 @@ export function ReportRangeDropdown<TValue extends string>({
                   type="button"
                 >
                   <span className="min-w-0">
-                    <span className="block truncate">{option.label}</span>
+                    <span className="block whitespace-normal break-words leading-5">{option.label}</span>
                     {option.helper ? (
-                      <span className="mt-0.5 block truncate text-[0.64rem] font-semibold text-[#718077]">
+                      <span className="mt-0.5 block whitespace-normal break-words text-[0.64rem] font-semibold leading-4 text-[#718077]">
                         {option.helper}
                       </span>
                     ) : null}

@@ -220,6 +220,7 @@ export function AdminUnitForm({
             ) : (
               <AdminSelect
                 ariaLabel="Unit penugasan admin unit"
+                allowWrap
                 className="[&_.admin-select-trigger]:rounded-xl [&_.admin-select-trigger]:border-transparent [&_.admin-select-trigger]:bg-surface-low [&_.admin-select-trigger]:text-sm [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger[aria-expanded='true']]:border-primary/20 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-menu]:rounded-2xl [&_.admin-select-option]:text-sm"
                 id={unitIdField}
                 onValueChange={setUnitId}

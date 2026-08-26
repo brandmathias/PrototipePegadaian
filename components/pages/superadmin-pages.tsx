@@ -3088,6 +3088,7 @@ function SuperAdminUnitInventorySection({
               ].map((filter) => (
                 <AdminSelect
                   ariaLabel={filter.label}
+                  allowWrap
                   className="w-full"
                   key={filter.label}
                   onValueChange={filter.onChange}

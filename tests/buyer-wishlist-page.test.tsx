@@ -136,6 +136,14 @@ describe("WishlistPage", () => {
     expect(screen.queryByRole("option", { name: /lelang berakhir dekat/i })).not.toBeInTheDocument();
   });
 
+  it("keeps the selected wishlist sort label readable", () => {
+    render(<WishlistPage activeItems={[makeWishlistItem()]} unavailableItems={[]} />);
+
+    const sortTrigger = screen.getByRole("button", { name: "Terbaru" });
+
+    expect(sortTrigger.querySelector(".whitespace-normal")).toHaveTextContent("Terbaru");
+  });
+
   it("keeps the mode badge on wishlist media without duplicating the category overlay", () => {
     render(<WishlistPage activeItems={[makeWishlistItem()]} unavailableItems={[]} />);
 

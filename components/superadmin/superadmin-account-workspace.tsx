@@ -485,7 +485,7 @@ function AuditAccountPanel({
             <div className="relative" ref={popoverRef}>
               <button
                 className={cn(
-                  "flex h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
+                  "flex h-auto min-h-11 w-full items-center justify-between gap-2.5 rounded-[1rem] border px-3.5 text-left text-[0.76rem] font-black shadow-[0_14px_30px_-28px_rgba(8,69,50,0.32)] outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:border-[#0a6a49]/55 focus-visible:ring-4 focus-visible:ring-[#0a6a49]/14",
                   datePickerOpen || timelineFilter !== "all"
                     ? "border-[#0a6a49]/60 bg-[#f3fbf6] text-[#06472e] ring-4 ring-[#0a6a49]/10"
                     : "border-[#dce9df] bg-white text-[#13211c]"
@@ -493,9 +493,11 @@ function AuditAccountPanel({
                 onClick={() => setDatePickerOpen((current) => !current)}
                 type="button"
               >
-                <span className="flex min-w-0 items-center gap-2">
+                <span className="flex min-w-0 items-start gap-2 py-1">
                   <CalendarClock className="size-4 shrink-0 text-[#0a6a49]" />
-                  <span className="whitespace-nowrap">Linimasa: {auditTimelineLabel(timelineFilter, selectedDate)}</span>
+                  <span className="min-w-0 whitespace-normal break-words leading-5">
+                    Linimasa: {auditTimelineLabel(timelineFilter, selectedDate)}
+                  </span>
                 </span>
                 <ChevronDown className={cn("size-4 shrink-0 transition duration-500", datePickerOpen && "rotate-180")} />
               </button>
@@ -513,7 +515,7 @@ function AuditAccountPanel({
                       return (
                         <button
                           className={cn(
-                            "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
+                            "flex w-full items-start justify-between gap-3 rounded-xl px-3 py-2 text-left text-[0.76rem] font-bold outline-none transition duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:ring-2 focus-visible:ring-[#0a6a49]/14",
                             active ? "bg-[#ecf8f1] text-[#006747]" : "text-[#334155] hover:bg-white"
                           )}
                           key={option.value}
@@ -524,9 +526,9 @@ function AuditAccountPanel({
                           }}
                           type="button"
                         >
-                          <span className="flex min-w-0 items-center gap-2">
+                          <span className="flex min-w-0 items-start gap-2">
                             <Icon className="size-4 shrink-0" />
-                            <span className="truncate">{option.label}</span>
+                            <span className="min-w-0 whitespace-normal break-words leading-5">{option.label}</span>
                           </span>
                           {active ? <Check className="size-4 shrink-0" /> : null}
                         </button>
@@ -996,6 +998,7 @@ function CreateSuperAdminPanel({
                 </label>
                 <AdminSelect
                   ariaLabel="Level akun superadmin baru"
+                  allowWrap
                   id="superadmin-level"
                   options={levelOptions}
                   value={form.level}
@@ -1164,6 +1167,7 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
             </div>
             <AdminSelect
               ariaLabel="Filter level superadmin"
+              allowWrap
               className="w-full md:w-40"
               options={[
                 { value: "all", label: "Semua Level" },
@@ -1176,6 +1180,7 @@ export function SuperAdminAccountWorkspace({ data }: SuperAdminAccountWorkspaceP
             />
             <AdminSelect
               ariaLabel="Filter status superadmin"
+              allowWrap
               className="w-full md:w-40"
               options={[
                 { value: "all", label: "Semua Status" },
@@ -1503,6 +1508,7 @@ export function SuperAdminAccountDetailWorkspace({
                   {canManage ? (
                     <AdminSelect
                       ariaLabel={`Ubah level ${account.name}`}
+                      allowWrap
                       options={levelOptions}
                       value={account.level}
                       onValueChange={(value) =>

@@ -132,6 +132,7 @@ export function RekeningForm({
             Nama bank
           </label>
           <AdminSelect
+            allowWrap
             ariaLabel="Nama bank"
             className="[&_.admin-select-trigger]:h-11 [&_.admin-select-trigger]:rounded-xl [&_.admin-select-trigger]:border-transparent [&_.admin-select-trigger]:bg-surface-low [&_.admin-select-trigger]:px-4 [&_.admin-select-trigger]:text-sm [&_.admin-select-trigger]:font-semibold [&_.admin-select-trigger]:text-foreground [&_.admin-select-trigger]:shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] [&_.admin-select-trigger[aria-expanded='true']]:border-[#0a6a49]/35 [&_.admin-select-trigger[aria-expanded='true']]:bg-white [&_.admin-select-trigger[aria-expanded='true']]:shadow-[0_0_0_4px_rgba(189,232,208,0.42),0_18px_38px_-30px_rgba(0,103,71,0.34)] [&_.admin-select-menu]:border-[#d7e0ec] [&_.admin-select-menu]:bg-white [&_.admin-select-menu]:shadow-[0_24px_54px_-34px_rgba(15,23,42,0.26)] [&_.admin-select-option]:min-h-11 [&_.admin-select-option]:rounded-[0.72rem] [&_.admin-select-option]:text-[0.86rem] [&_.admin-select-option]:font-semibold [&_.admin-select-option:hover]:bg-[#f0f7f3] [&_.admin-select-option[data-active='true']]:bg-[#e7f5ed] [&_.admin-select-check]:text-[#006747]"
             id={bankId}

@@ -245,6 +245,7 @@ export function AdminRedeemForm({
                   <FieldLabel>Metode Pembayaran Loket</FieldLabel>
                   <AdminSelect
                     ariaLabel="Metode pembayaran loket"
+                    allowWrap
                     className="w-full"
                     onValueChange={setPaymentMethod}
                     options={PAYMENT_METHOD_OPTIONS}
