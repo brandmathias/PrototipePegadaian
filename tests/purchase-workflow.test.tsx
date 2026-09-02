@@ -53,11 +53,16 @@ describe("PurchaseWorkflow", () => {
     openMock.mockReset();
   });
 
-  it("creates a Midtrans checkout before opening its payment page", async () => {
+  it("creates a Midtrans checkout before opening its payment detail", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout" } })
+      json: async () => ({
+        data: {
+          snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout",
+          transactionId: "trx-purchase-detail"
+        }
+      })
     });
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("open", openMock);
@@ -82,8 +87,9 @@ describe("PurchaseWorkflow", () => {
       );
     });
     await waitFor(() => {
-      expect(openMock).toHaveBeenCalledWith("https://app.sandbox.midtrans.com/snap/v2/checkout", "_self");
+      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-purchase-detail");
     });
+    expect(openMock).not.toHaveBeenCalled();
   });
 
   it("confirms before returning to harga tetap detail before creating a transaction", async () => {

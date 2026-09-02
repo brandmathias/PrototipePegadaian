@@ -11,11 +11,13 @@ import { cn } from "@/lib/utils";
 export function FixedPriceBuyButton({
   buttonLabel = "Beli Sekarang",
   className,
-  lotId
+  lotId,
+  openCheckout = false
 }: {
   buttonLabel?: string;
   className?: string;
   lotId: string;
+  openCheckout?: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -50,11 +52,11 @@ export function FixedPriceBuyButton({
         return;
       }
 
-      const checkoutUrl = payload?.data?.snapRedirectUrl;
-      if (!checkoutUrl) {
+      const transactionId = payload?.data?.transactionId;
+      if (!transactionId) {
         toast({
-          title: "Checkout Midtrans belum tersedia",
-          description: "Transaksi dibuat tetapi tautan pembayaran belum diterima.",
+          title: "Detail pembayaran belum tersedia",
+          description: "Transaksi belum mengembalikan identitas yang dapat dibuka.",
           variant: "error",
           scope: "buyer"
         });
@@ -62,7 +64,24 @@ export function FixedPriceBuyButton({
         return;
       }
 
-      window.open(checkoutUrl, "_self");
+      if (openCheckout) {
+        const checkoutUrl = payload?.data?.snapRedirectUrl;
+        if (!checkoutUrl) {
+          toast({
+            title: "Checkout Midtrans belum tersedia",
+            description: "Transaksi dibuat tetapi tautan pembayaran belum diterima.",
+            variant: "error",
+            scope: "buyer"
+          });
+          setIsPending(false);
+          return;
+        }
+
+        window.open(checkoutUrl, "_self");
+        return;
+      }
+
+      router.replace(`/transaksi/${transactionId}`);
     } catch {
       toast({
         title: "Koneksi belum stabil",

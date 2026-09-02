@@ -21,14 +21,18 @@ describe("FixedPriceBuyButton", () => {
     openMock.mockReset();
   });
 
-  it("creates a fixed price Midtrans checkout and opens its redirect URL", async () => {
+  it("creates a fixed price Midtrans checkout and opens its payment detail", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout" } })
+      json: async () => ({
+        data: {
+          snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout",
+          transactionId: "trx-fixed-1"
+        }
+      })
     });
     vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("open", openMock);
     const user = userEvent.setup();
 
     render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
@@ -42,7 +46,33 @@ describe("FixedPriceBuyButton", () => {
       );
     });
     await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-fixed-1");
+    });
+    expect(openMock).not.toHaveBeenCalled();
+  });
+
+  it("opens Snap only when the payment-detail action requests checkout", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({
+        data: {
+          snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout",
+          transactionId: "trx-fixed-1"
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("open", openMock);
+    const user = userEvent.setup();
+
+    render(<FixedPriceBuyButton buttonLabel="Lanjutkan ke Checkout Midtrans" lotId="lot-fixed-1" openCheckout />);
+
+    await user.click(screen.getByRole("button", { name: /lanjutkan ke checkout midtrans/i }));
+
+    await waitFor(() => {
       expect(openMock).toHaveBeenCalledWith("https://app.sandbox.midtrans.com/snap/v2/checkout", "_self");
     });
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 });

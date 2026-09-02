@@ -66,9 +66,9 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         return;
       }
 
-      const checkoutUrl = payload?.data?.snapRedirectUrl;
-      if (!checkoutUrl) {
-        const nextMessage = "Checkout dibuat, tetapi tautan Midtrans belum diterima.";
+      const transactionId = payload?.data?.transactionId;
+      if (!transactionId) {
+        const nextMessage = "Transaksi dibuat, tetapi detail pembayaran belum tersedia.";
         setStatus("error");
         setMessage(nextMessage);
         toast({
@@ -80,7 +80,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         return;
       }
 
-      window.open(checkoutUrl, "_self");
+      router.replace(`/transaksi/${transactionId}`);
     } catch {
       const nextMessage = "Koneksi terputus. Coba buat transaksi lagi dalam beberapa saat.";
       setStatus("error");
