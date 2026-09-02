@@ -231,6 +231,60 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });
 
+  it("renders the harga tetap Midtrans flow with a resumable checkout and automatic status", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transactionWithSpecifications,
+          id: "trx-fixed-midtrans",
+          method: "MIDTRANS",
+          paymentLabel: "Pembayaran Midtrans",
+          paymentNotes: ["Selesaikan pembayaran melalui checkout Midtrans."],
+          deadline: "Menunggu pembayaran Midtrans",
+          deadlineAt: "2099-05-05T02:30:00.000Z"
+        }}
+        transactionId="trx-fixed-midtrans"
+      />
+    );
+
+    const workflow = screen.getByText("Alur Pembayaran").closest("section");
+    expect(workflow).not.toBeNull();
+    expect(within(workflow!).getByRole("heading", { name: /bayar melalui midtrans/i })).toBeInTheDocument();
+    expect(within(workflow!).getByText(/status diperiksa otomatis/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pembayaran midtrans/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
+    expect(screen.getByText(/pilih va, qris, atau e-wallet/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /lanjutkan ke checkout midtrans/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/tidak perlu mengunggah bukti pembayaran manual/i)).toBeInTheDocument();
+  });
+
+  it("shows a verified Midtrans payment without manual proof upload", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transactionWithSpecifications,
+          id: "trx-fixed-midtrans-paid",
+          status: "LUNAS",
+          method: "MIDTRANS",
+          paymentLabel: "Pembayaran Midtrans",
+          verifiedAt: "5 Mei 2026, 11.15 WIB"
+        }}
+        transactionId="trx-fixed-midtrans-paid"
+      />
+    );
+
+    expect(screen.getByText(/^pembayaran terverifikasi otomatis$/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran midtrans diverifikasi otomatis/i)).toBeInTheDocument();
+    expect(screen.getByText(/tidak perlu mengunggah bukti transfer manual/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /lanjutkan ke checkout midtrans/i })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
+  });
+
   it("renders failed auction winner payment as a dedicated 24 hour failure detail", () => {
     render(
       <TransactionDetailPage

@@ -384,7 +384,12 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     deadlineAt,
     reference: row.referenceNumber ?? proof.reference ?? "-",
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
-    paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",
+    paymentLabel:
+      method === "MIDTRANS"
+        ? "Pembayaran Midtrans"
+        : method === "BAYAR_LANGSUNG"
+          ? "Bayar langsung di unit"
+          : "Transfer bank ke rekening unit",
     paymentNotes: getPaymentNotes(row),
     bankName: primaryBankAccount?.bankName ?? row.account?.bankName ?? undefined,
     bankAccountNumber: primaryBankAccount?.accountNumber ?? row.account?.accountNumber ?? undefined,

@@ -9,9 +9,11 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 export function FixedPriceBuyButton({
+  buttonLabel = "Beli Sekarang",
   className,
   lotId
 }: {
+  buttonLabel?: string;
   className?: string;
   lotId: string;
 }) {
@@ -86,7 +88,7 @@ export function FixedPriceBuyButton({
         </>
       ) : (
         <>
-          Beli Sekarang
+          {buttonLabel}
           <ShoppingBag className="size-4" />
         </>
       )}

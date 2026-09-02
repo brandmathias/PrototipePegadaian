@@ -36,6 +36,7 @@ import { AccountCopyButton } from "@/components/buyer/account-copy-button";
 import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
+import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
@@ -658,7 +659,9 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const isMidtrans = transaction.method === "MIDTRANS";
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
-  const hasFailedWorkflow = transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment;
+  const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
+  const hasFailedWorkflow =
+    transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment || isFailedMidtransPayment;
   const completed = transaction.status === "SELESAI";
   const paymentVerified = transaction.status === "LUNAS";
   const handoverProofUploaded = Boolean(transaction.handoverProof);
@@ -669,8 +672,12 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
     transaction.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.";
   const paymentDetail = isFailedVickreyPayment
     ? "Batas pembayaran 24 jam sudah terlewati tanpa pembayaran langsung di unit, sehingga transaksi pemenang ditutup sebagai gagal."
+    : isFailedMidtransPayment
+      ? "Checkout Midtrans gagal atau kedaluwarsa. Buat transaksi baru dari katalog jika barang masih tersedia."
     : isMidtrans
-      ? "Selesaikan pembayaran di halaman Midtrans. Status diperbarui otomatis setelah dana diterima."
+      ? paymentVerified
+        ? "Pembayaran sudah diterima Midtrans dan tercatat otomatis pada transaksi ini."
+        : "Selesaikan pembayaran di halaman Midtrans. Status diperbarui otomatis setelah dana diterima."
       : isTransfer
       ? transaction.status === "DITOLAK_BUKTI"
         ? "Pembayaran sudah dicoba, tetapi bukti transfer ditolak admin unit sehingga transaksi ini dibatalkan."
@@ -682,8 +689,12 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
   const verificationDetail = isFailedVickreyPayment
     ? "Pembayaran gagal karena pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam. Riwayat bid tetap tersimpan dan transaksi tidak lagi berada dalam antrean pembayaran aktif."
+    : isFailedMidtransPayment
+      ? "Midtrans melaporkan pembayaran gagal atau kedaluwarsa. Transaksi ini tidak dapat dilanjutkan dan barang dapat dibeli kembali jika masih tersedia."
     : isMidtrans
-      ? "Midtrans mengirim konfirmasi pembayaran yang diverifikasi server sebelum transaksi dinyatakan lunas."
+      ? paymentVerified
+        ? "Konfirmasi Midtrans sudah diterima dan diverifikasi server sebelum transaksi dinyatakan lunas."
+        : "Midtrans mengirim konfirmasi pembayaran yang diverifikasi server sebelum transaksi dinyatakan lunas."
       : isTransfer
       ? transaction.status === "DITOLAK_BUKTI"
         ? `Bukti pembayaran ditolak. Alasan: ${rejectionReason}. Transaksi dibatalkan dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
@@ -698,6 +709,8 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         ? "Pembayaran sudah diverifikasi. Admin unit perlu mengunggah bukti serah-terima barang."
       : awaitingBuyerConfirmation
         ? "Bukti serah-terima barang sudah tersedia. Konfirmasikan pembelian setelah barang diterima."
+      : isMidtrans
+        ? "Tahap ini aktif setelah pembayaran Midtrans berhasil dikonfirmasi otomatis."
         : "Tahap ini aktif setelah admin memverifikasi pembayaran.";
   const steps: PaymentWorkflowStep[] = [
     {
@@ -715,20 +728,38 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       label: hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Pembayaran Gagal"
+          : isFailedMidtransPayment
+            ? "Checkout Gagal"
           : "Verifikasi Gagal"
         : "Verifikasi",
       headline: hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Alur Pembayaran Gagal"
+          : isFailedMidtransPayment
+            ? "Pembayaran Midtrans Gagal"
           : "Alur Verifikasi Gagal"
-        : "Menunggu Verifikasi Admin",
+        : isMidtrans
+          ? paymentVerified
+            ? "Pembayaran Terkonfirmasi Otomatis"
+            : "Menunggu Konfirmasi Midtrans"
+          : "Menunggu Verifikasi Admin",
       detail: verificationDetail,
       meta: hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Melewati 24 jam"
+          : isFailedMidtransPayment
+            ? "Checkout kedaluwarsa atau gagal"
           : "Bukti ditolak admin unit"
-        : "Aksi admin unit",
-      actor: isFailedVickreyPayment ? "Sistem" : transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : undefined,
+        : isMidtrans
+          ? paymentVerified
+            ? "Webhook tervalidasi"
+            : "Status diperiksa otomatis"
+          : "Aksi admin unit",
+      actor: isFailedVickreyPayment || isFailedMidtransPayment || (isMidtrans && paymentVerified)
+        ? "Sistem"
+        : transaction.verifiedBy
+          ? `Admin: ${transaction.verifiedBy}`
+          : undefined,
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
       icon: ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
@@ -773,7 +804,9 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
               ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
               : "Fixed price transfer membutuhkan bukti pembayaran sebelum admin memverifikasi."
             : isMidtrans
-              ? "Fixed price Midtrans diperbarui otomatis setelah dana diterima."
+              ? isFailedMidtransPayment
+                ? "Checkout Midtrans gagal atau kedaluwarsa. Barang dapat dibeli kembali dari katalog jika masih tersedia."
+                : "Fixed price Midtrans diperbarui otomatis setelah dana diterima."
               : "Fixed price bayar langsung diverifikasi admin setelah pembayaran diterima di unit."
       }
       steps={steps}
@@ -2094,6 +2127,8 @@ export function TransactionDetailPage({
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
   const isProofInReview = transaction.status === "BUKTI_DIUNGGAH";
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
+  const isPendingMidtransPayment = isMidtrans && transaction.status === "MENUNGGU_PEMBAYARAN";
+  const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
   const isPendingVickreyPayment =
@@ -2112,7 +2147,9 @@ export function TransactionDetailPage({
         : isVerified && hasSubmittedTransferProof
           ? "Bukti Pembayaran"
           : "Unggah Bukti"
-    : "Status Konfirmasi";
+    : isMidtrans
+      ? "Status Pembayaran"
+      : "Status Konfirmasi";
   const blacklistPolicy = buyerStatus?.blacklist.active
     ? getBlacklistRestrictionPolicy(buyerStatus.blacklist.totalViolations)
     : null;
@@ -2229,7 +2266,9 @@ export function TransactionDetailPage({
                 ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
                 : isFixedPrice
                 ? isMidtrans
-                  ? "Selesaikan checkout di Midtrans. Status pembayaran diperbarui otomatis setelah dana diterima."
+                  ? isFailedMidtransPayment
+                    ? "Checkout Midtrans gagal atau kedaluwarsa. Barang dapat dibeli kembali dari katalog jika masih tersedia."
+                    : "Selesaikan checkout di Midtrans. Status pembayaran diperbarui otomatis setelah dana diterima."
                   : "Selesaikan pembayaran harga tetap, unggah bukti transfer, lalu tunggu admin unit memverifikasi transaksi."
                 : "Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai."}
             </p>
@@ -2423,8 +2462,96 @@ export function TransactionDetailPage({
                 </div>
               </>
             ) : isMidtrans ? (
-              <div className="rounded-[0.95rem] border border-primary/15 bg-primary/[0.04] p-5 text-sm font-semibold leading-7 text-[#365248]">
-                Selesaikan pembayaran melalui checkout Midtrans. Sistem akan memperbarui status secara otomatis setelah dana diterima; tidak ada rekening tujuan atau bukti transfer manual pada halaman ini.
+              <div className="space-y-5">
+                <div
+                  className={cn(
+                    "rounded-[1.15rem] border p-5",
+                    isFailedMidtransPayment
+                      ? "border-red-200 bg-red-50"
+                      : isVerified
+                        ? "border-[#c9e6d3] bg-[#f0faf4]"
+                        : "border-primary/15 bg-primary/[0.04]"
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={cn(
+                        "grid size-11 shrink-0 place-items-center rounded-2xl",
+                        isFailedMidtransPayment
+                          ? "bg-red-100 text-red-700"
+                          : isVerified
+                            ? "bg-[#d7eadc] text-[#0a6a49]"
+                            : "bg-primary/10 text-primary"
+                      )}
+                    >
+                      {isFailedMidtransPayment ? <CircleX className="size-5" /> : isVerified ? <CheckCircle2 className="size-5" /> : <Clock3 className="size-5" />}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6e716c]">
+                        Checkout Midtrans
+                      </p>
+                      <p className="mt-1 text-lg font-black text-[#13211c]">
+                        {isFailedMidtransPayment
+                          ? "Pembayaran gagal atau kedaluwarsa"
+                          : isVerified
+                            ? "Pembayaran terverifikasi otomatis"
+                            : "Menunggu pembayaran"}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-[#62655f]">
+                        {isFailedMidtransPayment
+                          ? "Transaksi ini tidak lagi menahan barang. Kembali ke katalog untuk mencoba pembelian baru."
+                          : isVerified
+                            ? "Konfirmasi dari Midtrans sudah diterima. Tidak perlu mengunggah bukti transfer manual."
+                            : "Pilih VA, QRIS, atau e-wallet di checkout Midtrans. Status akan tersinkron otomatis setelah dana diterima."}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-5 font-headline text-3xl font-black tracking-tight text-primary">
+                    {currency.format(transaction.amount)}
+                  </p>
+                </div>
+
+                <div className="divide-y divide-border/60 rounded-[1rem] border border-border/70 bg-white px-4">
+                  <PaymentInfoRow label="Metode" value="VA, QRIS, atau e-wallet" />
+                  <PaymentInfoRow
+                    label="Status"
+                    value={
+                      <Badge
+                        className={isVerified ? "bg-[#d7eadc] text-[#0a6a49]" : undefined}
+                        variant={isFailedMidtransPayment ? "danger" : isVerified ? "default" : "accent"}
+                      >
+                        {isFailedMidtransPayment ? "Gagal" : isVerified ? "Terverifikasi" : "Menunggu pembayaran"}
+                      </Badge>
+                    }
+                  />
+                  {!isVerified && !isFailedMidtransPayment && transaction.deadlineAt ? (
+                    <PaymentInfoRow
+                      label="Batas reservasi"
+                      value={
+                        <LiveCountdown
+                          className="text-primary"
+                          expiredLabel="Waktu pembayaran berakhir"
+                          fallbackLabel={transaction.deadline}
+                          prefix="Sisa"
+                          targetAt={transaction.deadlineAt}
+                        />
+                      }
+                    />
+                  ) : null}
+                </div>
+
+                {isPendingMidtransPayment ? (
+                  <FixedPriceBuyButton
+                    buttonLabel="Lanjutkan ke Checkout Midtrans"
+                    className="h-12 rounded-[0.78rem] bg-[#006747] text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98]"
+                    lotId={transaction.lotId}
+                  />
+                ) : null}
+
+                <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <p>Midtrans memverifikasi pembayaran melalui notifikasi server. Admin unit menerima transaksi setelah status berubah lunas.</p>
+                </div>
               </div>
             ) : (
               <>
@@ -2456,9 +2583,13 @@ export function TransactionDetailPage({
           {showReceipt ? (
             <div className="space-y-5">
               <p className="font-body text-sm leading-7 text-[#62655f]">
-                {isCompleted
-                  ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
-                  : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
+                {isMidtrans
+                  ? isCompleted
+                    ? "Pembayaran Midtrans telah terverifikasi dan pembelian sudah selesai."
+                    : `Pembayaran Midtrans diverifikasi otomatis pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`
+                  : isCompleted
+                    ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
+                    : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
               </p>
               {hasSubmittedTransferProof ? (
               <BuyerPaymentProofForm
@@ -2498,10 +2629,20 @@ export function TransactionDetailPage({
           ) : isMidtrans ? (
             <div className="space-y-4">
               <p className="font-body text-sm leading-7 text-[#62655f]">
-                Menunggu konfirmasi pembayaran dari Midtrans. Halaman akan menyegarkan status secara otomatis.
+                {isFailedMidtransPayment
+                  ? "Pembayaran Midtrans gagal atau kedaluwarsa. Transaksi ini sudah ditutup dan tidak perlu mengunggah bukti pembayaran."
+                  : "Menunggu konfirmasi pembayaran dari Midtrans. Halaman akan menyegarkan status secara otomatis."}
               </p>
-              <div className="rounded-lg border border-primary/15 bg-primary/[0.04] p-6 text-center text-sm font-semibold leading-7 text-primary">
-                Tidak perlu mengunggah bukti pembayaran.
+              <div
+                className={cn(
+                  "rounded-lg border p-6 text-center",
+                  isFailedMidtransPayment ? "border-red-200 bg-red-50 text-red-700" : "border-primary/15 bg-primary/[0.04] text-primary"
+                )}
+              >
+                {isFailedMidtransPayment ? <CircleX className="mx-auto size-7" /> : <Clock3 className="mx-auto size-7" />}
+                <p className="mt-4 text-sm font-semibold leading-7">
+                  {isFailedMidtransPayment ? "Silakan kembali ke katalog untuk mencoba pembelian baru." : "Tidak perlu mengunggah bukti pembayaran manual."}
+                </p>
               </div>
             </div>
           ) : (
