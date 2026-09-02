@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, gt, inArray, ne, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lte, ne, sql } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
@@ -45,6 +45,11 @@ import {
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 import { getBuyerWishlistCount } from "@/lib/services/wishlist.service";
 import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timezone";
+import {
+  MIDTRANS_RESERVATION_MINUTES,
+  createMidtransSnapTransaction,
+  getMidtransGatewayConfig
+} from "@/lib/payments/midtrans";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",
@@ -1257,4 +1262,120 @@ function isFixedPriceLockedByOtherBuyerStatus(status: string) {
   return FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES.includes(
     status as (typeof FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)[number]
   );
+}
+
+function isActiveMidtransReservation(transaction: {
+  paymentDeadline?: Date | null;
+  paymentMethod?: string | null;
+  status: string;
+}) {
+  return (
+    transaction.paymentMethod === "midtrans" &&
+    transaction.status === "menunggu_pembayaran" &&
+    Boolean(transaction.paymentDeadline && transaction.paymentDeadline.getTime() > Date.now())
+  );
+}
+
+export async function createFixedPriceMidtransCheckout(userId: string, pemasaranId: string) {
+  const config = getMidtransGatewayConfig();
+  const row = await getMarketingForBuyer(pemasaranId);
+  ensureActiveMarketing(row);
+
+  if (row.marketing.mode !== "fixed_price") {
+    throw new Error("Barang ini bukan transaksi harga tetap.");
+  }
+
+  const now = new Date();
+  await db
+    .update(transaksi)
+    .set({ gatewayStatus: "expire", status: "gagal", updatedAt: now })
+    .where(
+      and(
+        eq(transaksi.pemasaranId, pemasaranId),
+        eq(transaksi.paymentMethod, "midtrans"),
+        eq(transaksi.status, "menunggu_pembayaran"),
+        lte(transaksi.paymentDeadline, now)
+      )
+    );
+
+  const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
+  const ownReservation = activeTransactions.find(
+    (transaction) => transaction.userId === userId && isActiveMidtransReservation(transaction)
+  );
+
+  if (ownReservation?.paymentToken) {
+    return {
+      transactionId: ownReservation.id,
+      snapToken: ownReservation.paymentToken,
+      snapRedirectUrl: ownReservation.paymentRedirectUrl ?? null
+    };
+  }
+
+  const lockedByOtherBuyer = activeTransactions.find(
+    (transaction) => transaction.userId !== userId && isActiveMidtransReservation(transaction)
+  );
+  if (lockedByOtherBuyer) {
+    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+  }
+
+  const blacklistState = await getEffectiveBuyerBlacklistState(userId);
+  if (blacklistState.active && blacklistState.policy.blocksFixedPrice) {
+    throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi harga tetap baru.");
+  }
+
+  const amount = Number(row.marketing.price ?? 0);
+  if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+    throw new Error("Harga harga tetap belum valid.");
+  }
+
+  const transactionId = randomUUID();
+  const paymentOrderId = `FP-${transactionId}`;
+  const paymentDeadline = new Date(now.getTime() + MIDTRANS_RESERVATION_MINUTES * 60_000);
+  const [created] = await db
+    .insert(transaksi)
+    .values({
+      id: transactionId,
+      pemasaranId,
+      userId,
+      type: "fixed_price",
+      amount: String(amount),
+      paymentMethod: "midtrans",
+      paymentProvider: "midtrans",
+      paymentOrderId,
+      gatewayStatus: "pending",
+      status: "menunggu_pembayaran",
+      paymentDeadline
+    })
+    .returning()
+    .catch(throwFixedPriceClaimConflict);
+
+  try {
+    const checkout = await createMidtransSnapTransaction({
+      amount,
+      config,
+      itemName: row.item.name,
+      orderId: paymentOrderId
+    });
+    await db
+      .update(transaksi)
+      .set({
+        paymentToken: checkout.token,
+        paymentRedirectUrl: checkout.redirectUrl,
+        updatedAt: new Date()
+      })
+      .where(eq(transaksi.id, created.id));
+    revalidateTransactionViews();
+
+    return {
+      transactionId: created.id,
+      snapToken: checkout.token,
+      snapRedirectUrl: checkout.redirectUrl
+    };
+  } catch (error) {
+    await db
+      .update(transaksi)
+      .set({ gatewayStatus: "failed_to_create", status: "gagal", updatedAt: new Date() })
+      .where(eq(transaksi.id, created.id));
+    throw error;
+  }
 }

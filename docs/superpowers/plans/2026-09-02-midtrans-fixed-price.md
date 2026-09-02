@@ -26,7 +26,7 @@
 **Files:**
 - Create: `lib/payments/midtrans.ts`
 - Modify: `lib/db/schema/admin.ts`
-- Create: `drizzle/0031_midtrans_fixed_price.sql`
+- Create: `drizzle/0029_midtrans_fixed_price.sql`
 - Create: `scripts/apply-midtrans-fixed-price-migration.ts`
 - Modify: `.env.example`
 - Test: `tests/midtrans-payment.test.ts`
@@ -92,12 +92,12 @@
 - Test: `tests/purchase-workflow.test.tsx`
 
 **Interfaces:**
-- Consumes `{ transaction, snapToken }` checkout API result and `window.snap.pay`.
+- Consumes URL redirect Snap dari checkout API.
 - Produces UI pembayaran Midtrans untuk Buyer serta status otomatis tanpa tindakan verifikasi bukti Harga Tetap pada Admin Unit.
 
 - [ ] **Step 1: Write failing UI tests** untuk token Snap, callback yang hanya refresh halaman, dan ketiadaan tombol verifikasi bukti pada transaksi Midtrans.
 - [ ] **Step 2: Run UI tests** dan pastikan gagal.
-- [ ] **Step 3: Implement UI minimal** untuk Snap Sandbox, fallback konfigurasi, serta label status lintas peran.
+- [ ] **Step 3: Implement UI minimal** untuk redirect Snap Sandbox, fallback konfigurasi, serta label status lintas peran.
 - [ ] **Step 4: Run UI tests** dan pastikan lulus.
 - [ ] **Step 5: Commit** perubahan antarmuka.
 

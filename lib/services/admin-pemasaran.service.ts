@@ -93,7 +93,8 @@ const ADMIN_MARKETING_TRANSACTION_PRIORITY: Record<string, number> = {
   lunas: 4,
   bukti_diunggah: 3,
   ditolak_bukti: 3,
-  menunggu_konfirmasi_langsung: 2
+  menunggu_konfirmasi_langsung: 2,
+  menunggu_pembayaran: 1
 };
 
 function getAdminMarketingTransactionPriority(status?: string | null) {

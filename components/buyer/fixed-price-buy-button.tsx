@@ -28,9 +28,7 @@ export function FixedPriceBuyButton({
 
     try {
       const response = await fetch(`/api/user/beli/${lotId}`, {
-        method: "POST",
-        body: JSON.stringify({ paymentMethod: "transfer" }),
-        headers: { "Content-Type": "application/json" }
+        method: "POST"
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -50,11 +48,11 @@ export function FixedPriceBuyButton({
         return;
       }
 
-      const transactionId = payload?.data?.id;
-      if (!transactionId) {
+      const checkoutUrl = payload?.data?.snapRedirectUrl;
+      if (!checkoutUrl) {
         toast({
-          title: "Detail pembayaran belum tersedia",
-          description: "Transaksi dibuat tetapi ID transaksi belum diterima.",
+          title: "Checkout Midtrans belum tersedia",
+          description: "Transaksi dibuat tetapi tautan pembayaran belum diterima.",
           variant: "error",
           scope: "buyer"
         });
@@ -62,8 +60,7 @@ export function FixedPriceBuyButton({
         return;
       }
 
-      router.replace(`/transaksi/${transactionId}`);
-      router.refresh();
+      window.open(checkoutUrl, "_self");
     } catch {
       toast({
         title: "Koneksi belum stabil",
@@ -85,7 +82,7 @@ export function FixedPriceBuyButton({
       {isPending ? (
         <>
           <LoaderCircle className="button-spinner size-4" />
-          Membuat Transaksi
+          Menyiapkan Pembayaran
         </>
       ) : (
         <>

@@ -10,7 +10,7 @@ export type BuyerTransactionStatus =
   | "SELESAI"
   | "GAGAL";
 
-export type BuyerPaymentMethod = "TRANSFER_BANK" | "BAYAR_LANGSUNG";
+export type BuyerPaymentMethod = "TRANSFER_BANK" | "BAYAR_LANGSUNG" | "MIDTRANS";
 
 export type BuyerBankAccount = {
   id?: string;

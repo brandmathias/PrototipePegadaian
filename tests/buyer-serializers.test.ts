@@ -571,4 +571,33 @@ describe("buyer serializers", () => {
     expect(bid.status).toBe("GAGAL");
     expect(bid.note).toMatch(/pembayaran lelang tertutup gagal/i);
   });
+
+  it("serializes a pending fixed-price Midtrans checkout without manual transfer guidance", () => {
+    const transaction = serializeBuyerTransaction({
+      id: "trx-midtrans",
+      pemasaranId: "pm-midtrans",
+      type: "fixed_price",
+      amount: "12500000",
+      paymentMethod: "midtrans",
+      status: "menunggu_pembayaran",
+      proofUrl: null,
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: new Date("2099-05-05T14:07:00Z"),
+      verifiedAt: null,
+      createdAt: new Date("2099-05-04T14:07:00Z"),
+      lotName: "Cincin Emas",
+      lotId: "barang-midtrans",
+      imageUrl: null,
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Sam Ratulangi, Manado",
+      account: null
+    });
+
+    expect(transaction.method).toBe("MIDTRANS");
+    expect(transaction.deadline).toBe("Menunggu pembayaran Midtrans");
+    expect(transaction.deadlineAt).toBe("2099-05-05T14:07:00.000Z");
+    expect(transaction.paymentNotes.join(" ")).toMatch(/Midtrans/);
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/unggah bukti/i);
+  });
 });

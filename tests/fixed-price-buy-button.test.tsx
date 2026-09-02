@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const replaceMock = vi.fn();
-const refreshMock = vi.fn();
+const openMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: replaceMock,
-    refresh: refreshMock
+    refresh: vi.fn()
   })
 }));
 
@@ -18,16 +18,17 @@ describe("FixedPriceBuyButton", () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     replaceMock.mockReset();
-    refreshMock.mockReset();
+    openMock.mockReset();
   });
 
-  it("creates a fixed price transaction and opens its payment detail", async () => {
+  it("creates a fixed price Midtrans checkout and opens its redirect URL", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { id: "trx-fixed-1" } })
+      json: async () => ({ data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout" } })
     });
     vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("open", openMock);
     const user = userEvent.setup();
 
     render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
@@ -37,16 +38,11 @@ describe("FixedPriceBuyButton", () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         "/api/user/beli/lot-fixed-1",
-        expect.objectContaining({
-          body: JSON.stringify({ paymentMethod: "transfer" }),
-          headers: { "Content-Type": "application/json" },
-          method: "POST"
-        })
+        { method: "POST" }
       );
     });
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-fixed-1");
-      expect(refreshMock).toHaveBeenCalledTimes(1);
+      expect(openMock).toHaveBeenCalledWith("https://app.sandbox.midtrans.com/snap/v2/checkout", "_self");
     });
   });
 });

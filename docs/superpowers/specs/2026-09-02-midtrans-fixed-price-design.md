@@ -27,15 +27,14 @@ Tabel `transaksi` ditambah kolom khusus gateway: `paymentProvider`, `paymentOrde
 ## Konfigurasi
 
 - `MIDTRANS_SERVER_KEY`: hanya server, tidak boleh masuk Git atau browser.
-- `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`: key Snap yang memang dipakai browser.
 - `MIDTRANS_IS_PRODUCTION`: default `false`; produksi hanya aktif jika bernilai `true`.
 - Pada Midtrans MAP, Notification URL diarahkan ke `https://<domain>/api/payments/midtrans/notification`.
 
 ## Antarmuka
 
-- `POST /api/user/beli/:pemasaranId` membuat atau memakai ulang reservasi buyer aktif, lalu mengembalikan transaksi dan `snapToken`.
+- `POST /api/user/beli/:pemasaranId` membuat atau memakai ulang reservasi buyer aktif, lalu mengembalikan URL redirect Snap.
 - `POST /api/payments/midtrans/notification` menerima notifikasi Midtrans, memverifikasi signature dan status langsung, kemudian menerapkan transisi database secara idempoten.
-- Buyer membuka `snap.pay(token)`, kemudian kembali ke detail transaksi untuk membaca status yang berasal dari server.
+- Buyer berpindah ke checkout Snap melalui URL redirect, kemudian kembali ke detail transaksi untuk membaca status yang berasal dari server.
 
 ## Penanganan status Midtrans
 

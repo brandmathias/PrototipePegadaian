@@ -5844,6 +5844,9 @@ function getFixedPriceReceiptTerms(auction: MarketingSession) {
 }
 
 function getMarketingPaymentMethodLabel(auction: MarketingSession) {
+  if (auction.paymentMethod === "MIDTRANS") {
+    return "Midtrans (otomatis)";
+  }
   if (auction.paymentMethod === "BAYAR_LANGSUNG") {
     return "Langsung di unit";
   }
