@@ -254,9 +254,9 @@ describe("buyer transaction detail page", () => {
     expect(within(workflow!).getByText(/status diperiksa otomatis/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran midtrans/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
-    expect(screen.getByText(/pilih va, qris, atau e-wallet/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(2);
-    expect(screen.getByRole("button", { name: /lanjutkan ke checkout midtrans/i })).toBeInTheDocument();
+    expect(screen.getByText(/client key midtrans belum dikonfigurasi/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
+    expect(screen.getByRole("button", { name: /buka checkout midtrans/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
     expect(screen.getByText(/tidak perlu mengunggah bukti pembayaran manual/i)).toBeInTheDocument();

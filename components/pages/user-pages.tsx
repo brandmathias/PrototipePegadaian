@@ -36,7 +36,7 @@ import { AccountCopyButton } from "@/components/buyer/account-copy-button";
 import { AuctionLoserPageContent } from "@/components/buyer/auction-loser-page";
 import { AuctionWinnerPageContent } from "@/components/buyer/auction-winner-page";
 import { AuctionWinnerCountdown } from "@/components/buyer/auction-winner-countdown";
-import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
+import { MidtransEmbeddedCheckout } from "@/components/buyer/midtrans-embedded-checkout";
 import { BuyerPaymentProofForm } from "@/components/buyer/payment-proof-form";
 import { CompletePurchaseButton } from "@/components/buyer/complete-purchase-button";
 import { LoginHistoryDialog } from "@/components/buyer/login-history-dialog";
@@ -2462,6 +2462,9 @@ export function TransactionDetailPage({
                 </div>
               </>
             ) : isMidtrans ? (
+              isPendingMidtransPayment ? (
+                <MidtransEmbeddedCheckout lotId={transaction.lotId} />
+              ) : (
               <div className="space-y-5">
                 <div
                   className={cn(
@@ -2540,20 +2543,12 @@ export function TransactionDetailPage({
                   ) : null}
                 </div>
 
-                {isPendingMidtransPayment ? (
-                  <FixedPriceBuyButton
-                    buttonLabel="Lanjutkan ke Checkout Midtrans"
-                    className="h-12 rounded-[0.78rem] bg-[#006747] text-sm font-black text-white shadow-[0_18px_32px_-22px_rgba(0,103,71,0.74)] transition-[transform,background-color,box-shadow,opacity,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-[#00583d] active:scale-[0.98]"
-                    lotId={transaction.lotId}
-                    openCheckout
-                  />
-                ) : null}
-
                 <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
                   <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
                   <p>Midtrans memverifikasi pembayaran melalui notifikasi server. Admin unit menerima transaksi setelah status berubah lunas.</p>
                 </div>
               </div>
+              )
             ) : (
               <>
                 <div className="rounded-lg bg-[#f7f7f4] p-5">
