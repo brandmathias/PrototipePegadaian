@@ -155,22 +155,6 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
     };
   }, [embedId, router, toast, transactionId]);
 
-  if (status === "loading") {
-    return (
-      <div className="grid min-h-[34rem] place-items-center rounded-[1.5rem] border border-[#dbe8df] bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
-        <div className="grid justify-items-center gap-4">
-          <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
-            <LoaderCircle className="size-7 animate-spin" />
-          </span>
-          <div>
-            <p className="font-headline text-lg font-black text-[#13211c]">Menyiapkan checkout Midtrans</p>
-            <p className="mt-1 text-sm leading-6 text-[#62655f]">Metode pembayaran akan muncul di card ini.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (status === "error") {
     return (
       <div className="grid min-h-[34rem] content-center gap-5 rounded-[1.5rem] border border-[#f1d9b2] bg-[linear-gradient(145deg,#fffaf1,#ffffff)] p-6 text-center md:p-8">
@@ -200,8 +184,21 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
           <ShieldCheck className="size-3.5" /> Aman
         </span>
       </div>
-      <div className="min-h-[34rem] bg-white p-3 sm:p-5">
+      <div className="relative min-h-[34rem] bg-white p-3 sm:p-5">
         <div id={embedId} className="min-h-[32rem]" />
+        {status === "loading" ? (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
+            <div className="grid justify-items-center gap-4">
+              <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+                <LoaderCircle className="size-7 animate-spin" />
+              </span>
+              <div>
+                <p className="font-headline text-lg font-black text-[#13211c]">Menyiapkan checkout Midtrans</p>
+                <p className="mt-1 text-sm leading-6 text-[#62655f]">Metode pembayaran akan muncul di card ini.</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
       {status === "closed" ? (
         <div className="border-t border-[#edf1ed] bg-[#fffaf1] px-5 py-3 text-center text-sm font-semibold text-[#8b6a1d]">

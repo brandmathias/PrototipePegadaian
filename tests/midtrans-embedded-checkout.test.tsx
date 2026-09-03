@@ -18,6 +18,18 @@ describe("MidtransEmbeddedCheckout", () => {
     refreshMock.mockReset();
   });
 
+  it("keeps the Snap mount target in the DOM while checkout initializes", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => undefined)));
+
+    render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    expect(document.querySelector('[id^="midtrans-snap-"]')).toBeInTheDocument();
+  });
+
   it("embeds the existing Snap token inside the payment card", async () => {
     const fetchMock = vi.fn((url: string) => {
       if (url === "/api/payments/midtrans/config") {
@@ -34,7 +46,10 @@ describe("MidtransEmbeddedCheckout", () => {
         json: async () => ({ data: { snapToken: "snap-token-1" } })
       });
     });
-    const embedMock = vi.fn();
+    let targetExistedWhenSnapMounted = false;
+    const embedMock = vi.fn((_token: string, options: { embedId: string }) => {
+      targetExistedWhenSnapMounted = document.getElementById(options.embedId) !== null;
+    });
 
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("snap", { embed: embedMock });
@@ -55,6 +70,7 @@ describe("MidtransEmbeddedCheckout", () => {
         expect.objectContaining({ embedId: expect.stringMatching(/^midtrans-snap-/) })
       );
     });
+    expect(targetExistedWhenSnapMounted).toBe(true);
     expect(screen.getByText(/checkout midtrans/i)).toBeInTheDocument();
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
   });
