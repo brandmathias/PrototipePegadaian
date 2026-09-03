@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, inArray, lte, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminBarang } from "@/lib/admin-unit/serializers";
@@ -49,6 +49,23 @@ type AdminBarangMediaChangesInput = {
   addMedia?: unknown;
   deleteMediaIds?: unknown;
 };
+
+async function recordStatusChange(input: {
+  barangId: string;
+  oldStatus?: string | null;
+  newStatus: string;
+  userId: string;
+  note?: string;
+}) {
+  await db.insert(riwayatStatusBarang).values({
+    id: crypto.randomUUID(),
+    barangId: input.barangId,
+    oldStatus: input.oldStatus ?? null,
+    newStatus: input.newStatus,
+    changedByUserId: input.userId,
+    note: input.note ?? ""
+  });
+}
 
 export type AdminBarangHistoryEntry = {
   id: string;
@@ -1065,165 +1082,97 @@ export async function updateAdminBarang(
 }
 
 export async function extendAdminBarang(unitId: string, userId: string, barangId: string, input: { newDueDate?: unknown; note?: unknown }) {
-  const now = new Date();
-  const updated = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(barang)
-      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
-      .limit(1)
-      .for("update");
+  const current = await assertBarangForUnit(barangId, unitId);
+  if (current.status !== "gadai" && current.status !== "jaminan") {
+    throw new Error("Perpanjangan hanya bisa dilakukan sebelum barang dipasarkan.");
+  }
+  if (current.dueDate.getTime() <= Date.now()) {
+    throw new Error("Perpanjangan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
+  }
 
-    if (!current) {
-      throw new Error("Barang tidak ditemukan di unit Anda.");
-    }
-    if (current.status !== "gadai" && current.status !== "jaminan") {
-      throw new Error("Perpanjangan hanya bisa dilakukan sebelum barang dipasarkan.");
-    }
-    if (current.dueDate.getTime() <= now.getTime()) {
-      throw new Error("Perpanjangan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
-    }
+  const payload = validatePerpanjanganPayload(input, current.dueDate.toISOString().slice(0, 10));
+  const newDueDate = toUtcDate(payload.newDueDate);
 
-    const payload = validatePerpanjanganPayload(input, current.dueDate.toISOString().slice(0, 10));
-    const newDueDate = toUtcDate(payload.newDueDate);
+  await db.insert(riwayatPerpanjangan).values({
+    id: crypto.randomUUID(),
+    barangId,
+    oldDueDate: current.dueDate,
+    newDueDate,
+    note: payload.note,
+    extendedByUserId: userId
+  });
 
-    await tx.insert(riwayatPerpanjangan).values({
-      id: crypto.randomUUID(),
-      barangId,
-      oldDueDate: current.dueDate,
-      newDueDate,
-      note: payload.note,
-      extendedByUserId: userId
-    });
+  const [updated] = await db
+    .update(barang)
+    .set({ dueDate: newDueDate, updatedAt: new Date() })
+    .where(eq(barang.id, barangId))
+    .returning();
 
-    const [updatedItem] = await tx
-      .update(barang)
-      .set({ dueDate: newDueDate, updatedAt: now })
-      .where(
-        and(
-          eq(barang.id, barangId),
-          inArray(barang.status, ["gadai", "jaminan"]),
-          gt(barang.dueDate, now)
-        )
-      )
-      .returning();
-
-    if (!updatedItem) {
-      throw new Error("Barang berubah saat tanggal jatuh tempo diperbarui. Silakan coba lagi.");
-    }
-
-    await tx.insert(riwayatStatusBarang).values({
-      id: crypto.randomUUID(),
-      barangId,
-      oldStatus: current.status,
-      newStatus: current.status,
-      changedByUserId: userId,
-      note: "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran."
-    });
-
-    return updatedItem;
+  await recordStatusChange({
+    barangId,
+    oldStatus: current.status,
+    newStatus: current.status,
+    userId,
+    note: "Tanggal jatuh tempo barang diperpanjang sebelum pemasaran."
   });
 
   return serializeAdminBarang(updated);
 }
 
 export async function redeemAdminBarang(unitId: string, userId: string, barangId: string, input: { reference?: unknown; redeemedAt?: unknown }) {
-  const now = new Date();
-  const updated = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(barang)
-      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
-      .limit(1)
-      .for("update");
+  const current = await assertBarangForUnit(barangId, unitId);
+  if (current.status !== "gadai" && current.status !== "jaminan") {
+    throw new Error("Penebusan hanya bisa dicatat sebelum barang dipasarkan.");
+  }
+  if (current.dueDate.getTime() <= Date.now()) {
+    throw new Error("Penebusan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
+  }
 
-    if (!current) {
-      throw new Error("Barang tidak ditemukan di unit Anda.");
-    }
-    if (current.status !== "gadai" && current.status !== "jaminan") {
-      throw new Error("Penebusan hanya bisa dicatat sebelum barang dipasarkan.");
-    }
-    if (current.dueDate.getTime() <= now.getTime()) {
-      throw new Error("Penebusan tidak dapat dilakukan setelah jatuh tempo. Barang siap dipasarkan.");
-    }
+  const payload = validateTebusPayload(input);
+  const [updated] = await db
+    .update(barang)
+    .set({
+      status: "ditebus",
+      redeemedAt: toUtcDate(payload.redeemedAt),
+      redemptionReference: payload.reference,
+      updatedAt: new Date()
+    })
+    .where(eq(barang.id, barangId))
+    .returning();
 
-    const payload = validateTebusPayload(input);
-    const [updatedItem] = await tx
-      .update(barang)
-      .set({
-        status: "ditebus",
-        redeemedAt: toUtcDate(payload.redeemedAt),
-        redemptionReference: payload.reference,
-        updatedAt: now
-      })
-      .where(
-        and(
-          eq(barang.id, barangId),
-          inArray(barang.status, ["gadai", "jaminan"]),
-          gt(barang.dueDate, now)
-        )
-      )
-      .returning();
-
-    if (!updatedItem) {
-      throw new Error("Barang berubah saat penebusan dicatat. Silakan coba lagi.");
-    }
-
-    await tx.insert(riwayatStatusBarang).values({
-      id: crypto.randomUUID(),
-      barangId,
-      oldStatus: current.status,
-      newStatus: "ditebus",
-      changedByUserId: userId,
-      note: "Barang ditebus oleh nasabah."
-    });
-
-    return updatedItem;
+  await recordStatusChange({
+    barangId,
+    oldStatus: current.status,
+    newStatus: "ditebus",
+    userId,
+    note: "Barang ditebus oleh nasabah."
   });
 
   return serializeAdminBarang(updated);
 }
 
 export async function convertAdminBarangToJaminan(unitId: string, userId: string, barangId: string) {
-  const now = new Date();
-  const updated = await db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(barang)
-      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
-      .limit(1)
-      .for("update");
+  const current = await assertBarangForUnit(barangId, unitId);
+  if (current.status !== "gadai") {
+    throw new Error("Hanya barang gadai yang bisa dipindahkan menjadi jaminan.");
+  }
 
-    if (!current) {
-      throw new Error("Barang tidak ditemukan di unit Anda.");
-    }
-    if (current.status !== "gadai") {
-      throw new Error("Hanya barang gadai yang bisa dipindahkan menjadi jaminan.");
-    }
-    if (current.dueDate.getTime() > now.getTime()) {
-      throw new Error("Barang baru bisa menjadi jaminan setelah melewati tanggal jatuh tempo.");
-    }
+  if (current.dueDate.getTime() > Date.now()) {
+    throw new Error("Barang baru bisa menjadi jaminan setelah melewati tanggal jatuh tempo.");
+  }
 
-    const [updatedItem] = await tx
-      .update(barang)
-      .set({ status: "jaminan", updatedAt: now })
-      .where(and(eq(barang.id, barangId), eq(barang.status, "gadai"), lte(barang.dueDate, now)))
-      .returning();
+  const [updated] = await db
+    .update(barang)
+    .set({ status: "jaminan", updatedAt: new Date() })
+    .where(eq(barang.id, barangId))
+    .returning();
 
-    if (!updatedItem) {
-      throw new Error("Barang berubah saat status jaminan diperbarui. Silakan coba lagi.");
-    }
-
-    await tx.insert(riwayatStatusBarang).values({
-      id: crypto.randomUUID(),
-      barangId,
-      oldStatus: current.status,
-      newStatus: "jaminan",
-      changedByUserId: userId,
-      note: "Barang dipindahkan menjadi aset jaminan unit."
-    });
-
-    return updatedItem;
+  await recordStatusChange({
+    barangId,
+    oldStatus: current.status,
+    newStatus: "jaminan",
+    userId,
+    note: "Barang dipindahkan menjadi aset jaminan unit."
   });
 
   return serializeAdminBarang(updated);

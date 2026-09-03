@@ -148,7 +148,7 @@ export function getUnitItemOperationalState(input: {
   const isBeforeDueDate = dueDate ? dueDate.getTime() > now.getTime() : false;
   const fixedPriceCatalogLocked =
     activeMarketingMode === "fixed_price" &&
-    ["menunggu_pembayaran", "bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus);
+    ["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus);
 
   if (itemStatus === "terjual" || transactionStatus === "lunas" || transactionStatus === "selesai") {
     return { operationalStatus: "Terjual", operationalTone: "slate" };

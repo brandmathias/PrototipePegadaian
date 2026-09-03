@@ -43,39 +43,19 @@ function mockTransactionLookup(row: unknown) {
   };
 }
 
-function mockLockedItemLookup() {
-  return {
-    from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        limit: vi.fn().mockReturnValue({
-          for: vi.fn().mockResolvedValue([{ id: "barang-1", status: "dipasarkan" }])
-        })
-      })
-    })
-  };
-}
-
 describe("Midtrans notification route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.db));
     mocks.getMidtransGatewayConfig.mockReturnValue({ serverKey: "SB-Mid-server-test" });
     mocks.verifyMidtransNotificationSignature.mockReturnValue(true);
-    mocks.db.select
-      .mockImplementationOnce(() => mockTransactionLookup({
-        transaction: {
-          id: "trx-1",
-          amount: "12500000",
-          type: "fixed_price",
-          paymentMethod: "midtrans",
-          paymentProvider: "midtrans",
-          status: "menunggu_pembayaran"
-        },
+    mocks.db.select.mockReturnValue(
+      mockTransactionLookup({
+        transaction: { id: "trx-1", amount: "12500000", paymentProvider: "midtrans", status: "menunggu_pembayaran" },
         item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
         marketing: { id: "pemasaran-1" },
         unit: { id: "unit-1", name: "UPC Ranotana", address: "Manado" }
-      }))
-      .mockImplementationOnce(mockLockedItemLookup);
+      })
+    );
     mocks.db.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) });
   });
 
@@ -102,7 +82,7 @@ describe("Midtrans notification route", () => {
 
     expect(response.status).toBe(200);
     expect(mocks.db.update).toHaveBeenCalledTimes(1);
-    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
+    expect(mocks.db.transaction).not.toHaveBeenCalled();
     expect(mocks.notifyPaymentVerified).not.toHaveBeenCalled();
   });
 

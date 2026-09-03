@@ -121,22 +121,9 @@ function mockHandoverRows(rows: Array<Record<string, unknown>>) {
   };
 }
 
-function mockLockedItem(row: { id: string; status: string }) {
-  return {
-    from: vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({
-        limit: vi.fn().mockReturnValue({
-          for: vi.fn().mockResolvedValue([row])
-        })
-      })
-    })
-  };
-}
-
 describe("overdue Lelang Tertutup payment settlement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.tx.select.mockReset();
     mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));
   });
 
@@ -371,9 +358,6 @@ describe("handover auto-completion settlement", () => {
         }
       ])
     );
-    mocks.tx.select
-      .mockImplementationOnce(() => mockLockedItem({ id: "barang-1", status: "dipasarkan" }))
-      .mockImplementationOnce(() => mockLockedItem({ id: "barang-2", status: "dipasarkan" }));
 
     mocks.tx.update
       .mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)))
@@ -445,7 +429,6 @@ describe("handover auto-completion settlement", () => {
         }
       ])
     );
-    mocks.tx.select.mockImplementationOnce(() => mockLockedItem({ id: "barang-legacy", status: "terjual" }));
     mocks.tx.update.mockImplementationOnce(() => mockUpdatedTransaction((value) => updatePayloads.push(value)));
 
     const { processHandoverAutoCompletions } = await import("@/lib/services/cron.service");

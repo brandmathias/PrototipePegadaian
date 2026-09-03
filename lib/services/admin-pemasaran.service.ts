@@ -172,6 +172,49 @@ export function resolveMarketingPerformanceInsights(
   );
 }
 
+async function getBarangForUnit(barangId: string, unitId: string) {
+  const [row] = await db
+    .select()
+    .from(barang)
+    .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
+    .limit(1);
+  if (!row) {
+    throw new Error("Barang tidak ditemukan di unit Anda.");
+  }
+  return row;
+}
+
+async function getLatestMarketingForBarang(barangId: string) {
+  const [row] = await db
+    .select({
+      id: pemasaran.id,
+      mode: pemasaran.mode,
+      status: pemasaran.status
+    })
+    .from(pemasaran)
+    .where(eq(pemasaran.barangId, barangId))
+    .orderBy(desc(pemasaran.createdAt))
+    .limit(1);
+
+  return row ?? null;
+}
+
+async function getFixedPriceRemarketingLockCount(pemasaranId: string) {
+  const [row] = await db
+    .select({
+      count: sql<number>`count(*)`
+    })
+    .from(transaksi)
+    .where(
+      and(
+        eq(transaksi.pemasaranId, pemasaranId),
+        inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+      )
+    );
+
+  return Number(row?.count ?? 0);
+}
+
 async function getMarketingMediaByBarangIds(barangIds: string[]) {
   if (!barangIds.length) {
     return new Map<string, Array<{ id: string; type: string; url: string; fileName?: string }>>();
@@ -360,8 +403,31 @@ async function getBidRowsByPemasaranIds(pemasaranIds: string[]) {
 }
 
 export async function publishAdminBarang(unitId: string, userId: string, barangId: string, input: Parameters<typeof validatePemasaranPayload>[0]) {
-  const payload = validatePemasaranPayload(input);
+  const item = await getBarangForUnit(barangId, unitId);
   const now = new Date();
+  const latestMarketing = item.status === "dipasarkan" ? await getLatestMarketingForBarang(barangId) : null;
+  const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketing?.status === "gagal";
+  const canRepublishActiveFixedPrice =
+    item.status === "dipasarkan" &&
+    latestMarketing?.status === "aktif" &&
+    latestMarketing.mode === "fixed_price" &&
+    (await getFixedPriceRemarketingLockCount(latestMarketing.id)) === 0;
+
+  if (
+    item.status !== "jaminan" &&
+    item.status !== "gagal" &&
+    item.status !== "gadai" &&
+    !canRepublishFailedMarketing &&
+    !canRepublishActiveFixedPrice
+  ) {
+    throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi Harga Tetap aktif tanpa pembayaran yang mengunci katalog.");
+  }
+
+  if ((item.status === "jaminan" || item.status === "gadai") && item.dueDate.getTime() > now.getTime()) {
+    throw new Error("Barang baru dapat dipasarkan setelah durasi jatuh tempo berakhir.");
+  }
+
+  const payload = validatePemasaranPayload(input);
   let derivedDurationDays: number | null = null;
   let derivedDurationSeconds: number | null = null;
   let endsAt: Date | null = null;
@@ -372,69 +438,14 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
     endsAt = new Date(now.getTime() + payload.totalSeconds * 1000);
   }
 
+  const [{ nextIteration }] = await db
+    .select({
+      nextIteration: sql<number>`coalesce(max(${pemasaran.iteration}), 0) + 1`
+    })
+    .from(pemasaran)
+    .where(eq(pemasaran.barangId, barangId));
+
   const created = await db.transaction(async (tx) => {
-    const [item] = await tx
-      .select()
-      .from(barang)
-      .where(and(eq(barang.id, barangId), eq(barang.unitId, unitId)))
-      .limit(1)
-      .for("update");
-
-    if (!item) {
-      throw new Error("Barang tidak ditemukan di unit Anda.");
-    }
-
-    const [latestMarketing] = await tx
-      .select({
-        id: pemasaran.id,
-        mode: pemasaran.mode,
-        status: pemasaran.status
-      })
-      .from(pemasaran)
-      .where(eq(pemasaran.barangId, barangId))
-      .orderBy(desc(pemasaran.createdAt))
-      .limit(1);
-
-    const [lockRow] = await tx
-      .select({ count: sql<number>`count(*)` })
-      .from(transaksi)
-      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
-      .where(
-        and(
-          eq(pemasaran.barangId, barangId),
-          eq(transaksi.type, "fixed_price"),
-          inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
-        )
-      );
-    const hasFixedPriceClaim = Number(lockRow?.count ?? 0) > 0;
-    const canRepublishFailedMarketing = item.status === "dipasarkan" && latestMarketing?.status === "gagal";
-    const canRepublishActiveFixedPrice =
-      item.status === "dipasarkan" &&
-      latestMarketing?.status === "aktif" &&
-      latestMarketing.mode === "fixed_price" &&
-      !hasFixedPriceClaim;
-
-    if (
-      item.status !== "jaminan" &&
-      item.status !== "gagal" &&
-      item.status !== "gadai" &&
-      !canRepublishFailedMarketing &&
-      !canRepublishActiveFixedPrice
-    ) {
-      throw new Error("Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi Harga Tetap aktif tanpa pembayaran yang mengunci katalog.");
-    }
-
-    if ((item.status === "jaminan" || item.status === "gadai") && item.dueDate.getTime() > now.getTime()) {
-      throw new Error("Barang baru dapat dipasarkan setelah durasi jatuh tempo berakhir.");
-    }
-
-    const [{ nextIteration }] = await tx
-      .select({
-        nextIteration: sql<number>`coalesce(max(${pemasaran.iteration}), 0) + 1`
-      })
-      .from(pemasaran)
-      .where(eq(pemasaran.barangId, barangId));
-
     if (canRepublishActiveFixedPrice && latestMarketing) {
       await tx
         .update(pemasaran)
@@ -477,17 +488,17 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
           : "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup."
     });
 
-    return { item, marketing: createdMarketing };
+    return createdMarketing;
   });
 
-  return serializeAdminPemasaran(created.marketing, {
-    lotName: created.item.name,
-    lotCode: created.item.code,
-    lotCategory: created.item.category,
-    lotCondition: created.item.condition,
-    lotDescription: created.item.description,
-    lotAppraisalValue: created.item.appraisalValue,
-    lotSpecifications: created.item.specifications
+  return serializeAdminPemasaran(created, {
+    lotName: item.name,
+    lotCode: item.code,
+    lotCategory: item.category,
+    lotCondition: item.condition,
+    lotDescription: item.description,
+    lotAppraisalValue: item.appraisalValue,
+    lotSpecifications: item.specifications
   });
 }
 
