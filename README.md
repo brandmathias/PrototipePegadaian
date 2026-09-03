@@ -398,9 +398,13 @@ NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 UPLOADS_DIR=
 BLACKLIST_DURATION_UNIT=days
+MIDTRANS_SERVER_KEY=
+MIDTRANS_IS_PRODUCTION=false
 ```
 
 Untuk Web Push tanpa PWA/offline, buat satu pasangan VAPID dengan `npx web-push generate-vapid-keys --json`, lalu simpan `subject`, `publicKey`, dan `privateKey` ke tiga variabel di atas. Terapkan migrasi sebelum deploy dengan `npm run db:migrate:web-push-notifications`; browser baru dapat menerima push setelah pengguna menekan **Aktifkan notifikasi perangkat** di pusat notifikasi.
+
+Untuk Harga Tetap dengan Midtrans Snap Sandbox, isi `MIDTRANS_SERVER_KEY`, biarkan `MIDTRANS_IS_PRODUCTION=false`, lalu terapkan migrasi dengan `npm run db:migrate:midtrans-fixed-price`. Pada Midtrans MAP, atur Notification URL menjadi `https://<domain>/api/payments/midtrans/notification`. Server Key tidak boleh ditempatkan di browser atau Git.
 
 ### 3. Sinkronkan database
 

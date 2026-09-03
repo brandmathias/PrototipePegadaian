@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const replaceMock = vi.fn();
-const refreshMock = vi.fn();
+const openMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: replaceMock,
-    refresh: refreshMock
+    refresh: vi.fn()
   })
 }));
 
@@ -50,26 +50,32 @@ describe("PurchaseWorkflow", () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     replaceMock.mockReset();
-    refreshMock.mockReset();
+    openMock.mockReset();
   });
 
-  it("creates a harga tetap transaction before opening the detail payment workflow", async () => {
+  it("creates a Midtrans checkout before opening its payment detail", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ data: { id: "trx-transfer-1", status: "MENUNGGU_PEMBAYARAN" } })
+      json: async () => ({
+        data: {
+          snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout",
+          transactionId: "trx-purchase-detail"
+        }
+      })
     });
     vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("open", openMock);
     const user = userEvent.setup();
 
     renderPurchaseWorkflow();
 
     expect(screen.getByText(/lanjutkan ke detail pembayaran/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/transfer bank/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/midtrans/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
-    expect(screen.getAllByText(/siap membuat transaksi/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/siap membuat checkout aman/i).length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(screen.getByText(/0123-4567-8901-234/i)).toBeInTheDocument();
+    expect(screen.queryByText(/0123-4567-8901-234/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /lanjut ke detail pembayaran/i }));
@@ -77,16 +83,13 @@ describe("PurchaseWorkflow", () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         "/api/user/beli/fixed-direct-1",
-        expect.objectContaining({
-          body: JSON.stringify({ paymentMethod: "transfer" }),
-          headers: { "Content-Type": "application/json" },
-          method: "POST"
-        })
+        { method: "POST" }
       );
     });
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-transfer-1");
+      expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-purchase-detail");
     });
+    expect(openMock).not.toHaveBeenCalled();
   });
 
   it("confirms before returning to harga tetap detail before creating a transaction", async () => {

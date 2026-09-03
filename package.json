@@ -16,6 +16,7 @@
     "db:migrate:canonical-codes": "tsx scripts/apply-canonical-codes-migration.ts",
     "db:migrate:customer-data-standard": "tsx scripts/apply-customer-data-standard-migration.ts",
     "db:migrate:fixed-price-claim-lock": "tsx scripts/apply-fixed-price-claim-lock-migration.ts",
+    "db:migrate:midtrans-fixed-price": "tsx scripts/apply-midtrans-fixed-price-migration.ts",
     "db:migrate:web-push-notifications": "tsx scripts/apply-web-push-notifications-migration.ts",
     "db:cleanup:obsolete": "tsx scripts/cleanup-obsolete-database.ts",
     "db:backfill:blacklist": "tsx scripts/backfill-blacklist-violation-totals.ts",

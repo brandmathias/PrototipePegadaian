@@ -483,7 +483,7 @@ export function PurchasePage({ lot }: { lot: Lot | null }) {
   return (
     <div className="container space-y-8 py-10 md:space-y-10 md:py-12">
       <SectionHeading
-        description="Fixed price menggunakan transfer bank. Buat transaksi, lalu selesaikan pembayaran dari workflow detail transaksi."
+        description="Harga tetap menggunakan checkout Midtrans. Pilih VA, QRIS, atau e-wallet, lalu pantau status pembayaran dari detail transaksi."
         eyebrow="Pembayaran Harga Tetap"
         title="Detail pembayaran"
       />

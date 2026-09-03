@@ -30,7 +30,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const { toast } = useToast();
   const [status, setStatus] = useState<PurchaseStatus>("idle");
   const [message, setMessage] = useState(
-    "Buat transaksi terlebih dahulu, lalu unggah bukti transfer dari halaman detail pembayaran."
+    "Buat checkout Midtrans untuk memilih VA, QRIS, atau e-wallet secara aman."
   );
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
@@ -40,13 +40,11 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
     }
 
     setStatus("loading");
-    setMessage("Membuat transaksi harga tetap dan membuka workflow pembayaran.");
+    setMessage("Menyiapkan checkout Midtrans.");
 
     try {
       const response = await fetch(`/api/user/beli/${lot.id}`, {
-        method: "POST",
-        body: JSON.stringify({ paymentMethod: "transfer" }),
-        headers: { "Content-Type": "application/json" }
+        method: "POST"
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -68,13 +66,13 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         return;
       }
 
-      const transactionId = payload?.data?.id;
+      const transactionId = payload?.data?.transactionId;
       if (!transactionId) {
-        const nextMessage = "Transaksi dibuat, tetapi ID transaksi belum diterima.";
+        const nextMessage = "Transaksi dibuat, tetapi detail pembayaran belum tersedia.";
         setStatus("error");
         setMessage(nextMessage);
         toast({
-          title: "Detail pembayaran belum lengkap",
+        title: "Checkout Midtrans belum lengkap",
           description: nextMessage,
           variant: "error",
           scope: "buyer"
@@ -82,14 +80,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         return;
       }
 
-      toast({
-        title: "Transaksi harga tetap dibuat",
-        description: "Lanjutkan pembayaran dan unggah bukti transfer dari halaman detail transaksi.",
-        variant: "success",
-        scope: "buyer"
-      });
       router.replace(`/transaksi/${transactionId}`);
-      router.refresh();
     } catch {
       const nextMessage = "Koneksi terputus. Coba buat transaksi lagi dalam beberapa saat.";
       setStatus("error");
@@ -110,10 +101,6 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
 
   const isLoading = status === "loading";
   const isError = status === "error";
-  const accountNumber = lot.bankAccountNumber ?? "Rekening tujuan belum tersedia";
-  const accountHolder = lot.bankAccountHolder ?? "Nama pemilik rekening belum tersedia";
-  const bankName = lot.bankName ?? "Bank unit belum tersedia";
-
   return (
     <Card className="overflow-hidden border border-primary/10 bg-white shadow-[0_28px_90px_rgba(8,69,50,0.08)]">
       <CardContent className="relative grid gap-8 p-6 md:grid-cols-[0.92fr_1.08fr] md:p-8">
@@ -127,8 +114,8 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             Lanjutkan ke detail pembayaran
           </h2>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-            Sistem akan membuat transaksi harga tetap lebih dulu. Setelah itu Anda masuk ke workflow
-            pembayaran untuk transfer, unggah bukti, dan menunggu verifikasi admin unit.
+            Sistem membuat checkout Midtrans dengan nominal yang dikunci. Pilih metode pembayaran dan
+            selesaikan pembayaran di halaman Midtrans tanpa unggah bukti transfer.
           </p>
 
           <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
@@ -146,9 +133,9 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         <div className="flex min-h-[30rem] flex-col justify-between rounded-[1.75rem] border border-border/70 bg-[linear-gradient(145deg,#ffffff_0%,#f7faf8_100%)] p-6">
           <div className="grid gap-4">
             {[
-              { icon: CreditCard, label: "Metode pembayaran", value: "Transfer Bank" },
-              { icon: ShieldCheck, label: "Status saat ini", value: "Siap membuat transaksi" },
-              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Upload bukti di detail transaksi" }
+              { icon: CreditCard, label: "Metode pembayaran", value: "Midtrans: VA, QRIS, atau e-wallet" },
+              { icon: ShieldCheck, label: "Status saat ini", value: "Siap membuat checkout aman" },
+              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Bayar di halaman Midtrans" }
             ].map((item) => {
               const Icon = item.icon;
 
@@ -174,19 +161,10 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Rekening Tujuan
+                    Pembayaran Terverifikasi Otomatis
                   </p>
-                  <p className="mt-2 text-lg font-black text-foreground">{bankName}</p>
-                  <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Nomor Rekening
-                  </p>
-                  <p className="mt-1 whitespace-normal break-words font-headline text-2xl font-black leading-tight tracking-normal text-primary">
-                    {accountNumber}
-                  </p>
-                  <p className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Atas Nama
-                  </p>
-                  <p className="mt-1 whitespace-normal break-words text-sm font-bold leading-5 text-foreground">{accountHolder}</p>
+                  <p className="mt-2 text-lg font-black text-foreground">Midtrans</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Nominal pembayaran dikirim dari sistem ke Midtrans dan statusnya diperbarui otomatis setelah dana diterima.</p>
                 </div>
               </div>
             </div>
@@ -201,13 +179,12 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                     Workflow Pembayaran
                   </p>
                   <p className="text-sm font-semibold text-foreground">
-                    Upload bukti dilakukan setelah transaksi dibuat.
+                    Tidak perlu upload bukti transfer.
                   </p>
                 </div>
               </div>
               <p className="rounded-[1rem] border border-[#d7eadc] bg-[#f3fbf6] px-4 py-3 text-sm font-medium leading-6 text-[#0d6845]">
-                Di halaman detail transaksi, tahap pertama akan aktif untuk melakukan pembayaran.
-                Setelah bukti dikirim, tahap pembayaran menjadi hijau dan verifikasi admin berjalan.
+                Setelah pembayaran berhasil, status transaksi otomatis berubah menjadi lunas dan Admin Unit dapat menyiapkan serah-terima barang.
               </p>
             </div>
           </div>

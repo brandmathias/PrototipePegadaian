@@ -162,6 +162,15 @@ export const transaksi = pgTable(
     type: text("type").notNull(),
     amount: numeric("amount", { precision: 15, scale: 2 }).notNull(),
     paymentMethod: text("payment_method"),
+    paymentProvider: text("payment_provider"),
+    paymentOrderId: text("payment_order_id"),
+    paymentToken: text("payment_token"),
+    paymentRedirectUrl: text("payment_redirect_url"),
+    gatewayStatus: text("gateway_status"),
+    gatewayPaymentType: text("gateway_payment_type"),
+    gatewayTransactionId: text("gateway_transaction_id"),
+    gatewayPayload: jsonb("gateway_payload").$type<Record<string, unknown>>(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
     status: text("status").notNull().default("menunggu_pembayaran"),
     proofUrl: text("proof_url"),
     rejectionReason: text("rejection_reason"),
@@ -181,10 +190,16 @@ export const transaksi = pgTable(
     pemasaranIdx: index("transaksi_pemasaran_id_idx").on(table.pemasaranId),
     userIdx: index("transaksi_user_id_idx").on(table.userId),
     statusIdx: index("transaksi_status_idx").on(table.status),
+    paymentOrderIdx: uniqueIndex("transaksi_payment_order_id_unique")
+      .on(table.paymentOrderId)
+      .where(sql`${table.paymentOrderId} is not null`),
     fixedPriceClaimIdx: uniqueIndex("transaksi_fixed_price_claim_unique")
       .on(table.pemasaranId)
       .where(
-        sql`${table.type} = 'fixed_price' and ${table.status} in ('bukti_diunggah', 'lunas', 'selesai')`
+        sql`${table.type} = 'fixed_price' and (
+          ${table.status} in ('bukti_diunggah', 'lunas', 'selesai')
+          or (${table.paymentMethod} = 'midtrans' and ${table.status} = 'menunggu_pembayaran')
+        )`
       )
   })
 );

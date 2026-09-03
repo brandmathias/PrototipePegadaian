@@ -158,7 +158,9 @@ function getPaymentNotes(row: BuyerTransactionShape) {
   if (row.status === "lunas") {
     const autoCompleteDeadline = getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt);
     return [
-      "Pembayaran sudah diverifikasi admin unit.",
+      row.paymentMethod === "midtrans"
+        ? "Pembayaran sudah dikonfirmasi otomatis oleh Midtrans."
+        : "Pembayaran sudah diverifikasi admin unit.",
       row.handoverProofUrl
         ? autoCompleteDeadline
           ? `Bukti serah-terima barang sudah tersedia. Tekan Pembelian Selesai sebelum ${toDateTimeLabel(autoCompleteDeadline)}.`
@@ -197,6 +199,14 @@ function getPaymentNotes(row: BuyerTransactionShape) {
       "Datang ke unit terkait sesuai alamat yang tertera.",
       "Tunjukkan nomor pengajuan kepada petugas.",
       "Admin unit akan mengonfirmasi pembayaran setelah transaksi offline selesai."
+    ];
+  }
+
+  if (row.paymentMethod === "midtrans") {
+    return [
+      "Checkout Midtrans sudah dibuat dengan nominal yang terkunci.",
+      "Selesaikan pembayaran melalui halaman Midtrans sebelum batas reservasi berakhir.",
+      "Status akan berubah otomatis setelah Midtrans menerima pembayaran."
     ];
   }
 
@@ -298,7 +308,12 @@ export function serializePublicLot(row: PublicLotShape): Lot {
 
 export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTransaction {
   const isVickrey = row.type === "vickrey";
-  const method = row.paymentMethod === "langsung" ? "BAYAR_LANGSUNG" : "TRANSFER_BANK";
+  const method =
+    row.paymentMethod === "midtrans"
+      ? "MIDTRANS"
+      : row.paymentMethod === "langsung"
+        ? "BAYAR_LANGSUNG"
+        : "TRANSFER_BANK";
   const proof = splitLegacyProofValue(row.proofUrl);
   const status = toTransactionStatus(row.status);
   const hasFinalReceipt = row.status === "lunas" || row.status === "selesai";
@@ -311,12 +326,17 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
         : hasFinalReceipt
           ? "Selesai"
           : isFixedPriceWaitingPayment
-            ? "Unggah bukti pembayaran"
+            ? row.paymentMethod === "midtrans"
+              ? "Menunggu pembayaran Midtrans"
+              : "Unggah bukti pembayaran"
           : getCountdownState(row.paymentDeadline, {
               expiredLabel: "Waktu pembayaran berakhir"
             }).label;
   const deadlineAt =
-    status === "BUKTI_DIUNGGAH" || status === "DITOLAK_BUKTI" || hasFinalReceipt || isFixedPriceWaitingPayment
+    status === "BUKTI_DIUNGGAH" ||
+    status === "DITOLAK_BUKTI" ||
+    hasFinalReceipt ||
+    (isFixedPriceWaitingPayment && row.paymentMethod !== "midtrans")
       ? undefined
       : row.paymentDeadline?.toISOString();
   const handoverAutoCompleteDeadline =
@@ -364,7 +384,12 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     deadlineAt,
     reference: row.referenceNumber ?? proof.reference ?? "-",
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
-    paymentLabel: method === "BAYAR_LANGSUNG" ? "Bayar langsung di unit" : "Transfer bank ke rekening unit",
+    paymentLabel:
+      method === "MIDTRANS"
+        ? "Pembayaran Midtrans"
+        : method === "BAYAR_LANGSUNG"
+          ? "Bayar langsung di unit"
+          : "Transfer bank ke rekening unit",
     paymentNotes: getPaymentNotes(row),
     bankName: primaryBankAccount?.bankName ?? row.account?.bankName ?? undefined,
     bankAccountNumber: primaryBankAccount?.accountNumber ?? row.account?.accountNumber ?? undefined,

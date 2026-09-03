@@ -204,10 +204,13 @@ export async function notifyPaymentVerified(
     transactionType?: string;
     unitName?: string;
     unitAddress?: string;
+    paymentProvider?: string | null;
   }
 ) {
   const message =
-    input.transactionType === "fixed_price" && input.unitName && input.unitAddress
+    input.paymentProvider === "midtrans" && input.unitName && input.unitAddress
+      ? `Pembayaran Midtrans telah diterima. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}.`
+      : input.transactionType === "fixed_price" && input.unitName && input.unitAddress
       ? `Pembayaran Anda telah diverifikasi. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}. Buka detail transaksi untuk melihat informasi lengkap.`
       : "Admin unit sudah memverifikasi pembayaran Anda. Silakan buka detail transaksi untuk melanjutkan atau melihat nota.";
 
@@ -381,14 +384,34 @@ export async function notifySuperAdminPaymentVerified(input: {
   pemasaranId: string;
   transactionId: string;
   lotName: string;
+  paymentProvider?: string | null;
 }) {
   return createForUsers(input.superAdminUserIds, {
     title: `Pembayaran Disetujui: ${input.lotName}`,
-    message: "Admin unit menyetujui bukti pembayaran. Buka iterasi terkait untuk memantau proses serah-terima.",
+    message:
+      input.paymentProvider === "midtrans"
+        ? "Midtrans mengonfirmasi pembayaran secara otomatis. Buka iterasi terkait untuk memantau proses serah-terima."
+        : "Admin unit menyetujui bukti pembayaran. Buka iterasi terkait untuk memantau proses serah-terima.",
     type: "payment_verified",
     entityType: "transaction",
     entityId: input.transactionId,
     actionHref: getSuperAdminIterationHref(input.unitId, input.barangId, input.pemasaranId)
+  });
+}
+
+export async function notifyAdminUnitMidtransPaymentVerified(input: {
+  adminUserIds: string[];
+  pemasaranId: string;
+  transactionId: string;
+  lotName: string;
+}) {
+  return createForUsers(input.adminUserIds, {
+    title: `Pembayaran Diterima: ${input.lotName}`,
+    message: "Midtrans mengonfirmasi pembayaran secara otomatis. Lanjutkan persiapan serah-terima barang.",
+    type: "payment_verified",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: `/admin/pemasaran/fixed-price/${input.pemasaranId}`
   });
 }
 

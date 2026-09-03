@@ -91,6 +91,9 @@ function formatPaymentMethod(value: string | null | undefined) {
   if (value === "langsung") {
     return "BAYAR_LANGSUNG";
   }
+  if (value === "midtrans") {
+    return "MIDTRANS";
+  }
   return upper(value);
 }
 

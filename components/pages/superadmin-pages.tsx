@@ -3949,6 +3949,9 @@ function getSuperAdminMarketingReceiptImageUrl(
 function getSuperAdminMarketingPaymentMethodLabel(
   session: SuperAdminUnitBarangMarketingSession,
 ) {
+  if (session.paymentMethod === "MIDTRANS") {
+    return "Midtrans (otomatis)";
+  }
   if (session.paymentMethod === "BAYAR_LANGSUNG") {
     return "Langsung di unit";
   }

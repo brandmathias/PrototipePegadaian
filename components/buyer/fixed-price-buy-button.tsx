@@ -9,9 +9,11 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 
 export function FixedPriceBuyButton({
+  buttonLabel = "Beli Sekarang",
   className,
   lotId
 }: {
+  buttonLabel?: string;
   className?: string;
   lotId: string;
 }) {
@@ -28,9 +30,7 @@ export function FixedPriceBuyButton({
 
     try {
       const response = await fetch(`/api/user/beli/${lotId}`, {
-        method: "POST",
-        body: JSON.stringify({ paymentMethod: "transfer" }),
-        headers: { "Content-Type": "application/json" }
+        method: "POST"
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -50,11 +50,11 @@ export function FixedPriceBuyButton({
         return;
       }
 
-      const transactionId = payload?.data?.id;
+      const transactionId = payload?.data?.transactionId;
       if (!transactionId) {
         toast({
           title: "Detail pembayaran belum tersedia",
-          description: "Transaksi dibuat tetapi ID transaksi belum diterima.",
+          description: "Transaksi belum mengembalikan identitas yang dapat dibuka.",
           variant: "error",
           scope: "buyer"
         });
@@ -63,7 +63,6 @@ export function FixedPriceBuyButton({
       }
 
       router.replace(`/transaksi/${transactionId}`);
-      router.refresh();
     } catch {
       toast({
         title: "Koneksi belum stabil",
@@ -85,11 +84,11 @@ export function FixedPriceBuyButton({
       {isPending ? (
         <>
           <LoaderCircle className="button-spinner size-4" />
-          Membuat Transaksi
+          Menyiapkan Pembayaran
         </>
       ) : (
         <>
-          Beli Sekarang
+          {buttonLabel}
           <ShoppingBag className="size-4" />
         </>
       )}
