@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, gt, inArray, lte, ne, sql } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
 import { filterCountedBuyerViolationHistory } from "@/lib/buyer/violation-history";
 import { deriveEffectiveBlacklistState } from "@/lib/blacklist/effective-state";
@@ -1081,8 +1082,16 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     throw new Error("Transaksi ini sudah dibatalkan dan tidak dapat diperbarui.");
   }
 
-  if (row.status === "lunas" || row.status === "selesai" || row.status === "gagal") {
+  if (row.status === "lunas" || row.status === "selesai") {
     throw new Error("Transaksi ini sudah tidak dapat diperbarui.");
+  }
+
+  if (row.status === "gagal") {
+    throw new Error(
+      row.type === "vickrey"
+        ? "Transaksi ini sudah tidak dapat diperbarui."
+        : FIXED_PRICE_PAYMENT_FAILURE_COPY.description
+    );
   }
 
   if (row.paymentMethod !== "transfer") {

@@ -6,6 +6,7 @@ import {
   getBuyerLoserAnnouncementHref,
   getBuyerWinnerAnnouncementHref,
 } from "@/lib/buyer/transaction-links";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import { db } from "@/lib/db/client";
 import { blacklists, notifications, pelanggaranUser, transaksi } from "@/lib/db/schema";
 import { createNotificationOnce, createOrRefreshNotification } from "@/lib/services/notification.service";
@@ -219,6 +220,18 @@ export async function notifyPaymentVerified(
     title: `Pembayaran ${input.lotName} terverifikasi`,
     message,
     type: "payment_verified",
+    entityType: "transaction",
+    entityId: input.transactionId,
+    actionHref: `/transaksi/${input.transactionId}`
+  });
+}
+
+export async function notifyFixedPricePaymentFailed(input: TransactionEventInput) {
+  return createNotificationOnce({
+    userId: input.userId,
+    title: `Pembayaran Harga Tetap ${input.lotName} gagal`,
+    message: FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage,
+    type: "payment_failed",
     entityType: "transaction",
     entityId: input.transactionId,
     actionHref: `/transaksi/${input.transactionId}`

@@ -91,7 +91,7 @@ function formatNotificationDateTime(timestamp: string | number) {
 }
 
 function getNotificationTone(type: string): NotificationTone {
-  if (type === "payment_rejected") {
+  if (type === "payment_failed" || type === "payment_rejected") {
     return {
       dot: "bg-[#ef1d1d]",
       icon: AlertTriangle,

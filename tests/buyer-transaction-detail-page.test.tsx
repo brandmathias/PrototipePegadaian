@@ -232,6 +232,34 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("button", { name: /kirim bukti pembayaran/i })).toBeDisabled();
   });
 
+  it("renders a fixed-price payment deadline failure without stale transfer actions", () => {
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transaction,
+          id: "trx-fixed-failed",
+          status: "GAGAL",
+          createdAt: "3 Sep 2026 19.54 WIB",
+          deadline: "4 Sep 2026 19.54 WIB",
+          deadlineAt: "2026-09-04T11:54:00.000Z",
+          paymentNotes: []
+        }}
+        transactionId="trx-fixed-failed"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /pembayaran harga tetap gagal/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText(/daftar rekening tujuan/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/unggah bukti transfer maksimal 24 jam/i)).not.toBeInTheDocument();
+  });
+
   it("renders the harga tetap Midtrans flow with a resumable checkout and automatic status", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 

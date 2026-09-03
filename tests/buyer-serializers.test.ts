@@ -601,4 +601,35 @@ describe("buyer serializers", () => {
     expect(transaction.paymentNotes.join(" ")).toMatch(/Midtrans/);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/unggah bukti/i);
   });
+
+  it("serializes a failed fixed-price payment without auction wording", () => {
+    const transaction = serializeBuyerTransaction({
+      id: "trx-fixed-failed",
+      pemasaranId: "pm-fixed-failed",
+      type: "fixed_price",
+      amount: "12240000",
+      paymentMethod: "midtrans",
+      status: "gagal",
+      proofUrl: null,
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: new Date("2026-09-04T11:54:00Z"),
+      verifiedAt: null,
+      createdAt: new Date("2026-09-03T11:54:00Z"),
+      lotName: "Emas Batangan ANTAM 5 Gram",
+      lotId: "barang-fixed-failed",
+      imageUrl: null,
+      unitName: "UPC Ranotana",
+      unitAddress: "Jl. Ranotana No. 1",
+      account: null
+    });
+
+    expect(transaction.kind).toBe("FIXED_PRICE");
+    expect(transaction.status).toBe("GAGAL");
+    expect(transaction.paymentNotes.join(" ")).toMatch(
+      /Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i
+    );
+    expect(transaction.paymentNotes.join(" ")).toMatch(/barang dapat dibeli kembali/i);
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/lelang/i);
+  });
 });

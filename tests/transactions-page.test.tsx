@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { within } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -159,6 +160,25 @@ const transactions: BuyerTransaction[] = [
     paymentNotes: [],
     rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
     verifiedAt: "20 Mei 2026, 10.15 WIB",
+  },
+  {
+    id: "TRX-250520-FIXED-FAIL",
+    lotId: "lot-fixed-fail",
+    kind: "FIXED_PRICE",
+    title: "Emas Batangan ANTAM 5 Gram",
+    imageUrl: "/uploads/barang/emas-antam.jpg",
+    amount: 12240000,
+    status: "GAGAL",
+    method: "TRANSFER_BANK",
+    unit: "UPC Ranotana",
+    unitAddress: "Jl. Ranotana No. 1",
+    createdAt: "3 Sep 2026, 19.54 WIB",
+    deadline: "4 Sep 2026, 19.54 WIB",
+    deadlineAt: "2026-09-04T11:54:00.000Z",
+    reference: "REF-FIXED-FAIL",
+    applicationNumber: "PGJ-FP-FAIL",
+    paymentLabel: "Transfer bank ke rekening unit",
+    paymentNotes: [],
   },
   {
     id: "TRX-250520-FAIL",
@@ -339,6 +359,17 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("Ipad")).toBeInTheDocument();
+    const fixedPriceFailureRow = screen.getByText("Emas Batangan ANTAM 5 Gram").closest("article");
+    expect(fixedPriceFailureRow).not.toBeNull();
+    expect(
+      within(fixedPriceFailureRow!).getByText(
+        /Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i
+      )
+    ).toBeInTheDocument();
+    expect(within(fixedPriceFailureRow!).getByText(/^Total pembayaran$/i)).toBeInTheDocument();
+    expect(within(fixedPriceFailureRow!).getByText(/^Pembayaran Harga Tetap gagal$/i)).toBeInTheDocument();
+    expect(within(fixedPriceFailureRow!).queryByText(/nominal lelang gagal/i)).not.toBeInTheDocument();
+    expect(within(fixedPriceFailureRow!).queryByText(/batas pembayaran 24 jam telah lewat/i)).not.toBeInTheDocument();
     expect(screen.getAllByText("Jam Tangan Lelang Gagal")).toHaveLength(1);
     expect(screen.getAllByText("UPC Ranotana").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Unit UPC Ranotana/i)).not.toBeInTheDocument();

@@ -26,6 +26,7 @@ import {
   notifyAdminUnitVickreyResult,
   notifyBlacklistActivated,
   notifyPaymentDeadlineSoon,
+  notifyFixedPricePaymentFailed,
   notifyPaymentRejected,
   notifyPaymentVerified,
   notifyHandoverProofUploaded,
@@ -135,6 +136,26 @@ describe("notification event helpers", () => {
         actionHref: "/transaksi/trx-1",
         title: "Bukti serah-terima Kalung Emas sudah tersedia",
         message: expect.stringMatching(/Pembelian Selesai/i)
+      })
+    );
+  });
+
+  it("creates an informative fixed-price payment failure notification", async () => {
+    await notifyFixedPricePaymentFailed({
+      userId: "buyer-1",
+      transactionId: "trx-fixed-failed",
+      lotName: "Emas Batangan ANTAM 5 Gram"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: "buyer-1",
+        type: "payment_failed",
+        title: "Pembayaran Harga Tetap Emas Batangan ANTAM 5 Gram gagal",
+        message: expect.stringMatching(/batas waktu pembayaran telah berakhir/i),
+        entityType: "transaction",
+        entityId: "trx-fixed-failed",
+        actionHref: "/transaksi/trx-fixed-failed"
       })
     );
   });

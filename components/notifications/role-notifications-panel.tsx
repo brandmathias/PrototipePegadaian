@@ -108,6 +108,7 @@ function formatNotificationDateTime(timestamp: string | number) {
 
 function getNotificationTone(type: string): NotificationTone {
   if (
+    type === "payment_failed" ||
     type === "payment_rejected" ||
     type === "admin_payment_overdue" ||
     type === "superadmin_policy_alert"

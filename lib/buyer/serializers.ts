@@ -1,6 +1,7 @@
 import { getCountdownState } from "@/lib/countdown";
 import { getBarangSpecificationRows } from "@/lib/admin-unit/specifications";
 import { resolveViolationItemMedia } from "@/lib/blacklist/violation-item-media";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import { resolveAdminUnitCategoryLabel } from "@/lib/catalog/categories";
 import type { BuyerBankAccount, BuyerBid, BuyerBidStatus, BuyerTransaction } from "@/lib/contracts/buyer";
 import type { Lot, LotInsights } from "@/lib/contracts/catalog";
@@ -183,6 +184,13 @@ function getPaymentNotes(row: BuyerTransactionShape) {
       "Bukti transfer sudah diterima sistem.",
       "Admin unit akan mencocokkan bukti dengan mutasi rekening secara manual.",
       "Nota akan tersedia setelah pembayaran diverifikasi."
+    ];
+  }
+
+  if (row.status === "gagal" && row.type !== "vickrey") {
+    return [
+      FIXED_PRICE_PAYMENT_FAILURE_COPY.description,
+      "Buka kembali katalog jika ingin memulai transaksi baru dan barang masih tersedia."
     ];
   }
 

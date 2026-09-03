@@ -15,6 +15,7 @@ import {
   listActiveAdminUnitNotificationRecipientIds,
   listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitMidtransPaymentVerified,
+  notifyFixedPricePaymentFailed,
   notifyPaymentVerified,
   notifySuperAdminPaymentVerified
 } from "@/lib/services/notification-events";
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
   }
 
   if (nextStatus === "gagal") {
+    const wasPending = row.transaction.status === "menunggu_pembayaran";
     await db
       .update(transaksi)
       .set({
@@ -98,6 +100,13 @@ export async function POST(request: Request) {
         updatedAt: new Date()
       })
       .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")));
+    if (wasPending) {
+      await notifyFixedPricePaymentFailed({
+        userId: row.transaction.userId,
+        transactionId: row.transaction.id,
+        lotName: row.item.name
+      });
+    }
     revalidateTransactionViews();
     return NextResponse.json({ ok: true });
   }

@@ -21,6 +21,7 @@ import {
 
 import { LiveCountdown } from "@/components/buyer/live-countdown";
 import { Button } from "@/components/ui/button";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import {
   getBuyerLoserAnnouncementHref,
   getBuyerBidMonitoringHref,
@@ -125,6 +126,9 @@ function getTransactionDescription(transaction: BuyerTransaction) {
     case "SELESAI":
       return "Transaksi telah selesai. Barang telah diterima oleh Anda.";
     case "GAGAL":
+      return transaction.kind === "VICKREY_WIN"
+        ? "Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam. Akses lelang dapat dibatasi sesuai aturan."
+        : FIXED_PRICE_PAYMENT_FAILURE_COPY.description;
     default:
       return "Pembayaran Lelang Tertutup gagal karena melewati batas 24 jam. Akses lelang dapat dibatasi sesuai aturan.";
   }
@@ -167,6 +171,11 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
         momentValue: transaction.verifiedAt || transaction.createdAt,
       };
     case "GAGAL":
+      return {
+        amountLabel: transaction.kind === "VICKREY_WIN" ? "Nominal lelang gagal" : "Total pembayaran",
+        momentLabel: "Gagal pada",
+        momentValue: transaction.createdAt,
+      };
     default:
       return {
         amountLabel: "Nominal lelang gagal",
@@ -259,6 +268,19 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
         icon: <CircleX className="size-5" />,
       };
     case "GAGAL":
+      return transaction.kind === "VICKREY_WIN"
+        ? {
+            title: "Pembayaran gagal",
+            description: "Batas pembayaran 24 jam telah lewat.",
+            className: "bg-[#fff5f5] text-[#d84b4b]",
+            icon: <CircleX className="size-5" />,
+          }
+        : {
+            title: FIXED_PRICE_PAYMENT_FAILURE_COPY.title,
+            description: FIXED_PRICE_PAYMENT_FAILURE_COPY.noticeDescription,
+            className: "bg-[#fff5f5] text-[#d84b4b]",
+            icon: <CircleX className="size-5" />,
+          };
     default:
       return {
         title: "Pembayaran gagal",

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   listActiveAdminUnitNotificationRecipientIds: vi.fn(),
   listActiveSuperAdminNotificationRecipientIds: vi.fn(),
   notifyAdminUnitMidtransPaymentVerified: vi.fn(),
+  notifyFixedPricePaymentFailed: vi.fn(),
   notifyPaymentVerified: vi.fn(),
   notifySuperAdminPaymentVerified: vi.fn(),
   revalidateTransactionViews: vi.fn(),
@@ -17,13 +18,15 @@ vi.mock("@/lib/db/client", () => ({ db: mocks.db }));
 vi.mock("@/lib/payments/midtrans", () => ({
   getMidtransGatewayConfig: mocks.getMidtransGatewayConfig,
   getMidtransTransactionStatus: mocks.getMidtransTransactionStatus,
-  mapMidtransTransactionStatus: (status: string) => (status === "pending" ? "menunggu_pembayaran" : "unknown"),
+  mapMidtransTransactionStatus: (status: string) =>
+    status === "pending" ? "menunggu_pembayaran" : status === "expire" ? "gagal" : "unknown",
   verifyMidtransNotificationSignature: mocks.verifyMidtransNotificationSignature
 }));
 vi.mock("@/lib/services/notification-events", () => ({
   listActiveAdminUnitNotificationRecipientIds: mocks.listActiveAdminUnitNotificationRecipientIds,
   listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitMidtransPaymentVerified: mocks.notifyAdminUnitMidtransPaymentVerified,
+  notifyFixedPricePaymentFailed: mocks.notifyFixedPricePaymentFailed,
   notifyPaymentVerified: mocks.notifyPaymentVerified,
   notifySuperAdminPaymentVerified: mocks.notifySuperAdminPaymentVerified
 }));
@@ -50,7 +53,13 @@ describe("Midtrans notification route", () => {
     mocks.verifyMidtransNotificationSignature.mockReturnValue(true);
     mocks.db.select.mockReturnValue(
       mockTransactionLookup({
-        transaction: { id: "trx-1", amount: "12500000", paymentProvider: "midtrans", status: "menunggu_pembayaran" },
+        transaction: {
+          id: "trx-1",
+          userId: "buyer-1",
+          amount: "12500000",
+          paymentProvider: "midtrans",
+          status: "menunggu_pembayaran"
+        },
         item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
         marketing: { id: "pemasaran-1" },
         unit: { id: "unit-1", name: "UPC Ranotana", address: "Manado" }
@@ -105,5 +114,35 @@ describe("Midtrans notification route", () => {
     expect(response.status).toBe(401);
     expect(mocks.getMidtransTransactionStatus).not.toHaveBeenCalled();
     expect(mocks.db.select).not.toHaveBeenCalled();
+  });
+
+  it("notifies the buyer when a fixed-price Midtrans payment expires", async () => {
+    mocks.getMidtransTransactionStatus.mockResolvedValue({
+      order_id: "FP-trx-1",
+      gross_amount: "12500000",
+      status_code: "201",
+      transaction_status: "expire"
+    });
+
+    const { POST } = await import("@/app/api/payments/midtrans/notification/route");
+    const response = await POST(
+      new Request("http://localhost/api/payments/midtrans/notification", {
+        method: "POST",
+        body: JSON.stringify({
+          order_id: "FP-trx-1",
+          gross_amount: "12500000",
+          status_code: "201",
+          signature_key: "valid"
+        })
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.notifyFixedPricePaymentFailed).toHaveBeenCalledWith({
+      userId: "buyer-1",
+      transactionId: "trx-1",
+      lotName: "Cincin Emas"
+    });
+    expect(mocks.revalidateTransactionViews).toHaveBeenCalledTimes(1);
   });
 });
