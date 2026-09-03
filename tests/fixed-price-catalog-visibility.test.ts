@@ -9,9 +9,9 @@ import {
 } from "@/lib/buyer/fixed-price-visibility";
 
 describe("fixed price catalog visibility", () => {
-  it("keeps harga tetap catalog visible until buyer submits payment proof", () => {
-    expect(isFixedPriceTransactionCatalogHiddenStatus("menunggu_pembayaran")).toBe(false);
-    expect(isFixedPriceBuyerCatalogHiddenStatus("MENUNGGU_PEMBAYARAN")).toBe(false);
+  it("hides harga tetap catalog while a buyer has an active payment reservation", () => {
+    expect(isFixedPriceTransactionCatalogHiddenStatus("menunggu_pembayaran")).toBe(true);
+    expect(isFixedPriceBuyerCatalogHiddenStatus("MENUNGGU_PEMBAYARAN")).toBe(true);
   });
 
   it("hides harga tetap catalog after payment proof is submitted", () => {

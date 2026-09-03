@@ -1,4 +1,5 @@
 export const FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES = [
+  "menunggu_pembayaran",
   "bukti_diunggah",
   "menunggu_konfirmasi_langsung",
   "lunas",
@@ -6,6 +7,7 @@ export const FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES = [
 ] as const;
 
 export const FIXED_PRICE_BUYER_CATALOG_HIDDEN_STATUSES = [
+  "MENUNGGU_PEMBAYARAN",
   "BUKTI_DIUNGGAH",
   "MENUNGGU_KONFIRMASI_LANGSUNG",
   "LUNAS",

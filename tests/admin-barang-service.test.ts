@@ -137,10 +137,21 @@ describe("createAdminBarang", () => {
     };
     const query = () => ({
       from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([expiredItem]) }),
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            for: vi.fn().mockResolvedValue([expiredItem])
+          })
+        }),
       }),
     });
     mocks.db.select.mockImplementation(query);
+    mocks.db.transaction.mockImplementation(async (callback) =>
+      callback({
+        select: mocks.db.select,
+        insert: vi.fn(),
+        update: mocks.db.update
+      })
+    );
 
     await expect(
       extendAdminBarang("unit-1", "admin-1", "barang-expired", { newDueDate: "2026-06-01" }),

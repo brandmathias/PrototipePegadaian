@@ -48,7 +48,9 @@ import { formatAppDate, formatAppDateTime, formatAppLongDate } from "@/lib/timez
 import {
   MIDTRANS_RESERVATION_MINUTES,
   createMidtransSnapTransaction,
-  getMidtransGatewayConfig
+  getMidtransGatewayConfig,
+  getMidtransTransactionStatus,
+  mapMidtransTransactionStatus
 } from "@/lib/payments/midtrans";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
@@ -253,8 +255,10 @@ function transactionSelection() {
   };
 }
 
-async function getMarketingForBuyer(pemasaranId: string) {
-  const [row] = await db
+type BuyerQueryDatabase = Pick<typeof db, "select">;
+
+async function getMarketingForBuyerFrom(database: BuyerQueryDatabase, pemasaranId: string) {
+  const [row] = await database
     .select({
       marketing: pemasaran,
       item: barang,
@@ -276,6 +280,10 @@ async function getMarketingForBuyer(pemasaranId: string) {
   }
 
   return row;
+}
+
+async function getMarketingForBuyer(pemasaranId: string) {
+  return getMarketingForBuyerFrom(db, pemasaranId);
 }
 
 function ensureActiveMarketing(row: Awaited<ReturnType<typeof getMarketingForBuyer>>) {
@@ -896,32 +904,6 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     throw new Error("Barang ini bukan transaksi harga tetap.");
   }
 
-  const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
-  const existingBuyerTransaction = activeTransactions
-    .filter(
-      (item) => item.userId === userId && REUSABLE_BUYER_TRANSACTION_STATUSES.includes(item.status)
-    )
-    .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0];
-
-  const lockedByOtherBuyer = activeTransactions.find(
-    (item) =>
-      item.userId !== userId &&
-      isFixedPriceLockedByOtherBuyerStatus(item.status)
-  );
-
-  if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
-  }
-
-  if (existingBuyerTransaction) {
-    return serializeBuyerTransaction(
-      await getTransactionRowById(userId, existingBuyerTransaction.id).then((transactionRow) => {
-        if (!transactionRow) throw new Error("Transaksi aktif tidak ditemukan.");
-        return transactionRow;
-      })
-    );
-  }
-
   const blacklistState = await getEffectiveBuyerBlacklistState(userId);
   const blacklistPolicy = blacklistState.policy;
 
@@ -934,41 +916,104 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
     throw new Error("Harga harga tetap belum valid.");
   }
 
-  if (!row.account?.accountNumber) {
-    throw new Error("Rekening tujuan unit belum tersedia untuk pembayaran transfer.");
+  const hasProof = Boolean(payload.fileName);
+  const createdResult = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(eq(barang.id, row.item.id))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan.");
+    }
+
+    const currentRow = await getMarketingForBuyerFrom(tx, pemasaranId);
+    ensureActiveMarketing(currentRow);
+
+    if (currentRow.marketing.mode !== "fixed_price") {
+      throw new Error("Barang ini bukan transaksi harga tetap.");
+    }
+
+    if (!currentRow.account?.accountNumber) {
+      throw new Error("Rekening tujuan unit belum tersedia untuk pembayaran transfer.");
+    }
+
+    const activeTransactions = await tx
+      .select({ transaction: transaksi, marketing: pemasaran })
+      .from(transaksi)
+      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+      .where(
+        and(
+          eq(pemasaran.barangId, lockedItem.id),
+          eq(transaksi.type, "fixed_price"),
+          inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+        )
+      );
+    const existingBuyerTransaction = activeTransactions
+      .map(({ transaction }) => transaction)
+      .filter(
+        (item) => item.userId === userId && REUSABLE_BUYER_TRANSACTION_STATUSES.includes(item.status)
+      )
+      .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())[0];
+
+    if (existingBuyerTransaction) {
+      return { currentRow, existingTransactionId: existingBuyerTransaction.id, created: null };
+    }
+
+    if (activeTransactions.some(({ transaction }) => transaction.userId !== userId)) {
+      throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    }
+
+    const [created] = await tx
+      .insert(transaksi)
+      .values({
+        id: randomUUID(),
+        pemasaranId,
+        userId,
+        type: "fixed_price",
+        amount: String(Number(currentRow.marketing.price ?? 0)),
+        paymentMethod: payload.paymentMethod,
+        status: hasProof ? "bukti_diunggah" : "menunggu_pembayaran",
+        proofUrl: payload.fileName ?? null,
+        referenceNumber: payload.reference ?? null,
+        paymentDeadline: null
+      })
+      .returning()
+      .catch(throwFixedPriceClaimConflict);
+
+    return { currentRow, existingTransactionId: null, created };
+  });
+
+  if (createdResult.existingTransactionId) {
+    const existing = await getTransactionRowById(userId, createdResult.existingTransactionId);
+    if (!existing) {
+      throw new Error("Transaksi aktif tidak ditemukan.");
+    }
+    return serializeBuyerTransaction(existing);
   }
 
-  const hasProof = Boolean(payload.fileName);
-  const [created] = await db
-    .insert(transaksi)
-    .values({
-      id: randomUUID(),
-      pemasaranId,
-      userId,
-      type: "fixed_price",
-      amount: String(amount),
-      paymentMethod: payload.paymentMethod,
-      status: hasProof ? "bukti_diunggah" : "menunggu_pembayaran",
-      proofUrl: payload.fileName ?? null,
-      referenceNumber: payload.reference ?? null,
-      paymentDeadline: null
-    })
-    .returning()
-    .catch(throwFixedPriceClaimConflict);
+  const created = createdResult.created;
+  if (!created) {
+    throw new Error("Transaksi harga tetap tidak dapat dibuat.");
+  }
+
+  const currentRow = createdResult.currentRow;
 
   if (hasProof) {
     const [adminUserIds, superAdminUserIds] = await Promise.all([
-      listActiveAdminUnitNotificationRecipientIds(row.item.unitId),
+      listActiveAdminUnitNotificationRecipientIds(currentRow.item.unitId),
       listActiveSuperAdminNotificationRecipientIds()
     ]);
     await notifyAdminUnitPaymentProofUploaded({
       adminUserIds,
       superAdminUserIds,
-      unitId: row.item.unitId,
-      barangId: row.item.id,
+      unitId: currentRow.item.unitId,
+      barangId: currentRow.item.id,
       pemasaranId,
       transactionId: created.id,
-      lotName: row.item.name
+      lotName: currentRow.item.name
     });
   }
 
@@ -976,15 +1021,15 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
 
   return serializeBuyerTransaction({
     ...created,
-    lotName: row.item.name,
-    lotId: row.item.id,
-    lotCategory: row.item.category,
-    lotCondition: row.item.condition,
-    lotSpecifications: row.item.specifications,
-    imageUrl: row.imageUrl ?? null,
-    unitName: row.unit.name,
-    unitAddress: row.unit.address,
-    account: row.account
+    lotName: currentRow.item.name,
+    lotId: currentRow.item.id,
+    lotCategory: currentRow.item.category,
+    lotCondition: currentRow.item.condition,
+    lotSpecifications: currentRow.item.specifications,
+    imageUrl: currentRow.imageUrl ?? null,
+    unitName: currentRow.unit.name,
+    unitAddress: currentRow.unit.address,
+    account: currentRow.account
   });
 }
 
@@ -1089,35 +1134,81 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     throw new Error("Unggah bukti hanya tersedia untuk metode transfer bank.");
   }
 
-  const [lockedByOtherBuyer] = await db
-    .select({ id: transaksi.id })
-    .from(transaksi)
-    .where(
-      and(
-        eq(transaksi.pemasaranId, row.pemasaranId),
-        ne(transaksi.id, transactionId),
-        ne(transaksi.userId, userId),
-        inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+  const updated = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(eq(barang.id, row.lotId))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan.");
+    }
+
+    const [currentTransaction] = await tx
+      .select()
+      .from(transaksi)
+      .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
+      .limit(1);
+
+    if (!currentTransaction) {
+      throw new Error("Transaksi tidak ditemukan.");
+    }
+
+    if (currentTransaction.status === "bukti_diunggah") {
+      throw new Error("Bukti pembayaran sudah terkirim dan sedang diverifikasi admin unit.");
+    }
+
+    if (currentTransaction.status !== "menunggu_pembayaran" || currentTransaction.paymentMethod !== "transfer") {
+      throw new Error("Transaksi ini sudah tidak dapat diperbarui.");
+    }
+
+    const [lockedByOtherBuyer] = await tx
+      .select({ id: transaksi.id })
+      .from(transaksi)
+      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+      .where(
+        and(
+          eq(pemasaran.barangId, lockedItem.id),
+          eq(transaksi.type, "fixed_price"),
+          ne(transaksi.id, transactionId),
+          ne(transaksi.userId, userId),
+          inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
-  }
+    if (lockedByOtherBuyer) {
+      throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    }
 
-  const [updated] = await db
-    .update(transaksi)
-    .set({
-      status: "bukti_diunggah",
-      proofUrl: payload.fileName,
-      referenceNumber: payload.reference ?? row.referenceNumber,
-      rejectionReason: null,
-      updatedAt: new Date()
-    })
-    .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
-    .returning()
-    .catch(throwFixedPriceClaimConflict);
+    const [updatedTransaction] = await tx
+      .update(transaksi)
+      .set({
+        status: "bukti_diunggah",
+        proofUrl: payload.fileName,
+        referenceNumber: payload.reference ?? currentTransaction.referenceNumber,
+        rejectionReason: null,
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(transaksi.id, transactionId),
+          eq(transaksi.userId, userId),
+          eq(transaksi.status, "menunggu_pembayaran"),
+          eq(transaksi.paymentMethod, "transfer")
+        )
+      )
+      .returning()
+      .catch(throwFixedPriceClaimConflict);
+
+    if (!updatedTransaction) {
+      throw new Error("Bukti pembayaran sudah diproses oleh pengguna lain.");
+    }
+
+    return updatedTransaction;
+  });
 
   const [adminUserIds, superAdminUserIds] = await Promise.all([
     listActiveAdminUnitNotificationRecipientIds(row.unitId),
@@ -1173,6 +1264,17 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
 
   const completedAt = new Date();
   const updated = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(eq(barang.id, row.lotId))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan.");
+    }
+
     const [updatedTransaction] = await tx
       .update(transaksi)
       .set({
@@ -1181,15 +1283,27 @@ export async function completeBuyerTransaction(userId: string, transactionId: st
         completionSource: "buyer",
         updatedAt: completedAt
       })
-      .where(and(eq(transaksi.id, transactionId), eq(transaksi.userId, userId)))
+      .where(
+        and(
+          eq(transaksi.id, transactionId),
+          eq(transaksi.userId, userId),
+          eq(transaksi.status, "lunas")
+        )
+      )
       .returning();
 
     if (!updatedTransaction) {
       throw new Error("Transaksi tidak ditemukan.");
     }
 
-    await tx.update(pemasaran).set({ status: "selesai", updatedAt: completedAt }).where(eq(pemasaran.id, row.pemasaranId));
-    await tx.update(barang).set({ status: "terjual", updatedAt: completedAt }).where(eq(barang.id, row.lotId));
+    await tx
+      .update(pemasaran)
+      .set({ status: "selesai", updatedAt: completedAt })
+      .where(and(eq(pemasaran.id, row.pemasaranId), eq(pemasaran.status, "aktif")));
+    await tx
+      .update(barang)
+      .set({ status: "terjual", updatedAt: completedAt })
+      .where(and(eq(barang.id, lockedItem.id), eq(barang.status, "dipasarkan")));
 
     return updatedTransaction;
   });
@@ -1296,106 +1410,244 @@ function isFixedPriceLockedByOtherBuyerStatus(status: string) {
   );
 }
 
-function isActiveMidtransReservation(transaction: {
-  paymentDeadline?: Date | null;
-  paymentMethod?: string | null;
-  status: string;
-}) {
+function isFixedPriceClaimTransaction(transaction: { status: string; type?: string | null }) {
   return (
-    transaction.paymentMethod === "midtrans" &&
-    transaction.status === "menunggu_pembayaran" &&
-    Boolean(transaction.paymentDeadline && transaction.paymentDeadline.getTime() > Date.now())
+    transaction.type === "fixed_price" &&
+    isFixedPriceLockedByOtherBuyerStatus(transaction.status)
   );
 }
 
-export async function createFixedPriceMidtransCheckout(userId: string, pemasaranId: string) {
-  const config = getMidtransGatewayConfig();
-  const row = await getMarketingForBuyer(pemasaranId);
-  ensureActiveMarketing(row);
+function isUnexpiredMidtransReservation(
+  transaction: { paymentDeadline?: Date | null; paymentMethod?: string | null; status: string },
+  now: Date
+) {
+  return (
+    transaction.paymentMethod === "midtrans" &&
+    transaction.status === "menunggu_pembayaran" &&
+    Boolean(transaction.paymentDeadline && transaction.paymentDeadline.getTime() > now.getTime())
+  );
+}
 
-  if (row.marketing.mode !== "fixed_price") {
-    throw new Error("Barang ini bukan transaksi harga tetap.");
-  }
-
-  const now = new Date();
-  await db
-    .update(transaksi)
-    .set({ gatewayStatus: "expire", status: "gagal", updatedAt: now })
+async function reconcileExpiredMidtransReservations(
+  config: Awaited<ReturnType<typeof getMidtransGatewayConfig>>,
+  barangId: string,
+  now: Date
+) {
+  const expiredReservations = await db
+    .select({ transaction: transaksi })
+    .from(transaksi)
+    .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
     .where(
       and(
-        eq(transaksi.pemasaranId, pemasaranId),
+        eq(pemasaran.barangId, barangId),
+        eq(transaksi.type, "fixed_price"),
         eq(transaksi.paymentMethod, "midtrans"),
         eq(transaksi.status, "menunggu_pembayaran"),
         lte(transaksi.paymentDeadline, now)
       )
     );
 
-  const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
-  const ownReservation = activeTransactions.find(
-    (transaction) => transaction.userId === userId && isActiveMidtransReservation(transaction)
-  );
+  for (const reservation of expiredReservations) {
+    const orderId = reservation.transaction.paymentOrderId;
+    if (!orderId) {
+      continue;
+    }
 
-  if (ownReservation?.paymentToken) {
-    return {
-      transactionId: ownReservation.id,
-      snapToken: ownReservation.paymentToken,
-      snapRedirectUrl: ownReservation.paymentRedirectUrl ?? null
-    };
+    let gateway: Record<string, unknown>;
+    try {
+      gateway = await getMidtransTransactionStatus({ config, orderId });
+    } catch {
+      // A failed status lookup is not proof that the money was not received.
+      // Keep the reservation locked until Midtrans can be checked again.
+      continue;
+    }
+
+    if (mapMidtransTransactionStatus(String(gateway.transaction_status ?? "")) !== "gagal") {
+      continue;
+    }
+
+    await db.transaction(async (tx) => {
+      const [lockedItem] = await tx
+        .select()
+        .from(barang)
+        .where(eq(barang.id, barangId))
+        .limit(1)
+        .for("update");
+
+      if (!lockedItem) {
+        return;
+      }
+
+      await tx
+        .update(transaksi)
+        .set({
+          gatewayPayload: gateway,
+          gatewayStatus: String(gateway.transaction_status ?? "expire"),
+          status: "gagal",
+          updatedAt: new Date()
+        })
+        .where(
+          and(
+            eq(transaksi.id, reservation.transaction.id),
+            eq(transaksi.status, "menunggu_pembayaran"),
+            lte(transaksi.paymentDeadline, now)
+          )
+        );
+    });
+  }
+}
+
+export async function createFixedPriceMidtransCheckout(userId: string, pemasaranId: string) {
+  const config = getMidtransGatewayConfig();
+  const requestedRow = await getMarketingForBuyer(pemasaranId);
+  ensureActiveMarketing(requestedRow);
+
+  if (requestedRow.marketing.mode !== "fixed_price") {
+    throw new Error("Barang ini bukan transaksi harga tetap.");
   }
 
-  const lockedByOtherBuyer = activeTransactions.find(
-    (transaction) => transaction.userId !== userId && isActiveMidtransReservation(transaction)
-  );
-  if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
-  }
-
+  const now = new Date();
   const blacklistState = await getEffectiveBuyerBlacklistState(userId);
   if (blacklistState.active && blacklistState.policy.blocksFixedPrice) {
     throw new Error("Akun Anda sedang dibatasi untuk membuat transaksi harga tetap baru.");
   }
 
-  const amount = Number(row.marketing.price ?? 0);
+  const amount = Number(requestedRow.marketing.price ?? 0);
   if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
     throw new Error("Harga harga tetap belum valid.");
   }
 
+  await reconcileExpiredMidtransReservations(config, requestedRow.item.id, now);
+
   const transactionId = randomUUID();
   const paymentOrderId = `FP-${transactionId}`;
   const paymentDeadline = new Date(now.getTime() + MIDTRANS_RESERVATION_MINUTES * 60_000);
-  const [created] = await db
-    .insert(transaksi)
-    .values({
-      id: transactionId,
-      pemasaranId,
-      userId,
-      type: "fixed_price",
-      amount: String(amount),
-      paymentMethod: "midtrans",
-      paymentProvider: "midtrans",
-      paymentOrderId,
-      gatewayStatus: "pending",
-      status: "menunggu_pembayaran",
-      paymentDeadline
-    })
-    .returning()
-    .catch(throwFixedPriceClaimConflict);
+  const reservation = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(eq(barang.id, requestedRow.item.id))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan.");
+    }
+
+    const row = await getMarketingForBuyerFrom(tx, pemasaranId);
+    ensureActiveMarketing(row);
+
+    if (row.marketing.mode !== "fixed_price") {
+      throw new Error("Barang ini bukan transaksi harga tetap.");
+    }
+
+    const claims = await tx
+      .select({ transaction: transaksi, marketing: pemasaran })
+      .from(transaksi)
+      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+      .where(
+        and(
+          eq(pemasaran.barangId, lockedItem.id),
+          eq(transaksi.type, "fixed_price"),
+          inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+        )
+      );
+
+    const ownPendingReservation = claims.find(
+      ({ transaction }) =>
+        transaction.userId === userId &&
+        transaction.paymentMethod === "midtrans" &&
+        transaction.status === "menunggu_pembayaran"
+    )?.transaction;
+
+    if (ownPendingReservation) {
+      if (isUnexpiredMidtransReservation(ownPendingReservation, now) && ownPendingReservation.paymentToken) {
+        return {
+          created: ownPendingReservation,
+          row,
+          reuse: true
+        };
+      }
+
+      if (ownPendingReservation.paymentDeadline && ownPendingReservation.paymentDeadline.getTime() <= now.getTime()) {
+        throw new Error("Pembayaran sebelumnya masih menunggu konfirmasi Midtrans. Silakan coba lagi setelah status tersinkron.");
+      }
+
+      throw new Error("Checkout Midtrans sedang disiapkan. Silakan tunggu beberapa detik lalu coba lagi.");
+    }
+
+    const existingClaim = claims.find(({ transaction }) => isFixedPriceClaimTransaction(transaction));
+    if (existingClaim) {
+      throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    }
+
+    const [created] = await tx
+      .insert(transaksi)
+      .values({
+        id: transactionId,
+        pemasaranId,
+        userId,
+        type: "fixed_price",
+        amount: String(amount),
+        paymentMethod: "midtrans",
+        paymentProvider: "midtrans",
+        paymentOrderId,
+        gatewayStatus: "creating",
+        status: "menunggu_pembayaran",
+        paymentDeadline
+      })
+      .returning()
+      .catch(throwFixedPriceClaimConflict);
+
+    return { created, row, reuse: false };
+  });
+
+  if (reservation.reuse) {
+    return {
+      transactionId: reservation.created.id,
+      snapToken: reservation.created.paymentToken,
+      snapRedirectUrl: reservation.created.paymentRedirectUrl ?? null
+    };
+  }
+
+  const created = reservation.created;
 
   try {
     const checkout = await createMidtransSnapTransaction({
       amount,
       config,
-      itemName: row.item.name,
+      itemName: reservation.row.item.name,
       orderId: paymentOrderId
     });
-    await db
+    const [updated] = await db
       .update(transaksi)
       .set({
         paymentToken: checkout.token,
         paymentRedirectUrl: checkout.redirectUrl,
+        gatewayStatus: "pending",
         updatedAt: new Date()
       })
-      .where(eq(transaksi.id, created.id));
+      .where(
+        and(
+          eq(transaksi.id, created.id),
+          eq(transaksi.status, "menunggu_pembayaran"),
+          eq(transaksi.gatewayStatus, "creating")
+        )
+      )
+      .returning();
+
+    if (!updated) {
+      const [current] = await db
+        .select()
+        .from(transaksi)
+        .where(eq(transaksi.id, created.id))
+        .limit(1);
+
+      if (current?.status !== "lunas") {
+        throw new Error("Checkout Midtrans berubah saat sedang dibuat. Silakan buka ulang transaksi.");
+      }
+    }
+
     revalidateTransactionViews();
 
     return {
@@ -1404,10 +1656,34 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
       snapRedirectUrl: checkout.redirectUrl
     };
   } catch (error) {
-    await db
+    const [failed] = await db
       .update(transaksi)
       .set({ gatewayStatus: "failed_to_create", status: "gagal", updatedAt: new Date() })
-      .where(eq(transaksi.id, created.id));
+      .where(
+        and(
+          eq(transaksi.id, created.id),
+          eq(transaksi.status, "menunggu_pembayaran"),
+          eq(transaksi.gatewayStatus, "creating")
+        )
+      )
+      .returning({ id: transaksi.id });
+
+    if (!failed) {
+      const [current] = await db
+        .select()
+        .from(transaksi)
+        .where(eq(transaksi.id, created.id))
+        .limit(1);
+
+      if (current?.status === "lunas") {
+        return {
+          transactionId: current.id,
+          snapToken: current.paymentToken,
+          snapRedirectUrl: current.paymentRedirectUrl ?? null
+        };
+      }
+    }
+
     throw error;
   }
 }

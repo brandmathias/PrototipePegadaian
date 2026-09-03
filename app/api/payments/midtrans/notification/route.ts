@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import {
   getMidtransGatewayConfig,
   getMidtransTransactionStatus,
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
 
   if (
     !row ||
+    row.transaction.type !== "fixed_price" ||
+    row.transaction.paymentMethod !== "midtrans" ||
     row.transaction.paymentProvider !== "midtrans" ||
     Number(row.transaction.amount) !== Number(gateway.gross_amount)
   ) {
@@ -77,27 +80,53 @@ export async function POST(request: Request) {
   }
 
   if (nextStatus === "menunggu_pembayaran") {
-    await db
-      .update(transaksi)
-      .set({
-        gatewayPayload: gateway,
-        gatewayStatus: readString(gateway.transaction_status),
-        updatedAt: new Date()
-      })
-      .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")));
+    await db.transaction(async (tx) => {
+      const [lockedItem] = await tx
+        .select()
+        .from(barang)
+        .where(eq(barang.id, row.item.id))
+        .limit(1)
+        .for("update");
+
+      if (!lockedItem) {
+        return;
+      }
+
+      await tx
+        .update(transaksi)
+        .set({
+          gatewayPayload: gateway,
+          gatewayStatus: readString(gateway.transaction_status),
+          updatedAt: new Date()
+        })
+        .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")));
+    });
     return NextResponse.json({ ok: true });
   }
 
   if (nextStatus === "gagal") {
-    await db
-      .update(transaksi)
-      .set({
-        gatewayPayload: gateway,
-        gatewayStatus: readString(gateway.transaction_status),
-        status: "gagal",
-        updatedAt: new Date()
-      })
-      .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")));
+    await db.transaction(async (tx) => {
+      const [lockedItem] = await tx
+        .select()
+        .from(barang)
+        .where(eq(barang.id, row.item.id))
+        .limit(1)
+        .for("update");
+
+      if (!lockedItem) {
+        return;
+      }
+
+      await tx
+        .update(transaksi)
+        .set({
+          gatewayPayload: gateway,
+          gatewayStatus: readString(gateway.transaction_status),
+          status: "gagal",
+          updatedAt: new Date()
+        })
+        .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")));
+    });
     revalidateTransactionViews();
     return NextResponse.json({ ok: true });
   }
@@ -110,7 +139,81 @@ export async function POST(request: Request) {
   }
 
   const now = new Date();
-  const settled = await db.transaction(async (tx) => {
+  const settlement = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(eq(barang.id, row.item.id))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      return { kind: "ignored" as const, transaction: null };
+    }
+
+    const [currentTransaction] = await tx
+      .select()
+      .from(transaksi)
+      .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.paymentOrderId, orderId)))
+      .limit(1);
+
+    if (
+      !currentTransaction ||
+      currentTransaction.type !== "fixed_price" ||
+      currentTransaction.paymentMethod !== "midtrans" ||
+      currentTransaction.paymentProvider !== "midtrans"
+    ) {
+      return { kind: "ignored" as const, transaction: null };
+    }
+
+    if (currentTransaction.status !== "menunggu_pembayaran") {
+      return { kind: "ignored" as const, transaction: null };
+    }
+
+    const [currentMarketing] = await tx
+      .select()
+      .from(pemasaran)
+      .where(eq(pemasaran.id, currentTransaction.pemasaranId))
+      .limit(1);
+
+    const [otherClaim] = await tx
+      .select({ id: transaksi.id })
+      .from(transaksi)
+      .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+      .where(
+        and(
+          eq(pemasaran.barangId, lockedItem.id),
+          eq(transaksi.type, "fixed_price"),
+          ne(transaksi.id, currentTransaction.id),
+          inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+        )
+      )
+      .limit(1);
+
+    if (
+      lockedItem.status !== "dipasarkan" ||
+      !currentMarketing ||
+      currentMarketing.mode !== "fixed_price" ||
+      currentMarketing.status !== "aktif" ||
+      currentMarketing.barangId !== lockedItem.id ||
+      otherClaim
+    ) {
+      const [conflicted] = await tx
+        .update(transaksi)
+        .set({
+          gatewayPayload: gateway,
+          gatewayStatus: "payment_conflict",
+          rejectionReason: "Pembayaran Midtrans diterima ketika barang sudah tidak tersedia untuk transaksi ini.",
+          status: "gagal",
+          updatedAt: now,
+          verifiedAt: now
+        })
+        .where(and(eq(transaksi.id, currentTransaction.id), eq(transaksi.status, "menunggu_pembayaran")))
+        .returning();
+
+      return { kind: "conflict" as const, transaction: conflicted ?? null };
+    }
+
     const [updated] = await tx
       .update(transaksi)
       .set({
@@ -123,24 +226,49 @@ export async function POST(request: Request) {
         updatedAt: now,
         verifiedAt: now
       })
-      .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")))
+      .where(
+        and(
+          eq(transaksi.id, currentTransaction.id),
+          eq(transaksi.status, "menunggu_pembayaran"),
+          eq(transaksi.type, "fixed_price"),
+          eq(transaksi.paymentProvider, "midtrans")
+        )
+      )
       .returning();
-    if (!updated) return null;
+    if (!updated) return { kind: "ignored" as const, transaction: null };
 
-    await tx.update(pemasaran).set({ status: "selesai", updatedAt: now }).where(eq(pemasaran.id, row.marketing.id));
-    await tx.update(barang).set({ status: "terjual", updatedAt: now }).where(eq(barang.id, row.item.id));
+    await tx
+      .update(pemasaran)
+      .set({ status: "selesai", updatedAt: now })
+      .where(and(eq(pemasaran.id, currentMarketing.id), eq(pemasaran.status, "aktif")));
+    const [soldItem] = await tx
+      .update(barang)
+      .set({ status: "terjual", updatedAt: now })
+      .where(and(eq(barang.id, lockedItem.id), eq(barang.status, "dipasarkan")))
+      .returning({ id: barang.id });
+
+    if (!soldItem) {
+      throw new Error("Status barang berubah saat pembayaran Midtrans diproses.");
+    }
+
     await tx.insert(riwayatStatusBarang).values({
       id: randomUUID(),
-      barangId: row.item.id,
-      oldStatus: row.item.status,
+      barangId: lockedItem.id,
+      oldStatus: lockedItem.status,
       newStatus: "terjual",
       changedByUserId: null,
       note: "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans."
     });
-    return updated;
+    return { kind: "settled" as const, transaction: updated };
   });
 
-  if (settled) {
+  if (settlement.kind === "conflict") {
+    revalidateTransactionViews();
+    return NextResponse.json({ ok: true, conflict: true });
+  }
+
+  if (settlement.kind === "settled" && settlement.transaction) {
+    const settled = settlement.transaction;
     await notifyPaymentVerified({
       userId: settled.userId,
       transactionId: settled.id,

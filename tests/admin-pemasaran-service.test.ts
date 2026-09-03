@@ -506,6 +506,7 @@ describe("publishAdminBarang", () => {
     mocks.db.select.mockReset();
     mocks.db.transaction.mockImplementation(async (callback) =>
       callback({
+        select: mocks.db.select,
         insert: mocks.db.insert,
         update: mocks.db.update
       })
@@ -546,18 +547,10 @@ describe("publishAdminBarang", () => {
     const updateWhereSpy = vi.fn().mockResolvedValue(undefined);
 
     mocks.db.select
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([item])
-          })
-        })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ nextIteration: 3 }])
-        })
-      }));
+      .mockImplementationOnce(() => mockLockedSelect(item))
+      .mockImplementationOnce(() => mockLatestMarketingSelect(null))
+      .mockImplementationOnce(() => mockLockCountSelect(0))
+      .mockImplementationOnce(() => mockNextIterationSelect(3));
 
     mocks.db.insert
       .mockImplementationOnce(() => ({
@@ -590,7 +583,6 @@ describe("publishAdminBarang", () => {
         basePrice: "1500000",
         startsAt: now,
         endsAt: new Date(now.getTime() + 135_000),
-        revealEndsAt: new Date(now.getTime() + 135_000 + 600_000),
         durationDays: 0,
         durationSeconds: 135,
         status: "aktif",
@@ -611,13 +603,10 @@ describe("publishAdminBarang", () => {
       dueDate: new Date("2026-05-12T08:35:45.000+08:00")
     };
 
-    mocks.db.select.mockImplementationOnce(() => ({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([item])
-        })
-      })
-    }));
+    mocks.db.select
+      .mockImplementationOnce(() => mockLockedSelect(item))
+      .mockImplementationOnce(() => mockLatestMarketingSelect(null))
+      .mockImplementationOnce(() => mockLockCountSelect(0));
 
     await expect(
       publishAdminBarang("unit-1", "user-1", "barang-belum-tempo", {
@@ -626,7 +615,7 @@ describe("publishAdminBarang", () => {
       })
     ).rejects.toThrow("Barang baru dapat dipasarkan setelah durasi jatuh tempo berakhir.");
 
-    expect(mocks.db.transaction).not.toHaveBeenCalled();
+    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
   });
 
   it("allows a failed vickrey lot without bidders to be republished as harga tetap", async () => {
@@ -665,27 +654,10 @@ describe("publishAdminBarang", () => {
     const updateWhereSpy = vi.fn().mockResolvedValue(undefined);
 
     mocks.db.select
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([item])
-          })
-        })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue([{ status: "gagal" }])
-            })
-          })
-        })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ nextIteration: 2 }])
-        })
-      }));
+      .mockImplementationOnce(() => mockLockedSelect(item))
+      .mockImplementationOnce(() => mockLatestMarketingSelect({ status: "gagal" }))
+      .mockImplementationOnce(() => mockLockCountSelect(0))
+      .mockImplementationOnce(() => mockNextIterationSelect(2));
 
     mocks.db.insert
       .mockImplementationOnce(() => ({
@@ -714,7 +686,6 @@ describe("publishAdminBarang", () => {
         durationDays: null,
         durationSeconds: null,
         endsAt: null,
-        revealEndsAt: null,
         iteration: 2,
         status: "aktif"
       })
@@ -723,7 +694,7 @@ describe("publishAdminBarang", () => {
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("closes an active fixed price session with only waiting-payment checkouts before remarketing", async () => {
+  it("does not close an active fixed price session while a waiting-payment checkout holds the item", async () => {
     const now = new Date("2026-05-12T08:30:45.000+08:00");
     const item = {
       id: "barang-fixed-active",
@@ -759,43 +730,20 @@ describe("publishAdminBarang", () => {
     const insertValuesSpy = vi.fn().mockReturnValue({
       returning: vi.fn().mockResolvedValue([createdRow])
     });
-    const remarketingLockWhereSpy = vi.fn().mockResolvedValue([{ count: 0 }]);
+    const lockCountWhereSpy = vi.fn().mockResolvedValue([{ count: 1 }]);
     const updateBarangWhereSpy = vi.fn().mockResolvedValue(undefined);
     const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
 
     mocks.db.select
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([item])
-          })
+      .mockImplementationOnce(() => mockLockedSelect(item))
+      .mockImplementationOnce(() =>
+        mockLatestMarketingSelect({
+          id: "marketing-fixed-active",
+          mode: "fixed_price",
+          status: "aktif"
         })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue([
-                {
-                  id: "marketing-fixed-active",
-                  mode: "fixed_price",
-                  status: "aktif"
-                }
-              ])
-            })
-          })
-        })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: remarketingLockWhereSpy
-        })
-      }))
-      .mockImplementationOnce(() => ({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue([{ nextIteration: 3 }])
-        })
-      }));
+      )
+      .mockImplementationOnce(() => mockLockCountSelect(1, lockCountWhereSpy));
 
     mocks.db.update
       .mockImplementationOnce(() => ({
@@ -814,38 +762,66 @@ describe("publishAdminBarang", () => {
         values: statusHistoryValuesSpy
       }));
 
-    await publishAdminBarang("unit-1", "user-1", "barang-fixed-active", {
-      mode: "fixed_price",
-      price: "15000000"
-    });
-
-    expect(closeMarketingSetSpy).toHaveBeenCalledWith({
-      status: "gagal",
-      updatedAt: now
-    });
-    expect(insertValuesSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
+    await expect(
+      publishAdminBarang("unit-1", "user-1", "barang-fixed-active", {
         mode: "fixed_price",
-        price: "15000000",
-        iteration: 3,
-        status: "aktif"
+        price: "15000000"
       })
+    ).rejects.toThrow(
+      "Barang hanya bisa dipasarkan dari status jaminan, gagal, atau sesi Harga Tetap aktif tanpa pembayaran yang mengunci katalog."
     );
-    expect(updateBarangWhereSpy).toHaveBeenCalledTimes(1);
-    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        oldStatus: "dipasarkan",
-        newStatus: "dipasarkan",
-        note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
-      })
-    );
-    const remarketingLockValues = getSqlParameterValues(
-      remarketingLockWhereSpy.mock.calls[0]?.[0]
-    );
-    expect(remarketingLockValues).toContain("bukti_diunggah");
-    expect(remarketingLockValues).not.toContain("menunggu_pembayaran");
+
+    expect(closeMarketingSetSpy).not.toHaveBeenCalled();
+    expect(insertValuesSpy).not.toHaveBeenCalled();
+    expect(updateBarangWhereSpy).not.toHaveBeenCalled();
+    expect(statusHistoryValuesSpy).not.toHaveBeenCalled();
+    const lockValues = getSqlParameterValues(lockCountWhereSpy.mock.calls[0]?.[0]);
+    expect(lockValues).toContain("bukti_diunggah");
+    expect(lockValues).toContain("menunggu_pembayaran");
   });
 });
+
+function mockLockedSelect(row: unknown) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockReturnValue({
+          for: vi.fn().mockResolvedValue(row ? [row] : [])
+        })
+      })
+    })
+  };
+}
+
+function mockLatestMarketingSelect(row: unknown) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue(row ? [row] : [])
+        })
+      })
+    })
+  };
+}
+
+function mockLockCountSelect(count: number, whereSpy?: ReturnType<typeof vi.fn>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        where: whereSpy ?? vi.fn().mockResolvedValue([{ count }])
+      })
+    })
+  };
+}
+
+function mockNextIterationSelect(nextIteration: number) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue([{ nextIteration }])
+    })
+  };
+}
 
 function getSqlParameterValues(value: unknown): unknown[] {
   if (Array.isArray(value)) {

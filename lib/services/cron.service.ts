@@ -804,6 +804,17 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
 
   for (const row of dueRows) {
     await db.transaction(async (tx) => {
+      const [lockedItem] = await tx
+        .select()
+        .from(barang)
+        .where(eq(barang.id, row.item.id))
+        .limit(1)
+        .for("update");
+
+      if (!lockedItem) {
+        return;
+      }
+
       const isLegacyCompletionBackfill = row.transaction.status === "selesai";
       const completedAt = isLegacyCompletionBackfill
         ? getHandoverAutoCompleteDeadline(row.transaction.handoverProofUploadedAt) ?? now
@@ -838,12 +849,15 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
       }
 
       await tx.update(pemasaran).set({ status: "selesai", updatedAt: now }).where(eq(pemasaran.id, row.transaction.pemasaranId));
-      await tx.update(barang).set({ status: "terjual", updatedAt: now }).where(eq(barang.id, row.item.id));
+      await tx
+        .update(barang)
+        .set({ status: "terjual", updatedAt: now })
+        .where(and(eq(barang.id, lockedItem.id), eq(barang.status, "dipasarkan")));
 
       await tx.insert(riwayatStatusBarang).values({
         id: randomUUID(),
-        barangId: row.item.id,
-        oldStatus: row.item.status,
+        barangId: lockedItem.id,
+        oldStatus: lockedItem.status,
         newStatus: "terjual",
         changedByUserId: null,
         note: "Transaksi selesai otomatis karena buyer tidak menekan Pembelian Selesai dalam 3 hari setelah bukti serah-terima diunggah.",

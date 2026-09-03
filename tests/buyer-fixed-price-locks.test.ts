@@ -4,7 +4,8 @@ const mocks = vi.hoisted(() => {
   const db = {
     select: vi.fn(),
     insert: vi.fn(),
-    update: vi.fn()
+    update: vi.fn(),
+    transaction: vi.fn()
   };
 
   return {
@@ -71,7 +72,10 @@ function mockMarketingQuery(row: {
 function mockTransactionListQuery(rows: Array<Record<string, unknown>>) {
   return {
     from: vi.fn().mockReturnValue({
-      where: vi.fn().mockResolvedValue(rows)
+      where: vi.fn().mockResolvedValue(rows),
+      innerJoin: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(rows)
+      })
     })
   };
 }
@@ -80,7 +84,41 @@ function mockTransactionLockQuery(rows: Array<Record<string, unknown>>) {
   return {
     from: vi.fn().mockReturnValue({
       where: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue(rows)
+        limit: vi.fn().mockReturnValue({
+          for: vi.fn().mockResolvedValue(rows)
+        })
+      })
+    })
+  };
+}
+
+function mockCurrentTransactionQuery(row: Record<string, unknown>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue([row])
+      })
+    })
+  };
+}
+
+function mockFixedPriceClaimQuery(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(rows)
+      })
+    })
+  };
+}
+
+function mockFixedPriceClaimLockQuery(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue(rows)
+        })
       })
     })
   };
@@ -119,6 +157,7 @@ function mockTransactionDetailQuery(row: Record<string, unknown>) {
 describe("createFixedPricePurchase locking rules", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.db));
   });
 
   function expectTransactionViewsRevalidated() {
@@ -141,8 +180,22 @@ describe("createFixedPricePurchase locking rules", () => {
           media: { url: "/uploads/cincin.jpg" }
         })
       )
-      .mockImplementationOnce(() => mockTransactionListQuery([]))
-      .mockImplementationOnce(() => mockBlacklistQuery());
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
+      .mockImplementationOnce(() => mockTransactionListQuery([]));
 
     const insertValuesSpy = vi.fn().mockReturnValue({
       returning: vi.fn().mockResolvedValue([
@@ -190,8 +243,23 @@ describe("createFixedPricePurchase locking rules", () => {
     expectTransactionViewsRevalidated();
   });
 
-  it("allows another buyer to start checkout while the earlier buyer is only waiting for payment", async () => {
+  it("blocks another buyer while the earlier buyer is only waiting for payment", async () => {
     mocks.db.select
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
       .mockImplementationOnce(() =>
         mockMarketingQuery({
           marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
@@ -204,59 +272,26 @@ describe("createFixedPricePurchase locking rules", () => {
       .mockImplementationOnce(() =>
         mockTransactionListQuery([
           {
-            id: "trx-other-2",
-            userId: "buyer-lain",
-            status: "menunggu_pembayaran",
-            createdAt: new Date("2026-05-27T09:00:00.000Z")
+            transaction: {
+              id: "trx-other-2",
+              userId: "buyer-lain",
+              type: "fixed_price",
+              status: "menunggu_pembayaran",
+              createdAt: new Date("2026-05-27T09:00:00.000Z")
+            },
+            marketing: { id: "pemasaran-1" }
           }
         ])
-      )
-      .mockImplementationOnce(() => mockBlacklistQuery());
+      );
 
-    const insertValuesSpy = vi.fn().mockReturnValue({
-      returning: vi.fn().mockResolvedValue([
-        {
-          id: "trx-baru-2",
-          pemasaranId: "pemasaran-1",
-          userId: "buyer-baru",
-          type: "fixed_price",
-          amount: "12500000",
-          paymentMethod: "transfer",
-          status: "menunggu_pembayaran",
-          proofUrl: null,
-          referenceNumber: null,
-          paymentDeadline: null,
-          createdAt: new Date("2026-05-27T09:05:00.000Z"),
-          updatedAt: new Date("2026-05-27T09:05:00.000Z")
-        }
-      ])
-    });
-
-    mocks.db.insert.mockImplementationOnce(() => ({
-      values: insertValuesSpy
-    }));
-
-    const result = await createFixedPricePurchase("buyer-baru", "pemasaran-1", {
-      paymentMethod: "transfer"
-    });
-
-    expect(insertValuesSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "menunggu_pembayaran",
-        userId: "buyer-baru",
-        proofUrl: null,
-        referenceNumber: null,
-        paymentDeadline: null
+    await expect(
+      createFixedPricePurchase("buyer-baru", "pemasaran-1", {
+        paymentMethod: "transfer"
       })
-    );
-    expect(result).toEqual(
-      expect.objectContaining({
-          id: "trx-baru-2",
-          status: "menunggu_pembayaran",
-          userId: "buyer-baru"
-      })
-    );
-    expectTransactionViewsRevalidated();
+    ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
+
+    expect(mocks.db.insert).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
   it("blocks another buyer once the earlier buyer has uploaded payment proof", async () => {
@@ -270,13 +305,32 @@ describe("createFixedPricePurchase locking rules", () => {
           media: { url: "/uploads/cincin.jpg" }
         })
       )
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
       .mockImplementationOnce(() =>
         mockTransactionListQuery([
           {
-            id: "trx-other-proof",
-            userId: "buyer-lain",
-            status: "bukti_diunggah",
-            createdAt: new Date("2026-05-27T09:00:00.000Z")
+            transaction: {
+              id: "trx-other-proof",
+              userId: "buyer-lain",
+              type: "fixed_price",
+              status: "bukti_diunggah",
+              createdAt: new Date("2026-05-27T09:00:00.000Z")
+            },
+            marketing: { id: "pemasaran-1" }
           }
         ])
       );
@@ -301,8 +355,22 @@ describe("createFixedPricePurchase locking rules", () => {
           media: { url: "/uploads/cincin.jpg" }
         })
       )
-      .mockImplementationOnce(() => mockTransactionListQuery([]))
-      .mockImplementationOnce(() => mockBlacklistQuery());
+      .mockImplementationOnce(() => mockBlacklistQuery())
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockMarketingQuery({
+          marketing: { mode: "fixed_price", status: "aktif", price: "12500000" },
+          item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
+          unit: { name: "UPC Ranotana", address: "Jl. Sam Ratulangi" },
+          account: { accountNumber: "0123-4567-8901-234" },
+          media: { url: "/uploads/cincin.jpg" }
+        })
+      )
+      .mockImplementationOnce(() => mockTransactionListQuery([]));
 
     mocks.db.insert.mockImplementationOnce(() => ({
       values: vi.fn().mockReturnValue({
@@ -344,8 +412,20 @@ describe("createFixedPricePurchase locking rules", () => {
         })
       )
       .mockImplementationOnce(() =>
-        mockTransactionLockQuery([])
-      );
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockCurrentTransactionQuery({
+          id: "trx-proof-1",
+          userId: "buyer-1",
+          status: "menunggu_pembayaran",
+          paymentMethod: "transfer",
+          referenceNumber: "BRI-2026-001"
+        })
+      )
+      .mockImplementationOnce(() => mockFixedPriceClaimLockQuery([]));
 
     const updatedAt = new Date("2026-05-27T09:10:00.000Z");
     const setSpy = vi.fn().mockReturnValue({
@@ -398,7 +478,7 @@ describe("createFixedPricePurchase locking rules", () => {
     expectTransactionViewsRevalidated();
   });
 
-  it("reports a clear business conflict when another buyer claims the same fixed-price session first", async () => {
+  it("blocks proof upload when another buyer claims the same item first", async () => {
     mocks.db.select
       .mockImplementationOnce(() => mockBlacklistQuery())
       .mockImplementationOnce(() =>
@@ -415,20 +495,25 @@ describe("createFixedPricePurchase locking rules", () => {
           lotName: "Cincin Emas"
         })
       )
-      .mockImplementationOnce(() => mockTransactionLockQuery([]));
-
-    mocks.db.update.mockImplementationOnce(() => ({
-      set: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          returning: vi.fn().mockRejectedValue(
-            Object.assign(new Error("duplicate key value violates unique constraint"), {
-              code: "23505",
-              constraint: "transaksi_fixed_price_claim_unique"
-            })
-          )
+      .mockImplementationOnce(() =>
+        mockTransactionLockQuery([
+          { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" }
+        ])
+      )
+      .mockImplementationOnce(() =>
+        mockCurrentTransactionQuery({
+          id: "trx-proof-race",
+          userId: "buyer-1",
+          status: "menunggu_pembayaran",
+          paymentMethod: "transfer",
+          referenceNumber: "BRI-2026-001"
         })
-      })
-    }));
+      )
+      .mockImplementationOnce(() =>
+        mockFixedPriceClaimLockQuery([
+          { id: "trx-other", userId: "buyer-lain" }
+        ])
+      );
 
     await expect(
       uploadBuyerPaymentProof("buyer-1", "trx-proof-race", {
@@ -438,6 +523,7 @@ describe("createFixedPricePurchase locking rules", () => {
     ).rejects.toThrow("Barang sedang dalam proses pembelian oleh pembeli lain.");
 
     expect(mocks.notifyAdminUnitPaymentProofUploaded).not.toHaveBeenCalled();
+    expect(mocks.db.update).not.toHaveBeenCalled();
     expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { serializeAdminTransaction } from "@/lib/admin-unit/serializers";
@@ -198,15 +198,44 @@ export async function uploadAdminTransactionHandoverProof(
     updatedAt: uploadedAt
   };
 
-  const [updated] = await db
-    .update(transaksi)
-    .set(updatePayload)
-    .where(eq(transaksi.id, transactionId))
-    .returning();
+  const updated = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(and(eq(barang.id, row.item.id), eq(barang.unitId, unitId)))
+      .limit(1)
+      .for("update");
 
-  if (!updated) {
-    throw new Error("Transaksi tidak ditemukan.");
-  }
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan di unit Anda.");
+    }
+
+    const [currentTransaction] = await tx
+      .select()
+      .from(transaksi)
+      .where(eq(transaksi.id, transactionId))
+      .limit(1);
+
+    if (!currentTransaction || currentTransaction.status === "selesai") {
+      throw new Error("Bukti serah-terima tidak dapat diubah setelah transaksi selesai.");
+    }
+
+    if (currentTransaction.status !== "lunas") {
+      throw new Error("Bukti serah-terima baru dapat diunggah setelah pembayaran diverifikasi.");
+    }
+
+    const [updatedTransaction] = await tx
+      .update(transaksi)
+      .set(updatePayload)
+      .where(and(eq(transaksi.id, transactionId), eq(transaksi.status, "lunas")))
+      .returning();
+
+    if (!updatedTransaction) {
+      throw new Error("Bukti serah-terima sudah diproses oleh pengguna lain.");
+    }
+
+    return updatedTransaction;
+  });
 
   const superAdminUserIds = await listActiveSuperAdminNotificationRecipientIds();
   await notifyHandoverProofUploaded({
@@ -332,29 +361,85 @@ export async function verifyAdminTransaction(unitId: string, adminId: string, tr
     throw new Error("Status transaksi belum siap diverifikasi.");
   }
 
-  const [updated] = await db
-    .update(transaksi)
-    .set({
-      status: "lunas",
-      referenceNumber: payload.reference,
-      verifiedByUserId: adminId,
-      verifiedAt: new Date(),
-      updatedAt: new Date()
-    })
-    .where(eq(transaksi.id, transactionId))
-    .returning();
+  const now = new Date();
+  const expectedStatus = row.transaction.type === "fixed_price" ? "bukti_diunggah" : "menunggu_konfirmasi_langsung";
+  const updated = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(and(eq(barang.id, row.item.id), eq(barang.unitId, unitId)))
+      .limit(1)
+      .for("update");
 
-  await db.update(barang).set({ status: "terjual", updatedAt: new Date() }).where(eq(barang.id, row.item.id));
-  await db.update(pemasaran).set({ status: "selesai", updatedAt: new Date() }).where(eq(pemasaran.id, row.transaction.pemasaranId));
-  await recordItemStatusHistory({
-    barangId: row.item.id,
-    oldStatus: row.item.status,
-    newStatus: "terjual",
-    changedByUserId: adminId,
-    note:
-      row.transaction.type === "vickrey"
-        ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dalam batas waktu 24 jam dan diverifikasi admin unit."
-        : "Pembayaran harga tetap disetujui admin unit sehingga barang tercatat terjual."
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan di unit Anda.");
+    }
+
+    const [updatedTransaction] = await tx
+      .update(transaksi)
+      .set({
+        status: "lunas",
+        referenceNumber: payload.reference,
+        verifiedByUserId: adminId,
+        verifiedAt: now,
+        updatedAt: now
+      })
+      .where(
+        and(
+          eq(transaksi.id, transactionId),
+          eq(transaksi.type, row.transaction.type),
+          eq(transaksi.status, expectedStatus),
+          ...(row.transaction.type === "fixed_price" ? [eq(transaksi.paymentMethod, "transfer")] : [])
+        )
+      )
+      .returning();
+
+    if (!updatedTransaction) {
+      throw new Error("Transaksi sudah diproses oleh pengguna lain atau tidak lagi siap diverifikasi.");
+    }
+
+    const [soldItem] = await tx
+      .update(barang)
+      .set({ status: "terjual", updatedAt: now })
+      .where(
+        and(
+          eq(barang.id, lockedItem.id),
+          row.transaction.type === "vickrey"
+            ? inArray(barang.status, ["dipasarkan", "menunggu_pembayaran"])
+            : eq(barang.status, "dipasarkan")
+        )
+      )
+      .returning({ id: barang.id });
+
+    if (!soldItem) {
+      throw new Error("Status barang berubah saat pembayaran diverifikasi.");
+    }
+
+    if (row.transaction.type === "fixed_price") {
+      const [closedMarketing] = await tx
+        .update(pemasaran)
+        .set({ status: "selesai", updatedAt: now })
+        .where(and(eq(pemasaran.id, row.transaction.pemasaranId), eq(pemasaran.status, "aktif")))
+        .returning({ id: pemasaran.id });
+
+      if (!closedMarketing) {
+        throw new Error("Sesi pemasaran berubah saat pembayaran diverifikasi.");
+      }
+    }
+
+    await tx.insert(riwayatStatusBarang).values({
+      id: crypto.randomUUID(),
+      barangId: lockedItem.id,
+      oldStatus: lockedItem.status,
+      newStatus: "terjual",
+      changedByUserId: adminId,
+      note:
+        row.transaction.type === "vickrey"
+          ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dalam batas waktu 24 jam dan diverifikasi admin unit."
+          : "Pembayaran harga tetap disetujui admin unit sehingga barang tercatat terjual."
+    });
+
+    return updatedTransaction;
   });
   await notifyPaymentVerified({
     userId: updated.userId,
@@ -397,6 +482,17 @@ export async function rejectAdminTransactionProof(
 
   const now = new Date();
   const updated = await db.transaction(async (tx) => {
+    const [lockedItem] = await tx
+      .select()
+      .from(barang)
+      .where(and(eq(barang.id, row.item.id), eq(barang.unitId, unitId)))
+      .limit(1)
+      .for("update");
+
+    if (!lockedItem) {
+      throw new Error("Barang tidak ditemukan di unit Anda.");
+    }
+
     const [updatedTransaction] = await tx
       .update(transaksi)
       .set({
@@ -406,7 +502,13 @@ export async function rejectAdminTransactionProof(
         verifiedAt: now,
         updatedAt: now
       })
-      .where(eq(transaksi.id, transactionId))
+      .where(
+        and(
+          eq(transaksi.id, transactionId),
+          eq(transaksi.type, "fixed_price"),
+          eq(transaksi.status, "bukti_diunggah")
+        )
+      )
       .returning();
 
     if (!updatedTransaction) {
@@ -416,8 +518,8 @@ export async function rejectAdminTransactionProof(
     if (row.transaction.type === "fixed_price") {
       await relistRejectedFixedPriceMarketing(tx, {
         adminId,
-        barangId: row.item.id,
-        itemStatus: row.item.status,
+        barangId: lockedItem.id,
+        itemStatus: lockedItem.status,
         marketingId: row.transaction.pemasaranId,
         now,
         originalPublishedAt: row.marketing.createdAt,

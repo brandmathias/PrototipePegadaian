@@ -8,6 +8,12 @@ const mocks = vi.hoisted(() => {
   query.where = vi.fn(() => query);
   query.limit = vi.fn();
 
+  const lockedItemQuery: any = {};
+  lockedItemQuery.from = vi.fn(() => lockedItemQuery);
+  lockedItemQuery.where = vi.fn(() => lockedItemQuery);
+  lockedItemQuery.limit = vi.fn(() => lockedItemQuery);
+  lockedItemQuery.for = vi.fn();
+
   return {
     db: {
       select: vi.fn(() => query),
@@ -16,6 +22,7 @@ const mocks = vi.hoisted(() => {
       update: vi.fn()
     },
     query,
+    lockedItemQuery,
     revalidateTag: vi.fn(),
     serializeAdminTransaction: vi.fn((row) => row),
     notifyHandoverProofUploaded: vi.fn(),
@@ -130,13 +137,20 @@ describe("admin transaction service", () => {
     mocks.db.select.mockImplementation(() => mocks.query);
     mocks.query.limit.mockReset();
     mocks.query.limit.mockResolvedValue([makeTransactionJoin()]);
-    mocks.db.transaction.mockImplementation(async (callback) =>
-      callback({
+    mocks.lockedItemQuery.for.mockReset();
+    mocks.lockedItemQuery.for.mockResolvedValue([makeTransactionJoin().item]);
+    mocks.db.transaction.mockImplementation(async (callback) => {
+      const txSelect = vi
+        .fn()
+        .mockImplementationOnce(() => mocks.lockedItemQuery)
+        .mockImplementation(() => mocks.query);
+
+      return callback({
         insert: mocks.db.insert,
-        select: mocks.db.select,
+        select: txSelect,
         update: mocks.db.update
-      })
-    );
+      });
+    });
   });
 
   afterEach(() => {
@@ -210,8 +224,8 @@ describe("admin transaction service", () => {
 
     mocks.db.update
       .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
-      .mockImplementationOnce(() => mockUpdateOnly())
-      .mockImplementationOnce(() => mockUpdateOnly());
+      .mockImplementationOnce(() => mockUpdateReturning({ id: "barang-1" }))
+      .mockImplementationOnce(() => mockUpdateReturning({ id: "pm-fixed" }));
     mocks.db.insert.mockImplementationOnce(() => ({
       values: statusHistoryValuesSpy
     }));
@@ -247,6 +261,56 @@ describe("admin transaction service", () => {
     });
     expectTransactionViewsRevalidated();
 
+  });
+
+  it("keeps Vickrey verification compatible with its settled marketing session", async () => {
+    const vickrey = makeTransactionJoin("menunggu_konfirmasi_langsung", "vickrey");
+    vickrey.transaction.paymentMethod = "langsung";
+    vickrey.marketing.status = "selesai";
+    vickrey.marketing.winnerId = "buyer-1";
+    vickrey.marketing.finalPrice = "10000000";
+    vickrey.item.status = "menunggu_pembayaran";
+
+    mocks.query.limit
+      .mockResolvedValueOnce([vickrey])
+      .mockResolvedValueOnce([
+        {
+          ...vickrey,
+          transaction: {
+            ...vickrey.transaction,
+            status: "lunas"
+          }
+        }
+      ]);
+    mocks.lockedItemQuery.for.mockResolvedValue([vickrey.item]);
+
+    const updatedTransaction = {
+      ...vickrey.transaction,
+      status: "lunas",
+      referenceNumber: "CASH-2026-001",
+      verifiedByUserId: "admin-1"
+    };
+    const statusHistoryValuesSpy = mockInsertValues();
+    mocks.db.update
+      .mockImplementationOnce(() => mockUpdateReturning(updatedTransaction))
+      .mockImplementationOnce(() => mockUpdateReturning({ id: "barang-1" }));
+    mocks.db.insert.mockImplementationOnce(() => ({
+      values: statusHistoryValuesSpy
+    }));
+
+    await expect(
+      verifyAdminTransaction("unit-1", "admin-1", "trx-fixed-rejected", {
+        reference: "CASH-2026-001"
+      })
+    ).resolves.toBeDefined();
+
+    expect(statusHistoryValuesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        oldStatus: "menunggu_pembayaran",
+        newStatus: "terjual",
+        note: expect.stringMatching(/pemenang lelang tertutup/i)
+      })
+    );
   });
 
   it("rejects harga tetap verification before a payment proof is uploaded", async () => {
@@ -482,6 +546,24 @@ describe("admin transaction service", () => {
     vi.useFakeTimers();
     vi.setSystemTime(uploadedAt);
     mocks.query.limit.mockResolvedValue([makeTransactionJoin("lunas", "fixed_price")]);
+
+    const currentTransactionQuery = {
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([makeTransactionJoin("lunas", "fixed_price").transaction])
+        })
+      })
+    };
+    mocks.db.transaction.mockImplementationOnce(async (callback) =>
+      callback({
+        insert: mocks.db.insert,
+        select: vi
+          .fn()
+          .mockImplementationOnce(() => mocks.lockedItemQuery)
+          .mockImplementationOnce(() => currentTransactionQuery),
+        update: mocks.db.update
+      })
+    );
 
     const updatedTransaction = {
       ...makeTransactionJoin("lunas", "fixed_price").transaction,
