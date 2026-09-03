@@ -627,9 +627,9 @@ describe("buyer serializers", () => {
     expect(transaction.kind).toBe("FIXED_PRICE");
     expect(transaction.status).toBe("GAGAL");
     expect(transaction.paymentNotes.join(" ")).toMatch(
-      /Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i
+      /Batas waktu pembayaran telah berakhir\. Transaksi ditutup\./i
     );
-    expect(transaction.paymentNotes.join(" ")).toMatch(/barang dapat dibeli kembali/i);
+    expect(transaction.paymentNotes.join(" ")).toMatch(/buka kembali katalog/i);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/lelang/i);
   });
 });

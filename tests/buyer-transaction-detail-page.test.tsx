@@ -251,7 +251,7 @@ describe("buyer transaction detail page", () => {
 
     expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
     expect(
-      screen.getAllByText(/Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i).length
+      screen.getAllByText(/Batas waktu pembayaran telah berakhir\. Transaksi ditutup\./i).length
     ).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /pembayaran harga tetap gagal/i, level: 2 })).toBeInTheDocument();
     expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);

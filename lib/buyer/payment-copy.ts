@@ -1,9 +1,9 @@
 export const FIXED_PRICE_PAYMENT_FAILURE_COPY = {
   title: "Pembayaran Harga Tetap gagal",
   description:
-    "Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
+    "Batas waktu pembayaran telah berakhir. Transaksi ditutup.",
   noticeDescription:
-    "Batas waktu pembayaran telah berakhir. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
+    "Batas waktu pembayaran telah berakhir. Transaksi ditutup.",
   paymentDetail:
     "Pembayaran Harga Tetap tidak diselesaikan sebelum batas waktu berakhir, sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia.",
   verificationDetail:

@@ -362,10 +362,10 @@ describe("TransactionsPage", () => {
     const fixedPriceFailureRow = screen.getByText("Emas Batangan ANTAM 5 Gram").closest("article");
     expect(fixedPriceFailureRow).not.toBeNull();
     expect(
-      within(fixedPriceFailureRow!).getByText(
-        /Pembayaran Harga Tetap gagal karena batas waktu pembayaran telah berakhir/i
-      )
-    ).toBeInTheDocument();
+      within(fixedPriceFailureRow!).getAllByText(
+        /Batas waktu pembayaran telah berakhir\. Transaksi ditutup\./i
+      ).length
+    ).toBeGreaterThan(0);
     expect(within(fixedPriceFailureRow!).getByText(/^Total pembayaran$/i)).toBeInTheDocument();
     expect(within(fixedPriceFailureRow!).getByText(/^Pembayaran Harga Tetap gagal$/i)).toBeInTheDocument();
     expect(within(fixedPriceFailureRow!).queryByText(/nominal lelang gagal/i)).not.toBeInTheDocument();
