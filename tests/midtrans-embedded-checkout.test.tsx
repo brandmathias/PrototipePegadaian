@@ -19,15 +19,23 @@ describe("MidtransEmbeddedCheckout", () => {
   });
 
   it("embeds the existing Snap token inside the payment card", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => ({ data: { snapToken: "snap-token-1" } })
+    const fetchMock = vi.fn((url: string) => {
+      if (url === "/api/payments/midtrans/config") {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: { clientKey: "SB-Mid-client-test", isProduction: false } })
+        });
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: { snapToken: "snap-token-1" } })
+      });
     });
     const embedMock = vi.fn();
 
-    vi.stubEnv("NEXT_PUBLIC_MIDTRANS_CLIENT_KEY", "SB-Mid-client-test");
-    vi.stubEnv("NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION", "false");
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("snap", { embed: embedMock });
 
@@ -38,6 +46,7 @@ describe("MidtransEmbeddedCheckout", () => {
     );
 
     await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/payments/midtrans/config");
       expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans");
     });
     await waitFor(() => {
@@ -51,11 +60,16 @@ describe("MidtransEmbeddedCheckout", () => {
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {
-    vi.stubEnv("NEXT_PUBLIC_MIDTRANS_CLIENT_KEY", "SB-Mid-client-test");
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: false,
-      json: async () => ({ message: "Token checkout Midtrans belum tersedia." })
-    }));
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: url === "/api/payments/midtrans/config",
+        json: async () =>
+          url === "/api/payments/midtrans/config"
+            ? { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+            : { message: "Token checkout Midtrans belum tersedia." }
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
 
     render(
       <ToastProvider>

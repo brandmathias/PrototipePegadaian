@@ -80,24 +80,27 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
   const router = useRouter();
   const { toast } = useToast();
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-  const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.trim() ?? "";
-  const isProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true";
-  const [error, setError] = useState<string | null>(
-    clientKey ? null : "Client Key Midtrans belum dikonfigurasi."
-  );
-  const [status, setStatus] = useState<"loading" | "embedded" | "closed" | "error">(
-    clientKey ? "loading" : "error"
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "embedded" | "closed" | "error">("loading");
 
   useEffect(() => {
     let cancelled = false;
 
     async function mountCheckout() {
-      if (!clientKey) {
-        return;
-      }
-
       try {
+        const configResponse = await fetch("/api/payments/midtrans/config");
+        const configPayload = await configResponse.json().catch(() => ({}));
+
+        if (!configResponse.ok) {
+          throw new Error(configPayload.message ?? "Client Key Midtrans belum dikonfigurasi.");
+        }
+
+        const clientKey = configPayload?.data?.clientKey?.trim();
+        if (!clientKey) {
+          throw new Error("Client Key Midtrans belum dikonfigurasi.");
+        }
+
+        const isProduction = configPayload?.data?.isProduction === true;
         const response = await fetch(`/api/user/transaksi/${transactionId}/midtrans`);
         const payload = await response.json().catch(() => ({}));
 
@@ -150,7 +153,7 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
     return () => {
       cancelled = true;
     };
-  }, [clientKey, embedId, isProduction, router, toast, transactionId]);
+  }, [embedId, router, toast, transactionId]);
 
   if (status === "loading") {
     return (

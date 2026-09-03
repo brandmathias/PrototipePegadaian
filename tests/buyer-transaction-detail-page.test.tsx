@@ -29,6 +29,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 const transaction: BuyerTransaction = {
@@ -232,6 +233,8 @@ describe("buyer transaction detail page", () => {
   });
 
   it("renders the harga tetap Midtrans flow with a resumable checkout and automatic status", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -254,7 +257,7 @@ describe("buyer transaction detail page", () => {
     expect(within(workflow!).getByText(/status diperiksa otomatis/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran midtrans/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
-    expect(screen.getByText(/client key midtrans belum dikonfigurasi/i)).toBeInTheDocument();
+    expect(screen.getByText(/menyiapkan checkout midtrans/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
