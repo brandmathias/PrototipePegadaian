@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { AlertTriangle, LoaderCircle, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
@@ -11,12 +11,15 @@ type SnapCallbacks = {
     token: string,
     options: {
       embedId: string;
+      hideCloseButton?: boolean;
       onClose?: () => void;
       onError?: () => void;
       onPending?: () => void;
       onSuccess?: () => void;
     }
   ) => void;
+  hide?: () => void;
+  show?: () => void;
 };
 
 declare global {
@@ -123,6 +126,7 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
         setStatus("embedded");
         window.snap.embed(token, {
           embedId,
+          hideCloseButton: true,
           onClose: () => setStatus("closed"),
           onError: () => {
             setError("Checkout Midtrans mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
@@ -155,6 +159,16 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
     };
   }, [embedId, router, toast, transactionId]);
 
+  const hideCheckout = () => {
+    window.snap?.hide?.();
+    setStatus("closed");
+  };
+
+  const resumeCheckout = () => {
+    window.snap?.show?.();
+    setStatus("embedded");
+  };
+
   if (status === "error") {
     return (
       <div className="grid min-h-[34rem] content-center gap-5 rounded-[1.5rem] border border-[#f1d9b2] bg-[linear-gradient(145deg,#fffaf1,#ffffff)] p-6 text-center md:p-8">
@@ -180,12 +194,26 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
           <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">Checkout Midtrans</p>
           <p className="mt-1 text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#e6f4ea] px-3 py-1.5 text-xs font-black text-[#006747]">
-          <ShieldCheck className="size-3.5" /> Aman
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            aria-label="Kembali dari checkout Midtrans"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe8df] bg-white px-3 py-1.5 text-xs font-bold text-[#426053] transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#b7d9c2] hover:bg-[#f2faf4] hover:text-[#006747] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={status === "loading"}
+            onClick={hideCheckout}
+            type="button"
+          >
+            <ArrowLeft className="size-3.5" /> Kembali
+          </button>
+          <span className="inline-flex items-center gap-2 rounded-full bg-[#e6f4ea] px-3 py-1.5 text-xs font-black text-[#006747]">
+            <ShieldCheck className="size-3.5" /> Aman
+          </span>
+        </div>
       </div>
       <div className="relative min-h-[34rem] bg-white p-3 sm:p-5">
-        <div id={embedId} className="min-h-[32rem]" />
+        <div
+          className="midtrans-snap-container min-h-[32rem] w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full"
+          id={embedId}
+        />
         {status === "loading" ? (
           <div className="absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
             <div className="grid justify-items-center gap-4">
@@ -196,6 +224,26 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
                 <p className="font-headline text-lg font-black text-[#13211c]">Menyiapkan checkout Midtrans</p>
                 <p className="mt-1 text-sm leading-6 text-[#62655f]">Metode pembayaran akan muncul di card ini.</p>
               </div>
+            </div>
+          </div>
+        ) : null}
+        {status === "closed" ? (
+          <div className="absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
+            <div className="grid max-w-sm justify-items-center gap-4">
+              <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
+                <ArrowLeft className="size-6" />
+              </span>
+              <div>
+                <p className="font-headline text-lg font-black text-[#13211c]">Checkout disembunyikan</p>
+                <p className="mt-1 text-sm leading-6 text-[#62655f]">Anda dapat melanjutkan pembayaran kapan saja.</p>
+              </div>
+              <button
+                className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-black text-white shadow-[0_14px_26px_-18px_rgba(0,103,71,0.7)] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#005b3e] active:scale-[0.97]"
+                onClick={resumeCheckout}
+                type="button"
+              >
+                Lanjutkan pembayaran
+              </button>
             </div>
           </div>
         ) : null}

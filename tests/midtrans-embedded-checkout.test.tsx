@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const refreshMock = vi.fn();
@@ -47,12 +47,15 @@ describe("MidtransEmbeddedCheckout", () => {
       });
     });
     let targetExistedWhenSnapMounted = false;
-    const embedMock = vi.fn((_token: string, options: { embedId: string }) => {
+    const hideMock = vi.fn();
+    let embedOptions: { embedId: string; hideCloseButton?: boolean } | undefined;
+    const embedMock = vi.fn((_token: string, options: { embedId: string; hideCloseButton?: boolean }) => {
       targetExistedWhenSnapMounted = document.getElementById(options.embedId) !== null;
+      embedOptions = options;
     });
 
     vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("snap", { embed: embedMock });
+    vi.stubGlobal("snap", { embed: embedMock, hide: hideMock });
 
     render(
       <ToastProvider>
@@ -71,8 +74,37 @@ describe("MidtransEmbeddedCheckout", () => {
       );
     });
     expect(targetExistedWhenSnapMounted).toBe(true);
+    expect(embedOptions).toEqual(expect.objectContaining({ hideCloseButton: true }));
+    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("w-full");
     expect(screen.getByText(/checkout midtrans/i)).toBeInTheDocument();
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
+  });
+
+  it("lets the buyer hide checkout with the themed back control", async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: { clientKey: "SB-Mid-client-test", isProduction: false, snapToken: "snap-token-1" } })
+      })
+    );
+    const hideMock = vi.fn();
+    const embedMock = vi.fn();
+
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("snap", { embed: embedMock, hide: hideMock });
+
+    render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => expect(embedMock).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole("button", { name: /kembali dari checkout midtrans/i }));
+
+    expect(hideMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/checkout disembunyikan/i)).toBeInTheDocument();
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {
