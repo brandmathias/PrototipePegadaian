@@ -30,7 +30,7 @@ describe("Midtrans public config route", () => {
 
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
-      message: "Client Key Midtrans belum dikonfigurasi."
+      message: "Layanan pembayaran belum dikonfigurasi."
     });
   });
 });

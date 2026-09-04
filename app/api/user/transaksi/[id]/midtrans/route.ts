@@ -16,7 +16,7 @@ export async function GET(_request: Request, context: Context) {
     const data = await getBuyerMidtransCheckout(access.userId, id);
     return NextResponse.json({ data });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Checkout Midtrans belum dapat dimuat.";
+    const message = error instanceof Error ? error.message : "Pembayaran belum dapat dimuat.";
     return NextResponse.json({ message }, { status: 400 });
   }
 }

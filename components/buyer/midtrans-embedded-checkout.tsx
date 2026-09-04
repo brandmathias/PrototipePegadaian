@@ -95,12 +95,12 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
         const configPayload = await configResponse.json().catch(() => ({}));
 
         if (!configResponse.ok) {
-          throw new Error(configPayload.message ?? "Client Key Midtrans belum dikonfigurasi.");
+          throw new Error(configPayload.message ?? "Layanan pembayaran belum dikonfigurasi.");
         }
 
         const clientKey = configPayload?.data?.clientKey?.trim();
         if (!clientKey) {
-          throw new Error("Client Key Midtrans belum dikonfigurasi.");
+          throw new Error("Layanan pembayaran belum dikonfigurasi.");
         }
 
         const isProduction = configPayload?.data?.isProduction === true;
@@ -108,13 +108,13 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
         const payload = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(payload.message ?? "Checkout Midtrans belum dapat dibuat.");
+          throw new Error(payload.message ?? "Pembayaran belum dapat dibuat.");
         }
 
         const token = payload?.data?.snapToken;
 
         if (!token) {
-          throw new Error("Token checkout Midtrans belum diterima.");
+          throw new Error("Pembayaran belum dapat diproses.");
         }
 
         await ensureSnapScript({ clientKey, isProduction });
@@ -129,7 +129,7 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
           hideCloseButton: true,
           onClose: () => setStatus("closed"),
           onError: () => {
-            setError("Checkout Midtrans mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
+            setError("Pembayaran mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
             setStatus("error");
           },
           onPending: () => router.refresh(),
@@ -140,11 +140,11 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
           return;
         }
 
-        const message = checkoutError instanceof Error ? checkoutError.message : "Checkout Midtrans belum dapat dimuat.";
+        const message = checkoutError instanceof Error ? checkoutError.message : "Pembayaran belum dapat dimuat.";
         setError(message);
         setStatus("error");
         toast({
-          title: "Checkout Midtrans belum tampil",
+          title: "Pembayaran belum tampil",
           description: message,
           variant: "error",
           scope: "buyer"
@@ -176,12 +176,12 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
           <AlertTriangle className="size-6" />
         </span>
         <div>
-          <p className="font-headline text-lg font-black text-[#13211c]">Checkout belum dapat ditampilkan</p>
+          <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran belum dapat ditampilkan</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#62655f]">{error}</p>
         </div>
         <div className="mx-auto flex max-w-md items-start gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-left text-sm leading-6 text-[#62655f]">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p>Status pembayaran tetap diverifikasi otomatis melalui notifikasi server Midtrans.</p>
+          <p>Status pembayaran akan diperbarui setelah dana diterima.</p>
         </div>
       </div>
     );
@@ -191,12 +191,12 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
     <div className="overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)]">
       <div className="flex items-center justify-between gap-4 border-b border-[#edf1ed] bg-[#f8fbf8] px-5 py-4">
         <div>
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">Checkout Midtrans</p>
+          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">Pembayaran Transfer</p>
           <p className="mt-1 text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <button
-            aria-label="Kembali dari checkout Midtrans"
+            aria-label="Kembali dari pembayaran"
             className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe8df] bg-white px-3 py-1.5 text-xs font-bold text-[#426053] transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#b7d9c2] hover:bg-[#f2faf4] hover:text-[#006747] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={status === "loading"}
             onClick={hideCheckout}
@@ -221,8 +221,8 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
                 <LoaderCircle className="size-7 animate-spin" />
               </span>
               <div>
-                <p className="font-headline text-lg font-black text-[#13211c]">Menyiapkan checkout Midtrans</p>
-                <p className="mt-1 text-sm leading-6 text-[#62655f]">Metode pembayaran akan muncul di card ini.</p>
+                <p className="font-headline text-lg font-black text-[#13211c]">Menyiapkan pembayaran</p>
+                <p className="mt-1 text-sm leading-6 text-[#62655f]">Metode pembayaran akan muncul di sini.</p>
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
                 <ArrowLeft className="size-6" />
               </span>
               <div>
-                <p className="font-headline text-lg font-black text-[#13211c]">Checkout disembunyikan</p>
+                <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran disembunyikan</p>
                 <p className="mt-1 text-sm leading-6 text-[#62655f]">Anda dapat melanjutkan pembayaran kapan saja.</p>
               </div>
               <button
@@ -250,7 +250,7 @@ export function MidtransEmbeddedCheckout({ transactionId }: { transactionId: str
       </div>
       {status === "closed" ? (
         <div className="border-t border-[#edf1ed] bg-[#fffaf1] px-5 py-3 text-center text-sm font-semibold text-[#8b6a1d]">
-          Checkout ditutup. Status pembayaran tetap akan diperbarui otomatis jika pembayaran sudah dilakukan.
+          Pembayaran ditutup. Status akan diperbarui jika pembayaran sudah dilakukan.
         </div>
       ) : null}
     </div>

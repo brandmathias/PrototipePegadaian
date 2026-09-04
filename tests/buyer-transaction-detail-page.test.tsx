@@ -281,11 +281,18 @@ describe("buyer transaction detail page", () => {
 
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByRole("heading", { name: /bayar melalui midtrans/i })).toBeInTheDocument();
-    expect(within(workflow!).getByText(/status diperiksa otomatis/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pembayaran midtrans/i })).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /bayar melalui transfer/i })).toBeInTheDocument();
+    expect(within(workflow!).getByText(/status diperbarui setelah dana diterima/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
-    expect(screen.getByText(/menyiapkan checkout midtrans/i)).toBeInTheDocument();
+    expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
+    expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
+    const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
+    const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
+    expect(detailCard).toHaveClass("h-full", "min-h-[31rem]");
+    expect(paymentCard).toHaveClass("h-full", "min-h-[31rem]");
     expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
@@ -309,8 +316,8 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/^pembayaran terverifikasi otomatis$/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembayaran midtrans diverifikasi otomatis/i)).toBeInTheDocument();
+    expect(screen.getByText(/^pembayaran terverifikasi$/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran telah dikonfirmasi sistem sebelum transaksi dinyatakan lunas/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak perlu mengunggah bukti transfer manual/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lanjutkan ke checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();

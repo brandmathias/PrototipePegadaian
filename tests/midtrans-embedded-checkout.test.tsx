@@ -76,7 +76,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(targetExistedWhenSnapMounted).toBe(true);
     expect(embedOptions).toEqual(expect.objectContaining({ hideCloseButton: true }));
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("w-full");
-    expect(screen.getByText(/checkout midtrans/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran transfer/i)).toBeInTheDocument();
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
   });
 
@@ -101,10 +101,10 @@ describe("MidtransEmbeddedCheckout", () => {
     );
 
     await waitFor(() => expect(embedMock).toHaveBeenCalled());
-    fireEvent.click(screen.getByRole("button", { name: /kembali dari checkout midtrans/i }));
+    fireEvent.click(screen.getByRole("button", { name: /kembali dari pembayaran/i }));
 
     expect(hideMock).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(/checkout disembunyikan/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran disembunyikan/i)).toBeInTheDocument();
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {
@@ -114,7 +114,7 @@ describe("MidtransEmbeddedCheckout", () => {
         json: async () =>
           url === "/api/payments/midtrans/config"
             ? { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
-            : { message: "Token checkout Midtrans belum tersedia." }
+            : { message: "Pembayaran belum tersedia." }
       })
     );
     vi.stubGlobal("fetch", fetchMock);
@@ -125,7 +125,7 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(await screen.findByText(/checkout belum dapat ditampilkan/i)).toBeInTheDocument();
+    expect(await screen.findByText(/pembayaran belum dapat ditampilkan/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
   });
 });

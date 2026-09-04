@@ -10,7 +10,7 @@ export async function GET() {
 
   const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.trim() ?? "";
   if (!clientKey) {
-    return NextResponse.json({ message: "Client Key Midtrans belum dikonfigurasi." }, { status: 503 });
+    return NextResponse.json({ message: "Layanan pembayaran belum dikonfigurasi." }, { status: 503 });
   }
 
   return NextResponse.json({

@@ -573,19 +573,19 @@ export async function getBuyerMidtransCheckout(userId: string, transactionId: st
     .limit(1);
 
   if (!row || row.type !== "fixed_price" || row.paymentMethod !== "midtrans") {
-    throw new Error("Checkout Midtrans tidak ditemukan untuk transaksi ini.");
+    throw new Error("Pembayaran tidak ditemukan untuk transaksi ini.");
   }
 
   if (row.status !== "menunggu_pembayaran") {
-    throw new Error("Transaksi ini sudah tidak menunggu pembayaran Midtrans.");
+    throw new Error("Transaksi ini sudah tidak menunggu pembayaran.");
   }
 
   if (!row.paymentDeadline || row.paymentDeadline.getTime() <= Date.now()) {
-    throw new Error("Waktu pembayaran Midtrans sudah berakhir.");
+    throw new Error("Waktu pembayaran sudah berakhir.");
   }
 
   if (!row.paymentToken) {
-    throw new Error("Token checkout Midtrans belum tersedia.");
+    throw new Error("Pembayaran belum tersedia.");
   }
 
   return { snapToken: row.paymentToken };
