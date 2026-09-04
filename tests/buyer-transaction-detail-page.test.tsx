@@ -306,6 +306,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getAllByTestId("transaction-protection-item").every((item) => item.classList.contains("flex-1"))).toBe(true);
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
     expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "h-0", "flex-1", "min-h-0", "flex-col");
+    expect(screen.queryByText(/menunggu konfirmasi pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tidak perlu mengunggah bukti pembayaran manual/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
     const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
@@ -323,7 +325,6 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/tidak perlu mengunggah bukti pembayaran manual/i)).toBeInTheDocument();
   });
 
   it("shows a verified Midtrans payment without manual proof upload", () => {
