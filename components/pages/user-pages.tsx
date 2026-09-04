@@ -4,12 +4,14 @@ import type { ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
+  BadgeCheck,
   CalendarClock,
   CalendarDays,
   CheckCircle2,
   CircleX,
   ClipboardCheck,
   Clock3,
+  CircleOff,
   ExternalLink,
   FileCheck2,
   Gavel,
@@ -23,12 +25,14 @@ import {
   Phone,
   Printer,
   ReceiptText,
+  RefreshCw,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
   Trophy,
   UploadCloud,
   UserRound,
+  WalletCards,
   X,
 } from "lucide-react";
 
@@ -2115,6 +2119,58 @@ function VickreyPaymentSuccessDetail({
   );
 }
 
+function TransactionProtectionCard() {
+  const protectionItems = [
+    {
+      Icon: WalletCards,
+      title: "Bayar melalui transfer",
+      description: "Gunakan kanal pembayaran resmi di halaman ini."
+    },
+    {
+      Icon: RefreshCw,
+      title: "Verifikasi otomatis",
+      description: "Status pembayaran diperbarui setelah dana diterima."
+    },
+    {
+      Icon: CircleOff,
+      title: "Hindari transfer di luar platform",
+      description: "Jangan kirim dana ke rekening pribadi atau kanal lain."
+    }
+  ];
+
+  return (
+    <div className={PAYMENT_DETAIL_CARD_CLASS} data-testid="transaction-protection-card">
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/15 bg-primary/5 text-primary">
+            <BadgeCheck className="size-5" strokeWidth={1.8} />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-headline text-[1.45rem] font-black leading-tight tracking-tight text-primary">
+              Perlindungan Transaksi
+            </h2>
+            <p className="mt-1 text-[0.72rem] leading-5 text-[#62655f]">Kami menjaga transaksi Anda tetap aman.</p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-1 flex-col divide-y divide-primary/10 overflow-hidden rounded-[1rem] border border-primary/10 bg-[#fbfdfb]">
+          {protectionItems.map(({ Icon, title, description }) => (
+            <div className="flex flex-1 items-start gap-3 px-3.5 py-4" key={title}>
+              <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/15 bg-white text-primary">
+                <Icon className="size-[1.05rem]" strokeWidth={1.8} />
+              </span>
+              <div className="min-w-0 pt-0.5">
+                <p className="text-[0.76rem] font-bold leading-5 text-[#1d513c]">{title}</p>
+                <p className="mt-1 text-[0.67rem] leading-5 text-[#62655f]">{description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TransactionDetailPage({
   buyer,
   buyerStatus,
@@ -2618,7 +2674,9 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        {!isMidtrans ? (
+        {isMidtrans ? (
+          <TransactionProtectionCard />
+        ) : (
           <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <h2 className="mb-2 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
             <UploadCloud className="size-5" />
@@ -2693,7 +2751,7 @@ export function TransactionDetailPage({
             </div>
           )}
           </div>
-        ) : null}
+        )}
       </div>
 
       {showReceipt ? (

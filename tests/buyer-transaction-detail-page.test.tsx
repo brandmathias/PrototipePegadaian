@@ -290,6 +290,11 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
+    expect(screen.getByText(/kami menjaga transaksi anda tetap aman/i)).toBeInTheDocument();
+    expect(screen.getByText(/kanal pembayaran resmi/i)).toBeInTheDocument();
+    expect(screen.getByText(/verifikasi otomatis/i)).toBeInTheDocument();
+    expect(screen.getByText(/hindari transfer di luar platform/i)).toBeInTheDocument();
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
