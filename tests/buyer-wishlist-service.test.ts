@@ -19,14 +19,76 @@ vi.mock("next/cache", () => ({
   revalidateTag: mocks.revalidateTag
 }));
 
-import { getBuyerWishlistCount, isBuyerWishlistItem, toggleBuyerWishlist } from "@/lib/services/wishlist.service";
+vi.mock("@/lib/buyer/serializers", () => ({
+  serializePublicLot: vi.fn((row) => ({
+    id: row.marketingId,
+    name: row.itemName,
+    mode: row.marketingMode,
+    price: Number(row.marketingPrice ?? 0),
+    media: [],
+    specs: []
+  }))
+}));
+
+vi.mock("@/lib/services/public-lot-stats.service", () => ({
+  getLotStatsByIds: vi.fn(async () => new Map())
+}));
+
+vi.mock("@/lib/services/public-catalog.service", () => ({
+  publicCatalogVisibilityConditions: vi.fn(() => undefined)
+}));
+
+import {
+  getBuyerWishlistCount,
+  getBuyerWishlistIds,
+  isBuyerWishlistItem,
+  listBuyerWishlist,
+  toggleBuyerWishlist
+} from "@/lib/services/wishlist.service";
 
 function mockSelectRows(rows: unknown[]) {
-  const limit = vi.fn().mockResolvedValue(rows);
-  const where = vi.fn().mockReturnValue({ limit });
-  const from = vi.fn().mockReturnValue({ where });
-  mocks.db.select.mockReturnValueOnce({ from });
-  return { from, where, limit };
+  const query = {
+    from: vi.fn().mockReturnThis(),
+    innerJoin: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue(rows),
+    then: <TResult1 = unknown[], TResult2 = never>(
+      onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
+      onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+    ) => Promise.resolve(rows).then(onfulfilled, onrejected)
+  };
+
+  mocks.db.select.mockReturnValueOnce(query);
+  return query;
+}
+
+function makeWishlistRow(overrides: Record<string, unknown> = {}) {
+  return {
+    wishlistCreatedAt: new Date("2026-09-05T05:00:00.000Z"),
+    marketingId: "pm-visible",
+    marketingMode: "fixed_price",
+    marketingPrice: "10000000",
+    marketingBasePrice: null,
+    startsAt: null,
+    endsAt: null,
+    itemId: "item-visible",
+    itemCode: "BRG-1",
+    itemName: "Barang Terlihat",
+    itemStatus: "dipasarkan",
+    marketingStatus: "aktif",
+    unitIsActive: true,
+    category: "Perhiasan",
+    condition: "Baik",
+    description: "",
+    specifications: {},
+    updatedAt: new Date("2026-09-05T05:00:00.000Z"),
+    unitName: "UPC Ranotana",
+    unitAddress: "Manado",
+    account: null,
+    ...overrides
+  };
 }
 
 describe("wishlist service", () => {
@@ -36,6 +98,7 @@ describe("wishlist service", () => {
 
   it("adds an item when it is not in the buyer wishlist", async () => {
     mockSelectRows([]);
+    mockSelectRows([{ id: "pm-1" }]);
     const onConflictDoNothing = vi.fn().mockResolvedValue(undefined);
     const values = vi.fn().mockReturnValue({ onConflictDoNothing });
     mocks.db.insert.mockReturnValueOnce({ values });
@@ -87,5 +150,47 @@ describe("wishlist service", () => {
     await expect(isBuyerWishlistItem("buyer-1", "pm-1")).resolves.toBe(true);
 
     expect(mocks.db.select).toHaveBeenCalledWith({ id: expect.anything() });
+  });
+
+  it("only returns wishlist items that are currently visible in the public catalog", async () => {
+    mockSelectRows([
+      makeWishlistRow(),
+      makeWishlistRow({
+        marketingId: "pm-unavailable",
+        itemId: "item-unavailable",
+        itemName: "Barang Sudah Hilang",
+        itemStatus: "terjual"
+      })
+    ]);
+    mockSelectRows([]);
+
+    await expect(listBuyerWishlist("buyer-1")).resolves.toMatchObject({
+      activeItems: [expect.objectContaining({ lot: expect.objectContaining({ id: "pm-visible" }) })],
+      unavailableItems: []
+    });
+  });
+
+  it("uses the catalog visibility query when hydrating ids and the wishlist count", async () => {
+    const idsQuery = mockSelectRows([{ pemasaranId: "pm-visible" }]);
+    const countQuery = mockSelectRows([{ count: 1 }]);
+
+    await expect(getBuyerWishlistIds("buyer-1")).resolves.toEqual(["pm-visible"]);
+    await expect(getBuyerWishlistCount("buyer-1")).resolves.toBe(1);
+
+    expect(idsQuery.innerJoin).toHaveBeenCalled();
+    expect(countQuery.innerJoin).toHaveBeenCalled();
+  });
+
+  it("does not add a wishlist item that is no longer visible in the catalog", async () => {
+    mockSelectRows([]);
+    mockSelectRows([]);
+    mockSelectRows([{ count: 0 }]);
+
+    await expect(toggleBuyerWishlist("buyer-1", "pm-unavailable")).resolves.toEqual({
+      count: 0,
+      favorited: false
+    });
+
+    expect(mocks.db.insert).not.toHaveBeenCalled();
   });
 });

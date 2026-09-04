@@ -43,5 +43,13 @@ describe("fixed price catalog visibility", () => {
     expect(service).toContain("eq(transaksi.status, \"menunggu_pembayaran\")");
     expect(service).toContain("gt(transaksi.paymentDeadline, now)");
     expect(detailPage).toContain("getPublicLotById(id, { includeUnavailableFixedPrice: true })");
+
+    const wishlistService = await readFile(
+      path.join(process.cwd(), "lib/services/wishlist.service.ts"),
+      "utf8"
+    );
+
+    expect(service).toContain("export function publicCatalogVisibilityConditions");
+    expect(wishlistService).toContain("publicCatalogVisibilityConditions(now)");
   });
 });

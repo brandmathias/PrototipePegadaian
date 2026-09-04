@@ -7,6 +7,7 @@ import type { BuyerWishlist, BuyerWishlistItem } from "@/lib/contracts/wishlist"
 import { db } from "@/lib/db/client";
 import { barang, buyerWishlist, mediaBarang, pemasaran, unitAccounts, units } from "@/lib/db/schema";
 import { getLotStatsByIds } from "@/lib/services/public-lot-stats.service";
+import { publicCatalogVisibilityConditions } from "@/lib/services/public-catalog.service";
 import { revalidateLotInsightsViews } from "@/lib/services/revalidate-lot-insights-views";
 import { formatAppDateTime } from "@/lib/timezone";
 
@@ -68,41 +69,23 @@ async function getMediaByBarangId(barangIds: string[]) {
   }, new Map<string, Array<{ id: string; type: string; url: string; fileName: string | null }>>());
 }
 
-type WishlistAvailabilityRow = {
-  unitIsActive: boolean;
-  itemStatus: string;
-  marketingStatus: string;
-  marketingMode: string;
-  endsAt: Date | null;
-};
-
-function getUnavailableReason(row: WishlistAvailabilityRow, now: Date) {
-  if (row.unitIsActive === false) {
-    return "Unit sedang tidak aktif";
-  }
-
-  if (row.itemStatus !== "dipasarkan") {
-    return "Barang sudah tidak tersedia";
-  }
-
-  if (row.marketingStatus !== "aktif") {
-    return "Sesi pemasaran sudah tidak aktif";
-  }
-
-  if (row.marketingMode === "vickrey" && row.endsAt && row.endsAt.getTime() <= now.getTime()) {
-    return "Lelang sudah berakhir";
-  }
-
-  return null;
+function isCatalogVisibleWishlistRow(
+  row: Awaited<ReturnType<typeof getWishlistRows>>[number],
+  now: Date
+) {
+  return (
+    row.unitIsActive &&
+    row.itemStatus === "dipasarkan" &&
+    row.marketingStatus === "aktif" &&
+    (row.marketingMode !== "vickrey" || Boolean(row.endsAt && row.endsAt.getTime() > now.getTime()))
+  );
 }
 
 function serializeWishlistItem(
   row: Awaited<ReturnType<typeof getWishlistRows>>[number],
   media: Array<{ id: string; type: string; url: string; fileName: string | null }>,
-  now: Date,
   insights?: BuyerWishlistItem["lot"]["insights"]
 ): BuyerWishlistItem {
-  const unavailableReason = getUnavailableReason(row, now);
   const lot = serializePublicLot({
     ...row,
     insights,
@@ -111,13 +94,12 @@ function serializeWishlistItem(
 
   return {
     likedAt: formatAppDateTime(row.wishlistCreatedAt),
-    isAvailable: !unavailableReason,
-    ...(unavailableReason ? { unavailableReason } : {}),
-    lot: unavailableReason ? { ...lot, status: "Tidak tersedia" } : lot
+    isAvailable: true,
+    lot
   };
 }
 
-async function getWishlistRows(userId: string) {
+async function getWishlistRows(userId: string, now: Date) {
   return db
     .select(wishlistLotSelection())
     .from(buyerWishlist)
@@ -125,54 +107,84 @@ async function getWishlistRows(userId: string) {
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
-    .where(eq(buyerWishlist.userId, userId))
+    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)))
     .orderBy(desc(buyerWishlist.createdAt));
 }
 
 export async function getBuyerWishlistIds(userId: string) {
+  const now = new Date();
   const rows = await db
     .select({ pemasaranId: buyerWishlist.pemasaranId })
     .from(buyerWishlist)
-    .where(eq(buyerWishlist.userId, userId));
+    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)));
 
   return rows.map((row) => row.pemasaranId);
 }
 
 export async function isBuyerWishlistItem(userId: string, pemasaranId: string) {
+  const now = new Date();
   const [row] = await db
     .select({ id: buyerWishlist.id })
     .from(buyerWishlist)
-    .where(and(eq(buyerWishlist.userId, userId), eq(buyerWishlist.pemasaranId, pemasaranId)))
+    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(
+      and(
+        eq(buyerWishlist.userId, userId),
+        eq(buyerWishlist.pemasaranId, pemasaranId),
+        publicCatalogVisibilityConditions(now)
+      )
+    )
     .limit(1);
 
   return Boolean(row);
 }
 
 export async function getBuyerWishlistCount(userId: string) {
+  const now = new Date();
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(buyerWishlist)
-    .where(eq(buyerWishlist.userId, userId))
+    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)))
     .limit(1);
 
   return Number(row?.count ?? 0);
 }
 
 export async function listBuyerWishlist(userId: string): Promise<BuyerWishlist> {
-  const rows = await getWishlistRows(userId);
+  const now = new Date();
+  const rows = (await getWishlistRows(userId, now)).filter((row) => isCatalogVisibleWishlistRow(row, now));
   const [mediaByBarangId, statsByMarketingId] = await Promise.all([
     getMediaByBarangId(rows.map((row) => row.itemId)),
     getLotStatsByIds(rows.map((row) => row.marketingId))
   ]);
-  const now = new Date();
   const items = rows.map((row) =>
-    serializeWishlistItem(row, mediaByBarangId.get(row.itemId) ?? [], now, statsByMarketingId.get(row.marketingId))
+    serializeWishlistItem(row, mediaByBarangId.get(row.itemId) ?? [], statsByMarketingId.get(row.marketingId))
   );
 
   return {
-    activeItems: items.filter((item) => item.isAvailable),
-    unavailableItems: items.filter((item) => !item.isAvailable)
+    activeItems: items,
+    unavailableItems: []
   };
+}
+
+async function isCatalogWishlistEligible(pemasaranId: string) {
+  const [row] = await db
+    .select({ id: pemasaran.id })
+    .from(pemasaran)
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(eq(pemasaran.id, pemasaranId), publicCatalogVisibilityConditions(new Date())))
+    .limit(1);
+
+  return Boolean(row);
 }
 
 export async function toggleBuyerWishlist(userId: string, pemasaranId: string) {
@@ -189,6 +201,13 @@ export async function toggleBuyerWishlist(userId: string, pemasaranId: string) {
 
     revalidateLotInsightsViews();
 
+    return {
+      favorited: false,
+      count: await getBuyerWishlistCount(userId)
+    };
+  }
+
+  if (!(await isCatalogWishlistEligible(pemasaranId))) {
     return {
       favorited: false,
       count: await getBuyerWishlistCount(userId)

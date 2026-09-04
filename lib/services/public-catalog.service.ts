@@ -77,6 +77,19 @@ function vickreyCatalogAvailabilityPredicate(now: Date) {
   return or(ne(pemasaran.mode, "vickrey"), gt(pemasaran.endsAt, now));
 }
 
+export function publicCatalogVisibilityConditions(
+  now: Date,
+  options: { includeUnavailableFixedPrice?: boolean } = {}
+) {
+  return and(
+    eq(pemasaran.status, "aktif"),
+    eq(barang.status, "dipasarkan"),
+    eq(units.isActive, true),
+    options.includeUnavailableFixedPrice ? undefined : fixedPriceCatalogAvailabilityPredicate(now),
+    vickreyCatalogAvailabilityPredicate(now)
+  );
+}
+
 function isVickreyCatalogAvailableAt(mode: string, endsAt: Date | null, now: Date) {
   return mode !== "vickrey" || Boolean(endsAt && endsAt.getTime() > now.getTime());
 }
@@ -103,11 +116,7 @@ export async function getPublicCatalogUnitMetrics(
     .where(
       and(
         eq(barang.unitId, unitId),
-        eq(pemasaran.status, "aktif"),
-        eq(barang.status, "dipasarkan"),
-        eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate(now),
-        vickreyCatalogAvailabilityPredicate(now)
+        publicCatalogVisibilityConditions(now)
       )
     );
 
@@ -178,15 +187,7 @@ export async function listPublicLotsWithLimit(limit?: number) {
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
-    .where(
-      and(
-        eq(pemasaran.status, "aktif"),
-        eq(barang.status, "dipasarkan"),
-        eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate(now),
-        vickreyCatalogAvailabilityPredicate(now)
-      )
-    )
+    .where(publicCatalogVisibilityConditions(now))
     .orderBy(
       desc(pemasaran.createdAt),
       desc(pemasaran.iteration),
@@ -222,12 +223,9 @@ export async function listOngoingVickreyLotsWithLimit(limit?: number) {
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
     .where(
       and(
-        eq(pemasaran.status, "aktif"),
+        publicCatalogVisibilityConditions(now),
         eq(pemasaran.mode, "vickrey"),
-        or(isNull(pemasaran.startsAt), lte(pemasaran.startsAt, now)),
-        gt(pemasaran.endsAt, now),
-        eq(barang.status, "dipasarkan"),
-        eq(units.isActive, true)
+        or(isNull(pemasaran.startsAt), lte(pemasaran.startsAt, now))
       )
     )
     .orderBy(asc(pemasaran.endsAt), desc(pemasaran.createdAt));
@@ -253,9 +251,6 @@ export async function getPublicLotById(
   options: { includeUnavailableFixedPrice?: boolean } = {}
 ) {
   const now = new Date();
-  const fixedPriceAvailabilityPredicate = options.includeUnavailableFixedPrice
-    ? undefined
-    : fixedPriceCatalogAvailabilityPredicate(now);
   const [row] = await db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -265,11 +260,7 @@ export async function getPublicLotById(
     .where(
       and(
         eq(pemasaran.id, pemasaranId),
-        eq(pemasaran.status, "aktif"),
-        eq(barang.status, "dipasarkan"),
-        eq(units.isActive, true),
-        fixedPriceAvailabilityPredicate,
-        vickreyCatalogAvailabilityPredicate(now)
+        publicCatalogVisibilityConditions(now, options)
       )
     )
     .limit(1);
