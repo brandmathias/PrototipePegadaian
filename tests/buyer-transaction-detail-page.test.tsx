@@ -296,14 +296,12 @@ describe("buyer transaction detail page", () => {
     const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
     const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
     expect(detailCard?.parentElement).toHaveClass(
-      "mx-auto",
-      "max-w-[1180px]",
-      "lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]"
+      "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
     );
     expect(detailCard).toHaveClass("h-full");
     expect(paymentCard).toHaveClass("h-full");
-    expect(detailCard).not.toHaveClass("min-h-[31rem]");
-    expect(paymentCard).not.toHaveClass("min-h-[31rem]");
+    expect(detailCard).toHaveClass("min-h-[31rem]");
+    expect(paymentCard).toHaveClass("min-h-[31rem]");
     expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();

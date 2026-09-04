@@ -132,7 +132,7 @@ const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png"
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 const PAYMENT_DETAIL_CARD_CLASS =
-  "relative flex h-full flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
+  "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -2336,14 +2336,7 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div
-        className={cn(
-          "mx-auto grid w-full items-stretch gap-8",
-          isMidtrans
-            ? "max-w-[1180px] lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]"
-            : "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
-        )}
-      >
+      <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]">
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">
