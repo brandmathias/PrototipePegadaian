@@ -129,7 +129,7 @@ export function FixedPriceAvailabilityBadge({ fallbackLabel = "Tersedia" }: { fa
   const { availability } = useFixedPriceAvailability();
   const isSold = availability.status === "sold";
   const isReservedByOther = availability.status === "reserved" && availability.owner === "other";
-  const label = isSold ? "Tidak tersedia" : isReservedByOther ? "Sedang diproses" : fallbackLabel;
+  const label = isSold || isReservedByOther ? "Tidak tersedia" : fallbackLabel;
 
   return (
     <span
@@ -169,7 +169,7 @@ export function FixedPriceAvailabilityMedia({ children }: { children: ReactNode 
               <small className="mt-0.5 block text-xs font-medium leading-5 text-[#66756e]">
                 {availability.status === "sold"
                   ? "Barang sudah terjual."
-                  : "Sedang diproses pembeli lain."}
+                  : "Pembelian tidak tersedia saat ini."}
               </small>
             </span>
           </div>

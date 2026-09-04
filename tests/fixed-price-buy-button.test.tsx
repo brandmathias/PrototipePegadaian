@@ -71,6 +71,34 @@ describe("FixedPriceBuyButton", () => {
     });
   });
 
+  it("keeps the Beli Sekarang label while using the unavailable wishlist treatment", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <FixedPriceBuyButton
+        availability={{
+          status: "reserved",
+          owner: "other",
+          expiresAt: "2099-05-05T14:07:00.000Z",
+          canContinue: false
+        }}
+        lotId="lot-fixed-1"
+      />
+    );
+
+    const buyButton = screen.getByRole("button", { name: /beli sekarang/i });
+    expect(buyButton).toBeDisabled();
+    expect(buyButton).toHaveClass(
+      "rounded-full",
+      "bg-[#eceae4]",
+      "text-[#77736b]",
+      "disabled:opacity-100"
+    );
+    expect(buyButton).not.toHaveTextContent(/sedang diproses/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("closes from the cancel controls but not from the backdrop", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

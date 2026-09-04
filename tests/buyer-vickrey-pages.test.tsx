@@ -247,9 +247,13 @@ describe("buyer vickrey pages", () => {
       />
     );
 
-    const unavailableButton = screen.getByRole("button", { name: /sedang diproses/i });
+    const unavailableButton = screen.getByRole("button", { name: /beli sekarang/i });
     expect(unavailableButton).toBeDisabled();
     expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent("Barang tidak tersedia");
+    expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent(
+      "Pembelian tidak tersedia saat ini."
+    );
+    expect(screen.queryByText("Sedang diproses pembeli lain.")).not.toBeInTheDocument();
   });
 
   it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {

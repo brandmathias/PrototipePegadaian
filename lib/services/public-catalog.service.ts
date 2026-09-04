@@ -49,7 +49,7 @@ export function sortPublicCatalogRowsByLatestListing<
   });
 }
 
-function fixedPriceCatalogAvailabilityPredicate() {
+function fixedPriceCatalogAvailabilityPredicate(now: Date) {
   return or(
     ne(pemasaran.mode, "fixed_price"),
     notExists(
@@ -59,7 +59,14 @@ function fixedPriceCatalogAvailabilityPredicate() {
         .where(
           and(
             eq(transaksi.pemasaranId, pemasaran.id),
-            inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES)
+            or(
+              inArray(transaksi.status, FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES),
+              and(
+                eq(transaksi.paymentMethod, "midtrans"),
+                eq(transaksi.status, "menunggu_pembayaran"),
+                gt(transaksi.paymentDeadline, now)
+              )
+            )
           )
         )
     )
@@ -99,7 +106,7 @@ export async function getPublicCatalogUnitMetrics(
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate(),
+        fixedPriceCatalogAvailabilityPredicate(now),
         vickreyCatalogAvailabilityPredicate(now)
       )
     );
@@ -176,7 +183,7 @@ export async function listPublicLotsWithLimit(limit?: number) {
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate(),
+        fixedPriceCatalogAvailabilityPredicate(now),
         vickreyCatalogAvailabilityPredicate(now)
       )
     )
@@ -241,8 +248,14 @@ export async function listOngoingVickreyLotsWithLimit(limit?: number) {
   );
 }
 
-export async function getPublicLotById(pemasaranId: string) {
+export async function getPublicLotById(
+  pemasaranId: string,
+  options: { includeUnavailableFixedPrice?: boolean } = {}
+) {
   const now = new Date();
+  const fixedPriceAvailabilityPredicate = options.includeUnavailableFixedPrice
+    ? undefined
+    : fixedPriceCatalogAvailabilityPredicate(now);
   const [row] = await db
     .select(publicLotSelection())
     .from(pemasaran)
@@ -255,7 +268,7 @@ export async function getPublicLotById(pemasaranId: string) {
         eq(pemasaran.status, "aktif"),
         eq(barang.status, "dipasarkan"),
         eq(units.isActive, true),
-        fixedPriceCatalogAvailabilityPredicate(),
+        fixedPriceAvailabilityPredicate,
         vickreyCatalogAvailabilityPredicate(now)
       )
     )

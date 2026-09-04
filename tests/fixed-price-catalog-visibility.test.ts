@@ -28,4 +28,20 @@ describe("fixed price catalog visibility", () => {
     expect(service).not.toContain('min("catalog_history"."created_at")');
     expect(service).toContain("desc(pemasaran.createdAt),");
   });
+
+  it("hides active Midtrans reservations from the catalog while keeping stale detail URLs resolvable", async () => {
+    const service = await readFile(
+      path.join(process.cwd(), "lib/services/public-catalog.service.ts"),
+      "utf8"
+    );
+    const detailPage = await readFile(
+      path.join(process.cwd(), "app/(public)/katalog/[id]/page.tsx"),
+      "utf8"
+    );
+
+    expect(service).toContain("eq(transaksi.paymentMethod, \"midtrans\")");
+    expect(service).toContain("eq(transaksi.status, \"menunggu_pembayaran\")");
+    expect(service).toContain("gt(transaksi.paymentDeadline, now)");
+    expect(detailPage).toContain("getPublicLotById(id, { includeUnavailableFixedPrice: true })");
+  });
 });

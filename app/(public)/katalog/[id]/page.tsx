@@ -16,7 +16,10 @@ export default async function Page({
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const source = Array.isArray(query.source) ? query.source[0] : query.source;
-  const [lot, session] = await Promise.all([getPublicLotById(id), getServerSession()]);
+  const [lot, session] = await Promise.all([
+    getPublicLotById(id, { includeUnavailableFixedPrice: true }),
+    getServerSession()
+  ]);
   const isBuyer = session?.user?.role === "buyer";
   const fixedPriceAvailability =
     lot?.mode === "fixed_price"

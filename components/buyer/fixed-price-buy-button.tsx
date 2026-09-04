@@ -36,13 +36,9 @@ export function FixedPriceBuyButton({
     currentAvailability.status === "reserved" &&
     currentAvailability.owner === "self" &&
     currentAvailability.canContinue !== false;
-  const currentLabel = currentAvailability.status === "sold"
-    ? "Tidak tersedia"
-    : isUnavailable
-      ? "Sedang diproses"
-      : isContinuingPayment
-        ? "Lanjutkan pembayaran"
-        : buttonLabel;
+  const currentLabel = isContinuingPayment ? "Lanjutkan pembayaran" : buttonLabel;
+  const unavailableButtonClass =
+    "min-h-11 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:brightness-100 disabled:opacity-100";
 
   const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
 
@@ -123,7 +119,11 @@ export function FixedPriceBuyButton({
   return (
     <>
       <Button
-        className={cn("h-10 w-full rounded-md text-sm font-black", className)}
+        className={cn(
+          "w-full text-sm font-black",
+          isUnavailable ? unavailableButtonClass : "h-10 rounded-md",
+          className
+        )}
         disabled={isPending || isUnavailable}
         onClick={() => {
           if (!isUnavailable) {
@@ -134,7 +134,7 @@ export function FixedPriceBuyButton({
           isUnavailable
             ? currentAvailability.status === "sold"
               ? "Barang sudah terjual."
-              : "Sedang diproses pembeli lain."
+              : "Barang tidak tersedia untuk dibeli saat ini."
             : undefined
         }
         variant="accent"
@@ -146,8 +146,11 @@ export function FixedPriceBuyButton({
           </>
         ) : (
           <>
-            {currentLabel}
-            <ShoppingBag className="size-4" />
+            {isUnavailable ? (
+              <ShoppingBag className="size-3.5 shrink-0" strokeWidth={2.55} />
+            ) : null}
+            <span className="truncate">{currentLabel}</span>
+            {!isUnavailable ? <ShoppingBag className="size-4" /> : null}
           </>
         )}
       </Button>
