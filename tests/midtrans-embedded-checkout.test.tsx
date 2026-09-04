@@ -27,6 +27,7 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
+    expect(screen.getByTestId("midtrans-checkout-shell")).toHaveClass("flex", "flex-1", "min-h-0", "flex-col");
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("h-full", "min-h-0");
   });
 

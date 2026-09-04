@@ -295,6 +295,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/kanal pembayaran resmi/i)).toBeInTheDocument();
     expect(screen.getByText(/verifikasi otomatis/i)).toBeInTheDocument();
     expect(screen.getByText(/hindari transfer di luar platform/i)).toBeInTheDocument();
+    expect(screen.getByText("Bayar melalui transfer")).toHaveClass("text-[0.98rem]");
+    expect(screen.getByText("Gunakan kanal pembayaran resmi di halaman ini.")).toHaveClass("text-[0.82rem]");
     const protectionCard = screen.getByTestId("transaction-protection-card");
     expect(protectionCard).toHaveClass("h-full", "min-h-0");
     expect(protectionCard).not.toHaveClass("min-h-[31rem]");
@@ -303,6 +305,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getAllByTestId("transaction-protection-item")).toHaveLength(3);
     expect(screen.getAllByTestId("transaction-protection-item").every((item) => item.classList.contains("flex-1"))).toBe(true);
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "flex-1", "min-h-0", "flex-col");
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
     const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;

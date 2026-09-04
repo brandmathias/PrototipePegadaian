@@ -2161,8 +2161,8 @@ function TransactionProtectionCard() {
                 <Icon className="size-5" strokeWidth={1.8} />
               </span>
               <div className="min-w-0">
-                <p className="text-[0.88rem] font-bold leading-5 text-[#1d513c]">{title}</p>
-                <p className="mt-1 text-[0.75rem] leading-5 text-[#62655f]">{description}</p>
+                <p className="text-pretty text-[0.98rem] font-bold leading-5 text-[#1d513c]">{title}</p>
+                <p className="mt-1 text-pretty text-[0.82rem] leading-5 text-[#62655f]">{description}</p>
               </div>
             </div>
           ))}
@@ -2559,7 +2559,7 @@ export function TransactionDetailPage({
               </>
             ) : isMidtrans ? (
               isPendingMidtransPayment ? (
-                <>
+                <div className="flex min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
                   <MidtransEmbeddedCheckout compact transactionId={transaction.id} />
                   <div className="mt-3 flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-3 py-2.5 text-[0.8rem] leading-5 text-[#62655f]">
                     <Clock3 className="mt-0.5 size-[0.9rem] shrink-0 text-primary" />
@@ -2568,7 +2568,7 @@ export function TransactionDetailPage({
                       Status diperbarui setelah dana diterima. Tidak perlu mengunggah bukti pembayaran manual.
                     </p>
                   </div>
-                </>
+                </div>
               ) : (
               <div className="space-y-5">
                 <div
