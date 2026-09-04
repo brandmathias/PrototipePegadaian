@@ -118,6 +118,24 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
+  it("covers the native expired footer so Snap does not expose its Back action", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+
+    render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout compact terminalState="expired" transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    expect(screen.getByTestId("midtrans-expired-footer-mask")).toHaveClass(
+      "pointer-events-none",
+      "absolute",
+      "inset-x-0",
+      "bottom-0"
+    );
+    expect(screen.queryByText(/^Back$/)).not.toBeInTheDocument();
+  });
+
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {
     const fetchMock = vi.fn((url: string) =>
       Promise.resolve({

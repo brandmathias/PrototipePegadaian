@@ -77,7 +77,15 @@ function ensureSnapScript({ clientKey, isProduction }: { clientKey: string; isPr
   return snapScriptPromise;
 }
 
-export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { compact?: boolean; transactionId: string }) {
+export function MidtransEmbeddedCheckout({
+  compact = false,
+  terminalState = "pending",
+  transactionId,
+}: {
+  compact?: boolean;
+  terminalState?: "pending" | "expired" | "success";
+  transactionId: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
@@ -181,7 +189,9 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
       <div className={`border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
         <p className="text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
       </div>
-      <div className={`relative ${checkoutHeightClass} bg-white ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}>
+      <div
+        className={`relative ${checkoutHeightClass} ${terminalState === "expired" ? "bg-[#ffe1e7]" : "bg-white"} ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
+      >
         <div
           className={`midtrans-snap-container ${snapHeightClass} w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full`}
           id={embedId}
@@ -198,6 +208,13 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
               </div>
             </div>
           </div>
+        ) : null}
+        {terminalState === "expired" ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-40 bg-[#ffe1e7] sm:h-52"
+            data-testid="midtrans-expired-footer-mask"
+          />
         ) : null}
       </div>
     </div>

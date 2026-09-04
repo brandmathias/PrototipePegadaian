@@ -386,8 +386,11 @@ describe("buyer transaction detail page", () => {
     const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
     expect(detailCard?.parentElement).not.toHaveClass("lg:h-[42rem]");
     expect(detailCard?.parentElement).toHaveClass("lg:grid-rows-[minmax(0,auto)]");
+    expect(screen.getByTestId("transaction-payment-grid")).toHaveClass("buyer-payment-detail-grid");
     expect(detailCard).toHaveClass("h-fit", "min-h-0");
-    expect(paymentCard).toHaveClass("h-full", "min-h-0");
+    expect(paymentCard).toHaveClass("h-full", "min-h-0", "buyer-payment-detail-grid-panel");
+    expect(screen.getByTestId("transaction-protection-card")).toHaveClass("buyer-payment-detail-grid-panel");
+    expect(screen.getByTestId("midtrans-expired-footer-mask")).toBeInTheDocument();
     expect(within(paymentCard!).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
   });
 

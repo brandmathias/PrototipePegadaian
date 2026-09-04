@@ -2130,7 +2130,10 @@ function TransactionProtectionCard() {
   ];
 
   return (
-    <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")} data-testid="transaction-protection-card">
+    <div
+      className={cn(PAYMENT_DETAIL_CARD_CLASS, "buyer-payment-detail-grid-panel overflow-hidden")}
+      data-testid="transaction-protection-card"
+    >
       <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.025)_0%,transparent_65%)]" />
       <div className="relative z-10 flex flex-1 flex-col">
         <div className="flex items-start gap-3">
@@ -2385,11 +2388,12 @@ export function TransactionDetailPage({
 
       <div
         className={cn(
-          "grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]",
+          "buyer-payment-detail-grid grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]",
           isMidtrans && "lg:grid-rows-[minmax(0,auto)]"
         )}
+        data-testid="transaction-payment-grid"
       >
-        <div className={cn(PAYMENT_DETAIL_CARD_CLASS, isMidtrans && "h-fit")}>
+        <div className={cn(PAYMENT_DETAIL_CARD_CLASS, isMidtrans && "h-fit min-h-0")}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">
             <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
@@ -2490,7 +2494,10 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")}>
+        <div
+          className={cn(PAYMENT_DETAIL_CARD_CLASS, "buyer-payment-detail-grid-panel overflow-hidden")}
+          data-testid="transaction-payment-card"
+        >
           <div className="relative z-10 flex h-full flex-col">
             <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
               {isFailedFixedPricePayment && !isMidtrans ? <CircleX className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
@@ -2554,7 +2561,11 @@ export function TransactionDetailPage({
               </>
             ) : isMidtrans ? (
               <div className="flex h-0 min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
-                <MidtransEmbeddedCheckout compact transactionId={transaction.id} />
+                <MidtransEmbeddedCheckout
+                  compact
+                  terminalState={isFailedMidtransPayment ? "expired" : isVerified ? "success" : "pending"}
+                  transactionId={transaction.id}
+                />
               </div>
             ) : (
               <>
