@@ -132,7 +132,7 @@ const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png"
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 const PAYMENT_DETAIL_CARD_CLASS =
-  "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
+  "relative flex h-full flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -2169,9 +2169,7 @@ export function TransactionDetailPage({
         : isVerified && hasSubmittedTransferProof
           ? "Bukti Pembayaran"
           : "Unggah Bukti"
-    : isMidtrans
-      ? "Status Pembayaran"
-      : "Status Konfirmasi";
+    : "Status Konfirmasi";
   const blacklistPolicy = buyerStatus?.blacklist.active
     ? getBlacklistRestrictionPolicy(buyerStatus.blacklist.totalViolations)
     : null;
@@ -2338,7 +2336,14 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]">
+      <div
+        className={cn(
+          "mx-auto grid w-full items-stretch gap-8",
+          isMidtrans
+            ? "max-w-[1180px] lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]"
+            : "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
+        )}
+      >
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">
@@ -2504,7 +2509,16 @@ export function TransactionDetailPage({
               </>
             ) : isMidtrans ? (
               isPendingMidtransPayment ? (
-                <MidtransEmbeddedCheckout transactionId={transaction.id} />
+                <>
+                  <MidtransEmbeddedCheckout transactionId={transaction.id} />
+                  <div className="mt-4 flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
+                    <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <p>
+                      <span className="font-semibold text-[#1d513c]">Menunggu konfirmasi pembayaran.</span>{" "}
+                      Status diperbarui setelah dana diterima. Tidak perlu mengunggah bukti pembayaran manual.
+                    </p>
+                  </div>
+                </>
               ) : (
               <div className="space-y-5">
                 <div
@@ -2611,7 +2625,8 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        <div className={PAYMENT_DETAIL_CARD_CLASS}>
+        {!isMidtrans ? (
+          <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <h2 className="mb-2 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
             <UploadCloud className="size-5" />
             {proofPanelTitle}
@@ -2620,13 +2635,9 @@ export function TransactionDetailPage({
           {showReceipt ? (
             <div className="space-y-5">
               <p className="font-body text-sm leading-7 text-[#62655f]">
-                {isMidtrans
-                  ? isCompleted
-                    ? "Pembayaran telah terverifikasi dan pembelian sudah selesai."
-                    : `Pembayaran telah dikonfirmasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`
-                  : isCompleted
-                    ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
-                    : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
+                {isCompleted
+                  ? `Pembelian selesai setelah pembayaran diverifikasi pada ${transaction.verifiedAt}.`
+                  : `Pembayaran diverifikasi pada ${transaction.verifiedAt}. Menunggu konfirmasi selesai dari buyer.`}
               </p>
               {hasSubmittedTransferProof ? (
               <BuyerPaymentProofForm
@@ -2675,25 +2686,6 @@ export function TransactionDetailPage({
                 </div>
               )}
             </>
-          ) : isMidtrans ? (
-            <div className="space-y-4">
-              <p className="font-body text-sm leading-7 text-[#62655f]">
-                {isFailedMidtransPayment
-                  ? "Pembayaran gagal atau kedaluwarsa. Transaksi ini sudah ditutup dan tidak perlu mengunggah bukti pembayaran."
-                  : "Menunggu konfirmasi pembayaran. Status akan diperbarui setelah dana diterima."}
-              </p>
-              <div
-                className={cn(
-                  "rounded-lg border p-6 text-center",
-                  isFailedMidtransPayment ? "border-red-200 bg-red-50 text-red-700" : "border-primary/15 bg-primary/[0.04] text-primary"
-                )}
-              >
-                {isFailedMidtransPayment ? <CircleX className="mx-auto size-7" /> : <Clock3 className="mx-auto size-7" />}
-                <p className="mt-4 text-sm font-semibold leading-7">
-                  {isFailedMidtransPayment ? "Silakan kembali ke katalog untuk mencoba pembelian baru." : "Tidak perlu mengunggah bukti pembayaran manual."}
-                </p>
-              </div>
-            </div>
           ) : (
             <div className="space-y-4">
               <p className="font-body text-sm leading-7 text-[#62655f]">
@@ -2707,7 +2699,8 @@ export function TransactionDetailPage({
               </div>
             </div>
           )}
-        </div>
+          </div>
+        ) : null}
       </div>
 
       {showReceipt ? (

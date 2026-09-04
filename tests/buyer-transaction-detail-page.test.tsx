@@ -188,6 +188,10 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/nota diterbitkan setelah pembayaran diverifikasi admin unit/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
+    const transferDetailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
+    expect(transferDetailCard?.parentElement).toHaveClass(
+      "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
+    );
     const accountList = screen.getByLabelText(/daftar rekening tujuan/i);
     expect(accountList).toHaveClass(
       "grid",
@@ -285,14 +289,21 @@ describe("buyer transaction detail page", () => {
     expect(within(workflow!).getByText(/status diperbarui setelah dana diterima/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
     const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
     const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
-    expect(detailCard).toHaveClass("h-full", "min-h-[31rem]");
-    expect(paymentCard).toHaveClass("h-full", "min-h-[31rem]");
+    expect(detailCard?.parentElement).toHaveClass(
+      "mx-auto",
+      "max-w-[1180px]",
+      "lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]"
+    );
+    expect(detailCard).toHaveClass("h-full");
+    expect(paymentCard).toHaveClass("h-full");
+    expect(detailCard).not.toHaveClass("min-h-[31rem]");
+    expect(paymentCard).not.toHaveClass("min-h-[31rem]");
     expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
@@ -319,6 +330,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/^pembayaran terverifikasi$/i)).toBeInTheDocument();
     expect(screen.getByText(/pembayaran telah dikonfirmasi sistem sebelum transaksi dinyatakan lunas/i)).toBeInTheDocument();
     expect(screen.getByText(/tidak perlu mengunggah bukti transfer manual/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lanjutkan ke checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
   });
