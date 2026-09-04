@@ -137,8 +137,6 @@ const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 const PAYMENT_DETAIL_CARD_CLASS =
   "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
-const PAYMENT_DETAIL_PROTECTION_CARD_CLASS =
-  "relative flex min-h-[31rem] w-full self-start flex-col overflow-hidden rounded-xl border border-black/5 bg-white p-6 shadow-[0_18px_42px_rgba(0,74,35,0.04)] lg:p-7";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -2141,7 +2139,7 @@ function TransactionProtectionCard() {
   ];
 
   return (
-    <div className={PAYMENT_DETAIL_PROTECTION_CARD_CLASS} data-testid="transaction-protection-card">
+    <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")} data-testid="transaction-protection-card">
       <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.025)_0%,transparent_65%)]" />
       <div className="relative z-10 flex flex-1 flex-col">
         <div className="flex items-start gap-3">
@@ -2499,7 +2497,7 @@ export function TransactionDetailPage({
 
         <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")}>
           <div className="relative z-10 flex h-full flex-col">
-            <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
+            <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
               {isFailedFixedPricePayment ? <CircleX className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
               {isFailedFixedPricePayment ? "Pembayaran Harga Tetap Gagal" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
             </h2>
@@ -2562,9 +2560,9 @@ export function TransactionDetailPage({
             ) : isMidtrans ? (
               isPendingMidtransPayment ? (
                 <>
-                  <MidtransEmbeddedCheckout transactionId={transaction.id} />
-                  <div className="mt-4 flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
-                    <Clock3 className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <MidtransEmbeddedCheckout compact transactionId={transaction.id} />
+                  <div className="mt-3 flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-3 py-2.5 text-[0.8rem] leading-5 text-[#62655f]">
+                    <Clock3 className="mt-0.5 size-[0.9rem] shrink-0 text-primary" />
                     <p>
                       <span className="font-semibold text-[#1d513c]">Menunggu konfirmasi pembayaran.</span>{" "}
                       Status diperbarui setelah dana diterima. Tidak perlu mengunggah bukti pembayaran manual.

@@ -23,11 +23,11 @@ describe("MidtransEmbeddedCheckout", () => {
 
     render(
       <ToastProvider>
-        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
+        <MidtransEmbeddedCheckout compact transactionId="trx-fixed-1" />
       </ToastProvider>
     );
 
-    expect(document.querySelector('[id^="midtrans-snap-"]')).toBeInTheDocument();
+    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("min-h-[18rem]");
   });
 
   it("embeds the existing Snap token inside the payment card", async () => {
