@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const refreshMock = vi.fn();
@@ -81,6 +81,41 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(embedOptions).toEqual(expect.objectContaining({ hideCloseButton: true }));
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("w-full");
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
+  });
+
+  it("refreshes the detail view when Snap closes after a terminal payment state", async () => {
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () =>
+          url === "/api/payments/midtrans/config"
+            ? { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+            : { data: { snapToken: "snap-token-1" } }
+      })
+    );
+    let embedOptions: { embedId: string; onClose?: () => void } | undefined;
+    const embedMock = vi.fn((_token: string, options: { embedId: string; onClose?: () => void }) => {
+      embedOptions = options;
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("snap", { embed: embedMock });
+
+    render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => expect(embedOptions).toBeDefined());
+    expect(embedOptions?.onClose).toBeTypeOf("function");
+
+    act(() => {
+      embedOptions?.onClose?.();
+    });
+
+    expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {

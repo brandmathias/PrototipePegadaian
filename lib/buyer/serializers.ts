@@ -51,6 +51,7 @@ type BuyerTransactionShape = {
   type: string;
   amount: string;
   paymentMethod: string | null;
+  paymentOrderId?: string | null;
   status: string;
   violationLevel?: number | null;
   proofUrl: string | null;

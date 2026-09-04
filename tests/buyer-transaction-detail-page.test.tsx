@@ -315,10 +315,9 @@ describe("buyer transaction detail page", () => {
     expect(detailCard?.parentElement).toHaveClass(
       "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
     );
-    expect(detailCard?.parentElement).toHaveClass("lg:h-[42rem]");
-    expect(detailCard?.parentElement).not.toHaveClass("lg:h-[50rem]");
-    expect(detailCard?.parentElement).toHaveClass("lg:grid-rows-[minmax(0,1fr)]");
-    expect(detailCard).toHaveClass("h-full");
+    expect(detailCard?.parentElement).not.toHaveClass("lg:h-[42rem]");
+    expect(detailCard?.parentElement).toHaveClass("lg:grid-rows-[minmax(0,auto)]");
+    expect(detailCard).toHaveClass("h-fit");
     expect(paymentCard).toHaveClass("h-full");
     expect(detailCard).toHaveClass("min-h-0");
     expect(paymentCard).toHaveClass("min-h-0");
@@ -331,6 +330,8 @@ describe("buyer transaction detail page", () => {
   });
 
   it("shows a verified Midtrans payment without manual proof upload", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -346,12 +347,48 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByText(/^pembayaran terverifikasi$/i)).toBeInTheDocument();
-    expect(screen.getByText(/pembayaran telah dikonfirmasi sistem sebelum transaksi dinyatakan lunas/i)).toBeInTheDocument();
-    expect(screen.getByText(/tidak perlu mengunggah bukti transfer manual/i)).toBeInTheDocument();
+    expect(screen.getByTestId("midtrans-payment-content")).toBeInTheDocument();
+    expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^pembayaran terverifikasi$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tidak perlu mengunggah bukti transfer manual/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /lanjutkan ke checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the native Snap surface after a fixed-price Midtrans payment expires", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+
+    render(
+      <TransactionDetailPage
+        buyer={buyer}
+        transaction={{
+          ...transactionWithSpecifications,
+          id: "trx-fixed-midtrans-expired",
+          status: "GAGAL",
+          method: "MIDTRANS",
+          paymentLabel: "Pembayaran Midtrans",
+          paymentNotes: [],
+          createdAt: "5 Sep 2026 00.21 WIB",
+          deadline: "5 Sep 2026 00.21 WIB",
+          deadlineAt: "2026-09-04T16:21:00.000Z"
+        }}
+        transactionId="trx-fixed-midtrans-expired"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
+    expect(screen.getByTestId("midtrans-payment-content")).toBeInTheDocument();
+    expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
+    expect(screen.queryByText(/transaksi ini sudah ditutup/i)).not.toBeInTheDocument();
+
+    const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
+    const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
+    expect(detailCard?.parentElement).not.toHaveClass("lg:h-[42rem]");
+    expect(detailCard?.parentElement).toHaveClass("lg:grid-rows-[minmax(0,auto)]");
+    expect(detailCard).toHaveClass("h-fit", "min-h-0");
+    expect(paymentCard).toHaveClass("h-full", "min-h-0");
+    expect(within(paymentCard!).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
   });
 
   it("renders failed auction winner payment as a dedicated 24 hour failure detail", () => {

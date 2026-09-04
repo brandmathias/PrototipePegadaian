@@ -1481,14 +1481,20 @@ export function TransactionsPage({
   highlightedBidLotId?: string | null;
 }) {
   const { bids, transactions } = data;
+  const hasPendingMidtransPayment = transactions.some(
+    (transaction) => transaction.method === "MIDTRANS" && transaction.status === "MENUNGGU_PEMBAYARAN"
+  );
 
   return (
-    <TransactionsWorkspace
-      bids={bids}
-      highlightedBidLotId={highlightedBidLotId}
-      initialTab={initialTab}
-      transactions={transactions}
-    />
+    <>
+      <StatusSyncRefresh enabled={hasPendingMidtransPayment} />
+      <TransactionsWorkspace
+        bids={bids}
+        highlightedBidLotId={highlightedBidLotId}
+        initialTab={initialTab}
+        transactions={transactions}
+      />
+    </>
   );
 }
 
@@ -2188,7 +2194,6 @@ export function TransactionDetailPage({
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
   const isProofInReview = transaction.status === "BUKTI_DIUNGGAH";
   const isProofRejected = transaction.status === "DITOLAK_BUKTI";
-  const isPendingMidtransPayment = isMidtrans && transaction.status === "MENUNGGU_PEMBAYARAN";
   const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isFailedFixedPricePayment = isFixedPrice && transaction.status === "GAGAL";
@@ -2381,10 +2386,10 @@ export function TransactionDetailPage({
       <div
         className={cn(
           "grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]",
-          isPendingMidtransPayment && "lg:h-[42rem] lg:grid-rows-[minmax(0,1fr)]"
+          isMidtrans && "lg:grid-rows-[minmax(0,auto)]"
         )}
       >
-        <div className={PAYMENT_DETAIL_CARD_CLASS}>
+        <div className={cn(PAYMENT_DETAIL_CARD_CLASS, isMidtrans && "h-fit")}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">
             <h2 className="mb-6 flex items-center gap-2.5 font-headline text-[1.95rem] font-black tracking-tight text-primary">
@@ -2488,11 +2493,11 @@ export function TransactionDetailPage({
         <div className={cn(PAYMENT_DETAIL_CARD_CLASS, "overflow-hidden")}>
           <div className="relative z-10 flex h-full flex-col">
             <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
-              {isFailedFixedPricePayment ? <CircleX className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
-              {isFailedFixedPricePayment ? "Pembayaran Harga Tetap Gagal" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
+              {isFailedFixedPricePayment && !isMidtrans ? <CircleX className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
+              {isFailedFixedPricePayment && !isMidtrans ? "Pembayaran Harga Tetap Gagal" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
             </h2>
 
-            {isFailedFixedPricePayment ? (
+            {isFailedFixedPricePayment && !isMidtrans ? (
               <div className="flex flex-1 flex-col justify-center">
                 <div className="rounded-[1.15rem] border border-red-200 bg-red-50 p-5">
                   <div className="flex items-start gap-3">
@@ -2548,95 +2553,9 @@ export function TransactionDetailPage({
                 </div>
               </>
             ) : isMidtrans ? (
-              isPendingMidtransPayment ? (
-                <div className="flex h-0 min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
-                  <MidtransEmbeddedCheckout compact transactionId={transaction.id} />
-                </div>
-              ) : (
-              <div className="space-y-5">
-                <div
-                  className={cn(
-                    "rounded-[1.15rem] border p-5",
-                    isFailedMidtransPayment
-                      ? "border-red-200 bg-red-50"
-                      : isVerified
-                        ? "border-[#c9e6d3] bg-[#f0faf4]"
-                        : "border-primary/15 bg-primary/[0.04]"
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      className={cn(
-                        "grid size-11 shrink-0 place-items-center rounded-2xl",
-                        isFailedMidtransPayment
-                          ? "bg-red-100 text-red-700"
-                          : isVerified
-                            ? "bg-[#d7eadc] text-[#0a6a49]"
-                            : "bg-primary/10 text-primary"
-                      )}
-                    >
-                      {isFailedMidtransPayment ? <CircleX className="size-5" /> : isVerified ? <CheckCircle2 className="size-5" /> : <Clock3 className="size-5" />}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6e716c]">
-                        Pembayaran Transfer
-                      </p>
-                      <p className="mt-1 text-lg font-black text-[#13211c]">
-                        {isFailedMidtransPayment
-                          ? "Pembayaran gagal atau kedaluwarsa"
-                          : isVerified
-                            ? "Pembayaran terverifikasi"
-                            : "Menunggu pembayaran"}
-                      </p>
-                      <p className="mt-1 text-sm leading-6 text-[#62655f]">
-                        {isFailedMidtransPayment
-                          ? "Transaksi ini tidak lagi menahan barang. Kembali ke katalog untuk mencoba pembelian baru."
-                          : isVerified
-                            ? "Pembayaran telah diterima. Tidak perlu mengunggah bukti transfer manual."
-                            : "Selesaikan pembayaran melalui transfer. Status akan diperbarui setelah dana diterima."}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-5 font-headline text-3xl font-black tracking-tight text-primary">
-                    {currency.format(transaction.amount)}
-                  </p>
-                </div>
-
-                <div className="divide-y divide-border/60 rounded-[1rem] border border-border/70 bg-white px-4">
-                  <PaymentInfoRow label="Metode" value="Transfer" />
-                  <PaymentInfoRow
-                    label="Status"
-                    value={
-                      <Badge
-                        className={isVerified ? "bg-[#d7eadc] text-[#0a6a49]" : undefined}
-                        variant={isFailedMidtransPayment ? "danger" : isVerified ? "default" : "accent"}
-                      >
-                        {isFailedMidtransPayment ? "Gagal" : isVerified ? "Terverifikasi" : "Menunggu pembayaran"}
-                      </Badge>
-                    }
-                  />
-                  {!isVerified && !isFailedMidtransPayment && transaction.deadlineAt ? (
-                    <PaymentInfoRow
-                      label="Batas reservasi"
-                      value={
-                        <LiveCountdown
-                          className="text-primary"
-                          expiredLabel="Waktu pembayaran berakhir"
-                          fallbackLabel={transaction.deadline}
-                          prefix="Sisa"
-                          targetAt={transaction.deadlineAt}
-                        />
-                      }
-                    />
-                  ) : null}
-                </div>
-
-                <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
-                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <p>Status pembayaran diperbarui setelah dana diterima. Transaksi diproses setelah pembayaran terkonfirmasi.</p>
-                </div>
+              <div className="flex h-0 min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
+                <MidtransEmbeddedCheckout compact transactionId={transaction.id} />
               </div>
-              )
             ) : (
               <>
                 <div className="rounded-lg bg-[#f7f7f4] p-5">

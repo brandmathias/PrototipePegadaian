@@ -65,7 +65,13 @@ describe("Midtrans notification route", () => {
         unit: { id: "unit-1", name: "UPC Ranotana", address: "Manado" }
       })
     );
-    mocks.db.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) });
+    mocks.db.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: "trx-1", userId: "buyer-1" }])
+        })
+      })
+    });
   });
 
   it("records a pending gateway state without selling the item", async () => {

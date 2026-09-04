@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { AlertTriangle, ArrowLeft, LoaderCircle } from "lucide-react";
+import { AlertTriangle, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
@@ -18,7 +18,6 @@ type SnapCallbacks = {
       onSuccess?: () => void;
     }
   ) => void;
-  show?: () => void;
 };
 
 declare global {
@@ -83,7 +82,7 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
   const { toast } = useToast();
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<"loading" | "embedded" | "closed" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "embedded" | "error">("loading");
   const checkoutHeightClass = compact ? "h-0 min-h-0 flex-1" : "min-h-[34rem]";
   const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
 
@@ -128,7 +127,7 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
         window.snap.embed(token, {
           embedId,
           hideCloseButton: true,
-          onClose: () => setStatus("closed"),
+          onClose: () => router.refresh(),
           onError: () => {
             setError("Pembayaran mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
             setStatus("error");
@@ -159,11 +158,6 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
       cancelled = true;
     };
   }, [embedId, router, toast, transactionId]);
-
-  const resumeCheckout = () => {
-    window.snap?.show?.();
-    setStatus("embedded");
-  };
 
   if (status === "error") {
     return (
@@ -205,32 +199,7 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
             </div>
           </div>
         ) : null}
-        {status === "closed" ? (
-          <div className="absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
-            <div className="grid max-w-sm justify-items-center gap-4">
-              <span className="grid size-14 place-items-center rounded-full bg-primary/10 text-primary">
-                <ArrowLeft className="size-6" />
-              </span>
-              <div>
-                <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran disembunyikan</p>
-                <p className="mt-1 text-sm leading-6 text-[#62655f]">Anda dapat melanjutkan pembayaran kapan saja.</p>
-              </div>
-              <button
-                className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-black text-white shadow-[0_14px_26px_-18px_rgba(0,103,71,0.7)] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#005b3e] active:scale-[0.97]"
-                onClick={resumeCheckout}
-                type="button"
-              >
-                Lanjutkan pembayaran
-              </button>
-            </div>
-          </div>
-        ) : null}
       </div>
-      {status === "closed" ? (
-        <div className="border-t border-[#edf1ed] bg-[#fffaf1] px-5 py-3 text-center text-sm font-semibold text-[#8b6a1d]">
-          Pembayaran ditutup. Status akan diperbarui jika pembayaran sudah dilakukan.
-        </div>
-      ) : null}
     </div>
   );
 }

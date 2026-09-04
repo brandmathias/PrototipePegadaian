@@ -51,6 +51,7 @@ import {
   createMidtransSnapTransaction,
   getMidtransGatewayConfig
 } from "@/lib/payments/midtrans";
+import { syncMidtransTransactionStatus } from "@/lib/services/midtrans-payment.service";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "menunggu_pembayaran",
@@ -202,6 +203,7 @@ function transactionSelection() {
     type: transaksi.type,
     amount: transaksi.amount,
     paymentMethod: transaksi.paymentMethod,
+    paymentOrderId: transaksi.paymentOrderId,
     status: transaksi.status,
     proofUrl: transaksi.proofUrl,
     rejectionReason: transaksi.rejectionReason,
@@ -533,20 +535,71 @@ async function listUnitTransferAccounts(unitId?: string | null) {
     .orderBy(desc(unitAccounts.isActive), desc(unitAccounts.createdAt));
 }
 
+type BuyerMidtransSyncRow = {
+  paymentMethod: string | null;
+  paymentOrderId?: string | null;
+  status: string;
+};
+
+async function syncBuyerMidtransRow(userId: string, row: BuyerMidtransSyncRow) {
+  if (
+    row.paymentMethod !== "midtrans" ||
+    row.status !== "menunggu_pembayaran" ||
+    !row.paymentOrderId
+  ) {
+    return false;
+  }
+
+  try {
+    const result = await syncMidtransTransactionStatus({
+      config: getMidtransGatewayConfig(),
+      orderId: row.paymentOrderId,
+      userId
+    });
+    return result.changed;
+  } catch {
+    return false;
+  }
+}
+
+async function syncBuyerMidtransRows(userId: string, rows: BuyerMidtransSyncRow[]) {
+  const pendingRows = rows.filter(
+    (row) => row.paymentMethod === "midtrans" && row.status === "menunggu_pembayaran" && row.paymentOrderId
+  );
+
+  if (pendingRows.length === 0) {
+    return false;
+  }
+
+  const results = await Promise.all(pendingRows.map((row) => syncBuyerMidtransRow(userId, row)));
+  return results.some(Boolean);
+}
+
 export async function listBuyerTransactions(userId: string, options?: BuyerReadOptions) {
   await refreshBuyerAuctionSettlementState(options);
 
-  const rows = await getTransactionRows(userId);
+  let rows = await getTransactionRows(userId);
+  if (await syncBuyerMidtransRows(userId, rows)) {
+    rows = await getTransactionRows(userId);
+  }
+
   return rows.map(serializeBuyerTransaction);
 }
 
 export async function getBuyerTransactionById(userId: string, transactionId: string, options?: BuyerReadOptions) {
   await refreshBuyerAuctionSettlementState(options);
 
-  const row = await getTransactionRowById(userId, transactionId);
+  let row = await getTransactionRowById(userId, transactionId);
 
   if (!row) {
     throw new Error("Transaksi tidak ditemukan.");
+  }
+
+  if (await syncBuyerMidtransRow(userId, row)) {
+    row = await getTransactionRowById(userId, transactionId);
+    if (!row) {
+      throw new Error("Transaksi tidak ditemukan.");
+    }
   }
 
   const [accounts, violationLevel] = await Promise.all([
@@ -576,11 +629,10 @@ export async function getBuyerMidtransCheckout(userId: string, transactionId: st
     throw new Error("Pembayaran tidak ditemukan untuk transaksi ini.");
   }
 
-  if (row.status !== "menunggu_pembayaran") {
-    throw new Error("Transaksi ini sudah tidak menunggu pembayaran.");
-  }
-
-  if (!row.paymentDeadline || row.paymentDeadline.getTime() <= Date.now()) {
+  if (
+    row.status === "menunggu_pembayaran" &&
+    (!row.paymentDeadline || row.paymentDeadline.getTime() <= Date.now())
+  ) {
     throw new Error("Waktu pembayaran sudah berakhir.");
   }
 
