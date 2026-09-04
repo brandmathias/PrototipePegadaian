@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { LoaderCircle, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { FixedPricePaymentModal } from "@/components/buyer/fixed-price-payment-modal";
 
 export function FixedPriceBuyButton({
   buttonLabel = "Beli Sekarang",
@@ -20,6 +21,9 @@ export function FixedPriceBuyButton({
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, setIsPending] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+
+  const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
 
   async function handleBuyNow() {
     if (isPending) {
@@ -35,6 +39,7 @@ export function FixedPriceBuyButton({
       const payload = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
+        setIsConfirmationOpen(false);
         router.replace(`/login?next=${encodeURIComponent(`/katalog/${lotId}`)}`);
         return;
       }
@@ -62,6 +67,7 @@ export function FixedPriceBuyButton({
         return;
       }
 
+      setIsConfirmationOpen(false);
       router.replace(`/transaksi/${transactionId}`);
     } catch {
       toast({
@@ -75,23 +81,31 @@ export function FixedPriceBuyButton({
   }
 
   return (
-    <Button
-      className={cn("h-10 w-full rounded-md text-sm font-black", className)}
-      disabled={isPending}
-      onClick={handleBuyNow}
-      variant="accent"
-    >
-      {isPending ? (
-        <>
-          <LoaderCircle className="button-spinner size-4" />
-          Menyiapkan Pembayaran
-        </>
-      ) : (
-        <>
-          {buttonLabel}
-          <ShoppingBag className="size-4" />
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        className={cn("h-10 w-full rounded-md text-sm font-black", className)}
+        disabled={isPending}
+        onClick={() => setIsConfirmationOpen(true)}
+        variant="accent"
+      >
+        {isPending ? (
+          <>
+            <LoaderCircle className="button-spinner size-4" />
+            Menyiapkan Pembayaran
+          </>
+        ) : (
+          <>
+            {buttonLabel}
+            <ShoppingBag className="size-4" />
+          </>
+        )}
+      </Button>
+      <FixedPricePaymentModal
+        loading={isPending}
+        onClose={closeConfirmation}
+        onConfirm={handleBuyNow}
+        open={isConfirmationOpen}
+      />
+    </>
   );
 }

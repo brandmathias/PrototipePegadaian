@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -14,12 +14,13 @@ vi.mock("next/navigation", () => ({
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
 describe("FixedPriceBuyButton", () => {
   afterEach(() => {
+    document.body.style.overflow = "";
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     replaceMock.mockReset();
   });
 
-  it("creates a fixed price Midtrans checkout and opens its payment detail", async () => {
+  it("asks for confirmation before creating the fixed-price checkout", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
@@ -35,7 +36,23 @@ describe("FixedPriceBuyButton", () => {
 
     render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
 
-    await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
+    const buyButton = screen.getByRole("button", { name: /beli sekarang/i });
+    await user.click(buyButton);
+
+    const dialog = screen.getByRole("dialog", {
+      name: "Lanjutkan Pembayaran?"
+    });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveClass("max-w-[720px]", "rounded-[20px]", "sm:rounded-[26px]");
+    expect(screen.getByText("Barang ini dijual dengan harga tetap.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Apakah Anda yakin ingin melanjutkan pembayaran?")
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(screen.getByRole("button", { name: "Tidak" })).toHaveFocus();
+
+    await user.click(screen.getByRole("button", { name: "Ya, Lanjutkan" }));
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -46,5 +63,52 @@ describe("FixedPriceBuyButton", () => {
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledWith("/transaksi/trx-fixed-1");
     });
+  });
+
+  it("closes from the cancel controls but not from the backdrop", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
+
+    const buyButton = screen.getByRole("button", { name: /beli sekarang/i });
+    await user.click(buyButton);
+
+    fireEvent.click(screen.getByTestId("fixed-price-payment-backdrop"));
+    expect(screen.getByRole("dialog", { name: "Lanjutkan Pembayaran?" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Tidak" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(buyButton).toHaveFocus();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await user.click(buyButton);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.click(buyButton);
+    await user.click(screen.getByRole("button", { name: "Tutup konfirmasi pembayaran" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("keeps the confirmation locked while checkout is being prepared", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+    const user = userEvent.setup();
+
+    render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
+
+    await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
+    await user.click(screen.getByRole("button", { name: "Ya, Lanjutkan" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Lanjutkan Pembayaran?" });
+    expect(dialog).toHaveAttribute(
+      "aria-busy",
+      "true"
+    );
+    expect(within(dialog).getByRole("button", { name: /menyiapkan pembayaran/i })).toBeDisabled();
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("dialog", { name: "Lanjutkan Pembayaran?" })).toBeInTheDocument();
   });
 });

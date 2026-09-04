@@ -2396,7 +2396,7 @@ export function TransactionDetailPage({
       <div
         className={cn(
           "grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]",
-          isPendingMidtransPayment && "lg:h-[50rem] lg:grid-rows-[minmax(0,1fr)]"
+          isPendingMidtransPayment && "lg:h-[42rem] lg:grid-rows-[minmax(0,1fr)]"
         )}
       >
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
