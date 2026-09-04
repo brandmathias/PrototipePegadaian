@@ -136,7 +136,7 @@ const BUYER_HOME_HERO_IMAGE = "/uploads/Gambar Hero Section Beranda Pembeli.png"
 const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting.png";
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 const PAYMENT_DETAIL_CARD_CLASS =
-  "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
+  "relative flex h-full min-h-0 flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -2161,8 +2161,8 @@ function TransactionProtectionCard() {
                 <Icon className="size-5" strokeWidth={1.8} />
               </span>
               <div className="min-w-0">
-                <p className="text-[0.8rem] font-bold leading-5 text-[#1d513c]">{title}</p>
-                <p className="mt-1 text-[0.7rem] leading-5 text-[#62655f]">{description}</p>
+                <p className="text-[0.88rem] font-bold leading-5 text-[#1d513c]">{title}</p>
+                <p className="mt-1 text-[0.75rem] leading-5 text-[#62655f]">{description}</p>
               </div>
             </div>
           ))}

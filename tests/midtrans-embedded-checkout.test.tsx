@@ -27,7 +27,7 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("min-h-[18rem]");
+    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("h-full", "min-h-0");
   });
 
   it("embeds the existing Snap token inside the payment card", async () => {

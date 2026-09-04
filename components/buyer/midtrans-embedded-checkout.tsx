@@ -85,8 +85,8 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "closed" | "error">("loading");
-  const checkoutHeightClass = compact ? "min-h-[20rem]" : "min-h-[34rem]";
-  const snapHeightClass = compact ? "min-h-[18rem]" : "min-h-[32rem]";
+  const checkoutHeightClass = compact ? "h-[20rem] min-h-0" : "min-h-[34rem]";
+  const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
 
   useEffect(() => {
     let cancelled = false;

@@ -296,7 +296,8 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/verifikasi otomatis/i)).toBeInTheDocument();
     expect(screen.getByText(/hindari transfer di luar platform/i)).toBeInTheDocument();
     const protectionCard = screen.getByTestId("transaction-protection-card");
-    expect(protectionCard).toHaveClass("h-full", "min-h-[31rem]");
+    expect(protectionCard).toHaveClass("h-full", "min-h-0");
+    expect(protectionCard).not.toHaveClass("min-h-[31rem]");
     expect(protectionCard).not.toHaveClass("self-start");
     expect(screen.getByTestId("transaction-protection-list")).toHaveClass("flex-1");
     expect(screen.getAllByTestId("transaction-protection-item")).toHaveLength(3);
@@ -311,8 +312,10 @@ describe("buyer transaction detail page", () => {
     );
     expect(detailCard).toHaveClass("h-full");
     expect(paymentCard).toHaveClass("h-full");
-    expect(detailCard).toHaveClass("min-h-[31rem]");
-    expect(paymentCard).toHaveClass("min-h-[31rem]");
+    expect(detailCard).toHaveClass("min-h-0");
+    expect(paymentCard).toHaveClass("min-h-0");
+    expect(detailCard).not.toHaveClass("min-h-[31rem]");
+    expect(paymentCard).not.toHaveClass("min-h-[31rem]");
     expect(screen.getAllByText(/^rp 12\.450\.000$/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /buka checkout midtrans/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /unggah bukti/i })).not.toBeInTheDocument();
