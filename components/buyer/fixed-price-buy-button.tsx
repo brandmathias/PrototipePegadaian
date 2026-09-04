@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LoaderCircle, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -8,22 +8,49 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { FixedPricePaymentModal } from "@/components/buyer/fixed-price-payment-modal";
+import {
+  isFixedPriceUnavailable,
+  useFixedPriceAvailability
+} from "@/components/buyer/fixed-price-availability";
+import type { FixedPriceAvailability } from "@/lib/contracts/fixed-price-availability";
 
 export function FixedPriceBuyButton({
   buttonLabel = "Beli Sekarang",
   className,
-  lotId
+  lotId,
+  availability
 }: {
   buttonLabel?: string;
   className?: string;
   lotId: string;
+  availability?: FixedPriceAvailability;
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const availabilityContext = useFixedPriceAvailability();
   const [isPending, setIsPending] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const currentAvailability = availability ?? availabilityContext.availability;
+  const isUnavailable = isFixedPriceUnavailable(currentAvailability);
+  const isContinuingPayment =
+    currentAvailability.status === "reserved" &&
+    currentAvailability.owner === "self" &&
+    currentAvailability.canContinue !== false;
+  const currentLabel = currentAvailability.status === "sold"
+    ? "Tidak tersedia"
+    : isUnavailable
+      ? "Sedang diproses"
+      : isContinuingPayment
+        ? "Lanjutkan pembayaran"
+        : buttonLabel;
 
   const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
+
+  useEffect(() => {
+    if (isUnavailable && isConfirmationOpen && !isPending) {
+      setIsConfirmationOpen(false);
+    }
+  }, [isConfirmationOpen, isPending, isUnavailable]);
 
   async function handleBuyNow() {
     if (isPending) {
@@ -45,6 +72,19 @@ export function FixedPriceBuyButton({
       }
 
       if (!response.ok) {
+        if (response.status === 409 || payload?.code === "FIXED_PRICE_RESERVED") {
+          setIsConfirmationOpen(false);
+          toast({
+            title: "Barang baru saja dipesan",
+            description: "Pembeli lain lebih dulu memulai pembayaran. Ketersediaan barang telah diperbarui.",
+            variant: "error",
+            scope: "buyer"
+          });
+          void availabilityContext.refresh();
+          setIsPending(false);
+          return;
+        }
+
         toast({
           title: "Pembelian belum bisa diproses",
           description: payload.message ?? "Silakan coba lagi atau pilih barang lain.",
@@ -84,8 +124,19 @@ export function FixedPriceBuyButton({
     <>
       <Button
         className={cn("h-10 w-full rounded-md text-sm font-black", className)}
-        disabled={isPending}
-        onClick={() => setIsConfirmationOpen(true)}
+        disabled={isPending || isUnavailable}
+        onClick={() => {
+          if (!isUnavailable) {
+            setIsConfirmationOpen(true);
+          }
+        }}
+        title={
+          isUnavailable
+            ? currentAvailability.status === "sold"
+              ? "Barang sudah terjual."
+              : "Sedang diproses pembeli lain."
+            : undefined
+        }
         variant="accent"
       >
         {isPending ? (
@@ -95,7 +146,7 @@ export function FixedPriceBuyButton({
           </>
         ) : (
           <>
-            {buttonLabel}
+            {currentLabel}
             <ShoppingBag className="size-4" />
           </>
         )}

@@ -1,6 +1,7 @@
 import { LotDetailPage } from "@/components/public/lot-detail-page";
 import { getServerSession } from "@/lib/auth/session";
 import { getBuyerBidState, getBuyerProfileStatus } from "@/lib/services/buyer.service";
+import { getFixedPriceAvailability } from "@/lib/services/fixed-price-availability.service";
 import { getPublicLotById } from "@/lib/services/public-catalog.service";
 import { isBuyerWishlistItem } from "@/lib/services/wishlist.service";
 
@@ -17,6 +18,10 @@ export default async function Page({
   const source = Array.isArray(query.source) ? query.source[0] : query.source;
   const [lot, session] = await Promise.all([getPublicLotById(id), getServerSession()]);
   const isBuyer = session?.user?.role === "buyer";
+  const fixedPriceAvailability =
+    lot?.mode === "fixed_price"
+      ? await getFixedPriceAvailability(id, isBuyer ? session?.user?.id ?? null : null)
+      : undefined;
   const [bidState, buyerStatus, initialFavorited] =
     isBuyer && session?.user?.id
       ? await Promise.all([
@@ -31,6 +36,7 @@ export default async function Page({
       buyerId={isBuyer ? session?.user?.id : null}
       buyerStatus={buyerStatus}
       bidState={bidState}
+      fixedPriceAvailability={fixedPriceAvailability}
       initialFavorited={initialFavorited}
       lot={lot}
       trackView={source !== "payment"}

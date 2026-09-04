@@ -232,6 +232,26 @@ describe("buyer vickrey pages", () => {
     expect(screen.getByRole("button", { name: /pembelian sedang dibatasi/i })).toBeDisabled();
   });
 
+  it("disables fixed-price checkout and labels the media when another buyer is processing payment", () => {
+    render(
+      <LotDetailPage
+        bidState={null}
+        buyerStatus={null}
+        fixedPriceAvailability={{
+          status: "reserved",
+          owner: "other",
+          expiresAt: "2099-05-05T14:07:00.000Z"
+        }}
+        lot={fixedPriceLot}
+        trackView={false}
+      />
+    );
+
+    const unavailableButton = screen.getByRole("button", { name: /sedang diproses/i });
+    expect(unavailableButton).toBeDisabled();
+    expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent("Barang tidak tersedia");
+  });
+
   it("opens the sealed bid confirmation popup directly from lot detail with bid amount input", async () => {
     const user = userEvent.setup();
 

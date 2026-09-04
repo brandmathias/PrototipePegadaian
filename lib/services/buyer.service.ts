@@ -59,6 +59,16 @@ const REUSABLE_BUYER_TRANSACTION_STATUSES = [
   "menunggu_konfirmasi_langsung"
 ];
 const FIXED_PRICE_CLAIM_CONFLICT_MESSAGE = "Barang sedang dalam proses pembelian oleh pembeli lain.";
+export const FIXED_PRICE_CLAIM_CONFLICT_CODE = "FIXED_PRICE_RESERVED";
+
+export class FixedPriceClaimConflictError extends Error {
+  readonly code = FIXED_PRICE_CLAIM_CONFLICT_CODE;
+
+  constructor() {
+    super(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    this.name = "FixedPriceClaimConflictError";
+  }
+}
 
 const BLACKLIST_TRANSACTION_SETTLEMENT_MESSAGE =
   "Akun Anda sedang dalam masa pembatasan. Transaksi yang sedang berjalan belum dapat diselesaikan sampai masa blacklist berakhir.";
@@ -298,7 +308,7 @@ function isFixedPriceClaimConflict(error: unknown) {
 
 function throwFixedPriceClaimConflict(error: unknown): never {
   if (isFixedPriceClaimConflict(error)) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    throw new FixedPriceClaimConflictError();
   }
 
   throw error;
@@ -963,7 +973,7 @@ export async function createFixedPricePurchase(userId: string, pemasaranId: stri
   );
 
   if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    throw new FixedPriceClaimConflictError();
   }
 
   if (existingBuyerTransaction) {
@@ -1164,7 +1174,7 @@ export async function uploadBuyerPaymentProof(userId: string, transactionId: str
     .limit(1);
 
   if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    throw new FixedPriceClaimConflictError();
   }
 
   const [updated] = await db
@@ -1408,7 +1418,7 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
     (transaction) => transaction.userId !== userId && isActiveMidtransReservation(transaction)
   );
   if (lockedByOtherBuyer) {
-    throw new Error(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
+    throw new FixedPriceClaimConflictError();
   }
 
   const blacklistState = await getEffectiveBuyerBlacklistState(userId);

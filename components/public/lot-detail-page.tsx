@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 
 import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
+import {
+  FixedPriceAvailabilityBadge,
+  FixedPriceAvailabilityMedia,
+  FixedPriceAvailabilityProvider
+} from "@/components/buyer/fixed-price-availability";
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
 import { VickreyBidForm } from "@/components/buyer/vickrey-bid-form";
 import { BRAND_NAME } from "@/components/shared/brand";
@@ -22,6 +27,7 @@ import { getBlacklistRestrictionPolicy } from "@/lib/blacklist/restrictions";
 import { getBuyerTransactionsHref } from "@/lib/buyer/transaction-links";
 import type { BuyerBid } from "@/lib/contracts/buyer";
 import type { Lot } from "@/lib/contracts/catalog";
+import type { FixedPriceAvailability } from "@/lib/contracts/fixed-price-availability";
 import { currency } from "@/lib/formatters/currency";
 import { formatAppDate, formatAppDateTime } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
@@ -108,6 +114,7 @@ export function LotDetailPage({
   buyerId = null,
   bidState,
   buyerStatus = null,
+  fixedPriceAvailability,
   trackView = true,
   wishlistSyncEnabled = false
 }: {
@@ -116,6 +123,7 @@ export function LotDetailPage({
   buyerId?: string | null;
   bidState: BuyerBid | null;
   buyerStatus?: BuyerPublicStatus;
+  fixedPriceAvailability?: FixedPriceAvailability;
   trackView?: boolean;
   wishlistSyncEnabled?: boolean;
 }) {
@@ -165,6 +173,11 @@ export function LotDetailPage({
   ];
 
   return (
+    <FixedPriceAvailabilityProvider
+      enabled={!isVickrey}
+      initialAvailability={fixedPriceAvailability}
+      lotId={lot.id}
+    >
     <div className="relative min-h-screen overflow-hidden bg-white text-[#183f32]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#ffffff_0%,#f8faf8_100%)]" />
 
@@ -182,17 +195,19 @@ export function LotDetailPage({
         <section className="grid gap-8 xl:items-stretch xl:grid-cols-[minmax(0,1.08fr)_minmax(25rem,0.92fr)]">
           <div className="space-y-6 xl:h-full">
             <div className="relative rounded-[1.9rem] bg-white p-1 shadow-[0_28px_90px_rgba(8,69,50,0.08)] xl:h-full">
-              <LotMediaGallery
-                allowFullscreen
-                category={lot.category}
-                className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem] xl:min-h-0"
-                title={lot.name}
-                media={lot.media}
-                priority
-                showCategoryBadge={false}
-                showVideoControls
-                variant="pdp"
-              />
+              <FixedPriceAvailabilityMedia>
+                <LotMediaGallery
+                  allowFullscreen
+                  category={lot.category}
+                  className="min-h-[22rem] rounded-[calc(1.9rem-0.25rem)] border-transparent bg-[#f7f8f6] shadow-none md:min-h-[34rem] xl:min-h-0"
+                  title={lot.name}
+                  media={lot.media}
+                  priority
+                  showCategoryBadge={false}
+                  showVideoControls
+                  variant="pdp"
+                />
+              </FixedPriceAvailabilityMedia>
             </div>
           </div>
 
@@ -203,9 +218,13 @@ export function LotDetailPage({
                 <span className="relative rounded-full bg-[#0d6b4c] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#ecfff8] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
                   {modeLabel}
                 </span>
-                <span className="relative rounded-full bg-[#f7f2e8] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#9a6a00] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                  {lot.status}
-                </span>
+                {isVickrey ? (
+                  <span className="relative rounded-full bg-[#f7f2e8] px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] text-[#9a6a00] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                    {lot.status}
+                  </span>
+                ) : (
+                  <FixedPriceAvailabilityBadge fallbackLabel={lot.status} />
+                )}
                 {lot.domicile ? (
                   <span className="relative inline-flex items-center gap-1.5 rounded-full border border-[#cfe4d9] bg-[#f3faf6] px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#17633f]">
                     <MapPin className="size-3.5" />
@@ -457,5 +476,6 @@ export function LotDetailPage({
         </section>
       </div>
     </div>
+    </FixedPriceAvailabilityProvider>
   );
 }

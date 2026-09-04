@@ -3,12 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const replaceMock = vi.fn();
+const toastMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     replace: replaceMock,
     refresh: vi.fn()
   })
+}));
+
+vi.mock("@/components/ui/toast", () => ({
+  useToast: () => ({ toast: toastMock })
 }));
 
 import { FixedPriceBuyButton } from "@/components/buyer/fixed-price-buy-button";
@@ -18,6 +23,7 @@ describe("FixedPriceBuyButton", () => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     replaceMock.mockReset();
+    toastMock.mockReset();
   });
 
   it("asks for confirmation before creating the fixed-price checkout", async () => {
@@ -90,6 +96,34 @@ describe("FixedPriceBuyButton", () => {
     await user.click(buyButton);
     await user.click(screen.getByRole("button", { name: "Tutup konfirmasi pembayaran" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("explains when another buyer reserved the item before a stale checkout could start", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({
+        code: "FIXED_PRICE_RESERVED",
+        message: "Barang sedang dalam proses pembelian oleh pembeli lain."
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(<FixedPriceBuyButton lotId="lot-fixed-1" />);
+
+    await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
+    await user.click(screen.getByRole("button", { name: "Ya, Lanjutkan" }));
+
+    await waitFor(() => {
+      expect(toastMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Barang baru saja dipesan",
+          description: "Pembeli lain lebih dulu memulai pembayaran. Ketersediaan barang telah diperbarui.",
+          variant: "error"
+        })
+      );
+    });
   });
 
   it("keeps the confirmation locked while checkout is being prepared", async () => {
