@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { AlertTriangle, ArrowLeft, LoaderCircle, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
@@ -18,7 +18,6 @@ type SnapCallbacks = {
       onSuccess?: () => void;
     }
   ) => void;
-  hide?: () => void;
   show?: () => void;
 };
 
@@ -161,11 +160,6 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
     };
   }, [embedId, router, toast, transactionId]);
 
-  const hideCheckout = () => {
-    window.snap?.hide?.();
-    setStatus("closed");
-  };
-
   const resumeCheckout = () => {
     window.snap?.show?.();
     setStatus("embedded");
@@ -187,28 +181,11 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
 
   return (
     <div
-        className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex h-0 min-h-0 flex-1 flex-col" : ""}`}
+      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex h-0 min-h-0 flex-1 flex-col" : ""}`}
       data-testid="midtrans-checkout-shell"
     >
-      <div className={`flex items-center justify-between gap-4 border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
-        <div>
-          <p className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-primary">Pembayaran Transfer</p>
-          <p className="mt-1 text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            aria-label="Kembali dari pembayaran"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#dbe8df] bg-white px-3 py-1.5 text-xs font-bold text-[#426053] transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-[#b7d9c2] hover:bg-[#f2faf4] hover:text-[#006747] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={status === "loading"}
-            onClick={hideCheckout}
-            type="button"
-          >
-            <ArrowLeft className="size-3.5" /> Kembali
-          </button>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#e6f4ea] px-3 py-1.5 text-xs font-black text-[#006747]">
-            <ShieldCheck className="size-3.5" /> Aman
-          </span>
-        </div>
+      <div className={`border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
+        <p className="text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
       </div>
       <div className={`relative ${checkoutHeightClass} bg-white ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}>
         <div

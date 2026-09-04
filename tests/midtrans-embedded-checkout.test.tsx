@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const refreshMock = vi.fn();
@@ -29,6 +29,9 @@ describe("MidtransEmbeddedCheckout", () => {
 
     expect(screen.getByTestId("midtrans-checkout-shell")).toHaveClass("flex", "h-0", "flex-1", "min-h-0", "flex-col");
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("h-full", "min-h-0");
+    expect(screen.getByText("Pilih metode pembayaran")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Kembali dari pembayaran" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Aman$/)).not.toBeInTheDocument();
   });
 
   it("embeds the existing Snap token inside the payment card", async () => {
@@ -77,35 +80,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(targetExistedWhenSnapMounted).toBe(true);
     expect(embedOptions).toEqual(expect.objectContaining({ hideCloseButton: true }));
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("w-full");
-    expect(screen.getByText(/pembayaran transfer/i)).toBeInTheDocument();
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
-  });
-
-  it("lets the buyer hide checkout with the themed back control", async () => {
-    const fetchMock = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: { clientKey: "SB-Mid-client-test", isProduction: false, snapToken: "snap-token-1" } })
-      })
-    );
-    const hideMock = vi.fn();
-    const embedMock = vi.fn();
-
-    vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("snap", { embed: embedMock, hide: hideMock });
-
-    render(
-      <ToastProvider>
-        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
-      </ToastProvider>
-    );
-
-    await waitFor(() => expect(embedMock).toHaveBeenCalled());
-    fireEvent.click(screen.getByRole("button", { name: /kembali dari pembayaran/i }));
-
-    expect(hideMock).toHaveBeenCalledTimes(1);
-    expect(screen.getByText(/pembayaran disembunyikan/i)).toBeInTheDocument();
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {
