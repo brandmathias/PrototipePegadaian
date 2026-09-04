@@ -2393,7 +2393,12 @@ export function TransactionDetailPage({
         ) : null}
       </section>
 
-      <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]">
+      <div
+        className={cn(
+          "grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]",
+          isPendingMidtransPayment && "lg:h-[50rem] lg:grid-rows-[minmax(0,1fr)]"
+        )}
+      >
         <div className={PAYMENT_DETAIL_CARD_CLASS}>
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.02)_0%,transparent_42%)]" />
           <div className="relative z-10 flex h-full flex-col">

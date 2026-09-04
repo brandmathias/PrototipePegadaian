@@ -315,6 +315,8 @@ describe("buyer transaction detail page", () => {
     expect(detailCard?.parentElement).toHaveClass(
       "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
     );
+    expect(detailCard?.parentElement).toHaveClass("lg:h-[50rem]");
+    expect(detailCard?.parentElement).toHaveClass("lg:grid-rows-[minmax(0,1fr)]");
     expect(detailCard).toHaveClass("h-full");
     expect(paymentCard).toHaveClass("h-full");
     expect(detailCard).toHaveClass("min-h-0");
