@@ -85,7 +85,7 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "closed" | "error">("loading");
-  const checkoutHeightClass = compact ? "min-h-0 flex-1" : "min-h-[34rem]";
+  const checkoutHeightClass = compact ? "h-0 min-h-0 flex-1" : "min-h-[34rem]";
   const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
 
   return (
     <div
-      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex min-h-0 flex-1 flex-col" : ""}`}
+        className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex h-0 min-h-0 flex-1 flex-col" : ""}`}
       data-testid="midtrans-checkout-shell"
     >
       <div className={`flex items-center justify-between gap-4 border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
