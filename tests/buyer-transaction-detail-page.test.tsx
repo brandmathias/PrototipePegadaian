@@ -295,6 +295,12 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/kanal pembayaran resmi/i)).toBeInTheDocument();
     expect(screen.getByText(/verifikasi otomatis/i)).toBeInTheDocument();
     expect(screen.getByText(/hindari transfer di luar platform/i)).toBeInTheDocument();
+    const protectionCard = screen.getByTestId("transaction-protection-card");
+    expect(protectionCard).toHaveClass("h-fit", "min-h-0", "self-start");
+    expect(protectionCard).not.toHaveClass("min-h-[31rem]");
+    expect(screen.getByTestId("transaction-protection-list")).not.toHaveClass("flex-1");
+    expect(screen.getAllByTestId("transaction-protection-item")).toHaveLength(3);
+    expect(screen.getAllByTestId("transaction-protection-item").every((item) => !item.classList.contains("flex-1"))).toBe(true);
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();

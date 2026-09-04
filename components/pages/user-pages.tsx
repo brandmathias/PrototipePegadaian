@@ -137,6 +137,8 @@ const BUYER_NOTES_BACKGROUND_IMAGE = "/uploads/Gambar Background Catatan Penting
 const BUYER_PROFILE_BACKGROUND_IMAGE = "/uploads/Gambar Background Halaman Profil.png";
 const PAYMENT_DETAIL_CARD_CLASS =
   "relative flex h-full min-h-[31rem] flex-col rounded-xl border border-black/5 bg-white p-7 shadow-[0_18px_42px_rgba(0,74,35,0.04)]";
+const PAYMENT_DETAIL_COMPACT_CARD_CLASS =
+  "relative h-fit min-h-0 w-full self-start overflow-hidden rounded-xl border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(0,74,35,0.04)] lg:p-6";
 
 const transactionStatusMeta: Record<
   BuyerTransactionStatus,
@@ -2139,23 +2141,24 @@ function TransactionProtectionCard() {
   ];
 
   return (
-    <div className={PAYMENT_DETAIL_CARD_CLASS} data-testid="transaction-protection-card">
-      <div className="relative z-10 flex h-full flex-col">
+    <div className={PAYMENT_DETAIL_COMPACT_CARD_CLASS} data-testid="transaction-protection-card">
+      <div className="pointer-events-none absolute inset-0 rounded-xl bg-[linear-gradient(180deg,rgba(0,74,35,0.025)_0%,transparent_65%)]" />
+      <div className="relative z-10">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/15 bg-primary/5 text-primary">
-            <BadgeCheck className="size-5" strokeWidth={1.8} />
+          <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/15 bg-primary/5 text-primary">
+            <BadgeCheck className="size-[1.1rem]" strokeWidth={1.8} />
           </span>
           <div className="min-w-0">
-            <h2 className="font-headline text-[1.45rem] font-black leading-tight tracking-tight text-primary">
+            <h2 className="font-headline text-[1.3rem] font-black leading-tight tracking-tight text-primary">
               Perlindungan Transaksi
             </h2>
-            <p className="mt-1 text-[0.72rem] leading-5 text-[#62655f]">Kami menjaga transaksi Anda tetap aman.</p>
+            <p className="mt-1 text-[0.7rem] leading-5 text-[#62655f]">Kami menjaga transaksi Anda tetap aman.</p>
           </div>
         </div>
 
-        <div className="mt-5 flex flex-1 flex-col divide-y divide-primary/10 overflow-hidden rounded-[1rem] border border-primary/10 bg-[#fbfdfb]">
+        <div className="mt-4 divide-y divide-primary/10 overflow-hidden rounded-[1rem] border border-primary/10 bg-[#fbfdfb]" data-testid="transaction-protection-list">
           {protectionItems.map(({ Icon, title, description }) => (
-            <div className="flex flex-1 items-start gap-3 px-3.5 py-4" key={title}>
+            <div className="flex items-start gap-3 px-3.5 py-3" data-testid="transaction-protection-item" key={title}>
               <span className="grid size-9 shrink-0 place-items-center rounded-full border border-primary/15 bg-white text-primary">
                 <Icon className="size-[1.05rem]" strokeWidth={1.8} />
               </span>
