@@ -820,21 +820,6 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
     <PaymentWorkflowRail
       completed={completed}
       currentStep={currentStep}
-      description={
-        isVickreyWin
-          ? isFailedVickreyPayment
-            ? "Pembayaran Lelang Tertutup wajib selesai maksimal 24 jam. Karena tenggat terlewati, transaksi gagal dan tidak lagi berada dalam antrean pembayaran aktif."
-            : "Lelang Tertutup hanya memakai pembayaran langsung di unit terkait. Tidak ada unggah bukti pembayaran online."
-          : isFailedFixedPricePayment
-            ? FIXED_PRICE_PAYMENT_FAILURE_COPY.description
-          : isTransfer
-            ? transaction.status === "DITOLAK_BUKTI"
-              ? "Bukti pembayaran ditolak admin unit. Transaksi ini dibatalkan; silakan kembali ke katalog bila ingin melakukan pembelian ulang."
-              : "Fixed price transfer membutuhkan bukti pembayaran sebelum admin memverifikasi."
-            : isMidtrans
-              ? "Status pembayaran akan diperbarui setelah dana diterima."
-              : "Fixed price bayar langsung diverifikasi admin setelah pembayaran diterima di unit."
-      }
       steps={steps}
       title="Alur Pembayaran"
       tone="buyer"

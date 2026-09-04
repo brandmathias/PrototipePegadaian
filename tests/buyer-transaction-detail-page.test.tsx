@@ -286,7 +286,7 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
     expect(within(workflow!).getByRole("heading", { name: /bayar melalui transfer/i })).toBeInTheDocument();
-    expect(within(workflow!).getByText(/status diperbarui setelah dana diterima/i)).toBeInTheDocument();
+    expect(within(workflow!).queryByText("Status pembayaran akan diperbarui setelah dana diterima.")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();

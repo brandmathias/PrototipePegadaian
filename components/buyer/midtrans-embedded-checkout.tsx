@@ -181,10 +181,6 @@ export function MidtransEmbeddedCheckout({ compact = false, transactionId }: { c
           <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran belum dapat ditampilkan</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#62655f]">{error}</p>
         </div>
-        <div className="mx-auto flex max-w-md items-start gap-3 rounded-xl border border-primary/10 bg-white px-4 py-3 text-left text-sm leading-6 text-[#62655f]">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-          <p>Status pembayaran akan diperbarui setelah dana diterima.</p>
-        </div>
       </div>
     );
   }
