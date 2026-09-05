@@ -351,11 +351,17 @@ describe("TransactionsPage", () => {
     expect(screen.getByRole("button", { name: /semua transaksi/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /riwayat lelang/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /perlu tindakan/i })).toBeInTheDocument();
-    expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
+    const fixedPricePendingRow = screen.getByText("Honda Vario 160 CBS 2023").closest("article");
+    expect(fixedPricePendingRow).not.toBeNull();
+    expect(within(fixedPricePendingRow!).getByText("Perlu Tindakan")).toBeInTheDocument();
+    expect(
+      within(fixedPricePendingRow!).getByRole("link", { name: /lihat detail/i })
+    ).toHaveAttribute("href", "/transaksi/TRX-250520-0011");
     expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
     expect(screen.queryByText("TRX-250520-0012")).not.toBeInTheDocument();
     expect(screen.getByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i)).toBeInTheDocument();
+    expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("Ipad")).toBeInTheDocument();
@@ -439,7 +445,7 @@ describe("TransactionsPage", () => {
     expect(within(verifiedPaymentCard).queryByText("Transaksi selesai")).not.toBeInTheDocument();
   });
 
-  it("places rejected harga tetap proof transactions in Dibatalkan instead of Perlu Tindakan", async () => {
+  it("keeps active fixed-price payments in Perlu Tindakan and rejected payments in Gagal", async () => {
     const user = userEvent.setup();
 
     render(
@@ -452,7 +458,7 @@ describe("TransactionsPage", () => {
     await user.click(screen.getByRole("button", { name: /perlu tindakan/i }));
 
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
-    expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
+    expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.queryByText("Cincin Emas Berlian")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /gagal/i }));

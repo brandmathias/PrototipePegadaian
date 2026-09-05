@@ -188,15 +188,9 @@ function getTransactionAmountMeta(transaction: BuyerTransaction) {
 function getTransactionActionMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
-      if (transaction.kind === "VICKREY_WIN") {
-        return {
-          isPrimary: false,
-          label: "Lihat Detail",
-        };
-      }
       return {
-        isPrimary: true,
-        label: "Bayar Sekarang",
+        isPrimary: false,
+        label: "Lihat Detail",
       };
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
@@ -952,15 +946,11 @@ export function TransactionsWorkspace({
   );
 
   const visibleTransactions = useMemo(() => {
-    const recordedTransactions = transactions.filter(
-      (item) => !(item.kind === "FIXED_PRICE" && item.status === "MENUNGGU_PEMBAYARAN")
-    );
-
     if (transactionFilter === "all") {
-      return recordedTransactions;
+      return transactions;
     }
 
-    return recordedTransactions.filter(
+    return transactions.filter(
       (item) => getTransactionStatusMeta(item).matchesFilter === transactionFilter
     );
   }, [transactionFilter, transactions]);

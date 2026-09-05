@@ -1573,7 +1573,10 @@ function VickreyPaymentFailedDetail({
 }) {
   const sessionDate = transaction.createdAt.split(",")[0]?.trim() || transaction.createdAt;
   const failureReference = `TRX-FAIL-${transaction.applicationNumber || transaction.id}`;
-  const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
+  const paymentMethodLabel =
+    transaction.kind === "VICKREY_WIN" && transaction.method === "BAYAR_LANGSUNG"
+      ? "Bayar langsung di unit"
+      : getReceiptPaymentMethodLabel(transaction);
   const violationAudit = getFailedPaymentViolationAudit(
     transaction.violationLevel ?? buyerStatus?.blacklist.totalViolations
   );
@@ -1926,7 +1929,10 @@ function VickreyPaymentSuccessDetail({
   const successReference = `TRX-SUK-${
     transaction.applicationNumber || transaction.receiptNumber || transaction.reference || transaction.id
   }`;
-  const paymentMethodLabel = getReceiptPaymentMethodLabel(transaction);
+  const paymentMethodLabel =
+    transaction.kind === "VICKREY_WIN" && transaction.method === "BAYAR_LANGSUNG"
+      ? "Bayar langsung di unit"
+      : getReceiptPaymentMethodLabel(transaction);
   const handoverLockMessage = transaction.handoverProof
     ? null
     : getReceiptHandoverLockMessage(transaction);
@@ -2200,6 +2206,7 @@ export function TransactionDetailPage({
   const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isFailedFixedPricePayment = isFixedPrice && transaction.status === "GAGAL";
+  const isFixedPriceVerifiedPayment = isFixedPrice && isVerified && !isMidtrans;
   const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
   const isPendingVickreyPayment =
     isVickreyWin &&
@@ -2334,8 +2341,12 @@ export function TransactionDetailPage({
             <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
               {isProofRejected
                 ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
-                : isFailedFixedPricePayment
+              : isFailedFixedPricePayment
                 ? FIXED_PRICE_PAYMENT_FAILURE_COPY.description
+                : isFixedPriceVerifiedPayment
+                  ? isCompleted
+                    ? "Pembayaran dan serah-terima barang telah dikonfirmasi. Nota transaksi tersedia di halaman ini."
+                    : "Pembayaran harga tetap telah diverifikasi. Tunggu bukti serah-terima dari admin unit atau konfirmasikan setelah barang diterima."
                 : isFixedPrice
                 ? isMidtrans
                   ? isFailedMidtransPayment
@@ -2500,8 +2511,8 @@ export function TransactionDetailPage({
         >
           <div className="relative z-10 flex h-full flex-col">
             <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
-              {isFailedFixedPricePayment && !isMidtrans ? <CircleX className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
-              {isFailedFixedPricePayment && !isMidtrans ? "Pembayaran Harga Tetap Gagal" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
+              {isFailedFixedPricePayment && !isMidtrans ? <CircleX className="size-5" /> : isFixedPriceVerifiedPayment ? <CheckCircle2 className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
+              {isFailedFixedPricePayment && !isMidtrans ? "Pembayaran Harga Tetap Gagal" : isFixedPriceVerifiedPayment ? "Pembayaran Berhasil" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
             </h2>
 
             {isFailedFixedPricePayment && !isMidtrans ? (
@@ -2519,6 +2530,34 @@ export function TransactionDetailPage({
                     </div>
                   </div>
                 </div>
+              </div>
+            ) : isFixedPriceVerifiedPayment ? (
+              <div className="flex flex-1 flex-col justify-center gap-4">
+                <div className="rounded-[1.15rem] border border-[#bfe5ca] bg-[linear-gradient(135deg,#effbf3_0%,#ffffff_100%)] p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#d9f3e1] text-[#087642] shadow-[0_12px_24px_-18px_rgba(8,118,66,0.42)]">
+                      <CheckCircle2 className="size-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-black text-[#13211c]">Pembayaran berhasil diverifikasi</h3>
+                      <p className="mt-1 text-sm leading-6 text-[#52665b]">
+                        {isCompleted
+                          ? "Pembayaran dan serah-terima barang sudah tercatat sebagai transaksi selesai."
+                          : "Pembayaran telah diverifikasi oleh admin unit. Transaksi menunggu penyelesaian serah-terima barang."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <dl className="grid gap-3 rounded-[0.95rem] border border-[#e0ebe3] bg-[#fbfdfb] p-4 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#7a8f84]">Status pembayaran</dt>
+                    <dd className="mt-1 text-sm font-black text-[#0a6a49]">{isCompleted ? "Selesai" : "Lunas"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[0.68rem] font-black uppercase tracking-[0.12em] text-[#7a8f84]">Diverifikasi pada</dt>
+                    <dd className="mt-1 text-sm font-bold text-[#26372f]">{transaction.verifiedAt ?? transaction.createdAt}</dd>
+                  </div>
+                </dl>
               </div>
             ) : isTransfer ? (
               <>

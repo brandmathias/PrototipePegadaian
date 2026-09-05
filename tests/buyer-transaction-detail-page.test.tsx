@@ -264,6 +264,50 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/unggah bukti transfer maksimal 24 jam/i)).not.toBeInTheDocument();
   });
 
+  it.each(["LUNAS", "SELESAI"] as const)(
+    "renders fixed-price %s as verified payment information instead of payment instructions",
+    (status) => {
+      render(
+        <TransactionDetailPage
+          buyer={buyer}
+          transaction={{
+            ...transactionWithSpecifications,
+            id: `trx-fixed-${status.toLowerCase()}`,
+            status,
+            paymentProof: "/uploads/bukti/transfer-lunas.jpg",
+            verifiedAt: "5 Mei 2026, 11.15 WIB",
+            completedAt: status === "SELESAI" ? "5 Mei 2026, 12.15 WIB" : undefined,
+            handoverProof:
+              status === "SELESAI"
+                ? {
+                    fileUrl: "/uploads/serah-terima/trx-fixed-success.jpg",
+                    uploadedAt: "5 Mei 2026, 12.00 WIB",
+                    uploadedBy: "Admin Unit",
+                    location: "UPC Ranotana"
+                  }
+                : undefined
+          }}
+          transactionId={`trx-fixed-${status.toLowerCase()}`}
+        />
+      );
+
+      const paymentCard = screen.getByTestId("transaction-payment-card");
+      expect(
+        within(paymentCard).getByRole("heading", { name: /pembayaran berhasil diverifikasi/i })
+      ).toBeInTheDocument();
+      expect(
+        within(paymentCard).getByText(
+          status === "SELESAI"
+            ? /pembayaran dan serah-terima barang sudah tercatat sebagai transaksi selesai/i
+            : /pembayaran telah diverifikasi oleh admin unit/i
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByLabelText(/daftar rekening tujuan/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/pilih salah satu rekening di bawah/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/pembayaran diverifikasi pada/i)).toBeInTheDocument();
+    }
+  );
+
   it("renders the harga tetap Midtrans flow with a resumable checkout and automatic status", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
