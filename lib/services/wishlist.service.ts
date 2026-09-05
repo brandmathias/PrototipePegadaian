@@ -69,21 +69,25 @@ async function getMediaByBarangId(barangIds: string[]) {
   }, new Map<string, Array<{ id: string; type: string; url: string; fileName: string | null }>>());
 }
 
-function isCatalogVisibleWishlistRow(
+function getUnavailableReason(
   row: Awaited<ReturnType<typeof getWishlistRows>>[number],
   now: Date
 ) {
-  return (
-    row.unitIsActive &&
-    row.itemStatus === "dipasarkan" &&
-    row.marketingStatus === "aktif" &&
-    (row.marketingMode !== "vickrey" || Boolean(row.endsAt && row.endsAt.getTime() > now.getTime()))
-  );
+  if (!row.unitIsActive) return "Unit sedang tidak aktif";
+  if (row.itemStatus !== "dipasarkan") return "Barang sudah tidak tersedia";
+  if (row.marketingStatus !== "aktif") return "Sesi pemasaran sudah tidak aktif";
+  if (row.marketingMode === "vickrey" && (!row.endsAt || row.endsAt.getTime() <= now.getTime())) {
+    return "Lelang sudah berakhir";
+  }
+
+  return "Barang sudah tidak tersedia";
 }
 
 function serializeWishlistItem(
   row: Awaited<ReturnType<typeof getWishlistRows>>[number],
   media: Array<{ id: string; type: string; url: string; fileName: string | null }>,
+  now: Date,
+  isAvailable: boolean,
   insights?: BuyerWishlistItem["lot"]["insights"]
 ): BuyerWishlistItem {
   const lot = serializePublicLot({
@@ -91,15 +95,17 @@ function serializeWishlistItem(
     insights,
     media
   });
+  const unavailableReason = isAvailable ? null : getUnavailableReason(row, now);
 
   return {
     likedAt: formatAppDateTime(row.wishlistCreatedAt),
-    isAvailable: true,
-    lot
+    isAvailable,
+    ...(unavailableReason ? { unavailableReason } : {}),
+    lot: unavailableReason ? { ...lot, status: "Tidak tersedia" } : lot
   };
 }
 
-async function getWishlistRows(userId: string, now: Date) {
+async function getWishlistRows(userId: string) {
   return db
     .select(wishlistLotSelection())
     .from(buyerWishlist)
@@ -107,36 +113,27 @@ async function getWishlistRows(userId: string, now: Date) {
     .innerJoin(barang, eq(barang.id, pemasaran.barangId))
     .innerJoin(units, eq(units.id, barang.unitId))
     .leftJoin(unitAccounts, and(eq(unitAccounts.unitId, barang.unitId), eq(unitAccounts.isActive, true)))
-    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)))
+    .where(eq(buyerWishlist.userId, userId))
     .orderBy(desc(buyerWishlist.createdAt));
 }
 
 export async function getBuyerWishlistIds(userId: string) {
-  const now = new Date();
   const rows = await db
     .select({ pemasaranId: buyerWishlist.pemasaranId })
     .from(buyerWishlist)
-    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
-    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
-    .innerJoin(units, eq(units.id, barang.unitId))
-    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)));
+    .where(eq(buyerWishlist.userId, userId));
 
   return rows.map((row) => row.pemasaranId);
 }
 
 export async function isBuyerWishlistItem(userId: string, pemasaranId: string) {
-  const now = new Date();
   const [row] = await db
     .select({ id: buyerWishlist.id })
     .from(buyerWishlist)
-    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
-    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
-    .innerJoin(units, eq(units.id, barang.unitId))
     .where(
       and(
         eq(buyerWishlist.userId, userId),
-        eq(buyerWishlist.pemasaranId, pemasaranId),
-        publicCatalogVisibilityConditions(now)
+        eq(buyerWishlist.pemasaranId, pemasaranId)
       )
     )
     .limit(1);
@@ -145,33 +142,52 @@ export async function isBuyerWishlistItem(userId: string, pemasaranId: string) {
 }
 
 export async function getBuyerWishlistCount(userId: string) {
-  const now = new Date();
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(buyerWishlist)
-    .innerJoin(pemasaran, eq(pemasaran.id, buyerWishlist.pemasaranId))
-    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
-    .innerJoin(units, eq(units.id, barang.unitId))
-    .where(and(eq(buyerWishlist.userId, userId), publicCatalogVisibilityConditions(now)))
+    .where(eq(buyerWishlist.userId, userId))
     .limit(1);
 
   return Number(row?.count ?? 0);
 }
 
+async function getCatalogVisibleMarketingIds(marketingIds: string[], now: Date) {
+  const uniqueMarketingIds = [...new Set(marketingIds)];
+  if (!uniqueMarketingIds.length) return new Set<string>();
+
+  const rows = await db
+    .select({ id: pemasaran.id })
+    .from(pemasaran)
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .innerJoin(units, eq(units.id, barang.unitId))
+    .where(and(inArray(pemasaran.id, uniqueMarketingIds), publicCatalogVisibilityConditions(now)));
+
+  return new Set(rows.map((row) => row.id));
+}
+
 export async function listBuyerWishlist(userId: string): Promise<BuyerWishlist> {
   const now = new Date();
-  const rows = (await getWishlistRows(userId, now)).filter((row) => isCatalogVisibleWishlistRow(row, now));
-  const [mediaByBarangId, statsByMarketingId] = await Promise.all([
+  const rows = await getWishlistRows(userId);
+  const [mediaByBarangId, statsByMarketingId, visibleMarketingIds] = await Promise.all([
     getMediaByBarangId(rows.map((row) => row.itemId)),
-    getLotStatsByIds(rows.map((row) => row.marketingId))
+    getLotStatsByIds(rows.map((row) => row.marketingId)),
+    getCatalogVisibleMarketingIds(rows.map((row) => row.marketingId), now)
   ]);
-  const items = rows.map((row) =>
-    serializeWishlistItem(row, mediaByBarangId.get(row.itemId) ?? [], statsByMarketingId.get(row.marketingId))
+  const items = rows.map((row) => {
+    const isAvailable = visibleMarketingIds.has(row.marketingId);
+    return serializeWishlistItem(
+      row,
+      mediaByBarangId.get(row.itemId) ?? [],
+      now,
+      isAvailable,
+      statsByMarketingId.get(row.marketingId)
+    );
+  }
   );
 
   return {
-    activeItems: items,
-    unavailableItems: []
+    activeItems: items.filter((item) => item.isAvailable),
+    unavailableItems: items.filter((item) => !item.isAvailable)
   };
 }
 

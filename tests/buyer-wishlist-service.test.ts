@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   const db = {
@@ -25,6 +25,7 @@ vi.mock("@/lib/buyer/serializers", () => ({
     name: row.itemName,
     mode: row.marketingMode,
     price: Number(row.marketingPrice ?? 0),
+    status: row.status,
     media: [],
     specs: []
   }))
@@ -96,6 +97,10 @@ describe("wishlist service", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    mocks.db.select.mockReset();
+  });
+
   it("adds an item when it is not in the buyer wishlist", async () => {
     mockSelectRows([]);
     mockSelectRows([{ id: "pm-1" }]);
@@ -152,33 +157,42 @@ describe("wishlist service", () => {
     expect(mocks.db.select).toHaveBeenCalledWith({ id: expect.anything() });
   });
 
-  it("only returns wishlist items that are currently visible in the public catalog", async () => {
+  it("keeps a catalog-hidden fixed-price item in wishlist as unavailable", async () => {
     mockSelectRows([
       makeWishlistRow(),
       makeWishlistRow({
-        marketingId: "pm-unavailable",
-        itemId: "item-unavailable",
-        itemName: "Barang Sudah Hilang",
-        itemStatus: "terjual"
+        marketingId: "pm-hidden-by-transaction",
+        itemId: "item-hidden-by-transaction",
+        itemName: "Barang Sudah Tidak Di Katalog"
       })
     ]);
     mockSelectRows([]);
+    mockSelectRows([{ id: "pm-visible" }]);
 
     await expect(listBuyerWishlist("buyer-1")).resolves.toMatchObject({
       activeItems: [expect.objectContaining({ lot: expect.objectContaining({ id: "pm-visible" }) })],
-      unavailableItems: []
+      unavailableItems: [
+        expect.objectContaining({
+          isAvailable: false,
+          unavailableReason: "Barang sudah tidak tersedia",
+          lot: expect.objectContaining({
+            id: "pm-hidden-by-transaction",
+            status: "Tidak tersedia"
+          })
+        })
+      ]
     });
   });
 
-  it("uses the catalog visibility query when hydrating ids and the wishlist count", async () => {
+  it("keeps saved ids and totals even after an item leaves the catalog", async () => {
     const idsQuery = mockSelectRows([{ pemasaranId: "pm-visible" }]);
     const countQuery = mockSelectRows([{ count: 1 }]);
 
     await expect(getBuyerWishlistIds("buyer-1")).resolves.toEqual(["pm-visible"]);
     await expect(getBuyerWishlistCount("buyer-1")).resolves.toBe(1);
 
-    expect(idsQuery.innerJoin).toHaveBeenCalled();
-    expect(countQuery.innerJoin).toHaveBeenCalled();
+    expect(idsQuery.innerJoin).not.toHaveBeenCalled();
+    expect(countQuery.innerJoin).not.toHaveBeenCalled();
   });
 
   it("does not add a wishlist item that is no longer visible in the catalog", async () => {
