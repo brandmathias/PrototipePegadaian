@@ -100,7 +100,7 @@ describe("admin and superadmin notification pages", () => {
     });
     expect(notificationLink).toHaveClass("group", "hover:-translate-y-0.5");
     expect(notificationLink).toHaveAttribute("href", "/admin/transaksi/trx-admin-1");
-    expect(within(notificationLink).getByText(/silakan lakukan verifikasi/i)).toBeInTheDocument();
+    expect(within(notificationLink).getByText(/silakan lakukan verifikasi/i)).toHaveClass("text-justify");
   });
 
   it("renders superadmin notifications with the shared Monitoring Unit hero treatment", () => {

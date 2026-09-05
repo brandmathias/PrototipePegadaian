@@ -354,6 +354,8 @@ describe("TransactionsPage", () => {
     const fixedPricePendingRow = screen.getByText("Honda Vario 160 CBS 2023").closest("article");
     expect(fixedPricePendingRow).not.toBeNull();
     expect(within(fixedPricePendingRow!).getByText("Perlu Tindakan")).toBeInTheDocument();
+    expect(within(fixedPricePendingRow!).getByText("Pembayaran belum diselesaikan")).toBeInTheDocument();
+    expect(within(fixedPricePendingRow!).getByText("Lanjutkan pembayaran sebelum batas waktu berakhir.")).toBeInTheDocument();
     expect(
       within(fixedPricePendingRow!).getByRole("link", { name: /lihat detail/i })
     ).toHaveAttribute("href", "/transaksi/TRX-250520-0011");

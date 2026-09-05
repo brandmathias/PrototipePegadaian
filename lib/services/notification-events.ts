@@ -16,6 +16,7 @@ type TransactionEventInput = {
   userId: string;
   transactionId: string;
   lotName: string;
+  transactionType?: string;
 };
 
 const BUYER_RESTRICTION_NOTIFICATION_HREF = "/pelanggaran";
@@ -273,7 +274,10 @@ export async function notifyPaymentDeadlineSoon(input: TransactionEventInput) {
   return createNotificationOnce({
     userId: input.userId,
     title: `Batas pembayaran ${input.lotName} hampir habis`,
-    message: "Segera selesaikan pembayaran agar transaksi tidak gagal dan akun tidak terkena pembatasan.",
+    message:
+      input.transactionType === "fixed_price"
+        ? "Segera selesaikan pembayaran agar transaksi tidak gagal."
+        : "Segera selesaikan pembayaran agar transaksi tidak gagal dan akun tidak terkena pembatasan.",
     type: "payment_deadline",
     entityType: "transaction",
     entityId: input.transactionId,

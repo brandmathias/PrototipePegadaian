@@ -492,7 +492,8 @@ export async function processPaymentDeadlineNotifications(now = new Date()): Pro
     await notifyPaymentDeadlineSoon({
       userId: row.transaction.userId,
       transactionId: row.transaction.id,
-      lotName: row.item.name
+      lotName: row.item.name,
+      transactionType: row.transaction.type === "vickrey" ? "vickrey" : "fixed_price"
     });
     summary.notified += 1;
   }

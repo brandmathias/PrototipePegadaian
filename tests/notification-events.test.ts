@@ -204,7 +204,8 @@ describe("notification event helpers", () => {
     await notifyPaymentDeadlineSoon({
       userId: "buyer-1",
       transactionId: "trx-1",
-      lotName: "Motor Racing"
+      lotName: "Motor Racing",
+      transactionType: "vickrey"
     });
     await notifyBlacklistActivated({
       userId: "buyer-1",
@@ -216,7 +217,8 @@ describe("notification event helpers", () => {
     expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "payment_deadline",
-        title: "Batas pembayaran Motor Racing hampir habis"
+        title: "Batas pembayaran Motor Racing hampir habis",
+        message: "Segera selesaikan pembayaran agar transaksi tidak gagal dan akun tidak terkena pembatasan."
       })
     );
     expect(mocks.createOrRefreshNotification).toHaveBeenCalledWith(
@@ -320,6 +322,25 @@ describe("notification event helpers", () => {
         entityId: "pm-vickrey-1",
         actionHref:
           "/superadmin/unit/unit-1/barang/barang-vickrey-1?iteration=pm-vickrey-1#marketing-audit"
+      })
+    );
+  });
+
+  it("keeps fixed-price deadline notifications free from auction-only restriction language", async () => {
+    await notifyPaymentDeadlineSoon({
+      userId: "buyer-1",
+      transactionId: "trx-fixed-deadline",
+      lotName: "Emas Batangan ANTAM 5 Gram",
+      transactionType: "fixed_price"
+    });
+
+    expect(mocks.createNotificationOnce).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "payment_deadline",
+        title: "Batas pembayaran Emas Batangan ANTAM 5 Gram hampir habis",
+        message: "Segera selesaikan pembayaran agar transaksi tidak gagal.",
+        entityId: "trx-fixed-deadline",
+        actionHref: "/transaksi/trx-fixed-deadline"
       })
     );
   });

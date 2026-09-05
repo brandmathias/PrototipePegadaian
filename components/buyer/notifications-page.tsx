@@ -228,7 +228,7 @@ export function BuyerNotificationsPage({ initialNotifications }: BuyerNotificati
           </span>
           <span
             className={cn(
-              "mt-2 block text-sm leading-6",
+              "mt-2 block text-justify text-sm leading-6",
               notification.isRead
                 ? "font-medium text-[#c4cad4]"
                 : "font-semibold text-[#6a6f78]"

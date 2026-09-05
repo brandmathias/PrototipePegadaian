@@ -218,8 +218,8 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
       return {
-        title: "Transaksi aman",
-        description: "Data dan pembayaran Anda terlindungi.",
+        title: "Pembayaran belum diselesaikan",
+        description: "Lanjutkan pembayaran sebelum batas waktu berakhir.",
         className: "bg-[#f2fbf4] text-[#2e6c4e]",
         icon: <ShieldCheck className="size-5" />,
       };
