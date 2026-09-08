@@ -3950,7 +3950,7 @@ function getSuperAdminMarketingPaymentMethodLabel(
   session: SuperAdminUnitBarangMarketingSession,
 ) {
   if (session.paymentMethod === "MIDTRANS") {
-    return "Midtrans (otomatis)";
+    return "Pembayaran online (otomatis)";
   }
   if (session.paymentMethod === "BAYAR_LANGSUNG") {
     return "Langsung di unit";
@@ -5432,13 +5432,9 @@ function SuperAdminFixedPriceProgressPanel({
   const fulfilled = session.transactionStatus === "SELESAI";
   const verified = session.transactionStatus === "LUNAS" || fulfilled;
   const rejected = session.transactionStatus === "DITOLAK_BUKTI";
-  const submitted =
-    Boolean(session.transactionId) &&
-    !["MENUNGGU_PEMBAYARAN", "GAGAL"].includes(session.transactionStatus ?? "");
   const buyerActor = session.buyerName
     ? `Buyer: ${session.buyerName}`
     : "Buyer";
-  const adminActor = session.verifiedBy ? `Admin: ${session.verifiedBy}` : null;
   const completionActor =
     session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
   if (rejected) {
@@ -5447,17 +5443,9 @@ function SuperAdminFixedPriceProgressPanel({
         density="tight"
         steps={[
           {
-            label: "Pembayaran",
-            status: "Berdasarkan",
+            label: "Status Pembayaran",
+            status: "Tidak berhasil",
             actor: buyerActor,
-            occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
-            icon: WalletCards,
-            tone: "done",
-          },
-          {
-            label: "Verifikasi",
-            status: "Ditolak",
-            actor: adminActor,
             occurredAt: formatSuperAdminDateTime(session.verifiedAt),
             icon: X,
             tone: "failed",
@@ -5478,35 +5466,36 @@ function SuperAdminFixedPriceProgressPanel({
   const steps = [
     {
       label: "Pembayaran",
-      status: submitted
+      status: verified
         ? "Selesai"
         : session.transactionId
           ? "Berjalan"
           : "Belum terjadi",
-      actor: submitted || session.transactionId ? buyerActor : null,
-      occurredAt: submitted
+      actor: session.transactionId ? buyerActor : null,
+      occurredAt: verified
         ? formatSuperAdminDateTime(session.transactionCreatedAt)
         : null,
       icon: WalletCards,
-      tone: submitted
+      tone: verified
         ? ("done" as const)
         : session.transactionId
           ? ("current" as const)
           : ("pending" as const),
     },
     {
-      label: "Verifikasi",
+      label: "Status Pembayaran",
       status: verified
-        ? "Selesai"
-        : submitted
-          ? "Menunggu admin"
+        ? "Dikonfirmasi otomatis"
+        : session.transactionId
+          ? "Menunggu pembaruan"
           : "Belum terjadi",
-      actor: verified ? adminActor : null,
-      occurredAt: verified ? formatSuperAdminDateTime(session.soldAt) : null,
-      icon: ShieldCheck,
+      occurredAt: verified
+        ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
+        : null,
+      icon: WalletCards,
       tone: verified
         ? ("done" as const)
-        : submitted
+        : session.transactionId
           ? ("current" as const)
           : ("pending" as const),
     },
@@ -5557,18 +5546,18 @@ function SuperAdminFixedPriceWorkspace({
     session.status === "GAGAL" ||
     session.transactionStatus === "GAGAL";
   const statusTitle = rejected
-    ? "Pembayaran Harga Tetap Ditolak"
+    ? "Pembayaran Harga Tetap Tidak Berhasil"
     : isFailed
       ? "Sesi Harga Tetap Diarsipkan"
       : sold
         ? "Pembelian Harga Tetap Selesai"
         : verified
-          ? "Pembayaran Harga Tetap Terverifikasi"
+          ? "Pembayaran Harga Tetap Berhasil"
           : hasBuyer
-            ? "Bukti Pembayaran Masuk"
+            ? "Pembayaran Sedang Diproses"
             : "Masih Tersedia di Katalog";
   const statusDetail = rejected
-    ? `Admin unit menolak bukti pembayaran${session.rejectionReason ? ` dengan alasan: ${session.rejectionReason}` : ""}. Barang tetap tersedia untuk pembeli lain.`
+    ? `Pembayaran tidak berhasil diselesaikan${session.rejectionReason ? `: ${session.rejectionReason}` : ""}. Barang tetap tersedia untuk pembeli lain.`
     : isFailed
       ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
       : sold
@@ -5576,9 +5565,9 @@ function SuperAdminFixedPriceWorkspace({
           ? "Penjualan harga tetap selesai otomatis setelah masa konfirmasi serah-terima berakhir tanpa komplain."
           : "Penjualan harga tetap sudah selesai dan siap masuk arsip transaksi."
         : verified
-          ? getSuperAdminVerifiedDetail(session)
+          ? "Pembayaran telah dikonfirmasi otomatis. Admin unit dapat melanjutkan dokumentasi serah-terima barang."
           : hasBuyer
-            ? "Buyer sudah mengirim bukti pembayaran. Sesi menunggu verifikasi admin unit."
+            ? "Pembayaran sedang diproses. Status akan diperbarui otomatis setelah pembayaran diterima."
             : "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian.";
   const shouldAutoRefresh =
     Boolean(session.transactionId) &&
@@ -5600,7 +5589,7 @@ function SuperAdminFixedPriceWorkspace({
             : "border border-[#b9e4cc] bg-[#f4fcf6]",
         )}
         data-testid={
-          rejected ? "superadmin-payment-verification-audit" : undefined
+          rejected ? "superadmin-fixed-price-payment-audit" : undefined
         }
       >
         <div className="flex items-center gap-3">

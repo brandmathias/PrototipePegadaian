@@ -1306,14 +1306,14 @@ function getMarketingVerifiedDetail(
   auction: Pick<MarketingSession, "handoverAutoCompleteAt" | "handoverProofUrl" | "transactionStatus">,
 ) {
   if (isAwaitingHandoverDocumentation(auction)) {
-    return "Pembayaran sudah diverifikasi. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik.";
+    return "Pembayaran telah dikonfirmasi. Admin unit perlu mengunggah dokumentasi serah-terima barang fisik.";
   }
 
   if (auction.handoverAutoCompleteAt) {
     return `Menunggu buyer menekan Pembelian Selesai. Auto-selesai pada ${dateLabel(auction.handoverAutoCompleteAt)}.`;
   }
 
-  return "Pembayaran sudah diverifikasi. Menunggu buyer menekan Pembelian Selesai.";
+  return "Pembayaran telah dikonfirmasi. Menunggu buyer menekan Pembelian Selesai.";
 }
 
 function isPaymentQueue(auction: MarketingSession) {
@@ -1380,7 +1380,7 @@ function getFixedPriceWorkflowStatus(auction: MarketingSession) {
 
 function getFixedPriceOperationalNote(auction: MarketingSession) {
   if (isFixedPricePaymentRejected(auction)) {
-    return "Bukti pembayaran ditolak";
+    return "Pembayaran tidak berhasil";
   }
 
   if (isMarketingSold(auction)) {
@@ -1394,7 +1394,7 @@ function getFixedPriceOperationalNote(auction: MarketingSession) {
   }
 
   if (hasFixedPricePaymentSubmission(auction)) {
-    return "Pembelian harga tetap tercatat";
+    return "Pembayaran sedang diproses";
   }
 
   return "Menunggu pembeli dari katalog";
@@ -1504,7 +1504,7 @@ function getMarketingTimeMeta(auction: MarketingSession) {
 
   if (isFixedPricePaymentRejected(auction)) {
     return {
-      label: "Bukti Pembayaran Ditolak",
+      label: "Pembayaran Tidak Berhasil",
       value: dateLabel(auction.verifiedAt ?? auction.updatedAt ?? auction.createdAt),
     };
   }
@@ -1520,7 +1520,7 @@ function getMarketingTimeMeta(auction: MarketingSession) {
 
   if (auction.transactionStatus === "LUNAS") {
     return {
-      label: "Pembayaran Diverifikasi",
+      label: "Pembayaran Dikonfirmasi",
       value: dateLabel(auction.verifiedAt ?? auction.updatedAt ?? auction.createdAt),
     };
   }
@@ -1534,7 +1534,7 @@ function getMarketingTimeMeta(auction: MarketingSession) {
 
   if (auction.transactionStatus === "BUKTI_DIUNGGAH") {
     return {
-      label: "Bukti Pembayaran Diajukan",
+      label: "Pembayaran Sedang Diproses",
       value: dateLabel(auction.transactionCreatedAt ?? auction.updatedAt ?? auction.createdAt),
     };
   }
@@ -2928,11 +2928,9 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const fulfilled = auction.transactionStatus === "SELESAI";
   const verified = auction.transactionStatus === "LUNAS" || fulfilled;
   const rejected = isFixedPricePaymentRejected(auction);
-  const submitted = hasFixedPricePaymentSubmission(auction) || verified;
   const buyerActor = auction.buyerName
     ? `Buyer: ${auction.buyerName}`
     : "Buyer";
-  const adminActor = auction.verifiedBy ? `Admin: ${auction.verifiedBy}` : null;
   const completionActor =
     auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
 
@@ -2941,17 +2939,9 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       <CompactTransactionProgress
         steps={[
           {
-            label: "Pembayaran",
-            status: "Bukti dikirim",
+            label: "Status Pembayaran",
+            status: "Tidak berhasil",
             actor: buyerActor,
-            occurredAt: dateLabel(auction.transactionCreatedAt),
-            icon: WalletCards,
-            tone: "done",
-          },
-          {
-            label: "Verifikasi",
-            status: "Ditolak",
-            actor: adminActor,
             occurredAt: dateLabel(auction.verifiedAt),
             icon: X,
             tone: "failed",
@@ -2973,33 +2963,32 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const steps = [
     {
       label: "Pembayaran",
-      status: submitted
+      status: verified
         ? "Selesai"
         : auction.transactionId
           ? "Berjalan"
           : "Belum terjadi",
-      actor: submitted || auction.transactionId ? buyerActor : null,
-      occurredAt: submitted ? dateLabel(auction.transactionCreatedAt) : null,
+      actor: auction.transactionId ? buyerActor : null,
+      occurredAt: verified ? dateLabel(auction.transactionCreatedAt) : null,
       icon: WalletCards,
-      tone: submitted
+      tone: verified
         ? ("done" as const)
         : auction.transactionId
           ? ("current" as const)
           : ("pending" as const),
     },
     {
-      label: "Verifikasi",
+      label: "Status Pembayaran",
       status: verified
-        ? "Selesai"
-        : submitted
-          ? "Menunggu admin"
+        ? "Dikonfirmasi otomatis"
+        : auction.transactionId
+          ? "Menunggu pembaruan"
           : "Belum terjadi",
-      actor: verified ? adminActor : null,
-      occurredAt: verified ? dateLabel(auction.soldAt) : null,
-      icon: ShieldCheck,
+      occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
+      icon: WalletCards,
       tone: verified
         ? ("done" as const)
-        : submitted
+        : auction.transactionId
           ? ("current" as const)
           : ("pending" as const),
     },
@@ -3014,7 +3003,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
         ? completionActor
         : verified
           ? isAwaitingHandoverDocumentation(auction)
-            ? adminActor
+            ? null
             : buyerActor
           : null,
       occurredAt: fulfilled ? dateLabel(auction.completedAt) : null,
@@ -3218,14 +3207,10 @@ export function AdminFixedPriceDetailPage({
               <PencilLine className="size-4" />
               Edit Data
             </Button>
-            <FixedPricePaymentVerificationButton
+            <FixedPricePaymentStatusButton
               auction={auction}
               className="interactive-tap inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-[#c8d9d0] bg-[#edf5f1] px-4 text-sm font-black text-[#285445] shadow-[0_18px_32px_-26px_rgba(15,51,38,0.28)] transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-[#a9c7b8] hover:bg-[#e4f0ea] active:scale-[0.99]"
-              label={
-                canShowReceiptAction
-                  ? "Lihat Pembayaran"
-                  : "Verifikasi Pembayaran"
-              }
+              label="Status Pembayaran"
             />
             {canShowReceiptAction ? (
               <div className="sm:col-span-2 [&>span]:w-full">
@@ -3266,8 +3251,8 @@ export function AdminFixedPriceDetailPage({
               </p>
             ) : (
               <p>
-                Belum ada pembeli dengan bukti pembayaran masuk pada sesi harga
-                tetap ini.
+                Belum ada pembeli yang memulai pembayaran pada sesi harga tetap
+                ini.
               </p>
             )}
             <p className="mt-1">{statusMeta.detail}</p>
@@ -3390,20 +3375,20 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
       badgeClassName: "border-[#b7e7cf] bg-[#effaf4] text-[#006747]",
       detail: getMarketingVerifiedDetail(auction),
       icon: BadgeCheck,
-      label: "Terverifikasi",
+      label: "Pembayaran Berhasil",
     };
   }
 
   if (isFixedPricePaymentRejected(auction)) {
     const rejectionDetail = auction.rejectionReason
-      ? `Bukti pembayaran ditolak admin unit. Alasan: ${auction.rejectionReason}. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.`
-      : "Bukti pembayaran ditolak admin unit. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.";
+      ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.`
+      : "Pembayaran tidak berhasil diselesaikan. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.";
 
     return {
       badgeClassName: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c]",
       detail: rejectionDetail,
       icon: AlertTriangle,
-      label: "Bukti Ditolak",
+      label: "Pembayaran Tidak Berhasil",
     };
   }
 
@@ -3411,9 +3396,9 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
     return {
       badgeClassName: "border-[#fed7aa] bg-[#fff7ed] text-[#b45309]",
       detail:
-        "Buyer sudah mengirim bukti pembayaran. Admin unit dapat meninjau status pembayaran dari alur verifikasi.",
+        "Pembayaran sedang diproses. Status akan diperbarui otomatis setelah pembayaran diterima.",
       icon: ReceiptText,
-      label: "Pembayaran Masuk",
+      label: "Pembayaran Diproses",
     };
   }
 
@@ -5204,6 +5189,216 @@ function VickreyPaymentVerificationButton({
   );
 }
 
+function getFixedPricePaymentStatus(auction: MarketingSession) {
+  if (["LUNAS", "SELESAI"].includes(auction.transactionStatus ?? "")) {
+    return {
+      title: "Pembayaran berhasil",
+      description:
+        "Pembayaran sudah dikonfirmasi secara otomatis. Admin unit dapat melanjutkan dokumentasi serah-terima barang.",
+      tone: "success" as const,
+    };
+  }
+
+  if (["DITOLAK_BUKTI", "GAGAL"].includes(auction.transactionStatus ?? "")) {
+    return {
+      title: "Pembayaran tidak berhasil",
+      description:
+        "Pembayaran tidak dapat diselesaikan. Status ini hanya ditampilkan sebagai riwayat transaksi.",
+      tone: "failed" as const,
+    };
+  }
+
+  return {
+    title: "Pembayaran sedang diproses",
+    description:
+      "Pembayaran belum diselesaikan. Status akan diperbarui otomatis setelah pembayaran diterima.",
+    tone: "pending" as const,
+  };
+}
+
+function FixedPricePaymentStatusModal({
+  auction,
+  onOpenChange,
+  open,
+}: {
+  auction: MarketingSession;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+}) {
+  const status = getFixedPricePaymentStatus(auction);
+  const CategoryIcon = getMarketingCategoryIcon(auction.category);
+  const categoryLabel = humanize(auction.category);
+  const paymentPrice = auction.price ?? 0;
+  const reference = buildMarketingPaymentReference(auction);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onOpenChange(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onOpenChange, open]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  const toneClass =
+    status.tone === "success"
+      ? "border-[#b9e4cc] bg-[#f4fcf6] text-[#075b3f]"
+      : status.tone === "failed"
+        ? "border-[#fecaca] bg-[#fff1f2] text-[#9f1239]"
+        : "border-[#fde3b2] bg-[#fff8eb] text-[#8a4b08]";
+
+  return createPortal(
+    <div className="scrollbar-none fixed inset-0 z-[150] overflow-y-auto overscroll-contain px-3 py-3 sm:px-6 sm:py-6 print:hidden">
+      <button
+        aria-label="Tutup status pembayaran harga tetap"
+        className="fixed inset-0 bg-[#07131e]/66 backdrop-blur-[5px]"
+        onClick={() => onOpenChange(false)}
+        type="button"
+      />
+      <section
+        aria-labelledby="fixed-price-payment-status-title"
+        aria-modal="true"
+        className="relative z-[151] mx-auto my-auto w-full max-w-2xl pt-10 sm:pt-14"
+        role="dialog"
+      >
+        <div className="overflow-hidden rounded-[1.45rem] border border-[#d8e4de] bg-white shadow-[0_42px_118px_-46px_rgba(3,21,14,0.84)]">
+          <div className="relative px-5 pb-6 pt-8 sm:px-7 sm:pb-7">
+            <button
+              aria-label="Tutup"
+              className="absolute right-4 top-4 grid size-10 place-items-center rounded-lg text-slate-400 transition duration-200 ease-out hover:bg-slate-100 hover:text-slate-700 active:scale-[0.97]"
+              onClick={() => onOpenChange(false)}
+              type="button"
+            >
+              <X className="size-4.5" strokeWidth={2.2} />
+            </button>
+            <p className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#006747]">
+              Harga Tetap
+            </p>
+            <h2
+              className="mt-2 font-headline text-[1.55rem] font-black tracking-tight text-[#15231d] sm:text-[1.78rem]"
+              id="fixed-price-payment-status-title"
+            >
+              Status Pembayaran Harga Tetap
+            </h2>
+            <p className="mt-2 max-w-xl text-[0.9rem] font-semibold leading-7 text-slate-500">
+              Status pembayaran diperbarui otomatis. Tidak diperlukan persetujuan atau penolakan dari admin unit.
+            </p>
+          </div>
+
+          <div className="border-y border-[#edf2ee] bg-[#fbfdfb] px-5 py-5 sm:px-7">
+            <div className={`rounded-[1rem] border p-4 ${toneClass}`}>
+              <div className="flex items-start gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/80 shadow-[0_12px_24px_-18px_rgba(8,69,50,0.35)]">
+                  {status.tone === "failed" ? (
+                    <X className="size-5" strokeWidth={2.4} />
+                  ) : status.tone === "success" ? (
+                    <CheckCircle2 className="size-5" strokeWidth={2.4} />
+                  ) : (
+                    <WalletCards className="size-5" strokeWidth={2.2} />
+                  )}
+                </span>
+                <div>
+                  <p className="font-headline text-[1rem] font-black">{status.title}</p>
+                  <p className="mt-1 text-sm font-semibold leading-6">{status.description}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <PaymentVerificationInfoCard
+                icon={CategoryIcon}
+                iconLabel={`Ikon kategori ${categoryLabel}`}
+                label="Nama Barang"
+                hoverable={false}
+                value={auction.lot}
+              />
+              <PaymentVerificationInfoCard
+                icon={UserRound}
+                hoverable={false}
+                label="Pembeli"
+                value={auction.buyerName || "-"}
+              />
+              <PaymentVerificationInfoCard
+                icon={WalletCards}
+                hoverable={false}
+                label="Nominal Pembayaran"
+                value={currency.format(paymentPrice)}
+              />
+              <PaymentVerificationInfoCard
+                icon={ReceiptText}
+                hoverable={false}
+                label="Nomor Transaksi"
+                value={reference}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end px-5 py-5 sm:px-7">
+            <Button
+              className="min-h-12 rounded-[0.82rem] border-[#dbe4df] bg-white px-9 text-[0.92rem] font-bold text-[#26342e] shadow-[0_14px_30px_-28px_rgba(15,23,42,0.32)] hover:bg-[#f6faf8]"
+              onClick={() => onOpenChange(false)}
+              type="button"
+              variant="secondary"
+            >
+              Kembali
+            </Button>
+          </div>
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
+function FixedPricePaymentStatusButton({
+  auction,
+  className,
+  label = "Status Pembayaran",
+}: {
+  auction: MarketingSession;
+  className?: string;
+  label?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!auction.transactionId) {
+    return (
+      <Button className={className} disabled>
+        <ReceiptText className="size-5" />
+        {label}
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <button className={className} onClick={() => setIsOpen(true)} type="button">
+        <ReceiptText className="size-5" />
+        {label}
+      </button>
+      <FixedPricePaymentStatusModal
+        auction={auction}
+        onOpenChange={setIsOpen}
+        open={isOpen}
+      />
+    </>
+  );
+}
+
 function FixedPricePaymentVerificationModal({
   auction,
   onOpenChange,
@@ -5838,14 +6033,14 @@ function getFixedPriceReceiptTerms(auction: MarketingSession) {
   return [
     "Tunjukkan nota ini beserta kartu identitas asli (KTP) saat pengambilan barang.",
     `Pengambilan barang dilakukan di unit ${unitName}.`,
-    "Pembayaran harga tetap sudah diverifikasi admin unit dan nota ini sah sebagai bukti pembelian.",
+    "Pembayaran harga tetap telah dikonfirmasi secara otomatis dan nota ini sah sebagai bukti pembelian.",
     "Simpan nota ini untuk keperluan administrasi atau pengambilan barang.",
   ];
 }
 
 function getMarketingPaymentMethodLabel(auction: MarketingSession) {
   if (auction.paymentMethod === "MIDTRANS") {
-    return "Midtrans (otomatis)";
+    return "Pembayaran online (otomatis)";
   }
   if (auction.paymentMethod === "BAYAR_LANGSUNG") {
     return "Langsung di unit";
@@ -5902,7 +6097,7 @@ function FixedPriceReceiptInlinePrint({
         statusLabel={
           isCompleted
             ? getMarketingCompletionLabel(auction)
-            : "Terverifikasi admin"
+            : "Pembayaran dikonfirmasi otomatis"
         }
         subtotal={total}
         terms={getFixedPriceReceiptTerms(auction)}

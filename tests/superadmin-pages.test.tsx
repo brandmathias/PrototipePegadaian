@@ -2095,9 +2095,9 @@ describe("superadmin pages", () => {
     );
 
     expect(
-      screen.getByText("Pembayaran Harga Tetap Ditolak"),
+      screen.getByText("Pembayaran Harga Tetap Tidak Berhasil"),
     ).toBeInTheDocument();
-    const audit = screen.getByTestId("superadmin-payment-verification-audit");
+    const audit = screen.getByTestId("superadmin-fixed-price-payment-audit");
     const fixedPriceGrid = screen.getByTestId(
       "superadmin-fixed-price-settlement-primary-grid",
     );
@@ -2124,7 +2124,7 @@ describe("superadmin pages", () => {
     expect(screen.getByTestId("superadmin-item-price-frame")).toHaveTextContent(
       "Rp 15.000.000",
     );
-    expect(screen.getByText(/maria supit/i)).toBeInTheDocument();
+    expect(screen.queryByText(/maria supit/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/6 Jul 2026/).length).toBeGreaterThan(0);
     expect(
       screen.queryByText("Detail Verifikasi Admin Unit"),

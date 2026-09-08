@@ -444,7 +444,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
   });
 
-  it("opens harga tetap payment verification when buyer proof has been uploaded", () => {
+  it("opens an informative fixed-price payment status without manual approval controls", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -473,35 +473,17 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /verifikasi pembayaran/i }));
-    const dialog = screen.getByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i });
+    fireEvent.click(screen.getByRole("button", { name: /status pembayaran/i }));
+    const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
 
-    expect(within(dialog).getByText(/kewajiban nominal harga tetap/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/status pembayaran diperbarui otomatis/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/pembayaran sedang diproses/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
-    expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
-    const fullscreenButton = within(dialog).getByRole("button", { name: /buka fullscreen bukti pembayaran/i });
-    expect(fullscreenButton).toHaveClass("absolute", "right-4", "top-4", "size-10", "bg-white/94");
-    expect(within(dialog).queryByRole("link", { name: /buka bukti pembayaran/i })).not.toBeInTheDocument();
-
-    fireEvent.click(fullscreenButton);
-
-    const previewDialog = screen.getByRole("dialog", { name: /preview bukti pembayaran/i });
-    expect(within(previewDialog).getByRole("img", { name: /preview bukti pembayaran buyer demo 13 b/i })).toBeInTheDocument();
-
-    const reasonSelect = within(dialog).getByLabelText(/alasan penolakan pembayaran harga tetap/i);
-    const options = within(reasonSelect).getAllByRole("option");
-
-    expect(options).toHaveLength(3);
-    expect(within(dialog).getByRole("button", { name: /tolak pembayaran/i })).toBeDisabled();
-    expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeEnabled();
-
-    fireEvent.change(reasonSelect, {
-      target: { value: "Nominal uang yang dikirim tidak sesuai harga barang" }
-    });
-
-    expect(within(dialog).getByRole("button", { name: /tolak pembayaran/i })).toBeEnabled();
-    expect(within(dialog).getByRole("button", { name: /setujui pembayaran/i })).toBeDisabled();
+    expect(within(dialog).queryByText(/verifikasi/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: /setujui pembayaran/i })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: /tolak pembayaran/i })).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/midtrans/i)).not.toBeInTheDocument();
   });
 
   it("uses the public catalog metric even when the admin session feed contains more active rows", () => {
@@ -532,7 +514,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("1 Harga Tetap / 0 Lelang Tertutup")).toBeInTheDocument();
   });
 
-  it("allows harga tetap verification from the uploaded-proof status even when the proof URL is missing", () => {
+  it("shows fixed-price payment status even when legacy proof data is absent", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -560,11 +542,11 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
+    const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
-    expect(verifyButton).toBeEnabled();
-    fireEvent.click(verifyButton);
-    expect(screen.getByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i })).toBeInTheDocument();
+    expect(statusButton).toBeEnabled();
+    fireEvent.click(statusButton);
+    expect(screen.getByRole("dialog", { name: /status pembayaran harga tetap/i })).toBeInTheDocument();
   });
 
   it("auto-refreshes detail harga tetap while payment is still waiting on buyer or admin action", () => {
@@ -604,7 +586,7 @@ describe("admin pemasaran pages", () => {
     expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
-  it("does not reopen harga tetap verification actions after payment proof has been rejected", () => {
+  it("shows a read-only failed payment status for historical fixed-price records", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -633,26 +615,15 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    const verifyButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
+    const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
-    expect(screen.getByText(/bukti ditolak/i)).toBeInTheDocument();
-    expect(screen.getByText(/bukti pembayaran ditolak/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/verifikasi: ditolak/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.getByLabelText(/status pembayaran: tidak berhasil/i)).toHaveClass("transaction-progress-node-failed");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
-    expect(verifyButton).not.toBeDisabled();
-    fireEvent.click(verifyButton);
-    const dialog = screen.getByRole("dialog", { name: /review pembayaran ditolak/i });
-    expect(within(dialog).getByText("PEMBAYARAN DITOLAK")).toBeInTheDocument();
-    expect(within(dialog).getAllByText(/uang dikirim bukan ke rekening tujuan/i)).toHaveLength(1);
-    expect(within(dialog).getByTestId("fixed-price-payment-proof-preview")).toHaveClass(
-      "h-64",
-      "sm:h-72",
-      "lg:h-[20rem]",
-    );
-    expect(within(dialog).queryByText(/batas waktu pelunasan/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/fixed price dinyatakan/i)).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/review penolakan terkunci/i)).not.toBeInTheDocument();
+    expect(statusButton).toBeEnabled();
+    fireEvent.click(statusButton);
+    const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
+    expect(within(dialog).getByText("Pembayaran tidak berhasil")).toBeInTheDocument();
     expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
   });
@@ -691,7 +662,7 @@ describe("admin pemasaran pages", () => {
     expect(managementConsole).not.toBeNull();
 
     const editButton = within(managementConsole!).getByRole("button", { name: /edit data/i });
-    const paymentButton = within(managementConsole!).getByRole("button", { name: /lihat pembayaran/i });
+    const paymentButton = within(managementConsole!).getByRole("button", { name: /status pembayaran/i });
     const receiptButton = within(managementConsole!).getByRole("button", { name: /cetak nota/i });
 
     expect(editButton).toBeDisabled();
@@ -702,10 +673,9 @@ describe("admin pemasaran pages", () => {
 
     fireEvent.click(paymentButton);
 
-    const dialog = screen.getByRole("dialog", { name: /detail pembayaran terverifikasi/i });
-    expect(within(dialog).getAllByText(/pembayaran disetujui/i).length).toBeGreaterThan(0);
-    expect(within(dialog).getAllByText(/hanya dapat dilihat/i).length).toBeGreaterThan(0);
-    expect(within(dialog).queryByLabelText(/alasan penolakan pembayaran harga tetap/i)).not.toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
+    expect(within(dialog).getByText("Pembayaran berhasil")).toBeInTheDocument();
+    expect(within(dialog).getByText(/dikonfirmasi secara otomatis/i)).toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /tolak pembayaran/i })).not.toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: /setujui pembayaran/i })).not.toBeInTheDocument();
   });
@@ -760,7 +730,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!.querySelector(".receipt-output-main-grid")).not.toBeNull();
     expect(receiptPrintRoot!.querySelector(".receipt-output-summary-grid")).not.toBeNull();
     expect(receiptPrintRoot!).toHaveTextContent("Harga Tetap");
-    expect(receiptPrintRoot!).toHaveTextContent("Terverifikasi admin");
+    expect(receiptPrintRoot!).toHaveTextContent("Pembayaran dikonfirmasi otomatis");
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/cincin-utama.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog", { name: /verifikasi bukti pembayaran pembelian barang harga tetap/i })).not.toBeInTheDocument();
@@ -895,9 +865,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.queryByRole("link", { name: /edit data/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /edit data/i })).toBeDisabled();
     expect(screen.queryByRole("link", { name: /lihat log/i })).not.toBeInTheDocument();
-    const verifyPaymentButton = screen.getByRole("button", { name: /verifikasi pembayaran/i });
-    expect(verifyPaymentButton).toBeDisabled();
-    expect(verifyPaymentButton).toHaveClass("bg-[#edf5f1]", "text-[#285445]");
+    const paymentStatusButton = screen.getByRole("button", { name: /status pembayaran/i });
+    expect(paymentStatusButton).toBeDisabled();
+    expect(paymentStatusButton).toHaveClass("bg-[#edf5f1]", "text-[#285445]");
 
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima harga tetap/i);
     expect(handoverPanel).toHaveTextContent("Dokumentasi Serah Terima Barang Fisik");
@@ -937,7 +907,7 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeEnabled();
     expect(screen.queryByText("Cristiano Ronaldo")).not.toBeInTheDocument();
-    expect(screen.getByText(/belum ada pembeli dengan bukti pembayaran masuk/i)).toBeInTheDocument();
+    expect(screen.getByText(/belum ada pembeli yang memulai pembayaran/i)).toBeInTheDocument();
   });
 
   it("keeps fixed-price video media inside the same gallery preview frame", () => {
