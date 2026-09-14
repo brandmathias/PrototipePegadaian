@@ -373,32 +373,44 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
   });
 
-  it("shows a verified Midtrans payment without manual proof upload", () => {
-    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+  it.each(["LUNAS", "SELESAI"] as const)(
+    "shows a successful Midtrans %s payment as a completed payment state",
+    (status) => {
+      vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
-    render(
-      <TransactionDetailPage
-        buyer={buyer}
-        transaction={{
-          ...transactionWithSpecifications,
-          id: "trx-fixed-midtrans-paid",
-          status: "LUNAS",
-          method: "MIDTRANS",
-          paymentLabel: "Pembayaran Midtrans",
-          verifiedAt: "5 Mei 2026, 11.15 WIB"
-        }}
-        transactionId="trx-fixed-midtrans-paid"
-      />
-    );
+      render(
+        <TransactionDetailPage
+          buyer={buyer}
+          transaction={{
+            ...transactionWithSpecifications,
+            id: "trx-fixed-midtrans-paid",
+            status,
+            method: "MIDTRANS",
+            paymentLabel: "Pembayaran Midtrans",
+            verifiedAt: "5 Mei 2026, 11.15 WIB",
+            completedAt: status === "SELESAI" ? "5 Mei 2026, 12.15 WIB" : undefined
+          }}
+          transactionId="trx-fixed-midtrans-paid"
+        />
+      );
 
-    expect(screen.getByTestId("midtrans-payment-content")).toBeInTheDocument();
-    expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
-    expect(screen.queryByText(/^pembayaran terverifikasi$/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/tidak perlu mengunggah bukti transfer manual/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /lanjutkan ke checkout midtrans/i })).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
-  });
+      const paymentCard = screen.getByTestId("transaction-payment-card");
+      expect(
+        within(paymentCard).getByRole("heading", { level: 2, name: /^pembayaran berhasil$/i })
+      ).toBeInTheDocument();
+      expect(
+        within(paymentCard).getByText(
+          status === "SELESAI"
+            ? /pembayaran dan serah-terima barang sudah tercatat sebagai transaksi selesai/i
+            : /pembayaran telah diterima dan tercatat\. transaksi menunggu penyelesaian serah-terima barang/i
+        )
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId("midtrans-payment-content")).not.toBeInTheDocument();
+      expect(screen.queryByText(/menyiapkan pembayaran/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
+    }
+  );
 
   it("keeps the existing Midtrans failure summary after a fixed-price payment expires", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));

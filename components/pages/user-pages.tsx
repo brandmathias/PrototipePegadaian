@@ -2206,7 +2206,7 @@ export function TransactionDetailPage({
   const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isFailedFixedPricePayment = isFixedPrice && transaction.status === "GAGAL";
-  const isFixedPriceVerifiedPayment = isFixedPrice && isVerified && !isMidtrans;
+  const isFixedPriceVerifiedPayment = isFixedPrice && isVerified;
   const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
   const isPendingVickreyPayment =
     isVickreyWin &&
@@ -2543,7 +2543,9 @@ export function TransactionDetailPage({
                       <p className="mt-1 text-sm leading-6 text-[#52665b]">
                         {isCompleted
                           ? "Pembayaran dan serah-terima barang sudah tercatat sebagai transaksi selesai."
-                          : "Pembayaran telah diverifikasi oleh admin unit. Transaksi menunggu penyelesaian serah-terima barang."}
+                          : isMidtrans
+                            ? "Pembayaran telah diterima dan tercatat. Transaksi menunggu penyelesaian serah-terima barang."
+                            : "Pembayaran telah diverifikasi oleh admin unit. Transaksi menunggu penyelesaian serah-terima barang."}
                       </p>
                     </div>
                   </div>
