@@ -349,7 +349,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getAllByTestId("transaction-protection-item")).toHaveLength(3);
     expect(screen.getAllByTestId("transaction-protection-item").every((item) => item.classList.contains("flex-1"))).toBe(true);
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "min-h-[44rem]", "flex-1", "flex-col");
+    expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "h-0", "min-h-0", "flex-1", "flex-col");
     expect(screen.queryByText(/menunggu konfirmasi pembayaran/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tidak perlu mengunggah bukti pembayaran manual/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
@@ -400,7 +400,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
   });
 
-  it("shows the fixed-price failure state after a Midtrans payment expires", () => {
+  it("keeps the existing Midtrans failure summary after a fixed-price payment expires", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
     render(
@@ -421,15 +421,16 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: /status pembayaran/i })).toBeInTheDocument();
-    expect(screen.queryByTestId("midtrans-payment-content")).not.toBeInTheDocument();
-    expect(screen.getAllByText(/pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. transaksi ditutup\./i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/transaksi ditutup\. kembali ke katalog/i)).toBeInTheDocument();
-    expect(screen.queryByText(/menyiapkan pembayaran/i)).not.toBeInTheDocument();
+    const paymentCard = screen.getByTestId("transaction-payment-card");
+    expect(within(paymentCard).getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
+    expect(within(paymentCard).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
+    expect(within(paymentCard).queryByTestId("midtrans-payment-content")).not.toBeInTheDocument();
+    expect(within(paymentCard).getAllByText(/pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. transaksi ditutup\./i).length).toBeGreaterThan(0);
+    expect(within(paymentCard).getByText(/transaksi ditutup setelah batas waktu pembayaran berakhir/i)).toBeInTheDocument();
 
     expect(screen.getByTestId("transaction-payment-grid")).toHaveClass("buyer-payment-detail-grid");
-    expect(screen.queryByTestId("transaction-protection-card")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("midtrans-expired-footer-mask")).not.toBeInTheDocument();
+    expect(screen.getByTestId("transaction-protection-card")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
   });
 
   it("renders failed auction winner payment as a dedicated 24 hour failure detail", () => {

@@ -27,8 +27,8 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(screen.getByTestId("midtrans-checkout-shell")).toHaveClass("flex", "min-h-[44rem]", "flex-col");
-    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("min-h-[42rem]");
+    expect(screen.getByTestId("midtrans-checkout-shell")).toHaveClass("flex", "h-0", "min-h-0", "flex-1", "flex-col");
+    expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("h-full", "min-h-0");
     expect(screen.getByText("Pilih metode pembayaran")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Kembali dari pembayaran" })).not.toBeInTheDocument();
     expect(screen.queryByText(/^Aman$/)).not.toBeInTheDocument();
