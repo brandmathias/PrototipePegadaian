@@ -2600,52 +2600,6 @@ export function TransactionDetailPage({
                   </p>
                 </div>
               </>
-            ) : isFailedMidtransPayment ? (
-              <div className="space-y-5">
-                <div className="rounded-[1.15rem] border border-red-200 bg-red-50 p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-red-100 text-red-700">
-                      <CircleX className="size-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-[#6e716c]">
-                        Pembayaran Transfer
-                      </p>
-                      <p className="mt-1 text-lg font-black text-[#13211c]">Pembayaran gagal</p>
-                      <p className="mt-1 text-sm leading-6 text-[#62655f]">
-                        {FIXED_PRICE_PAYMENT_FAILURE_COPY.description}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-5 font-headline text-3xl font-black tracking-tight text-primary">
-                    {currency.format(transaction.amount)}
-                  </p>
-                </div>
-
-                <div className="divide-y divide-border/60 rounded-[1rem] border border-border/70 bg-white px-4">
-                  <PaymentInfoRow label="Metode" value="Transfer" />
-                  <PaymentInfoRow
-                    label="Status"
-                    value={<Badge variant="danger">Gagal</Badge>}
-                  />
-                </div>
-
-                <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-[#f7f9f6] px-4 py-3 text-sm leading-6 text-[#62655f]">
-                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <p>
-                    Transaksi ditutup setelah batas waktu pembayaran berakhir. Barang dapat dibeli kembali dari
-                    katalog jika masih tersedia.
-                  </p>
-                </div>
-              </div>
-            ) : isFailedFixedPricePayment ? (
-              <div className="grid min-h-[27.75rem] place-items-center rounded-[1rem] border border-red-200 bg-red-50 p-6 text-center text-red-700">
-                <div className="max-w-md">
-                  <CircleX className="mx-auto size-8" />
-                  <p className="mt-4 font-headline text-lg font-black">{FIXED_PRICE_PAYMENT_FAILURE_COPY.title}</p>
-                  <p className="mt-2 text-sm leading-6">{FIXED_PRICE_PAYMENT_FAILURE_COPY.description}</p>
-                </div>
-              </div>
             ) : isMidtrans ? (
               <div className="flex h-0 min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
                 <MidtransEmbeddedCheckout

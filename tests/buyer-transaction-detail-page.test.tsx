@@ -412,7 +412,7 @@ describe("buyer transaction detail page", () => {
     }
   );
 
-  it("keeps the existing Midtrans failure summary after a fixed-price payment expires", () => {
+  it("keeps the final Snap checkout visible after a fixed-price payment expires", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
     render(
@@ -436,9 +436,10 @@ describe("buyer transaction detail page", () => {
     const paymentCard = screen.getByTestId("transaction-payment-card");
     expect(within(paymentCard).getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
     expect(within(paymentCard).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
-    expect(within(paymentCard).queryByTestId("midtrans-payment-content")).not.toBeInTheDocument();
-    expect(within(paymentCard).getAllByText(/pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. transaksi ditutup\./i).length).toBeGreaterThan(0);
-    expect(within(paymentCard).getByText(/transaksi ditutup setelah batas waktu pembayaran berakhir/i)).toBeInTheDocument();
+    expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
+    expect(within(paymentCard).getByTestId("midtrans-checkout-shell")).toBeInTheDocument();
+    expect(within(paymentCard).getByTestId("midtrans-expired-footer-mask")).toBeInTheDocument();
+    expect(within(paymentCard).queryByText(/^Pembayaran gagal$/i)).not.toBeInTheDocument();
 
     expect(screen.getByTestId("transaction-payment-grid")).toHaveClass("buyer-payment-detail-grid");
     expect(screen.getByTestId("transaction-protection-card")).toBeInTheDocument();
