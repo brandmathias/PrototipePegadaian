@@ -629,6 +629,7 @@ export async function getBuyerMidtransCheckout(userId: string, transactionId: st
   const [row] = await db
     .select({
       paymentMethod: transaksi.paymentMethod,
+      paymentRedirectUrl: transaksi.paymentRedirectUrl,
       paymentToken: transaksi.paymentToken,
       paymentDeadline: transaksi.paymentDeadline,
       status: transaksi.status,
@@ -653,7 +654,7 @@ export async function getBuyerMidtransCheckout(userId: string, transactionId: st
     throw new Error("Pembayaran belum tersedia.");
   }
 
-  return { snapToken: row.paymentToken };
+  return { snapRedirectUrl: row.paymentRedirectUrl, snapToken: row.paymentToken };
 }
 
 export async function listBuyerBids(userId: string, options?: BuyerReadOptions) {

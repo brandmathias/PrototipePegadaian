@@ -148,8 +148,16 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(hideMock).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the final failure summary instead of mounting an expired Snap token", () => {
-    const fetchMock = vi.fn();
+  it("renders the Midtrans-hosted expired Snap checkout", async () => {
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () =>
+          url === "/api/user/transaksi/trx-fixed-1/midtrans"
+            ? { data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/vtweb/expired-token", snapToken: "snap-token-1" } }
+            : { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+      })
+    );
     const embedMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("snap", { embed: embedMock });
@@ -160,9 +168,12 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(screen.getByTestId("midtrans-expired-summary")).toBeInTheDocument();
-    expect(screen.getByText(/batas waktu pembayaran telah berakhir/i)).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await screen.findByTitle("Status pembayaran Midtrans")).toHaveAttribute(
+      "src",
+      "https://app.sandbox.midtrans.com/snap/v2/vtweb/expired-token"
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans");
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/payments/midtrans/config");
     expect(embedMock).not.toHaveBeenCalled();
   });
 

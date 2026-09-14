@@ -97,6 +97,7 @@ export function MidtransEmbeddedCheckout({
   toastRef.current = toast;
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
+  const [expiredRedirectUrl, setExpiredRedirectUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "error">("loading");
   const checkoutHeightClass = compact ? "h-0 min-h-0 flex-1" : "min-h-[34rem]";
   const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
@@ -104,12 +105,28 @@ export function MidtransEmbeddedCheckout({
   useEffect(() => {
     let cancelled = false;
 
-    if (terminalState === "expired") {
-      return;
-    }
-
     async function mountCheckout() {
       try {
+        const response = await fetch(`/api/user/transaksi/${transactionId}/midtrans`);
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(payload.message ?? "Pembayaran belum dapat dibuat.");
+        }
+
+        const token = payload?.data?.snapToken;
+
+        if (!token) {
+          throw new Error("Pembayaran belum dapat diproses.");
+        }
+
+        const redirectUrl = payload?.data?.snapRedirectUrl?.trim();
+        if (terminalState === "expired" && redirectUrl) {
+          setExpiredRedirectUrl(redirectUrl);
+          setStatus("embedded");
+          return;
+        }
+
         const configResponse = await fetch("/api/payments/midtrans/config");
         const configPayload = await configResponse.json().catch(() => ({}));
 
@@ -123,18 +140,6 @@ export function MidtransEmbeddedCheckout({
         }
 
         const isProduction = configPayload?.data?.isProduction === true;
-        const response = await fetch(`/api/user/transaksi/${transactionId}/midtrans`);
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(payload.message ?? "Pembayaran belum dapat dibuat.");
-        }
-
-        const token = payload?.data?.snapToken;
-
-        if (!token) {
-          throw new Error("Pembayaran belum dapat diproses.");
-        }
 
         await ensureSnapScript({ clientKey, isProduction });
 
@@ -180,25 +185,6 @@ export function MidtransEmbeddedCheckout({
     };
   }, [embedId, terminalState, transactionId]);
 
-  if (terminalState === "expired") {
-    return (
-      <div
-        className={`grid ${checkoutHeightClass} content-center gap-5 rounded-[1.5rem] border border-[#f5c7cd] bg-[linear-gradient(145deg,#fff7f7,#fff1f2)] p-6 text-center md:p-8`}
-        data-testid="midtrans-expired-summary"
-      >
-        <span className="mx-auto grid size-14 place-items-center rounded-full bg-[#fee2e2] text-[#c7363d]">
-          <AlertTriangle className="size-6" />
-        </span>
-        <div>
-          <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran gagal</p>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#62655f]">
-            Batas waktu pembayaran telah berakhir. Transaksi ditutup dan barang dapat dibeli kembali jika masih tersedia.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   if (status === "error") {
     return (
       <div className={`grid ${checkoutHeightClass} content-center gap-5 rounded-[1.5rem] border border-[#f1d9b2] bg-[linear-gradient(145deg,#fffaf1,#ffffff)] p-6 text-center md:p-8`}>
@@ -222,12 +208,20 @@ export function MidtransEmbeddedCheckout({
         <p className="text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
       </div>
       <div
-        className={`relative ${checkoutHeightClass} ${terminalState === "expired" ? "bg-[#ffe1e7]" : "bg-white"} ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
+        className={`relative ${checkoutHeightClass} bg-white ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
       >
-        <div
-          className={`midtrans-snap-container ${snapHeightClass} w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full`}
-          id={embedId}
-        />
+        {expiredRedirectUrl ? (
+          <iframe
+            className={`${snapHeightClass} w-full border-0`}
+            src={expiredRedirectUrl}
+            title="Status pembayaran Midtrans"
+          />
+        ) : (
+          <div
+            className={`midtrans-snap-container ${snapHeightClass} w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full`}
+            id={embedId}
+          />
+        )}
         {status === "loading" ? (
           <div className="absolute inset-0 z-10 grid place-items-center bg-[linear-gradient(145deg,#f8fbf8,#ffffff)] p-8 text-center">
             <div className="grid justify-items-center gap-4">
@@ -240,13 +234,6 @@ export function MidtransEmbeddedCheckout({
               </div>
             </div>
           </div>
-        ) : null}
-        {terminalState === "expired" ? (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-40 bg-[#ffe1e7] sm:h-52"
-            data-testid="midtrans-expired-footer-mask"
-          />
         ) : null}
       </div>
     </div>
