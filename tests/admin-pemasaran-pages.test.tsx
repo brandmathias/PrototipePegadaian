@@ -306,7 +306,7 @@ describe("admin pemasaran pages", () => {
             price: 12500000,
             transactionStatus: "BUKTI_DIUNGGAH",
             buyerName: "Raras",
-            paymentMethod: "TRANSFER_BANK",
+            paymentMethod: "MIDTRANS",
             proofUrl: "/uploads/bukti.jpg",
             reference: "TRX-001",
             soldAt: null,
@@ -347,7 +347,7 @@ describe("admin pemasaran pages", () => {
             price: 15000000,
             transactionStatus: "MENUNGGU_PEMBAYARAN",
             buyerName: "Buyer Demo 13 B",
-            paymentMethod: "TRANSFER_BANK",
+            paymentMethod: "MIDTRANS",
             proofUrl: null,
             soldAt: null,
             startsAt: "2026-05-26T12:49:00.000Z",
@@ -361,7 +361,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/cincin emas 3/i)).toBeInTheDocument();
     expect(screen.getAllByText(/aktif/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/belum ada pembeli/i)).toBeInTheDocument();
-    expect(screen.getByText(/menunggu pembeli dari katalog/i)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
     expect(screen.queryByText(/buyer demo 13 b/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/pembelian harga tetap tercatat/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
@@ -444,7 +444,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
   });
 
-  it("opens an informative fixed-price payment status without manual approval controls", () => {
+  it("shows that a fixed-price purchase is still waiting to be completed", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -459,16 +459,16 @@ describe("admin pemasaran pages", () => {
           startsAt: "2026-05-26T12:49:00.000Z",
           price: 15000000,
           transactionId: "trx-fixed-verify",
-          transactionStatus: "BUKTI_DIUNGGAH",
+          transactionStatus: "MENUNGGU_PEMBAYARAN",
           buyerName: "Buyer Demo 13 B",
-          paymentMethod: "TRANSFER_BANK",
-          proofUrl: "/uploads/bukti-fixed-price.jpg",
-          rejectionReason: "Uang dikirim bukan ke rekening tujuan",
+          paymentMethod: "MIDTRANS",
+          proofUrl: null,
+          rejectionReason: null,
           reference: "FP-02393124",
           paymentDeadline: "2099-06-05T12:00:00.000Z",
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
           primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
-          note: "Buyer sudah mengirim bukti pembayaran transfer."
+          note: "Pembeli belum menyelesaikan pembelian."
         }}
       />
     );
@@ -477,7 +477,8 @@ describe("admin pemasaran pages", () => {
     const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
 
     expect(within(dialog).getByText(/status pembayaran diperbarui otomatis/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/pembayaran sedang diproses/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/pembelian belum diselesaikan/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
     expect(within(dialog).queryByText(/verifikasi/i)).not.toBeInTheDocument();
@@ -568,7 +569,7 @@ describe("admin pemasaran pages", () => {
           transactionId: "trx-fixed-refresh",
           transactionStatus: "MENUNGGU_PEMBAYARAN",
           buyerName: "Buyer Demo 13 B",
-          paymentMethod: "TRANSFER_BANK",
+          paymentMethod: "MIDTRANS",
           proofUrl: null,
           reference: null,
           paymentDeadline: "2099-06-05T12:00:00.000Z",
@@ -583,10 +584,16 @@ describe("admin pemasaran pages", () => {
       vi.advanceTimersByTime(10000);
     });
 
+    expect(screen.getByLabelText(/^pembayaran: menunggu pembayaran$/i)).toHaveClass(
+      "transaction-progress-node-current",
+    );
+    expect(screen.getByLabelText(/^status pembayaran: menunggu pembayaran diterima$/i)).toHaveClass(
+      "border-[#dfe6e2]",
+    );
     expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
-  it("shows a read-only failed payment status for historical fixed-price records", () => {
+  it("explains when a fixed-price payment missed its deadline and keeps three progress stages", () => {
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -601,29 +608,32 @@ describe("admin pemasaran pages", () => {
           startsAt: "2026-05-26T12:49:00.000Z",
           price: 15000000,
           transactionId: "trx-fixed-rejected",
-          transactionStatus: "DITOLAK_BUKTI",
+          transactionStatus: "GAGAL",
           buyerName: "Buyer Demo 13 B",
           paymentMethod: "TRANSFER_BANK",
-          proofUrl: "/uploads/bukti-fixed-price.jpg",
-          rejectionReason: "Uang dikirim bukan ke rekening tujuan",
+          proofUrl: null,
+          rejectionReason: null,
           reference: "FP-02393124",
           paymentDeadline: "2099-06-05T12:00:00.000Z",
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
           primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
-          note: "Bukti pembayaran harga tetap ditolak."
+          note: "Pembayaran harga tetap tidak diselesaikan sampai batas waktu."
         }}
       />
     );
 
     const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
+    expect(screen.getByLabelText(/pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-current");
     expect(screen.getByLabelText(/status pembayaran: tidak berhasil/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.getByLabelText(/^selesai: transaksi dibatalkan$/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
     expect(statusButton).toBeEnabled();
     fireEvent.click(statusButton);
     const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
     expect(within(dialog).getByText("Pembayaran tidak berhasil")).toBeInTheDocument();
+    expect(within(dialog).getByText(/batas waktu pembayaran telah berakhir/i)).toBeInTheDocument();
     expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
   });
@@ -907,7 +917,19 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeEnabled();
     expect(screen.queryByText("Cristiano Ronaldo")).not.toBeInTheDocument();
-    expect(screen.getByText(/belum ada pembeli yang memulai pembayaran/i)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/pembelian belum diselesaikan pada sesi harga tetap/i),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/^pembayaran: menunggu pembayaran$/i)).toHaveClass(
+      "transaction-progress-node-current",
+    );
+    expect(screen.getByLabelText(/^status pembayaran: menunggu pembayaran diterima$/i)).toHaveClass(
+      "border-[#dfe6e2]",
+    );
+    expect(screen.getByLabelText(/^selesai: belum terjadi$/i)).toHaveClass(
+      "border-[#dfe6e2]",
+    );
   });
 
   it("keeps fixed-price video media inside the same gallery preview frame", () => {

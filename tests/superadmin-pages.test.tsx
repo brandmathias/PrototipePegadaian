@@ -2044,7 +2044,7 @@ describe("superadmin pages", () => {
     expect(screen.queryByText("Progress Pembayaran Lelang")).not.toBeInTheDocument();
   });
 
-  it("shows rejected fixed-price verification details as read-only audit data", () => {
+  it("shows failed fixed-price payment details and all three progress stages", () => {
     render(
       <SuperAdminUnitBarangDetailPage
         detail={
@@ -2078,15 +2078,12 @@ describe("superadmin pages", () => {
               iteration: 5,
               price: 15_000_000,
               transactionId: "trx-fixed-rejected",
-              transactionStatus: "DITOLAK_BUKTI",
+              transactionStatus: "GAGAL",
               transactionCreatedAt: "2026-07-06T04:29:00.000Z",
               buyerName: "Cristiano Ronaldo",
-              proofUrl: "/uploads/bukti-fixed-rejected.jpg",
-              verifiedBy: "Maria Supit",
-              verifiedAt: "2026-07-06T05:56:00.000Z",
-              rejectionReason: "Uang dikirim bukan ke rekening tujuan.",
+              paymentDeadline: "2026-07-06T05:56:00.000Z",
               reference: "FP-117870000000024",
-              note: "Bukti pembayaran harga tetap ditolak admin unit.",
+              note: "Pembayaran Harga Tetap tidak diselesaikan sampai batas waktu.",
             },
             history: [],
           } as any
@@ -2104,7 +2101,16 @@ describe("superadmin pages", () => {
     const fixedPricePerformancePanel = screen.getByTestId(
       "superadmin-fixed-price-performance-panel",
     );
-    expect(audit).toHaveTextContent("Uang dikirim bukan ke rekening tujuan.");
+    expect(audit).toHaveTextContent("Batas waktu pembayaran telah berakhir.");
+    expect(screen.getByLabelText(/pembayaran: batas waktu berakhir/i)).toHaveClass(
+      "transaction-progress-node-current",
+    );
+    expect(screen.getByLabelText(/status pembayaran: tidak berhasil/i)).toHaveClass(
+      "transaction-progress-node-failed",
+    );
+    expect(screen.getByLabelText(/^selesai: transaksi dibatalkan$/i)).toHaveClass(
+      "border-[#dfe6e2]",
+    );
     expect(audit).toHaveClass("py-2.5", "rounded-lg");
     expect(fixedPriceGrid).toHaveClass(
       "items-stretch",

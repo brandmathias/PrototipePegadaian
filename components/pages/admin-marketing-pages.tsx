@@ -72,6 +72,7 @@ import { AdminMarketingForm } from "@/components/admin-unit/admin-marketing-form
 import { HandoverProofUploadForm } from "@/components/admin-unit/handover-proof-upload-form";
 import { AdminUnitActionButton } from "@/components/admin-unit/admin-unit-action-button";
 import { isFixedPriceBuyerCatalogHiddenStatus } from "@/lib/buyer/fixed-price-visibility";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import { CompactTransactionProgress } from "@/components/shared/compact-transaction-progress";
 import { LotFigure } from "@/components/shared/lot-figure";
 import { MarketingPerformancePanel } from "@/components/shared/marketing-performance-panel";
@@ -1339,6 +1340,10 @@ function isFixedPricePaymentRejected(auction: MarketingSession) {
   return auction.transactionStatus === "DITOLAK_BUKTI";
 }
 
+function isFixedPricePaymentFailed(auction: MarketingSession) {
+  return ["DITOLAK_BUKTI", "GAGAL"].includes(auction.transactionStatus ?? "");
+}
+
 function hasFixedPricePaymentSubmission(auction: MarketingSession) {
   const transactionStatus = auction.transactionStatus ?? "";
 
@@ -1379,7 +1384,7 @@ function getFixedPriceWorkflowStatus(auction: MarketingSession) {
 }
 
 function getFixedPriceOperationalNote(auction: MarketingSession) {
-  if (isFixedPricePaymentRejected(auction)) {
+  if (isFixedPricePaymentFailed(auction)) {
     return "Pembayaran tidak berhasil";
   }
 
@@ -1397,7 +1402,7 @@ function getFixedPriceOperationalNote(auction: MarketingSession) {
     return "Pembayaran sedang diproses";
   }
 
-  return "Menunggu pembeli dari katalog";
+  return "Menunggu pembelian barang";
 }
 
 function getFixedPriceVisibleBuyerName(auction: MarketingSession) {
@@ -1502,7 +1507,7 @@ function getMarketingTimeMeta(auction: MarketingSession) {
     };
   }
 
-  if (isFixedPricePaymentRejected(auction)) {
+  if (isFixedPricePaymentFailed(auction)) {
     return {
       label: "Pembayaran Tidak Berhasil",
       value: dateLabel(auction.verifiedAt ?? auction.updatedAt ?? auction.createdAt),
@@ -2927,22 +2932,35 @@ export function AdminVickreyAuctionListPage({
 function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
   const fulfilled = auction.transactionStatus === "SELESAI";
   const verified = auction.transactionStatus === "LUNAS" || fulfilled;
-  const rejected = isFixedPricePaymentRejected(auction);
+  const failed = isFixedPricePaymentFailed(auction);
+  const hasTransaction = Boolean(auction.transactionId);
   const buyerActor = auction.buyerName
     ? `Buyer: ${auction.buyerName}`
     : "Buyer";
   const completionActor =
     auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
 
-  if (rejected) {
+  if (failed) {
     return (
       <CompactTransactionProgress
         steps={[
           {
+            label: "Pembayaran",
+            status: "Batas waktu berakhir",
+            actor: buyerActor,
+            occurredAt: dateLabel(
+              auction.verifiedAt ?? auction.paymentDeadline ?? auction.transactionCreatedAt,
+            ),
+            icon: Landmark,
+            tone: "current",
+          },
+          {
             label: "Status Pembayaran",
             status: "Tidak berhasil",
-            actor: buyerActor,
-            occurredAt: dateLabel(auction.verifiedAt),
+            actor: "Sistem",
+            occurredAt: dateLabel(
+              auction.verifiedAt ?? auction.paymentDeadline ?? auction.transactionCreatedAt,
+            ),
             icon: X,
             tone: "failed",
           },
@@ -2965,32 +2983,30 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       label: "Pembayaran",
       status: verified
         ? "Selesai"
-        : auction.transactionId
-          ? "Berjalan"
-          : "Belum terjadi",
-      actor: auction.transactionId ? buyerActor : null,
+        : hasTransaction
+          ? "Menunggu pembayaran"
+          : "Menunggu pembeli",
+      actor: hasTransaction ? buyerActor : null,
       occurredAt: verified ? dateLabel(auction.transactionCreatedAt) : null,
       icon: WalletCards,
       tone: verified
         ? ("done" as const)
-        : auction.transactionId
+        : hasTransaction
           ? ("current" as const)
-          : ("pending" as const),
+          : ("current" as const),
     },
     {
       label: "Status Pembayaran",
       status: verified
         ? "Dikonfirmasi otomatis"
-        : auction.transactionId
-          ? "Menunggu pembaruan"
-          : "Belum terjadi",
+        : hasTransaction
+          ? "Menunggu pembayaran diterima"
+          : "Belum dimulai",
       occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
       icon: WalletCards,
       tone: verified
         ? ("done" as const)
-        : auction.transactionId
-          ? ("current" as const)
-          : ("pending" as const),
+        : ("pending" as const),
     },
     {
       label: "Selesai",
@@ -3249,9 +3265,11 @@ export function AdminFixedPriceDetailPage({
                 Pembeli tercatat:{" "}
                 <span className="font-black text-[#13211c]">{buyerName}</span>.
               </p>
+            ) : auction.transactionId ? (
+              <p>Pembelian belum diselesaikan pada sesi harga tetap ini.</p>
             ) : (
               <p>
-                Belum ada pembeli yang memulai pembayaran pada sesi harga tetap
+                Belum ada pembeli yang memulai pembelian pada sesi harga tetap
                 ini.
               </p>
             )}
@@ -3379,10 +3397,12 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
     };
   }
 
-  if (isFixedPricePaymentRejected(auction)) {
-    const rejectionDetail = auction.rejectionReason
-      ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.`
-      : "Pembayaran tidak berhasil diselesaikan. Barang kembali tersedia di katalog sebagai sesi Harga Tetap.";
+  if (isFixedPricePaymentFailed(auction)) {
+    const rejectionDetail = isFixedPricePaymentRejected(auction)
+      ? auction.rejectionReason
+        ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
+        : "Bukti pembayaran tidak disetujui sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia."
+      : FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage;
 
     return {
       badgeClassName: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c]",
@@ -3405,7 +3425,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
   return {
     badgeClassName: "border-[#fed7aa] bg-[#fff8e8] text-[#b45309]",
     detail:
-      "Barang tersedia di katalog publik dan masih menunggu buyer menyelesaikan pembelian harga tetap.",
+      "Pembelian belum diselesaikan. Barang masih tersedia di katalog publik.",
     icon: CheckCircle2,
     label: "Tersedia di Katalog",
   };
@@ -5199,12 +5219,29 @@ function getFixedPricePaymentStatus(auction: MarketingSession) {
     };
   }
 
-  if (["DITOLAK_BUKTI", "GAGAL"].includes(auction.transactionStatus ?? "")) {
+  if (isFixedPricePaymentFailed(auction)) {
+    const description = isFixedPricePaymentRejected(auction)
+      ? auction.rejectionReason
+        ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
+        : "Bukti pembayaran tidak disetujui sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia."
+      : FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage;
+
     return {
       title: "Pembayaran tidak berhasil",
-      description:
-        "Pembayaran tidak dapat diselesaikan. Status ini hanya ditampilkan sebagai riwayat transaksi.",
+      description,
       tone: "failed" as const,
+    };
+  }
+
+  if (
+    !auction.transactionId ||
+    auction.transactionStatus === "MENUNGGU_PEMBAYARAN"
+  ) {
+    return {
+      title: "Menunggu pembelian barang",
+      description:
+        "Pembelian belum diselesaikan. Status akan diperbarui otomatis setelah pembayaran diterima.",
+      tone: "pending" as const,
     };
   }
 
