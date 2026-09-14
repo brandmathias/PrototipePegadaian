@@ -2945,7 +2945,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       <CompactTransactionProgress
         steps={[
           {
-            label: "Pembayaran",
+            label: "Melakukan Pembayaran",
             status: "Batas waktu berakhir",
             actor: buyerActor,
             occurredAt: dateLabel(
@@ -2955,7 +2955,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
             tone: "current",
           },
           {
-            label: "Status Pembayaran",
+            label: "Pembayaran Gagal",
             status: "Tidak berhasil",
             actor: "Sistem",
             occurredAt: dateLabel(
@@ -2965,7 +2965,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
             tone: "failed",
           },
           {
-            label: "Selesai",
+            label: "Serah-Terima & Konfirmasi Buyer",
             status: "Transaksi dibatalkan",
             actor: null,
             occurredAt: null,
@@ -2980,7 +2980,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
 
   const steps = [
     {
-      label: "Pembayaran",
+      label: "Melakukan Pembayaran",
       status: verified
         ? "Selesai"
         : hasTransaction
@@ -2996,20 +2996,20 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
           : ("current" as const),
     },
     {
-      label: "Status Pembayaran",
+      label: "Verifikasi",
       status: verified
         ? "Dikonfirmasi otomatis"
         : hasTransaction
           ? "Menunggu pembayaran diterima"
           : "Belum dimulai",
       occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
-      icon: WalletCards,
+      icon: ShieldCheck,
       tone: verified
         ? ("done" as const)
         : ("pending" as const),
     },
     {
-      label: "Selesai",
+      label: "Serah-Terima & Konfirmasi Buyer",
       status: fulfilled
         ? getMarketingProgressCompletionLabel(auction)
         : verified
@@ -3315,10 +3315,11 @@ export function AdminFixedPriceDetailPage({
         data-testid="fixed-price-outcome-layout"
       >
         <div className="h-full [&>section]:h-full">
-          <MarketingPerformancePanel
-            insights={auction.insights}
-            lotId={auction.id}
-            testId="admin-fixed-price-performance-panel"
+        <MarketingPerformancePanel
+          insights={auction.insights}
+          liveStats={!isFixedPricePaymentFailed(auction) && auction.status !== "GAGAL"}
+          lotId={auction.id}
+          testId="admin-fixed-price-performance-panel"
           />
         </div>
         {auction.transactionId ? (
@@ -3398,15 +3399,9 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
   }
 
   if (isFixedPricePaymentFailed(auction)) {
-    const rejectionDetail = isFixedPricePaymentRejected(auction)
-      ? auction.rejectionReason
-        ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
-        : "Bukti pembayaran tidak disetujui sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia."
-      : FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage;
-
     return {
       badgeClassName: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c]",
-      detail: rejectionDetail,
+      detail: FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage,
       icon: AlertTriangle,
       label: "Pembayaran Tidak Berhasil",
     };
@@ -5220,15 +5215,9 @@ function getFixedPricePaymentStatus(auction: MarketingSession) {
   }
 
   if (isFixedPricePaymentFailed(auction)) {
-    const description = isFixedPricePaymentRejected(auction)
-      ? auction.rejectionReason
-        ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${auction.rejectionReason}. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
-        : "Bukti pembayaran tidak disetujui sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia."
-      : FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage;
-
     return {
       title: "Pembayaran tidak berhasil",
-      description,
+      description: FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage,
       tone: "failed" as const,
     };
   }

@@ -2045,6 +2045,12 @@ describe("superadmin pages", () => {
   });
 
   it("shows failed fixed-price payment details and all three progress stages", () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ likes: 0, participants: 0, views: 0 }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
     render(
       <SuperAdminUnitBarangDetailPage
         detail={
@@ -2082,7 +2088,9 @@ describe("superadmin pages", () => {
               transactionCreatedAt: "2026-07-06T04:29:00.000Z",
               buyerName: "Cristiano Ronaldo",
               paymentDeadline: "2026-07-06T05:56:00.000Z",
+              rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
               reference: "FP-117870000000024",
+              insights: { views: 12, likes: 1, participants: 0 },
               note: "Pembayaran Harga Tetap tidak diselesaikan sampai batas waktu.",
             },
             history: [],
@@ -2101,14 +2109,17 @@ describe("superadmin pages", () => {
     const fixedPricePerformancePanel = screen.getByTestId(
       "superadmin-fixed-price-performance-panel",
     );
-    expect(audit).toHaveTextContent("Batas waktu pembayaran telah berakhir.");
-    expect(screen.getByLabelText(/pembayaran: batas waktu berakhir/i)).toHaveClass(
+    expect(audit).toHaveTextContent(
+      "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan.",
+    );
+    expect(audit).not.toHaveTextContent("Nominal uang yang dikirim tidak sesuai harga barang");
+    expect(screen.getByLabelText(/melakukan pembayaran: batas waktu berakhir/i)).toHaveClass(
       "transaction-progress-node-current",
     );
-    expect(screen.getByLabelText(/status pembayaran: tidak berhasil/i)).toHaveClass(
+    expect(screen.getByLabelText(/pembayaran gagal: tidak berhasil/i)).toHaveClass(
       "transaction-progress-node-failed",
     );
-    expect(screen.getByLabelText(/^selesai: transaksi dibatalkan$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: transaksi dibatalkan$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
     expect(audit).toHaveClass("py-2.5", "rounded-lg");
@@ -2121,6 +2132,9 @@ describe("superadmin pages", () => {
     expect(fixedPricePerformancePanel).toHaveTextContent(
       "Performa & Aktivitas Sesi Publik",
     );
+    expect(fixedPricePerformancePanel).toHaveTextContent("12x");
+    expect(fixedPricePerformancePanel).toHaveTextContent("1 Akun");
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(
       screen.queryByText("Ringkasan Sesi Harga Tetap"),
     ).not.toBeInTheDocument();

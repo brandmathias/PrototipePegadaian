@@ -371,7 +371,7 @@ describe("TransactionsPage", () => {
     expect(fixedPriceFailureRow).not.toBeNull();
     expect(
       within(fixedPriceFailureRow!).getAllByText(
-        /Batas waktu pembayaran telah berakhir\. Transaksi ditutup\./i
+        /Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. Transaksi ditutup\./i
       ).length
     ).toBeGreaterThan(0);
     expect(within(fixedPriceFailureRow!).getByText(/^Total pembayaran$/i)).toBeInTheDocument();

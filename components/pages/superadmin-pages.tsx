@@ -5451,7 +5451,7 @@ function SuperAdminFixedPriceProgressPanel({
         density="tight"
         steps={[
           {
-            label: "Pembayaran",
+            label: "Melakukan Pembayaran",
             status: "Batas waktu berakhir",
             actor: buyerActor,
             occurredAt: failureOccurredAt,
@@ -5459,7 +5459,7 @@ function SuperAdminFixedPriceProgressPanel({
             tone: "current",
           },
           {
-            label: "Status Pembayaran",
+            label: "Pembayaran Gagal",
             status: "Tidak berhasil",
             actor: "Sistem",
             occurredAt: failureOccurredAt,
@@ -5467,7 +5467,7 @@ function SuperAdminFixedPriceProgressPanel({
             tone: "failed",
           },
           {
-            label: "Selesai",
+            label: "Serah-Terima & Konfirmasi Buyer",
             status: "Transaksi dibatalkan",
             icon: CircleDot,
             tone: "pending",
@@ -5480,7 +5480,7 @@ function SuperAdminFixedPriceProgressPanel({
 
   const steps = [
     {
-      label: "Pembayaran",
+      label: "Melakukan Pembayaran",
       status: verified
         ? "Selesai"
         : hasTransaction
@@ -5498,7 +5498,7 @@ function SuperAdminFixedPriceProgressPanel({
           : ("current" as const),
     },
     {
-      label: "Status Pembayaran",
+      label: "Verifikasi",
       status: verified
         ? "Dikonfirmasi otomatis"
         : hasTransaction
@@ -5507,13 +5507,13 @@ function SuperAdminFixedPriceProgressPanel({
       occurredAt: verified
         ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
         : null,
-      icon: WalletCards,
+      icon: ShieldCheck,
       tone: verified
         ? ("done" as const)
         : ("pending" as const),
     },
     {
-      label: "Selesai",
+      label: "Serah-Terima & Konfirmasi Buyer",
       status: fulfilled
         ? getSuperAdminProgressCompletionLabel(session)
         : verified
@@ -5579,11 +5579,7 @@ function SuperAdminFixedPriceWorkspace({
             ? "Menunggu Pembelian Barang"
             : "Masih Tersedia di Katalog";
   const statusDetail = paymentFailed
-    ? session.transactionStatus === "DITOLAK_BUKTI"
-      ? session.rejectionReason
-        ? `Pembayaran tidak berhasil diselesaikan. Informasi: ${session.rejectionReason}. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.`
-        : "Bukti pembayaran tidak disetujui sehingga transaksi ditutup. Barang dapat dibeli kembali dari katalog jika masih tersedia."
-      : FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage
+    ? FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage
     : isFailed
       ? "Iterasi harga tetap ini ditutup tanpa transaksi yang valid dan disimpan sebagai arsip monitoring."
       : sold
@@ -5658,6 +5654,7 @@ function SuperAdminFixedPriceWorkspace({
       >
         <MarketingPerformancePanel
           insights={session.insights}
+          liveStats={!isFailed}
           lotId={session.id}
           testId="superadmin-fixed-price-performance-panel"
         />

@@ -40,4 +40,22 @@ describe("MarketingPerformancePanel", () => {
       method: "GET"
     });
   });
+
+  it("keeps server-provided aggregate metrics for terminal sessions without live polling", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <MarketingPerformancePanel
+        insights={{ likes: 7, participants: 0, views: 42 }}
+        liveStats={false}
+        lotId="failed-fixed-price-iteration"
+        pollIntervalMs={null}
+      />
+    );
+
+    expect(screen.getByText("42x")).toBeInTheDocument();
+    expect(screen.getByText("7 Akun")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

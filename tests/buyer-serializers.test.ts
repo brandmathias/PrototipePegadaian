@@ -627,7 +627,7 @@ describe("buyer serializers", () => {
     expect(transaction.kind).toBe("FIXED_PRICE");
     expect(transaction.status).toBe("GAGAL");
     expect(transaction.paymentNotes.join(" ")).toMatch(
-      /Batas waktu pembayaran telah berakhir\. Transaksi ditutup\./i
+      /Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. Transaksi ditutup\./i
     );
     expect(transaction.paymentNotes.join(" ")).toMatch(/buka kembali katalog/i);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/lelang/i);

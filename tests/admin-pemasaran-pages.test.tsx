@@ -584,16 +584,22 @@ describe("admin pemasaran pages", () => {
       vi.advanceTimersByTime(10000);
     });
 
-    expect(screen.getByLabelText(/^pembayaran: menunggu pembayaran$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
       "transaction-progress-node-current",
     );
-    expect(screen.getByLabelText(/^status pembayaran: menunggu pembayaran diterima$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^verifikasi: menunggu pembayaran diterima$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
     expect(router.refresh).toHaveBeenCalledTimes(1);
   });
 
   it("explains when a fixed-price payment missed its deadline and keeps three progress stages", () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ likes: 0, participants: 0, views: 0 }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
     render(
       <AdminFixedPriceDetailPage
         auction={{
@@ -612,9 +618,10 @@ describe("admin pemasaran pages", () => {
           buyerName: "Buyer Demo 13 B",
           paymentMethod: "TRANSFER_BANK",
           proofUrl: null,
-          rejectionReason: null,
+          rejectionReason: "Nominal uang yang dikirim tidak sesuai harga barang",
           reference: "FP-02393124",
           paymentDeadline: "2099-06-05T12:00:00.000Z",
+          insights: { views: 42, likes: 7, participants: 0 },
           media: [{ id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" }],
           primaryMedia: { id: "m1", type: "foto", url: "/uploads/cincin-utama.jpg", fileName: "cincin-utama.jpg" },
           note: "Pembayaran harga tetap tidak diselesaikan sampai batas waktu."
@@ -624,16 +631,22 @@ describe("admin pemasaran pages", () => {
 
     const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
-    expect(screen.getByLabelText(/pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-current");
-    expect(screen.getByLabelText(/status pembayaran: tidak berhasil/i)).toHaveClass("transaction-progress-node-failed");
-    expect(screen.getByLabelText(/^selesai: transaksi dibatalkan$/i)).toHaveClass("border-[#dfe6e2]");
+    expect(screen.getByLabelText(/melakukan pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-current");
+    expect(screen.getByLabelText(/pembayaran gagal: tidak berhasil/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: transaksi dibatalkan$/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
+    const performancePanel = screen.getByTestId("admin-fixed-price-performance-panel");
+    expect(performancePanel).toHaveTextContent("42x");
+    expect(performancePanel).toHaveTextContent("7 Akun");
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(statusButton).toBeEnabled();
     fireEvent.click(statusButton);
     const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
     expect(within(dialog).getByText("Pembayaran tidak berhasil")).toBeInTheDocument();
-    expect(within(dialog).getByText(/batas waktu pembayaran telah berakhir/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan/i)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/nominal uang yang dikirim tidak sesuai harga barang/i)).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/bukti pembayaran tidak disetujui/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/tolak pembayaran/i)).not.toBeInTheDocument();
   });
@@ -667,6 +680,10 @@ describe("admin pemasaran pages", () => {
         }}
       />
     );
+
+    expect(screen.getByLabelText(/^melakukan pembayaran: selesai$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^verifikasi: dikonfirmasi otomatis$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer:/i)).toBeInTheDocument();
 
     const managementConsole = screen.getByText("Konsol Manajemen").closest("section");
     expect(managementConsole).not.toBeNull();
@@ -921,13 +938,13 @@ describe("admin pemasaran pages", () => {
     expect(
       screen.getByText(/pembelian belum diselesaikan pada sesi harga tetap/i),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/^pembayaran: menunggu pembayaran$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
       "transaction-progress-node-current",
     );
-    expect(screen.getByLabelText(/^status pembayaran: menunggu pembayaran diterima$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^verifikasi: menunggu pembayaran diterima$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
-    expect(screen.getByLabelText(/^selesai: belum terjadi$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: belum terjadi$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
   });

@@ -61,19 +61,24 @@ export function MarketingPerformancePanel({
   className,
   insights,
   lotId,
+  liveStats = true,
   pollIntervalMs = 10000,
   testId
 }: {
   className?: string;
   insights?: LotInsights | null;
   lotId?: string | null;
+  liveStats?: boolean;
   pollIntervalMs?: number | null;
   testId?: string;
 }) {
   const [stats, setStats] = useState(() => normalizeInsights(insights));
   const endpoint = useMemo(
-    () => (lotId ? `/api/public/lots/${encodeURIComponent(lotId)}/stats` : null),
-    [lotId]
+    () =>
+      liveStats && lotId
+        ? `/api/public/lots/${encodeURIComponent(lotId)}/stats`
+        : null,
+    [liveStats, lotId]
   );
 
   useEffect(() => {
@@ -119,7 +124,7 @@ export function MarketingPerformancePanel({
   }, [endpoint, pollIntervalMs, refreshStats]);
 
   useEffect(() => {
-    if (!lotId) {
+    if (!lotId || !liveStats) {
       return;
     }
 
@@ -137,7 +142,7 @@ export function MarketingPerformancePanel({
     return () => {
       window.removeEventListener("pegadaian:lot-stats-refresh", handleRefresh);
     };
-  }, [lotId, refreshStats]);
+  }, [liveStats, lotId, refreshStats]);
 
   return (
     <section
