@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { AlertTriangle, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { MIDTRANS_SNAP_ENABLED_PAYMENTS } from "@/lib/payments/midtrans-payment-options";
 
 type SnapCallbacks = {
+  hide?: () => void;
   embed: (
     token: string,
     options: {
@@ -90,6 +91,10 @@ export function MidtransEmbeddedCheckout({
 }) {
   const router = useRouter();
   const { toast } = useToast();
+  const routerRef = useRef(router);
+  const toastRef = useRef(toast);
+  routerRef.current = router;
+  toastRef.current = toast;
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "error">("loading");
@@ -138,13 +143,13 @@ export function MidtransEmbeddedCheckout({
           embedId,
           enabledPayments: [...MIDTRANS_SNAP_ENABLED_PAYMENTS],
           hideCloseButton: true,
-          onClose: () => router.refresh(),
+          onClose: () => routerRef.current.refresh(),
           onError: () => {
             setError("Pembayaran mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
             setStatus("error");
           },
-          onPending: () => router.refresh(),
-          onSuccess: () => router.refresh()
+          onPending: () => routerRef.current.refresh(),
+          onSuccess: () => routerRef.current.refresh()
         });
       } catch (checkoutError) {
         if (cancelled) {
@@ -154,7 +159,7 @@ export function MidtransEmbeddedCheckout({
         const message = checkoutError instanceof Error ? checkoutError.message : "Pembayaran belum dapat dimuat.";
         setError(message);
         setStatus("error");
-        toast({
+        toastRef.current({
           title: "Pembayaran belum tampil",
           description: message,
           variant: "error",
@@ -167,8 +172,9 @@ export function MidtransEmbeddedCheckout({
 
     return () => {
       cancelled = true;
+      window.snap?.hide?.();
     };
-  }, [embedId, router, toast, transactionId]);
+  }, [embedId, transactionId]);
 
   if (status === "error") {
     return (

@@ -78,6 +78,7 @@ describe("MidtransEmbeddedCheckout", () => {
         expect.objectContaining({ embedId: expect.stringMatching(/^midtrans-snap-/) })
       );
     });
+    expect(embedMock).toHaveBeenCalledTimes(1);
     expect(targetExistedWhenSnapMounted).toBe(true);
     expect(embedOptions).toEqual(
       expect.objectContaining({ enabledPayments: MIDTRANS_SNAP_ENABLED_PAYMENTS, hideCloseButton: true })
@@ -119,6 +120,32 @@ describe("MidtransEmbeddedCheckout", () => {
     });
 
     expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the active Snap instance when the checkout unmounts", async () => {
+    const embedMock = vi.fn();
+    const hideMock = vi.fn();
+    vi.stubGlobal("fetch", vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () =>
+          url === "/api/payments/midtrans/config"
+            ? { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+            : { data: { snapToken: "snap-token-1" } }
+      })
+    ));
+    vi.stubGlobal("snap", { embed: embedMock, hide: hideMock });
+
+    const { unmount } = render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => expect(embedMock).toHaveBeenCalledTimes(1));
+    unmount();
+
+    expect(hideMock).toHaveBeenCalledTimes(1);
   });
 
   it("covers the native expired footer so Snap does not expose its Back action", () => {
