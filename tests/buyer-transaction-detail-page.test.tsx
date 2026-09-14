@@ -349,7 +349,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getAllByTestId("transaction-protection-item")).toHaveLength(3);
     expect(screen.getAllByTestId("transaction-protection-item").every((item) => item.classList.contains("flex-1"))).toBe(true);
     expect(screen.getByText(/menyiapkan pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "h-0", "min-h-0", "flex-1", "flex-col");
+    expect(screen.getByTestId("midtrans-payment-content")).toHaveClass("flex", "min-h-[44rem]", "flex-1", "flex-col");
     expect(screen.queryByText(/menunggu konfirmasi pembayaran/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tidak perlu mengunggah bukti pembayaran manual/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
