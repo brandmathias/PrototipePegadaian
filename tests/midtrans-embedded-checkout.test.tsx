@@ -9,6 +9,7 @@ vi.mock("next/navigation", () => ({
 
 import { MidtransEmbeddedCheckout } from "@/components/buyer/midtrans-embedded-checkout";
 import { ToastProvider } from "@/components/ui/toast";
+import { MIDTRANS_SNAP_ENABLED_PAYMENTS } from "@/lib/payments/midtrans-payment-options";
 
 describe("MidtransEmbeddedCheckout", () => {
   afterEach(() => {
@@ -52,8 +53,8 @@ describe("MidtransEmbeddedCheckout", () => {
     });
     let targetExistedWhenSnapMounted = false;
     const hideMock = vi.fn();
-    let embedOptions: { embedId: string; hideCloseButton?: boolean } | undefined;
-    const embedMock = vi.fn((_token: string, options: { embedId: string; hideCloseButton?: boolean }) => {
+    let embedOptions: { embedId: string; enabledPayments?: string[]; hideCloseButton?: boolean } | undefined;
+    const embedMock = vi.fn((_token: string, options: { embedId: string; enabledPayments?: string[]; hideCloseButton?: boolean }) => {
       targetExistedWhenSnapMounted = document.getElementById(options.embedId) !== null;
       embedOptions = options;
     });
@@ -78,7 +79,9 @@ describe("MidtransEmbeddedCheckout", () => {
       );
     });
     expect(targetExistedWhenSnapMounted).toBe(true);
-    expect(embedOptions).toEqual(expect.objectContaining({ hideCloseButton: true }));
+    expect(embedOptions).toEqual(
+      expect.objectContaining({ enabledPayments: MIDTRANS_SNAP_ENABLED_PAYMENTS, hideCloseButton: true })
+    );
     expect(document.querySelector('[id^="midtrans-snap-"]')).toHaveClass("w-full");
     expect(screen.getByText(/pilih metode pembayaran/i)).toBeInTheDocument();
   });

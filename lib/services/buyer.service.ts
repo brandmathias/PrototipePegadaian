@@ -52,6 +52,7 @@ import {
   createMidtransSnapTransaction,
   getMidtransGatewayConfig
 } from "@/lib/payments/midtrans";
+import { MIDTRANS_SNAP_ENABLED_PAYMENTS } from "@/lib/payments/midtrans-payment-options";
 import { syncMidtransTransactionStatus } from "@/lib/services/midtrans-payment.service";
 
 const REUSABLE_BUYER_TRANSACTION_STATUSES = [
@@ -1458,6 +1459,7 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
     const checkout = await createMidtransSnapTransaction({
       amount,
       config,
+      enabledPayments: [...MIDTRANS_SNAP_ENABLED_PAYMENTS],
       itemName: row.item.name,
       orderId: paymentOrderId
     });

@@ -23,6 +23,7 @@ type FetchLike = typeof fetch;
 type CreateMidtransSnapTransactionInput = {
   amount: number;
   config: MidtransGatewayConfig;
+  enabledPayments: string[];
   fetchImpl?: FetchLike;
   itemName: string;
   orderId: string;
@@ -88,6 +89,7 @@ export function mapMidtransTransactionStatus(status: string) {
 export async function createMidtransSnapTransaction({
   amount,
   config,
+  enabledPayments,
   fetchImpl = fetch,
   itemName,
   orderId
@@ -102,6 +104,7 @@ export async function createMidtransSnapTransaction({
     body: JSON.stringify({
       transaction_details: { order_id: orderId, gross_amount: amount },
       item_details: [{ id: orderId, name: itemName, price: amount, quantity: 1 }],
+      enabled_payments: enabledPayments,
       expiry: { unit: "minute", duration: MIDTRANS_RESERVATION_MINUTES }
     })
   });

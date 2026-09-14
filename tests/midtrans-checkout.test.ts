@@ -30,6 +30,7 @@ vi.mock("@/lib/services/notification-events", () => ({
 vi.mock("next/cache", () => ({ revalidateTag: mocks.revalidateTag }));
 
 import { createFixedPriceMidtransCheckout } from "@/lib/services/buyer.service";
+import { MIDTRANS_SNAP_ENABLED_PAYMENTS } from "@/lib/payments/midtrans-payment-options";
 
 function mockMarketingQuery() {
   return {
@@ -108,7 +109,12 @@ describe("createFixedPriceMidtransCheckout", () => {
     });
     expect(inserted.paymentOrderId).toBe(`FP-${inserted.id}`);
     expect(mocks.createMidtransSnapTransaction).toHaveBeenCalledWith(
-      expect.objectContaining({ amount: 12_500_000, itemName: "Cincin Emas", orderId: inserted.paymentOrderId })
+      expect.objectContaining({
+        amount: 12_500_000,
+        enabledPayments: MIDTRANS_SNAP_ENABLED_PAYMENTS,
+        itemName: "Cincin Emas",
+        orderId: inserted.paymentOrderId
+      })
     );
   });
 

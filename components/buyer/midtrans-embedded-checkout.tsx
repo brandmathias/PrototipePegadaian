@@ -5,6 +5,7 @@ import { AlertTriangle, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
+import { MIDTRANS_SNAP_ENABLED_PAYMENTS } from "@/lib/payments/midtrans-payment-options";
 
 type SnapCallbacks = {
   embed: (
@@ -12,6 +13,7 @@ type SnapCallbacks = {
     options: {
       embedId: string;
       hideCloseButton?: boolean;
+      enabledPayments?: string[];
       onClose?: () => void;
       onError?: () => void;
       onPending?: () => void;
@@ -134,6 +136,7 @@ export function MidtransEmbeddedCheckout({
         setStatus("embedded");
         window.snap.embed(token, {
           embedId,
+          enabledPayments: [...MIDTRANS_SNAP_ENABLED_PAYMENTS],
           hideCloseButton: true,
           onClose: () => router.refresh(),
           onError: () => {

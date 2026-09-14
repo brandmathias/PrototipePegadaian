@@ -55,6 +55,7 @@ describe("Midtrans payment contract", () => {
         MIDTRANS_SERVER_KEY: "SB-Mid-server-test",
         NEXT_PUBLIC_MIDTRANS_CLIENT_KEY: "SB-Mid-client-test"
       }),
+      enabledPayments: ["alfamart", "indomaret"],
       fetchImpl: fetchMock,
       itemName: "Cincin Emas",
       orderId: "FP-trx-1"
@@ -75,6 +76,7 @@ describe("Midtrans payment contract", () => {
       method: "POST"
     });
     expect(JSON.parse(request.body)).toEqual({
+      enabled_payments: ["alfamart", "indomaret"],
       expiry: { duration: 15, unit: "minute" },
       item_details: [{ id: "FP-trx-1", name: "Cincin Emas", price: 12_500_000, quantity: 1 }],
       transaction_details: { gross_amount: 12_500_000, order_id: "FP-trx-1" }
