@@ -35,7 +35,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(screen.queryByText(/^Aman$/)).not.toBeInTheDocument();
   });
 
-  it.each(["pending", "expired", "success"] as const)("embeds the existing Snap token inside the %s payment card", async (terminalState) => {
+  it.each(["pending", "success"] as const)("embeds the existing Snap token inside the %s payment card", async (terminalState) => {
     const fetchMock = vi.fn((url: string) => {
       if (url === "/api/payments/midtrans/config") {
         return Promise.resolve({
@@ -148,8 +148,11 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(hideMock).toHaveBeenCalledTimes(1);
   });
 
-  it("covers the native expired footer so Snap does not expose its Back action", () => {
-    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+  it("shows the final failure summary instead of mounting an expired Snap token", () => {
+    const fetchMock = vi.fn();
+    const embedMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("snap", { embed: embedMock });
 
     render(
       <ToastProvider>
@@ -157,13 +160,10 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(screen.getByTestId("midtrans-expired-footer-mask")).toHaveClass(
-      "pointer-events-none",
-      "absolute",
-      "inset-x-0",
-      "bottom-0"
-    );
-    expect(screen.queryByText(/^Back$/)).not.toBeInTheDocument();
+    expect(screen.getByTestId("midtrans-expired-summary")).toBeInTheDocument();
+    expect(screen.getByText(/batas waktu pembayaran telah berakhir/i)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(embedMock).not.toHaveBeenCalled();
   });
 
   it("does not offer a redirect checkout when the inline checkout cannot load", async () => {

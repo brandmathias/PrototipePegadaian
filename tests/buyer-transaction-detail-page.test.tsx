@@ -431,9 +431,9 @@ describe("buyer transaction detail page", () => {
     expect(within(paymentCard).getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
     expect(within(paymentCard).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
     expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
-    expect(within(paymentCard).getByTestId("midtrans-checkout-shell")).toBeInTheDocument();
-    expect(within(paymentCard).getByTestId("midtrans-expired-footer-mask")).toBeInTheDocument();
-    expect(within(paymentCard).queryByText(/^Pembayaran gagal$/i)).not.toBeInTheDocument();
+    expect(within(paymentCard).getByTestId("midtrans-expired-summary")).toBeInTheDocument();
+    expect(within(paymentCard).queryByTestId("midtrans-checkout-shell")).not.toBeInTheDocument();
+    expect(within(paymentCard).getByText(/^Pembayaran gagal$/i)).toBeInTheDocument();
 
     expect(screen.getByTestId("transaction-payment-grid")).toHaveClass("buyer-payment-detail-grid");
     expect(screen.getByTestId("transaction-protection-card")).toBeInTheDocument();

@@ -104,6 +104,10 @@ export function MidtransEmbeddedCheckout({
   useEffect(() => {
     let cancelled = false;
 
+    if (terminalState === "expired") {
+      return;
+    }
+
     async function mountCheckout() {
       try {
         const configResponse = await fetch("/api/payments/midtrans/config");
@@ -174,7 +178,26 @@ export function MidtransEmbeddedCheckout({
       cancelled = true;
       window.snap?.hide?.();
     };
-  }, [embedId, transactionId]);
+  }, [embedId, terminalState, transactionId]);
+
+  if (terminalState === "expired") {
+    return (
+      <div
+        className={`grid ${checkoutHeightClass} content-center gap-5 rounded-[1.5rem] border border-[#f5c7cd] bg-[linear-gradient(145deg,#fff7f7,#fff1f2)] p-6 text-center md:p-8`}
+        data-testid="midtrans-expired-summary"
+      >
+        <span className="mx-auto grid size-14 place-items-center rounded-full bg-[#fee2e2] text-[#c7363d]">
+          <AlertTriangle className="size-6" />
+        </span>
+        <div>
+          <p className="font-headline text-lg font-black text-[#13211c]">Pembayaran gagal</p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#62655f]">
+            Batas waktu pembayaran telah berakhir. Transaksi ditutup dan barang dapat dibeli kembali jika masih tersedia.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (status === "error") {
     return (
