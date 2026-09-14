@@ -1,6 +1,7 @@
 node_modules/
 .next/
 .worktrees/
+/graphify-out/
 
 .env.local
 .env*.local
