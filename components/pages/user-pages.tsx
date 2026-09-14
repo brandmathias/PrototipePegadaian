@@ -2598,8 +2598,16 @@ export function TransactionDetailPage({
                   </p>
                 </div>
               </>
+            ) : isFailedFixedPricePayment ? (
+              <div className="grid min-h-[27.75rem] place-items-center rounded-[1rem] border border-red-200 bg-red-50 p-6 text-center text-red-700">
+                <div className="max-w-md">
+                  <CircleX className="mx-auto size-8" />
+                  <p className="mt-4 font-headline text-lg font-black">{FIXED_PRICE_PAYMENT_FAILURE_COPY.title}</p>
+                  <p className="mt-2 text-sm leading-6">{FIXED_PRICE_PAYMENT_FAILURE_COPY.description}</p>
+                </div>
+              </div>
             ) : isMidtrans ? (
-              <div className="flex h-0 min-h-0 flex-1 flex-col" data-testid="midtrans-payment-content">
+              <div className="flex min-h-[44rem] flex-1 flex-col" data-testid="midtrans-payment-content">
                 <MidtransEmbeddedCheckout
                   compact
                   terminalState={isFailedMidtransPayment ? "expired" : isVerified ? "success" : "pending"}
@@ -2627,7 +2635,7 @@ export function TransactionDetailPage({
           </div>
         </div>
 
-        {isMidtrans ? (
+        {isMidtrans && !isFailedFixedPricePayment ? (
           <TransactionProtectionCard />
         ) : (
           <div className={PAYMENT_DETAIL_CARD_CLASS}>

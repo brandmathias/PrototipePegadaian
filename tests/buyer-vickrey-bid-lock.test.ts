@@ -6,11 +6,13 @@ const mocks = vi.hoisted(() => {
     select: vi.fn()
   };
   const processExpiredVickreyAuctions = vi.fn();
+  const processHandoverAutoCompletions = vi.fn();
   const processOverdueVickreyPayments = vi.fn();
 
   return {
     db,
     processExpiredVickreyAuctions,
+    processHandoverAutoCompletions,
     processOverdueVickreyPayments
   };
 });
@@ -21,6 +23,8 @@ vi.mock("@/lib/db/client", () => ({
 
 vi.mock("@/lib/services/cron.service", () => ({
   processExpiredVickreyAuctions: mocks.processExpiredVickreyAuctions,
+  processHandoverAutoCompletions: mocks.processHandoverAutoCompletions,
+  processOverdueFixedPricePayments: vi.fn(),
   processOverdueVickreyPayments: mocks.processOverdueVickreyPayments
 }));
 

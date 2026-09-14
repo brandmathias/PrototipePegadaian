@@ -102,7 +102,6 @@ export async function createMidtransSnapTransaction({
     body: JSON.stringify({
       transaction_details: { order_id: orderId, gross_amount: amount },
       item_details: [{ id: orderId, name: itemName, price: amount, quantity: 1 }],
-      enabled_payments: ["bank_transfer", "gopay", "qris", "shopeepay"],
       expiry: { unit: "minute", duration: MIDTRANS_RESERVATION_MINUTES }
     })
   });

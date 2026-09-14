@@ -18,6 +18,7 @@ vi.mock("@/lib/services/cron.service", () => ({
   processExpiredHandoverConfirmations: vi.fn(),
   processExpiredVickreyAuctions: vi.fn(),
   processHandoverAutoCompletions: vi.fn(),
+  processOverdueFixedPricePayments: vi.fn(),
   processOverdueVickreyPayments: vi.fn()
 }));
 vi.mock("@/lib/services/notification-events", () => ({

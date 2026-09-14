@@ -28,6 +28,7 @@ vi.mock("@/lib/buyer/serializers", () => ({
 
 vi.mock("@/lib/services/cron.service", () => ({
   processExpiredVickreyAuctions: vi.fn(),
+  processOverdueFixedPricePayments: vi.fn(),
   processOverdueVickreyPayments: vi.fn(),
   processHandoverAutoCompletions: vi.fn()
 }));

@@ -41,6 +41,7 @@ import {
 import {
   processExpiredVickreyAuctions,
   processHandoverAutoCompletions,
+  processOverdueFixedPricePayments,
   processOverdueVickreyPayments
 } from "@/lib/services/cron.service";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
@@ -202,6 +203,7 @@ async function refreshBuyerAuctionSettlementState(options?: BuyerReadOptions) {
   }
 
   await processExpiredVickreyAuctions();
+  await processOverdueFixedPricePayments();
   await processOverdueVickreyPayments();
   await processHandoverAutoCompletions();
 }

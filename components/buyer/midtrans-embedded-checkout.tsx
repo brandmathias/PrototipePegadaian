@@ -91,8 +91,8 @@ export function MidtransEmbeddedCheckout({
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "error">("loading");
-  const checkoutHeightClass = compact ? "h-0 min-h-0 flex-1" : "min-h-[34rem]";
-  const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
+  const checkoutHeightClass = compact ? "min-h-[44rem] flex-1" : "min-h-[34rem]";
+  const snapHeightClass = compact ? "min-h-[42rem]" : "min-h-[32rem]";
 
   useEffect(() => {
     let cancelled = false;
@@ -183,7 +183,7 @@ export function MidtransEmbeddedCheckout({
 
   return (
     <div
-      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex h-0 min-h-0 flex-1 flex-col" : ""}`}
+      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex min-h-[44rem] flex-1 flex-col" : ""}`}
       data-testid="midtrans-checkout-shell"
     >
       <div className={`border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
@@ -193,7 +193,7 @@ export function MidtransEmbeddedCheckout({
         className={`relative ${checkoutHeightClass} ${terminalState === "expired" ? "bg-[#ffe1e7]" : "bg-white"} ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
       >
         <div
-          className={`midtrans-snap-container ${snapHeightClass} w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full`}
+          className={`midtrans-snap-container ${snapHeightClass} w-full [&>iframe]:!h-full [&>iframe]:!max-w-none [&>iframe]:!w-full [&>iframe]:!min-h-full`}
           id={embedId}
         />
         {status === "loading" ? (

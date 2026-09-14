@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => {
   const db = {
     select: vi.fn(),
-    transaction: vi.fn()
+    transaction: vi.fn(),
+    update: vi.fn()
   };
   const tx = {
     insert: vi.fn(),
@@ -15,7 +16,9 @@ const mocks = vi.hoisted(() => {
   const listActiveAdminUnitNotificationRecipientIds = vi.fn().mockResolvedValue(["admin-unit-1"]);
   const listActiveSuperAdminNotificationRecipientIds = vi.fn().mockResolvedValue(["superadmin-1"]);
   const notifyAdminUnitVickreyResult = vi.fn();
+  const notifyFixedPricePaymentFailed = vi.fn();
   const notifySuperAdminPolicyAlert = vi.fn();
+  const revalidateTransactionViews = vi.fn();
 
   return {
     db,
@@ -23,7 +26,9 @@ const mocks = vi.hoisted(() => {
     listActiveSuperAdminNotificationRecipientIds,
     notifyAdminUnitVickreyResult,
     notifyBlacklistActivated,
+    notifyFixedPricePaymentFailed,
     notifySuperAdminPolicyAlert,
+    revalidateTransactionViews,
     tx
   };
 });
@@ -37,13 +42,21 @@ vi.mock("@/lib/services/notification-events", () => ({
   listActiveSuperAdminNotificationRecipientIds: mocks.listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitVickreyResult: mocks.notifyAdminUnitVickreyResult,
   notifyBlacklistActivated: mocks.notifyBlacklistActivated,
+  notifyFixedPricePaymentFailed: mocks.notifyFixedPricePaymentFailed,
   notifyPaymentDeadlineSoon: vi.fn(),
   notifySuperAdminPolicyAlert: mocks.notifySuperAdminPolicyAlert,
   notifyVickreyLoss: vi.fn(),
   notifyVickreyWinner: vi.fn()
 }));
 
-import { processOverdueVickreyPayments } from "@/lib/services/cron.service";
+vi.mock("@/lib/services/revalidate-transaction-views", () => ({
+  revalidateTransactionViews: mocks.revalidateTransactionViews
+}));
+
+import {
+  processOverdueFixedPricePayments,
+  processOverdueVickreyPayments
+} from "@/lib/services/cron.service";
 
 function mockOverdueRows(rows: Array<Record<string, unknown>>) {
   return {
@@ -54,6 +67,20 @@ function mockOverdueRows(rows: Array<Record<string, unknown>>) {
             where: vi.fn().mockReturnValue({
               orderBy: vi.fn().mockResolvedValue(rows)
             })
+          })
+        })
+      })
+    })
+  };
+}
+
+function mockFixedPriceRows(rows: Array<Record<string, unknown>>) {
+  return {
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue(rows)
           })
         })
       })
@@ -120,6 +147,51 @@ function mockHandoverRows(rows: Array<Record<string, unknown>>) {
     })
   };
 }
+
+describe("overdue Harga Tetap payment settlement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("closes an unpaid Midtrans transaction after its deadline without creating a violation", async () => {
+    const now = new Date("2026-09-14T03:00:00.000Z");
+    const paymentDeadline = new Date("2026-09-14T02:45:00.000Z");
+    const updatePayloads: Array<Record<string, unknown>> = [];
+
+    mocks.db.select.mockImplementationOnce(() =>
+      mockFixedPriceRows([
+        {
+          item: { name: "Emas Batangan ANTAM 5 Gram" },
+          transaction: {
+            id: "trx-fixed-1",
+            paymentDeadline,
+            userId: "buyer-1"
+          }
+        }
+      ])
+    );
+    mocks.db.update.mockImplementationOnce(() =>
+      mockUpdatedTransaction((value) => updatePayloads.push(value))
+    );
+
+    const summary = await processOverdueFixedPricePayments(now);
+
+    expect(summary).toEqual({ processed: 1, failed: 1 });
+    expect(updatePayloads).toEqual([
+      expect.objectContaining({
+        gatewayStatus: "expire",
+        status: "gagal",
+        updatedAt: now
+      })
+    ]);
+    expect(mocks.notifyFixedPricePaymentFailed).toHaveBeenCalledWith({
+      userId: "buyer-1",
+      transactionId: "trx-fixed-1",
+      lotName: "Emas Batangan ANTAM 5 Gram"
+    });
+    expect(mocks.revalidateTransactionViews).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe("overdue Lelang Tertutup payment settlement", () => {
   beforeEach(() => {

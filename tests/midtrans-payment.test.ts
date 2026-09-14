@@ -75,7 +75,6 @@ describe("Midtrans payment contract", () => {
       method: "POST"
     });
     expect(JSON.parse(request.body)).toEqual({
-      enabled_payments: ["bank_transfer", "gopay", "qris", "shopeepay"],
       expiry: { duration: 15, unit: "minute" },
       item_details: [{ id: "FP-trx-1", name: "Cincin Emas", price: 12_500_000, quantity: 1 }],
       transaction_details: { gross_amount: 12_500_000, order_id: "FP-trx-1" }

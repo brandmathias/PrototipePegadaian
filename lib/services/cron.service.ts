@@ -28,6 +28,7 @@ import {
   listActiveSuperAdminNotificationRecipientIds,
   notifyAdminUnitVickreyResult,
   notifyBlacklistActivated,
+  notifyFixedPricePaymentFailed,
   notifyPaymentDeadlineSoon,
   notifySuperAdminPolicyAlert,
   notifyVickreyLoss,
@@ -35,6 +36,7 @@ import {
 } from "@/lib/services/notification-events";
 import { formatAppDateTime } from "@/lib/timezone";
 import { processPendingPushDeliveries } from "@/lib/services/push-notification.service";
+import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
 
 type BidOutcomeInput = {
   basePrice: string | number | null;
@@ -83,6 +85,11 @@ type OverduePaymentSummary = {
 type PaymentDeadlineSummary = {
   processed: number;
   notified: number;
+};
+
+type FixedPricePaymentSummary = {
+  processed: number;
+  failed: number;
 };
 
 type BlacklistExpirySummary = {
@@ -501,6 +508,70 @@ export async function processPaymentDeadlineNotifications(now = new Date()): Pro
   return summary;
 }
 
+export async function processOverdueFixedPricePayments(now = new Date()): Promise<FixedPricePaymentSummary> {
+  const overdueTransactions = await db
+    .select({
+      transaction: transaksi,
+      item: barang
+    })
+    .from(transaksi)
+    .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
+    .innerJoin(barang, eq(barang.id, pemasaran.barangId))
+    .where(
+      and(
+        eq(transaksi.type, "fixed_price"),
+        eq(transaksi.paymentMethod, "midtrans"),
+        eq(transaksi.status, "menunggu_pembayaran"),
+        isNotNull(transaksi.paymentDeadline),
+        lte(transaksi.paymentDeadline, now)
+      )
+    )
+    .orderBy(asc(transaksi.paymentDeadline));
+
+  let failed = 0;
+
+  for (const row of overdueTransactions) {
+    const [updatedTransaction] = await db
+      .update(transaksi)
+      .set({
+        gatewayStatus: "expire",
+        status: "gagal",
+        updatedAt: now
+      })
+      .where(
+        and(
+          eq(transaksi.id, row.transaction.id),
+          eq(transaksi.type, "fixed_price"),
+          eq(transaksi.paymentMethod, "midtrans"),
+          eq(transaksi.status, "menunggu_pembayaran"),
+          isNotNull(transaksi.paymentDeadline),
+          lte(transaksi.paymentDeadline, now)
+        )
+      )
+      .returning({ id: transaksi.id });
+
+    if (!updatedTransaction) {
+      continue;
+    }
+
+    failed += 1;
+    await notifyFixedPricePaymentFailed({
+      userId: row.transaction.userId,
+      transactionId: row.transaction.id,
+      lotName: row.item.name
+    });
+  }
+
+  if (failed > 0) {
+    revalidateTransactionViews();
+  }
+
+  return {
+    processed: overdueTransactions.length,
+    failed
+  };
+}
+
 export async function processOverdueVickreyPayments(now = new Date()): Promise<OverduePaymentSummary> {
   const overdueTransactions = await db
     .select({
@@ -861,9 +932,10 @@ export async function processHandoverAutoCompletions(now = new Date()): Promise<
 }
 
 export async function runAuctionSettlementCron(now = new Date()) {
-  const [expiredAuctions, paymentDeadlineWarnings, overduePayments, expiredBlacklists, handoverAutoCompletions, pushDeliveries] = await Promise.all([
+  const [expiredAuctions, paymentDeadlineWarnings, overdueFixedPricePayments, overduePayments, expiredBlacklists, handoverAutoCompletions, pushDeliveries] = await Promise.all([
     processExpiredVickreyAuctions(now),
     processPaymentDeadlineNotifications(now),
+    processOverdueFixedPricePayments(now),
     processOverdueVickreyPayments(now),
     processExpiredBlacklistRestrictions(now),
     processHandoverAutoCompletions(now),
@@ -873,6 +945,7 @@ export async function runAuctionSettlementCron(now = new Date()) {
   return {
     expiredAuctions,
     paymentDeadlineWarnings,
+    overdueFixedPricePayments,
     overduePayments,
     expiredBlacklists,
     handoverAutoCompletions,
