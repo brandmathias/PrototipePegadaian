@@ -374,7 +374,7 @@ describe("buyer transaction detail page", () => {
   });
 
   it.each(["LUNAS", "SELESAI"] as const)(
-    "shows a successful Midtrans %s payment as a completed payment state",
+    "keeps the final Snap checkout visible for a successful Midtrans %s payment",
     (status) => {
       vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
@@ -398,15 +398,9 @@ describe("buyer transaction detail page", () => {
       expect(
         within(paymentCard).getByRole("heading", { level: 2, name: /^pembayaran berhasil$/i })
       ).toBeInTheDocument();
-      expect(
-        within(paymentCard).getByText(
-          status === "SELESAI"
-            ? /pembayaran dan serah-terima barang sudah tercatat sebagai transaksi selesai/i
-            : /pembayaran telah diterima dan tercatat\. transaksi menunggu penyelesaian serah-terima barang/i
-        )
-      ).toBeInTheDocument();
-      expect(screen.queryByTestId("midtrans-payment-content")).not.toBeInTheDocument();
-      expect(screen.queryByText(/menyiapkan pembayaran/i)).not.toBeInTheDocument();
+      expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
+      expect(within(paymentCard).getByTestId("midtrans-checkout-shell")).toBeInTheDocument();
+      expect(within(paymentCard).queryByTestId("midtrans-expired-footer-mask")).not.toBeInTheDocument();
       expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
     }

@@ -34,7 +34,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(screen.queryByText(/^Aman$/)).not.toBeInTheDocument();
   });
 
-  it.each(["pending", "expired"] as const)("embeds the existing Snap token inside the %s payment card", async (terminalState) => {
+  it.each(["pending", "expired", "success"] as const)("embeds the existing Snap token inside the %s payment card", async (terminalState) => {
     const fetchMock = vi.fn((url: string) => {
       if (url === "/api/payments/midtrans/config") {
         return Promise.resolve({

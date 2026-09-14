@@ -2531,7 +2531,7 @@ export function TransactionDetailPage({
                   </div>
                 </div>
               </div>
-            ) : isFixedPriceVerifiedPayment ? (
+            ) : isFixedPriceVerifiedPayment && !isMidtrans ? (
               <div className="flex flex-1 flex-col justify-center gap-4">
                 <div className="rounded-[1.15rem] border border-[#bfe5ca] bg-[linear-gradient(135deg,#effbf3_0%,#ffffff_100%)] p-5">
                   <div className="flex items-start gap-3">
