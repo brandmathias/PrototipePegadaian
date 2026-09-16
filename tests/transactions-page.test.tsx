@@ -354,8 +354,8 @@ describe("TransactionsPage", () => {
     const fixedPricePendingRow = screen.getByText("Honda Vario 160 CBS 2023").closest("article");
     expect(fixedPricePendingRow).not.toBeNull();
     expect(within(fixedPricePendingRow!).getByText("Perlu Tindakan")).toBeInTheDocument();
-    expect(within(fixedPricePendingRow!).getByText("Pembayaran belum diselesaikan")).toBeInTheDocument();
-    expect(within(fixedPricePendingRow!).getByText("Lanjutkan pembayaran sebelum batas waktu berakhir.")).toBeInTheDocument();
+    expect(within(fixedPricePendingRow!).getByText("Menunggu pembayaran")).toBeInTheDocument();
+    expect(within(fixedPricePendingRow!).getByText("Selesaikan pembayaran sebelum batas waktu berakhir.")).toBeInTheDocument();
     expect(
       within(fixedPricePendingRow!).getByRole("link", { name: /lihat detail/i })
     ).toHaveAttribute("href", "/transaksi/TRX-250520-0011");
@@ -469,7 +469,9 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Jam Tangan Lelang Gagal")).toBeInTheDocument();
     expect(screen.queryByText("Honda Vario 160 CBS 2023")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
-    expect(screen.getAllByText("Dibatalkan").length).toBeGreaterThan(0);
+    const fixedPriceRejectedRow = screen.getByText("Cincin Emas Berlian").closest("article");
+    expect(fixedPriceRejectedRow).not.toBeNull();
+    expect(within(fixedPriceRejectedRow!).getByText("Gagal")).toBeInTheDocument();
     expect(
       screen
         .getAllByRole("link", { name: /lihat detail/i })

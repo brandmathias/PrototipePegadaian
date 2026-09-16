@@ -30,7 +30,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
   const { toast } = useToast();
   const [status, setStatus] = useState<PurchaseStatus>("idle");
   const [message, setMessage] = useState(
-    "Buat checkout Midtrans untuk memilih VA, QRIS, atau e-wallet secara aman."
+    "Buat pesanan pembelian barang Harga Tetap untuk memilih transfer bank, rekening virtual, QRIS, atau dompet digital secara aman."
   );
   const [isBackConfirmOpen, setIsBackConfirmOpen] = useState(false);
 
@@ -40,7 +40,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
     }
 
     setStatus("loading");
-    setMessage("Menyiapkan checkout Midtrans.");
+    setMessage("Menyiapkan pembayaran Harga Tetap.");
 
     try {
       const response = await fetch(`/api/user/beli/${lot.id}`, {
@@ -72,7 +72,7 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         setStatus("error");
         setMessage(nextMessage);
         toast({
-        title: "Checkout Midtrans belum lengkap",
+        title: "Pembayaran Harga Tetap belum lengkap",
           description: nextMessage,
           variant: "error",
           scope: "buyer"
@@ -114,8 +114,8 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
             Lanjutkan ke detail pembayaran
           </h2>
           <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-            Sistem membuat checkout Midtrans dengan nominal yang dikunci. Pilih metode pembayaran dan
-            selesaikan pembayaran di halaman Midtrans tanpa unggah bukti transfer.
+            Sistem membuat pesanan pembelian barang Harga Tetap dengan nominal yang dikunci. Pilih metode
+            pembayaran dan selesaikan pembayaran melalui halaman ini tanpa mengunggah bukti transfer.
           </p>
 
           <div className="rounded-[1.5rem] border border-border/70 bg-surface-low p-5">
@@ -133,9 +133,9 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
         <div className="flex min-h-[30rem] flex-col justify-between rounded-[1.75rem] border border-border/70 bg-[linear-gradient(145deg,#ffffff_0%,#f7faf8_100%)] p-6">
           <div className="grid gap-4">
             {[
-              { icon: CreditCard, label: "Metode pembayaran", value: "Midtrans: VA, QRIS, atau e-wallet" },
-              { icon: ShieldCheck, label: "Status saat ini", value: "Siap membuat checkout aman" },
-              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Bayar di halaman Midtrans" }
+              { icon: CreditCard, label: "Metode pembayaran", value: "Transfer bank, rekening virtual, QRIS, atau dompet digital" },
+              { icon: ShieldCheck, label: "Status saat ini", value: "Siap membuat pesanan aman" },
+              { icon: CheckCircle2, label: "Tahap berikutnya", value: "Selesaikan pembayaran di halaman ini" }
             ].map((item) => {
               const Icon = item.icon;
 
@@ -163,8 +163,8 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     Pembayaran Terverifikasi Otomatis
                   </p>
-                  <p className="mt-2 text-lg font-black text-foreground">Midtrans</p>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Nominal pembayaran dikirim dari sistem ke Midtrans dan statusnya diperbarui otomatis setelah dana diterima.</p>
+                  <p className="mt-2 text-lg font-black text-foreground">Pemeriksaan otomatis</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Nominal pembayaran dikirim melalui kanal resmi dan statusnya diperbarui otomatis setelah dana diterima.</p>
                 </div>
               </div>
             </div>
@@ -176,10 +176,10 @@ export function PurchaseWorkflow({ lot }: PurchaseWorkflowProps) {
                 </span>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Workflow Pembayaran
+                    Alur pembayaran
                   </p>
                   <p className="text-sm font-semibold text-foreground">
-                    Tidak perlu upload bukti transfer.
+                     Tidak perlu mengunggah bukti transfer.
                   </p>
                 </div>
               </div>

@@ -1259,7 +1259,7 @@ const MARKETING_METHOD_FILTERS = [
 const MARKETING_STATUS_FILTERS = [
   "Semua",
   "Aktif",
-  "Menunggu Bayar",
+  "Menunggu Pembayaran",
   "Menunggu Serah-Terima",
   "Menunggu Buyer",
   "Selesai",
@@ -1376,6 +1376,10 @@ function getFixedPriceWorkflowStatus(auction: MarketingSession) {
     return getPostVerificationStatus(auction);
   }
 
+  if (auction.transactionId && auction.transactionStatus === "MENUNGGU_PEMBAYARAN") {
+    return "Menunggu Pembayaran";
+  }
+
   if (auction.status === "GAGAL" || auction.transactionStatus === "GAGAL") {
     return "Gagal";
   }
@@ -1395,7 +1399,11 @@ function getFixedPriceOperationalNote(auction: MarketingSession) {
   if (auction.transactionStatus === "LUNAS") {
     return isAwaitingHandoverDocumentation(auction)
       ? "Menunggu dokumentasi serah-terima barang dari admin unit"
-      : "Menunggu buyer menyelesaikan pembelian";
+      : "Menunggu buyer mengonfirmasi serah-terima barang";
+  }
+
+  if (auction.transactionId && auction.transactionStatus === "MENUNGGU_PEMBAYARAN") {
+    return "Pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran";
   }
 
   if (hasFixedPricePaymentSubmission(auction)) {
@@ -1449,7 +1457,7 @@ function getMarketingWorkflowStatus(auction: MarketingSession) {
     return "Selesai";
   }
   if (isPaymentQueue(auction)) {
-    return "Menunggu Bayar";
+    return "Menunggu Pembayaran";
   }
   if (isMarketingActive(auction)) {
     return "Aktif";
@@ -1955,7 +1963,7 @@ function MarketingFeedRow({ auction }: { auction: MarketingSession }) {
   const statusDotClass =
     workflowStatus === "Aktif"
       ? "bg-[#0fa35a]"
-      : workflowStatus === "Menunggu Bayar"
+      : workflowStatus === "Menunggu Pembayaran"
         ? "bg-[#d89b12]"
         : workflowStatus === "Gagal"
           ? "bg-[#d61f1f]"
@@ -2253,7 +2261,7 @@ function MarketingIterationHistoryPanel({
     selectedStatus === "Menunggu Serah-Terima" ||
     selectedStatus === "Menunggu Buyer";
   const selectedActive =
-    selectedStatus === "Aktif" || selectedStatus === "Menunggu Bayar";
+    selectedStatus === "Aktif" || selectedStatus === "Menunggu Pembayaran";
   const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
     value: entry.id,
     label: `Iterasi ${entry.iteration ?? history.length - index}${entry.id === latestIterationId ? " (Terkini)" : ""}`,
@@ -2946,7 +2954,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
         steps={[
           {
             label: "Pesanan Dibuat",
-            status: "Menunggu pembayaran",
+            status: "Pesanan dibuat",
             actor: buyerActor,
             occurredAt: dateLabel(auction.transactionCreatedAt),
             icon: Package2,
@@ -2978,36 +2986,30 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
 
   const steps = [
     {
-      label: "Melakukan Pembayaran",
+      label: "Pesanan Dibuat",
       status: verified
         ? "Selesai"
         : hasTransaction
-          ? "Menunggu pembayaran"
-          : "Menunggu pembeli",
+          ? "Pesanan dibuat"
+          : "Belum dibuat",
       actor: hasTransaction ? buyerActor : null,
-      occurredAt: verified ? dateLabel(auction.transactionCreatedAt) : null,
-      icon: WalletCards,
-      tone: verified
-        ? ("done" as const)
-        : hasTransaction
-          ? ("current" as const)
-          : ("current" as const),
+      occurredAt: hasTransaction ? dateLabel(auction.transactionCreatedAt) : null,
+      icon: Package2,
+      tone: hasTransaction ? ("done" as const) : ("current" as const),
     },
     {
-      label: "Verifikasi",
+      label: "Menunggu Pembayaran",
       status: verified
-        ? "Dikonfirmasi otomatis"
+        ? "Pembayaran diterima"
         : hasTransaction
-          ? "Menunggu pembayaran diterima"
+          ? "Menunggu pembayaran"
           : "Belum dimulai",
       occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
-      icon: ShieldCheck,
-      tone: verified
-        ? ("done" as const)
-        : ("pending" as const),
+      icon: WalletCards,
+      tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
     },
     {
-      label: "Serah-Terima & Konfirmasi Buyer",
+      label: "Serah-Terima Barang & Konfirmasi Pembeli",
       status: fulfilled
         ? getMarketingProgressCompletionLabel(auction)
         : verified
@@ -3264,7 +3266,7 @@ export function AdminFixedPriceDetailPage({
                 <span className="font-black text-[#13211c]">{buyerName}</span>.
               </p>
             ) : auction.transactionId ? (
-              <p>Pembelian belum diselesaikan pada sesi harga tetap ini.</p>
+              <p>Pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran.</p>
             ) : (
               <p>
                 Belum ada pembeli yang memulai pembelian pada sesi harga tetap
@@ -3402,6 +3404,16 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
       detail: FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage,
       icon: AlertTriangle,
       label: "Pembayaran Tidak Berhasil",
+    };
+  }
+
+  if (auction.transactionId && auction.transactionStatus === "MENUNGGU_PEMBAYARAN") {
+    return {
+      badgeClassName: "border-[#fde3b2] bg-[#fff8eb] text-[#8a4b08]",
+      detail:
+        "Pesanan pembelian barang Harga Tetap sudah dibuat. Menunggu pembayaran sebelum batas waktu berakhir.",
+      icon: WalletCards,
+      label: "Menunggu Pembayaran",
     };
   }
 
@@ -5207,7 +5219,7 @@ function getFixedPricePaymentStatus(auction: MarketingSession) {
     return {
       title: "Pembayaran berhasil",
       description:
-        "Pembayaran sudah dikonfirmasi secara otomatis. Admin unit dapat melanjutkan dokumentasi serah-terima barang.",
+        "Pembayaran pembelian barang Harga Tetap sudah dikonfirmasi secara otomatis. Admin unit dapat melanjutkan dokumentasi serah-terima barang.",
       tone: "success" as const,
     };
   }
@@ -5220,14 +5232,19 @@ function getFixedPricePaymentStatus(auction: MarketingSession) {
     };
   }
 
-  if (
-    !auction.transactionId ||
-    auction.transactionStatus === "MENUNGGU_PEMBAYARAN"
-  ) {
+  if (auction.transactionStatus === "MENUNGGU_PEMBAYARAN") {
     return {
-      title: "Menunggu pembelian barang",
+      title: "Menunggu pembayaran",
       description:
-        "Pembelian belum diselesaikan. Status akan diperbarui otomatis setelah pembayaran diterima.",
+        "Pesanan pembelian barang Harga Tetap sudah dibuat. Status akan diperbarui otomatis setelah pembayaran diterima.",
+      tone: "pending" as const,
+    };
+  }
+
+  if (!auction.transactionId) {
+    return {
+      title: "Belum ada pesanan",
+      description: "Belum ada pesanan pembelian barang Harga Tetap pada sesi ini.",
       tone: "pending" as const,
     };
   }
@@ -5445,9 +5462,7 @@ function FixedPricePaymentVerificationModal({
     : `#${reference}`;
   const CategoryIcon = getMarketingCategoryIcon(auction.category);
   const categoryLabel = humanize(auction.category);
-  const paymentMethodLabel = auction.paymentMethod
-    ? humanize(auction.paymentMethod)
-    : "Transfer Bank";
+  const paymentMethodLabel = getMarketingPaymentMethodLabel(auction);
   const statusLabel = humanize(auction.transactionStatus).toUpperCase();
   const verificationStatusLabel = isRejectedReview
     ? "TRANSAKSI PEMBELIAN GAGAL"

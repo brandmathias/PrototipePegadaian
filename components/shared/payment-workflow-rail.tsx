@@ -38,7 +38,7 @@ export function PaymentWorkflowRail({
 }: PaymentWorkflowRailProps) {
   const boundedStep = Math.min(Math.max(currentStep, 0), Math.max(steps.length - 1, 0));
   const activeStep = steps[boundedStep];
-  const displayedStage = completed ? steps.length : Math.min(boundedStep + 1, steps.length - 1);
+  const displayedStage = completed ? steps.length : boundedStep + 1;
   const progress =
     steps.length <= 1 ? 100 : completed ? 100 : (boundedStep / (steps.length - 1)) * 100;
   const accentClass = tone === "admin" ? "text-[#0a6a49]" : "text-primary";

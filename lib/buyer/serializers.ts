@@ -161,7 +161,7 @@ function getPaymentNotes(row: BuyerTransactionShape) {
     const autoCompleteDeadline = getHandoverAutoCompleteDeadline(row.handoverProofUploadedAt);
     return [
       row.paymentMethod === "midtrans"
-        ? "Pembayaran sudah dikonfirmasi otomatis oleh Midtrans."
+        ? "Pembayaran pembelian barang Harga Tetap sudah dikonfirmasi otomatis."
         : "Pembayaran sudah diverifikasi admin unit.",
       row.handoverProofUrl
         ? autoCompleteDeadline
@@ -220,9 +220,9 @@ function getPaymentNotes(row: BuyerTransactionShape) {
 
   if (row.paymentMethod === "midtrans") {
     return [
-      "Checkout Midtrans sudah dibuat dengan nominal yang terkunci.",
-      "Selesaikan pembayaran melalui halaman Midtrans sebelum batas reservasi berakhir.",
-      "Status akan berubah otomatis setelah Midtrans menerima pembayaran."
+      "Pesanan pembelian barang Harga Tetap sudah dibuat dengan nominal yang terkunci.",
+      "Selesaikan pembayaran melalui halaman transaksi sebelum batas reservasi berakhir.",
+      "Status akan berubah otomatis setelah pembayaran diterima."
     ];
   }
 
@@ -343,7 +343,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
           ? "Selesai"
           : isFixedPriceWaitingPayment
             ? row.paymentMethod === "midtrans"
-              ? "Menunggu pembayaran Midtrans"
+              ? "Menunggu pembayaran"
               : "Unggah bukti pembayaran"
           : getCountdownState(row.paymentDeadline, {
               expiredLabel: "Waktu pembayaran berakhir"
@@ -402,7 +402,7 @@ export function serializeBuyerTransaction(row: BuyerTransactionShape): BuyerTran
     applicationNumber: `${isVickrey ? "PGJ-VIC" : "PGJ-FP"}-${row.id.slice(0, 8).toUpperCase()}`,
     paymentLabel:
       method === "MIDTRANS"
-        ? "Pembayaran Midtrans"
+        ? "Pembayaran online"
         : method === "BAYAR_LANGSUNG"
           ? "Bayar langsung di unit"
           : "Transfer bank ke rekening unit",

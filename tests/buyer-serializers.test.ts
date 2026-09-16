@@ -595,10 +595,11 @@ describe("buyer serializers", () => {
     });
 
     expect(transaction.method).toBe("MIDTRANS");
-    expect(transaction.paymentLabel).toBe("Pembayaran Midtrans");
-    expect(transaction.deadline).toBe("Menunggu pembayaran Midtrans");
+    expect(transaction.paymentLabel).toBe("Pembayaran online");
+    expect(transaction.deadline).toBe("Menunggu pembayaran");
     expect(transaction.deadlineAt).toBe("2099-05-05T14:07:00.000Z");
-    expect(transaction.paymentNotes.join(" ")).toMatch(/Midtrans/);
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/Midtrans/i);
+    expect(transaction.paymentNotes.join(" ")).toMatch(/pesanan pembelian barang Harga Tetap/i);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/unggah bukti/i);
   });
 

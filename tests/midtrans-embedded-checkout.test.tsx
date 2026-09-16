@@ -122,6 +122,41 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps one embedded checkout when the transaction status refreshes", async () => {
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () =>
+          url === "/api/payments/midtrans/config"
+            ? { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+            : { data: { snapToken: "snap-token-1" } }
+      })
+    );
+    const embedMock = vi.fn();
+    const hideMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("snap", { embed: embedMock, hide: hideMock });
+
+    const view = render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout terminalState="pending" transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => expect(embedMock).toHaveBeenCalledTimes(1));
+
+    view.rerender(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout terminalState="success" transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans"));
+    expect(embedMock).toHaveBeenCalledTimes(1);
+    expect(hideMock).not.toHaveBeenCalled();
+  });
+
   it("closes the active Snap instance when the checkout unmounts", async () => {
     const embedMock = vi.fn();
     const hideMock = vi.fn();
@@ -168,7 +203,7 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(await screen.findByTitle("Status pembayaran Midtrans")).toHaveAttribute(
+    expect(await screen.findByTitle("Status pembayaran")).toHaveAttribute(
       "src",
       "https://app.sandbox.midtrans.com/snap/v2/vtweb/expired-token"
     );

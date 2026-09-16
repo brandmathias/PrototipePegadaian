@@ -2113,7 +2113,7 @@ describe("superadmin pages", () => {
       "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran.",
     );
     expect(audit).not.toHaveTextContent("Nominal uang yang dikirim tidak sesuai harga barang");
-    expect(screen.getByLabelText(/pesanan dibuat: menunggu pembayaran/i)).toHaveClass(
+    expect(screen.getByLabelText(/pesanan dibuat: pesanan dibuat/i)).toHaveClass(
       "transaction-progress-node-done",
     );
     expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass(

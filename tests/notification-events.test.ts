@@ -108,7 +108,7 @@ describe("notification event helpers", () => {
         type: "payment_verified",
         title: "Pembayaran Kalung Emas terverifikasi",
         message:
-          "Pembayaran Anda telah diverifikasi. Segera lakukan pengambilan barang di UPC Ranotana, Jl. Sam Ratulangi. Buka detail transaksi untuk melihat informasi lengkap.",
+          "Pembayaran pembelian barang Harga Tetap telah diterima. Segera lakukan pengambilan barang di UPC Ranotana, Jl. Sam Ratulangi.",
         actionHref: "/transaksi/trx-1"
       })
     );
@@ -152,7 +152,7 @@ describe("notification event helpers", () => {
         userId: "buyer-1",
         type: "payment_failed",
         title: "Pembayaran Harga Tetap Emas Batangan ANTAM 5 Gram gagal",
-        message: expect.stringMatching(/batas waktu pembayaran telah berakhir/i),
+        message: expect.stringMatching(/tidak diselesaikan sampai batas waktu pembayaran/i),
         entityType: "transaction",
         entityId: "trx-fixed-failed",
         actionHref: "/transaksi/trx-fixed-failed"

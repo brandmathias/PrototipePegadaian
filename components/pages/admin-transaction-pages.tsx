@@ -6,9 +6,11 @@ import { useState, type ReactNode } from "react";
 import {
   ArrowRight,
   CheckCircle2,
+  ClipboardCheck,
   FileCheck2,
   FileText,
   History,
+  Package2,
   Printer,
   ReceiptText,
   UserRound,
@@ -460,16 +462,85 @@ function AdminTransactionInlineReceiptPrint({
 
 function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionItem }) {
   const isTransfer = transaction.method === "TRANSFER_BANK";
+  const isFixedPrice = transaction.pemasaranMode === "Harga Tetap";
   const isVerified = transaction.status === "LUNAS" || transaction.status === "SELESAI";
   const completed = transaction.status === "SELESAI";
+  const paymentFailed = isFixedPrice && ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status);
   const currentIndex =
-    transaction.status === "SELESAI"
-      ? 2
-      : isVerified
+    isFixedPrice
+      ? isVerified || completed
         ? 2
-        : transaction.status === "BUKTI_DIUNGGAH" || transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG"
-        ? 1
-        : 0;
+        : 1
+      : transaction.status === "SELESAI"
+        ? 2
+        : isVerified
+          ? 2
+          : transaction.status === "BUKTI_DIUNGGAH" || transaction.status === "MENUNGGU_KONFIRMASI_LANGSUNG"
+            ? 1
+            : 0;
+  if (isFixedPrice) {
+    const fixedPaymentDetail = paymentFailed
+      ? "Pesanan pembelian barang Harga Tetap sudah dibuat, tetapi pembayaran tidak diterima sampai batas waktu berakhir."
+      : isVerified
+        ? "Pesanan pembelian barang Harga Tetap sudah dibuat dan pembayarannya telah diterima."
+        : "Pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran.";
+    const fixedVerificationDetail = paymentFailed
+      ? "Pembayaran tidak berhasil. Transaksi ditutup dan barang dapat dipasarkan kembali jika masih tersedia."
+      : isVerified
+        ? "Pembayaran pembelian barang Harga Tetap telah dikonfirmasi. Lanjutkan dokumentasi serah-terima barang."
+        : "Status pembayaran diperbarui otomatis setelah pembayaran diterima.";
+    const fixedCompletionDetail = completed
+      ? "Pembayaran dan serah-terima barang sudah dikonfirmasi. Transaksi masuk arsip selesai."
+      : isVerified
+        ? "Menunggu dokumentasi serah-terima barang dan konfirmasi pembeli."
+        : "Serah-terima barang aktif setelah pembayaran berhasil.";
+
+    return (
+      <PaymentWorkflowRail
+        className="rounded-[1.5rem] border-black/8 shadow-none"
+        compact
+        completed={completed}
+        currentStep={currentIndex}
+        description="Pesanan pembelian barang Harga Tetap dibuat terlebih dahulu, menunggu pembayaran, lalu dilanjutkan ke serah-terima barang."
+        steps={[
+          {
+            id: "payment",
+            label: "Pesanan Dibuat",
+            headline: "Pesanan Dibuat",
+            detail: fixedPaymentDetail,
+            meta: "Pesanan dibuat",
+            actor: `Buyer: ${transaction.buyer}`,
+            occurredAt: transaction.createdAt,
+            icon: Package2
+          },
+          {
+            id: "payment-waiting",
+            label: "Menunggu Pembayaran",
+            headline: paymentFailed ? "Pembayaran Harga Tetap Gagal" : isVerified ? "Pembayaran Berhasil" : "Menunggu Pembayaran",
+            detail: fixedVerificationDetail,
+            meta: paymentFailed ? "Batas waktu berakhir" : isVerified ? "Pembayaran diterima" : "Menunggu pembayaran",
+            actor: paymentFailed ? "Sistem" : isVerified ? transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Sistem" : undefined,
+            occurredAt: transaction.verifiedAt || (paymentFailed ? transaction.deadline : undefined),
+            icon: paymentFailed ? XCircle : WalletCards,
+            tone: paymentFailed ? "danger" : "default"
+          },
+          {
+            id: "handover",
+            label: "Serah-Terima Barang & Konfirmasi Pembeli",
+            headline: completed ? "Pembelian Selesai" : isVerified ? "Menunggu Serah-Terima Barang" : "Belum Dimulai",
+            detail: fixedCompletionDetail,
+            meta: completed ? "Selesai" : isVerified ? "Menunggu serah-terima" : "Belum dimulai",
+            actor: completed ? transaction.completionSource === "auto_handover_grace" ? "Sistem" : `Buyer: ${transaction.buyer}` : undefined,
+            occurredAt: transaction.completedAt,
+            icon: ClipboardCheck
+          }
+        ]}
+        title="Status Alur Pembelian"
+        tone="admin"
+      />
+    );
+  }
+
   const paymentDetail = isTransfer
     ? transaction.proofFile
       ? "Bukti transfer sudah masuk dan siap diperiksa admin."

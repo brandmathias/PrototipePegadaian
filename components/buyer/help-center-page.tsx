@@ -36,7 +36,7 @@ const faqItems = [
   {
     question: "Bagaimana alur pembelian barang Harga Tetap?",
     answer:
-      "Pilih barang berlabel Harga Tetap, lanjutkan ke pembayaran Midtrans, lalu selesaikan pembayaran melalui kanal yang tersedia sebelum batas waktu berakhir. Status pembayaran diperbarui otomatis dan proses serah-terima dapat dilanjutkan setelah pembayaran berhasil."
+      "Pilih barang berlabel Harga Tetap untuk membuat pesanan pembelian. Selesaikan pembayaran melalui kanal yang tersedia sebelum batas waktu berakhir. Status pembayaran diperbarui otomatis; setelah pembayaran berhasil, proses serah-terima dan konfirmasi pembeli dapat dilanjutkan."
   },
   {
     question: "Akun saya dibatasi Level 2, apakah saya masih bisa membeli barang Harga Tetap?",

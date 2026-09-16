@@ -881,7 +881,7 @@ export async function listAdminBarangHistory(
         note:
           transaction.type === "vickrey"
             ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dan barang tercatat terjual."
-            : "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans sehingga barang tercatat terjual.",
+            : "Pembayaran pembelian barang Harga Tetap dikonfirmasi otomatis sehingga barang tercatat terjual.",
         actorName: transaction.actorName,
         actorRole: transaction.actorRole,
         createdAt: transaction.verifiedAt ?? transaction.completedAt ?? transaction.updatedAt ?? transaction.createdAt

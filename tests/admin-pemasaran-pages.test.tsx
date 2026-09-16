@@ -322,7 +322,6 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/kalung emas/i)).toBeInTheDocument();
     expect(screen.getAllByText(/aktif/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bukti diunggah/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /lihat sesi/i })).toHaveAttribute(
       "href",
       "/admin/pemasaran/fixed-price/pm-fixed"
@@ -364,7 +363,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
     expect(screen.queryByText(/buyer demo 13 b/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/pembelian harga tetap tercatat/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/menunggu pembayaran/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/pesanan pembelian barang Harga Tetap sudah dibuat/i)).not.toBeInTheDocument();
   });
 
   it("opens the ended vickrey winner workspace from the unified marketing action", () => {
@@ -477,8 +476,8 @@ describe("admin pemasaran pages", () => {
     const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
 
     expect(within(dialog).getByText(/status pembayaran diperbarui otomatis/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
-    expect(within(dialog).getByText(/pembelian belum diselesaikan/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/menunggu pembayaran/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/pesanan pembelian barang Harga Tetap sudah dibuat/i)).toBeInTheDocument();
     expect(within(dialog).getByRole("img", { name: /ikon kategori perhiasan/i })).toBeInTheDocument();
     expect(within(dialog).getAllByText(/buyer demo 13 b/i).length).toBeGreaterThan(0);
     expect(within(dialog).queryByText(/verifikasi/i)).not.toBeInTheDocument();
@@ -584,11 +583,11 @@ describe("admin pemasaran pages", () => {
       vi.advanceTimersByTime(10000);
     });
 
-    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
-      "transaction-progress-node-current",
+    expect(screen.getByLabelText(/^pesanan dibuat: pesanan dibuat$/i)).toHaveClass(
+      "transaction-progress-node-done",
     );
-    expect(screen.getByLabelText(/^verifikasi: menunggu pembayaran diterima$/i)).toHaveClass(
-      "border-[#dfe6e2]",
+    expect(screen.getByLabelText(/^menunggu pembayaran: menunggu pembayaran$/i)).toHaveClass(
+      "transaction-progress-node-current",
     );
     expect(router.refresh).toHaveBeenCalledTimes(1);
   });
@@ -631,7 +630,7 @@ describe("admin pemasaran pages", () => {
 
     const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
-    expect(screen.getByLabelText(/pesanan dibuat: menunggu pembayaran/i)).toHaveClass("transaction-progress-node-done");
+    expect(screen.getByLabelText(/pesanan dibuat: pesanan dibuat/i)).toHaveClass("transaction-progress-node-done");
     expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-failed");
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
@@ -681,9 +680,9 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByLabelText(/^melakukan pembayaran: selesai$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^verifikasi: dikonfirmasi otomatis$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer:/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^pesanan dibuat: selesai$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^menunggu pembayaran: pembayaran diterima$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli:/i)).toBeInTheDocument();
 
     const managementConsole = screen.getByText("Konsol Manajemen").closest("section");
     expect(managementConsole).not.toBeNull();
@@ -934,17 +933,17 @@ describe("admin pemasaran pages", () => {
 
     expect(screen.getByRole("button", { name: /jadwalkan pasarkan ulang/i })).toBeEnabled();
     expect(screen.queryByText("Cristiano Ronaldo")).not.toBeInTheDocument();
-    expect(screen.getByText(/menunggu pembelian barang/i)).toBeInTheDocument();
+    expect(screen.getByText(/pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran\.$/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/pembelian belum diselesaikan pada sesi harga tetap/i),
+      screen.getByText(/pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran$/i),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^pesanan dibuat: pesanan dibuat$/i)).toHaveClass(
+      "transaction-progress-node-done",
+    );
+    expect(screen.getByLabelText(/^menunggu pembayaran: menunggu pembayaran$/i)).toHaveClass(
       "transaction-progress-node-current",
     );
-    expect(screen.getByLabelText(/^verifikasi: menunggu pembayaran diterima$/i)).toHaveClass(
-      "border-[#dfe6e2]",
-    );
-    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: belum terjadi$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum terjadi$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
   });

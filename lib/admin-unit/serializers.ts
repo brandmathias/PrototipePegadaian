@@ -252,13 +252,15 @@ export function serializeAdminPemasaran(
   const transactionNote = (() => {
     if (row.mode === "fixed_price") {
       if (extra.transaction?.status === "lunas" || extra.transaction?.status === "selesai") {
-        return "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans dan barang siap dinyatakan terjual.";
+        return "Pembayaran pembelian barang Harga Tetap dikonfirmasi otomatis dan barang siap dinyatakan terjual.";
       }
       if (["ditolak_bukti", "gagal"].includes(extra.transaction?.status ?? "")) {
         return FIXED_PRICE_PAYMENT_FAILURE_COPY.description;
       }
       if (extra.transaction) {
-        return "Pembeli sedang menyelesaikan pembayaran melalui Midtrans.";
+        return extra.transaction.status === "menunggu_pembayaran"
+          ? "Pesanan pembelian barang Harga Tetap sudah dibuat dan menunggu pembayaran."
+          : "Pembayaran pembelian barang Harga Tetap sedang diproses melalui kanal resmi.";
       }
       return "Belum ada transaksi pembeli pada sesi harga tetap ini.";
     }

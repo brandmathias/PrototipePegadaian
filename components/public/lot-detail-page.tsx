@@ -163,7 +163,7 @@ export function LotDetailPage({
       label: "Pembayaran",
       value: isVickrey
         ? "Pembayaran dilakukan setelah pemenang dikonfirmasi dan transaksi berhasil diverifikasi."
-        : "Pembayaran dilakukan setelah checkout dengan harga tetap. Konfirmasi otomatis setelah transaksi berhasil."
+        : "Pembayaran dilakukan setelah pesanan Harga Tetap dibuat. Konfirmasi berlangsung otomatis setelah transaksi berhasil."
     },
     {
       icon: ShieldCheck,

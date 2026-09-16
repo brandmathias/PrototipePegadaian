@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Trophy,
   FileText,
+  WalletCards,
 } from "lucide-react";
 
 import { LiveCountdown } from "@/components/buyer/live-countdown";
@@ -67,7 +68,7 @@ function getTransactionStatusMeta(transaction: BuyerTransaction) {
     case "MENUNGGU_PEMBAYARAN":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
-        label: "Perlu Pembayaran",
+        label: transaction.kind === "FIXED_PRICE" ? "Menunggu Pembayaran" : "Perlu Pembayaran",
         className: "bg-orange-50 text-orange-700",
         matchesFilter: "action" as TransactionFilter,
       };
@@ -92,7 +93,7 @@ function getTransactionStatusMeta(transaction: BuyerTransaction) {
       };
     case "DITOLAK_BUKTI":
       return {
-        label: "Dibatalkan",
+        label: transaction.kind === "FIXED_PRICE" ? "Gagal" : "Dibatalkan",
         className: "bg-red-50 text-red-600",
         matchesFilter: "cancelled" as TransactionFilter,
       };
@@ -111,7 +112,7 @@ function getTransactionDescription(transaction: BuyerTransaction) {
     case "MENUNGGU_PEMBAYARAN":
       return transaction.kind === "VICKREY_WIN"
         ? "Anda memenangkan lelang. Segera selesaikan pembayaran sebelum batas waktu berakhir."
-        : "Transaksi harga tetap. Segera selesaikan pembayaran sebelum batas waktu berakhir.";
+        : "Pesanan pembelian barang Harga Tetap sudah dibuat. Selesaikan pembayaran sebelum batas waktu berakhir.";
     case "DITOLAK_BUKTI":
       return transaction.kind === "FIXED_PRICE"
         ? FIXED_PRICE_PAYMENT_FAILURE_COPY.description
@@ -220,10 +221,10 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
       return {
-        title: "Pembayaran belum diselesaikan",
-        description: "Lanjutkan pembayaran sebelum batas waktu berakhir.",
+        title: transaction.kind === "FIXED_PRICE" ? "Menunggu pembayaran" : "Pembayaran belum diselesaikan",
+        description: "Selesaikan pembayaran sebelum batas waktu berakhir.",
         className: "bg-[#f2fbf4] text-[#2e6c4e]",
-        icon: <ShieldCheck className="size-5" />,
+        icon: transaction.kind === "FIXED_PRICE" ? <WalletCards className="size-5" /> : <ShieldCheck className="size-5" />,
       };
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
@@ -258,8 +259,11 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
       };
     case "DITOLAK_BUKTI":
       return {
-        title: "Verifikasi ditolak",
-        description: "Bukti pembayaran tidak disetujui admin unit.",
+        title: transaction.kind === "FIXED_PRICE" ? "Pembayaran gagal" : "Verifikasi ditolak",
+        description:
+          transaction.kind === "FIXED_PRICE"
+            ? FIXED_PRICE_PAYMENT_FAILURE_COPY.noticeDescription
+            : "Bukti pembayaran tidak disetujui admin unit.",
         className: "bg-[#fff5f5] text-[#d84b4b]",
         icon: <CircleX className="size-5" />,
       };

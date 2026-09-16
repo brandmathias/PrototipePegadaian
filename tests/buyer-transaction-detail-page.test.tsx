@@ -174,8 +174,8 @@ describe("buyer transaction detail page", () => {
     );
 
     expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
-    expect(screen.getByText(/melakukan pembayaran/i)).toBeInTheDocument();
-    expect(screen.getByText(/^verifikasi$/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/^pesanan dibuat$/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /^menunggu pembayaran$/i, level: 3 })).toBeInTheDocument();
     expect(screen.getAllByText(/selesai/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bukti diunggah/i)).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang kalung emas 18k/i })).toBeInTheDocument();
@@ -186,7 +186,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText(/8,52 gram/i)).toBeInTheDocument();
     expect(screen.getByText(/appraisal unit pegadaian/i)).toBeInTheDocument();
     expect(screen.getByText(/nota diterbitkan setelah pembayaran diverifikasi admin unit/i)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /rekening tujuan/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pembayaran harga tetap/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /unggah bukti/i })).toBeInTheDocument();
     const transferDetailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
     expect(transferDetailCard?.parentElement).toHaveClass(
@@ -261,7 +261,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.getByText("Pesanan Dibuat")).toBeInTheDocument();
     expect(screen.getByText("Menunggu Pembayaran")).toBeInTheDocument();
     expect(screen.getByText("Belum dimulai")).toBeInTheDocument();
-    expect(screen.getByText(/pesanan pembelian barang Harga Tetap telah dibuat. Pembayaran belum diterima/i)).toBeInTheDocument();
+    expect(screen.getByText(/pesanan pembelian barang Harga Tetap telah dibuat.*pembayaran belum diterima/i)).toBeInTheDocument();
     expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);
     expect(screen.queryByLabelText(/daftar rekening tujuan/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
@@ -312,7 +312,7 @@ describe("buyer transaction detail page", () => {
     }
   );
 
-  it("renders the harga tetap Midtrans flow with a resumable checkout and automatic status", () => {
+  it("renders the harga tetap flow with a resumable checkout and automatic status", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
 
     render(
@@ -333,9 +333,9 @@ describe("buyer transaction detail page", () => {
 
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByRole("heading", { name: /bayar melalui transfer/i })).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /menunggu pembayaran/i })).toBeInTheDocument();
     expect(within(workflow!).queryByText("Status pembayaran akan diperbarui setelah dana diterima.")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pembayaran harga tetap/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: /status pembayaran/i })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
@@ -359,7 +359,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByText(/status pembayaran dikonfirmasi otomatis oleh midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout midtrans/i)).not.toBeInTheDocument();
     const detailCard = screen.getByRole("heading", { name: /rincian transaksi/i }).parentElement?.parentElement;
-    const paymentCard = screen.getByRole("heading", { name: /pembayaran transfer/i }).parentElement?.parentElement;
+    const paymentCard = screen.getByRole("heading", { name: /pembayaran harga tetap/i }).parentElement?.parentElement;
     expect(detailCard?.parentElement).toHaveClass(
       "lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)_minmax(0,0.92fr)]"
     );
@@ -432,8 +432,7 @@ describe("buyer transaction detail page", () => {
     );
 
     const paymentCard = screen.getByTestId("transaction-payment-card");
-    expect(within(paymentCard).getByRole("heading", { name: /pembayaran transfer/i })).toBeInTheDocument();
-    expect(within(paymentCard).queryByRole("heading", { name: /pembayaran harga tetap gagal/i })).not.toBeInTheDocument();
+    expect(within(paymentCard).getByRole("heading", { name: /pembayaran harga tetap gagal/i })).toBeInTheDocument();
     expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
     expect(within(paymentCard).getByTestId("midtrans-checkout-shell")).toBeInTheDocument();
     expect(within(paymentCard).queryByTestId("midtrans-expired-summary")).not.toBeInTheDocument();
@@ -581,7 +580,7 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
     expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
-    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
     expect(within(workflow!).getByRole("heading", { name: /menunggu konfirmasi buyer/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /bukti serah-terima barang kalung emas 18k/i })).toBeInTheDocument();
@@ -626,7 +625,7 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
 
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
     expect(
       within(workflow!).getByRole("heading", { name: /menunggu bukti serah-terima dari admin unit/i })
     ).toBeInTheDocument();
@@ -951,7 +950,7 @@ describe("buyer transaction detail page", () => {
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
     expect(within(workflow!).queryByText(/alur selesai/i)).not.toBeInTheDocument();
-    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 2 dari 3/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/posisi sekarang\s*\|\s*tahap 3 dari 3/i)).toBeInTheDocument();
     expect(within(workflow!).getByRole("heading", { name: /menunggu bukti serah-terima dari admin unit/i })).toBeInTheDocument();
     expect(within(workflow!).getByText(/^berjalan$/i)).toBeInTheDocument();
     expect(
@@ -1139,7 +1138,7 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getAllByText(/pembelian sudah ditutup buyer/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/pembelian selesai/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
     expect(screen.queryByText(/transfer-selesai.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti transfer/i)).not.toBeInTheDocument();

@@ -170,7 +170,7 @@ export async function syncMidtransTransactionStatus({
       oldStatus: row.item.status,
       newStatus: "terjual",
       changedByUserId: null,
-      note: "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans."
+      note: "Pembayaran pembelian barang Harga Tetap telah dikonfirmasi otomatis setelah dana diterima."
     });
 
     return updated;

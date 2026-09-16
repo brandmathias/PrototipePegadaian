@@ -5452,7 +5452,7 @@ function SuperAdminFixedPriceProgressPanel({
         steps={[
           {
             label: "Pesanan Dibuat",
-            status: "Menunggu pembayaran",
+            status: "Pesanan dibuat",
             actor: buyerActor,
             occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
             icon: ShoppingBag,
@@ -5480,40 +5480,34 @@ function SuperAdminFixedPriceProgressPanel({
 
   const steps = [
     {
-      label: "Melakukan Pembayaran",
+      label: "Pesanan Dibuat",
       status: verified
         ? "Selesai"
         : hasTransaction
-          ? "Menunggu pembayaran"
-          : "Menunggu pembeli",
+          ? "Pesanan dibuat"
+          : "Belum dibuat",
       actor: hasTransaction ? buyerActor : null,
-      occurredAt: verified
+      occurredAt: hasTransaction
         ? formatSuperAdminDateTime(session.transactionCreatedAt)
         : null,
-      icon: WalletCards,
-      tone: verified
-        ? ("done" as const)
-        : hasTransaction
-          ? ("current" as const)
-          : ("current" as const),
+      icon: ShoppingBag,
+      tone: hasTransaction ? ("done" as const) : ("current" as const),
     },
     {
-      label: "Verifikasi",
+      label: "Menunggu Pembayaran",
       status: verified
-        ? "Dikonfirmasi otomatis"
+        ? "Pembayaran diterima"
         : hasTransaction
-          ? "Menunggu pembayaran diterima"
+          ? "Menunggu pembayaran"
           : "Belum dimulai",
       occurredAt: verified
         ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
         : null,
-      icon: ShieldCheck,
-      tone: verified
-        ? ("done" as const)
-        : ("pending" as const),
+      icon: WalletCards,
+      tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
     },
     {
-      label: "Serah-Terima & Konfirmasi Buyer",
+      label: "Serah-Terima Barang & Konfirmasi Pembeli",
       status: fulfilled
         ? getSuperAdminProgressCompletionLabel(session)
         : verified
@@ -5576,7 +5570,7 @@ function SuperAdminFixedPriceWorkspace({
         : verified
           ? "Pembayaran Harga Tetap Berhasil"
           : hasBuyer
-            ? "Menunggu Pembelian Barang"
+            ? "Menunggu Pembayaran"
             : "Masih Tersedia di Katalog";
   const statusDetail = paymentFailed
     ? FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage
@@ -5589,7 +5583,7 @@ function SuperAdminFixedPriceWorkspace({
         : verified
           ? "Pembayaran telah dikonfirmasi otomatis. Admin unit dapat melanjutkan dokumentasi serah-terima barang."
           : hasBuyer
-            ? "Pembelian belum diselesaikan. Status akan diperbarui otomatis setelah pembayaran diterima."
+            ? "Pesanan pembelian barang Harga Tetap sudah dibuat. Status akan diperbarui otomatis setelah pembayaran diterima."
             : "Barang tersedia di katalog publik dan masih menunggu pembelian barang.";
   const shouldAutoRefresh =
     Boolean(session.transactionId) &&

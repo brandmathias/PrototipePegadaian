@@ -210,10 +210,10 @@ export async function notifyPaymentVerified(
   }
 ) {
   const message =
-    input.paymentProvider === "midtrans" && input.unitName && input.unitAddress
-      ? `Pembayaran Midtrans telah diterima. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}.`
-      : input.transactionType === "fixed_price" && input.unitName && input.unitAddress
-      ? `Pembayaran Anda telah diverifikasi. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}. Buka detail transaksi untuk melihat informasi lengkap.`
+    input.transactionType === "fixed_price" && input.unitName && input.unitAddress
+      ? `Pembayaran pembelian barang Harga Tetap telah diterima. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}.`
+      : input.paymentProvider === "midtrans" && input.unitName && input.unitAddress
+      ? `Pembayaran telah diterima. Segera lakukan pengambilan barang di ${input.unitName}, ${input.unitAddress}.`
       : "Admin unit sudah memverifikasi pembayaran Anda. Silakan buka detail transaksi untuk melanjutkan atau melihat nota.";
 
   return createNotificationOnce({
@@ -407,7 +407,7 @@ export async function notifySuperAdminPaymentVerified(input: {
     title: `Pembayaran Disetujui: ${input.lotName}`,
     message:
       input.paymentProvider === "midtrans"
-        ? "Midtrans mengonfirmasi pembayaran secara otomatis. Buka iterasi terkait untuk memantau proses serah-terima."
+        ? "Pembayaran pembelian barang Harga Tetap dikonfirmasi otomatis. Buka iterasi terkait untuk memantau proses serah-terima."
         : "Admin unit menyetujui bukti pembayaran. Buka iterasi terkait untuk memantau proses serah-terima.",
     type: "payment_verified",
     entityType: "transaction",
@@ -424,7 +424,7 @@ export async function notifyAdminUnitMidtransPaymentVerified(input: {
 }) {
   return createForUsers(input.adminUserIds, {
     title: `Pembayaran Diterima: ${input.lotName}`,
-    message: "Midtrans mengonfirmasi pembayaran secara otomatis. Lanjutkan persiapan serah-terima barang.",
+    message: "Pembayaran pembelian barang Harga Tetap dikonfirmasi otomatis. Lanjutkan persiapan serah-terima barang.",
     type: "payment_verified",
     entityType: "transaction",
     entityId: input.transactionId,

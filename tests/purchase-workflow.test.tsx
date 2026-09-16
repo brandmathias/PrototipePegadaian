@@ -53,7 +53,7 @@ describe("PurchaseWorkflow", () => {
     openMock.mockReset();
   });
 
-  it("creates a Midtrans checkout before opening its payment detail", async () => {
+  it("creates a fixed-price payment order before opening its payment detail", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
@@ -71,9 +71,10 @@ describe("PurchaseWorkflow", () => {
     renderPurchaseWorkflow();
 
     expect(screen.getByText(/lanjutkan ke detail pembayaran/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/midtrans/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/transfer bank, rekening virtual, QRIS, atau dompet digital/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bayar langsung/i)).not.toBeInTheDocument();
-    expect(screen.getAllByText(/siap membuat checkout aman/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/siap membuat pesanan aman/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/midtrans/i)).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.queryByText(/0123-4567-8901-234/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();

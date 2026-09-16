@@ -61,7 +61,9 @@ describe("BuyerHelpCenterPage", () => {
     expect(screen.getByText(/langsung di unit maksimal 24 jam/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /bagaimana alur pembelian barang Harga Tetap/i }));
-    expect(screen.getByText(/pembayaran Midtrans/i)).toBeInTheDocument();
+    expect(screen.getByText(/pesanan pembelian/i)).toBeInTheDocument();
+    expect(screen.getByText(/kanal yang tersedia/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Midtrans/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/unggah bukti pembayaran dan nomor referensi/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /disclaimer penting/i }));

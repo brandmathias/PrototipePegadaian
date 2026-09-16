@@ -93,6 +93,7 @@ export function MidtransEmbeddedCheckout({
   const { toast } = useToast();
   const routerRef = useRef(router);
   const toastRef = useRef(toast);
+  const embeddedTokenRef = useRef<string | null>(null);
   routerRef.current = router;
   toastRef.current = toast;
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
@@ -107,6 +108,11 @@ export function MidtransEmbeddedCheckout({
 
     async function mountCheckout() {
       try {
+        if (terminalState === "expired" && embeddedTokenRef.current) {
+          window.snap?.hide?.();
+          embeddedTokenRef.current = null;
+        }
+
         const response = await fetch(`/api/user/transaksi/${transactionId}/midtrans`);
         const payload = await response.json().catch(() => ({}));
 
@@ -147,25 +153,45 @@ export function MidtransEmbeddedCheckout({
           return;
         }
 
+        if (embeddedTokenRef.current === token) {
+          setStatus("embedded");
+          return;
+        }
+
+        if (embeddedTokenRef.current) {
+          window.snap.hide?.();
+          embeddedTokenRef.current = null;
+        }
+
         setStatus("embedded");
-        window.snap.embed(token, {
-          embedId,
-          enabledPayments: [...MIDTRANS_SNAP_ENABLED_PAYMENTS],
-          hideCloseButton: true,
-          onClose: () => routerRef.current.refresh(),
-          onError: () => {
-            setError("Pembayaran mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
-            setStatus("error");
-          },
-          onPending: () => routerRef.current.refresh(),
-          onSuccess: () => routerRef.current.refresh()
-        });
+        embeddedTokenRef.current = token;
+        try {
+          window.snap.embed(token, {
+            embedId,
+            enabledPayments: [...MIDTRANS_SNAP_ENABLED_PAYMENTS],
+            hideCloseButton: true,
+            onClose: () => routerRef.current.refresh(),
+            onError: () => {
+              embeddedTokenRef.current = null;
+              setError("Pembayaran mengalami kendala. Muat ulang halaman untuk mencoba lagi.");
+              setStatus("error");
+            },
+            onPending: () => routerRef.current.refresh(),
+            onSuccess: () => routerRef.current.refresh()
+          });
+        } catch (embedError) {
+          embeddedTokenRef.current = null;
+          throw embedError;
+        }
       } catch (checkoutError) {
         if (cancelled) {
           return;
         }
 
-        const message = checkoutError instanceof Error ? checkoutError.message : "Pembayaran belum dapat dimuat.";
+        const rawMessage = checkoutError instanceof Error ? checkoutError.message : "";
+        const message = /midtrans|snap|popupinview|embed/i.test(rawMessage)
+          ? "Pembayaran belum dapat dimuat. Muat ulang halaman untuk mencoba lagi."
+          : rawMessage || "Pembayaran belum dapat dimuat. Muat ulang halaman untuk mencoba lagi.";
         setError(message);
         setStatus("error");
         toastRef.current({
@@ -181,9 +207,17 @@ export function MidtransEmbeddedCheckout({
 
     return () => {
       cancelled = true;
-      window.snap?.hide?.();
     };
   }, [embedId, terminalState, transactionId]);
+
+  useEffect(() => {
+    return () => {
+      if (embeddedTokenRef.current) {
+        window.snap?.hide?.();
+        embeddedTokenRef.current = null;
+      }
+    };
+  }, [embedId, transactionId]);
 
   if (status === "error") {
     return (
@@ -214,7 +248,7 @@ export function MidtransEmbeddedCheckout({
           <iframe
             className={`${snapHeightClass} w-full border-0`}
             src={expiredRedirectUrl}
-            title="Status pembayaran Midtrans"
+             title="Status pembayaran"
           />
         ) : (
           <div

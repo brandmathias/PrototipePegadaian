@@ -335,6 +335,10 @@ function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverte
 }
 
 function getTimelineLabels(transaction: BuyerTransaction) {
+  if (transaction.kind === "FIXED_PRICE") {
+    return ["Pesanan Dibuat", "Menunggu Pembayaran", "Serah-Terima Barang & Konfirmasi Pembeli"];
+  }
+
   return [
     transaction.method === "MIDTRANS"
       ? "Bayar melalui Transfer"
@@ -365,6 +369,16 @@ function BuyerSettlementLockNotice({ message }: { message: string }) {
 }
 
 function getCurrentStep(transaction: BuyerTransaction) {
+  if (transaction.kind === "FIXED_PRICE") {
+    if (["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status)) {
+      return 1;
+    }
+    if (transaction.status === "LUNAS" || transaction.status === "SELESAI") {
+      return 2;
+    }
+    return 1;
+  }
+
   switch (transaction.status) {
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
@@ -383,6 +397,10 @@ function getCurrentStep(transaction: BuyerTransaction) {
 }
 
 function getTransactionStatusDescription(transaction: BuyerTransaction) {
+  if (transaction.status === "MENUNGGU_PEMBAYARAN" && transaction.kind === "FIXED_PRICE") {
+    return "Pesanan pembelian barang Harga Tetap telah dibuat. Selesaikan pembayaran sebelum batas waktu berakhir.";
+  }
+
   if (transaction.status === "MENUNGGU_PEMBAYARAN" && transaction.kind === "VICKREY_WIN") {
     return "Anda memenangkan lelang dan diberi waktu maksimal 24 jam untuk menyelesaikan pembayaran.";
   }
@@ -560,6 +578,24 @@ function getUrgentTransactionRank(transaction: BuyerTransaction) {
 }
 
 function getUrgentDashboardCopy(transaction: BuyerTransaction) {
+  if (transaction.kind === "FIXED_PRICE" && transaction.status === "MENUNGGU_PEMBAYARAN") {
+    return {
+      eyebrow: "Pembelian Harga Tetap",
+      title: `Pesanan ${transaction.title} sudah dibuat.`,
+      detail: "Selesaikan pembayaran sebelum batas waktu berakhir.",
+      tone: "info" as const
+    };
+  }
+
+  if (transaction.kind === "FIXED_PRICE" && ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status)) {
+    return {
+      eyebrow: "Pembayaran Harga Tetap",
+      title: `Pembayaran ${transaction.title} gagal.`,
+      detail: FIXED_PRICE_PAYMENT_FAILURE_COPY.description,
+      tone: "danger" as const
+    };
+  }
+
   if (transaction.kind === "VICKREY_WIN" && isDashboardPaymentWaiting(transaction)) {
     return {
       eyebrow: "Pemenang Lelang Tertutup",
@@ -675,20 +711,34 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
   const isFailedFixedPricePayment =
     isFixedPrice && ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status);
+  const isFixedPricePurchase = isFixedPrice;
   const hasFailedWorkflow =
     transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment || isFailedFixedPricePayment;
   const completed = transaction.status === "SELESAI";
   const paymentVerified = transaction.status === "LUNAS";
+  const isFixedPriceVerifiedPayment = isFixedPrice && (paymentVerified || completed);
   const handoverProofUploaded = Boolean(transaction.handoverProof);
   const awaitingHandoverProof = paymentVerified && !handoverProofUploaded;
   const awaitingBuyerConfirmation = paymentVerified && handoverProofUploaded;
-  const currentStep = paymentVerified || completed ? 2 : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow ? 1 : 0;
+  const currentStep = isFixedPrice
+    ? paymentVerified || completed
+      ? 2
+      : 1
+    : paymentVerified || completed
+      ? 2
+      : transaction.status === "BUKTI_DIUNGGAH" || hasFailedWorkflow
+        ? 1
+        : 0;
   const rejectionReason =
     transaction.rejectionReason ?? "Bukti pembayaran tidak disetujui admin unit.";
-  const paymentDetail = isFailedVickreyPayment
-    ? "Batas pembayaran 24 jam sudah terlewati tanpa pembayaran langsung di unit, sehingga transaksi pemenang ditutup sebagai gagal."
-    : isFailedFixedPricePayment
-      ? FIXED_PRICE_PAYMENT_FAILURE_COPY.paymentDetail
+  const paymentDetail = isFailedFixedPricePayment
+    ? FIXED_PRICE_PAYMENT_FAILURE_COPY.paymentDetail
+    : isFixedPricePurchase
+      ? isFixedPriceVerifiedPayment
+        ? "Pembayaran pembelian barang Harga Tetap telah diterima. Lanjutkan proses serah-terima barang."
+        : "Pesanan pembelian barang Harga Tetap telah dibuat. Selesaikan pembayaran sebelum batas waktu berakhir."
+    : isFailedVickreyPayment
+      ? "Batas pembayaran 24 jam sudah terlewati tanpa pembayaran langsung di unit, sehingga transaksi pemenang ditutup sebagai gagal."
     : isMidtrans
       ? paymentVerified
         ? "Pembayaran telah diterima dan tercatat pada transaksi ini."
@@ -702,10 +752,14 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       : isVickreyWin
         ? `Datang ke ${transaction.unit} untuk melakukan pembayaran secara langsung.`
         : `Datang ke ${transaction.unit}, bawa nomor ${transaction.applicationNumber}, lalu selesaikan pembayaran di loket.`;
-  const verificationDetail = isFailedVickreyPayment
-    ? "Pembayaran gagal karena pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam. Riwayat bid tetap tersimpan dan transaksi tidak lagi berada dalam antrean pembayaran aktif."
-    : isFailedFixedPricePayment
-      ? FIXED_PRICE_PAYMENT_FAILURE_COPY.verificationDetail
+  const verificationDetail = isFailedFixedPricePayment
+    ? FIXED_PRICE_PAYMENT_FAILURE_COPY.verificationDetail
+    : isFixedPricePurchase
+      ? isFixedPriceVerifiedPayment
+        ? "Pembayaran pembelian barang Harga Tetap telah diterima dan dikonfirmasi otomatis."
+        : "Status pembayaran akan diperbarui otomatis setelah pembayaran diterima."
+    : isFailedVickreyPayment
+      ? "Pembayaran gagal karena pemenang lelang tidak menyelesaikan pembayaran dalam waktu 24 jam. Riwayat bid tetap tersimpan dan transaksi tidak lagi berada dalam antrean pembayaran aktif."
     : isMidtrans
       ? paymentVerified
         ? "Pembayaran telah dikonfirmasi sistem sebelum transaksi dinyatakan lunas."
@@ -730,8 +784,8 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const steps: PaymentWorkflowStep[] = [
     {
       id: "payment",
-      label: isFailedFixedPricePayment ? "Pesanan Dibuat" : "Melakukan Pembayaran",
-      headline: isFailedFixedPricePayment
+      label: isFixedPricePurchase ? "Pesanan Dibuat" : "Melakukan Pembayaran",
+      headline: isFixedPricePurchase
         ? "Pesanan Dibuat"
         : isMidtrans
           ? "Bayar melalui Transfer"
@@ -740,11 +794,15 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
             : isVickreyWin
               ? "Bayar Lelang Tertutup di Unit"
               : "Bayar di Loket Unit",
-      detail: isFailedFixedPricePayment
-        ? "Pesanan pembelian barang Harga Tetap telah dibuat. Pembayaran belum diterima."
+      detail: isFixedPricePurchase
+        ? isFailedFixedPricePayment
+          ? "Pesanan pembelian barang Harga Tetap telah dibuat, tetapi pembayaran belum diterima."
+          : isFixedPriceVerifiedPayment
+            ? "Pesanan pembelian barang Harga Tetap telah dibuat dan pembayarannya sudah diterima."
+            : "Pesanan pembelian barang Harga Tetap telah dibuat. Selesaikan pembayaran sebelum batas waktu berakhir."
         : paymentDetail,
-      meta: isFailedFixedPricePayment
-        ? "Menunggu pembayaran"
+      meta: isFixedPricePurchase
+        ? "Pesanan dibuat"
         : isMidtrans
           ? "Transfer"
           : isTransfer
@@ -754,22 +812,26 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
               : "Bayar di loket",
       actor: `Buyer: ${buyer.name}`,
       occurredAt: transaction.createdAt,
-      icon: isFailedFixedPricePayment ? ShoppingBag : Landmark
+      icon: isFixedPricePurchase ? ShoppingBag : Landmark
     },
     {
       id: "verification",
-      label: hasFailedWorkflow
+      label: isFixedPricePurchase
+        ? "Menunggu Pembayaran"
+        : hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Pembayaran Gagal"
-          : isFailedFixedPricePayment
-            ? "Menunggu Pembayaran"
           : "Verifikasi Gagal"
         : "Verifikasi",
-      headline: hasFailedWorkflow
+      headline: isFixedPricePurchase
+        ? isFailedFixedPricePayment
+          ? "Pembayaran Harga Tetap Gagal"
+          : isFixedPriceVerifiedPayment
+            ? "Pembayaran Berhasil"
+          : "Menunggu Pembayaran"
+        : hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Alur Pembayaran Gagal"
-          : isFailedFixedPricePayment
-            ? "Pembayaran Harga Tetap Gagal"
           : "Alur Verifikasi Gagal"
         : isMidtrans
           ? paymentVerified
@@ -777,11 +839,15 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
             : "Menunggu Konfirmasi Pembayaran"
           : "Menunggu Verifikasi Admin",
       detail: verificationDetail,
-      meta: hasFailedWorkflow
+      meta: isFixedPricePurchase
+        ? isFailedFixedPricePayment
+          ? "Batas waktu berakhir"
+          : isFixedPriceVerifiedPayment
+            ? "Pembayaran diterima"
+            : "Pembayaran belum diterima"
+        : hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Melewati 24 jam"
-          : isFailedFixedPricePayment
-            ? "Batas waktu berakhir"
           : "Bukti ditolak admin unit"
         : isMidtrans
           ? paymentVerified
@@ -794,7 +860,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? `Admin: ${transaction.verifiedBy}`
           : undefined,
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
-      icon: isFailedFixedPricePayment ? WalletCards : ShieldCheck,
+      icon: isFixedPricePurchase ? WalletCards : ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
@@ -806,14 +872,26 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Menunggu Bukti Serah-Terima dari Admin Unit"
           : awaitingBuyerConfirmation
             ? "Menunggu Konfirmasi Buyer"
-            : isFailedFixedPricePayment
-              ? "Belum Dimulai"
+            : isFixedPricePurchase
+              ? isFixedPriceVerifiedPayment
+                ? "Menunggu Serah-Terima Barang"
+                : "Belum Dimulai"
               : "Serah-Terima & Konfirmasi Buyer",
-      detail: isFailedFixedPricePayment
-        ? "Serah-terima belum dimulai karena pembayaran tidak berhasil."
+      detail: isFixedPricePurchase
+        ? isFailedFixedPricePayment
+          ? "Serah-terima belum dimulai karena pembayaran tidak berhasil."
+          : completed
+            ? "Pembayaran dan serah-terima barang sudah dikonfirmasi."
+            : isFixedPriceVerifiedPayment
+              ? "Pembayaran berhasil. Lanjutkan serah-terima barang dan konfirmasi setelah barang diterima."
+              : "Serah-terima aktif setelah pembayaran berhasil dikonfirmasi."
         : completionDetail,
-      meta: isFailedFixedPricePayment
-        ? "Belum dimulai"
+      meta: isFixedPricePurchase
+        ? completed
+          ? "Selesai"
+          : isFixedPriceVerifiedPayment
+            ? "Menunggu serah-terima"
+            : "Belum dimulai"
         : awaitingHandoverProof
           ? "Aksi admin unit"
           : "Aksi akhir buyer",
@@ -827,7 +905,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Admin Unit"
           : undefined,
       occurredAt: completed ? transaction.completedAt : transaction.handoverProof?.uploadedAt,
-      icon: isFailedFixedPricePayment ? ClipboardCheck : CheckCircle2
+      icon: isFixedPricePurchase ? ClipboardCheck : CheckCircle2
     }
   ];
 
@@ -2364,11 +2442,9 @@ export function TransactionDetailPage({
                     ? "Pembayaran dan serah-terima barang telah dikonfirmasi. Nota transaksi tersedia di halaman ini."
                     : "Pembayaran harga tetap telah diverifikasi. Tunggu bukti serah-terima dari admin unit atau konfirmasikan setelah barang diterima."
                 : isFixedPrice
-                ? isMidtrans
-                  ? isFailedMidtransPayment
-                    ? "Pembayaran gagal atau kedaluwarsa. Barang dapat dibeli kembali dari katalog jika masih tersedia."
-                    : "Selesaikan pembayaran melalui transfer. Status akan diperbarui setelah dana diterima."
-                  : "Selesaikan pembayaran harga tetap, unggah bukti transfer, lalu tunggu admin unit memverifikasi transaksi."
+                ? isFailedMidtransPayment
+                  ? "Pembayaran gagal atau kedaluwarsa. Barang dapat dibeli kembali dari katalog jika masih tersedia."
+                  : "Pesanan pembelian barang Harga Tetap telah dibuat. Selesaikan pembayaran sebelum batas waktu berakhir."
                 : "Selesaikan pembayaran hasil lelang, pantau verifikasi admin, dan buka nota setelah transaksi selesai."}
             </p>
           </div>
@@ -2527,8 +2603,8 @@ export function TransactionDetailPage({
         >
           <div className="relative z-10 flex h-full flex-col">
             <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
-              {isFailedFixedPricePayment && !isMidtrans ? <CircleX className="size-5" /> : isFixedPriceVerifiedPayment ? <CheckCircle2 className="size-5" /> : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
-              {isFailedFixedPricePayment && !isMidtrans ? "Pembayaran Harga Tetap Gagal" : isFixedPriceVerifiedPayment ? "Pembayaran Berhasil" : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
+              {isFixedPrice ? (isFailedFixedPricePayment ? <CircleX className="size-5" /> : isFixedPriceVerifiedPayment ? <CheckCircle2 className="size-5" /> : <WalletCards className="size-5" />) : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
+              {isFixedPrice ? (isFailedFixedPricePayment ? "Pembayaran Harga Tetap Gagal" : isFixedPriceVerifiedPayment ? "Pembayaran Berhasil" : "Pembayaran Harga Tetap") : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
             </h2>
 
             {isFailedFixedPricePayment && !isMidtrans ? (

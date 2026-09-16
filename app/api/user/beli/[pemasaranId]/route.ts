@@ -19,7 +19,10 @@ export async function POST(_request: Request, context: Context) {
     const data = await createFixedPriceMidtransCheckout(access.userId, pemasaranId);
     return NextResponse.json({ data }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Checkout Midtrans gagal dibuat.";
+    const rawMessage = error instanceof Error ? error.message : "";
+    const message = /midtrans|snap/i.test(rawMessage)
+      ? "Layanan pembayaran belum siap. Silakan coba lagi."
+      : rawMessage || "Pesanan pembelian barang Harga Tetap belum dapat dibuat. Silakan coba lagi.";
     if (error instanceof FixedPriceClaimConflictError) {
       return NextResponse.json(
         { code: error.code, message },
