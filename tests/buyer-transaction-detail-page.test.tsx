@@ -258,6 +258,10 @@ describe("buyer transaction detail page", () => {
       screen.getAllByText(/Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran\. Transaksi ditutup\./i).length
     ).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /pembayaran harga tetap gagal/i, level: 2 })).toBeInTheDocument();
+    expect(screen.getByText("Pesanan Dibuat")).toBeInTheDocument();
+    expect(screen.getByText("Menunggu Pembayaran")).toBeInTheDocument();
+    expect(screen.getByText("Belum dimulai")).toBeInTheDocument();
+    expect(screen.getByText(/pesanan pembelian barang Harga Tetap telah dibuat. Pembayaran belum diterima/i)).toBeInTheDocument();
     expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);
     expect(screen.queryByLabelText(/daftar rekening tujuan/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();

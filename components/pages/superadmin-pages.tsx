@@ -5451,25 +5451,25 @@ function SuperAdminFixedPriceProgressPanel({
         density="tight"
         steps={[
           {
-            label: "Melakukan Pembayaran",
-            status: "Batas waktu berakhir",
+            label: "Pesanan Dibuat",
+            status: "Menunggu pembayaran",
             actor: buyerActor,
-            occurredAt: failureOccurredAt,
-            icon: Landmark,
-            tone: "current",
+            occurredAt: formatSuperAdminDateTime(session.transactionCreatedAt),
+            icon: ShoppingBag,
+            tone: "done",
           },
           {
-            label: "Pembayaran Gagal",
-            status: "Tidak berhasil",
+            label: "Menunggu Pembayaran",
+            status: "Batas waktu berakhir",
             actor: "Sistem",
             occurredAt: failureOccurredAt,
             icon: X,
             tone: "failed",
           },
           {
-            label: "Serah-Terima & Konfirmasi Buyer",
-            status: "Transaksi dibatalkan",
-            icon: CircleDot,
+            label: "Serah-Terima Barang & Konfirmasi Pembeli",
+            status: "Belum dimulai",
+            icon: PackageCheck,
             tone: "pending",
           },
         ]}

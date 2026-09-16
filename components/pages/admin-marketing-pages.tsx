@@ -2945,18 +2945,16 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       <CompactTransactionProgress
         steps={[
           {
-            label: "Melakukan Pembayaran",
-            status: "Batas waktu berakhir",
+            label: "Pesanan Dibuat",
+            status: "Menunggu pembayaran",
             actor: buyerActor,
-            occurredAt: dateLabel(
-              auction.verifiedAt ?? auction.paymentDeadline ?? auction.transactionCreatedAt,
-            ),
-            icon: Landmark,
-            tone: "current",
+            occurredAt: dateLabel(auction.transactionCreatedAt),
+            icon: Package2,
+            tone: "done",
           },
           {
-            label: "Pembayaran Gagal",
-            status: "Tidak berhasil",
+            label: "Menunggu Pembayaran",
+            status: "Batas waktu berakhir",
             actor: "Sistem",
             occurredAt: dateLabel(
               auction.verifiedAt ?? auction.paymentDeadline ?? auction.transactionCreatedAt,
@@ -2965,11 +2963,11 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
             tone: "failed",
           },
           {
-            label: "Serah-Terima & Konfirmasi Buyer",
-            status: "Transaksi dibatalkan",
+            label: "Serah-Terima Barang & Konfirmasi Pembeli",
+            status: "Belum dimulai",
             actor: null,
             occurredAt: null,
-            icon: CheckCircle2,
+            icon: ClipboardList,
             tone: "pending",
           },
         ]}

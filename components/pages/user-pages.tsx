@@ -730,9 +730,9 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const steps: PaymentWorkflowStep[] = [
     {
       id: "payment",
-      label: "Melakukan Pembayaran",
+      label: isFailedFixedPricePayment ? "Pesanan Dibuat" : "Melakukan Pembayaran",
       headline: isFailedFixedPricePayment
-        ? "Pembayaran Harga Tetap"
+        ? "Pesanan Dibuat"
         : isMidtrans
           ? "Bayar melalui Transfer"
           : isTransfer
@@ -740,9 +740,11 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
             : isVickreyWin
               ? "Bayar Lelang Tertutup di Unit"
               : "Bayar di Loket Unit",
-      detail: paymentDetail,
+      detail: isFailedFixedPricePayment
+        ? "Pesanan pembelian barang Harga Tetap telah dibuat. Pembayaran belum diterima."
+        : paymentDetail,
       meta: isFailedFixedPricePayment
-        ? "Batas waktu berakhir"
+        ? "Menunggu pembayaran"
         : isMidtrans
           ? "Transfer"
           : isTransfer
@@ -752,7 +754,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
               : "Bayar di loket",
       actor: `Buyer: ${buyer.name}`,
       occurredAt: transaction.createdAt,
-      icon: Landmark
+      icon: isFailedFixedPricePayment ? ShoppingBag : Landmark
     },
     {
       id: "verification",
@@ -760,7 +762,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
         ? isFailedVickreyPayment
           ? "Pembayaran Gagal"
           : isFailedFixedPricePayment
-            ? "Pembayaran Gagal"
+            ? "Menunggu Pembayaran"
           : "Verifikasi Gagal"
         : "Verifikasi",
       headline: hasFailedWorkflow
@@ -792,21 +794,29 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? `Admin: ${transaction.verifiedBy}`
           : undefined,
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
-      icon: ShieldCheck,
+      icon: isFailedFixedPricePayment ? WalletCards : ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
       id: "completion",
-      label: "Serah-Terima & Konfirmasi Buyer",
+      label: "Serah-Terima Barang & Konfirmasi Pembeli",
       headline: completed
         ? "Pembelian Selesai"
         : awaitingHandoverProof
           ? "Menunggu Bukti Serah-Terima dari Admin Unit"
           : awaitingBuyerConfirmation
             ? "Menunggu Konfirmasi Buyer"
-            : "Serah-Terima & Konfirmasi Buyer",
-      detail: completionDetail,
-      meta: awaitingHandoverProof ? "Aksi admin unit" : "Aksi akhir buyer",
+            : isFailedFixedPricePayment
+              ? "Belum Dimulai"
+              : "Serah-Terima & Konfirmasi Buyer",
+      detail: isFailedFixedPricePayment
+        ? "Serah-terima belum dimulai karena pembayaran tidak berhasil."
+        : completionDetail,
+      meta: isFailedFixedPricePayment
+        ? "Belum dimulai"
+        : awaitingHandoverProof
+          ? "Aksi admin unit"
+          : "Aksi akhir buyer",
       actor: transaction.handoverProof
         ? completed
           ? transaction.completionSource === "AUTO_HANDOVER_GRACE"
@@ -817,7 +827,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Admin Unit"
           : undefined,
       occurredAt: completed ? transaction.completedAt : transaction.handoverProof?.uploadedAt,
-      icon: CheckCircle2
+      icon: isFailedFixedPricePayment ? ClipboardCheck : CheckCircle2
     }
   ];
 

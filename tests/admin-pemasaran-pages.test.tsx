@@ -631,9 +631,9 @@ describe("admin pemasaran pages", () => {
 
     const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
-    expect(screen.getByLabelText(/melakukan pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-current");
-    expect(screen.getByLabelText(/pembayaran gagal: tidak berhasil/i)).toHaveClass("transaction-progress-node-failed");
-    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: transaksi dibatalkan$/i)).toHaveClass("border-[#dfe6e2]");
+    expect(screen.getByLabelText(/pesanan dibuat: menunggu pembayaran/i)).toHaveClass("transaction-progress-node-done");
+    expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
     const performancePanel = screen.getByTestId("admin-fixed-price-performance-panel");

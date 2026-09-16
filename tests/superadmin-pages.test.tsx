@@ -2113,13 +2113,13 @@ describe("superadmin pages", () => {
       "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran.",
     );
     expect(audit).not.toHaveTextContent("Nominal uang yang dikirim tidak sesuai harga barang");
-    expect(screen.getByLabelText(/melakukan pembayaran: batas waktu berakhir/i)).toHaveClass(
-      "transaction-progress-node-current",
+    expect(screen.getByLabelText(/pesanan dibuat: menunggu pembayaran/i)).toHaveClass(
+      "transaction-progress-node-done",
     );
-    expect(screen.getByLabelText(/pembayaran gagal: tidak berhasil/i)).toHaveClass(
+    expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass(
       "transaction-progress-node-failed",
     );
-    expect(screen.getByLabelText(/^serah-terima & konfirmasi buyer: transaksi dibatalkan$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
     expect(audit).toHaveClass("py-2.5", "rounded-lg");
