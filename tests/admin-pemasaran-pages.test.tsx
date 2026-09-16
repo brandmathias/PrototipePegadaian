@@ -586,7 +586,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/^pesanan dibuat: pesanan dibuat$/i)).toHaveClass(
       "transaction-progress-node-done",
     );
-    expect(screen.getByLabelText(/^menunggu pembayaran: menunggu pembayaran$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
       "transaction-progress-node-current",
     );
     expect(router.refresh).toHaveBeenCalledTimes(1);
@@ -631,7 +631,7 @@ describe("admin pemasaran pages", () => {
     const statusButton = screen.getByRole("button", { name: /status pembayaran/i });
 
     expect(screen.getByLabelText(/pesanan dibuat: pesanan dibuat/i)).toHaveClass("transaction-progress-node-done");
-    expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-failed");
+    expect(screen.getByLabelText(/pembayaran gagal: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-failed");
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass("border-[#dfe6e2]");
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
@@ -681,7 +681,7 @@ describe("admin pemasaran pages", () => {
     );
 
     expect(screen.getByLabelText(/^pesanan dibuat: selesai$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^menunggu pembayaran: pembayaran diterima$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^pembayaran berhasil: pembayaran diterima$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli:/i)).toBeInTheDocument();
 
     const managementConsole = screen.getByText("Konsol Manajemen").closest("section");
@@ -940,7 +940,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/^pesanan dibuat: pesanan dibuat$/i)).toHaveClass(
       "transaction-progress-node-done",
     );
-    expect(screen.getByLabelText(/^menunggu pembayaran: menunggu pembayaran$/i)).toHaveClass(
+    expect(screen.getByLabelText(/^melakukan pembayaran: menunggu pembayaran$/i)).toHaveClass(
       "transaction-progress-node-current",
     );
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum terjadi$/i)).toHaveClass(

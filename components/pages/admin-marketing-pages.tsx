@@ -2961,7 +2961,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
             tone: "done",
           },
           {
-            label: "Menunggu Pembayaran",
+            label: "Pembayaran Gagal",
             status: "Batas waktu berakhir",
             actor: "Sistem",
             occurredAt: dateLabel(
@@ -2998,7 +2998,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
       tone: hasTransaction ? ("done" as const) : ("current" as const),
     },
     {
-      label: "Menunggu Pembayaran",
+      label: verified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
       status: verified
         ? "Pembayaran diterima"
         : hasTransaction
@@ -3413,7 +3413,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
       detail:
         "Pesanan pembelian barang Harga Tetap sudah dibuat. Menunggu pembayaran sebelum batas waktu berakhir.",
       icon: Clock3,
-      label: "Menunggu Pembayaran",
+      label: "Melakukan Pembayaran",
     };
   }
 

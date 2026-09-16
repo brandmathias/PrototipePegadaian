@@ -336,7 +336,12 @@ function BidPaymentContext({ item, inverted = false }: { item: BuyerBid; inverte
 
 function getTimelineLabels(transaction: BuyerTransaction) {
   if (transaction.kind === "FIXED_PRICE") {
-    return ["Pesanan Dibuat", "Menunggu Pembayaran", "Serah-Terima Barang & Konfirmasi Pembeli"];
+    const paymentLabel = ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status)
+      ? "Pembayaran Gagal"
+      : ["LUNAS", "SELESAI"].includes(transaction.status)
+        ? "Pembayaran Berhasil"
+        : "Melakukan Pembayaran";
+    return ["Pesanan Dibuat", paymentLabel, "Serah-Terima Barang & Konfirmasi Pembeli"];
   }
 
   return [
@@ -817,7 +822,11 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
     {
       id: "verification",
       label: isFixedPricePurchase
-        ? "Menunggu Pembayaran"
+        ? isFailedFixedPricePayment
+          ? "Pembayaran Gagal"
+          : isFixedPriceVerifiedPayment
+            ? "Pembayaran Berhasil"
+            : "Melakukan Pembayaran"
         : hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Pembayaran Gagal"
@@ -828,7 +837,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? "Pembayaran Harga Tetap Gagal"
           : isFixedPriceVerifiedPayment
             ? "Pembayaran Berhasil"
-          : "Menunggu Pembayaran"
+          : "Melakukan Pembayaran"
         : hasFailedWorkflow
         ? isFailedVickreyPayment
           ? "Alur Pembayaran Gagal"

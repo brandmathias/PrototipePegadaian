@@ -219,7 +219,7 @@ describe("admin transaction pages", () => {
       "href",
       "/uploads/bukti-kalung.jpg"
     );
-    expect(screen.getByRole("heading", { name: /menunggu pembayaran/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /melakukan pembayaran/i })).toBeInTheDocument();
     expect(screen.getByText(/serah-terima barang & konfirmasi pembeli/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /dokumentasi serah terima barang fisik/i })).toBeInTheDocument();
   });

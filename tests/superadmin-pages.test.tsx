@@ -2116,7 +2116,7 @@ describe("superadmin pages", () => {
     expect(screen.getByLabelText(/pesanan dibuat: pesanan dibuat/i)).toHaveClass(
       "transaction-progress-node-done",
     );
-    expect(screen.getByLabelText(/menunggu pembayaran: batas waktu berakhir/i)).toHaveClass(
+    expect(screen.getByLabelText(/pembayaran gagal: batas waktu berakhir/i)).toHaveClass(
       "transaction-progress-node-failed",
     );
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass(

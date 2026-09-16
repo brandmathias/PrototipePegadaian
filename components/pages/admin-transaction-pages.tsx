@@ -502,7 +502,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
         compact
         completed={completed}
         currentStep={currentIndex}
-        description="Pesanan pembelian barang Harga Tetap dibuat terlebih dahulu, menunggu pembayaran, lalu dilanjutkan ke serah-terima barang."
+        description="Pesanan pembelian barang Harga Tetap dibuat terlebih dahulu, pembeli melakukan pembayaran, lalu dilanjutkan ke serah-terima barang."
         steps={[
           {
             id: "payment",
@@ -516,8 +516,8 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
           },
           {
             id: "payment-waiting",
-            label: "Menunggu Pembayaran",
-            headline: paymentFailed ? "Pembayaran Harga Tetap Gagal" : isVerified ? "Pembayaran Berhasil" : "Menunggu Pembayaran",
+            label: paymentFailed ? "Pembayaran Gagal" : isVerified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
+            headline: paymentFailed ? "Pembayaran Harga Tetap Gagal" : isVerified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
             detail: fixedVerificationDetail,
             meta: paymentFailed ? "Batas waktu berakhir" : isVerified ? "Pembayaran diterima" : "Menunggu pembayaran",
             actor: paymentFailed ? "Sistem" : isVerified ? transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Sistem" : undefined,

@@ -354,7 +354,7 @@ describe("TransactionsPage", () => {
     const fixedPricePendingRow = screen.getByText("Honda Vario 160 CBS 2023").closest("article");
     expect(fixedPricePendingRow).not.toBeNull();
     expect(within(fixedPricePendingRow!).getByText("Perlu Tindakan")).toBeInTheDocument();
-    expect(within(fixedPricePendingRow!).getByText("Menunggu pembayaran")).toBeInTheDocument();
+    expect(within(fixedPricePendingRow!).getByText("Melakukan Pembayaran")).toBeInTheDocument();
     expect(within(fixedPricePendingRow!).getByText("Selesaikan pembayaran sebelum batas waktu berakhir.")).toBeInTheDocument();
     expect(
       within(fixedPricePendingRow!).getByRole("link", { name: /lihat detail/i })

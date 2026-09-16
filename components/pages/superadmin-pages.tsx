@@ -5459,7 +5459,7 @@ function SuperAdminFixedPriceProgressPanel({
             tone: "done",
           },
           {
-            label: "Menunggu Pembayaran",
+            label: "Pembayaran Gagal",
             status: "Batas waktu berakhir",
             actor: "Sistem",
             occurredAt: failureOccurredAt,
@@ -5494,7 +5494,7 @@ function SuperAdminFixedPriceProgressPanel({
       tone: hasTransaction ? ("done" as const) : ("current" as const),
     },
     {
-      label: "Menunggu Pembayaran",
+      label: verified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
       status: verified
         ? "Pembayaran diterima"
         : hasTransaction
@@ -5570,7 +5570,7 @@ function SuperAdminFixedPriceWorkspace({
         : verified
           ? "Pembayaran Harga Tetap Berhasil"
           : hasBuyer
-            ? "Menunggu Pembayaran"
+            ? "Melakukan Pembayaran"
             : "Masih Tersedia di Katalog";
   const statusDetail = paymentFailed
     ? FIXED_PRICE_PAYMENT_FAILURE_COPY.notificationMessage

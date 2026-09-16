@@ -175,7 +175,7 @@ describe("buyer transaction detail page", () => {
 
     expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^pesanan dibuat$/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: /^menunggu pembayaran$/i, level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^melakukan pembayaran$/i, level: 3 })).toBeInTheDocument();
     expect(screen.getAllByText(/selesai/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/bukti diunggah/i)).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /foto barang kalung emas 18k/i })).toBeInTheDocument();
@@ -259,7 +259,7 @@ describe("buyer transaction detail page", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /pembayaran harga tetap gagal/i, level: 2 })).toBeInTheDocument();
     expect(screen.getByText("Pesanan Dibuat")).toBeInTheDocument();
-    expect(screen.getByText("Menunggu Pembayaran")).toBeInTheDocument();
+    expect(screen.getByText("Pembayaran Gagal")).toBeInTheDocument();
     expect(screen.getByText("Belum dimulai")).toBeInTheDocument();
     expect(screen.getByText(/pesanan pembelian barang Harga Tetap telah dibuat.*pembayaran belum diterima/i)).toBeInTheDocument();
     expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);
@@ -333,7 +333,7 @@ describe("buyer transaction detail page", () => {
 
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByRole("heading", { name: /menunggu pembayaran/i })).toBeInTheDocument();
+    expect(within(workflow!).getByRole("heading", { name: /melakukan pembayaran/i })).toBeInTheDocument();
     expect(within(workflow!).queryByText("Status pembayaran akan diperbarui setelah dana diterima.")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /pembayaran harga tetap/i })).toBeInTheDocument();
     expect(screen.getAllByText(/^transfer$/i).length).toBeGreaterThan(0);

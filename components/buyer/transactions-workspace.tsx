@@ -68,7 +68,7 @@ function getTransactionStatusMeta(transaction: BuyerTransaction) {
     case "MENUNGGU_PEMBAYARAN":
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {
-        label: transaction.kind === "FIXED_PRICE" ? "Menunggu Pembayaran" : "Perlu Pembayaran",
+        label: transaction.kind === "FIXED_PRICE" ? "Melakukan Pembayaran" : "Perlu Pembayaran",
         className: "bg-orange-50 text-orange-700",
         matchesFilter: "action" as TransactionFilter,
       };
@@ -221,7 +221,7 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
   switch (transaction.status) {
     case "MENUNGGU_PEMBAYARAN":
       return {
-        title: transaction.kind === "FIXED_PRICE" ? "Menunggu pembayaran" : "Pembayaran belum diselesaikan",
+        title: transaction.kind === "FIXED_PRICE" ? "Melakukan pembayaran" : "Pembayaran belum diselesaikan",
         description: "Selesaikan pembayaran sebelum batas waktu berakhir.",
         className: "bg-[#f2fbf4] text-[#2e6c4e]",
         icon: transaction.kind === "FIXED_PRICE" ? <Clock3 className="size-5" /> : <ShieldCheck className="size-5" />,
