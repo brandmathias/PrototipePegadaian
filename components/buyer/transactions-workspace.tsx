@@ -224,7 +224,7 @@ function getTransactionNoticeMeta(transaction: BuyerTransaction) {
         title: transaction.kind === "FIXED_PRICE" ? "Menunggu pembayaran" : "Pembayaran belum diselesaikan",
         description: "Selesaikan pembayaran sebelum batas waktu berakhir.",
         className: "bg-[#f2fbf4] text-[#2e6c4e]",
-        icon: transaction.kind === "FIXED_PRICE" ? <WalletCards className="size-5" /> : <ShieldCheck className="size-5" />,
+        icon: transaction.kind === "FIXED_PRICE" ? <Clock3 className="size-5" /> : <ShieldCheck className="size-5" />,
       };
     case "MENUNGGU_KONFIRMASI_LANGSUNG":
       return {

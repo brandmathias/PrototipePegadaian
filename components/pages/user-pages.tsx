@@ -860,7 +860,13 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           ? `Admin: ${transaction.verifiedBy}`
           : undefined,
       occurredAt: transaction.verifiedAt || (hasFailedWorkflow ? transaction.deadline : undefined),
-      icon: isFixedPricePurchase ? WalletCards : ShieldCheck,
+      icon: isFixedPricePurchase
+        ? isFailedFixedPricePayment
+          ? CircleX
+          : isFixedPriceVerifiedPayment
+            ? CheckCircle2
+            : Clock3
+        : ShieldCheck,
       tone: hasFailedWorkflow ? "danger" : "default"
     },
     {
@@ -2603,7 +2609,7 @@ export function TransactionDetailPage({
         >
           <div className="relative z-10 flex h-full flex-col">
             <h2 className={cn("flex items-center gap-2.5 font-headline font-black tracking-tight text-primary", isMidtrans ? "mb-4 text-[1.75rem]" : "mb-6 text-[1.95rem]")}>
-              {isFixedPrice ? (isFailedFixedPricePayment ? <CircleX className="size-5" /> : isFixedPriceVerifiedPayment ? <CheckCircle2 className="size-5" /> : <WalletCards className="size-5" />) : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
+              {isFixedPrice ? (isFailedFixedPricePayment ? <CircleX className="size-5" /> : isFixedPriceVerifiedPayment ? <CheckCircle2 className="size-5" /> : <Clock3 className="size-5" />) : isTransfer || isMidtrans ? <Landmark className="size-5" /> : <MapPinned className="size-5" />}
               {isFixedPrice ? (isFailedFixedPricePayment ? "Pembayaran Harga Tetap Gagal" : isFixedPriceVerifiedPayment ? "Pembayaran Berhasil" : "Pembayaran Harga Tetap") : isTransfer ? "Rekening Tujuan" : isMidtrans ? "Pembayaran Transfer" : "Bayar Langsung di Unit"}
             </h2>
 

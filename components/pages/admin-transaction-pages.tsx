@@ -7,6 +7,7 @@ import {
   ArrowRight,
   CheckCircle2,
   ClipboardCheck,
+  Clock3,
   FileCheck2,
   FileText,
   History,
@@ -521,7 +522,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
             meta: paymentFailed ? "Batas waktu berakhir" : isVerified ? "Pembayaran diterima" : "Menunggu pembayaran",
             actor: paymentFailed ? "Sistem" : isVerified ? transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Sistem" : undefined,
             occurredAt: transaction.verifiedAt || (paymentFailed ? transaction.deadline : undefined),
-            icon: paymentFailed ? XCircle : WalletCards,
+            icon: paymentFailed ? XCircle : isVerified ? CheckCircle2 : Clock3,
             tone: paymentFailed ? "danger" : "default"
           },
           {

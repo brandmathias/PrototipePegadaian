@@ -3005,7 +3005,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
           ? "Menunggu pembayaran"
           : "Belum dimulai",
       occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
-      icon: WalletCards,
+      icon: verified ? CheckCircle2 : Clock3,
       tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
     },
     {
@@ -3412,7 +3412,7 @@ function getFixedPriceCatalogStatusMeta(auction: MarketingSession) {
       badgeClassName: "border-[#fde3b2] bg-[#fff8eb] text-[#8a4b08]",
       detail:
         "Pesanan pembelian barang Harga Tetap sudah dibuat. Menunggu pembayaran sebelum batas waktu berakhir.",
-      icon: WalletCards,
+      icon: Clock3,
       label: "Menunggu Pembayaran",
     };
   }

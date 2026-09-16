@@ -5503,7 +5503,7 @@ function SuperAdminFixedPriceProgressPanel({
       occurredAt: verified
         ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
         : null,
-      icon: WalletCards,
+      icon: verified ? CheckCircle2 : Clock3,
       tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
     },
     {
