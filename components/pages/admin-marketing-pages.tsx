@@ -5452,7 +5452,7 @@ function FixedPricePaymentVerificationModal({
     : "Transfer Bank";
   const statusLabel = humanize(auction.transactionStatus).toUpperCase();
   const verificationStatusLabel = isRejectedReview
-    ? "PEMBAYARAN DITOLAK"
+    ? "TRANSAKSI PEMBELIAN GAGAL"
     : isReadOnly
       ? "PEMBAYARAN DISETUJUI"
       : auction.transactionStatus === "BUKTI_DIUNGGAH"
@@ -5554,14 +5554,14 @@ function FixedPricePaymentVerificationModal({
                 id="fixed-price-payment-verification-title"
               >
                 {isRejectedReview
-                  ? "Review Pembayaran Ditolak"
+                  ? "Detail Transaksi Pembelian Harga Tetap Gagal"
                   : isReadOnly
                     ? "Detail Pembayaran Terverifikasi"
                     : "Verifikasi Bukti Pembayaran Pembelian Barang Harga Tetap"}
               </h2>
               <p className="mx-auto max-w-[36rem] text-[0.9rem] font-semibold leading-7 text-slate-500">
                 {isRejectedReview
-                  ? "Bukti pembayaran ini sudah ditolak. Data berikut hanya dapat ditinjau sebagai arsip verifikasi."
+                  ? FIXED_PRICE_PAYMENT_FAILURE_COPY.timelineDescription
                   : isReadOnly
                     ? "Informasi verifikasi sebelumnya hanya dapat dilihat dan tidak dapat diubah."
                     : "Pastikan bukti pembayaran sesuai dengan kewajiban nominal tetap."}
@@ -5740,7 +5740,7 @@ function FixedPricePaymentVerificationModal({
                     )}
                   >
                     {isRejectedReview
-                      ? `Bukti pembayaran ditolak admin unit${auction.rejectionReason ? ` dengan alasan: ${auction.rejectionReason}` : ""}. Transaksi ini dibatalkan dan hanya dapat ditinjau sebagai arsip.`
+                      ? FIXED_PRICE_PAYMENT_FAILURE_COPY.timelineDescription
                       : isReadOnly
                         ? "Pembayaran disetujui admin unit. Bukti, nominal, dan rekening tujuan berikut disimpan sebagai catatan verifikasi."
                         : "Pembayaran telah diterima. Cocokkan nominal transfer dan rekening tujuan sebelum transaksi harga tetap dicairkan."}
@@ -5801,12 +5801,12 @@ function FixedPricePaymentVerificationModal({
                           )}
                         >
                           {isRejectedReview
-                            ? "Review penolakan terkunci"
+                            ? "Informasi transaksi tersimpan"
                             : "Data verifikasi terkunci"}
                         </p>
                         <p className="mt-1 font-semibold">
                           {isRejectedReview
-                            ? `Alasan penolakan: ${auction.rejectionReason || "Alasan penolakan tidak tercatat."}`
+                            ? "Transaksi ini ditutup setelah batas waktu pembayaran berakhir."
                             : "Hasil persetujuan ini hanya dapat dilihat untuk menjaga konsistensi riwayat transaksi."}
                         </p>
                       </div>

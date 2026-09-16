@@ -778,6 +778,12 @@ describe("listAdminBarangHistory", () => {
     const result = await listAdminBarangHistory("unit-1", undefined, "barang-same-moment-relist");
 
     expect(result.map((entry) => entry.id)).toEqual(["hist-relisted", "hist-rejected"]);
+    expect(result[1]).toEqual(
+      expect.objectContaining({
+        actorName: "Sistem Otomatis",
+        note: "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang kembali tersedia di katalog."
+      })
+    );
   });
 
   it("fills missing marketed, sold, and failed milestones from pemasaran and transaksi history", async () => {
@@ -841,15 +847,15 @@ describe("listAdminBarangHistory", () => {
             ...baseRow,
             marketingId: "marketing-fixed",
             type: "fixed_price",
-            status: "ditolak_bukti",
-            rejectionReason: "Nominal tidak sesuai.",
+            status: "gagal",
+            rejectionReason: null,
             createdAt: new Date("2026-06-01T14:00:00.000Z"),
             updatedAt: new Date("2026-06-01T15:30:00.000Z"),
-            verifiedAt: new Date("2026-06-01T15:30:00.000Z"),
+            verifiedAt: null,
             completedAt: null,
-            paymentDeadline: null,
-            actorName: "Admin Verifikasi",
-            actorRole: "admin_unit"
+            paymentDeadline: new Date("2026-06-01T15:00:00.000Z"),
+            actorName: null,
+            actorRole: null
           },
           {
             ...baseRow,
@@ -878,7 +884,8 @@ describe("listAdminBarangHistory", () => {
         }),
         expect.objectContaining({
           actionKey: "gagal",
-          note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Nominal tidak sesuai."
+          actorName: "Sistem Otomatis",
+          note: "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang kembali tersedia di katalog."
         }),
         expect.objectContaining({
           actionKey: "dipasarkan",
@@ -1268,7 +1275,9 @@ describe("listAdminBarangHistory", () => {
       expect.objectContaining({
         id: "transaction-failed-pm-5",
         createdAt: rejectedAt.toISOString(),
-        note: "Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: Uang dikirim bukan ke rekening tujuan."
+        note: "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang kembali tersedia di katalog.",
+        actorName: "Sistem Otomatis",
+        actorRole: null
       })
     ]);
     expect(relistPublish).toEqual(

@@ -61,10 +61,11 @@ describe("BuyerHelpCenterPage", () => {
     expect(screen.getByText(/langsung di unit maksimal 24 jam/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /bagaimana alur pembelian barang Harga Tetap/i }));
-    expect(screen.getByText(/unggah bukti pembayaran dan nomor referensi/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran Midtrans/i)).toBeInTheDocument();
+    expect(screen.queryByText(/unggah bukti pembayaran dan nomor referensi/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /disclaimer penting/i }));
-    expect(screen.getByText(/Pembayaran harus dilakukan ke rekening unit yang ditampilkan sistem/i)).toBeInTheDocument();
+    expect(screen.getByText(/Gunakan kanal pembayaran yang tersedia pada halaman transaksi/i)).toBeInTheDocument();
   });
 
   it("keeps technical bidder censorship details out of buyer help content", () => {

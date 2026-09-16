@@ -362,7 +362,7 @@ describe("TransactionsPage", () => {
     expect(screen.queryByRole("button", { name: /bayar sekarang/i })).not.toBeInTheDocument();
     expect(screen.getByText("Cincin Emas Berlian")).toBeInTheDocument();
     expect(screen.queryByText("TRX-250520-0012")).not.toBeInTheDocument();
-    expect(screen.getByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Honda Vario 160 CBS 2023")).toBeInTheDocument();
     expect(screen.getByText("Kalung Mutiara Laut Selatan")).toBeInTheDocument();
     expect(screen.getByText("Iphone 14 Pro Max")).toBeInTheDocument();
@@ -371,7 +371,7 @@ describe("TransactionsPage", () => {
     expect(fixedPriceFailureRow).not.toBeNull();
     expect(
       within(fixedPriceFailureRow!).getAllByText(
-        /Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. Transaksi ditutup\./i
+        /Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran\. Transaksi ditutup\./i
       ).length
     ).toBeGreaterThan(0);
     expect(within(fixedPriceFailureRow!).getByText(/^Total pembayaran$/i)).toBeInTheDocument();

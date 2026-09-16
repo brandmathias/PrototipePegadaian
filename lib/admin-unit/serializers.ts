@@ -5,6 +5,7 @@ import type { LotInsights } from "@/lib/contracts/catalog";
 import type { barang, bids, pemasaran, transaksi } from "@/lib/db/schema/admin";
 import { formatAppDateTime } from "@/lib/timezone";
 import { getHandoverAutoCompleteDeadline } from "@/lib/transactions/handover-finalization";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 
 type BarangRow = InferSelectModel<typeof barang>;
 type PemasaranRow = InferSelectModel<typeof pemasaran>;
@@ -251,15 +252,13 @@ export function serializeAdminPemasaran(
   const transactionNote = (() => {
     if (row.mode === "fixed_price") {
       if (extra.transaction?.status === "lunas" || extra.transaction?.status === "selesai") {
-        return "Pembayaran sudah terverifikasi dan barang siap dinyatakan terjual.";
+        return "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans dan barang siap dinyatakan terjual.";
       }
-      if (extra.transaction?.status === "ditolak_bukti") {
-        return extra.transaction.rejectionReason
-          ? `Bukti pembayaran ditolak admin unit. Alasan: ${extra.transaction.rejectionReason}`
-          : "Bukti pembayaran ditolak admin unit.";
+      if (["ditolak_bukti", "gagal"].includes(extra.transaction?.status ?? "")) {
+        return FIXED_PRICE_PAYMENT_FAILURE_COPY.description;
       }
       if (extra.transaction) {
-        return "Pembeli sudah mulai proses pembayaran dan menunggu verifikasi admin.";
+        return "Pembeli sedang menyelesaikan pembayaran melalui Midtrans.";
       }
       return "Belum ada transaksi pembeli pada sesi harga tetap ini.";
     }
@@ -389,7 +388,7 @@ export function serializeAdminTransaction(
     lot: row.lotName ?? "-",
     imageUrl: row.imageUrl ?? undefined,
     status: upper(row.status),
-    method: row.paymentMethod === "langsung" ? "BAYAR_LANGSUNG" : "TRANSFER_BANK",
+    method: formatPaymentMethod(row.paymentMethod) ?? "TRANSFER_BANK",
     total: toNumber(row.amount),
     reference: row.referenceNumber ?? proof.reference ?? "-",
     unit: row.unitName ?? "-",

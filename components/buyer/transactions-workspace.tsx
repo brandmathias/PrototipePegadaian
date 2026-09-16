@@ -113,7 +113,9 @@ function getTransactionDescription(transaction: BuyerTransaction) {
         ? "Anda memenangkan lelang. Segera selesaikan pembayaran sebelum batas waktu berakhir."
         : "Transaksi harga tetap. Segera selesaikan pembayaran sebelum batas waktu berakhir.";
     case "DITOLAK_BUKTI":
-      return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
+      return transaction.kind === "FIXED_PRICE"
+        ? FIXED_PRICE_PAYMENT_FAILURE_COPY.description
+        : "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
     case "BUKTI_DIUNGGAH":
     case "MENUNGGU_VERIFIKASI":
       return "Pembayaran telah kami terima. Transaksi sedang diverifikasi oleh tim admin unit.";

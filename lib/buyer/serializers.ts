@@ -172,6 +172,13 @@ function getPaymentNotes(row: BuyerTransactionShape) {
     ];
   }
 
+  if (row.status === "ditolak_bukti" && row.type === "fixed_price") {
+    return [
+      FIXED_PRICE_PAYMENT_FAILURE_COPY.description,
+      "Transaksi dibatalkan dan barang kembali tersedia di katalog jika belum terjual."
+    ];
+  }
+
   if (row.status === "ditolak_bukti") {
     return [
       "Bukti pembayaran ditolak admin unit.",

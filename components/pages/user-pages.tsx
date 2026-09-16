@@ -395,6 +395,10 @@ function getTransactionStatusDescription(transaction: BuyerTransaction) {
     return "Transaksi harga tetap sudah dibuat. Lakukan transfer sesuai nominal, lalu unggah bukti pembayaran dari halaman ini.";
   }
 
+  if (transaction.status === "DITOLAK_BUKTI" && transaction.kind === "FIXED_PRICE") {
+    return FIXED_PRICE_PAYMENT_FAILURE_COPY.description;
+  }
+
   if (transaction.status === "DITOLAK_BUKTI") {
     return "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog.";
   }
@@ -669,7 +673,8 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
-  const isFailedFixedPricePayment = isFixedPrice && transaction.status === "GAGAL";
+  const isFailedFixedPricePayment =
+    isFixedPrice && ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status);
   const hasFailedWorkflow =
     transaction.status === "DITOLAK_BUKTI" || isFailedVickreyPayment || isFailedFixedPricePayment;
   const completed = transaction.status === "SELESAI";
@@ -2202,10 +2207,11 @@ export function TransactionDetailPage({
   const isVickreyWin = transaction.kind === "VICKREY_WIN";
   const isFixedPrice = transaction.kind === "FIXED_PRICE";
   const isProofInReview = transaction.status === "BUKTI_DIUNGGAH";
-  const isProofRejected = transaction.status === "DITOLAK_BUKTI";
+  const isProofRejected = transaction.status === "DITOLAK_BUKTI" && !isFixedPrice;
   const isFailedMidtransPayment = isMidtrans && transaction.status === "GAGAL";
   const isFailedVickreyPayment = isVickreyWin && transaction.status === "GAGAL";
-  const isFailedFixedPricePayment = isFixedPrice && transaction.status === "GAGAL";
+  const isFailedFixedPricePayment =
+    isFixedPrice && ["GAGAL", "DITOLAK_BUKTI"].includes(transaction.status);
   const isFixedPriceVerifiedPayment = isFixedPrice && isVerified;
   const isSuccessfulVickreyPayment = isVickreyWin && isVerified;
   const isPendingVickreyPayment =
@@ -2339,10 +2345,10 @@ export function TransactionDetailPage({
               Detail Pembayaran
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-              {isProofRejected
-                ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
-              : isFailedFixedPricePayment
+              {isFailedFixedPricePayment
                 ? FIXED_PRICE_PAYMENT_FAILURE_COPY.description
+              : isProofRejected
+                ? "Bukti pembayaran ditolak admin unit. Transaksi dibatalkan dan barang kembali tersedia di katalog."
                 : isFixedPriceVerifiedPayment
                   ? isCompleted
                     ? "Pembayaran dan serah-terima barang telah dikonfirmasi. Nota transaksi tersedia di halaman ini."

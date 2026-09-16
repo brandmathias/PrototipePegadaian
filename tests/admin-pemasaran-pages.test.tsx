@@ -644,7 +644,7 @@ describe("admin pemasaran pages", () => {
     fireEvent.click(statusButton);
     const dialog = screen.getByRole("dialog", { name: /status pembayaran harga tetap/i });
     expect(within(dialog).getByText("Pembayaran tidak berhasil")).toBeInTheDocument();
-    expect(within(dialog).getByText(/pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan/i)).toBeInTheDocument();
+    expect(within(dialog).getByText(/transaksi pembelian barang harga tetap tidak diselesaikan sampai batas waktu pembayaran/i)).toBeInTheDocument();
     expect(within(dialog).queryByText(/nominal uang yang dikirim tidak sesuai harga barang/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/bukti pembayaran tidak disetujui/i)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/setujui pembayaran/i)).not.toBeInTheDocument();

@@ -284,7 +284,7 @@ describe("buyer serializers", () => {
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/24 jam|batas waktu/i);
   });
 
-  it("exposes rejected proof reason as canceled harga tetap content", () => {
+  it("normalizes legacy fixed-price proof rejection as a general failed purchase", () => {
     const transaction = serializeBuyerTransaction({
       id: "trx-fixed-rejected",
       pemasaranId: "pm-fixed",
@@ -307,8 +307,8 @@ describe("buyer serializers", () => {
     });
 
     expect(transaction.status).toBe("DITOLAK_BUKTI");
-    expect(transaction.rejectionReason).toBe("Nominal uang yang dikirim tidak sesuai harga barang.");
-    expect(transaction.paymentNotes.join(" ")).toMatch(/nominal uang yang dikirim/i);
+    expect(transaction.paymentNotes.join(" ")).toMatch(/transaksi pembelian barang harga tetap/i);
+    expect(transaction.paymentNotes.join(" ")).not.toMatch(/nominal uang yang dikirim/i);
     expect(transaction.paymentNotes.join(" ")).toMatch(/transaksi dibatalkan/i);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/unggah ulang/i);
     expect(transaction.deadline).toBe("Dibatalkan");
@@ -627,7 +627,7 @@ describe("buyer serializers", () => {
     expect(transaction.kind).toBe("FIXED_PRICE");
     expect(transaction.status).toBe("GAGAL");
     expect(transaction.paymentNotes.join(" ")).toMatch(
-      /Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. Transaksi ditutup\./i
+      /Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran\. Transaksi ditutup\./i
     );
     expect(transaction.paymentNotes.join(" ")).toMatch(/buka kembali katalog/i);
     expect(transaction.paymentNotes.join(" ")).not.toMatch(/lelang/i);

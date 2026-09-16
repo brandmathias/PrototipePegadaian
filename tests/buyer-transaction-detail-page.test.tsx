@@ -255,7 +255,7 @@ describe("buyer transaction detail page", () => {
 
     expect(screen.getByRole("heading", { name: /detail pembayaran/i })).toBeInTheDocument();
     expect(
-      screen.getAllByText(/Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan\. Transaksi ditutup\./i).length
+      screen.getAllByText(/Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran\. Transaksi ditutup\./i).length
     ).toBeGreaterThan(0);
     expect(screen.getByRole("heading", { name: /pembayaran harga tetap gagal/i, level: 2 })).toBeInTheDocument();
     expect(screen.getAllByText(/transaksi ditutup/i).length).toBeGreaterThan(0);
@@ -1142,7 +1142,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
   });
 
-  it("surfaces rejection reason as a canceled transaction while keeping the submitted proof visible", () => {
+  it("shows a general failed fixed-price purchase without legacy proof details", () => {
     render(
       <TransactionDetailPage
         buyer={buyer}
@@ -1158,13 +1158,13 @@ describe("buyer transaction detail page", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: /alur verifikasi gagal/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/bukti pembayaran ditolak/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/nominal uang yang dikirim tidak sesuai harga barang/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/transaksi dibatalkan dan barang kembali tersedia di katalog/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("heading", { name: /pembayaran harga tetap gagal/i })).toHaveLength(2);
+    expect(screen.getAllByText(/transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/bukti pembayaran ditolak/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/nominal uang yang dikirim tidak sesuai harga barang/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/barang dapat dibeli kembali dari katalog jika masih tersedia/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("heading", { name: /review bukti/i })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /preview bukti transfer/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /review bukti/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /preview bukti transfer/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/transfer-budi-buram\.jpg/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/upload kembali bukti pembayaran/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/tekan untuk membuka tampilan penuh/i)).not.toBeInTheDocument();
@@ -1173,7 +1173,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByText(/Admin: Maria Supit/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/^Sistem$/i)).toBeInTheDocument();
     expect(within(workflow!).getAllByText(new RegExp(`Buyer: ${buyer.name}`, "i"))).toHaveLength(1);
   });
 

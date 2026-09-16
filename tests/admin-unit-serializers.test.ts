@@ -497,6 +497,33 @@ describe("admin unit serializers", () => {
     expect(transaction.printableReceipt).toBe(false);
   });
 
+  it("preserves Midtrans as the fixed-price payment method", () => {
+    const transaction = serializeAdminTransaction({
+      id: "TRX-MIDTRANS",
+      pemasaranId: "pm-1",
+      userId: "buyer-1",
+      type: "fixed_price",
+      amount: "12500000",
+      paymentMethod: "midtrans",
+      status: "gagal",
+      proofUrl: null,
+      handoverProofUrl: null,
+      handoverProofUploadedAt: null,
+      handoverProofUploadedByUserId: null,
+      completedAt: null,
+      completionSource: null,
+      rejectionReason: null,
+      referenceNumber: null,
+      paymentDeadline: null,
+      verifiedByUserId: null,
+      verifiedAt: null,
+      createdAt: new Date("2026-04-24T00:00:00Z"),
+      updatedAt: new Date("2026-04-24T00:00:00Z")
+    });
+
+    expect(transaction.method).toBe("MIDTRANS");
+  });
+
   it("keeps legacy proof URLs separate from transfer references", () => {
     const transaction = serializeAdminTransaction({
       id: "TRX-LEGACY",

@@ -15,6 +15,7 @@ import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema/auth";
 import { barang, bids, mediaBarang, pemasaran, riwayatPerpanjangan, riwayatStatusBarang, transaksi, units } from "@/lib/db/schema";
 import { formatAppDateTime } from "@/lib/timezone";
+import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 
 function toUtcDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -132,6 +133,10 @@ type AdminBarangTransactionTimelineRow = AdminBarangTimelineSourceRow & {
   actorName: string | null;
   actorRole: string | null;
 };
+
+function isLegacyFixedPriceProofFailureNote(note: string | null | undefined) {
+  return /(?:verifikasi\s+)?bukti pembayaran harga tetap ditolak admin unit/iu.test(String(note ?? ""));
+}
 
 function mapStatusHistoryAction(oldStatus: string | null, newStatus: string) {
   if (!oldStatus) {
@@ -789,6 +794,9 @@ export async function listAdminBarangHistory(
           })
         : null;
     const createdAt = getPaymentFailureHistoryTime(row, transactionRows);
+    const isLegacyFixedPriceFailure =
+      action.actionKey === "gagal" &&
+      isLegacyFixedPriceProofFailureNote(row.note);
     const entry = {
       id: row.id,
       barangId: row.barangId,
@@ -803,9 +811,13 @@ export async function listAdminBarangHistory(
       actionKey: action.actionKey,
       actionLabel: action.actionLabel,
       actionTone: action.actionTone,
-      note: publishedMarketing ? formatMarketingPublishedHistoryNote(publishedMarketing) : normalizeHistoryNote(row.note),
-      actorName: normalizeHistoryActorName(row.actorName),
-      actorRole: row.actorRole,
+      note: isLegacyFixedPriceFailure
+        ? FIXED_PRICE_PAYMENT_FAILURE_COPY.timelineDescription
+        : publishedMarketing
+          ? formatMarketingPublishedHistoryNote(publishedMarketing)
+          : normalizeHistoryNote(row.note),
+      actorName: isLegacyFixedPriceFailure ? "Sistem Otomatis" : normalizeHistoryActorName(row.actorName),
+      actorRole: isLegacyFixedPriceFailure ? null : row.actorRole,
       createdAt: createdAt.toISOString(),
       createdAtLabel: formatAppDateTime(createdAt)
     };
@@ -869,7 +881,7 @@ export async function listAdminBarangHistory(
         note:
           transaction.type === "vickrey"
             ? "Pemenang Lelang Tertutup menyelesaikan pembayaran dan barang tercatat terjual."
-            : "Pembayaran harga tetap disetujui admin unit sehingga barang tercatat terjual.",
+            : "Pembayaran Harga Tetap dikonfirmasi otomatis oleh Midtrans sehingga barang tercatat terjual.",
         actorName: transaction.actorName,
         actorRole: transaction.actorRole,
         createdAt: transaction.verifiedAt ?? transaction.completedAt ?? transaction.updatedAt ?? transaction.createdAt
@@ -894,11 +906,9 @@ export async function listAdminBarangHistory(
         actionKey: "gagal",
         actionLabel: "Gagal",
         actionTone: "danger",
-        note: transaction.rejectionReason
-          ? `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${appendSentencePeriod(transaction.rejectionReason)}`
-          : "Verifikasi bukti pembayaran harga tetap ditolak admin unit.",
-        actorName: transaction.actorName,
-        actorRole: transaction.actorRole,
+        note: FIXED_PRICE_PAYMENT_FAILURE_COPY.timelineDescription,
+        actorName: "Sistem Otomatis",
+        actorRole: null,
         createdAt: transaction.verifiedAt ?? transaction.updatedAt ?? transaction.createdAt
       });
 
@@ -909,7 +919,8 @@ export async function listAdminBarangHistory(
       continue;
     }
 
-    if (row.status !== "gagal") {
+    const isFailedFixedPricePayment = transaction?.type === "fixed_price" && transaction.status === "gagal";
+    if (row.status !== "gagal" && !isFailedFixedPricePayment) {
       continue;
     }
 
@@ -926,7 +937,7 @@ export async function listAdminBarangHistory(
           row.updatedAt ??
           row.endsAt ??
           row.createdAt
-        : transaction?.updatedAt ?? row.updatedAt ?? row.endsAt ?? row.createdAt;
+        : transaction?.paymentDeadline ?? transaction?.updatedAt ?? row.updatedAt ?? row.endsAt ?? row.createdAt;
     const failedEntry = createSyntheticHistoryEntry(row, {
       id: `marketing-failed-${row.marketingId}`,
       actionKey: "gagal",
@@ -937,9 +948,9 @@ export async function listAdminBarangHistory(
           ? row.bidCount > 0
             ? "Pemenang Lelang Tertutup tidak menyelesaikan pembayaran dalam 24 jam sehingga sesi dinyatakan gagal."
             : "Sesi Lelang Tertutup berakhir tanpa penawar sehingga barang masuk status gagal."
-          : "Sesi Harga Tetap ditutup sebagai pemasaran gagal dan membutuhkan tindak lanjut unit.",
-      actorName: transaction?.actorName,
-      actorRole: transaction?.actorRole,
+          : FIXED_PRICE_PAYMENT_FAILURE_COPY.timelineDescription,
+      actorName: row.mode === "fixed_price" ? "Sistem Otomatis" : transaction?.actorName,
+      actorRole: row.mode === "fixed_price" ? null : transaction?.actorRole,
       createdAt: failedEntryCreatedAt
     });
 

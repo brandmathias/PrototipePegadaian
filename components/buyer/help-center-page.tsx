@@ -36,7 +36,7 @@ const faqItems = [
   {
     question: "Bagaimana alur pembelian barang Harga Tetap?",
     answer:
-      "Pilih barang berlabel Harga Tetap, lanjutkan ke pembayaran, transfer sesuai nominal ke rekening unit yang tertera, lalu unggah bukti pembayaran dan nomor referensi jika tersedia. Transaksi dicatat setelah bukti terkirim dan menunggu verifikasi admin unit. Setelah admin memverifikasi pembayaran, status transaksi berubah menjadi lunas atau siap dilanjutkan ke proses serah terima sesuai arahan unit."
+      "Pilih barang berlabel Harga Tetap, lanjutkan ke pembayaran Midtrans, lalu selesaikan pembayaran melalui kanal yang tersedia sebelum batas waktu berakhir. Status pembayaran diperbarui otomatis dan proses serah-terima dapat dilanjutkan setelah pembayaran berhasil."
   },
   {
     question: "Akun saya dibatasi Level 2, apakah saya masih bisa membeli barang Harga Tetap?",
@@ -56,7 +56,7 @@ const faqItems = [
   {
     question: "Apa saja disclaimer penting sebelum mengikuti lelang atau membeli Harga Tetap?",
     answer:
-      "Pastikan detail barang, foto, deskripsi, unit pelaksana, harga dasar atau harga tetap, rekening tujuan, dan batas waktu pembayaran sudah sesuai sebelum mengirim bid atau bukti bayar. Penawaran Lelang Tertutup bersifat final setelah dikirim. Pembayaran harus dilakukan ke rekening unit yang ditampilkan sistem. Simpan bukti pembayaran untuk verifikasi. Jika ada perbedaan status, hubungi admin unit terkait dengan nomor transaksi dan bukti pendukung."
+      "Pastikan detail barang, foto, deskripsi, unit pelaksana, harga, dan batas waktu pembayaran sudah sesuai sebelum melanjutkan transaksi. Penawaran Lelang Tertutup bersifat final setelah dikirim. Gunakan kanal pembayaran yang tersedia pada halaman transaksi. Jika ada perbedaan status, hubungi admin unit terkait dengan nomor transaksi."
   }
 ];
 

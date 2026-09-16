@@ -1,13 +1,15 @@
 export const FIXED_PRICE_PAYMENT_FAILURE_COPY = {
   title: "Pembayaran Harga Tetap gagal",
   description:
-    "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan. Transaksi ditutup.",
+    "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup.",
   noticeDescription:
-    "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan. Transaksi ditutup.",
+    "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup.",
   paymentDetail:
-    "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
+    "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
   verificationDetail:
-    "Sistem menutup transaksi karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan. Barang dapat dibeli kembali jika masih tersedia.",
+    "Sistem menutup transaksi pembelian barang Harga Tetap karena batas waktu pembayaran berakhir. Barang dapat dibeli kembali jika masih tersedia.",
   notificationMessage:
-    "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia."
+    "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang dapat dibeli kembali dari katalog jika masih tersedia.",
+  timelineDescription:
+    "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran. Transaksi ditutup dan barang kembali tersedia di katalog."
 } as const;

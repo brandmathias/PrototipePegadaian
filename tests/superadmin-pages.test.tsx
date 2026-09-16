@@ -2110,7 +2110,7 @@ describe("superadmin pages", () => {
       "superadmin-fixed-price-performance-panel",
     );
     expect(audit).toHaveTextContent(
-      "Pembayaran gagal karena pembeli tidak menyelesaikan pembayaran pada waktu yang telah ditentukan.",
+      "Transaksi pembelian barang Harga Tetap tidak diselesaikan sampai batas waktu pembayaran.",
     );
     expect(audit).not.toHaveTextContent("Nominal uang yang dikirim tidak sesuai harga barang");
     expect(screen.getByLabelText(/melakukan pembayaran: batas waktu berakhir/i)).toHaveClass(
