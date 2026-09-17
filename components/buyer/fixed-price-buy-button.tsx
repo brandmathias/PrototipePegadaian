@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Clock3, LoaderCircle, ShoppingBag } from "lucide-react";
+import { LoaderCircle, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function FixedPriceBuyButton({
     ? "Lanjutkan pembayaran"
     : buttonLabel;
   const unavailableButtonClass =
-    "min-h-11 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:brightness-100 disabled:opacity-100";
+    "h-10 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:text-[#77736b] hover:brightness-100 disabled:opacity-100";
 
   const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
 
@@ -164,15 +164,8 @@ export function FixedPriceBuyButton({
           </>
         ) : (
           <>
-            {isUnavailable ? (
-              hasActiveInvoice ? (
-                <Clock3 className="size-3.5 shrink-0" strokeWidth={2.55} />
-              ) : (
-                <ShoppingBag className="size-3.5 shrink-0" strokeWidth={2.55} />
-              )
-            ) : null}
             <span className="truncate">{currentLabel}</span>
-            {!isUnavailable ? <ShoppingBag className="size-4" /> : null}
+            <ShoppingBag className="size-4" />
           </>
         )}
       </Button>
