@@ -98,7 +98,7 @@ export function MidtransEmbeddedCheckout({
   toastRef.current = toast;
   const embedId = `midtrans-snap-${useId().replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const [error, setError] = useState<string | null>(null);
-  const [expiredRedirectUrl, setExpiredRedirectUrl] = useState<string | null>(null);
+  const [terminalRedirectUrl, setTerminalRedirectUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<"loading" | "embedded" | "error">("loading");
   const checkoutHeightClass = compact ? "h-0 min-h-0 flex-1" : "min-h-[34rem]";
   const snapHeightClass = compact ? "h-full min-h-0" : "min-h-[32rem]";
@@ -108,11 +108,6 @@ export function MidtransEmbeddedCheckout({
 
     async function mountCheckout() {
       try {
-        if (terminalState === "expired" && embeddedTokenRef.current) {
-          window.snap?.hide?.();
-          embeddedTokenRef.current = null;
-        }
-
         const response = await fetch(`/api/user/transaksi/${transactionId}/midtrans`);
         const payload = await response.json().catch(() => ({}));
 
@@ -127,8 +122,12 @@ export function MidtransEmbeddedCheckout({
         }
 
         const redirectUrl = payload?.data?.snapRedirectUrl?.trim();
-        if (terminalState === "expired" && redirectUrl) {
-          setExpiredRedirectUrl(redirectUrl);
+        if (terminalState !== "pending" && redirectUrl) {
+          if (embeddedTokenRef.current) {
+            window.snap?.hide?.();
+            embeddedTokenRef.current = null;
+          }
+          setTerminalRedirectUrl(redirectUrl);
           setStatus("embedded");
           return;
         }
@@ -244,10 +243,10 @@ export function MidtransEmbeddedCheckout({
       <div
         className={`relative ${checkoutHeightClass} bg-white ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
       >
-        {expiredRedirectUrl ? (
+        {terminalRedirectUrl ? (
           <iframe
             className={`${snapHeightClass} w-full border-0`}
-            src={expiredRedirectUrl}
+            src={terminalRedirectUrl}
              title="Status pembayaran"
           />
         ) : (

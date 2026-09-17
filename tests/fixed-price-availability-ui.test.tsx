@@ -132,9 +132,7 @@ describe("fixed-price availability UI", () => {
     expect(screen.getByTestId("fixed-price-availability-badge")).toHaveTextContent(
       "Pembayaran aktif"
     );
-    expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent(
-      "Selesaikan pembayaran Harga Tetap yang masih aktif sebelum membeli barang lain."
-    );
+    expect(screen.queryByTestId("fixed-price-unavailable-media")).not.toBeInTheDocument();
     expect(screen.getByTestId("fixed-price-active-invoice-notice")).toHaveTextContent(
       "Pembayaran Harga Tetap masih aktif"
     );

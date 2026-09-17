@@ -166,11 +166,12 @@ export function FixedPriceAvailabilityMedia({ children }: { children: ReactNode 
   const { availability } = useFixedPriceAvailability();
   const hasActiveInvoice = hasActiveFixedPriceInvoice(availability);
   const unavailable = isFixedPriceUnavailable(availability);
+  const showUnavailableMedia = unavailable && !hasActiveInvoice;
 
   return (
     <div className="relative h-full">
       {children}
-      {unavailable ? (
+      {showUnavailableMedia ? (
         <div
           className="fixed-price-unavailable-media pointer-events-none absolute inset-0 z-[3] grid place-items-center bg-[#17231d]/16 px-6 backdrop-blur-[1px]"
           data-testid="fixed-price-unavailable-media"

@@ -35,7 +35,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(screen.queryByText(/^Aman$/)).not.toBeInTheDocument();
   });
 
-  it.each(["pending", "success"] as const)("embeds the existing Snap token inside the %s payment card", async (terminalState) => {
+  it("embeds the existing Snap token inside the pending payment card", async () => {
     const fetchMock = vi.fn((url: string) => {
       if (url === "/api/payments/midtrans/config") {
         return Promise.resolve({
@@ -64,7 +64,7 @@ describe("MidtransEmbeddedCheckout", () => {
 
     render(
       <ToastProvider>
-        <MidtransEmbeddedCheckout terminalState={terminalState} transactionId="trx-fixed-1" />
+        <MidtransEmbeddedCheckout terminalState="pending" transactionId="trx-fixed-1" />
       </ToastProvider>
     );
 
@@ -206,6 +206,35 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(await screen.findByTitle("Status pembayaran")).toHaveAttribute(
       "src",
       "https://app.sandbox.midtrans.com/snap/v2/vtweb/expired-token"
+    );
+    expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans");
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/payments/midtrans/config");
+    expect(embedMock).not.toHaveBeenCalled();
+  });
+
+  it("renders the Midtrans-hosted successful Snap checkout", async () => {
+    const fetchMock = vi.fn((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () =>
+          url === "/api/user/transaksi/trx-fixed-1/midtrans"
+            ? { data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/vtweb/success-token", snapToken: "snap-token-1" } }
+            : { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
+      })
+    );
+    const embedMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("snap", { embed: embedMock });
+
+    render(
+      <ToastProvider>
+        <MidtransEmbeddedCheckout compact terminalState="success" transactionId="trx-fixed-1" />
+      </ToastProvider>
+    );
+
+    expect(await screen.findByTitle("Status pembayaran")).toHaveAttribute(
+      "src",
+      "https://app.sandbox.midtrans.com/snap/v2/vtweb/success-token"
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans");
     expect(fetchMock).not.toHaveBeenCalledWith("/api/payments/midtrans/config");
