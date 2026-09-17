@@ -123,7 +123,7 @@ describe("FixedPriceBuyButton", () => {
     const buyButton = screen.getByRole("button", { name: /pembayaran masih aktif/i });
     expect(buyButton).toBeDisabled();
     expect(buyButton).toHaveTextContent("Pembayaran masih aktif");
-    expect(buyButton).toHaveClass("min-h-11", "rounded-full", "bg-[#eceae4]");
+    expect(buyButton).toHaveClass("h-10", "rounded-md", "bg-[#eceae4]");
     expect(buyButton).toHaveAttribute(
       "title",
       "Selesaikan pembayaran Harga Tetap yang masih aktif sebelum membeli barang lain."

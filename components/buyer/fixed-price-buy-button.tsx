@@ -44,8 +44,6 @@ export function FixedPriceBuyButton({
       : buttonLabel;
   const unavailableButtonClass =
     "h-10 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:text-[#77736b] hover:brightness-100 disabled:opacity-100";
-  const activeInvoiceButtonClass =
-    "min-h-11 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:text-[#77736b] hover:brightness-100 disabled:opacity-100";
 
   const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
 
@@ -141,11 +139,7 @@ export function FixedPriceBuyButton({
       <Button
         className={cn(
           "w-full text-sm font-black",
-          isUnavailable
-            ? hasActiveInvoice
-              ? activeInvoiceButtonClass
-              : unavailableButtonClass
-            : "h-10 rounded-md",
+          isUnavailable ? unavailableButtonClass : "h-10 rounded-md",
           className
         )}
         disabled={isPending || isUnavailable}
