@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { LoaderCircle, ShoppingBag } from "lucide-react";
+import { Clock3, LoaderCircle, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -37,11 +37,15 @@ export function FixedPriceBuyButton({
     currentAvailability.status === "reserved" &&
     currentAvailability.owner === "self" &&
     currentAvailability.canContinue !== false;
-  const currentLabel = isContinuingPayment
-    ? "Lanjutkan pembayaran"
-    : buttonLabel;
+  const currentLabel = hasActiveInvoice
+    ? "Pembayaran masih aktif"
+    : isContinuingPayment
+      ? "Lanjutkan pembayaran"
+      : buttonLabel;
   const unavailableButtonClass =
     "h-10 rounded-md border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:text-[#77736b] hover:brightness-100 disabled:opacity-100";
+  const activeInvoiceButtonClass =
+    "min-h-11 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:text-[#77736b] hover:brightness-100 disabled:opacity-100";
 
   const closeConfirmation = useCallback(() => setIsConfirmationOpen(false), []);
 
@@ -137,7 +141,11 @@ export function FixedPriceBuyButton({
       <Button
         className={cn(
           "w-full text-sm font-black",
-          isUnavailable ? unavailableButtonClass : "h-10 rounded-md",
+          isUnavailable
+            ? hasActiveInvoice
+              ? activeInvoiceButtonClass
+              : unavailableButtonClass
+            : "h-10 rounded-md",
           className
         )}
         disabled={isPending || isUnavailable}
@@ -164,8 +172,11 @@ export function FixedPriceBuyButton({
           </>
         ) : (
           <>
+            {isUnavailable && hasActiveInvoice ? (
+              <Clock3 className="size-3.5 shrink-0" strokeWidth={2.55} />
+            ) : null}
             <span className="truncate">{currentLabel}</span>
-            <ShoppingBag className="size-4" />
+            {!isUnavailable || !hasActiveInvoice ? <ShoppingBag className="size-4" /> : null}
           </>
         )}
       </Button>
