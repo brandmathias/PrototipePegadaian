@@ -12,6 +12,7 @@ import {
 
 import { AuctionCountdownTiles } from "@/components/buyer/auction-countdown-tiles";
 import {
+  FixedPriceActiveInvoiceNotice,
   FixedPriceAvailabilityBadge,
   FixedPriceAvailabilityMedia,
   FixedPriceAvailabilityProvider
@@ -349,6 +350,8 @@ export function LotDetailPage({
                   {getVickreyBidLockLabel(buyerStatus)}
                 </div>
               ) : null}
+
+              {!isVickrey && !isActionBlocked ? <FixedPriceActiveInvoiceNotice /> : null}
 
               <div className="relative flex gap-3">
                 {isVickrey ? (

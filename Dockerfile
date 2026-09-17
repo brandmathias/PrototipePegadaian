@@ -49,6 +49,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts/production-cron-scheduler
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0023_canonical_unit_sbg_codes.sql ./canonical-code-migration.sql
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0025_customer_data_standard.sql ./customer-data-standard-migration.sql
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0028_fixed_price_claim_lock.sql ./fixed-price-claim-lock-migration.sql
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle/0030_fixed_price_buyer_invoice_lock.sql ./fixed-price-buyer-invoice-lock-migration.sql
 
 RUN mkdir -p /app/public/uploads/barang /app/public/uploads/bukti /app/public/uploads/blacklist-review /app/public/uploads/serah-terima \
   && mkdir -p /app/uploads/barang /app/uploads/bukti /app/uploads/blacklist-review /app/uploads/serah-terima \

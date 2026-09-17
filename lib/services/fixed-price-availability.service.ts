@@ -1,6 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
+import { getFixedPriceInvoiceExpiry } from "@/lib/buyer/fixed-price-invoice-lock";
 import type { FixedPriceAvailability } from "@/lib/contracts/fixed-price-availability";
 import { db } from "@/lib/db/client";
 import { transaksi } from "@/lib/db/schema";
@@ -99,5 +100,42 @@ export async function getFixedPriceAvailability(
     .from(transaksi)
     .where(and(eq(transaksi.pemasaranId, pemasaranId), eq(transaksi.type, "fixed_price")));
 
-  return resolveFixedPriceAvailability(rows, viewerId, now);
+  const availability = resolveFixedPriceAvailability(rows, viewerId, now);
+
+  if (!viewerId) {
+    return { ...availability, buyerActiveInvoice: null };
+  }
+
+  const [activeInvoice] = await db
+    .select({
+      id: transaksi.id,
+      pemasaranId: transaksi.pemasaranId,
+      userId: transaksi.userId,
+      type: transaksi.type,
+      status: transaksi.status,
+      paymentMethod: transaksi.paymentMethod,
+      paymentDeadline: transaksi.paymentDeadline
+    })
+    .from(transaksi)
+    .where(
+      and(
+        eq(transaksi.userId, viewerId),
+        eq(transaksi.type, "fixed_price"),
+        eq(transaksi.paymentMethod, "midtrans"),
+        eq(transaksi.status, "menunggu_pembayaran"),
+        gt(transaksi.paymentDeadline, now)
+      )
+    )
+    .limit(1);
+
+  return {
+    ...availability,
+    buyerActiveInvoice:
+      activeInvoice && activeInvoice.pemasaranId !== pemasaranId
+        ? {
+            transactionId: activeInvoice.id,
+            expiresAt: getFixedPriceInvoiceExpiry(activeInvoice)
+          }
+        : null
+  };
 }

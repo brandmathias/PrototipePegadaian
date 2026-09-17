@@ -2,6 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  FixedPriceActiveInvoiceNotice,
   FixedPriceAvailabilityBadge,
   FixedPriceAvailabilityMedia,
   FixedPriceAvailabilityProvider,
@@ -100,6 +101,46 @@ describe("fixed-price availability UI", () => {
     expect(screen.queryByText("Sedang diproses")).not.toBeInTheDocument();
     expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent(
       "Pembelian tidak tersedia saat ini."
+    );
+  });
+
+  it("shows the active-invoice reason and its payment link for another fixed-price item", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+
+    render(
+      <FixedPriceAvailabilityProvider
+        initialAvailability={{
+          status: "available",
+          owner: null,
+          expiresAt: null,
+          canContinue: false,
+          buyerActiveInvoice: {
+            transactionId: "trx-active-1",
+            expiresAt: "2099-05-05T14:07:00.000Z"
+          }
+        }}
+        lotId="lot-fixed-2"
+      >
+        <FixedPriceAvailabilityBadge fallbackLabel="Tersedia" />
+        <FixedPriceAvailabilityMedia>
+          <div>media</div>
+        </FixedPriceAvailabilityMedia>
+        <FixedPriceActiveInvoiceNotice />
+      </FixedPriceAvailabilityProvider>
+    );
+
+    expect(screen.getByTestId("fixed-price-availability-badge")).toHaveTextContent(
+      "Pembayaran aktif"
+    );
+    expect(screen.getByTestId("fixed-price-unavailable-media")).toHaveTextContent(
+      "Selesaikan pembayaran Harga Tetap yang masih aktif sebelum membeli barang lain."
+    );
+    expect(screen.getByTestId("fixed-price-active-invoice-notice")).toHaveTextContent(
+      "Pembayaran Harga Tetap masih aktif"
+    );
+    expect(screen.getByRole("link", { name: "Lihat pembayaran aktif" })).toHaveAttribute(
+      "href",
+      "/transaksi/trx-active-1"
     );
   });
 });

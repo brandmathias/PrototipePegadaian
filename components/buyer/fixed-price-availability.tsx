@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { CircleOff } from "lucide-react";
+import Link from "next/link";
+import { Clock3, CircleOff } from "lucide-react";
 
 import {
   DEFAULT_FIXED_PRICE_AVAILABILITY,
@@ -30,12 +31,24 @@ function isFixedPriceAvailability(value: unknown): value is FixedPriceAvailabili
   const validStatus = ["available", "reserved", "sold"].includes(candidate.status ?? "");
   const validOwner = candidate.owner === null || candidate.owner === "self" || candidate.owner === "other";
   const validExpiry = candidate.expiresAt === null || typeof candidate.expiresAt === "string";
+  const validBuyerActiveInvoice =
+    candidate.buyerActiveInvoice === undefined ||
+    candidate.buyerActiveInvoice === null ||
+    (typeof candidate.buyerActiveInvoice === "object" &&
+      typeof candidate.buyerActiveInvoice.transactionId === "string" &&
+      (candidate.buyerActiveInvoice.expiresAt === null ||
+        typeof candidate.buyerActiveInvoice.expiresAt === "string"));
 
-  return validStatus && validOwner && validExpiry;
+  return validStatus && validOwner && validExpiry && validBuyerActiveInvoice;
+}
+
+export function hasActiveFixedPriceInvoice(availability: FixedPriceAvailability) {
+  return Boolean(availability.buyerActiveInvoice);
 }
 
 export function isFixedPriceUnavailable(availability: FixedPriceAvailability) {
   return (
+    hasActiveFixedPriceInvoice(availability) ||
     availability.status === "sold" ||
     (availability.status === "reserved" &&
       (availability.owner === "other" || availability.canContinue === false))
@@ -127,15 +140,18 @@ export function useFixedPriceAvailability() {
 
 export function FixedPriceAvailabilityBadge({ fallbackLabel = "Tersedia" }: { fallbackLabel?: string }) {
   const { availability } = useFixedPriceAvailability();
+  const hasActiveInvoice = hasActiveFixedPriceInvoice(availability);
   const isSold = availability.status === "sold";
   const isReservedByOther = availability.status === "reserved" && availability.owner === "other";
-  const label = isSold || isReservedByOther ? "Tidak tersedia" : fallbackLabel;
+  const label = hasActiveInvoice ? "Pembayaran aktif" : isSold || isReservedByOther ? "Tidak tersedia" : fallbackLabel;
 
   return (
     <span
       className={cn(
         "relative rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]",
-        isSold || isReservedByOther
+        hasActiveInvoice
+          ? "bg-[#fff7e1] text-[#956b00]"
+          : isSold || isReservedByOther
           ? "bg-[#fff0f2] text-[#b4233c]"
           : "bg-[#f7f2e8] text-[#9a6a00]"
       )}
@@ -148,6 +164,7 @@ export function FixedPriceAvailabilityBadge({ fallbackLabel = "Tersedia" }: { fa
 
 export function FixedPriceAvailabilityMedia({ children }: { children: ReactNode }) {
   const { availability } = useFixedPriceAvailability();
+  const hasActiveInvoice = hasActiveFixedPriceInvoice(availability);
   const unavailable = isFixedPriceUnavailable(availability);
 
   return (
@@ -167,7 +184,9 @@ export function FixedPriceAvailabilityMedia({ children }: { children: ReactNode 
                 Barang tidak tersedia
               </strong>
               <small className="mt-0.5 block text-xs font-medium leading-5 text-[#66756e]">
-                {availability.status === "sold"
+                {hasActiveInvoice
+                  ? "Selesaikan pembayaran Harga Tetap yang masih aktif sebelum membeli barang lain."
+                  : availability.status === "sold"
                   ? "Barang sudah terjual."
                   : "Pembelian tidak tersedia saat ini."}
               </small>
@@ -175,6 +194,39 @@ export function FixedPriceAvailabilityMedia({ children }: { children: ReactNode 
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+export function FixedPriceActiveInvoiceNotice() {
+  const { availability } = useFixedPriceAvailability();
+  const activeInvoice = availability.buyerActiveInvoice;
+
+  if (!activeInvoice) {
+    return null;
+  }
+
+  return (
+    <div
+      className="relative flex items-start gap-3 rounded-[1.35rem] border border-[#f0d899] bg-[linear-gradient(135deg,#fffaf0,#fff5dc)] p-4 text-[#765a16] shadow-[0_20px_44px_-34px_rgba(149,107,0,0.48)]"
+      data-testid="fixed-price-active-invoice-notice"
+      role="status"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[#a97700] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <Clock3 className="size-5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-black text-[#624b13]">Pembayaran Harga Tetap masih aktif</p>
+        <p className="mt-1 text-sm leading-6 text-[#806a32]">
+          Selesaikan pembayaran pada invoice yang sedang berjalan sebelum membeli barang Harga Tetap lain.
+        </p>
+        <Link
+          className="mt-2 inline-flex items-center text-sm font-black text-[#805f00] underline decoration-[#d3a62e] decoration-2 underline-offset-4 transition duration-200 ease-out hover:text-[#5d4300]"
+          href={`/transaksi/${activeInvoice.transactionId}`}
+        >
+          Lihat pembayaran aktif
+        </Link>
+      </div>
     </div>
   );
 }

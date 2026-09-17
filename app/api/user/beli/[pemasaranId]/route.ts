@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireBuyerApiSession } from "@/lib/auth/session";
 import {
   createFixedPriceMidtransCheckout,
+  FixedPriceActiveInvoiceConflictError,
   FixedPriceClaimConflictError
 } from "@/lib/services/buyer.service";
 
@@ -23,7 +24,10 @@ export async function POST(_request: Request, context: Context) {
     const message = /midtrans|snap/i.test(rawMessage)
       ? "Layanan pembayaran belum siap. Silakan coba lagi."
       : rawMessage || "Pesanan pembelian barang Harga Tetap belum dapat dibuat. Silakan coba lagi.";
-    if (error instanceof FixedPriceClaimConflictError) {
+    if (
+      error instanceof FixedPriceClaimConflictError ||
+      error instanceof FixedPriceActiveInvoiceConflictError
+    ) {
       return NextResponse.json(
         { code: error.code, message },
         { status: 409 }

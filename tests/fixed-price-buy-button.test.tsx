@@ -99,6 +99,35 @@ describe("FixedPriceBuyButton", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("disables a new purchase while another fixed-price invoice is active", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <FixedPriceBuyButton
+        availability={{
+          status: "available",
+          owner: null,
+          expiresAt: null,
+          canContinue: false,
+          buyerActiveInvoice: {
+            transactionId: "trx-active-1",
+            expiresAt: "2099-05-05T14:07:00.000Z"
+          }
+        }}
+        lotId="lot-fixed-2"
+      />
+    );
+
+    const buyButton = screen.getByRole("button", { name: /pembayaran masih aktif/i });
+    expect(buyButton).toBeDisabled();
+    expect(buyButton).toHaveAttribute(
+      "title",
+      "Selesaikan pembayaran Harga Tetap yang masih aktif sebelum membeli barang lain."
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("closes from the cancel controls but not from the backdrop", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -148,6 +177,34 @@ describe("FixedPriceBuyButton", () => {
         expect.objectContaining({
           title: "Barang baru saja dipesan",
           description: "Pembeli lain lebih dulu memulai pembayaran. Ketersediaan barang telah diperbarui.",
+          variant: "error"
+        })
+      );
+    });
+  });
+
+  it("explains when a stale page tries to create a second active invoice", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({
+        code: "FIXED_PRICE_ACTIVE_INVOICE",
+        message: "Anda masih memiliki pembayaran Harga Tetap yang aktif."
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const user = userEvent.setup();
+
+    render(<FixedPriceBuyButton lotId="lot-fixed-2" />);
+
+    await user.click(screen.getByRole("button", { name: /beli sekarang/i }));
+    await user.click(screen.getByRole("button", { name: "Ya, Lanjutkan" }));
+
+    await waitFor(() => {
+      expect(toastMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Pembayaran masih aktif",
+          description: "Anda masih memiliki pembayaran Harga Tetap yang aktif.",
           variant: "error"
         })
       );

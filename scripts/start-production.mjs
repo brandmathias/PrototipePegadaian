@@ -22,6 +22,10 @@ const fixedPriceClaimLockMigrationSql = await readFile(
   new URL("./fixed-price-claim-lock-migration.sql", import.meta.url),
   "utf8",
 );
+const fixedPriceBuyerInvoiceLockMigrationSql = await readFile(
+  new URL("./fixed-price-buyer-invoice-lock-migration.sql", import.meta.url),
+  "utf8",
+);
 await client.connect();
 
 try {
@@ -114,6 +118,7 @@ try {
   await client.query(canonicalCodeMigrationSql);
   await client.query(customerDataStandardMigrationSql);
   await client.query(fixedPriceClaimLockMigrationSql);
+  await client.query(fixedPriceBuyerInvoiceLockMigrationSql);
   const unitAdminAuditRepair = await client.query(`
     with target_context as (
       select

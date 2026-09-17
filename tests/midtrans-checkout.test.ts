@@ -159,4 +159,90 @@ describe("createFixedPriceMidtransCheckout", () => {
     expect(setSpy.mock.calls[0][0]).toMatchObject({ gatewayStatus: "expire", status: "gagal" });
     expect(valuesSpy).toHaveBeenCalledTimes(1);
   });
+
+  it("blocks a buyer who already has an active fixed-price invoice for another item", async () => {
+    mocks.db.select
+      .mockImplementationOnce(mockMarketingQuery)
+      .mockImplementationOnce(() =>
+        mockTransactionListQuery([
+          {
+            id: "active-invoice",
+            pemasaranId: "pemasaran-lain",
+            userId: "buyer-1",
+            type: "fixed_price",
+            paymentDeadline: new Date(Date.now() + 60_000),
+            paymentMethod: "midtrans",
+            status: "menunggu_pembayaran"
+          }
+        ])
+      );
+    mocks.db.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) })
+    });
+
+    await expect(
+      createFixedPriceMidtransCheckout("buyer-1", "pemasaran-1")
+    ).rejects.toThrow("pembayaran Harga Tetap yang aktif");
+
+    expect(mocks.db.insert).not.toHaveBeenCalled();
+    expect(mocks.createMidtransSnapTransaction).not.toHaveBeenCalled();
+  });
+
+  it("allows a buyer to create another checkout after the earlier invoice failed", async () => {
+    mocks.db.select
+      .mockImplementationOnce(mockMarketingQuery)
+      .mockImplementationOnce(() =>
+        mockTransactionListQuery([
+          {
+            id: "failed-invoice",
+            pemasaranId: "pemasaran-lain",
+            userId: "buyer-1",
+            type: "fixed_price",
+            paymentDeadline: new Date(Date.now() - 60_000),
+            paymentMethod: "midtrans",
+            status: "gagal"
+          }
+        ])
+      )
+      .mockImplementationOnce(mockBlacklistQuery);
+    const valuesSpy = vi.fn((values) => ({ returning: vi.fn().mockResolvedValue([values]) }));
+    mocks.db.insert.mockReturnValue({ values: valuesSpy });
+    mocks.db.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) })
+    });
+    mocks.createMidtransSnapTransaction.mockResolvedValue({
+      redirectUrl: "https://app.sandbox.midtrans.com/snap/v2/checkout",
+      token: "snap-token-after-failed-invoice"
+    });
+
+    await expect(createFixedPriceMidtransCheckout("buyer-1", "pemasaran-1")).resolves.toEqual(
+      expect.objectContaining({ transactionId: expect.any(String) })
+    );
+
+    expect(valuesSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the active-invoice conflict when the database rejects a concurrent checkout", async () => {
+    mocks.db.select
+      .mockImplementationOnce(mockMarketingQuery)
+      .mockImplementationOnce(() => mockTransactionListQuery([]))
+      .mockImplementationOnce(mockBlacklistQuery);
+    mocks.db.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) })
+    });
+    mocks.db.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue(
+          Object.assign(new Error("duplicate key value violates unique constraint"), {
+            code: "23505",
+            constraint: "transaksi_fixed_price_buyer_active_unique"
+          })
+        )
+      })
+    });
+
+    await expect(
+      createFixedPriceMidtransCheckout("buyer-1", "pemasaran-1")
+    ).rejects.toThrow("pembayaran Harga Tetap yang aktif");
+  });
 });

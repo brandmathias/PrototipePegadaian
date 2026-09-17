@@ -199,7 +199,15 @@ export const transaksi = pgTable(
         sql`${table.type} = 'fixed_price' and (
           ${table.status} in ('bukti_diunggah', 'lunas', 'selesai')
           or (${table.paymentMethod} = 'midtrans' and ${table.status} = 'menunggu_pembayaran')
-        )`
+      )`
+      ),
+    fixedPriceBuyerActiveInvoiceIdx: uniqueIndex("transaksi_fixed_price_buyer_active_unique")
+      .on(table.userId)
+      .where(
+        sql`${table.type} = 'fixed_price'
+          and ${table.paymentMethod} = 'midtrans'
+          and ${table.status} = 'menunggu_pembayaran'
+          and ${table.paymentDeadline} is not null`
       )
   })
 );

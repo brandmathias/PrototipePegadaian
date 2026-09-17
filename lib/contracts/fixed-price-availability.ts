@@ -6,11 +6,16 @@ export type FixedPriceAvailability = {
   owner: FixedPriceReservationOwner;
   expiresAt: string | null;
   canContinue?: boolean;
+  buyerActiveInvoice?: {
+    transactionId: string;
+    expiresAt: string | null;
+  } | null;
 };
 
 export const DEFAULT_FIXED_PRICE_AVAILABILITY: FixedPriceAvailability = {
   status: "available",
   owner: null,
   expiresAt: null,
-  canContinue: false
+  canContinue: false,
+  buyerActiveInvoice: null
 };

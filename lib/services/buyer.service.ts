@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 
-import { and, desc, eq, gt, inArray, lte, ne, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lte, ne, or, sql } from "drizzle-orm";
 
+import { findActiveFixedPriceInvoice } from "@/lib/buyer/fixed-price-invoice-lock";
 import { FIXED_PRICE_TRANSACTION_CATALOG_HIDDEN_STATUSES } from "@/lib/buyer/fixed-price-visibility";
 import { FIXED_PRICE_PAYMENT_FAILURE_COPY } from "@/lib/buyer/payment-copy";
 import { serializeBuyerBid, serializeBuyerTransaction } from "@/lib/buyer/serializers";
@@ -69,6 +70,19 @@ export class FixedPriceClaimConflictError extends Error {
   constructor() {
     super(FIXED_PRICE_CLAIM_CONFLICT_MESSAGE);
     this.name = "FixedPriceClaimConflictError";
+  }
+}
+
+const FIXED_PRICE_ACTIVE_INVOICE_MESSAGE =
+  "Anda masih memiliki pembayaran Harga Tetap yang aktif. Selesaikan pembayaran tersebut sebelum membeli barang lain.";
+export const FIXED_PRICE_ACTIVE_INVOICE_CODE = "FIXED_PRICE_ACTIVE_INVOICE";
+
+export class FixedPriceActiveInvoiceConflictError extends Error {
+  readonly code = FIXED_PRICE_ACTIVE_INVOICE_CODE;
+
+  constructor() {
+    super(FIXED_PRICE_ACTIVE_INVOICE_MESSAGE);
+    this.name = "FixedPriceActiveInvoiceConflictError";
   }
 }
 
@@ -309,12 +323,29 @@ function isFixedPriceClaimConflict(error: unknown) {
   return databaseError.code === "23505" && databaseError.constraint === "transaksi_fixed_price_claim_unique";
 }
 
+function isFixedPriceActiveInvoiceConflict(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const databaseError = error as { code?: unknown; constraint?: unknown };
+  return databaseError.code === "23505" && databaseError.constraint === "transaksi_fixed_price_buyer_active_unique";
+}
+
 function throwFixedPriceClaimConflict(error: unknown): never {
   if (isFixedPriceClaimConflict(error)) {
     throw new FixedPriceClaimConflictError();
   }
 
   throw error;
+}
+
+function throwFixedPriceCheckoutConflict(error: unknown): never {
+  if (isFixedPriceActiveInvoiceConflict(error)) {
+    throw new FixedPriceActiveInvoiceConflictError();
+  }
+
+  throwFixedPriceClaimConflict(error);
 }
 
 async function getActiveBlacklist(userId: string) {
@@ -1398,14 +1429,21 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
     .set({ gatewayStatus: "expire", status: "gagal", updatedAt: now })
     .where(
       and(
-        eq(transaksi.pemasaranId, pemasaranId),
+        eq(transaksi.type, "fixed_price"),
         eq(transaksi.paymentMethod, "midtrans"),
         eq(transaksi.status, "menunggu_pembayaran"),
-        lte(transaksi.paymentDeadline, now)
+        lte(transaksi.paymentDeadline, now),
+        or(eq(transaksi.pemasaranId, pemasaranId), eq(transaksi.userId, userId))
       )
     );
 
-  const activeTransactions = await db.select().from(transaksi).where(eq(transaksi.pemasaranId, pemasaranId));
+  const relevantTransactions = await db
+    .select()
+    .from(transaksi)
+    .where(or(eq(transaksi.pemasaranId, pemasaranId), eq(transaksi.userId, userId)));
+  const activeTransactions = relevantTransactions.filter(
+    (transaction) => transaction.pemasaranId === pemasaranId
+  );
   const ownReservation = activeTransactions.find(
     (transaction) => transaction.userId === userId && isActiveMidtransReservation(transaction)
   );
@@ -1416,6 +1454,11 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
       snapToken: ownReservation.paymentToken,
       snapRedirectUrl: ownReservation.paymentRedirectUrl ?? null
     };
+  }
+
+  const activeBuyerInvoice = findActiveFixedPriceInvoice(relevantTransactions, userId, now);
+  if (activeBuyerInvoice && activeBuyerInvoice.pemasaranId !== pemasaranId) {
+    throw new FixedPriceActiveInvoiceConflictError();
   }
 
   const lockedByOtherBuyer = activeTransactions.find(
@@ -1454,7 +1497,7 @@ export async function createFixedPriceMidtransCheckout(userId: string, pemasaran
       paymentDeadline
     })
     .returning()
-    .catch(throwFixedPriceClaimConflict);
+    .catch(throwFixedPriceCheckoutConflict);
 
   try {
     const checkout = await createMidtransSnapTransaction({
