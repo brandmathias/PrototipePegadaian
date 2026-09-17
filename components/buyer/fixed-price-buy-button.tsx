@@ -37,11 +37,9 @@ export function FixedPriceBuyButton({
     currentAvailability.status === "reserved" &&
     currentAvailability.owner === "self" &&
     currentAvailability.canContinue !== false;
-  const currentLabel = hasActiveInvoice
-    ? "Pembayaran masih aktif"
-    : isContinuingPayment
-      ? "Lanjutkan pembayaran"
-      : buttonLabel;
+  const currentLabel = isContinuingPayment
+    ? "Lanjutkan pembayaran"
+    : buttonLabel;
   const unavailableButtonClass =
     "min-h-11 rounded-full border border-[#d9d6ce] bg-[#eceae4] px-4 text-[#77736b] shadow-none hover:bg-[#eceae4] hover:brightness-100 disabled:opacity-100";
 
