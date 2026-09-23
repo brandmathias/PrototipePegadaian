@@ -53,6 +53,33 @@ function mockQueryChain(methods: string[], value: unknown) {
 }
 
 describe("sortAdminMarketingRowsByRecency", () => {
+  it("keeps a relisted active fixed-price session ahead of its newer failed audit row", () => {
+    const rows = sortAdminMarketingRowsByRecency([
+      {
+        id: "failed-fixed-price",
+        marketing: {
+          id: "failed-fixed-price",
+          mode: "fixed_price",
+          status: "gagal",
+          iteration: 1,
+          updatedAt: new Date("2026-08-13T04:12:42.000Z")
+        }
+      },
+      {
+        id: "relisted-fixed-price",
+        marketing: {
+          id: "relisted-fixed-price",
+          mode: "fixed_price",
+          status: "aktif",
+          iteration: 2,
+          updatedAt: new Date("2026-08-13T04:12:41.000Z")
+        }
+      }
+    ]);
+
+    expect(rows.map((row) => row.id)).toEqual(["relisted-fixed-price", "failed-fixed-price"]);
+  });
+
   it("places an updated marketing session before older untouched sessions", () => {
     const rows = sortAdminMarketingRowsByRecency([
       {

@@ -68,13 +68,14 @@ describe("fixed-price rejected relist repair", () => {
     expect(client.query).toHaveBeenCalledWith(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL);
   });
 
-  it("selects rejected proofs by their verification update instead of the newest purchase attempt", () => {
+  it("selects the latest terminal fixed-price payment failure for relisting", () => {
     expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`where t."type" = 'fixed_price'`);
-    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`and t."status" = 'ditolak_bukti'`);
     expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(
       `order by t."pemasaran_id", t."updated_at" desc, t."created_at" desc, t."id" desc`
     );
-    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`coalesce(p."price", rejected."amount")::text`);
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`and latest_transaction."status" in ('ditolak_bukti', 'gagal')`);
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`where next_p."barang_id" = p."barang_id"`);
+    expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`coalesce(p."price", latest_transaction."amount")::text`);
     expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).toContain(`p."created_at" as original_published_at`);
     expect(FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL).not.toContain(`lt."amount"`);
   });
@@ -164,5 +165,7 @@ describe("fixed-price rejected relist repair", () => {
     expect(startupScript).not.toContain(`"created_at" = rejected_relist.rejected_at`);
     expect(startupScript).toContain(`'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.'`);
     expect(startupScript).toContain(`riwayat sistem`);
+    expect(startupScript).toContain(`t."status" in ('ditolak_bukti', 'gagal')`);
+    expect(startupScript).toContain(`fixedPriceFailedRelists`);
   });
 });

@@ -2115,10 +2115,22 @@ function getMarketingIterationNumber(auction: MarketingSession) {
     : 0;
 }
 
+function getMarketingCatalogPriority(auction: MarketingSession) {
+  return auction.mode === "FIXED_PRICE" && auction.status === "AKTIF" && !isFixedPricePaymentFailed(auction)
+    ? 1
+    : 0;
+}
+
 function compareMarketingRecency(
   left: MarketingSession,
   right: MarketingSession,
 ) {
+  const catalogPriorityDiff =
+    getMarketingCatalogPriority(right) - getMarketingCatalogPriority(left);
+  if (catalogPriorityDiff !== 0) {
+    return catalogPriorityDiff;
+  }
+
   const timestampDiff =
     getMarketingSessionTimestamp(right) - getMarketingSessionTimestamp(left);
   if (timestampDiff !== 0) {

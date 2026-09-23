@@ -33,12 +33,18 @@ type AdminMarketingBidRow = {
 
 type MarketingRecencyRow = {
   marketing: {
+    mode?: string | null;
+    status?: string | null;
     updatedAt?: Date | null;
     createdAt?: Date | null;
     startsAt?: Date | null;
     iteration?: number | null;
   };
 };
+
+function getMarketingCatalogPriority(row: MarketingRecencyRow) {
+  return row.marketing.mode === "fixed_price" && row.marketing.status === "aktif" ? 1 : 0;
+}
 
 function getMarketingRecencyTimestamp(row: MarketingRecencyRow) {
   const value = row.marketing.updatedAt ?? row.marketing.createdAt ?? row.marketing.startsAt;
@@ -49,6 +55,11 @@ function getMarketingRecencyTimestamp(row: MarketingRecencyRow) {
 
 export function sortAdminMarketingRowsByRecency<T extends MarketingRecencyRow>(rows: T[]) {
   return [...rows].sort((left, right) => {
+    const catalogPriorityDiff = getMarketingCatalogPriority(right) - getMarketingCatalogPriority(left);
+    if (catalogPriorityDiff !== 0) {
+      return catalogPriorityDiff;
+    }
+
     const timeDiff = getMarketingRecencyTimestamp(right) - getMarketingRecencyTimestamp(left);
     if (timeDiff !== 0) {
       return timeDiff;

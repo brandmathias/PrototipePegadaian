@@ -443,6 +443,62 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("button", { name: /lihat video 2/i })).toBeInTheDocument();
   });
 
+  it("marks the active catalog relist as the latest fixed-price iteration", () => {
+    render(
+      <AdminFixedPriceDetailPage
+        auction={{
+          id: "pm-fixed-relisted",
+          lotId: "barang-fixed-history",
+          lot: "Gelang Kaki Emas",
+          code: "SBG-1178700000000026",
+          category: "emas",
+          condition: "baik",
+          status: "AKTIF",
+          mode: "FIXED_PRICE",
+          iteration: 2,
+          startsAt: "2026-05-26T00:33:36.773Z",
+          updatedAt: "2026-08-13T04:12:41.346Z",
+          price: 10_801_050,
+          iterationHistory: [
+            {
+              id: "pm-fixed-relisted",
+              lotId: "barang-fixed-history",
+              lot: "Gelang Kaki Emas",
+              code: "SBG-1178700000000026",
+              category: "emas",
+              condition: "baik",
+              status: "AKTIF",
+              mode: "FIXED_PRICE",
+              iteration: 2,
+              startsAt: "2026-05-26T00:33:36.773Z",
+              updatedAt: "2026-08-13T04:12:41.346Z",
+              price: 10_801_050
+            },
+            {
+              id: "pm-fixed-failed",
+              lotId: "barang-fixed-history",
+              lot: "Gelang Kaki Emas",
+              code: "SBG-1178700000000026",
+              category: "emas",
+              condition: "baik",
+              status: "GAGAL",
+              mode: "FIXED_PRICE",
+              iteration: 1,
+              startsAt: "2026-05-26T00:33:36.773Z",
+              updatedAt: "2026-08-13T04:12:42.000Z",
+              price: 10_801_050,
+              transactionId: "trx-fixed-failed",
+              transactionStatus: "GAGAL"
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /iterasi 2 \(terkini\)/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /iterasi 1 \(terkini\)/i })).not.toBeInTheDocument();
+  });
+
   it("shows that a fixed-price purchase is still waiting to be completed", () => {
     render(
       <AdminFixedPriceDetailPage

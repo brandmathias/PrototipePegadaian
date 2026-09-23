@@ -26,11 +26,12 @@ export type RepairQueryClient = {
 };
 
 export const FIXED_PRICE_REJECTED_RELIST_CANDIDATES_SQL = `
-with latest_rejected_transaction as (
+with latest_transaction as (
   select distinct on (t."pemasaran_id")
     t."id",
     t."pemasaran_id",
     t."amount",
+    t."status",
     t."rejection_reason",
     t."verified_by_user_id",
     coalesce(t."verified_at", t."updated_at", t."created_at") as rejected_at,
@@ -38,14 +39,13 @@ with latest_rejected_transaction as (
     t."updated_at"
   from "transaksi" t
   where t."type" = 'fixed_price'
-    and t."status" = 'ditolak_bukti'
   order by t."pemasaran_id", t."updated_at" desc, t."created_at" desc, t."id" desc
 )
 select
   p."id" as marketing_id,
   p."barang_id",
-  coalesce(p."price", rejected."amount")::text as price,
-  rejected."amount"::text as amount,
+  coalesce(p."price", latest_transaction."amount")::text as price,
+  latest_transaction."amount"::text as amount,
   p."iteration",
   p."created_at" as original_published_at,
   (
@@ -55,17 +55,24 @@ select
   )::integer as max_iteration,
   p."created_by_user_id",
   b."status" as item_status,
-  rejected."id" as transaction_id,
-  rejected."rejected_at",
-  rejected."rejection_reason",
-  rejected."verified_by_user_id"
+  latest_transaction."id" as transaction_id,
+  latest_transaction."rejected_at",
+  latest_transaction."rejection_reason",
+  latest_transaction."verified_by_user_id"
 from "pemasaran" p
 inner join "barang" b on b."id" = p."barang_id"
-inner join latest_rejected_transaction rejected on rejected."pemasaran_id" = p."id"
+inner join latest_transaction on latest_transaction."pemasaran_id" = p."id"
 where p."mode" = 'fixed_price'
-  and p."status" = 'aktif'
-  and b."status" = 'dipasarkan'
-order by rejected."updated_at" asc, p."id" asc
+  and p."status" in ('aktif', 'gagal')
+  and b."status" in ('dipasarkan', 'gagal')
+  and latest_transaction."status" in ('ditolak_bukti', 'gagal')
+  and not exists (
+    select 1
+    from "pemasaran" next_p
+    where next_p."barang_id" = p."barang_id"
+      and next_p."iteration" > p."iteration"
+  )
+order by latest_transaction."updated_at" asc, p."id" asc
 `.trim();
 
 const ARCHIVE_MARKETING_SQL = `
@@ -74,12 +81,12 @@ set "status" = 'gagal',
     "updated_at" = $2
 where "id" = $1
   and "mode" = 'fixed_price'
-  and "status" = 'aktif'
+  and "status" in ('aktif', 'gagal')
   and exists (
     select 1
     from "barang" b
     where b."id" = "pemasaran"."barang_id"
-      and b."status" = 'dipasarkan'
+      and b."status" in ('dipasarkan', 'gagal')
   )
   and exists (
     select 1
@@ -91,7 +98,7 @@ where "id" = $1
       order by t."created_at" desc, t."updated_at" desc, t."id" desc
       limit 1
     ) latest_transaction
-    where latest_transaction."status" = 'ditolak_bukti'
+    where latest_transaction."status" in ('ditolak_bukti', 'gagal')
   )
 returning "id"
 `.trim();
@@ -177,7 +184,7 @@ with recursive rejected_edges as (
   inner join "transaksi" t
     on t."pemasaran_id" = previous_p."id"
    and t."type" = 'fixed_price'
-   and t."status" = 'ditolak_bukti'
+   and t."status" in ('ditolak_bukti', 'gagal')
   inner join "pemasaran" next_p
     on next_p."barang_id" = previous_p."barang_id"
    and next_p."mode" = 'fixed_price'
@@ -231,7 +238,7 @@ with rejected_relist as (
   inner join "transaksi" t
     on t."pemasaran_id" = previous_p."id"
    and t."type" = 'fixed_price'
-   and t."status" = 'ditolak_bukti'
+   and t."status" in ('ditolak_bukti', 'gagal')
   inner join "pemasaran" next_p
     on next_p."barang_id" = previous_p."barang_id"
    and next_p."mode" = 'fixed_price'

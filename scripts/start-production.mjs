@@ -1,4 +1,5 @@
 import pg from "pg";
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { startProductionCronScheduler } from "./production-cron-scheduler.mjs";
 
@@ -235,8 +236,108 @@ try {
     )
     where "new_status" = 'gagal'
       and "note" ilike 'Verifikasi bukti pembayaran harga tetap ditolak admin unit.%'
-      and "note" ilike '%Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.%'
+    and "note" ilike '%Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.%'
   `);
+
+  const fixedPriceFailedRelistCandidates = await client.query(`
+    with latest_transaction as (
+      select distinct on (t."pemasaran_id")
+        t."id",
+        t."pemasaran_id",
+        t."amount",
+        t."status",
+        coalesce(t."verified_at", t."updated_at", t."created_at") as failed_at
+      from "transaksi" t
+      where t."type" = 'fixed_price'
+      order by t."pemasaran_id", t."updated_at" desc, t."created_at" desc, t."id" desc
+    )
+    select
+      p."id" as marketing_id,
+      p."barang_id",
+      p."iteration",
+      p."created_at" as original_published_at,
+      p."created_by_user_id",
+      coalesce(p."price", latest_transaction."amount")::text as price,
+      latest_transaction."status" as transaction_status,
+      latest_transaction."failed_at"
+    from "pemasaran" p
+    inner join "barang" b on b."id" = p."barang_id"
+    inner join latest_transaction on latest_transaction."pemasaran_id" = p."id"
+    where p."mode" = 'fixed_price'
+      and p."status" in ('aktif', 'gagal')
+      and b."status" in ('dipasarkan', 'gagal')
+      and latest_transaction."status" in ('ditolak_bukti', 'gagal')
+      and coalesce(p."price", latest_transaction."amount") is not null
+      and not exists (
+        select 1
+        from "pemasaran" next_p
+        where next_p."barang_id" = p."barang_id"
+          and next_p."iteration" > p."iteration"
+      )
+    order by latest_transaction."failed_at" asc, p."id" asc
+  `);
+  let fixedPriceFailedRelists = 0;
+
+  for (const candidate of fixedPriceFailedRelistCandidates.rows) {
+    const failedAt = new Date(candidate.failed_at);
+    const relistedAt = new Date(failedAt.getTime() + 1);
+    const [archived] = (
+      await client.query(
+        `
+          update "pemasaran"
+          set "status" = 'gagal', "updated_at" = $2
+          where "id" = $1
+            and "mode" = 'fixed_price'
+            and "status" in ('aktif', 'gagal')
+          returning "id"
+        `,
+        [candidate.marketing_id, failedAt],
+      )
+    ).rows;
+
+    if (!archived) continue;
+
+    const relistedMarketingId = randomUUID();
+    await client.query(
+      `
+        insert into "pemasaran" (
+          "id", "barang_id", "mode", "price", "base_price", "duration_days",
+          "duration_seconds", "starts_at", "ends_at", "reveal_ends_at", "iteration",
+          "status", "created_by_user_id", "created_at", "updated_at"
+        ) values ($1, $2, 'fixed_price', $3, null, null, null, $5, null, null, $4, 'aktif', $6, $5, $7)
+      `,
+      [
+        relistedMarketingId,
+        candidate.barang_id,
+        candidate.price,
+        Number(candidate.iteration) + 1,
+        candidate.original_published_at,
+        candidate.created_by_user_id,
+        relistedAt,
+      ],
+    );
+    await client.query(`update "barang" set "status" = 'dipasarkan', "updated_at" = $2 where "id" = $1`, [
+      candidate.barang_id,
+      relistedAt,
+    ]);
+    await client.query(`update "buyer_wishlist" set "pemasaran_id" = $2 where "pemasaran_id" = $1`, [
+      candidate.marketing_id,
+      relistedMarketingId,
+    ]);
+    await client.query(`update "pemasaran_views" set "pemasaran_id" = $2 where "pemasaran_id" = $1`, [
+      candidate.marketing_id,
+      relistedMarketingId,
+    ]);
+    await client.query(
+      `
+        insert into "riwayat_status_barang" (
+          "id", "barang_id", "old_status", "new_status", "changed_by_user_id", "note", "created_at"
+        ) values ($1, $2, 'gagal', 'dipasarkan', null, 'Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.', $3)
+      `,
+      [randomUUID(), candidate.barang_id, relistedAt],
+    );
+    fixedPriceFailedRelists += 1;
+  }
 
   const fixedPriceRepairSyncedRelists = await client.query(`
     with recursive rejected_edges as (
@@ -250,7 +351,7 @@ try {
       inner join "transaksi" t
         on t."pemasaran_id" = previous_p."id"
        and t."type" = 'fixed_price'
-       and t."status" = 'ditolak_bukti'
+       and t."status" in ('ditolak_bukti', 'gagal')
       inner join "pemasaran" next_p
         on next_p."barang_id" = previous_p."barang_id"
        and next_p."mode" = 'fixed_price'
@@ -304,7 +405,7 @@ try {
       inner join "transaksi" t
         on t."pemasaran_id" = previous_p."id"
        and t."type" = 'fixed_price'
-       and t."status" = 'ditolak_bukti'
+       and t."status" in ('ditolak_bukti', 'gagal')
       inner join "pemasaran" next_p
         on next_p."barang_id" = previous_p."barang_id"
        and next_p."mode" = 'fixed_price'
@@ -415,7 +516,7 @@ try {
 
   await client.query("commit");
   console.log(
-    `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, sinkronisasi tanggal riwayat lintas unit memperbarui ${crossUnitHistoryDateSync.rowCount ?? 0} riwayat, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi, relist harga tetap disinkronkan ${fixedPriceRepairSyncedRelists.rowCount ?? 0} pemasaran dan ${fixedPriceRepairInsertedRelistHistory.rowCount ?? 0} riwayat sistem (${fixedPriceRepairDeletedHistory.rowCount ?? 0} repair lama dihapus, ${fixedPriceRepairCleanedNotes.rowCount ?? 0} catatan dibersihkan).`,
+      `Startup migration: database bersih, data nasabah standar, seluruh kode unit/SBG sudah canonical, sinkronisasi tanggal riwayat lintas unit memperbarui ${crossUnitHistoryDateSync.rowCount ?? 0} riwayat, audit admin unit diperbaiki ${unitAdminAuditRepair.rows[0]?.repaired_references ?? 0} referensi, relist harga tetap membuat ${fixedPriceFailedRelists} iterasi aktif, menyinkronkan ${fixedPriceRepairSyncedRelists.rowCount ?? 0} pemasaran dan ${fixedPriceRepairInsertedRelistHistory.rowCount ?? 0} riwayat sistem (${fixedPriceRepairDeletedHistory.rowCount ?? 0} repair lama dihapus, ${fixedPriceRepairCleanedNotes.rowCount ?? 0} catatan dibersihkan).`,
   );
 } catch (error) {
   await client.query("rollback").catch(() => undefined);
