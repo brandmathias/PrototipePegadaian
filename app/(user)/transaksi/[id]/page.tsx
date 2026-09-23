@@ -10,8 +10,8 @@ export default async function Page({
   const { id } = await params;
   const buyer = await getBuyerSessionUser(`/transaksi/${id}`);
   const [buyerStatus, transaction] = await Promise.all([
-    getBuyerProfileStatus(buyer.id),
-    getBuyerTransactionById(buyer.id, id).catch(() => null)
+    getBuyerProfileStatus(buyer.id, { refreshAuctionState: false }),
+    getBuyerTransactionById(buyer.id, id, { refreshAuctionState: false }).catch(() => null)
   ]);
 
   return (

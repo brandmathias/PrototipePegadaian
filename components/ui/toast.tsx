@@ -125,9 +125,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, [clearDismissTimer]);
 
   React.useEffect(() => {
+    const timers = dismissTimersRef.current;
+
     return () => {
-      dismissTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
-      dismissTimersRef.current.clear();
+      timers.forEach((timerId) => window.clearTimeout(timerId));
+      timers.clear();
     };
   }, []);
 
@@ -221,7 +223,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {classes.chrome ? <div className={cn("pointer-events-none absolute inset-0", classes.chrome)} /> : null}
                 <div className="toast-sheen pointer-events-none absolute inset-0" />
                 <div className={cn("absolute inset-y-0 left-0 w-1.5", classes.accent)} />
-                <div className="flex min-w-0 items-start gap-3 p-3 pl-4 sm:p-4 sm:pl-5">
+                <div className="flex min-w-0 items-start gap-3 p-3 px-4 sm:p-4 sm:px-5">
                   <div
                     className={cn(
                       "toast-icon-pop mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl",
@@ -237,7 +239,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     {item.description ? (
                       <p
                         className={cn(
-                          "mt-1 break-words text-justify text-sm leading-relaxed [text-align-last:left]",
+                          "mt-1 break-words text-left text-sm leading-relaxed",
                           classes.description
                         )}
                       >
@@ -248,7 +250,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   <button
                     aria-label="Tutup notifikasi"
                     className={cn(
-                      "interactive-tap -mr-1 -mt-1 grid size-10 shrink-0 place-items-center rounded-full p-1 transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 sm:mr-0 sm:mt-0",
+                      "interactive-tap grid size-10 shrink-0 place-items-center rounded-full p-1 transition-[background-color,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2",
                       classes.close
                     )}
                     onClick={() => dismiss(item.id)}

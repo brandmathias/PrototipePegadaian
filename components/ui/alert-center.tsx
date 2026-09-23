@@ -326,7 +326,7 @@ export function AlertCenter({ scope, className }: AlertCenterProps) {
             ) : null}
           </div>
           {notification.description ? (
-            <p className={cn("mt-0.5 text-justify text-[0.74rem] leading-relaxed text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
+            <p className={cn("mt-0.5 text-left text-[0.74rem] leading-relaxed text-black/58 dark:text-slate-300/70", isLoserNotification ? "text-[#6f5054] dark:text-rose-100/68" : "")}>
               {notification.description}
             </p>
           ) : null}

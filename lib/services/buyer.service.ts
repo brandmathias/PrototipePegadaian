@@ -1324,8 +1324,8 @@ export async function getBuyerBidState(userId: string, pemasaranId: string) {
   return buyerBids.find((item) => item.lotId === pemasaranId) ?? null;
 }
 
-export async function getBuyerProfileStatus(userId: string) {
-  await refreshBuyerAuctionSettlementState();
+export async function getBuyerProfileStatus(userId: string, options?: BuyerReadOptions) {
+  await refreshBuyerAuctionSettlementState(options);
 
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   const blacklistState = await getEffectiveBuyerBlacklistState(userId);
