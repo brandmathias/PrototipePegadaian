@@ -2119,6 +2119,9 @@ describe("superadmin pages", () => {
     expect(screen.getByLabelText(/pembayaran gagal: batas waktu berakhir/i)).toHaveClass(
       "transaction-progress-node-failed",
     );
+    expect(
+      within(screen.getByText("Progress Penyelesaian").closest("section")!).getByText("Sistem Otomatis"),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass(
       "border-[#dfe6e2]",
     );
@@ -2156,6 +2159,57 @@ describe("superadmin pages", () => {
       screen.queryByRole("button", { name: /lihat verifikasi pembayaran/i }),
     ).not.toBeInTheDocument();
     expect(within(audit).queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("shows automatic actor for successful fixed-price payment even without payment method metadata", () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ likes: 0, participants: 0, views: 0 }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <SuperAdminUnitBarangDetailPage
+        detail={
+          {
+            unit: { id: "unit-wanea", code: "UPC-WANEA", name: "UPC Wanea", address: "Wanea", status: "Aktif" },
+            item: {
+              id: "barang-fixed-paid",
+              code: "SBG-117870000000025",
+              name: "Emas Batangan ANTM 5 Gram",
+              category: "emas",
+              condition: "baik",
+              status: "terjual",
+              appraisalValue: 12_240_000,
+              specifications: {},
+              media: [],
+            },
+            operationalStatus: "Terjual",
+            operationalTone: "emerald",
+            marketing: {
+              id: "pemasaran-fixed-paid",
+              lotId: "barang-fixed-paid",
+              lot: "Emas Batangan ANTM 5 Gram",
+              status: "SELESAI",
+              mode: "FIXED_PRICE",
+              price: 12_240_000,
+              transactionId: "trx-fixed-paid",
+              transactionStatus: "SELESAI",
+              transactionCreatedAt: "2026-09-23T04:15:00.000Z",
+              verifiedAt: "2026-09-23T04:17:00.000Z",
+              buyerName: "Brand Mathias",
+              soldAt: "2026-09-23T04:17:00.000Z",
+              insights: { views: 0, likes: 0, participants: 0 },
+            },
+            history: [],
+          } as any
+        }
+      />,
+    );
+
+    const progress = screen.getByText("Progress Penyelesaian").closest("section");
+    expect(progress).not.toBeNull();
+    expect(within(progress!).getByText("Sistem Otomatis")).toBeInTheDocument();
   });
 
   it("keeps the verified superadmin winner manifest compact inside the settlement grid", () => {

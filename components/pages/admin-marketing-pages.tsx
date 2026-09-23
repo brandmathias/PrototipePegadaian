@@ -2958,7 +2958,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
     ? `Buyer: ${auction.buyerName}`
     : "Buyer";
   const completionActor =
-    auction.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+    auction.completionSource === "auto_handover_grace" ? "Sistem Otomatis" : buyerActor;
 
   if (failed) {
     return (
@@ -2975,7 +2975,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
           {
             label: "Pembayaran Gagal",
             status: "Batas waktu berakhir",
-            actor: "Sistem",
+            actor: "Sistem Otomatis",
             occurredAt: dateLabel(
               auction.verifiedAt ?? auction.paymentDeadline ?? auction.transactionCreatedAt,
             ),
@@ -3016,6 +3016,7 @@ function FixedPriceProgressPanel({ auction }: { auction: MarketingSession }) {
         : hasTransaction
           ? "Menunggu pembayaran"
           : "Belum dimulai",
+      actor: verified ? "Sistem Otomatis" : null,
       occurredAt: verified ? dateLabel(auction.verifiedAt ?? auction.soldAt) : null,
       icon: verified ? CheckCircle2 : Clock3,
       tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),

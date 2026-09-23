@@ -278,6 +278,8 @@ describe("buyer transaction detail page", () => {
             ...transactionWithSpecifications,
             id: `trx-fixed-${status.toLowerCase()}`,
             status,
+            method: "TRANSFER_BANK",
+            verifiedBy: "Admin Unit",
             paymentProof: "/uploads/bukti/transfer-lunas.jpg",
             verifiedAt: "5 Mei 2026, 11.15 WIB",
             completedAt: status === "SELESAI" ? "5 Mei 2026, 12.15 WIB" : undefined,
@@ -296,6 +298,9 @@ describe("buyer transaction detail page", () => {
       );
 
       const paymentCard = screen.getByTestId("transaction-payment-card");
+      const workflow = screen.getByText("Alur Pembayaran").closest("section");
+      expect(workflow).not.toBeNull();
+      expect(within(workflow!).getByText("Sistem Otomatis")).toBeInTheDocument();
       expect(
         within(paymentCard).getByRole("heading", { name: /pembayaran berhasil diverifikasi/i })
       ).toBeInTheDocument();

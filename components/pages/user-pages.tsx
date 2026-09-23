@@ -865,7 +865,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
           : "Aksi admin unit",
       actor: isFailedVickreyPayment
         ? "Sistem"
-        : isFailedFixedPricePayment || (isFixedPricePurchase && isMidtrans && paymentVerified)
+        : isFailedFixedPricePayment || isFixedPriceVerifiedPayment
           ? "Sistem Otomatis"
         : transaction.verifiedBy
           ? `Admin: ${transaction.verifiedBy}`

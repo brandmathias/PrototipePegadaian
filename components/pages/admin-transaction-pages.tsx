@@ -520,14 +520,10 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
             headline: paymentFailed ? "Pembayaran Harga Tetap Gagal" : isVerified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
             detail: fixedVerificationDetail,
             meta: paymentFailed ? "Batas waktu berakhir" : isVerified ? "Pembayaran diterima" : "Menunggu pembayaran",
-            actor: paymentFailed
-              ? "Sistem Otomatis"
-              : isVerified
-                ? transaction.verifiedBy
-                  ? `Admin: ${transaction.verifiedBy}`
-                  : "Sistem Otomatis"
-                : undefined,
-            occurredAt: transaction.verifiedAt || (paymentFailed ? transaction.deadline : undefined),
+            actor: paymentFailed || isVerified ? "Sistem Otomatis" : undefined,
+            occurredAt:
+              transaction.verifiedAt ||
+              (paymentFailed ? transaction.deadline : transaction.soldAt),
             icon: paymentFailed ? XCircle : isVerified ? CheckCircle2 : Clock3,
             tone: paymentFailed ? "danger" : "default"
           },

@@ -689,6 +689,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/pesanan dibuat: pesanan dibuat/i)).toHaveClass("transaction-progress-node-done");
     expect(screen.getByLabelText(/pembayaran gagal: batas waktu berakhir/i)).toHaveClass("transaction-progress-node-failed");
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli: belum dimulai$/i)).toHaveClass("border-[#dfe6e2]");
+    expect(screen.getByText("Sistem Otomatis")).toBeInTheDocument();
     expect(screen.queryByText(/pembayaran masuk/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/verifikasi: menunggu admin/i)).not.toBeInTheDocument();
     const performancePanel = screen.getByTestId("admin-fixed-price-performance-panel");
@@ -739,6 +740,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByLabelText(/^pesanan dibuat: selesai$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^pembayaran berhasil: pembayaran diterima$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^serah-terima barang & konfirmasi pembeli:/i)).toBeInTheDocument();
+    expect(screen.getByText("Sistem Otomatis")).toBeInTheDocument();
 
     const managementConsole = screen.getByText("Konsol Manajemen").closest("section");
     expect(managementConsole).not.toBeNull();

@@ -5503,13 +5503,7 @@ function SuperAdminFixedPriceProgressPanel({
       occurredAt: verified
         ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
         : null,
-      actor: verified
-        ? session.paymentMethod?.toUpperCase() === "MIDTRANS"
-          ? "Sistem Otomatis"
-          : session.verifiedBy
-            ? `Admin: ${session.verifiedBy}`
-            : null
-        : null,
+      actor: verified ? "Sistem Otomatis" : null,
       icon: verified ? CheckCircle2 : Clock3,
       tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
     },
