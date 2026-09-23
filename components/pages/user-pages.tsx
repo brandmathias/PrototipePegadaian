@@ -863,8 +863,10 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
             ? "Sudah dikonfirmasi sistem"
             : "Status diperbarui setelah dana diterima"
           : "Aksi admin unit",
-      actor: isFailedVickreyPayment || isFailedFixedPricePayment || (isMidtrans && paymentVerified)
+      actor: isFailedVickreyPayment
         ? "Sistem"
+        : isFailedFixedPricePayment || (isFixedPricePurchase && isMidtrans && paymentVerified)
+          ? "Sistem Otomatis"
         : transaction.verifiedBy
           ? `Admin: ${transaction.verifiedBy}`
           : undefined,
@@ -913,7 +915,7 @@ function PaymentProgressRail({ buyer, transaction }: { buyer: BuyerSessionUser; 
       actor: transaction.handoverProof
         ? completed
           ? transaction.completionSource === "AUTO_HANDOVER_GRACE"
-            ? "Sistem"
+            ? "Sistem Otomatis"
             : `Buyer: ${buyer.name}`
           : `Admin: ${transaction.handoverProof.uploadedBy}`
         : awaitingHandoverProof

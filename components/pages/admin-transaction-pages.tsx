@@ -520,7 +520,13 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
             headline: paymentFailed ? "Pembayaran Harga Tetap Gagal" : isVerified ? "Pembayaran Berhasil" : "Melakukan Pembayaran",
             detail: fixedVerificationDetail,
             meta: paymentFailed ? "Batas waktu berakhir" : isVerified ? "Pembayaran diterima" : "Menunggu pembayaran",
-            actor: paymentFailed ? "Sistem" : isVerified ? transaction.verifiedBy ? `Admin: ${transaction.verifiedBy}` : "Sistem" : undefined,
+            actor: paymentFailed
+              ? "Sistem Otomatis"
+              : isVerified
+                ? transaction.verifiedBy
+                  ? `Admin: ${transaction.verifiedBy}`
+                  : "Sistem Otomatis"
+                : undefined,
             occurredAt: transaction.verifiedAt || (paymentFailed ? transaction.deadline : undefined),
             icon: paymentFailed ? XCircle : isVerified ? CheckCircle2 : Clock3,
             tone: paymentFailed ? "danger" : "default"
@@ -531,7 +537,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
             headline: completed ? "Pembelian Selesai" : isVerified ? "Menunggu Serah-Terima Barang" : "Belum Dimulai",
             detail: fixedCompletionDetail,
             meta: completed ? "Selesai" : isVerified ? "Menunggu serah-terima" : "Belum dimulai",
-            actor: completed ? transaction.completionSource === "auto_handover_grace" ? "Sistem" : `Buyer: ${transaction.buyer}` : undefined,
+            actor: completed ? transaction.completionSource === "auto_handover_grace" ? "Sistem Otomatis" : `Buyer: ${transaction.buyer}` : undefined,
             occurredAt: transaction.completedAt,
             icon: ClipboardCheck
           }

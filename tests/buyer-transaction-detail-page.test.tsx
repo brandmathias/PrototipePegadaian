@@ -1176,7 +1176,7 @@ describe("buyer transaction detail page", () => {
     expect(screen.queryByRole("button", { name: /kirim bukti pembayaran/i })).not.toBeInTheDocument();
     const workflow = screen.getByText("Alur Pembayaran").closest("section");
     expect(workflow).not.toBeNull();
-    expect(within(workflow!).getByText(/^Sistem$/i)).toBeInTheDocument();
+    expect(within(workflow!).getByText(/^Sistem Otomatis$/i)).toBeInTheDocument();
     expect(within(workflow!).getAllByText(new RegExp(`Buyer: ${buyer.name}`, "i"))).toHaveLength(1);
   });
 

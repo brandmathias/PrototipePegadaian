@@ -5440,7 +5440,7 @@ function SuperAdminFixedPriceProgressPanel({
     ? `Buyer: ${session.buyerName}`
     : "Buyer";
   const completionActor =
-    session.completionSource === "auto_handover_grace" ? "Sistem" : buyerActor;
+    session.completionSource === "auto_handover_grace" ? "Sistem Otomatis" : buyerActor;
   const failureOccurredAt = formatSuperAdminDateTime(
     session.paymentDeadline ?? session.verifiedAt ?? session.transactionCreatedAt,
   );
@@ -5461,7 +5461,7 @@ function SuperAdminFixedPriceProgressPanel({
           {
             label: "Pembayaran Gagal",
             status: "Batas waktu berakhir",
-            actor: "Sistem",
+            actor: "Sistem Otomatis",
             occurredAt: failureOccurredAt,
             icon: X,
             tone: "failed",
@@ -5502,6 +5502,13 @@ function SuperAdminFixedPriceProgressPanel({
           : "Belum dimulai",
       occurredAt: verified
         ? formatSuperAdminDateTime(session.verifiedAt ?? session.soldAt)
+        : null,
+      actor: verified
+        ? session.paymentMethod?.toUpperCase() === "MIDTRANS"
+          ? "Sistem Otomatis"
+          : session.verifiedBy
+            ? `Admin: ${session.verifiedBy}`
+            : null
         : null,
       icon: verified ? CheckCircle2 : Clock3,
       tone: verified ? ("done" as const) : hasTransaction ? ("current" as const) : ("pending" as const),
