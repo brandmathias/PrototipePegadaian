@@ -37,6 +37,7 @@ import {
 import { formatAppDateTime } from "@/lib/timezone";
 import { processPendingPushDeliveries } from "@/lib/services/push-notification.service";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
+import { relistFailedFixedPriceMarketing } from "@/lib/services/relist-fixed-price";
 
 type BidOutcomeInput = {
   basePrice: string | number | null;
@@ -512,6 +513,7 @@ export async function processOverdueFixedPricePayments(now = new Date()): Promis
   const overdueTransactions = await db
     .select({
       transaction: transaksi,
+      marketing: pemasaran,
       item: barang
     })
     .from(transaksi)
@@ -531,24 +533,37 @@ export async function processOverdueFixedPricePayments(now = new Date()): Promis
   let failed = 0;
 
   for (const row of overdueTransactions) {
-    const [updatedTransaction] = await db
-      .update(transaksi)
-      .set({
-        gatewayStatus: "expire",
-        status: "gagal",
-        updatedAt: now
-      })
-      .where(
-        and(
-          eq(transaksi.id, row.transaction.id),
-          eq(transaksi.type, "fixed_price"),
-          eq(transaksi.paymentMethod, "midtrans"),
-          eq(transaksi.status, "menunggu_pembayaran"),
-          isNotNull(transaksi.paymentDeadline),
-          lte(transaksi.paymentDeadline, now)
+    const updatedTransaction = await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(transaksi)
+        .set({
+          gatewayStatus: "expire",
+          status: "gagal",
+          updatedAt: now
+        })
+        .where(
+          and(
+            eq(transaksi.id, row.transaction.id),
+            eq(transaksi.type, "fixed_price"),
+            eq(transaksi.paymentMethod, "midtrans"),
+            eq(transaksi.status, "menunggu_pembayaran"),
+            isNotNull(transaksi.paymentDeadline),
+            lte(transaksi.paymentDeadline, now)
+          )
         )
-      )
-      .returning({ id: transaksi.id });
+        .returning({ id: transaksi.id });
+
+      if (!updated) return null;
+
+      await relistFailedFixedPriceMarketing(tx, {
+        barangId: row.item.id,
+        itemStatus: row.item.status,
+        marketing: { ...row.marketing, price: String(row.marketing.price ?? row.transaction.amount) },
+        now,
+        failureNote: "Pembayaran barang Harga Tetap tidak diselesaikan sampai batas waktu; sesi ditutup dan barang dipublikasikan kembali ke katalog."
+      });
+      return updated;
+    });
 
     if (!updatedTransaction) {
       continue;

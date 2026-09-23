@@ -18,6 +18,7 @@ import {
   notifySuperAdminPaymentVerified
 } from "@/lib/services/notification-events";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
+import { relistFailedFixedPriceMarketing } from "@/lib/services/relist-fixed-price";
 
 type MidtransPaymentStatus = "menunggu_pembayaran" | "gagal" | "lunas" | "unknown";
 
@@ -107,16 +108,30 @@ export async function syncMidtransTransactionStatus({
       return { changed: false, status: nextStatus, transactionId: row.transaction.id };
     }
 
-    const [updated] = await db
-      .update(transaksi)
-      .set({
-        gatewayPayload: gateway,
-        gatewayStatus: readString(gateway.transaction_status),
-        status: "gagal",
-        updatedAt: new Date()
-      })
-      .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")))
-      .returning();
+    const now = new Date();
+    const updated = await db.transaction(async (tx) => {
+      const [failed] = await tx
+        .update(transaksi)
+        .set({
+          gatewayPayload: gateway,
+          gatewayStatus: readString(gateway.transaction_status),
+          status: "gagal",
+          updatedAt: now
+        })
+        .where(and(eq(transaksi.id, row.transaction.id), eq(transaksi.status, "menunggu_pembayaran")))
+        .returning();
+
+      if (!failed) return null;
+
+      await relistFailedFixedPriceMarketing(tx, {
+        barangId: row.item.id,
+        itemStatus: row.item.status,
+        marketing: { ...row.marketing, price: String(row.marketing.price ?? row.transaction.amount) },
+        now,
+        failureNote: "Pembayaran barang Harga Tetap dinyatakan gagal oleh Midtrans; sesi ditutup dan barang dipublikasikan kembali ke katalog."
+      });
+      return failed;
+    });
 
     if (!updated) {
       return { changed: false, status: nextStatus, transactionId: row.transaction.id };

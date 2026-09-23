@@ -148,6 +148,16 @@ function mockHandoverRows(rows: Array<Record<string, unknown>>) {
   };
 }
 
+function mockArchivedMarketing() {
+  return {
+    set: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: "pemasaran-fixed-1" }])
+      })
+    })
+  };
+}
+
 describe("overdue Harga Tetap payment settlement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -157,26 +167,45 @@ describe("overdue Harga Tetap payment settlement", () => {
     const now = new Date("2026-09-14T03:00:00.000Z");
     const paymentDeadline = new Date("2026-09-14T02:45:00.000Z");
     const updatePayloads: Array<Record<string, unknown>> = [];
+    const insertedPayloads: Array<Record<string, unknown>> = [];
 
     mocks.db.select.mockImplementationOnce(() =>
       mockFixedPriceRows([
         {
-          item: { name: "Emas Batangan ANTAM 5 Gram" },
+          item: { id: "barang-fixed-1", name: "Emas Batangan ANTAM 5 Gram", status: "dipasarkan" },
+          marketing: {
+            id: "pemasaran-fixed-1",
+            iteration: 2,
+            price: "12500000",
+            createdAt: new Date("2026-09-10T00:00:00.000Z"),
+            createdByUserId: "admin-1"
+          },
           transaction: {
             id: "trx-fixed-1",
+            pemasaranId: "pemasaran-fixed-1",
             paymentDeadline,
             userId: "buyer-1"
           }
         }
       ])
     );
-    mocks.db.update.mockImplementationOnce(() =>
+    mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));
+    mocks.tx.update.mockImplementationOnce(() =>
       mockUpdatedTransaction((value) => updatePayloads.push(value))
     );
+    mocks.tx.update.mockImplementationOnce(() => mockArchivedMarketing());
+    mocks.tx.update.mockImplementation(() => mockVoidUpdate());
+    mocks.tx.insert.mockImplementation(() => ({
+      values: vi.fn((value) => {
+        insertedPayloads.push(value);
+        return Promise.resolve(undefined);
+      })
+    }));
 
     const summary = await processOverdueFixedPricePayments(now);
 
     expect(summary).toEqual({ processed: 1, failed: 1 });
+    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
     expect(updatePayloads).toEqual([
       expect.objectContaining({
         gatewayStatus: "expire",
@@ -184,6 +213,17 @@ describe("overdue Harga Tetap payment settlement", () => {
         updatedAt: now
       })
     ]);
+    expect(mocks.tx.insert).toHaveBeenCalled();
+    expect(insertedPayloads[0]).toMatchObject({
+      barangId: "barang-fixed-1",
+      iteration: 3,
+      status: "aktif",
+      price: "12500000",
+      startsAt: new Date("2026-09-10T00:00:00.000Z"),
+      createdAt: new Date("2026-09-10T00:00:00.000Z"),
+      updatedAt: new Date(now.getTime() + 1)
+    });
+    expect(insertedPayloads.slice(1).map((entry) => entry.newStatus)).toEqual(["gagal", "dipasarkan"]);
     expect(mocks.notifyFixedPricePaymentFailed).toHaveBeenCalledWith({
       userId: "buyer-1",
       transactionId: "trx-fixed-1",

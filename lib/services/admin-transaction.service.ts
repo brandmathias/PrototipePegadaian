@@ -12,11 +12,9 @@ import {
 import { db } from "@/lib/db/client";
 import {
   barang,
-  buyerWishlist,
   buyerProfiles,
   mediaBarang,
   pemasaran,
-  pemasaranViews,
   riwayatStatusBarang,
   transaksi,
   unitAccounts,
@@ -33,6 +31,7 @@ import {
   notifySuperAdminPaymentVerified
 } from "@/lib/services/notification-events";
 import { revalidateTransactionViews } from "@/lib/services/revalidate-transaction-views";
+import { relistFailedFixedPriceMarketing } from "@/lib/services/relist-fixed-price";
 
 const handoverUploader = alias(users, "transaction_handover_uploader");
 const paymentVerifier = alias(users, "transaction_payment_verifier");
@@ -250,75 +249,6 @@ async function recordItemStatusHistory(input: {
   });
 }
 
-type TransactionDb = Parameters<Parameters<typeof db.transaction>[0]>[0];
-
-async function relistRejectedFixedPriceMarketing(
-  tx: TransactionDb,
-  input: {
-    adminId: string;
-    barangId: string;
-    itemStatus: string;
-    marketingId: string;
-    now: Date;
-    originalPublishedAt: Date;
-    price: string;
-    reason: string;
-    sourceIteration?: number | null;
-  }
-) {
-  const [archived] = await tx
-    .update(pemasaran)
-    .set({ status: "gagal", updatedAt: input.now })
-    .where(and(eq(pemasaran.id, input.marketingId), eq(pemasaran.status, "aktif"), eq(pemasaran.mode, "fixed_price")))
-    .returning({ id: pemasaran.id });
-
-  if (!archived) {
-    return;
-  }
-
-  const relistedAt = new Date(input.now.getTime() + 1);
-  const relistedMarketingId = randomUUID();
-
-  await tx.insert(pemasaran).values({
-    id: relistedMarketingId,
-    barangId: input.barangId,
-    mode: "fixed_price",
-    price: input.price,
-    basePrice: null,
-    durationDays: null,
-    durationSeconds: null,
-    startsAt: input.originalPublishedAt,
-    endsAt: null,
-    iteration: Number(input.sourceIteration ?? 0) + 1,
-    status: "aktif",
-    createdByUserId: input.adminId,
-    createdAt: input.originalPublishedAt,
-    updatedAt: relistedAt
-  });
-
-  await tx.update(barang).set({ status: "dipasarkan", updatedAt: relistedAt }).where(eq(barang.id, input.barangId));
-  await tx.update(buyerWishlist).set({ pemasaranId: relistedMarketingId }).where(eq(buyerWishlist.pemasaranId, input.marketingId));
-  await tx.update(pemasaranViews).set({ pemasaranId: relistedMarketingId }).where(eq(pemasaranViews.pemasaranId, input.marketingId));
-  await tx.insert(riwayatStatusBarang).values({
-    id: randomUUID(),
-    barangId: input.barangId,
-    oldStatus: input.itemStatus,
-    newStatus: "gagal",
-    changedByUserId: input.adminId,
-    note: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${input.reason}.`,
-    createdAt: input.now
-  });
-  await tx.insert(riwayatStatusBarang).values({
-    id: randomUUID(),
-    barangId: input.barangId,
-    oldStatus: "gagal",
-    newStatus: "dipasarkan",
-    changedByUserId: null,
-    note: "Barang dipublikasikan kembali ke katalog sebagai sesi Harga Tetap.",
-    createdAt: relistedAt
-  });
-}
-
 export async function verifyAdminTransaction(unitId: string, adminId: string, transactionId: string, input: { reference?: unknown }) {
   const row = await getTransactionForUnit(unitId, transactionId);
   await ensureTransactionMutable(row.transaction.status);
@@ -414,16 +344,13 @@ export async function rejectAdminTransactionProof(
     }
 
     if (row.transaction.type === "fixed_price") {
-      await relistRejectedFixedPriceMarketing(tx, {
-        adminId,
+      await relistFailedFixedPriceMarketing(tx, {
         barangId: row.item.id,
         itemStatus: row.item.status,
-        marketingId: row.transaction.pemasaranId,
+        marketing: { ...row.marketing, price: String(row.marketing.price ?? row.transaction.amount) },
         now,
-        originalPublishedAt: row.marketing.createdAt,
-        price: String(row.marketing.price ?? row.transaction.amount),
-        reason: payload.reason,
-        sourceIteration: row.marketing.iteration
+        failedByUserId: adminId,
+        failureNote: `Verifikasi bukti pembayaran harga tetap ditolak admin unit. Alasan: ${payload.reason}.`
       });
     }
 

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   db: { select: vi.fn(), update: vi.fn(), transaction: vi.fn() },
+  tx: { update: vi.fn(), insert: vi.fn() },
   getMidtransTransactionStatus: vi.fn(),
   listActiveAdminUnitNotificationRecipientIds: vi.fn(),
   listActiveSuperAdminNotificationRecipientIds: vi.fn(),
@@ -69,7 +70,13 @@ describe("Midtrans payment status sync", () => {
           status: "menunggu_pembayaran"
         },
         item: { id: "barang-1", name: "Cincin Emas", status: "dipasarkan" },
-        marketing: { id: "pemasaran-1" },
+        marketing: {
+          id: "pemasaran-1",
+          iteration: 2,
+          price: "12500000",
+          createdAt: new Date("2026-09-10T00:00:00.000Z"),
+          createdByUserId: "admin-1"
+        },
         unit: { id: "unit-1", name: "UPC Ranotana", address: "Manado" }
       })
     );
@@ -80,6 +87,21 @@ describe("Midtrans payment status sync", () => {
         where: vi.fn().mockReturnValue({ returning })
       })
     });
+    mocks.db.transaction.mockImplementation(async (callback) => callback(mocks.tx));
+    mocks.tx.update.mockImplementationOnce(() => ({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: "trx-1", userId: "buyer-1" }]) })
+      })
+    }));
+    mocks.tx.update.mockImplementationOnce(() => ({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: "pemasaran-1" }]) })
+      })
+    }));
+    mocks.tx.update.mockImplementation(() => ({
+      set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) })
+    }));
+    mocks.tx.insert.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
   });
 
   it("moves an expired pending payment to failed and emits the buyer update", async () => {
@@ -97,7 +119,7 @@ describe("Midtrans payment status sync", () => {
     });
 
     expect(result).toEqual({ changed: true, status: "gagal", transactionId: "trx-1" });
-    expect(mocks.db.update).toHaveBeenCalledTimes(1);
+    expect(mocks.db.transaction).toHaveBeenCalledTimes(1);
     expect(mocks.notifyFixedPricePaymentFailed).toHaveBeenCalledWith({
       userId: "buyer-1",
       transactionId: "trx-1",
