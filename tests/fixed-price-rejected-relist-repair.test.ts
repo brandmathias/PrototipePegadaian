@@ -167,5 +167,6 @@ describe("fixed-price rejected relist repair", () => {
     expect(startupScript).toContain(`riwayat sistem`);
     expect(startupScript).toContain(`t."status" in ('ditolak_bukti', 'gagal')`);
     expect(startupScript).toContain(`fixedPriceFailedRelists`);
+    expect(startupScript).not.toContain(`"reveal_ends_at"`);
   });
 });

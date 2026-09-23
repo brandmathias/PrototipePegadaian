@@ -302,9 +302,9 @@ try {
       `
         insert into "pemasaran" (
           "id", "barang_id", "mode", "price", "base_price", "duration_days",
-          "duration_seconds", "starts_at", "ends_at", "reveal_ends_at", "iteration",
+          "duration_seconds", "starts_at", "ends_at", "iteration",
           "status", "created_by_user_id", "created_at", "updated_at"
-        ) values ($1, $2, 'fixed_price', $3, null, null, null, $5, null, null, $4, 'aktif', $6, $5, $7)
+        ) values ($1, $2, 'fixed_price', $3, null, null, null, $5, null, $4, 'aktif', $6, $5, $7)
       `,
       [
         relistedMarketingId,
