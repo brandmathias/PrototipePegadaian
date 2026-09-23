@@ -239,6 +239,9 @@ try {
     and "note" ilike '%Barang otomatis dipasarkan ulang ke katalog pada iterasi berikutnya.%'
   `);
 
+  let fixedPriceFailedRelists = 0;
+  await client.query("savepoint fixed_price_failed_relist_repair");
+  try {
   const fixedPriceFailedRelistCandidates = await client.query(`
     with latest_transaction as (
       select distinct on (t."pemasaran_id")
@@ -276,8 +279,6 @@ try {
       )
     order by latest_transaction."failed_at" asc, p."id" asc
   `);
-  let fixedPriceFailedRelists = 0;
-
   for (const candidate of fixedPriceFailedRelistCandidates.rows) {
     const failedAt = new Date(candidate.failed_at);
     const relistedAt = new Date(failedAt.getTime() + 1);
@@ -337,6 +338,11 @@ try {
       [randomUUID(), candidate.barang_id, relistedAt],
     );
     fixedPriceFailedRelists += 1;
+  }
+    await client.query("release savepoint fixed_price_failed_relist_repair");
+  } catch (error) {
+    await client.query("rollback to savepoint fixed_price_failed_relist_repair").catch(() => undefined);
+    console.error("Fixed-price failed relist repair skipped during startup:", error);
   }
 
   const fixedPriceRepairSyncedRelists = await client.query(`
