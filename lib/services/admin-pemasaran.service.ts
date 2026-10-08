@@ -204,7 +204,7 @@ async function getLatestMarketingForBarang(barangId: string) {
     })
     .from(pemasaran)
     .where(eq(pemasaran.barangId, barangId))
-    .orderBy(desc(pemasaran.createdAt))
+    .orderBy(desc(pemasaran.iteration), desc(pemasaran.createdAt))
     .limit(1);
 
   return row ?? null;
@@ -493,7 +493,7 @@ export async function publishAdminBarang(unitId: string, userId: string, barangI
       newStatus: "dipasarkan",
       changedByUserId: userId,
       note: canRepublishActiveFixedPrice
-        ? "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
+        ? `Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi ${payload.mode === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup"}.`
         : payload.mode === "fixed_price"
           ? "Barang dipublikasikan ke katalog sebagai sesi Harga Tetap."
           : "Barang dipublikasikan ke katalog sebagai sesi Lelang Tertutup."

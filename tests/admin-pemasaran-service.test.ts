@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 const mocks = vi.hoisted(() => {
   const db = {
@@ -617,7 +618,6 @@ describe("publishAdminBarang", () => {
         basePrice: "1500000",
         startsAt: now,
         endsAt: new Date(now.getTime() + 135_000),
-        revealEndsAt: new Date(now.getTime() + 135_000 + 600_000),
         durationDays: 0,
         durationSeconds: 135,
         status: "aktif",
@@ -741,7 +741,6 @@ describe("publishAdminBarang", () => {
         durationDays: null,
         durationSeconds: null,
         endsAt: null,
-        revealEndsAt: null,
         iteration: 2,
         status: "aktif"
       })
@@ -750,7 +749,7 @@ describe("publishAdminBarang", () => {
     expect(statusHistoryValuesSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("closes an active fixed price session with only waiting-payment checkouts before remarketing", async () => {
+  it.each(["fixed_price", "vickrey"] as const)("selects the latest iteration and closes active fixed price before remarketing as %s", async (mode) => {
     const now = new Date("2026-05-12T08:30:45.000+08:00");
     const item = {
       id: "barang-fixed-active",
@@ -787,6 +786,11 @@ describe("publishAdminBarang", () => {
       returning: vi.fn().mockResolvedValue([createdRow])
     });
     const remarketingLockWhereSpy = vi.fn().mockResolvedValue([{ count: 0 }]);
+    const latestMarketingOrderSpy = vi.fn().mockReturnValue({
+      limit: vi.fn().mockResolvedValue([
+        { id: "marketing-fixed-active", mode: "fixed_price", status: "aktif" }
+      ])
+    });
     const updateBarangWhereSpy = vi.fn().mockResolvedValue(undefined);
     const statusHistoryValuesSpy = vi.fn().mockResolvedValue(undefined);
 
@@ -801,15 +805,7 @@ describe("publishAdminBarang", () => {
       .mockImplementationOnce(() => ({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockReturnValue({
-              limit: vi.fn().mockResolvedValue([
-                {
-                  id: "marketing-fixed-active",
-                  mode: "fixed_price",
-                  status: "aktif"
-                }
-              ])
-            })
+            orderBy: latestMarketingOrderSpy
           })
         })
       }))
@@ -842,18 +838,24 @@ describe("publishAdminBarang", () => {
       }));
 
     await publishAdminBarang("unit-1", "user-1", "barang-fixed-active", {
-      mode: "fixed_price",
-      price: "15000000"
+      mode,
+      price: "15000000",
+      ...(mode === "vickrey" ? { durationHours: "1" } : {})
     });
 
+    expect(latestMarketingOrderSpy.mock.calls[0].map((order) => new PgDialect().sqlToQuery(order).sql)).toEqual([
+      '"pemasaran"."iteration" desc',
+      '"pemasaran"."created_at" desc'
+    ]);
     expect(closeMarketingSetSpy).toHaveBeenCalledWith({
       status: "gagal",
       updatedAt: now
     });
     expect(insertValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        mode: "fixed_price",
-        price: "15000000",
+        mode,
+        price: mode === "fixed_price" ? "15000000" : null,
+        basePrice: mode === "vickrey" ? "15000000" : null,
         iteration: 3,
         status: "aktif"
       })
@@ -863,7 +865,7 @@ describe("publishAdminBarang", () => {
       expect.objectContaining({
         oldStatus: "dipasarkan",
         newStatus: "dipasarkan",
-        note: "Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi Harga Tetap."
+        note: `Sesi harga tetap lama ditutup dan barang dipublikasikan ulang ke katalog sebagai sesi ${mode === "fixed_price" ? "Harga Tetap" : "Lelang Tertutup"}.`
       })
     );
     const remarketingLockValues = getSqlParameterValues(
