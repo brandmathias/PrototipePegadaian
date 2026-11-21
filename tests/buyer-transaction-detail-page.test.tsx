@@ -383,9 +383,10 @@ describe("buyer transaction detail page", () => {
   });
 
   it.each(["LUNAS", "SELESAI"] as const)(
-    "keeps the final Snap checkout visible for a successful Midtrans %s payment",
+    "shows recorded payment without reopening Snap for a Midtrans %s transaction",
     (status) => {
-      vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => {})));
+      const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
+      vi.stubGlobal("fetch", fetchMock);
 
       render(
         <TransactionDetailPage
@@ -408,8 +409,9 @@ describe("buyer transaction detail page", () => {
         within(paymentCard).getByRole("heading", { level: 2, name: /^pembayaran berhasil$/i })
       ).toBeInTheDocument();
       expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
-      expect(within(paymentCard).getByTestId("midtrans-checkout-shell")).toBeInTheDocument();
-      expect(within(paymentCard).queryByTestId("midtrans-expired-footer-mask")).not.toBeInTheDocument();
+      expect(within(paymentCard).getByText("Pembayaran telah diterima dan tercatat.")).toBeInTheDocument();
+      expect(within(paymentCard).queryByTestId("midtrans-checkout-shell")).not.toBeInTheDocument();
+      expect(fetchMock).not.toHaveBeenCalled();
       expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
     }

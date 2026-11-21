@@ -122,7 +122,7 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps one embedded checkout when the transaction status refreshes", async () => {
+  it("replaces the active checkout when the server confirms payment", async () => {
     const fetchMock = vi.fn((url: string) =>
       Promise.resolve({
         ok: true,
@@ -145,6 +145,7 @@ describe("MidtransEmbeddedCheckout", () => {
     );
 
     await waitFor(() => expect(embedMock).toHaveBeenCalledTimes(1));
+    fetchMock.mockClear();
 
     view.rerender(
       <ToastProvider>
@@ -152,9 +153,11 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans"));
+    expect(await screen.findByText("Pembayaran telah diterima dan tercatat.")).toBeInTheDocument();
+    expect(document.querySelector('[id^="midtrans-snap-"]')).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(embedMock).toHaveBeenCalledTimes(1);
-    expect(hideMock).not.toHaveBeenCalled();
+    expect(hideMock).toHaveBeenCalledTimes(1);
   });
 
   it("closes the active Snap instance when the checkout unmounts", async () => {
@@ -212,13 +215,13 @@ describe("MidtransEmbeddedCheckout", () => {
     expect(embedMock).not.toHaveBeenCalled();
   });
 
-  it("renders the Midtrans-hosted successful Snap checkout", async () => {
+  it("shows confirmed payment on revisit even when the saved Snap URL is expired", async () => {
     const fetchMock = vi.fn((url: string) =>
       Promise.resolve({
         ok: true,
         json: async () =>
           url === "/api/user/transaksi/trx-fixed-1/midtrans"
-            ? { data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/vtweb/success-token", snapToken: "snap-token-1" } }
+            ? { data: { snapRedirectUrl: "https://app.sandbox.midtrans.com/snap/v2/vtweb/expired-token", snapToken: "snap-token-1" } }
             : { data: { clientKey: "SB-Mid-client-test", isProduction: false } }
       })
     );
@@ -232,12 +235,9 @@ describe("MidtransEmbeddedCheckout", () => {
       </ToastProvider>
     );
 
-    expect(await screen.findByTitle("Status pembayaran")).toHaveAttribute(
-      "src",
-      "https://app.sandbox.midtrans.com/snap/v2/vtweb/success-token"
-    );
-    expect(fetchMock).toHaveBeenCalledWith("/api/user/transaksi/trx-fixed-1/midtrans");
-    expect(fetchMock).not.toHaveBeenCalledWith("/api/payments/midtrans/config");
+    expect(await screen.findByText("Pembayaran telah diterima dan tercatat.")).toBeInTheDocument();
+    expect(screen.queryByTitle("Status pembayaran")).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
     expect(embedMock).not.toHaveBeenCalled();
   });
 

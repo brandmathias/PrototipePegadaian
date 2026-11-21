@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { AlertTriangle, LoaderCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
@@ -89,6 +89,30 @@ export function MidtransEmbeddedCheckout({
   terminalState?: "pending" | "expired" | "success";
   transactionId: string;
 }) {
+  if (terminalState === "success") {
+    return (
+      <div className={`grid min-h-64 place-items-center rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-6 text-center ${compact ? "flex-1" : ""}`}>
+        <div className="grid justify-items-center gap-3">
+          <CheckCircle2 aria-hidden="true" className="size-12 text-emerald-700" />
+          <p className="font-headline text-xl font-bold text-emerald-950">Pembayaran terverifikasi</p>
+          <p className="text-sm text-emerald-900">Pembayaran telah diterima dan tercatat.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <SnapCheckout compact={compact} terminalState={terminalState} transactionId={transactionId} />;
+}
+
+function SnapCheckout({
+  compact,
+  terminalState,
+  transactionId,
+}: {
+  compact: boolean;
+  terminalState: "pending" | "expired";
+  transactionId: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const routerRef = useRef(router);
@@ -122,7 +146,7 @@ export function MidtransEmbeddedCheckout({
         }
 
         const redirectUrl = payload?.data?.snapRedirectUrl?.trim();
-        if (terminalState !== "pending" && redirectUrl) {
+        if (terminalState === "expired" && redirectUrl) {
           if (embeddedTokenRef.current) {
             window.snap?.hide?.();
             embeddedTokenRef.current = null;
