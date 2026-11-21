@@ -2710,7 +2710,10 @@ export function TransactionDetailPage({
                 </div>
               </>
             ) : isMidtrans ? (
-              <div className="flex min-h-[44rem] flex-1 flex-col" data-testid="midtrans-payment-content">
+              <div
+                className={cn("flex flex-1 flex-col", !isVerified && "min-h-[44rem]")}
+                data-testid="midtrans-payment-content"
+              >
                 <MidtransEmbeddedCheckout
                   compact
                   terminalState={isFailedMidtransPayment ? "expired" : isVerified ? "success" : "pending"}

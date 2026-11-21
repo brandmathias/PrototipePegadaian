@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, LoaderCircle } from "lucide-react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { AlertTriangle, Check, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useToast } from "@/components/ui/toast";
@@ -80,6 +80,26 @@ function ensureSnapScript({ clientKey, isProduction }: { clientKey: string; isPr
   return snapScriptPromise;
 }
 
+function CheckoutFrame({ children, className = "", compact, label }: {
+  children: ReactNode;
+  className?: string;
+  compact: boolean;
+  label: string;
+}) {
+  return (
+    <section
+      aria-label={label}
+      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${className}`}
+      data-testid="midtrans-checkout-shell"
+    >
+      <div className={`border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
+        <p className="text-sm font-bold text-[#13211c]">{label}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export function MidtransEmbeddedCheckout({
   compact = false,
   terminalState = "pending",
@@ -91,13 +111,19 @@ export function MidtransEmbeddedCheckout({
 }) {
   if (terminalState === "success") {
     return (
-      <div className={`grid min-h-64 place-items-center rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-6 text-center ${compact ? "flex-1" : ""}`}>
-        <div className="grid justify-items-center gap-3">
-          <CheckCircle2 aria-hidden="true" className="size-12 text-emerald-700" />
-          <p className="font-headline text-xl font-bold text-emerald-950">Pembayaran terverifikasi</p>
-          <p className="text-sm text-emerald-900">Pembayaran telah diterima dan tercatat.</p>
+      <CheckoutFrame compact={compact} label="Status pembayaran">
+        <div className={compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}>
+          <div className="grid h-[clamp(16rem,28vw,28rem)] place-items-center rounded-xl border border-emerald-100 bg-emerald-50 p-5 text-center">
+            <div className="grid justify-items-center gap-2">
+              <span className="mb-1 grid size-9 place-items-center rounded-full bg-emerald-700 text-white">
+                <Check aria-hidden="true" className="size-5" />
+              </span>
+              <p className="font-headline text-lg font-bold text-emerald-950" lang="en">Payment successful</p>
+              <p className="text-sm text-emerald-900">Pembayaran telah diterima dan tercatat.</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </CheckoutFrame>
     );
   }
 
@@ -257,13 +283,11 @@ function SnapCheckout({
   }
 
   return (
-    <div
-      className={`overflow-hidden rounded-[1.5rem] border border-[#dbe8df] bg-white shadow-[0_18px_40px_-34px_rgba(8,69,50,0.3)] ${compact ? "flex h-0 min-h-0 flex-1 flex-col" : ""}`}
-      data-testid="midtrans-checkout-shell"
+    <CheckoutFrame
+      className={compact ? "flex h-0 min-h-0 flex-1 flex-col" : undefined}
+      compact={compact}
+      label="Pilih metode pembayaran"
     >
-      <div className={`border-b border-[#edf1ed] bg-[#f8fbf8] ${compact ? "px-4 py-3" : "px-5 py-4"}`}>
-        <p className="text-sm font-bold text-[#13211c]">Pilih metode pembayaran</p>
-      </div>
       <div
         className={`relative ${checkoutHeightClass} bg-white ${compact ? "p-2.5 sm:p-3" : "p-3 sm:p-5"}`}
       >
@@ -293,6 +317,6 @@ function SnapCheckout({
           </div>
         ) : null}
       </div>
-    </div>
+    </CheckoutFrame>
   );
 }

@@ -409,8 +409,10 @@ describe("buyer transaction detail page", () => {
         within(paymentCard).getByRole("heading", { level: 2, name: /^pembayaran berhasil$/i })
       ).toBeInTheDocument();
       expect(within(paymentCard).getByTestId("midtrans-payment-content")).toBeInTheDocument();
-      expect(within(paymentCard).getByText("Pembayaran telah diterima dan tercatat.")).toBeInTheDocument();
-      expect(within(paymentCard).queryByTestId("midtrans-checkout-shell")).not.toBeInTheDocument();
+      const statusPanel = within(paymentCard).getByRole("region", { name: "Status pembayaran" });
+      expect(within(statusPanel).getByText("Payment successful")).toBeInTheDocument();
+      expect(within(statusPanel).getByText("Pembayaran telah diterima dan tercatat.")).toBeInTheDocument();
+      expect(statusPanel.querySelector("iframe")).not.toBeInTheDocument();
       expect(fetchMock).not.toHaveBeenCalled();
       expect(screen.getByRole("heading", { name: /perlindungan transaksi/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/file bukti pembayaran/i)).not.toBeInTheDocument();
