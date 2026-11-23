@@ -17,6 +17,8 @@ backup-*.sql
 # Local agent configuration and generated artifacts
 /.agents/
 /.codex/
+/.codex-*
+/codex-*
 /.codex-artifacts/
 /codex-artifacts/
 
