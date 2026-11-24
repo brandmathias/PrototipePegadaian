@@ -81,12 +81,14 @@ describe("sortAdminMarketingRowsByRecency", () => {
     expect(rows.map((row) => row.id)).toEqual(["relisted-fixed-price", "failed-fixed-price"]);
   });
 
-  it("keeps a new publication ahead of an older session with a later price edit", () => {
+  it("places an active price edit ahead of an earlier publication", () => {
     const rows = sortAdminMarketingRowsByRecency([
       {
         id: "newly-created",
         marketing: {
           id: "newly-created",
+          mode: "vickrey",
+          status: "aktif",
           iteration: 1,
           createdAt: new Date("2026-06-14T10:00:00.000Z"),
           updatedAt: new Date("2026-06-14T10:00:00.000Z")
@@ -94,8 +96,11 @@ describe("sortAdminMarketingRowsByRecency", () => {
       },
       {
         id: "repriced-fixed",
+        lastPublishedAt: new Date("2026-06-12T10:00:00.000Z"),
         marketing: {
           id: "repriced-fixed",
+          mode: "fixed_price",
+          status: "aktif",
           iteration: 1,
           createdAt: new Date("2026-06-12T10:00:00.000Z"),
           updatedAt: new Date("2026-06-15T11:00:00.000Z")
@@ -112,7 +117,7 @@ describe("sortAdminMarketingRowsByRecency", () => {
       }
     ]);
 
-    expect(rows.map((row) => row.id)).toEqual(["newly-created", "repriced-fixed", "old-session"]);
+    expect(rows.map((row) => row.id)).toEqual(["repriced-fixed", "newly-created", "old-session"]);
   });
 });
 

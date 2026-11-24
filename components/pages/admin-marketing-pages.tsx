@@ -2141,6 +2141,14 @@ function compareMarketingRecency(
   return getMarketingIterationNumber(right) - getMarketingIterationNumber(left);
 }
 
+function getMarketingFeedTimestamp(session: MarketingSession) {
+  const publishedAt = Date.parse(session.lastPublishedAt ?? session.createdAt ?? session.startsAt ?? "") || getMarketingSessionTimestamp(session);
+  if (session.mode === "FIXED_PRICE" && session.status === "AKTIF") {
+    return Math.max(publishedAt, Date.parse(session.updatedAt ?? "") || 0);
+  }
+  return publishedAt;
+}
+
 function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {
   const groups = new Map<string, MarketingSession[]>();
 
@@ -2166,9 +2174,7 @@ function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {
     })
     .sort((left, right) => {
       const activeFirst = getMarketingCatalogPriority(right) - getMarketingCatalogPriority(left);
-      const publishedAt = (session: MarketingSession) =>
-        Date.parse(session.lastPublishedAt ?? session.createdAt ?? session.startsAt ?? "") || getMarketingSessionTimestamp(session);
-      return activeFirst || publishedAt(right) - publishedAt(left) || compareMarketingRecency(left, right);
+      return activeFirst || getMarketingFeedTimestamp(right) - getMarketingFeedTimestamp(left) || compareMarketingRecency(left, right);
     });
 }
 

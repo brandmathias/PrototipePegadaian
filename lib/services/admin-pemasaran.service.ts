@@ -51,7 +51,11 @@ function getMarketingRecencyTimestamp(row: MarketingRecencyRow) {
   const value = row.lastPublishedAt ?? row.marketing.createdAt ?? row.marketing.startsAt ?? row.marketing.updatedAt;
   const time = value instanceof Date ? value.getTime() : Number.NaN;
 
-  return Number.isFinite(time) ? time : 0;
+  const publishedAt = Number.isFinite(time) ? time : 0;
+  if (row.marketing.mode === "fixed_price" && row.marketing.status === "aktif") {
+    return Math.max(publishedAt, row.marketing.updatedAt?.getTime() || 0);
+  }
+  return publishedAt;
 }
 
 export function sortAdminMarketingRowsByRecency<T extends MarketingRecencyRow>(rows: T[]) {
