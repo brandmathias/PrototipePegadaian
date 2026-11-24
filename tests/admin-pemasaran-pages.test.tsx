@@ -190,7 +190,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText("2 Barang")).toBeInTheDocument();
     expect(screen.getByText(/1 Harga Tetap \/ 1 Lelang Tertutup/i)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
-      "href", "/admin/pemasaran/fixed-price/pm-fixed-active"
+      "href", "/admin/pemasaran/vickrey-auction/pm-vickrey-active"
     );
     const marketedMetric = screen.getByText("Barang Dipasarkan").closest("article");
     expect(marketedMetric).not.toBeNull();

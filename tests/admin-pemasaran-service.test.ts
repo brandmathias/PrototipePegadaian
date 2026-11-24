@@ -81,14 +81,12 @@ describe("sortAdminMarketingRowsByRecency", () => {
     expect(rows.map((row) => row.id)).toEqual(["relisted-fixed-price", "failed-fixed-price"]);
   });
 
-  it("places an active price edit ahead of an earlier publication", () => {
+  it("keeps a new publication ahead of an older session with a later price edit", () => {
     const rows = sortAdminMarketingRowsByRecency([
       {
         id: "newly-created",
         marketing: {
           id: "newly-created",
-          mode: "vickrey",
-          status: "aktif",
           iteration: 1,
           createdAt: new Date("2026-06-14T10:00:00.000Z"),
           updatedAt: new Date("2026-06-14T10:00:00.000Z")
@@ -96,11 +94,8 @@ describe("sortAdminMarketingRowsByRecency", () => {
       },
       {
         id: "repriced-fixed",
-        lastPublishedAt: new Date("2026-06-12T10:00:00.000Z"),
         marketing: {
           id: "repriced-fixed",
-          mode: "fixed_price",
-          status: "aktif",
           iteration: 1,
           createdAt: new Date("2026-06-12T10:00:00.000Z"),
           updatedAt: new Date("2026-06-15T11:00:00.000Z")
@@ -117,7 +112,7 @@ describe("sortAdminMarketingRowsByRecency", () => {
       }
     ]);
 
-    expect(rows.map((row) => row.id)).toEqual(["repriced-fixed", "newly-created", "old-session"]);
+    expect(rows.map((row) => row.id)).toEqual(["newly-created", "repriced-fixed", "old-session"]);
   });
 });
 
@@ -773,7 +768,7 @@ describe("publishAdminBarang", () => {
       id: "marketing-fixed-new",
       barangId: "barang-fixed-active",
       mode: "fixed_price",
-      price: 15000000,
+      price: 22500000,
       basePrice: null,
       durationDays: null,
       durationSeconds: null,
@@ -793,7 +788,7 @@ describe("publishAdminBarang", () => {
     const remarketingLockWhereSpy = vi.fn().mockResolvedValue([{ count: 0 }]);
     const latestMarketingOrderSpy = vi.fn().mockReturnValue({
       limit: vi.fn().mockResolvedValue([
-        { id: "marketing-fixed-active", mode: "fixed_price", status: "aktif" }
+        { id: "marketing-fixed-active", mode: "fixed_price", status: "aktif", price: "15000000" }
       ])
     });
     const updateBarangWhereSpy = vi.fn().mockResolvedValue(undefined);
@@ -844,7 +839,7 @@ describe("publishAdminBarang", () => {
 
     await publishAdminBarang("unit-1", "user-1", "barang-fixed-active", {
       mode,
-      price: "15000000",
+      price: "22500000",
       ...(mode === "vickrey" ? { durationHours: "1" } : {})
     });
 
@@ -859,8 +854,8 @@ describe("publishAdminBarang", () => {
     expect(insertValuesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         mode,
-        price: mode === "fixed_price" ? "15000000" : null,
-        basePrice: mode === "vickrey" ? "15000000" : null,
+        price: mode === "fixed_price" ? "22500000" : null,
+        basePrice: mode === "vickrey" ? "22500000" : null,
         iteration: 3,
         status: "aktif"
       })
