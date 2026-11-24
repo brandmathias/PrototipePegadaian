@@ -238,7 +238,7 @@ export function AdminMarketingForm({
   heroIcon?: ReactNode;
   submitIcon?: ReactNode;
   submitLabel: string;
-  successDescription: string;
+  successDescription?: string;
   successTitle: string;
   onCancel?: () => void;
 }) {
@@ -388,7 +388,9 @@ export function AdminMarketingForm({
 
       toast({
         title: successTitle,
-        description: successDescription,
+        description: successDescription ?? (mode === "fixed_price"
+          ? "Barang kini dijual dengan harga tetap."
+          : "Barang kini ditawarkan melalui lelang tertutup."),
         variant: "success",
         scope: "admin-unit",
       });

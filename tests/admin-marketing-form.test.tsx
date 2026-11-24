@@ -134,6 +134,28 @@ describe("AdminMarketingForm", () => {
     });
   });
 
+  it.each([
+    ["vickrey", "Harga Tetap", "Barang kini dijual dengan harga tetap."],
+    ["fixed_price", "Lelang Tertutup", "Barang kini ditawarkan melalui lelang tertutup."]
+  ] as const)("confirms the selected mode when switching from %s", async (defaultMode, choice, description) => {
+    renderWithToast(
+      <AdminMarketingForm
+        barangId="barang-1"
+        defaultMode={defaultMode}
+        defaultPrice={200000}
+        endpoint="/api/admin/pemasaran"
+        redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
+        submitLabel="Tayangkan ke katalog"
+        successTitle="Barang dipasarkan kembali"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(choice, "i") }));
+    fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
+    expect(await screen.findByText(description)).toBeVisible();
+  });
+
   it("lets operators replace duration values cleanly after the padded default renders", () => {
     renderWithToast(
       <AdminMarketingForm
