@@ -114,6 +114,7 @@ type MarketingMedia = {
 };
 
 export type MarketingSession = {
+  lastPublishedAt?: string | null;
   id: string;
   lotId: string;
   lot: string;
@@ -2116,7 +2117,7 @@ function getMarketingIterationNumber(auction: MarketingSession) {
 }
 
 function getMarketingCatalogPriority(auction: MarketingSession) {
-  return auction.mode === "FIXED_PRICE" && auction.status === "AKTIF" && !isFixedPricePaymentFailed(auction)
+  return auction.status === "AKTIF" && !(auction.mode === "FIXED_PRICE" && isFixedPricePaymentFailed(auction))
     ? 1
     : 0;
 }
@@ -2152,7 +2153,9 @@ function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {
 
   return Array.from(groups.values())
     .map((group) => {
-      const sortedHistory = [...group].sort(compareMarketingRecency);
+      const sortedHistory = [...group].sort((left, right) =>
+        getMarketingIterationNumber(right) - getMarketingIterationNumber(left) || compareMarketingRecency(left, right)
+      );
       const latest = sortedHistory[0];
 
       return {
@@ -2161,7 +2164,12 @@ function buildLatestMarketingFeedItems(auctions: MarketingSession[]) {
         iterationHistory: sortedHistory,
       };
     })
-    .sort(compareMarketingRecency);
+    .sort((left, right) => {
+      const activeFirst = getMarketingCatalogPriority(right) - getMarketingCatalogPriority(left);
+      const publishedAt = (session: MarketingSession) =>
+        Date.parse(session.lastPublishedAt ?? session.createdAt ?? session.startsAt ?? "") || getMarketingSessionTimestamp(session);
+      return activeFirst || publishedAt(right) - publishedAt(left) || compareMarketingRecency(left, right);
+    });
 }
 
 function getMarketingSearchValues(auction: MarketingSession) {

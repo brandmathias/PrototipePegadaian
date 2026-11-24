@@ -43,6 +43,8 @@ describe("admin pemasaran pages", () => {
             id: "pm-fixed-active",
             lotId: "barang-1",
             lot: "Kalung Emas Aktif",
+            updatedAt: "2026-05-06T00:00:00.000Z",
+            lastPublishedAt: "2026-05-01T00:00:00.000Z",
             code: "BRG-001",
             category: "emas",
             condition: "baik",
@@ -58,6 +60,7 @@ describe("admin pemasaran pages", () => {
             id: "pm-vickrey-active",
             lotId: "barang-2",
             lot: "Cincin Emas Aktif",
+            lastPublishedAt: "2026-05-05T00:00:00.000Z",
             code: "BRG-002",
             category: "emas",
             condition: "baik",
@@ -186,6 +189,9 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByRole("combobox", { name: "Filter status pemasaran" })).toBeInTheDocument();
     expect(screen.getByText("2 Barang")).toBeInTheDocument();
     expect(screen.getByText(/1 Harga Tetap \/ 1 Lelang Tertutup/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /lihat detail/i })[0]).toHaveAttribute(
+      "href", "/admin/pemasaran/vickrey-auction/pm-vickrey-active"
+    );
     const marketedMetric = screen.getByText("Barang Dipasarkan").closest("article");
     expect(marketedMetric).not.toBeNull();
     expect(marketedMetric).not.toHaveClass("group", "hover:-translate-y-0.5");

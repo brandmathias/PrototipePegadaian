@@ -32,6 +32,7 @@ type AdminMarketingBidRow = {
 };
 
 type MarketingRecencyRow = {
+  lastPublishedAt?: Date | null;
   marketing: {
     mode?: string | null;
     status?: string | null;
@@ -43,11 +44,11 @@ type MarketingRecencyRow = {
 };
 
 function getMarketingCatalogPriority(row: MarketingRecencyRow) {
-  return row.marketing.mode === "fixed_price" && row.marketing.status === "aktif" ? 1 : 0;
+  return row.marketing.status === "aktif" ? 1 : 0;
 }
 
 function getMarketingRecencyTimestamp(row: MarketingRecencyRow) {
-  const value = row.marketing.updatedAt ?? row.marketing.createdAt ?? row.marketing.startsAt;
+  const value = row.lastPublishedAt ?? row.marketing.createdAt ?? row.marketing.startsAt ?? row.marketing.updatedAt;
   const time = value instanceof Date ? value.getTime() : Number.NaN;
 
   return Number.isFinite(time) ? time : 0;
@@ -518,6 +519,11 @@ export async function listAdminPemasaran(unitId: string) {
 
   const rows = await db
     .select({
+      lastPublishedAt: sql<Date | null>`(
+        select max(${riwayatStatusBarang.createdAt}) from ${riwayatStatusBarang}
+        where ${riwayatStatusBarang.barangId} = ${barang.id}
+          and ${riwayatStatusBarang.newStatus} = 'dipasarkan'
+      )`.mapWith(riwayatStatusBarang.createdAt),
       marketing: pemasaran,
       item: barang,
       unitName: units.name,
@@ -547,8 +553,9 @@ export async function listAdminPemasaran(unitId: string) {
     getLotStatsByIds(sortedRows.map((row) => row.marketing.id))
   ]);
 
-  return sortedRows.map((row) =>
-    serializeAdminPemasaran(row.marketing, {
+  return sortedRows.map((row) => ({
+    lastPublishedAt: row.lastPublishedAt?.toISOString() ?? null,
+    ...serializeAdminPemasaran(row.marketing, {
       lotName: row.item.name,
       lotCode: row.item.code,
       lotCategory: row.item.category,
@@ -565,7 +572,7 @@ export async function listAdminPemasaran(unitId: string) {
       transaction: transactionByPemasaranId.get(row.marketing.id) ?? null,
       participantPreviews: participantPreviewsByPemasaranId.get(row.marketing.id) ?? []
     })
-  );
+  }));
 }
 
 export async function getAdminPemasaranById(unitId: string, pemasaranId: string) {
