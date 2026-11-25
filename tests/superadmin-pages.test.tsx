@@ -1324,7 +1324,7 @@ describe("superadmin pages", () => {
         now,
         transactionStatus: "bukti_diunggah",
       }).operationalStatus,
-    ).toBe("Menunggu Verifikasi");
+    ).toBe("Bukti Transfer Diterima");
 
     expect(
       getUnitItemOperationalState({

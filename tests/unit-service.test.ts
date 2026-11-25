@@ -23,7 +23,7 @@ import { getUnitItemOperationalState } from "@/lib/services/unit.service";
 describe("getUnitItemOperationalState", () => {
   it.each([
     ["menunggu_pembayaran", null, "Menunggu Pembayaran"],
-    ["bukti_diunggah", null, "Menunggu Verifikasi"],
+    ["bukti_diunggah", null, "Bukti Transfer Diterima"],
     ["menunggu_konfirmasi_langsung", null, "Menunggu Verifikasi"],
     ["lunas", null, "Menunggu Serah-Terima"],
     ["lunas", "/bukti.jpg", "Menunggu Buyer"],

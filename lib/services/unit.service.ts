@@ -154,7 +154,11 @@ export function getUnitItemOperationalState(input: {
     return { operationalStatus: input.handoverProofUrl ? "Menunggu Buyer" : "Menunggu Serah-Terima", operationalTone: "blue" };
   }
 
-  if (["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus)) {
+  if (transactionStatus === "bukti_diunggah") {
+    return { operationalStatus: "Bukti Transfer Diterima", operationalTone: "amber" };
+  }
+
+  if (transactionStatus === "menunggu_konfirmasi_langsung") {
     return { operationalStatus: "Menunggu Verifikasi", operationalTone: "amber" };
   }
 
@@ -163,7 +167,7 @@ export function getUnitItemOperationalState(input: {
   }
 
   if (itemStatus === "terjual") {
-    return { operationalStatus: "Perlu Verifikasi Transaksi", operationalTone: "amber" };
+    return { operationalStatus: "Data Penjualan Tidak Lengkap", operationalTone: "amber" };
   }
 
   if (itemStatus === "ditebus") {

@@ -2193,7 +2193,6 @@ const unitDetailOperationalStatusOptions = [
   "Menunggu Verifikasi",
   "Menunggu Serah-Terima",
   "Menunggu Buyer",
-  "Perlu Verifikasi Transaksi",
   "Terjual",
   "Gagal",
 ] as const;
@@ -2340,7 +2339,8 @@ function getUnitDetailDisplayStatus(status: string) {
   const normalizedStatus = normalizeUnitDetailOptionValue(status);
 
   if (normalizedStatus === "menunggu_pembayaran") return "Menunggu Pembayaran";
-  if (["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(normalizedStatus)) {
+  if (normalizedStatus === "bukti_diunggah") return "Bukti Transfer Diterima";
+  if (normalizedStatus === "menunggu_konfirmasi_langsung") {
     return "Menunggu Verifikasi";
   }
 
@@ -2881,12 +2881,15 @@ function SuperAdminUnitInventorySection({
   const statusOptions = useMemo(
     () => [
       { label: "Semua Status", value: unitDetailFilterAll },
-      ...unitDetailOperationalStatusOptions.map((status) => ({
+      ...Array.from(new Set<string>([
+        ...unitDetailOperationalStatusOptions,
+        ...items.map((item) => getUnitDetailDisplayStatus(item.operationalStatus)),
+      ])).map((status) => ({
         label: status,
         value: status,
       })),
     ],
-    [],
+    [items],
   );
   const modeOptions = useMemo(
     () => [
