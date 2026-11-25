@@ -588,7 +588,7 @@ function AdminPurchaseTimeline({ transaction }: { transaction: AdminTransactionI
     {
       id: "completed",
       label: "Selesai",
-      headline: completed ? getAdminTransactionCompletionLabel(transaction) : "Menunggu Buyer Selesai",
+      headline: completed ? getAdminTransactionCompletionLabel(transaction) : "Menunggu Penyelesaian Buyer",
       detail: finishDetail,
       meta: "Penutupan transaksi",
       actor: completed
@@ -636,7 +636,7 @@ function getLedgerStatusSignal(transaction: AdminTransactionItem) {
   if (transaction.status === "LUNAS") {
     return {
       title: "Terverifikasi admin",
-      detail: "Menunggu buyer selesai",
+      detail: "Menunggu Penyelesaian Buyer",
       shellClass: "border-[#c9ead3] bg-[#f4fcf6] text-[#075b3f] dark:border-emerald-300/16 dark:bg-emerald-300/[0.08] dark:text-emerald-200",
       iconClass: "bg-[#20b96b] text-white dark:bg-emerald-300/18 dark:text-emerald-100",
       pulseClass: "bg-[#20b96b]/22",

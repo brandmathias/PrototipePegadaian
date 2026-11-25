@@ -1262,7 +1262,7 @@ const MARKETING_STATUS_FILTERS = [
   "Aktif",
   "Menunggu Pembayaran",
   "Menunggu Serah-Terima",
-  "Menunggu Buyer",
+  "Menunggu Penyelesaian Buyer",
   "Selesai",
   "Gagal",
 ] as const;
@@ -1287,7 +1287,7 @@ function getPostVerificationStatus(
 ) {
   return isAwaitingHandoverDocumentation(auction)
     ? "Menunggu Serah-Terima"
-    : "Menunggu Buyer";
+    : "Menunggu Penyelesaian Buyer";
 }
 
 function getMarketingCompletionLabel(
@@ -2279,7 +2279,7 @@ function MarketingIterationHistoryPanel({
   const selectedSettled =
     selectedStatus === "Selesai" ||
     selectedStatus === "Menunggu Serah-Terima" ||
-    selectedStatus === "Menunggu Buyer";
+    selectedStatus === "Menunggu Penyelesaian Buyer";
   const selectedActive =
     selectedStatus === "Aktif" || selectedStatus === "Menunggu Pembayaran";
   const iterationOptions: AdminSelectOption[] = history.map((entry, index) => ({
@@ -4108,7 +4108,7 @@ function VickreySettlementDeadlineBanner({
               <h2 className="font-headline text-[1rem] font-black uppercase tracking-[0.02em] text-[#075b3f] sm:text-[1.12rem]">
                 {awaitingHandover
                   ? "Pembayaran Terverifikasi - Menunggu Serah-Terima Barang"
-                  : "Pembayaran Terverifikasi - Menunggu Buyer Selesai"}
+                  : "Pembayaran Terverifikasi - Menunggu Penyelesaian Buyer"}
               </h2>
               <p className="mt-1 text-[0.8rem] font-semibold leading-5 text-[#2f6a52]">
                 {awaitingHandover
@@ -4240,7 +4240,7 @@ function VickreyWinnerProfilePanel({ auction }: { auction: MarketingSession }) {
               ? "Barang Sudah Diambil"
               : awaitingHandover
                 ? "Menunggu Serah-Terima"
-                : "Menunggu Buyer Selesai"}
+                : "Menunggu Penyelesaian Buyer"}
           </span>
         </div>
       ) : null}
@@ -4554,7 +4554,7 @@ function VickreyPaymentProgressPanel({
           },
           {
             label: "Selesai",
-            status: awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu buyer",
+            status: awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Penyelesaian Buyer",
             actor: awaitingHandover ? adminActor : buyerActor,
             icon: CheckCircle2,
             tone: "current" as const,
@@ -4729,7 +4729,7 @@ function VickreyPaymentTotalPanel({
               variant="secondary"
             >
               <Clock3 className="size-4" />
-              {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Buyer Selesai"}
+              {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Penyelesaian Buyer"}
             </Button>
           </div>
         </div>
@@ -6365,7 +6365,7 @@ function VickreyWinnerActionFooter({
           variant="secondary"
         >
           <CheckCircle2 className="size-4" />
-          {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Buyer Selesai"}
+          {awaitingHandover ? "Menunggu Serah-Terima" : "Menunggu Penyelesaian Buyer"}
         </Button>
       </div>
     );

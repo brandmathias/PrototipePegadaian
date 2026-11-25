@@ -1987,11 +1987,11 @@ describe("admin pemasaran pages", () => {
       />
     );
 
-    expect(screen.getByText(/pembayaran terverifikasi .* menunggu buyer selesai/i)).toBeInTheDocument();
+    expect(screen.getByText(/pembayaran terverifikasi .* Menunggu Penyelesaian Buyer/i)).toBeInTheDocument();
     expect(screen.getByText(/nota tersedia, arsip final belum ditutup/i)).toBeInTheDocument();
     expect(screen.getByText(/pemenang terverifikasi/i)).toBeInTheDocument();
     expect(screen.getAllByText(/pembayaran terverifikasi/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/menunggu buyer selesai/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Menunggu Penyelesaian Buyer/i).length).toBeGreaterThan(0);
     const rankingTitle = screen.getByText(/ranking peserta lelang \(admin view\)/i);
     expect(rankingTitle).toBeInTheDocument();
     const handoverPanel = screen.getByLabelText(/area upload bukti serah-terima pemenang/i);
@@ -2021,7 +2021,7 @@ describe("admin pemasaran pages", () => {
     expect(screen.getByText(/progress penyelesaian/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/pembayaran: selesai/i)).toHaveClass("border-[#006747]");
     expect(screen.getByLabelText(/verifikasi: selesai/i)).toHaveClass("border-[#006747]");
-    expect(screen.getByLabelText(/selesai: menunggu buyer/i)).toHaveClass("border-[#d7ad2f]");
+    expect(screen.getByLabelText(/selesai: Menunggu Penyelesaian Buyer/i)).toHaveClass("border-[#d7ad2f]");
     const noteTitle = screen.getByText(/nota & konfirmasi buyer/i);
     const notePanel = noteTitle.closest("section");
     expect(notePanel).not.toBeNull();
@@ -2029,7 +2029,7 @@ describe("admin pemasaran pages", () => {
     expect(notePanel).toHaveTextContent(/status admin/i);
     expect(notePanel).toHaveTextContent(/terverifikasi/i);
     expect(notePanel).toContainElement(screen.getByRole("button", { name: /cetak nota/i }));
-    expect(notePanel).toContainElement(screen.getByRole("button", { name: /menunggu buyer selesai/i }));
+    expect(notePanel).toContainElement(screen.getByRole("button", { name: /Menunggu Penyelesaian Buyer/i }));
     expect(handoverPanel.compareDocumentPosition(noteTitle) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
@@ -2049,7 +2049,7 @@ describe("admin pemasaran pages", () => {
     expect(receiptPrintRoot!.querySelector('img[src*="/uploads/bangle.jpg"]')).not.toBeNull();
     expect(screen.queryByRole("dialog", { name: /pratinjau nota pengambilan barang/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /cetak nota/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /menunggu buyer selesai/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Menunggu Penyelesaian Buyer/i })).toBeDisabled();
 
     printSpy.mockRestore();
   });
