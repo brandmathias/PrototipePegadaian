@@ -151,7 +151,7 @@ export function getUnitItemOperationalState(input: {
   }
 
   if (transactionStatus === "lunas") {
-    return { operationalStatus: input.handoverProofUrl ? "Menunggu Buyer" : "Menunggu Serah-Terima", operationalTone: "blue" };
+    return { operationalStatus: input.handoverProofUrl ? "Menunggu Penyelesaian Buyer" : "Menunggu Serah-Terima", operationalTone: "blue" };
   }
 
   if (transactionStatus === "bukti_diunggah") {

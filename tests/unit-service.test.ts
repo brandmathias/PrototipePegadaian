@@ -26,7 +26,7 @@ describe("getUnitItemOperationalState", () => {
     ["bukti_diunggah", null, "Bukti Transfer Diterima"],
     ["menunggu_konfirmasi_langsung", null, "Menunggu Verifikasi"],
     ["lunas", null, "Menunggu Serah-Terima"],
-    ["lunas", "/bukti.jpg", "Menunggu Buyer"],
+    ["lunas", "/bukti.jpg", "Menunggu Penyelesaian Buyer"],
     ["selesai", "/bukti.jpg", "Terjual"],
   ])("shows the transaction stage for %s with proof %s", (status, proof, expected) => {
     expect(getUnitItemOperationalState({

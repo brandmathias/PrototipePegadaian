@@ -2192,7 +2192,7 @@ const unitDetailOperationalStatusOptions = [
   "Menunggu Pembayaran",
   "Menunggu Verifikasi",
   "Menunggu Serah-Terima",
-  "Menunggu Buyer",
+  "Menunggu Penyelesaian Buyer",
   "Terjual",
   "Gagal",
 ] as const;
