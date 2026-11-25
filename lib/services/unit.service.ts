@@ -127,6 +127,7 @@ function formatUnitOperationalStatusLabel(value: string) {
 
 export function getUnitItemOperationalState(input: {
   itemStatus: string;
+  handoverProofUrl?: string | null;
   activeMarketingMode?: string | null;
   activeMarketingStatus?: string | null;
   dueDate?: Date | null;
@@ -138,7 +139,6 @@ export function getUnitItemOperationalState(input: {
   operationalTone: "amber" | "blue" | "emerald" | "red" | "slate";
 } {
   const itemStatus = input.itemStatus.toLowerCase();
-  const activeMarketingMode = String(input.activeMarketingMode ?? "").toLowerCase();
   const activeMarketingStatus = String(input.activeMarketingStatus ?? "").toLowerCase();
   const latestMarketingStatus = String(input.latestMarketingStatus ?? "").toLowerCase();
   const transactionStatus = String(input.transactionStatus ?? "").toLowerCase();
@@ -146,19 +146,31 @@ export function getUnitItemOperationalState(input: {
   const dueDate = input.dueDate ?? null;
   const isCollateralStatus = itemStatus === "gadai" || itemStatus === "jaminan";
   const isBeforeDueDate = dueDate ? dueDate.getTime() > now.getTime() : false;
-  const fixedPriceCatalogLocked =
-    activeMarketingMode === "fixed_price" &&
-    ["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus);
-
-  if (itemStatus === "terjual" || transactionStatus === "lunas" || transactionStatus === "selesai") {
+  if (transactionStatus === "selesai") {
     return { operationalStatus: "Terjual", operationalTone: "slate" };
+  }
+
+  if (transactionStatus === "lunas") {
+    return { operationalStatus: input.handoverProofUrl ? "Menunggu Buyer" : "Menunggu Serah-Terima", operationalTone: "blue" };
+  }
+
+  if (["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(transactionStatus)) {
+    return { operationalStatus: "Menunggu Verifikasi", operationalTone: "amber" };
+  }
+
+  if (transactionStatus === "menunggu_pembayaran") {
+    return { operationalStatus: "Menunggu Pembayaran", operationalTone: "amber" };
+  }
+
+  if (itemStatus === "terjual") {
+    return { operationalStatus: "Perlu Verifikasi Transaksi", operationalTone: "amber" };
   }
 
   if (itemStatus === "ditebus") {
     return { operationalStatus: "Ditebus", operationalTone: "slate" };
   }
 
-  if (itemStatus === "dipasarkan" && activeMarketingStatus === "aktif" && !fixedPriceCatalogLocked) {
+  if (itemStatus === "dipasarkan" && activeMarketingStatus === "aktif") {
     return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
   }
 
@@ -170,15 +182,8 @@ export function getUnitItemOperationalState(input: {
     return { operationalStatus: "Gagal", operationalTone: "red" };
   }
 
-  if (fixedPriceCatalogLocked) {
-    return {
-      operationalStatus: "Sedang Dipasarkan",
-      operationalTone: "blue"
-    };
-  }
-
   if (itemStatus === "menunggu_pembayaran") {
-    return { operationalStatus: "Sedang Dipasarkan", operationalTone: "blue" };
+    return { operationalStatus: "Menunggu Pembayaran", operationalTone: "amber" };
   }
 
   if (itemStatus === "dipasarkan") {
@@ -353,7 +358,7 @@ export async function getUnitById(unitId: string) {
         from transaksi t
         inner join pemasaran p on p.id = t.pemasaran_id
         where p.barang_id = ${outerBarangId}
-        order by t.created_at desc
+        order by t.created_at desc, t.id desc
         limit 1
       )`,
       transactionStatus: sql<string | null>`(
@@ -361,7 +366,15 @@ export async function getUnitById(unitId: string) {
         from transaksi t
         inner join pemasaran p on p.id = t.pemasaran_id
         where p.barang_id = ${outerBarangId}
-        order by t.created_at desc
+        order by t.created_at desc, t.id desc
+        limit 1
+      )`,
+      handoverProofUrl: sql<string | null>`(
+        select t.handover_proof_url
+        from transaksi t
+        inner join pemasaran p on p.id = t.pemasaran_id
+        where p.barang_id = ${outerBarangId}
+        order by t.created_at desc, t.id desc
         limit 1
       )`,
       transactionAmount: sql<string | null>`(
@@ -426,6 +439,7 @@ export async function getUnitById(unitId: string) {
         transactionStatus: item.transactionStatus
       }),
       ...getUnitItemOperationalState({
+        handoverProofUrl: item.handoverProofUrl,
         itemStatus: item.status,
         activeMarketingMode: item.activeMarketingMode,
         activeMarketingStatus: item.activeMarketingStatus,
@@ -499,12 +513,13 @@ export async function getSuperAdminUnitBarangDetail(unitId: string, barangId: st
     db
       .select({
         status: transaksi.status,
+        handoverProofUrl: transaksi.handoverProofUrl,
         type: transaksi.type
       })
       .from(transaksi)
       .innerJoin(pemasaran, eq(pemasaran.id, transaksi.pemasaranId))
       .where(eq(pemasaran.barangId, barangId))
-      .orderBy(desc(transaksi.createdAt))
+      .orderBy(desc(transaksi.createdAt), desc(transaksi.id))
       .limit(1)
   ]);
 
@@ -538,6 +553,7 @@ export async function getSuperAdminUnitBarangDetail(unitId: string, barangId: st
     marketing: normalizedMarketing,
     history,
     ...getUnitItemOperationalState({
+      handoverProofUrl: latestTransaction?.handoverProofUrl,
       itemStatus: rawItem.status,
       activeMarketingMode: activeMarketing?.mode,
       activeMarketingStatus: activeMarketing?.status,

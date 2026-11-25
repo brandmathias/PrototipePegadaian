@@ -2189,6 +2189,11 @@ const unitDetailOperationalStatusOptions = [
   "Ditebus",
   "Sedang Dipasarkan",
   "Siap Dipasarkan",
+  "Menunggu Pembayaran",
+  "Menunggu Verifikasi",
+  "Menunggu Serah-Terima",
+  "Menunggu Buyer",
+  "Perlu Verifikasi Transaksi",
   "Terjual",
   "Gagal",
 ] as const;
@@ -2334,14 +2339,9 @@ function getUnitDetailStatusToneClass(
 function getUnitDetailDisplayStatus(status: string) {
   const normalizedStatus = normalizeUnitDetailOptionValue(status);
 
-  if (
-    [
-      "bukti_diunggah",
-      "menunggu_pembayaran",
-      "menunggu_konfirmasi_langsung",
-    ].includes(normalizedStatus)
-  ) {
-    return "Sedang Dipasarkan";
+  if (normalizedStatus === "menunggu_pembayaran") return "Menunggu Pembayaran";
+  if (["bukti_diunggah", "menunggu_konfirmasi_langsung"].includes(normalizedStatus)) {
+    return "Menunggu Verifikasi";
   }
 
   if (

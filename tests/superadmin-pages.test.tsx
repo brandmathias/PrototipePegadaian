@@ -1324,7 +1324,7 @@ describe("superadmin pages", () => {
         now,
         transactionStatus: "bukti_diunggah",
       }).operationalStatus,
-    ).toBe("Sedang Dipasarkan");
+    ).toBe("Menunggu Verifikasi");
 
     expect(
       getUnitItemOperationalState({
@@ -1332,7 +1332,7 @@ describe("superadmin pages", () => {
         dueDate: new Date("2026-05-01T00:00:00.000Z"),
         now,
       }).operationalStatus,
-    ).toBe("Sedang Dipasarkan");
+    ).toBe("Menunggu Pembayaran");
 
     expect(
       getUnitItemOperationalState({
