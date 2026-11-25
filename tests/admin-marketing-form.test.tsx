@@ -154,6 +154,26 @@ describe("AdminMarketingForm", () => {
     fireEvent.click(screen.getByRole("button", { name: new RegExp(choice, "i") }));
     fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
     expect(await screen.findByText(description)).toBeVisible();
+    expect(screen.getAllByRole("button", { name: "Tutup notifikasi" })).toHaveLength(1);
+  });
+
+  it("shows one error toast when republication fails", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ message: "Sesi masih aktif." }), { status: 409 }));
+    renderWithToast(
+      <AdminMarketingForm
+        barangId="barang-1"
+        defaultPrice={200000}
+        endpoint="/api/admin/pemasaran"
+        redirectTo="/admin/pemasaran"
+        serverNow="2026-05-30T03:00:00.000Z"
+        submitLabel="Tayangkan ke katalog"
+        successTitle="Barang dipasarkan kembali"
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /tayangkan ke katalog/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Sesi masih aktif.");
+    expect(screen.getAllByRole("button", { name: "Tutup notifikasi" })).toHaveLength(1);
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it("lets operators replace duration values cleanly after the padded default renders", () => {

@@ -354,16 +354,6 @@ export function AdminMarketingForm({
     }
 
     setIsSubmitting(true);
-    toast({
-      title: "Menyiapkan tayangan katalog",
-      description:
-        mode === "vickrey"
-          ? "Sesi lelang tertutup sedang dibuat dengan countdown sesuai durasi."
-          : "Barang sedang dipublikasikan sebagai harga tetap.",
-      variant: "info",
-      scope: "admin-unit",
-      duration: 2800,
-    });
 
     try {
       const response = await fetch(endpoint, {
